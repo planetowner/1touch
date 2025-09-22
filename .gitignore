@@ -1,0 +1,57 @@
+﻿# --- Python 기본 ---
+.venv/
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+.coverage
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.pytype/
+.tox/
+
+# --- 에디터/OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- 환경변수/시크릿 ---
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.der
+secrets.*
+*.credentials.json
+
+# --- 로그 ---
+logs/
+*.log
+
+# --- DB/데이터 덤프(대형 파일) ---
+# 스키마(ddl)는 추적하고, 덤프/백업만 제외
+*.sql.gz
+*.dump.sql
+*.bak.sql
+*.sql.bak
+*.db
+*.sqlite
+*.sqlite3
+# (원하면 씨드 파일도 제외)
+# db/seed/
+
+# --- 기타 캐시/도구 ---
+pip-wheel-metadata/
+pip-log.txt
+.pyre/
