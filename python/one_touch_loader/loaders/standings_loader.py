@@ -40,36 +40,23 @@ INSERT INTO knockout_ties (
   aggregate_team1, aggregate_team2, winner_team_id
 ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 ON DUPLICATE KEY UPDATE
-  leg1_fixture_id=VALUES(leg1_fixture_id),
-  leg1_home_team_id=VALUES(leg1_home_team_id),
-  leg1_away_team_id=VALUES(leg1_away_team_id),
-  leg1_home_score=VALUES(leg1_home_score),
-  leg1_away_score=VALUES(leg1_away_score),
-  leg2_fixture_id=VALUES(leg2_fixture_id),
-  leg2_home_team_id=VALUES(leg2_home_team_id),
-  leg2_away_team_id=VALUES(leg2_away_team_id),
-  leg2_home_score=VALUES(leg2_home_score),
-  leg2_away_score=VALUES(leg2_away_score),
-  aggregate_team1=VALUES(aggregate_team1),
-  aggregate_team2=VALUES(aggregate_team2),
-  winner_team_id=VALUES(winner_team_id)
+  leg1_fixture_id = VALUES(leg1_fixture_id),
+  leg1_home_team_id = VALUES(leg1_home_team_id),
+  leg1_away_team_id = VALUES(leg1_away_team_id),
+  leg1_home_score = VALUES(leg1_home_score),
+  leg1_away_score = VALUES(leg1_away_score),
+  leg2_fixture_id = VALUES(leg2_fixture_id),
+  leg2_home_team_id = VALUES(leg2_home_team_id),
+  leg2_away_team_id = VALUES(leg2_away_team_id),
+  leg2_home_score = VALUES(leg2_home_score),
+  leg2_away_score = VALUES(leg2_away_score),
+  aggregate_team1 = VALUES(aggregate_team1),
+  aggregate_team2 = VALUES(aggregate_team2),
+  -- 이미 값이 있으면 유지, NULL일 때만 새 값 채움
+  winner_team_id = IFNULL(winner_team_id, VALUES(winner_team_id))
 """
 
 # ===== 공용 유틸 =====
-def _normalize_dt(s: Optional[str]) -> Optional[str]:
-    if not s: return None
-    try:
-        s2 = s.replace("Z", "+00:00")
-        dt = datetime.fromisoformat(s2).replace(tzinfo=None)
-        return dt.strftime("%Y-%m-%d %H:%M:%S")
-    except Exception:
-        s3 = s.replace("T", " ").replace("Z", "")
-        if "+" in s3:
-            s3 = s3.split("+", 1)[0]
-        elif len(s3) >= 6 and s3[-6] in "+-" and s3[-3] == ":":
-            s3 = s3[:-6]
-        return s3[:19]
-
 def _result_for_team(home_id:int, away_id:int, hs:Optional[int], as_:Optional[int], team_id:int) -> Optional[str]:
     if hs is None or as_ is None:
         return None
