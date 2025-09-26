@@ -1,0 +1,253 @@
+{
+  "home_screen": {
+    "team": {
+      "logo": "string",
+      "name": "string",
+      "league_standing": "object"
+    },
+    "next_match": {
+      "home_team": { "logo": "string", "name": "string" },
+      "away_team": { "logo": "string", "name": "string" },
+      "date": "string",
+      "league_round": "string"
+    },
+    "last_match": {
+      "home_team": { "logo": "string", "short_name": "string" },
+      "away_team": { "logo": "string", "short_name": "string" },
+      "date": "string",
+      "scores": "string"
+    },
+    "fixtures_calendar": [
+      {
+        "match_id": "int",
+        "home_team": "string",
+        "away_team": "string",
+        "date": "string"
+      }
+    ]
+  },
+
+  "team_screen": {
+    "basic_info": {
+      "logo": "string",
+      "name": "string",
+      "league_standing": "object"
+    },
+    "overview": {
+      "next_match": "object",
+      "last_match": "object",
+      "standing": [
+        {
+          "league_logo": "string",
+          "team_name": "string",
+          "MP": "int",
+          "W": "int",
+          "D": "int",
+          "L": "int"
+        }
+      ],
+      "injury": [
+        {
+          "player_image": "string",
+          "player_number": "int",
+          "player_name": "string",
+          "reason": "string",
+          "return_date": "string"
+        }
+      ],
+      "transfer": [
+        {
+          "player_image": "string",
+          "player_number": "int",
+          "player_name": "string"
+        }
+      ]
+    },
+    "matches": {
+      "next_match": "object",
+      "live_last_match": "object"
+    },
+    "standing": [
+      {
+        "team_logo": "string",
+        "team_name": "string",
+        "MP": "int",
+        "W": "int",
+        "D": "int",
+        "L": "int",
+        "GF": "int",
+        "GA": "int",
+        "GD": "int",
+        "Pts": "int",
+        "last5": "string"
+      }
+    ],
+    "squad": [
+      {
+        "player_image": "string",
+        "player_number": "int",
+        "player_name": "string",
+        "team_name": "string",
+        "age": "int",
+        "position": "string",
+        "contract_length": "string"
+      }
+    ]
+  },
+
+  "match_screen": {
+    "next_match_preview": {
+      "teams": { "home": "object", "away": "object" },
+      "date": "string",
+      "last_H2H": [{ "date": "string", "scores": "string" }],
+      "standing": "object"
+    },
+    "live_match": {
+      "teams": { "home": "object", "away": "object", "round": "string" },
+      "live_score": "string",
+      "time": "string",
+      "scorers": [{ "name": "string", "time": "string" }],
+      "momentum": "object",
+      "stats": {
+        "ball_progression": "int",
+        "total_shots": "int",
+        "shots_on_target": "int",
+        "total_passes": "int",
+        "pass_accuracy": "int",
+        "yellows": "int",
+        "reds": "int",
+        "fouls": "int",
+        "offsides": "int",
+        "saves": "int"
+      },
+      "lineup": [
+        {
+          "name": "string",
+          "position": "string",
+          "number": "int",
+          "status": "string"
+        }
+      ],
+      "subs": [
+        {
+          "name": "string",
+          "position": "string",
+          "number": "int",
+          "sub_time": "string",
+          "status": "string"
+        }
+      ],
+      "coach": { "name": "string" },
+      "venue": { "name": "string" }
+    },
+    "past_match": {
+      "teams": { "home": "object", "away": "object", "round": "string" },
+      "score": "string",
+      "time": "string",
+      "scorers": [{ "name": "string", "time": "string" }],
+      "POM": { "image": "string", "name": "string" },
+      "momentum": "object",
+      "stats": "object",
+      "lineup": "array",
+      "subs": "array",
+      "coach": { "name": "string" },
+      "venue": { "name": "string" }
+    },
+    "H2H": {
+      "opponent_team_logo": "string",
+      "record": { "W": "int", "D": "int", "L": "int" },
+      "past_matches": [
+        { "league": "string", "round": "string", "scores": "string" }
+      ]
+    }
+  },
+
+  "player_screen": {
+    "main": {
+      "image": "string",
+      "name": "string",
+      "number": "int",
+      "team_name": "string",
+      "age": "int",
+      "league_name": "string"
+    },
+    "overview": {
+      "basic_info": {
+        "position": "string",
+        "nationality": "string",
+        "injury": "string",
+        "captain": "bool",
+        "height": "int",
+        "weight": "int"
+      },
+      "competition_stats": [
+        {
+          "league_name": "string",
+          "matches_played": "int",
+          "win_rate": "float"
+        }
+      ],
+      "last_matches": [
+        {
+          "opponent_logo": "string",
+          "opponent_short_name": "string",
+          "league_round": "string",
+          "scores": "string",
+          "top_stats": "object"
+        }
+      ],
+      "club_history": [{ "team_name": "string", "duration": "string" }]
+    },
+    "analysis": {
+      "top_stats": "object",
+      "influence": { "minutes_played": "int", "win_rate": "float" }
+    },
+    "matches": [
+      {
+        "opponent_logo": "string",
+        "opponent_short_name": "string",
+        "league_round": "string",
+        "scores": "string",
+        "top_stats": "object"
+      }
+    ],
+    "career": {
+      "trophies": [
+        {
+          "team_name": "string",
+          "competition": "string",
+          "season": "string"
+        }
+      ],
+      "history": [
+        {
+          "season": "string",
+          "team_name": "string",
+          "matches_played": "int",
+          "win_rate": "float",
+          "competition": "string"
+        }
+      ]
+    },
+    "compare": [
+      {
+        "image": "string",
+        "name": "string",
+        "number": "int",
+        "team_name": "string",
+        "team_logo": "string",
+        "season": "string"
+      }
+    ]
+  },
+
+  "harry_kane_shelter": {
+    "image": "string",
+    "name": "string",
+    "number": "int",
+    "position": "string",
+    "team_name": "string",
+    "nationality": "string",
+    "stats": "object"
+  }
+}
