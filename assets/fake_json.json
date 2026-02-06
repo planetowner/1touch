@@ -1,0 +1,349 @@
+[
+  {
+    "id": 1,
+    "name": "Manchester City",
+    "short_code": "MCI",
+    "image_path": "https://example.com/images/mci.png",
+    "league_id": 8,
+    "standing": {
+      "rank": 1,
+      "points": 86,
+      "wins": 27,
+      "draws": 5,
+      "losses": 4,
+      "goal_for": 88,
+      "goal_against": 30
+    },
+    "nextMatch": {
+      "id": 201,
+      "season_id": 2025,
+      "round_id": 38,
+      "venue_id": 101,
+      "home_team_id": 1,
+      "away_team_id": 2,
+      "starting_at": "2025-10-10T17:30:00Z",
+      "status": "not_started",
+      "home_team": {
+        "id": 1,
+        "name": "Manchester City",
+        "short_code": "MCI",
+        "image_path": "https://example.com/images/mci.png"
+      },
+      "away_team": {
+        "id": 2,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://example.com/images/liv.png"
+      }
+    },
+    "lastMatch": {
+      "id": 191,
+      "season_id": 2025,
+      "round_id": 37,
+      "venue_id": 102,
+      "home_team_id": 3,
+      "away_team_id": 1,
+      "starting_at": "2025-10-01T18:30:00Z",
+      "status": "finished",
+      "home_team": {
+        "id": 3,
+        "name": "Arsenal",
+        "short_code": "ARS",
+        "image_path": "https://example.com/images/ars.png"
+      },
+      "away_team": {
+        "id": 1,
+        "name": "Manchester City",
+        "short_code": "MCI",
+        "image_path": "https://example.com/images/mci.png"
+      }
+    }
+  },
+  {
+    "id": 2,
+    "name": "Liverpool",
+    "short_code": "LIV",
+    "image_path": "https://example.com/images/liv.png",
+    "league_id": 8,
+    "standing": {
+      "rank": 2,
+      "points": 82,
+      "wins": 25,
+      "draws": 7,
+      "losses": 4,
+      "goal_for": 81,
+      "goal_against": 35
+    },
+    "nextMatch": {
+      "id": 201,
+      "season_id": 2025,
+      "round_id": 38,
+      "venue_id": 101,
+      "home_team_id": 1,
+      "away_team_id": 2,
+      "starting_at": "2025-10-10T17:30:00Z",
+      "status": "not_started",
+      "home_team": {
+        "id": 1,
+        "name": "Manchester City",
+        "short_code": "MCI",
+        "image_path": "https://example.com/images/mci.png"
+      },
+      "away_team": {
+        "id": 2,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://example.com/images/liv.png"
+      }
+    },
+    "lastMatch": {
+      "id": 192,
+      "season_id": 2025,
+      "round_id": 37,
+      "venue_id": 103,
+      "home_team_id": 2,
+      "away_team_id": 4,
+      "starting_at": "2025-10-02T20:00:00Z",
+      "status": "finished",
+      "home_team": {
+        "id": 2,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://example.com/images/liv.png"
+      },
+      "away_team": {
+        "id": 4,
+        "name": "Tottenham Hotspur",
+        "short_code": "TOT",
+        "image_path": "https://example.com/images/tot.png"
+      }
+    }
+  },
+  {
+    "id": 3,
+    "name": "FC Barcelona",
+    "short_code": "FCB",
+    "image_path": "https://example.com/images/fcb.png",
+    "league_id": 82,
+    "standing": {
+      "rank": 2,
+      "points": 76,
+      "wins": 24,
+      "draws": 4,
+      "losses": 6,
+      "goal_for": 75,
+      "goal_against": 32
+    },
+    "nextMatch": {
+      "id": 101,
+      "season_id": 2025,
+      "round_id": 35,
+      "venue_id": 500,
+      "home_team_id": 3,
+      "away_team_id": 4,
+      "starting_at": "2025-10-15T20:00:00Z",
+      "status": "not_started",
+      "home_team": {
+        "id": 3,
+        "name": "FC Barcelona",
+        "short_code": "FCB",
+        "image_path": "https://example.com/images/fcb.png"
+      },
+      "away_team": {
+        "id": 4,
+        "name": "Real Madrid",
+        "short_code": "RMA",
+        "image_path": "https://example.com/images/rma.png"
+      }
+    },
+    "lastMatch": {
+      "id": 99,
+      "season_id": 2025,
+      "round_id": 34,
+      "venue_id": 501,
+      "home_team_id": 3,
+      "away_team_id": 5,
+      "starting_at": "2025-10-05T18:30:00Z",
+      "status": "finished",
+      "home_team": {
+        "id": 3,
+        "name": "FC Barcelona",
+        "short_code": "FCB",
+        "image_path": "https://example.com/images/fcb.png"
+      },
+      "away_team": {
+        "id": 5,
+        "name": "Valencia CF",
+        "short_code": "VAL",
+        "image_path": "https://example.com/images/val.png"
+      }
+    }
+  },
+  {
+    "id": 4,
+    "name": "Real Madrid",
+    "short_code": "RMA",
+    "image_path": "https://example.com/images/rma.png",
+    "league_id": 82,
+    "standing": {
+      "rank": 1,
+      "points": 80,
+      "wins": 26,
+      "draws": 2,
+      "losses": 6,
+      "goal_for": 82,
+      "goal_against": 28
+    },
+    "nextMatch": {
+      "id": 101,
+      "season_id": 2025,
+      "round_id": 35,
+      "venue_id": 500,
+      "home_team_id": 3,
+      "away_team_id": 4,
+      "starting_at": "2025-10-15T20:00:00Z",
+      "status": "not_started",
+      "home_team": {
+        "id": 4,
+        "name": "Real Madrid",
+        "short_code": "RMA",
+        "image_path": "https://example.com/images/rma.png"
+      },
+      "away_team": {
+        "id": 3,
+        "name": "FC Barcelona",
+        "short_code": "FCB",
+        "image_path": "https://example.com/images/fcb.png"
+      },
+    "lastMatch": null
+  },
+  {
+    "id": 5,
+    "name": "Inter Milan",
+    "short_code": "INT",
+    "image_path": "https://example.com/images/inter.png",
+    "league_id": 301,
+    "standing": {
+      "rank": 1,
+      "points": 84,
+      "wins": 27,
+      "draws": 3,
+      "losses": 5,
+      "goal_for": 78,
+      "goal_against": 27
+    },
+    "nextMatch": {
+      "id": 301,
+      "season_id": 2025,
+      "round_id": 36,
+      "venue_id": 900,
+      "home_team_id": 5,
+      "away_team_id": 6,
+      "starting_at": "2025-10-12T19:45:00Z",
+      "status": "not_started",
+      "home_team": {
+        "id": 5,
+        "name": "Inter Milan",
+        "short_code": "INT",
+        "image_path": "https://example.com/images/inter.png"
+      },
+      "away_team": {
+        "id": 6,
+        "name": "Juventus",
+        "short_code": "JUV",
+        "image_path": "https://example.com/images/juv.png"
+      }
+    },
+    "lastMatch": null
+  },
+  {
+    "id": 6,
+    "name": "Juventus",
+    "short_code": "JUV",
+    "image_path": "https://example.com/images/juv.png",
+    "league_id": 301,
+    "standing": {
+      "rank": 3,
+      "points": 72,
+      "wins": 21,
+      "draws": 9,
+      "losses": 5,
+      "goal_for": 66,
+      "goal_against": 34
+    },
+    "nextMatch": null,
+    "lastMatch": null
+  },
+  {
+    "id": 7,
+    "name": "Bayern Munich",
+    "short_code": "FCB",
+    "image_path": "https://example.com/images/bayern.png",
+    "league_id": 384,
+    "standing": {
+      "rank": 1,
+      "points": 82,
+      "wins": 27,
+      "draws": 1,
+      "losses": 5,
+      "goal_for": 90,
+      "goal_against": 25
+    },
+    "nextMatch": null,
+    "lastMatch": null
+  },
+  {
+    "id": 8,
+    "name": "Borussia Dortmund",
+    "short_code": "BVB",
+    "image_path": "https://example.com/images/bvb.png",
+    "league_id": 384,
+    "standing": {
+      "rank": 2,
+      "points": 75,
+      "wins": 23,
+      "draws": 6,
+      "losses": 4,
+      "goal_for": 82,
+      "goal_against": 33
+    },
+    "nextMatch": null,
+    "lastMatch": null
+  },
+  {
+    "id": 9,
+    "name": "Paris Saint-Germain",
+    "short_code": "PSG",
+    "image_path": "https://example.com/images/psg.png",
+    "league_id": 564,
+    "standing": {
+      "rank": 1,
+      "points": 85,
+      "wins": 26,
+      "draws": 7,
+      "losses": 3,
+      "goal_for": 89,
+      "goal_against": 29
+    },
+    "nextMatch": null,
+    "lastMatch": null
+  },
+  {
+    "id": 10,
+    "name": "AS Monaco",
+    "short_code": "MON",
+    "image_path": "https://example.com/images/monaco.png",
+    "league_id": 564,
+    "standing": {
+      "rank": 2,
+      "points": 78,
+      "wins": 24,
+      "draws": 6,
+      "losses": 6,
+      "goal_for": 75,
+      "goal_against": 34
+    },
+    "nextMatch": null,
+    "lastMatch": null
+  }
+]

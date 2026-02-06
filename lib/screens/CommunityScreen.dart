@@ -1,4 +1,4 @@
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+// import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -75,8 +75,7 @@ class _CommunityState extends State<Community>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xE5DB0030), // Deep Red
-                      Color(0x00B40000), // Transparent
+                      Color(0xFFD82457), Color(0x00D82457)
                     ],
                     stops: [0.0, 0.6],
                   ),
@@ -100,7 +99,7 @@ class _CommunityState extends State<Community>
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0x99B40000), Color(0x00B40000)],
+                      colors: [Color(0xFFD82457), Color(0x00D82457)],
                     ),
                   ),
                 ),

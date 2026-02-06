@@ -70,8 +70,7 @@ class _PlayersState extends State<Players> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xE5DB0030),
-                      Color(0x00B40000),
+                      Color(0xFFD82457), Color(0x00D82457)
                     ],
                     stops: [0.0, 0.6],
                   ),
@@ -95,8 +94,7 @@ class _PlayersState extends State<Players> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0x99B40000),
-                        Color(0x00B40000),
+                        Color(0xFFD82457), Color(0x00D82457)
                       ],
                     ),
                   ),
@@ -386,7 +384,7 @@ class _PlayersState extends State<Players> {
                           ),
                       ],
                     );
-                  }).toList(),
+                  }),
 
                   const SizedBox(height: 48),
 
@@ -443,7 +441,7 @@ class _PlayersState extends State<Players> {
                           ),
                       ],
                     );
-                  }).toList(),
+                  }),
 
                   const SizedBox(height: 48), // extra scroll padding
                 ],

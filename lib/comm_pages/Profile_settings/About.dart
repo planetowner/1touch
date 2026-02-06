@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:onetouch/core/stylesheet_dark.dart';
 // import 'package:go_router/go_router.dart';
 
 class AboutPage extends StatefulWidget {
@@ -13,29 +14,10 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // Background is black
       body: Stack(
         children: [
-          // Gradient Background
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 400,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xE5DB0030),
-                    Color(0x00B40000),
-                  ],
-                  stops: [0.0, 0.6],
-                ),
-              ),
-            ),
-          ),
+          // Gradient Removed
 
           // Content
           SafeArea(
@@ -51,9 +33,9 @@ class _AboutPageState extends State<AboutPage> {
                         icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
-                      const Text(
+                      Text(
                         "About",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
+                        style: Body1.style,
                       ),
                       const Icon(Icons.search, color: Colors.white),
                     ],
@@ -96,7 +78,7 @@ class _AboutPageState extends State<AboutPage> {
 
   Widget _buildListItem(BuildContext context, String title, VoidCallback onTap) {
     return ListTile(
-      title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 14)),
+      title: Text(title, style: Body1.style),
       trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
       onTap: onTap,
     );

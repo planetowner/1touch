@@ -2,42 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
-/// 공통: 상단 그라디언트 + 커스텀 AppBar
+/// Common header wrapper - Gradient removed
 class _GradientHeader extends StatelessWidget {
-  final VoidCallback? onBack;
-  final VoidCallback? onSearch;
-
-  const _GradientHeader({
-    this.onBack,
-    this.onSearch,
-  });
+  const _GradientHeader();
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Gradient BG
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 400,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xE5DB0030), // #DB0030 with opacity
-                  Color(0x00B40000),
-                ],
-                stops: [0.0, 0.6],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+    // Just an empty placeholder or background since scaffold is black
+    return const SizedBox.shrink();
   }
 }
 
@@ -47,7 +19,7 @@ const _divider = Divider(
   height: 1,
 );
 
-/// ============ 화면 1: 알림 목록 (Following Teams / Players) ============
+/// ============ Screen 1: Notification List ============
 class NotificationListPage extends StatelessWidget {
   const NotificationListPage({super.key});
 
@@ -67,117 +39,105 @@ class NotificationListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          const _GradientHeader(),
-          CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                centerTitle: true,
-                automaticallyImplyLeading: false,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                floating: true,
-                snap: true,
-                toolbarHeight: 80,
-                flexibleSpace: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0x99B40000), // profile page에서 쓰던 값
-                        Color(0x00B40000),
-                      ],
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.black, // Background Black
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  centerTitle: true,
+                  automaticallyImplyLeading: false,
+                  backgroundColor: Colors.black, // Black AppBar
+                  elevation: 0,
+                  floating: true,
+                  snap: true,
+                  toolbarHeight: 80,
+                  // FlexibleSpace Removed
+                  title: Padding(
+                    padding: EdgeInsets.only(top: 30),
+                    child: Text(
+                      "Notifications",
+                      style: Heading4.style,
                     ),
                   ),
-                ),
-                title: Padding(
-                  padding: EdgeInsets.only(top: 30),
-                  child: Text(
-                    "Notifications",
-                    style: Heading4.style,
-                  ),
-                ),
-                leading: Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ),
-                actions: [
-                  Padding(
+                  leading: Padding(
                     padding: const EdgeInsets.only(top: 30),
                     child: IconButton(
-                      onPressed: () => context.push('/search'),
-                      icon: const Icon(Icons.search, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
-                ],
-              ),
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  Container(
-                    padding: EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "FOLLOWING TEAMS",
-                          style: Body2_b.style,
-                        ),
-                        const SizedBox(height: 16),
-                        ...teams.asMap().entries.map((entry) {
-                          final i = entry.key;
-                          final t = entry.value;
-                          return Column(
-                            children: [
-                              _listRow(
-                                label: t,
-                                onTap: () => context.push(
-                                  '/profile/notification/team/${Uri.encodeComponent(t)}',
-                                ),
-                              ),
-                              if (i != teams.length - 1)
-                                const Divider(color: Colors.white24),
-                            ],
-                          );
-                        }),
-                        const SizedBox(height: 48),
-                        Text(
-                          "FOLLOWING PLAYERS",
-                          style: Body2_b.style,
-                        ),
-                        const SizedBox(height: 16),
-                        ...players.asMap().entries.map((entry) {
-                          final i = entry.key;
-                          final p = entry.value;
-                          return Column(
-                            children: [
-                              _listRow(
-                                label: p,
-                                onTap: () => context.push(
-                                  '/profile/notification/player/${Uri.encodeComponent(p)}',
-                                ),
-                              ),
-                              if (i != players.length - 1)
-                                const Divider(color: Colors.white24),
-                            ],
-                          );
-                        }),
-                        const SizedBox(height: 120),
-                      ],
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30),
+                      child: IconButton(
+                        onPressed: () => context.push('/search'),
+                        icon: const Icon(Icons.search, color: Colors.white),
+                      ),
                     ),
-                  )
-                ]),
-              )
-            ],
-          ),
-        ],
-      )
+                  ],
+                ),
+                SliverList(
+                  delegate: SliverChildListDelegate([
+                    Container(
+                      padding: EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "FOLLOWING TEAMS",
+                            style: Body2_b.style,
+                          ),
+                          const SizedBox(height: 16),
+                          ...teams.asMap().entries.map((entry) {
+                            final i = entry.key;
+                            final t = entry.value;
+                            return Column(
+                              children: [
+                                _listRow(
+                                  label: t,
+                                  onTap: () => context.push(
+                                    '/profile/notification/team/${Uri.encodeComponent(t)}',
+                                  ),
+                                ),
+                                if (i != teams.length - 1)
+                                  const Divider(color: Colors.white24),
+                              ],
+                            );
+                          }),
+                          const SizedBox(height: 48),
+                          Text(
+                            "FOLLOWING PLAYERS",
+                            style: Body2_b.style,
+                          ),
+                          const SizedBox(height: 16),
+                          ...players.asMap().entries.map((entry) {
+                            final i = entry.key;
+                            final p = entry.value;
+                            return Column(
+                              children: [
+                                _listRow(
+                                  label: p,
+                                  onTap: () => context.push(
+                                    '/profile/notification/player/${Uri.encodeComponent(p)}',
+                                  ),
+                                ),
+                                if (i != players.length - 1)
+                                  const Divider(color: Colors.white24),
+                              ],
+                            );
+                          }),
+                          const SizedBox(height: 120),
+                        ],
+                      ),
+                    )
+                  ]),
+                )
+              ],
+            ),
+          ],
+        )
     );
   }
 
@@ -191,7 +151,7 @@ class NotificationListPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(label,
-                style: const TextStyle(color: Colors.white, fontSize: 16)),
+                style: Body1.style),
             const Icon(Icons.chevron_right, color: Colors.white),
           ],
         ),
@@ -231,32 +191,20 @@ class _TeamNotificationDetailPageState extends State<TeamNotificationDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // Black Background
       body: Stack(
         children: [
-          const _GradientHeader(), // same as NotificationListPage
           CustomScrollView(
             slivers: [
               SliverAppBar(
                 centerTitle: true,
                 automaticallyImplyLeading: false,
-                backgroundColor: Colors.transparent,
+                backgroundColor: Colors.black, // Black AppBar
                 elevation: 0,
                 floating: true,
                 snap: true,
                 toolbarHeight: 80,
-                flexibleSpace: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0x99B40000),
-                        Color(0x00B40000),
-                      ],
-                    ),
-                  ),
-                ),
+                // FlexibleSpace Removed
                 title: Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: Text("Notifications", style: Heading4.style),
@@ -318,7 +266,7 @@ class _TeamNotificationDetailPageState extends State<TeamNotificationDetailPage>
               ),
             ],
           ),
-          // Bottom fixed button (matches your screenshot)
+          // Bottom fixed button
           Align(
             alignment: Alignment.bottomCenter,
             child: SafeArea(
@@ -338,7 +286,7 @@ class _TeamNotificationDetailPageState extends State<TeamNotificationDetailPage>
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text("UPDATE NOTIFICATIONS", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text("UPDATE NOTIFICATIONS", style: Body2_b.style.copyWith(color: Colors.black)),
                 ),
               ),
             ),
@@ -381,32 +329,20 @@ class _PlayerNotificationDetailPageState extends State<PlayerNotificationDetailP
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // Black Background
       body: Stack(
         children: [
-          const _GradientHeader(),
           CustomScrollView(
             slivers: [
               SliverAppBar(
                 centerTitle: true,
                 automaticallyImplyLeading: false,
-                backgroundColor: Colors.transparent,
+                backgroundColor: Colors.black, // Black AppBar
                 elevation: 0,
                 floating: true,
                 snap: true,
                 toolbarHeight: 80,
-                flexibleSpace: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0x99B40000),
-                        Color(0x00B40000),
-                      ],
-                    ),
-                  ),
-                ),
+                // FlexibleSpace Removed
                 title: Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: Text("Notifications", style: Heading4.style),
@@ -487,7 +423,7 @@ class _PlayerNotificationDetailPageState extends State<PlayerNotificationDetailP
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text("UPDATE NOTIFICATIONS", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text("UPDATE NOTIFICATIONS", style: Body2_b.style.copyWith(color: Colors.black)),
                 ),
               ),
             ),
@@ -527,28 +463,4 @@ Widget _masterSwitchRow({
   required ValueChanged<bool> onChanged,
 }) {
   return _switchRow(label: label, value: value, onChanged: onChanged);
-}
-
-Widget _updateButton(VoidCallback onPressed) {
-  return Container(
-    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-    child: SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        child: const Text(
-          "UPDATE NOTIFICATIONS",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-    ),
-  );
 }

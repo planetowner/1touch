@@ -107,7 +107,7 @@ class PlayerOverviewTab extends StatelessWidget {
   }
 
   Widget _buildStatBox(String label, String value, {required double width}) {
-    return Container(
+    return SizedBox(
       width: width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,7 +200,7 @@ class PlayerOverviewTab extends StatelessWidget {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
@@ -214,28 +214,28 @@ class PlayerOverviewTab extends StatelessWidget {
         "result": "WIN",
         "score": "3 : 2",
         "minutes": "90 min.",
-        "againstLogo": "assets/img.png",
+        "againstLogo": "assets/messi.png",
         "stats": ["1 Goal", "1 Assist", "7.7"]
       },
       {
         "result": "LOST",
         "score": "3 : 2",
         "minutes": "78 min.",
-        "againstLogo": "assets/img.png",
+        "againstLogo": "assets/barca.png",
         "stats": ["92 Passes", "1 Assist", "7.7"]
       },
       {
         "result": "DRAW",
         "score": "3 : 2",
         "minutes": "45 min.",
-        "againstLogo": "assets/img.png",
+        "againstLogo": "assets/barca.png",
         "stats": ["1 Goal", "7.7"]
       },
       {
         "result": "WIN",
         "score": "3 : 2",
         "minutes": "90 min.",
-        "againstLogo": "assets/img.png",
+        "againstLogo": "assets/barca.png",
         "stats": ["1 Assist", "7.7"]
       },
     ];

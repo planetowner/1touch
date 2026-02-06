@@ -130,7 +130,7 @@ class _SquadTabState extends State<SquadTab> {
                   style: const TextStyle(color: Colors.grey),
                 ),
               );
-            }).toList(),
+            }),
             const SizedBox(height: 24),
           ],
         );

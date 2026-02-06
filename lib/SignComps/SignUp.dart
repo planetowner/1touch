@@ -23,11 +23,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   InputDecoration _dec(String hint) => InputDecoration(
     hintText: hint,
-    hintStyle: Body1.style.copyWith(color: Colors.white),
+    hintStyle: Body1.style.copyWith(color: Colors.white70),
     filled: true,
     fillColor: const Color(0xFF3C3C3C),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
   );
 
   bool get _canSubmit =>
@@ -36,7 +36,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           _firstName.text.trim().isNotEmpty &&
           _lastName.text.trim().isNotEmpty &&
           _email.text.trim().isNotEmpty &&
-          _password.text.length >= 6;
+          _password.text.length >= 8;
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -65,114 +65,132 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLight = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0B0B0B) : Colors.white,
+      backgroundColor: isLight ? Colors.white : const Color(0xFF0B0B0B),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: BackButton(color: isDark ? Colors.white : Colors.black),
+        leading: BackButton(color: isLight ? Colors.black : Colors.white),
         centerTitle: true,
         title: Text('Sign up', style: Body1.style.copyWith(color: Colors.black)),
       ),
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          onChanged: () => setState(() {}), // 버튼 활성화 갱신
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            children: [
-              const SizedBox(height: 12),
-              const Text('First name'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _firstName,
-                decoration: _dec('John'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter first name' : null,
-              ),
-              const SizedBox(height: 16),
-
-              const Text('Last name'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _lastName,
-                decoration: _dec('Doe'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter last name' : null,
-              ),
-              const SizedBox(height: 16),
-
-              const Text('Email'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-                decoration: _dec('johndoe@gmail.com'),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Enter email';
-                  final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(v.trim());
-                  return ok ? null : 'Enter a valid email';
-                },
-              ),
-              const SizedBox(height: 16),
-
-              const Text('Password'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _password,
-                obscureText: _obscure,
-                decoration: _dec('• • • • • • • •').copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  ),
-                ),
-                validator: (v) => (v != null && v.length >= 6) ? null : 'At least 6 characters',
-              ),
-
-              const SizedBox(height: 28),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Checkbox(
-                    value: _agreed,
-                    onChanged: (v) => setState(() => _agreed = v ?? false),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text.rich(
-                      TextSpan(
-                        text:
-                        "By clicking sign up, I hereby agree and consent to 1Touch’s Terms & Conditions; I confirm that I have read 1Touch’s Privacy Policy.",
-                        children: const [],
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              // --- 1. I added the Form widget back here ---
+              child: Form(
+                key: _formKey,
+                onChanged: () => setState(() {}), // This ensures the button enables/disables correctly
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 12),
+                      const Text('First name', style: Eyebrow.style),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _firstName,
+                        decoration: _dec('John'),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter first name' : null,
+                        style: Body1.style,
                       ),
-                      style: const TextStyle(height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
+                      const SizedBox(height: 16),
 
-              const SizedBox(height: 16),
+                      const Text('Last name', style: Eyebrow.style),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _lastName,
+                        decoration: _dec('Doe'),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter last name' : null,
+                        style: Body1.style,
+                      ),
+                      const SizedBox(height: 16),
 
-              SizedBox(
-                height: 56,
-                child: FilledButton(
-                  onPressed: _canSubmit ? _submit : null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      const Text('Email', style: Eyebrow.style),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _email,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: _dec('johndoe@gmail.com'),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Enter email';
+                          final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(v.trim());
+                          return ok ? null : 'Enter a valid email';
+                        },
+                        style: Body1.style,
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text('Password', style: Eyebrow.style),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _password,
+                        obscureText: _obscure,
+                        decoration: _dec('• • • • • • • •').copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility, color: Colors.white),
+                            onPressed: () => setState(() => _obscure = !_obscure),
+                          ),
+                        ),
+                        validator: (v) => (v != null && v.length >= 8) ? null : 'At least 8 characters',
+                        style: Body1.style,
+                      ),
+
+                      // --- 2. The Spacer now works correctly inside SliverFillRemaining ---
+                      const Spacer(),
+
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Checkbox(
+                            value: _agreed,
+                            onChanged: (v) => setState(() => _agreed = v ?? false),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                text:
+                                "By clicking sign up, I hereby agree and consent to 1Touch’s Terms & Conditions; I confirm that I have read 1Touch’s Privacy Policy.",
+                                children: const [],
+                              ),
+                              // --- 3. Updated style as requested ---
+                              style: Body2.style,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      SizedBox(
+                        height: 56,
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: _canSubmit ? _submit : null,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          ),
+                          child: _submitting
+                              ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
+                              : Text('SIGN UP', style: Body2_b.style.copyWith(color: Colors.black)),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
-                  child: _submitting
-                      ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('SIGN UP', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
                 ),
               ),
-              const SizedBox(height: 24),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

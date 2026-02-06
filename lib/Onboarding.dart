@@ -8,11 +8,11 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness != Brightness.dark;
+    final isLight = Theme.of(context).brightness == Brightness.dark;
 
-    Future<void> _proceed() async {
+    Future<void> proceed() async {
       // TODO: 실제 로그인 처리 후 홈으로
-      context.go('/home');
+      context.go('/onboarding/welcome');
     }
 
     // 아이콘을 위젯으로 받아서 PNG/SVG 아무거나 쓸 수 있게
@@ -21,7 +21,8 @@ class OnboardingScreen extends StatelessWidget {
       required String label,
       required VoidCallback onTap,
     }) {
-      final bgColor = isDark ? Colors.black.withOpacity(0.1) : Color(0xFF3D3D3D);
+      final bgColor =
+          isLight ? Colors.black.withOpacity(0.1): Color(0xFF3D3D3D);
 
       return SizedBox(
         width: double.infinity,
@@ -30,7 +31,8 @@ class OnboardingScreen extends StatelessWidget {
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
             backgroundColor: bgColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 16),
           ),
@@ -45,7 +47,9 @@ class OnboardingScreen extends StatelessWidget {
                 child: Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: isDark ?  Body1.style.copyWith(color: Colors.black) : Body1.style,
+                  style: isLight
+                      ? Body1.style.copyWith(color: Colors.black)
+                      : Body1.style,
                 ),
               ),
               // 우측 균형 맞추기용 더미 공간
@@ -57,64 +61,71 @@ class OnboardingScreen extends StatelessWidget {
     }
 
     // Divider 색상 테마 대응
-    final dividerColor = isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1);
+    final dividerColor =
+        isLight ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.2);
 
     return Scaffold(
       body: SafeArea(
         child: Container(
-          color: isDark ? Colors.white : Colors.black,
-          child: Column(
+            color: isLight ? Colors.white : Colors.black,
+            child: Column(
               children: [
-              const SizedBox(height: 200),
-            // 상단 로고 (SVG)
-            SvgPicture.asset(
-              'assets/app_logo.svg',
-              width: 203.4,
-              height: 35,
-              fit: BoxFit.contain,
-              colorFilter: ColorFilter.mode(
-                isDark ? Colors.black : Colors.white,
-                BlendMode.srcIn,
-              ),
-            ),
-            const Spacer(),
-            Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    // ✅ PNG / SVG 아이콘을 그대로 전달
-                    socialBtn(
-                      icon: SvgPicture.asset('assets/google.svg'),
-                      label: 'Continue with Google',
-                      onTap: _proceed,
-                    ),
-                    const SizedBox(height: 16),
-                    socialBtn(
-                      icon: SvgPicture.asset('assets/apple.svg', color: isDark ? Colors.black : Colors.white,),
-                      label: 'Continue with Apple',
-                      onTap: _proceed,
-                    ),
-                    const SizedBox(height: 16),
-                    socialBtn(
-                      icon: SvgPicture.asset('assets/facebook.svg'),
-                      label: 'Continue with Facebook',
-                      onTap: _proceed,
-                    ),
-                    const SizedBox(height: 12),
-                    Divider(color: dividerColor, thickness: 1),
-                    const SizedBox(height: 12),
-                    socialBtn(
-                      icon: Icon(Icons.mail_outline, size: 24, color: isDark ? Colors.black : Colors.white,),
-                      label: 'Continue with email',
-                      onTap: () => context.go('/auth/signup'),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
+                const SizedBox(height: 200),
+                // 상단 로고 (SVG)
+                SvgPicture.asset(
+                  'assets/app_logo.svg',
+                  width: 203.4,
+                  height: 35,
+                  fit: BoxFit.contain,
+                  colorFilter: ColorFilter.mode(
+                    isLight ? Colors.black : Colors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
-        ),
-          ],
-      )
-        ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      // ✅ PNG / SVG 아이콘을 그대로 전달
+                      socialBtn(
+                        icon: SvgPicture.asset('assets/google.svg'),
+                        label: 'Continue with Google',
+                        onTap: proceed,
+                      ),
+                      const SizedBox(height: 16),
+                      socialBtn(
+                        icon: SvgPicture.asset(
+                          'assets/apple.svg',
+                          color: isLight ? Colors.white : Colors.black,
+                        ),
+                        label: 'Continue with Apple',
+                        onTap: proceed,
+                      ),
+                      const SizedBox(height: 16),
+                      socialBtn(
+                        icon: SvgPicture.asset('assets/facebook.svg'),
+                        label: 'Continue with Facebook',
+                        onTap: proceed,
+                      ),
+                      const SizedBox(height: 12),
+                      Divider(color: dividerColor, thickness: 1),
+                      const SizedBox(height: 12),
+                      socialBtn(
+                        icon: Icon(
+                          Icons.mail_outline,
+                          size: 24,
+                          color: isLight ? Colors.white : Colors.black,
+                        ),
+                        label: 'Continue with email',
+                        onTap: () => context.go('/auth/signup'),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ],
+            )),
       ),
     );
   }

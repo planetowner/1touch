@@ -88,11 +88,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                 ),
                 child: TextField(
                   controller: _searchController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  style: Body1.style,
+                  decoration: InputDecoration(
                     contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     hintText: "Search teams to add!",
-                    hintStyle: TextStyle(color: Colors.white54),
+                    hintStyle: Body1.style.copyWith(color: Colors.white54),
                     border: InputBorder.none,
                     suffixIcon: Icon(Icons.search, color: Colors.white, size: 24),
                   ),
@@ -128,11 +128,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                 child: ElevatedButton(
                   onPressed: updateEnabled ? () => Navigator.of(context).pop() : null,
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.resolveWith<Color>((states) =>
-                    states.contains(MaterialState.disabled) ? Colors.grey.shade700 : Colors.white),
-                    foregroundColor: MaterialStateProperty.resolveWith<Color>((states) =>
-                    states.contains(MaterialState.disabled) ? Colors.grey.shade400 : Colors.black),
-                    shape: MaterialStateProperty.all(
+                    backgroundColor: WidgetStateProperty.resolveWith<Color>((states) =>
+                    states.contains(WidgetState.disabled) ? Colors.grey.shade700 : Colors.white),
+                    foregroundColor: WidgetStateProperty.resolveWith<Color>((states) =>
+                    states.contains(WidgetState.disabled) ? Colors.grey.shade400 : Colors.black),
+                    shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
@@ -218,8 +218,8 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
             onTap: onRemove,
             child: const CircleAvatar(
               backgroundColor: Color(0xFFF54E5C),
-              radius: 14,
-              child: Icon(Icons.remove, size: 24, color: Colors.black),
+              radius: 10,
+              child: Icon(Icons.remove, size: 20, color: Colors.black),
             ),
           ),
           const SizedBox(width: 16),

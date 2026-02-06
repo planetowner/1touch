@@ -1,6 +1,6 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/post_type.dart';
@@ -23,12 +23,39 @@ class Addpost extends StatefulWidget {
 class _AddPostState extends State<Addpost> {
   Category _selectedCategory = Category.general;
 
+  // 1. Add ScrollController
+  late ScrollController _scrollController;
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        setState(() {
+          // Track scroll offset up to 150px
+          _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 2. Calculate Opacity Factor (0.0 to 1.0)
+    double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+
     return Scaffold(
       backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true, // 3. Allow content/gradient behind AppBar
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        // 4. Fade AppBar to Black on scroll (starts transparent)
+        backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
@@ -41,110 +68,124 @@ class _AddPostState extends State<Addpost> {
           ),
         ],
         toolbarHeight: 80,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xE5DB0030),
-                Color(0x00B40000),
-              ],
-              stops: [0.0, 1],
-            ),
-          ),
-        ),
+        // Removed the static flexibleSpace gradient so it doesn't block the fading logic
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Text("POST TO", style: Body2_b.style),
-                const SizedBox(width: 8),
-                // POST TO dropdown
-                Container(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3D3D3D),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: DropdownButton<Category>(
-                    value: _selectedCategory,
-                    onChanged: (Category? newValue) {
-                      setState(() {
-                        _selectedCategory = newValue!;
-                      });
-                    },
-                    items: Category.values.map((Category category) {
-                      return DropdownMenuItem<Category>(
-                        value: category,
-                        child: Text(
-                          category.toString().split('.').last.toUpperCase(),
-                          style: Body1_b.style,
-                        ),
-                      );
-                    }).toList(),
-                    dropdownColor: const Color(0xFF3D3D3D),
-                    underline: Container(),
-                    icon: const Icon(Icons.keyboard_arrow_down,
-                        color: Colors.white, size: 24),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Title
-            Text("Title goes here", style: Heading4.style),
-            const SizedBox(height: 12),
-
-            // Body
-            Text(
-              "FC Barcelona is more than just a football club; it's a symbol of passion and pride for its fans. "
-              "The team's style of play, known as 'tiki-taka', showcases their commitment to teamwork and skill.\n\n"
-              "With a rich history of success, including numerous La Liga and Champions League titles, "
-              "Barcelona continues to inspire young athletes around the world...",
-              style: Body2.style,
-            ),
-            const SizedBox(height: 24),
-
-            // Media Picker placeholder
-            DottedBorder(
-              color: Colors.white54,
-              strokeWidth: 1,
-              dashPattern: [6, 6],
-              borderType: BorderType.RRect,
-              radius: Radius.circular(12),
-              child: GestureDetector(
-                onTap: () {},
-                child: Container(
-                  width: double.infinity,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF272828),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.add, color: Colors.white, size: 28),
-                        const SizedBox(height: 8),
-                        Text("Add photo or video", style: Body2.style),
-                      ],
-                    ),
+      body: Stack(
+        children: [
+          // 5. Background Gradient (Fades out on scroll)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 400,
+            child: AnimatedOpacity(
+              opacity: (1 - opacityFactor), // Fades to 0
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    // Using HomeScreen colors for consistency
+                    colors: [Color(0xFFD82457), Color(0x00D82457)],
+                    stops: [0.0, 0.6],
                   ),
                 ),
               ),
             ),
+          ),
 
-            const SizedBox(height: 32),
-          ],
-        ),
+          // 6. Scrollable Content
+          SingleChildScrollView(
+            controller: _scrollController,
+            // Add top padding since we are behind the AppBar now
+            padding: const EdgeInsets.fromLTRB(24, 100, 24, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Text("POST TO", style: Body2_b.style),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3D3D3D),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: DropdownButton<Category>(
+                        value: _selectedCategory,
+                        onChanged: (Category? newValue) {
+                          setState(() {
+                            _selectedCategory = newValue!;
+                          });
+                        },
+                        items: Category.values.map((Category category) {
+                          return DropdownMenuItem<Category>(
+                            value: category,
+                            child: Text(
+                              category.toString().split('.').last.toUpperCase(),
+                              style: Body1_b.style,
+                            ),
+                          );
+                        }).toList(),
+                        dropdownColor: const Color(0xFF3D3D3D),
+                        underline: Container(),
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Colors.white, size: 24),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                Text("Title goes here", style: Heading4.style),
+                const SizedBox(height: 12),
+
+                Text(
+                  "FC Barcelona is more than just a football club; it's a symbol of passion and pride for its fans. "
+                      "The team's style of play, known as 'tiki-taka', showcases their commitment to teamwork and skill.\n\n"
+                      "With a rich history of success, including numerous La Liga and Champions League titles, "
+                      "Barcelona continues to inspire young athletes around the world...",
+                  style: Body2.style,
+                ),
+                const SizedBox(height: 24),
+
+                DottedBorder(
+                  color: Colors.white54,
+                  strokeWidth: 1,
+                  dashPattern: [6, 6],
+                  borderType: BorderType.RRect,
+                  radius: Radius.circular(12),
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: double.infinity,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF272828),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.add, color: Colors.white, size: 28),
+                            const SizedBox(height: 8),
+                            Text("Add photo or video", style: Body2.style),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),

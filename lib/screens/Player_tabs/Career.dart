@@ -95,7 +95,7 @@ class CareerTab extends StatelessWidget {
       children: [
         SvgPicture.asset(svgPath, width: 24, height: 24),
         const SizedBox(width: 8),
-        Text("$clubName", style: Heading5.style),
+        Text(clubName, style: Heading5.style),
         Spacer(),
         Text("$trophyCount", style: Heading5.style),
       ],
@@ -110,7 +110,7 @@ class CareerTab extends StatelessWidget {
           children: [
             const Icon(Icons.emoji_events_outlined, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Text("$title", style: Heading5.style),
+            Text(title, style: Heading5.style),
           ],
         ),
         const SizedBox(height: 6),
@@ -215,7 +215,7 @@ class CareerTab extends StatelessWidget {
                 ],
               ),
             );
-          }).toList()
+          })
       ],
     );
   }

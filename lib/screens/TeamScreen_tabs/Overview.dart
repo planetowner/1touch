@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/bodywidgets/bodywidget_team.dart' as bwg;
+import 'package:onetouch/features/TeamScreenFeatures.dart' as bwg;
 // import 'package:intl/intl.dart';
 
 class OverviewTab extends StatelessWidget {

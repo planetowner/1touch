@@ -39,6 +39,7 @@ dependencies:
   flutter_chat_types: ^3.5.1
   uuid: ^4.0.0
   http: ^0.13.6
+  video_player: ^2.8.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -67,14 +68,19 @@ flutter:
     - assets/highlight1.png
     - assets/app_logo.svg
     - assets/barca_logo.svg
-    - assets/img.png
+    - assets/barca.png
     - assets/girona_logo.svg
-    - assets/img_1.png
+    - assets/messi.png
     - assets/google.svg
     - assets/facebook.svg
     - assets/apple.svg
     - assets/img_2.png
     - assets/addpost_icon.svg
+    - assets/flag_video.mp4
+    - assets/profileavatar.png
+    - 1.PlayerImages/
+    - 2.TeamLogos/
+
 
 
 

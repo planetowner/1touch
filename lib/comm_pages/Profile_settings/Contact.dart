@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:onetouch/core/stylesheet_dark.dart';
 // import 'package:go_router/go_router.dart';
 
 class ContactPage extends StatefulWidget {
@@ -13,29 +14,10 @@ class _ContactPageState extends State<ContactPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // Background is black
       body: Stack(
         children: [
-          // Gradient Background
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 400,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xE5DB0030),
-                    Color(0x00B40000),
-                  ],
-                  stops: [0.0, 0.6],
-                ),
-              ),
-            ),
-          ),
+          // Gradient Removed
 
           // Content
           SafeArea(
@@ -46,16 +28,14 @@ class _ContactPageState extends State<ContactPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      BackButton(color: Colors.white),
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
                       Text(
                         "Contact",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
+                        style: Body1.style),
                       Icon(Icons.search, color: Colors.white),
                     ],
                   ),
@@ -69,12 +49,16 @@ class _ContactPageState extends State<ContactPage> {
                     children: [
                       const SizedBox(height: 16),
                       _buildLabel("EMAIL"),
+                      const SizedBox(height: 16),
                       _buildValueRow("contact@1touch.com", onTap: () {}),
+                      const SizedBox(height: 12),
                       _buildDivider(),
 
                       const SizedBox(height: 24),
                       _buildLabel("INSTAGRAM"),
+                      const SizedBox(height: 16),
                       _buildValueRow("1touch_app", onTap: () {}),
+                      const SizedBox(height: 12),
                       _buildDivider(),
                     ],
                   ),
@@ -90,11 +74,7 @@ class _ContactPageState extends State<ContactPage> {
   Widget _buildLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-        fontSize: 13,
-      ),
+      style: Body2_b.style,
     );
   }
 
@@ -106,7 +86,7 @@ class _ContactPageState extends State<ContactPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 15)),
+            Text(value, style: Body1.style),
             const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
           ],
         ),

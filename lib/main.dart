@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:onetouch/comm_pages/Profile.dart';
-import 'package:onetouch/comm_pages/Profile_settings/About.dart';
-import 'package:onetouch/comm_pages/Profile_settings/Contact.dart';
-import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
-import 'package:onetouch/comm_pages/Profile_settings/Notification.dart';
-import 'package:onetouch/comm_pages/Profile_settings/Preference.dart';
-import 'package:onetouch/comm_pages/Search.dart';
+// Core & Data
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/data/playerdata.dart';
-import 'package:onetouch/screens/CommunityScreen.dart';
-import 'package:onetouch/screens/HomeScreen.dart' as homescreen;
-import 'package:onetouch/screens/MatchScreen.dart' as matchscreen;
-import 'package:onetouch/screens/MoreScreen.dart';
-import 'package:onetouch/screens/Player.dart';
-import 'package:onetouch/screens/PlayerScreen.dart' as playerscreen;
-import 'package:onetouch/screens/TeamScreen.dart';
+
+// Feature Modules
+import 'package:onetouch/screens/index.dart';     // Imports all screens
+import 'package:onetouch/comm_pages/index.dart'; // Imports all profile pages
+import 'package:onetouch/SignComps/index.dart';  // Imports auth components
+
+// Root Level Pages
 import 'package:onetouch/Splash.dart';
 import 'package:onetouch/Onboarding.dart';
-import 'package:onetouch/SignComps/SignUp.dart';
-import 'package:onetouch/SignComps/VerifyEmail.dart';
+import 'package:onetouch/select_favorite_teams.dart';
+import 'package:onetouch/WelcomeScreen.dart';
+
 
 
 void main() {
@@ -29,19 +24,30 @@ void main() {
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
-  initialLocation: '/', // ✅ 스플래시부터 시작
+  // initialLocation: '/', // 스플래시부터 시작
+  initialLocation: '/home', // 테스팅 페이지
   navigatorKey: _rootNavigatorKey,
   routes: [
-    // ❶ Splash
+    // Splash
     GoRoute(
       path: '/',
       builder: (context, state) => const SplashScreen(),
     ),
 
-    // ❷ Onboarding
+    // Onboarding
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
+      routes: [
+        GoRoute(
+          path: 'welcome',
+          builder: (context, state) => const WelcomeScreen(),
+        ),
+        GoRoute(
+          path: 'select-favorites',
+          builder: (context, state) => const SelectFavoriteTeamsScreen(),
+        ),
+      ]
     ),
     GoRoute(
       path: '/auth/signup',
@@ -56,7 +62,7 @@ final GoRouter _router = GoRouter(
       },
     ),
 
-    // ❸ 메인 탭 (기존 그대로)
+    // 메인 탭 (기존 그대로)
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return MainScreen(navigationShell: navigationShell);
@@ -65,13 +71,13 @@ final GoRouter _router = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/home',
-            builder: (context, state) => homescreen.HomeScreen(),
+            builder: (context, state) => HomeScreen(),
           ),
         ]),
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/players',
-            builder: (context, state) => playerscreen.Players(),
+            builder: (context, state) => Players(),
             routes: [
               GoRoute(
                 path: ':id',
@@ -87,10 +93,10 @@ final GoRouter _router = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/team',
-            builder: (context, state) => More(),
+            builder: (context, state) => const SizedBox(),
             routes: [
               GoRoute(
-                path: ':teamId',
+                path: ':teamId', // Matches /team/:teamId
                 builder: (context, state) {
                   var teamId = state.pathParameters['teamId']!;
                   return TeamScreen(teamId: int.parse(teamId));
@@ -115,7 +121,7 @@ final GoRouter _router = GoRouter(
       builder: (context, state) {
         final matchId = state.pathParameters['matchId'] ?? 'Unknown Match';
         final matchStatus = state.uri.queryParameters['status'] ?? 'upcoming';
-        return matchscreen.MatchScreen(matchId: matchId, matchStatus: matchStatus);
+        return MatchScreen(matchId: matchId, matchStatus: matchStatus);
       },
     ),
     GoRoute(path: '/profile', builder: (c, s) => Profile()),
@@ -149,7 +155,7 @@ class MainScreen extends StatelessWidget {
 
   int getFavoriteTeamName() {
     // This is just a placeholder. Replace with real user preference later.
-    return 9;
+    return 1;
   }
 
   @override
@@ -192,8 +198,8 @@ class MainScreen extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             label: 'Team',
-            icon: Icon(Icons.people_outline),
-            activeIcon: Icon(Icons.people),
+            icon: Icon(Icons.local_police_outlined),
+            activeIcon: Icon(Icons.local_police),
           ),
           BottomNavigationBarItem(
             label: 'Community',

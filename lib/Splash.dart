@@ -18,14 +18,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _boot() async {
     // TODO: 로그인 상태 확인 후 분기 (홈/온보딩)
-    await Future.delayed(const Duration(seconds: 10)); // 로고 잠깐 보여주기
+    await Future.delayed(const Duration(seconds: 5)); // 로고 잠깐 보여주기
     if (!mounted) return;
     context.go('/onboarding');
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
+    final isLight = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: isLight ? Colors.white : const Color(0xFF0B0B0B),

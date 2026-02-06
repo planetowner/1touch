@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-
+import 'package:onetouch/features/helper.dart'; // Import helper
 
 class Search extends StatelessWidget {
   const Search({super.key});
@@ -10,32 +10,24 @@ class Search extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent, // Transparent for gradient effect
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Gradient background
-            AnimatedOpacity(
-              opacity: 1.0,
-              // Or adjust based on scroll if you need dynamic opacity
-              duration: Duration(milliseconds: 200),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0x99B40000), // Deep Red
-                      Color(0x00B40000), // Transparent
-                    ],
-                    stops: [0.0, 0.6],
-                  ),
-                ),
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFD82457), Color(0x00D82457)
+                ],
+                stops: [0.0, 0.4],
               ),
             ),
-            const SearchContent(), // Your search content
-          ],
-        ),
+          ),
+          const SafeArea(child: SearchContent()),
+        ],
       ),
     );
   }
@@ -49,314 +41,269 @@ class SearchContent extends StatefulWidget {
 }
 
 class _SearchContentState extends State<SearchContent> {
-  final TextEditingController _controller = TextEditingController();
-  String query = "";
-  bool searchActive = false;
-  final List<Map<String, dynamic>> searchResults = [
+  final TextEditingController _searchController = TextEditingController();
+
+  bool _isSearching = false;
+  int _selectedIndex = 0;
+  final List<String> _tabs = ["ALL", "PLAYERS", "TEAMS", "EVENTS"];
+
+  final List<Map<String, dynamic>> _recentItems = [
     {
-      "type": "player",
-      "name": "Bradley Barcola",
-      "team": "Paris Saint-Germain",
-      "number": "29",
-      "image": "assets/player.png"
+      'type': 'player',
+      'name': 'Player Name',
+      'team': 'Team Name',
+      'image': 'assets/rashford.png'
     },
     {
-      "type": "team",
-      "name": "FC Barcelona",
-      "rank": "LaLiga 1st",
-      "logo": "assets/barca_logo.svg",
-      "isFavorite": true
+      'type': 'team',
+      'name': 'Team Name',
+      'league': 'League #th',
+      'logo': 'assets/barcelona.png'
     },
     {
-      "type": "event",
-      "homeTeam": "FCB",
-      "awayTeam": "GRN",
-      "homeLogo": "assets/barca_logo.svg",
-      "awayLogo": "assets/girona_logo.svg",
-      "date": "Sun, Sep 15",
-      "time": "10:15 AM"
+      'type': 'match',
+      'homeTeam': 'AAA',
+      'homeLogo': 'assets/barcelona.png',
+      'awayTeam': 'BBB',
+      'awayLogo': 'assets/girona.png',
+      'date': 'Sun, Sep 15',
+      'time': '10:15 AM'
     },
   ];
 
-  final List<String> filters = ['ALL', 'PLAYERS', 'TEAMS', 'EVENTS'];
-  int selectedFilter = 0;
+  final List<Map<String, dynamic>> _searchResults = [
+    {
+      'type': 'match',
+      'homeTeam': 'Man City',
+      'homeLogo': 'assets/mancity.png',
+      'awayTeam': 'Liverpool',
+      'awayLogo': 'assets/liverpool.png',
+      'time': '20:00',
+      'date': 'Today'
+    },
+    {
+      'type': 'team',
+      'name': 'Manchester United',
+      'logo': 'assets/manutd.png',
+      'league': 'Premier League'
+    },
+  ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildSearchBar(context),
-        if (searchActive) ...[
-          _buildFilterChips(),
-          const SizedBox(height: 8),
-          Expanded(child: _buildSearchResults()),
-        ] else ...[
-          Expanded(child: _buildRecentResults()),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. SEARCH BAR AREA
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                  onPressed: () => context.pop(),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _isSearching = value.isNotEmpty;
+                      });
+                    },
+                    style: Body1.style,
+                    cursorColor: const Color(0xFFD82457),
+                    decoration: InputDecoration(
+                      hintText: "Search...",
+                      hintStyle: Body1.style.copyWith(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.12),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                      suffixIcon: _isSearching
+                          ? IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _isSearching = false;
+                          });
+                        },
+                      )
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 2. CONTENT AREA
+          Expanded(
+            child: _isSearching
+                ? _buildSearchResultsLayout()
+                : _buildRecentsLayout(),
+          ),
         ],
+      ),
+    );
+  }
+
+  // --- LAYOUT A: RECENTS ---
+  Widget _buildRecentsLayout() {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      children: [
+        const Text(
+          "RECENTS",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ..._recentItems.map((item) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: item['type'] == 'match'
+                ? SearchMatchCard( // Uses Helper Widget
+              homeTeam: item['homeTeam'],
+              homeLogo: item['homeLogo'],
+              awayTeam: item['awayTeam'],
+              awayLogo: item['awayLogo'],
+              date: item['date'],
+              time: item['time'],
+            )
+                : _buildStandardCard(item),
+          );
+        }),
       ],
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 47, 24, 24),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-            onPressed: () => context.pop(),
-          ),
-          Expanded(
-            child: TextField(
-              onTap: () {
-                if (!searchActive) {
-                  setState(() => searchActive = true);
-                }
-              },
-              controller: _controller,
-              onChanged: (text) => setState(() => query = text),
-              style: const TextStyle(color: Colors.black),
-              decoration: InputDecoration(
-                hintText: "Search",
-                hintStyle: const TextStyle(color: Colors.black),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                suffixIcon: query.isNotEmpty
-                    ? IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () {
-                    _controller.clear();
-                    setState(() => query = "");
-                  },
-                )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+  // --- LAYOUT B: TABS + RESULTS ---
+  Widget _buildSearchResultsLayout() {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: List.generate(_tabs.length, (index) {
+                final isSelected = _selectedIndex == index;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedIndex = index),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white : const Color(0xFF3D3D3D),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        _tabs[index],
+                        style: TextStyle(
+                          color: isSelected ? Colors.black : Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
             ),
           ),
-        ],
-      ),
+        ),
+        Expanded(child: _buildTabContent()),
+      ],
     );
   }
 
-  Widget _buildFilterChips() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(filters.length, (index) {
-          bool isSelected = selectedFilter == index;
-          return ChoiceChip(
-            label: Text(
-              filters[index],
-              style: TextStyle(
-                  color: isSelected ? Colors.black : Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14),
-            ),
-            selected: isSelected,
-            onSelected: (_) => setState(() => selectedFilter = index),
-            selectedColor: Colors.white,
-            backgroundColor: Color(0xFF3D3D3D),
-            side: BorderSide.none,
-            shape: StadiumBorder(),
-            showCheckmark: false,
-          );
-        }),
-      ),
+  Widget _buildTabContent() {
+    if (_selectedIndex == 0) {
+      return ListView.separated(
+        padding: const EdgeInsets.all(20),
+        itemCount: _searchResults.length,
+        separatorBuilder: (c, i) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          final result = _searchResults[index];
+          return result['type'] == 'match'
+              ? SearchMatchCard( // Uses Helper Widget
+            homeTeam: result['homeTeam'],
+            homeLogo: result['homeLogo'],
+            awayTeam: result['awayTeam'],
+            awayLogo: result['awayLogo'],
+            date: result['date'],
+            time: result['time'],
+          )
+              : _buildStandardCard(result);
+        },
+      );
+    }
+    return Center(
+        child: Text("${_tabs[_selectedIndex]} RESULTS",
+            style: const TextStyle(color: Colors.white))
     );
   }
 
-  Widget _buildSearchResults() {
-    // You’ll replace this with dynamic results based on `query` and `selectedFilter`
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      itemCount: searchResults.length,
-      itemBuilder: (context, index) {
-        final result = searchResults[index];
-
-        switch (result["type"]) {
-          case "player":
-            return _buildPlayerCard(result);
-          case "team":
-            return _buildTeamCard(result);
-          case "event":
-            return _buildMatchCard(result);
-          default:
-            return const SizedBox.shrink();
-        }
-      },
-    );
-  }
-
-  Widget _buildRecentResults() {
-    final recent = ["FC Barcelona", "Erling Haaland", "PSG"];
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      itemCount: recent.length,
-      itemBuilder: (_, index) {
-        return Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF272828),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                recent[index],
-                style: Heading5.style
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildPlayerCard(Map result) {
+  Widget _buildStandardCard(Map<String, dynamic> item) {
+    bool isTeam = item['type'] == 'team';
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF272828),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.grey[800],
-                backgroundImage: AssetImage(result['image'] ?? 'assets/placeholder.png'),
+          Container(
+            width: 48, height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[800],
+              image: DecorationImage(
+                image: AssetImage(isTeam ? item['logo'] : item['image']),
+                fit: BoxFit.cover,
+                onError: (e, s) {},
               ),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  result['number'] ?? '##',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(result['name'], style: Heading5.style),
-              const SizedBox(height: 4),
-              Text(result['team'], style: Body2.style),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTeamCard(Map result) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF272828),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: Image.asset(result['logo'], fit: BoxFit.contain),
+            ),
+            child: const Icon(Icons.image_not_supported, color: Colors.transparent),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(result['name'], style: Heading5.style),
+                Text(item['name'], style: Heading4.style.copyWith(fontSize: 16)),
                 const SizedBox(height: 4),
-                Text(result['rank'], style: Body2.style),
+                Text(
+                  isTeam ? item['league'] : item['team'],
+                  style: Body2.style.copyWith(color: Colors.white54),
+                ),
               ],
             ),
           ),
-          const Icon(Icons.star, color: Colors.white, size: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMatchCard(Map result) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF272828),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              SizedBox(
-                width: 36,
-                height: 36,
-                child: Image.asset(result['homeLogo'], fit: BoxFit.contain),
-              ),
-              const SizedBox(height: 6),
-              Text(result['homeTeam'], style: Body2.style),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const Text("#", style: Heading3.style),
-          ),
-          Column(
-            children: [
-              Text(result['date'], style: Body2.style),
-              const SizedBox(height: 4),
-              Text(result['time'], style: Body2.style),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const Text("#", style: Heading3.style),
-          ),
-          Column(
-            children: [
-              SizedBox(
-                width: 36,
-                height: 36,
-                child: Image.asset(result['awayLogo'], fit: BoxFit.contain),
-              ),
-              const SizedBox(height: 6),
-              Text(result['awayTeam'], style: Body2.style),
-            ],
-          ),
+          if (isTeam) const Icon(Icons.star, color: Colors.white, size: 24),
         ],
       ),
     );

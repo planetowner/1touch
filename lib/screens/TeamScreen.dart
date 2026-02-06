@@ -4,28 +4,73 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:onetouch/features/helper.dart';
+import 'TeamScreen_tabs/index.dart';
 
-import 'package:onetouch/screens/TeamScreen_tabs/Overview.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Matches.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Squad.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
+import '../data/teamdata.dart';
 
-final Map<String, Map<String, dynamic>> teamsData = {
-  "FC Barcelona": {
+String fakeTeamsJson = """
+[
+  {
     "id": 1,
     "name": "FC Barcelona",
-    "position": "La Liga 1st",
-    "logo": "assets/barca_logo.svg",
-    "rankChange": 1,
-    "highlight": {
-      "title": "Manchester United v. Brighton | PREMIER LEAGUE",
-      "source": "NBC Sports",
-      "time": "1 day ago",
-      "image": "assets/highlight1.png",
+    "short_code": "FCB",
+    "image_path": "https://example.com/images/fcb.png",
+    "league_id": 82,
+    "standing": {
+      "rank": 2,
+      "points": 76,
+      "wins": 24,
+      "draws": 4,
+      "losses": 6,
+      "goal_for": 75,
+      "goal_against": 32
     },
+    "nextMatch": {
+      "id": 101,
+      "league_id": 82,
+      "season_id": 2025,
+      "round_id": 35,
+      "venue_id": 500,
+      "home_team_id": 1,
+      "away_team_id": 2,
+      "starting_at": "2025-09-15T20:00:00Z",
+      "status": "not_started",
+      "home_team": {
+        "id": 1,
+        "name": "FC Barcelona",
+        "short_code": "FCB",
+        "image_path": "https://example.com/images/fcb.png"
+      },
+      "away_team": {
+        "id": 2,
+        "name": "Real Madrid",
+        "short_code": "RMA",
+        "image_path": "https://example.com/images/rma.png"
+      }
+    },
+    "lastMatch": null
   },
-};
+  {
+    "id": 2,
+    "name": "Real Madrid",
+    "short_code": "RMA",
+    "image_path": "https://example.com/images/rma.png",
+    "league_id": 82,
+    "standing": {
+      "rank": 1,
+      "points": 80,
+      "wins": 26,
+      "draws": 2,
+      "losses": 6,
+      "goal_for": 82,
+      "goal_against": 28
+    },
+    "nextMatch": null,
+    "lastMatch": null
+  }
+]
+""";
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
@@ -41,19 +86,41 @@ class _TeamScreenState extends State<TeamScreen>
   late final ScrollController _scrollController;
   late final TabController _tabController;
   double _scrollOffset = 0.0;
+
+  // ✅ initialize and add the view-model map your UI uses
+  List<Team> teams = [];
   Map<String, dynamic>? team;
   bool isLoading = true;
 
   Future<void> fetchTeamData() async {
     final url =
         'https://3e6a1be77d44.ngrok-free.app/api/teams/${widget.teamId}/overview';
-
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final jsonMap = json.decode(response.body) as Map<String, dynamic>;
+        final parsed = Team.fromJson(jsonMap); // ✅ parse API object
+        final int leagueId = parsed.leagueId;
+        final int? rank = parsed.standing?['rank'] as int?;
+        final String leagueName = {
+          8: "Premier League",
+          82: "La Liga",
+          301: "Serie A",
+          384: "Bundesliga",
+          564: "Ligue 1",
+        }[leagueId] ?? 'League';
+        final position = rank != null ? "$leagueName ${ordinal(rank)}" : leagueName;
+
         setState(() {
-          team = jsonMap;
+          teams = [parsed]; // ✅ List<Team>
+          team = {          // ✅ Map<String, dynamic> for your UI
+            "id": parsed.id,
+            "name": parsed.name,
+            "position": position,
+            "logo": parsed.imagePath, // network URL; we handle below
+            "rankChange": 0,
+            "raw": jsonMap,
+          };
           isLoading = false;
         });
       } else {
@@ -67,10 +134,8 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   @override
-  @override
   void initState() {
     super.initState();
-
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -78,9 +143,50 @@ class _TeamScreenState extends State<TeamScreen>
         });
       });
 
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 5, vsync: this); // ✅ add init
 
-    fetchTeamData(); // <-- THIS LINE SHOULD BE HERE
+    // 🔁 Toggle which source to use
+    loadFakeData();     // local fake JSON
+    // fetchTeamData(); // real API
+  }
+
+  void loadFakeData() {
+    final decoded = jsonDecode(fakeTeamsJson) as List<dynamic>;
+    final parsedTeams = decoded.map((t) => Team.fromJson(t)).toList();
+
+    // pick the one matching route param; fallback to first
+    final Team selected = parsedTeams.firstWhere(
+          (t) => t.id == widget.teamId,
+      orElse: () => parsedTeams.first,
+    );
+
+    // build position text (e.g., "La Liga 2nd")
+    const leagueNames = {
+      8: "Premier League",
+      82: "La Liga",
+      301: "Serie A",
+      384: "Bundesliga",
+      564: "Ligue 1",
+    };
+
+    final int leagueId = selected.leagueId;
+    final int? rank = selected.standing?['rank'] as int?;
+    final position = rank != null
+        ? "${leagueNames[leagueId] ?? 'League'} ${ordinal(rank)}"
+        : (leagueNames[leagueId] ?? 'League');
+
+    setState(() {
+      teams = parsedTeams; // ✅ keep the full parsed list if you need it later
+      team = {
+        "id": selected.id,
+        "name": selected.name,
+        "position": position,
+        "logo": selected.imagePath, // URL; render as network if startsWith('http')
+        "rankChange": 1,
+        "raw": selected, // full Team object for tabs if needed
+      };
+      isLoading = false;
+    });
   }
 
   @override
@@ -99,7 +205,7 @@ class _TeamScreenState extends State<TeamScreen>
       );
     }
 
-    if (team == null) {
+    if (team == null) { // ✅ exists now
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(child: Text("Team Not Found")),
@@ -113,54 +219,38 @@ class _TeamScreenState extends State<TeamScreen>
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Top gradient background (fades out as you scroll)
           Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 400,
+            top: 0, left: 0, right: 0, height: 400,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xE5DB0030),
-                      Color(0x00B40000),
-                    ],
+                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                    colors: [Color(0xFFD82457), Color(0x00D82457)],
                     stops: [0.0, 0.6],
                   ),
                 ),
               ),
             ),
           ),
-
-          // Coordinated scrolling: AppBar hides, TabBar stays sticky
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              // Floating AppBar (hides on downward scroll, snaps back on slight up)
               SliverAppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor:
-                Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,
-                pinned: false, // not pinned -> will hide
+                pinned: false,
                 toolbarHeight: 80,
                 flexibleSpace: Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0x99B40000),
-                        Color(0x00B40000),
-                      ],
+                      begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                      colors: [Color(0xFFD82457), Color(0x00D82457)],
                     ),
                   ),
                 ),
@@ -168,10 +258,16 @@ class _TeamScreenState extends State<TeamScreen>
                   padding: const EdgeInsets.only(left: 8, top: 30),
                   child: Row(
                     children: [
-                      SvgPicture.asset(
+                      // render network or asset seamlessly
+                      (team?["logo"] as String).startsWith('http')
+                          ? Image.network(
                         team?["logo"] as String,
-                        height: 52,
-                        width: 53,
+                        height: 52, width: 53, fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.red),
+                      )
+                          : SvgPicture.asset(
+                        team?["logo"] as String,
+                        height: 52, width: 53,
                         clipBehavior: Clip.antiAlias,
                       ),
                       const SizedBox(width: 16),
@@ -179,11 +275,17 @@ class _TeamScreenState extends State<TeamScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(team?["name"] as String, style: Heading4.style),
-                          // FIX: rankChange key casing
-                          Text(
-                            "${team?["position"]} ${team?["rankChange"]}",
-                            style: Body2.style,
-                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("${team?["position"]}", style: Body2.style),
+                              Icon(Icons.arrow_drop_up, size: 16,),
+                              Text(
+                                  team?["rankChange"] != 0 ? " ${team?["rankChange"]}" : "",
+                                  style: Eyebrow.style
+                              ),
+                            ],
+                          )
                         ],
                       ),
                     ],
@@ -207,10 +309,8 @@ class _TeamScreenState extends State<TeamScreen>
                   ),
                 ],
               ),
-
-              // Sticky TabBar (stays while content scrolls)
               SliverPersistentHeader(
-                pinned: false, // keep TabBar visible
+                pinned: false,
                 delegate: _TabBarDelegate(
                   TabBar(
                     controller: _tabController,
@@ -238,8 +338,6 @@ class _TeamScreenState extends State<TeamScreen>
                 ),
               ),
             ],
-
-            // Tab content; each tab can scroll independently but stays under sticky TabBar
             body: TabBarView(
               controller: _tabController,
               children: [
@@ -257,7 +355,6 @@ class _TeamScreenState extends State<TeamScreen>
   }
 }
 
-// Sticky Tab Bar Delegate (unchanged behavior, reused for NestedScrollView)
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
 

@@ -1,7 +1,8 @@
 import 'miniteam.dart';
 
-class Match {
+class MatchData {
   final int id;
+  final int leagueId;
   final int seasonId;
   final int roundId;
   final int venueId;
@@ -12,8 +13,9 @@ class Match {
   final MiniTeam? homeTeam;
   final MiniTeam? awayTeam;
 
-  Match({
+  MatchData({
     required this.id,
+    required this.leagueId,
     required this.seasonId,
     required this.roundId,
     required this.venueId,
@@ -25,9 +27,10 @@ class Match {
     this.awayTeam,
   });
 
-  factory Match.fromJson(Map<String, dynamic> json) {
-    return Match(
+  factory MatchData.fromJson(Map<String, dynamic> json) {
+    return MatchData(
       id: json['id'],
+      leagueId: json['league_id'],
       seasonId: json['season_id'],
       roundId: json['round_id'],
       venueId: json['venue_id'],
