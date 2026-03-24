@@ -96,10 +96,16 @@ final GoRouter _router = GoRouter(
             builder: (context, state) => const SizedBox(),
             routes: [
               GoRoute(
-                path: ':teamId', // Matches /team/:teamId
+                path: ':id',
                 builder: (context, state) {
-                  var teamId = state.pathParameters['teamId']!;
-                  return TeamScreen(teamId: int.parse(teamId));
+                  // 1. Get the ID string (default to "1")
+                  final String idStr = state.pathParameters['id'] ?? '1';
+
+                  // 2. Parse it to an integer
+                  final int teamId = int.tryParse(idStr) ?? 1;
+
+                  // 3. Pass the integer to TeamScreen
+                  return TeamScreen(teamId: teamId);
                 },
               ),
             ],
@@ -143,6 +149,12 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/profile/about', builder: (c, s) => AboutPage()),
     GoRoute(path: '/profile/contact', builder: (c, s) => ContactPage()),
     GoRoute(path: '/search', builder: (c, s) => Search()),
+    GoRoute(
+      path: '/compare',
+      builder: (context, state) => PlayerComparisonScreen(
+        initialPlayerName: state.extra as String?,
+      ),
+    ),
   ],
 );
 

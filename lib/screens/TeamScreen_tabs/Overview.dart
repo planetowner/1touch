@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/features/TeamScreenFeatures.dart' as bwg;
-// import 'package:intl/intl.dart';
+import 'package:onetouch/features/TeamScreenFeatures.dart';
+// import 'Standing.dart';
+// import 'Analysis.dart';
 
 class OverviewTab extends StatelessWidget {
   final Map<String, dynamic>? team;
@@ -17,37 +18,43 @@ class OverviewTab extends StatelessWidget {
             [
               const SizedBox(height: 24),
               const SectionHeader(title: "FIXTURE"),
-              Container(child: bwg.Fixtures(teams: team)),
+              // Pass the whole team map
+              Container(child: Fixtures(teams: team)),
+
               const SizedBox(height: 32),
               const SectionHeader(title: "STANDING"),
-              Container(child: bwg.Standing(teams: team,)),
+              Container(child: Standing(teams: team)),
+
               const SizedBox(height: 32),
               const SectionHeader(title: "BEST XI"),
-              Container(child: bwg.BestXI(teams: team,)),
+              Container(child: BestXI(teams: team)),
+
               const SizedBox(height: 32),
               const SectionHeader(title: "INJURY STATUS"),
-              Container(child: bwg.InjuryStatus(teams: team,)),
+              Container(child: InjuryStatus(teams: team)),
+
               const SizedBox(height: 20),
               const SectionHeader(title: "TRANSFERS"),
-              Container(child: bwg.Transfer(teams: team,)),
+              Container(child: Transfer(teams: team)),
+
               Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Container(
-                  width: 395,
+                  width: double.infinity,
                   height: 108,
-                  padding: EdgeInsets.all(8),
                   decoration: ShapeDecoration(
-                    color: Color(0xFF3D3D3D),
+                    color: const Color(0xFF3D3D3D),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text("Ad",
                         textAlign: TextAlign.center, style: Heading4.style),
                   ),
                 ),
               ),
+              const SizedBox(height: 50),
             ],
           ),
         ),
@@ -58,7 +65,6 @@ class OverviewTab extends StatelessWidget {
 
 class SectionHeader extends StatelessWidget {
   final String title;
-
   const SectionHeader({super.key, required this.title});
 
   @override

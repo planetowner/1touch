@@ -14,6 +14,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   final _firstName = TextEditingController();
   final _lastName  = TextEditingController();
+  final _username  = TextEditingController();
   final _email     = TextEditingController();
   final _password  = TextEditingController();
 
@@ -35,6 +36,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           !_submitting &&
           _firstName.text.trim().isNotEmpty &&
           _lastName.text.trim().isNotEmpty &&
+          _username.text.trim().isNotEmpty &&
           _email.text.trim().isNotEmpty &&
           _password.text.length >= 8;
 
@@ -58,6 +60,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   void dispose() {
     _firstName.dispose();
     _lastName.dispose();
+    _username.dispose();
     _email.dispose();
     _password.dispose();
     super.dispose();
@@ -107,6 +110,16 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         controller: _lastName,
                         decoration: _dec('Doe'),
                         validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter last name' : null,
+                        style: Body1.style,
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text('Username', style: Eyebrow.style),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _username,
+                        decoration: _dec('john_doe'),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter username' : null,
                         style: Body1.style,
                       ),
                       const SizedBox(height: 16),

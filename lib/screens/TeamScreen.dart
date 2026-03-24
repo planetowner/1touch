@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'package:onetouch/features/helper.dart';
 import 'TeamScreen_tabs/index.dart';
 
@@ -15,7 +14,7 @@ String fakeTeamsJson = """
     "id": 1,
     "name": "FC Barcelona",
     "short_code": "FCB",
-    "image_path": "https://example.com/images/fcb.png",
+    "image_path": "TeamLogos/Barcelona.png",
     "league_id": 82,
     "standing": {
       "rank": 2,
@@ -35,27 +34,41 @@ String fakeTeamsJson = """
       "home_team_id": 1,
       "away_team_id": 2,
       "starting_at": "2025-09-15T20:00:00Z",
-      "status": "not_started",
+      "status": "NS",
+      "date": "Sun, Sep 15",
+      "time": "20:00",
+      "isLive": false,
       "home_team": {
         "id": 1,
         "name": "FC Barcelona",
         "short_code": "FCB",
-        "image_path": "https://example.com/images/fcb.png"
+        "image_path": "TeamLogos/Barcelona.png"
       },
       "away_team": {
         "id": 2,
         "name": "Real Madrid",
         "short_code": "RMA",
-        "image_path": "https://example.com/images/rma.png"
-      }
+        "image_path": "TeamLogos/RealMadrid.png"
+      },
+      "home_score": 0,
+      "away_score": 0
     },
-    "lastMatch": null
+    "transfers": [
+      {
+        "name": "Dani Olmo",
+        "fee": "€60M",
+        "in": true,
+        "oldteam": "RB Leipzig",
+        "year": "2030",
+        "image": "assets/players/olmo.png"
+      }
+    ]
   },
   {
     "id": 2,
     "name": "Real Madrid",
     "short_code": "RMA",
-    "image_path": "https://example.com/images/rma.png",
+    "image_path": "TeamLogos/RealMadrid.png",
     "league_id": 82,
     "standing": {
       "rank": 1,
@@ -67,10 +80,11 @@ String fakeTeamsJson = """
       "goal_against": 28
     },
     "nextMatch": null,
-    "lastMatch": null
+    "transfers": []
   }
 ]
 """;
+
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
@@ -92,46 +106,46 @@ class _TeamScreenState extends State<TeamScreen>
   Map<String, dynamic>? team;
   bool isLoading = true;
 
-  Future<void> fetchTeamData() async {
-    final url =
-        'https://3e6a1be77d44.ngrok-free.app/api/teams/${widget.teamId}/overview';
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final jsonMap = json.decode(response.body) as Map<String, dynamic>;
-        final parsed = Team.fromJson(jsonMap); // ✅ parse API object
-        final int leagueId = parsed.leagueId;
-        final int? rank = parsed.standing?['rank'] as int?;
-        final String leagueName = {
-          8: "Premier League",
-          82: "La Liga",
-          301: "Serie A",
-          384: "Bundesliga",
-          564: "Ligue 1",
-        }[leagueId] ?? 'League';
-        final position = rank != null ? "$leagueName ${ordinal(rank)}" : leagueName;
-
-        setState(() {
-          teams = [parsed]; // ✅ List<Team>
-          team = {          // ✅ Map<String, dynamic> for your UI
-            "id": parsed.id,
-            "name": parsed.name,
-            "position": position,
-            "logo": parsed.imagePath, // network URL; we handle below
-            "rankChange": 0,
-            "raw": jsonMap,
-          };
-          isLoading = false;
-        });
-      } else {
-        print("Failed to load team data: ${response.statusCode}");
-        setState(() => isLoading = false);
-      }
-    } catch (e) {
-      print("Error: $e");
-      setState(() => isLoading = false);
-    }
-  }
+  // Future<void> fetchTeamData() async {
+  //   final url =
+  //       'https://3e6a1be77d44.ngrok-free.app/api/teams/${widget.teamId}/overview';
+  //   try {
+  //     final response = await http.get(Uri.parse(url));
+  //     if (response.statusCode == 200) {
+  //       final jsonMap = json.decode(response.body) as Map<String, dynamic>;
+  //       final parsed = Team.fromJson(jsonMap); // ✅ parse API object
+  //       final int leagueId = parsed.leagueId;
+  //       final int? rank = parsed.standing?['rank'] as int?;
+  //       final String leagueName = {
+  //         8: "Premier League",
+  //         82: "La Liga",
+  //         301: "Serie A",
+  //         384: "Bundesliga",
+  //         564: "Ligue 1",
+  //       }[leagueId] ?? 'League';
+  //       final position = rank != null ? "$leagueName ${ordinal(rank)}" : leagueName;
+  //
+  //       setState(() {
+  //         teams = [parsed]; // ✅ List<Team>
+  //         team = {          // ✅ Map<String, dynamic> for your UI
+  //           "id": parsed.id,
+  //           "name": parsed.name,
+  //           "position": position,
+  //           "logo": parsed.imagePath, // network URL; we handle below
+  //           "rankChange": 0,
+  //           "raw": jsonMap,
+  //         };
+  //         isLoading = false;
+  //       });
+  //     } else {
+  //       print("Failed to load team data: ${response.statusCode}");
+  //       setState(() => isLoading = false);
+  //     }
+  //   } catch (e) {
+  //     print("Error: $e");
+  //     setState(() => isLoading = false);
+  //   }
+  // }
 
   @override
   void initState() {
@@ -151,16 +165,15 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void loadFakeData() {
-    final decoded = jsonDecode(fakeTeamsJson) as List<dynamic>;
-    final parsedTeams = decoded.map((t) => Team.fromJson(t)).toList();
+    final List<dynamic> decoded = jsonDecode(fakeTeamsJson);
 
-    // pick the one matching route param; fallback to first
-    final Team selected = parsedTeams.firstWhere(
-          (t) => t.id == widget.teamId,
-      orElse: () => parsedTeams.first,
-    );
+    // 1) route param(teamId)로 팀 선택 (없으면 첫 번째)
+    final Map<String, dynamic> rawTeamMap = decoded.firstWhere(
+          (t) => t['id'] == widget.teamId,
+      orElse: () => decoded[0],
+    ) as Map<String, dynamic>;
 
-    // build position text (e.g., "La Liga 2nd")
+    // 2) position 문자열 안전 생성 (예: "La Liga 2nd")
     const leagueNames = {
       8: "Premier League",
       82: "La Liga",
@@ -169,25 +182,29 @@ class _TeamScreenState extends State<TeamScreen>
       564: "Ligue 1",
     };
 
-    final int leagueId = selected.leagueId;
-    final int? rank = selected.standing?['rank'] as int?;
+    final int leagueId = rawTeamMap['league_id'] ?? 0;
+    final Map<String, dynamic>? standing =
+    rawTeamMap['standing'] as Map<String, dynamic>?;
+    final int? rank = standing?['rank'] as int?;
+
     final position = rank != null
         ? "${leagueNames[leagueId] ?? 'League'} ${ordinal(rank)}"
         : (leagueNames[leagueId] ?? 'League');
 
     setState(() {
-      teams = parsedTeams; // ✅ keep the full parsed list if you need it later
+      // UI에서 쓰는 team map은 "rawTeamMap + computed fields"로 구성
+      // nextMatch / transfers / standing 등은 rawTeamMap에 이미 들어있으니 그대로 유지됨
       team = {
-        "id": selected.id,
-        "name": selected.name,
+        ...rawTeamMap,
         "position": position,
-        "logo": selected.imagePath, // URL; render as network if startsWith('http')
-        "rankChange": 1,
-        "raw": selected, // full Team object for tabs if needed
+        "logo": rawTeamMap["image_path"], // UI에서 팀 로고로 쓰는 키
+        "rankChange": 1, // 더미
       };
+
       isLoading = false;
     });
   }
+
 
   @override
   void dispose() {
@@ -265,10 +282,10 @@ class _TeamScreenState extends State<TeamScreen>
                         height: 52, width: 53, fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.red),
                       )
-                          : SvgPicture.asset(
+                          : Image.asset(
                         team?["logo"] as String,
                         height: 52, width: 53,
-                        clipBehavior: Clip.antiAlias,
+                        // clipBehavior: Clip.antiAlias,
                       ),
                       const SizedBox(width: 16),
                       Column(
@@ -298,7 +315,7 @@ class _TeamScreenState extends State<TeamScreen>
                       children: [
                         IconButton(
                           onPressed: () => context.push('/profile'),
-                          icon: const Icon(Icons.star_outline, size: 32),
+                          icon: const Icon(Icons.account_circle_outlined, size: 32),
                         ),
                         IconButton(
                           onPressed: () => context.push('/search'),

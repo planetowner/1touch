@@ -111,29 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-
-  // Future<void> fetchHomeData() async {
-  //   try {
-  //     final resp = await http.get(Uri.parse(
-  //         'https://3e6a1be77d44.ngrok-free.app/api/teams/9/overview'));
-  //     if (resp.statusCode == 200) {
-  //       final jsonMap = json.decode(resp.body) as Map<String, dynamic>;
-  //       final team = Team.fromJson(jsonMap);
-  //
-  //       setState(() {
-  //         realteam = [team]; // wrap it in a list
-  //         isLoading = false;
-  //       });
-  //     } else {
-  //       print("Failed to load data: ${resp.statusCode}");
-  //       setState(() => isLoading = false);
-  //     }
-  //   } catch (e) {
-  //     print("Error fetching home data: $e");
-  //     setState(() => isLoading = false);
-  //   }
-  // }
-
   @override
   void dispose() {
     _scrollController.dispose();
@@ -147,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
       [
         "FC Barcelona",
         "La Liga 1st",
-        "assets/barca_logo.svg",
+        "TeamLogos/Barcelona.png",
         "100",
         "200",
         {
@@ -160,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
       [
         "FC Barcelona",
         "La Liga 1st",
-        "assets/barca_logo.svg",
+        "TeamLogos/Barcelona.png",
         "100",
         "200",
         {
@@ -272,8 +249,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: Row(
                               children: [
-                                SvgPicture.asset(
-                                  'assets/barca_logo.svg', // Replace with current team's logo
+                                Image.asset(
+                                  "TeamLogos/Barcelona.png",
                                   height: 24,
                                   width: 24,
                                 ),

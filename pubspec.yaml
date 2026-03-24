@@ -67,19 +67,17 @@ flutter:
   assets:
     - assets/highlight1.png
     - assets/app_logo.svg
-    - assets/barca_logo.svg
-    - assets/barca.png
-    - assets/girona_logo.svg
     - assets/messi.png
     - assets/google.svg
     - assets/facebook.svg
     - assets/apple.svg
-    - assets/img_2.png
+    - assets/HeungminSon.png
     - assets/addpost_icon.svg
     - assets/flag_video.mp4
     - assets/profileavatar.png
-    - 1.PlayerImages/
-    - 2.TeamLogos/
+    - assets/playerSilhouette.svg
+    - assets/playerAvatar.png
+    - TeamLogos/
 
 
 

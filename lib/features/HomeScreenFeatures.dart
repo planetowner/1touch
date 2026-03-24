@@ -91,10 +91,10 @@ class TeamSelectionSheet extends StatefulWidget {
 class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   // Data moved inside the State class
   final List<Map<String, dynamic>> _followingTeams = [
-    {'name': 'FC Barcelona', 'league': 'La Liga 1st', 'logo': '2.TeamLogos/Barca.png', 'isSelected': true},
-    {'name': 'Real Madrid', 'league': 'La Liga 2nd', 'logo': '2.TeamLogos/RealMadrid.png', 'isSelected': false},
-    {'name': 'Atletico Madrid', 'league': 'La Liga 3rd', 'logo': '2.TeamLogos/AtléticoMadrid.png', 'isSelected': false},
-    {'name': 'Sevilla FC', 'league': 'La Liga 4th', 'logo': '2.TeamLogos/Sevilla.png', 'isSelected': false},
+    {'name': 'FC Barcelona', 'league': 'La Liga 1st', 'logo': 'TeamLogos/Barcelona.png', 'isSelected': true},
+    {'name': 'Real Madrid', 'league': 'La Liga 2nd', 'logo': 'TeamLogos/RealMadrid.png', 'isSelected': false},
+    {'name': 'Atletico Madrid', 'league': 'La Liga 3rd', 'logo': 'TeamLogos/AtleticoMadrid.png', 'isSelected': false},
+    {'name': 'Sevilla FC', 'league': 'La Liga 4th', 'logo': 'TeamLogos/Sevilla.png', 'isSelected': false},
   ];
 
   @override
@@ -127,8 +127,8 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                     borderRadius: BorderRadius.circular(8),
                     child: Image.asset(
                       team['logo'],
-                      width: 40,
-                      height: 40,
+                      width: 24,
+                      height: 24,
                       errorBuilder: (context, error, stackTrace) =>
                       const Icon(Icons.error, color: Colors.white),
                     ),
@@ -277,9 +277,9 @@ class MyTeams extends StatelessWidget {
                   date: 'Sat, Sep 20 3:30 PM',
                   venue: 'Venue Name',
                   team1shortname: "FCB",
-                  team1Logo: 'assets/barca_logo.svg',
+                  team1Logo: 'TeamLogos/Barcelona.png',
                   team2shortname: "GIR",
-                  team2Logo: 'assets/girona_logo.svg',
+                  team2Logo: 'TeamLogos/Girona.png',
                 ),
               ),
             ],
@@ -313,10 +313,10 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
     final random = Random(month.month + month.year * 12); // Seed for consistent results
 
     final teamLogos = [
-      'assets/barca.png',
-      'assets/barca.png',
-      'assets/barca.png',
-      'assets/barca.png',
+      'TeamLogos/Barcelona.png',
+      'TeamLogos/Barcelona.png',
+      'TeamLogos/Barcelona.png',
+      'TeamLogos/Barcelona.png',
     ];
 
     final colors = [Colors.red, Colors.blue, Colors.green, Colors.orange];

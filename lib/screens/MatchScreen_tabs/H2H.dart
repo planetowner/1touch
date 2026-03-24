@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 class H2HTab extends StatelessWidget {
@@ -60,8 +59,8 @@ class H2HTab extends StatelessWidget {
               shape: BoxShape.circle,
               color: Colors.white,
             ),
-            child: SvgPicture.asset(
-              'assets/girona_logo.svg',
+            child: Image.asset(
+              "TeamLogos/Girona.png",
               fit: BoxFit.contain,
             ),
           ),

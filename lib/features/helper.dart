@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import "package:onetouch/core/stylesheet_dark.dart";
 // import 'package:onetouch/data/teamdata.dart';
@@ -163,60 +162,60 @@ class MatchCard2 extends StatelessWidget {
   }
 }
 
-class MatchCard3 extends StatelessWidget {
-  final String date, venue, team1Name, team1Logo, team2Name, team2Logo;
-
-  const MatchCard3({
-    super.key,
-    required this.date,
-    required this.venue,
-    required this.team1Name,
-    required this.team1Logo,
-    required this.team2Name,
-    required this.team2Logo,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-          bottomLeft: Radius.circular(0),
-          bottomRight: Radius.circular(0),
-        ),
-        color: Color(0xFF3D3D3D),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('NEXT MATCH', style: Body1_b.style),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _TeamDisplay(teamName: team1Name, teamLogo: team1Logo),
-                  ),
-                  const SizedBox(width: 24),
-                  // _MatchInfo(date: date, venue: venue), // Commented out in original
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: _TeamDisplay(teamName: team2Name, teamLogo: team2Logo),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
+// class MatchCard3 extends StatelessWidget {
+//   final String date, venue, team1Name, team1Logo, team2Name, team2Logo;
+//
+//   const MatchCard3({
+//     super.key,
+//     required this.date,
+//     required this.venue,
+//     required this.team1Name,
+//     required this.team1Logo,
+//     required this.team2Name,
+//     required this.team2Logo,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(16),
+//       decoration: const BoxDecoration(
+//         borderRadius: BorderRadius.only(
+//           topLeft: Radius.circular(20),
+//           topRight: Radius.circular(20),
+//           bottomLeft: Radius.circular(0),
+//           bottomRight: Radius.circular(0),
+//         ),
+//         color: Color(0xFF3D3D3D),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           const Text('NEXT MATCH', style: Body1_b.style),
+//           const SizedBox(height: 16),
+//           LayoutBuilder(
+//             builder: (context, constraints) {
+//               return Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Expanded(
+//                     child: _TeamDisplay(teamName: team1Name, teamLogo: team1Logo),
+//                   ),
+//                   const SizedBox(width: 24),
+//                   _MatchInfo(match: , leagueName: ,), // Commented out in original
+//                   const SizedBox(width: 24),
+//                   Expanded(
+//                     child: _TeamDisplay(teamName: team2Name, teamLogo: team2Logo),
+//                   ),
+//                 ],
+//               );
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class SearchMatchCard extends StatelessWidget {
   final String homeTeam;
@@ -380,7 +379,9 @@ class _TeamDisplay2 extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SvgPicture.asset(teamLogo, width: 48, height: 48, fit: BoxFit.cover),
+        Image.asset(
+            teamLogo, width: 48, height: 48, fit: BoxFit.cover
+        ),
         const SizedBox(height: 8),
         Text(teamName, textAlign: TextAlign.center, style: Eyebrow.style),
       ],
@@ -458,7 +459,7 @@ class _ScoreBoard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: const Color(0xFF272828),
+            color: Colors.black,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(

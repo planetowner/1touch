@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class EditFollowingTeamsSheet extends StatefulWidget {
   const EditFollowingTeamsSheet({super.key});
@@ -13,10 +12,10 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   final TextEditingController _searchController = TextEditingController();
 
   List<Map<String, String>> allTeams = [
-    {"name": "FC Barcelona", "league": "La Liga 1st", "logo": "assets/barca_logo.svg"},
-    {"name": "Bayern Munich", "league": "Bundesliga 1st", "logo": "assets/barca_logo.svg"},
-    {"name": "Everton", "league": "PL 13th", "logo": "assets/barca_logo.svg"},
-    {"name": "Eintracht Frankfurt", "league": "Bundesliga 3rd", "logo": "assets/barca_logo.svg"},
+    {"name": "FC Barcelona", "league": "La Liga 1st", "logo": "TeamLogos/Barcelona.png"},
+    {"name": "Bayern Munich", "league": "Bundesliga 1st", "logo": "TeamLogos/Barcelona.png"},
+    {"name": "Everton", "league": "PL 13th", "logo": "TeamLogos/Barcelona.png"},
+    {"name": "Eintracht Frankfurt", "league": "Bundesliga 3rd", "logo": "TeamLogos/Barcelona.png"},
   ];
 
   List<Map<String, String>> followedTeams = [];
@@ -174,7 +173,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: SvgPicture.asset(team['logo']!, width: 52, height: 52),
+                leading: Image.asset(team['logo']!, width: 52, height: 52),
                 title: Text(team['name']!, style: Heading5.style),
                 subtitle: Text(team['league']!, style: Eyebrow.style),
                 trailing: GestureDetector(
@@ -195,7 +194,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   ),
                 ),
               ),
-              const Divider(color: Color(0xFF3A3A3A), thickness: 1, height: 24),
+              const Divider(color: Color(0xFF3D3D3D), thickness: 1, height: 24),
             ],
           );
         },
@@ -223,7 +222,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
             ),
           ),
           const SizedBox(width: 16),
-          SvgPicture.asset(logoPath, width: 52, height: 52),
+          Image.asset(logoPath, width: 52, height: 52),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

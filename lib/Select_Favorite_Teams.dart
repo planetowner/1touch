@@ -2,8 +2,8 @@ import 'dart:ui'; // [NEW] Required for ImageFilter (Blur)
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-
 import 'RankFavTeams.dart';
+
 
 class SelectFavoriteTeamsScreen extends StatefulWidget {
   const SelectFavoriteTeamsScreen({super.key});

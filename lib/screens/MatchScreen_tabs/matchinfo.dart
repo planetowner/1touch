@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/matchdata.dart';
 
@@ -71,7 +70,7 @@ class MatchInfoTab extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _teamBlock("assets/barca_logo.svg", "Team Name"),
+        _teamBlock("TeamLogos/Barcelona.png", "Team Name"),
         const SizedBox(width: 20,),
         Column(
           mainAxisSize: MainAxisSize.min,
@@ -114,7 +113,7 @@ class MatchInfoTab extends StatelessWidget {
           ],
         ),
         const SizedBox(width: 20,),
-        _teamBlock("assets/girona_logo.svg", "Team Name"),
+        _teamBlock("TeamLogos/Girona.png", "Team Name"),
       ],
     );
   }
@@ -122,7 +121,7 @@ class MatchInfoTab extends StatelessWidget {
   Widget _teamBlock(String logo, String name) {
     return Column(
       children: [
-        SvgPicture.asset(logo, width: 72, height: 72),
+        Image.asset(logo, width: 72, height: 72),
         const SizedBox(height: 8),
         Text(name, style: Body1.style),
       ],

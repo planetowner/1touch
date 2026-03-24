@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/data/teamdata.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/stylesheet_dark.dart";
 
+import '../data/matchdata.dart';
+
 class Fixtures extends StatefulWidget {
-  const Fixtures({super.key, this.teams});
+  Fixtures({super.key, this.teams});
 
   final teams;
 
@@ -13,59 +16,69 @@ class Fixtures extends StatefulWidget {
 }
 
 class _FixturesState extends State<Fixtures> {
-  int mycolor = 0xFF272828;
 
   @override
   Widget build(BuildContext context) {
+    MatchData? match;
+    String leagueName = "Unknown League";
+
+    if (widget.teams == null) {
+      return const SizedBox.shrink();
+    }
+    if (widget.teams is Map<String, dynamic>) {
+      final teamObj = Team.fromJson(widget.teams as Map<String, dynamic>);
+      match = teamObj.nextMatch;
+      leagueName = leagueNames[teamObj.leagueId] ?? "Unknown League";
+    }
+
+    if (match == null) return const SizedBox.shrink();
+
+
     return SizedBox(
-      // Changed from Expanded to SizedBox to avoid layout overflow
-      // height: 446,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Material(
-          elevation: 5,
+          elevation: 0,
+          color: const Color(0xFF272828),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20)
           ),
+          clipBehavior: Clip.antiAlias,
           child: Container(
-            // width: 375,  // Reduced width to fix overflow
-            padding: EdgeInsets.only(bottom: 24),
-            decoration: BoxDecoration(
-              color: Color(mycolor),
-              borderRadius: BorderRadius.circular(20),
+            padding: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20),
+                color: Color(0xFF272828)
             ),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              GestureDetector(
-                onTap: () {
-                  const matchId = "200";
-                  context.push('/match/$matchId'); // Navigate to MatchScreen
-                },
-                child: MatchCard3(
-                  date: 'Sun, Sep 15 10:15 AM',
-                  venue: 'Camp Nou',
-                  team1Name: 'FC BARCELONA',
-                  team1Logo: "assets/barca_logo.svg",
-                  team2Name: 'Girona FC',
-                  team2Logo: 'assets/girona_logo.svg',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    final matchId = match!.id.toString();
+                    context.push('/match/$matchId');
+                  },
+                  child: MatchCard(
+                    match: match,
+                    leagueName: leagueName,
+                  ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  const matchId = "300";
-                  GoRouter.of(context)
-                      .push('/match/$matchId'); // Navigate to MatchScreen
-                },
-                child: MatchCard2(
-                  date: 'Sun, Sep 15 10:15 AM',
-                  venue: 'Venue Name',
-                  team1shortname: "FCB",
-                  team1Logo: "https://cdn.sportmonks.com/images/soccer/teams/29/29.png",
-                  team2shortname: "GIR",
-                  team2Logo: 'https://cdn.sportmonks.com/images/soccer/teams/9/9.png',
+                GestureDetector(
+                  onTap: () {
+                    const matchId = "300";
+                    GoRouter.of(context)
+                        .push('/match/$matchId'); // Navigate to MatchScreen
+                  },
+                  child: MatchCard2(
+                    date: "Sun, Sep 15 10:15 AM",
+                    venue: 'Venue Name',
+                    team1shortname: "FCB",
+                    team1Logo: "TeamLogos/Barcelona.png",
+                    team2shortname: "GIR",
+                    team2Logo: 'TeamLogos/Girona.png',
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ),
         ),
       ),

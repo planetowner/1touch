@@ -135,12 +135,10 @@ class _CommunityState extends State<Community>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SvgPicture.asset(
-                        'assets/barca_logo.svg',
-                        height: 48,
-                        width: 48,
-                        placeholderBuilder: (_) =>
-                            const CircularProgressIndicator(),
+                      Image.asset(
+                        'TeamLogos/Barcelona.png',
+                        height: 52,
+                        width: 52,
                       ),
                       const SizedBox(width: 16),
                       Expanded(

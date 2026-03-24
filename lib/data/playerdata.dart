@@ -4,7 +4,7 @@ class Player {
   final String id;
   final String fullName;
   final String teamName;
-  final Color teamColor;
+  final List<Color> teamColor;
 
   Player({
     required this.id,
@@ -19,7 +19,7 @@ final List<Player> allPlayers = [
     id: 'son',
     fullName: 'Heungmin Son',
     teamName: 'Tottenham Hotspur',
-    teamColor: Color(0x005C92FF),
+    teamColor: [const Color(0x665C92FF), const Color(0x005C92FF)],
   ),
   // Add more if needed
 ];
@@ -31,7 +31,7 @@ Player getPlayerById(String id) {
       id: 'unknown',
       fullName: 'Unknown Player',
       teamName: 'Unknown',
-      teamColor: Colors.grey,
+      teamColor: [Colors.grey, Colors.grey],
     ),
   );
 }

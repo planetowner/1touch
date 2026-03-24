@@ -259,19 +259,19 @@ class _ProfileState extends State<Profile> {
       {
         "name": "Team Name",
         "league": "League #th",
-        "logo": "assets/barca_logo.svg",
+        "logo": "TeamLogos/Barcelona.png",
         "isSelected": true,
       },
       {
         "name": "Team Name",
         "league": "League #th",
-        "logo": "assets/barca_logo.svg",
+        "logo": "TeamLogos/Barcelona.png",
         "isSelected": false,
       },
       {
         "name": "Team Name",
         "league": "League #th",
-        "logo": "assets/barca_logo.svg",
+        "logo": "TeamLogos/Barcelona.png",
         "isSelected": false,
       },
     ];
@@ -299,7 +299,7 @@ class _ProfileState extends State<Profile> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SvgPicture.asset(
+                    Image.asset(
                       team['logo'],
                       height: 80,
                       width: 80,

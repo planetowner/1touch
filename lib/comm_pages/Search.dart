@@ -20,7 +20,7 @@ class Search extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFD82457), Color(0x00D82457)
+                  Colors.black
                 ],
                 stops: [0.0, 0.4],
               ),

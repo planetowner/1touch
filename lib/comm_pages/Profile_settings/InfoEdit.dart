@@ -11,6 +11,7 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final nameController = TextEditingController(text: "John Doe");
+  final usernameController = TextEditingController(text: "john_doe");
   final emailController = TextEditingController(text: "jdoe0507@gmail.com");
   final passwordController = TextEditingController(text: "password123");
   bool isPasswordVisible = false;
@@ -77,6 +78,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _buildTextField(
                 label: "Name",
                 controller: nameController,
+              ),
+              const SizedBox(height: 24),
+              _buildTextField(
+                label: "Username",
+                controller: usernameController,
               ),
               const SizedBox(height: 24),
               _buildTextField(
