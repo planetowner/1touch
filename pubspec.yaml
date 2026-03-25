@@ -34,7 +34,7 @@ dependencies:
   permission_handler: ^11.3.1
   table_calendar: ^3.0.9
   flutter_svg: ^2.0.9
-  fl_chart: ^0.66.0
+  fl_chart: ^0.70.0
   flutter_chat_ui: ^1.6.4
   flutter_chat_types: ^3.5.1
   uuid: ^4.0.0

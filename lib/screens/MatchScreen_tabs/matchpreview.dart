@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 
+import 'package:fl_chart/fl_chart.dart';
+
 class MatchPreviewTab extends StatefulWidget {
   final String matchId;
 
@@ -128,7 +130,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildSimpleTeamCol("AAA", "TeamLogos/Barcelona.png"),
+              _buildSimpleTeamCol("FCB", "TeamLogos/Barcelona.png"),
               const SizedBox(height: 8),
               _buildScoreBox('#'),
               Column(
@@ -139,7 +141,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
               ),
               _buildScoreBox('#'),
               const SizedBox(height: 8),
-              _buildSimpleTeamCol("BBB", "TeamLogos/Girona.png"),
+              _buildSimpleTeamCol("GIR", "TeamLogos/Girona.png"),
             ],
           ),
         ),
