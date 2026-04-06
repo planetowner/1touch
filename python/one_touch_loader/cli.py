@@ -1,4 +1,3 @@
-# python/one_touch_loader/cli.py
 import sys
 from one_touch_loader.loaders.big5_bootstrap import run_big5_bootstrap
 from one_touch_loader.loaders.standings_loader import (
@@ -7,6 +6,7 @@ from one_touch_loader.loaders.standings_loader import (
 from one_touch_loader.loaders.points_pace import (
     build_points_pace_all, refresh_points_pace_current
 )
+from one_touch_loader.loaders.highlights_loader import refresh_highlights
 
 USAGE = """
 Usage:
@@ -16,11 +16,16 @@ Usage:
   python -m one_touch_loader.cli standings delta <league_id> <season_id> <team_id>
   python -m one_touch_loader.cli points-pace build
   python -m one_touch_loader.cli points-pace refresh-current
+  python -m one_touch_loader.cli highlights
+  python -m one_touch_loader.cli highlights refresh
+  python -m one_touch_loader.cli highlights refresh <team_id,team_id,...>
 """
 
 def main():
     if len(sys.argv) < 2:
-        print(USAGE); return
+        print(USAGE)
+        return
+
     cmd = sys.argv[1]
 
     if cmd == "big5":
@@ -32,7 +37,8 @@ def main():
 
     elif cmd == "standings":
         if len(sys.argv) < 3:
-            print(USAGE); return
+            print(USAGE)
+            return
         sub = sys.argv[2]
         if sub == "build":
             build_all_standings()
@@ -41,7 +47,9 @@ def main():
             refresh_current_standings()
             print("Standings refresh-current done.")
         elif sub == "delta" and len(sys.argv) == 6:
-            lid = int(sys.argv[3]); sid = int(sys.argv[4]); tid = int(sys.argv[5])
+            lid = int(sys.argv[3])
+            sid = int(sys.argv[4])
+            tid = int(sys.argv[5])
             delta, symbol = compute_rank_delta_since_last_match(tid, lid, sid)
             print(f"team {tid} @ league {lid} season {sid}: delta={delta} {symbol}")
         else:
@@ -49,7 +57,8 @@ def main():
 
     elif cmd == "points-pace":
         if len(sys.argv) < 3:
-            print(USAGE); return
+            print(USAGE)
+            return
         sub = sys.argv[2]
         if sub == "build":
             build_points_pace_all()
@@ -57,6 +66,19 @@ def main():
         elif sub == "refresh-current":
             refresh_points_pace_current()
             print("Points pace refresh-current done.")
+        else:
+            print(USAGE)
+
+    elif cmd == "highlights":
+        team_ids = None
+        if len(sys.argv) >= 3 and sys.argv[2] == "refresh":
+            if len(sys.argv) == 4:
+                team_ids = [int(x.strip()) for x in sys.argv[3].split(",") if x.strip()]
+            refresh_highlights(team_ids)
+            print("Highlights refresh done.")
+        elif len(sys.argv) == 2:
+            refresh_highlights()
+            print("Highlights refresh done.")
         else:
             print(USAGE)
 
