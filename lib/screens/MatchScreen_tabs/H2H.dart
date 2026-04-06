@@ -1,30 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
-class H2HTab extends StatelessWidget {
+class H2HTab extends StatefulWidget {
   const H2HTab({super.key});
 
   @override
+  State<H2HTab> createState() => _H2HTabState();
+}
+
+class _H2HTabState extends State<H2HTab> {
+
+  int _selectedMatches = 5;
+  final List<int> _matchOptions = [5, 10, 20];
+
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 48),
           _buildDropdownRow(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 48),
           _buildWDLBox(),
-          const SizedBox(height: 32),
-          _buildPredictionBar('Expert', [60, 20, 20],
-              [Color(0xFFFF5B5B), Color(0xFF3D3D3D), Color(0xFF5B92FF)]),
-          _buildPredictionBar('User', [50, 30, 20],
-              [Color(0xFFFF5B5B), Color(0xFF3D3D3D), Color(0xFF5B92FF)]),
+          const SizedBox(height: 48),
+          _buildBetsCard(),
           const Padding(
             padding: EdgeInsets.only(bottom: 8, top: 40),
             child: Text('PAST MATCHES', style: Body2_b.style),
           ),
           ...List.generate(
             5,
-                (i) => _buildPastMatchCard('ABC', 'DEF', '#', '#', 'League / Round'),
+                (i) =>
+                _buildPastMatchCard('ABC', 'DEF', '#', '#', 'League / Round'),
           ),
           const SizedBox(height: 140),
         ],
@@ -34,27 +41,59 @@ class H2HTab extends StatelessWidget {
 
   Widget _buildDropdownRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Functional dropdown
           Container(
-            padding: const EdgeInsets.only(left: 16, right: 8, top: 8, bottom: 8),
             decoration: BoxDecoration(
-              color: Color(0xFF3D3D3D),
-              borderRadius: BorderRadius.circular(20),
+              color: const Color(0xFF3D3D3D),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Row(
-              children: const [
-                Text('LAST FIVE MATCHES', style: Body2_b.style),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              ],
+            child: IntrinsicWidth(
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  value: _selectedMatches,
+                  dropdownColor: const Color(0xFF3D3D3D),
+                  borderRadius: BorderRadius.circular(16),
+                  icon: const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                  ),
+                  style: Body2_b.style,
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedMatches = val);
+                  },
+                  items: _matchOptions.map((n) {
+                    return DropdownMenuItem<int>(
+                      value: n,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Text('LAST $n MATCHES', style: Body2_b.style),
+                      ),
+                    );
+                  }).toList(),
+                  selectedItemBuilder: (context) => _matchOptions.map((n) {
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Text(
+                          'LAST $_selectedMatches MATCHES',
+                          style: Body2_b.style,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
           const Text('AGAINST', style: Body2_b.style),
           Container(
-            width: 36,
-            height: 36,
+            width: 40,
+            height: 40,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white,
@@ -104,34 +143,102 @@ class H2HTab extends StatelessWidget {
     );
   }
 
-  Widget _buildPredictionBar(String title, List<int> values, List<Color> colors) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title.toUpperCase(), style: Body2_b.style),
-          const SizedBox(height: 16),
-          Row(
-            children: List.generate(values.length, (i) {
-              return Expanded(
-                flex: values[i],
-                child: Container(
-                  height: 26,
-                  color: colors[i],
-                  alignment: Alignment.center,
-                  child: Text('${values[i]}%', style: Heading4.style),
-                ),
-              );
-            }),
+  Widget _buildBetsCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+            'BETS',
+          style: Body2_b.style,
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF3D3D3D),
+            borderRadius: BorderRadius.circular(24),
           ),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // EXPERT row
+              Row(
+                children: const [
+                  Text('EXPERT', style: Body2_b.style),
+                  SizedBox(width: 6),
+                  Icon(Icons.help_outline, color: Colors.white, size: 16),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _buildBar(
+                values: [60, 20, 20],
+                showCheckOnFirst: false,
+              ),
+              const SizedBox(height: 20),
+              // USER row
+              const Text('USER', style: Body2_b.style),
+              const SizedBox(height: 12),
+              _buildBar(
+                values: [60, 30, 10],
+                showCheckOnFirst: true,
+              ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildBar(
+      {required List<int> values, required bool showCheckOnFirst}) {
+    const radius = Radius.circular(6);
+    final segments = [
+      // [value, isFirst, isLast, isWhite]
+      (values[0], true, false, false),
+      (values[1], false, false, false),
+      (values[2], false, true, true),
+    ];
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Row(
+        children: List.generate(segments.length, (i) {
+          final (value, isFirst, isLast, isWhite) = segments[i];
+          return Expanded(
+            flex: value,
+            child: Container(
+              height: 36,
+              decoration: BoxDecoration(
+                color: isWhite
+                    ? Colors.white
+                    : i == 0
+                    ? const Color(0xFFFF5B5B)
+                    : const Color(0xFF272828),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '$value%',
+                    style: Body2_b.style.copyWith(
+                      color: isWhite ? Colors.black : null, // If false, 'null' keeps the default Body2_b color
+                    ),
+                  ),
+
+                  if (i == 0 && showCheckOnFirst)
+                    const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                ],
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildPastMatchCard(
-      String teamA, String teamB, String homeScore, String awayScore, String league) {
+  Widget _buildPastMatchCard(String teamA, String teamB, String homeScore,
+      String awayScore, String league) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),

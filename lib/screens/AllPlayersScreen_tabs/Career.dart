@@ -539,11 +539,4 @@ class _CareerTabState extends State<CareerTab> {
       ],
     );
   }
-
-  Widget _buildDivider() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 16),
-      child: Divider(height: 1, color: Colors.white24),
-    );
-  }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/matchdata.dart';
+import 'package:onetouch/features/MatchInfoFeatures.dart';
+import 'package:onetouch/features/KaneRest.dart';
 
 class MatchInfoTab extends StatelessWidget {
   final String matchId;
-  final String matchStatus; // "past" or "live"
+  final String matchStatus; // "past" | "live"
 
   MatchInfoTab({
     super.key,
@@ -13,51 +15,130 @@ class MatchInfoTab extends StatelessWidget {
   });
 
   bool get isLive => matchStatus == 'live';
-  List<Substitute> subsTeamA = [
+
+  // ── Mock data — replace with real API models ──
+
+  final List<Substitute> _subsA = [
     Substitute(name: "Ferran Torres", minute: 82, goal: true, subIn: true),
     Substitute(name: "Raphinha"),
     Substitute(name: "Eric García"),
   ];
 
-  List<Substitute> subsTeamB = [
+  final List<Substitute> _subsB = [
     Substitute(name: "Tsygankov", minute: 82, subIn: true, goal: true),
     Substitute(name: "Dovbyk"),
     Substitute(name: "Blind"),
   ];
 
-  String coachA = "Xavi";
-  String coachB = "Michel";
+  final List<Map<String, dynamic>> _goalEvents = const [
+    {'player': 'Lewandowski', 'minute': "23'", 'team': 'home'},
+    {'player': 'Lewandowski', 'minute': "67'", 'team': 'home'},
+    {'player': 'Dovbyk',      'minute': "45'", 'team': 'away'},
+  ];
+
+  final List<StatBarData> _statBars = const [
+    StatBarData(category: "Possession",    homePercent: 64, awayPercent: 36),
+    StatBarData(category: "Pass Accuracy", homePercent: 82, awayPercent: 78),
+  ];
+
+  // Away: rows ordered GK → attackers (shown top → bottom on pitch)
+  final List<List<LineupPlayer>> _awayRows = const [
+    [LineupPlayer(number: 13, name: 'Gazzaniga')],
+    [
+      LineupPlayer(number: 16, name: 'Francés'),
+      LineupPlayer(number: 17, name: 'Blind'),
+      LineupPlayer(number: 18, name: 'Krejci'),
+      LineupPlayer(number: 3,  name: 'Gutiérrez',
+          events: [LineupEvent(type: LineupEventType.yellowCard)]),
+    ],
+    [
+      LineupPlayer(number: 8,  name: 'Tsigankov'),
+      LineupPlayer(number: 4,  name: 'Martinez',
+          events: [LineupEvent(type: LineupEventType.yellowCard)]),
+      LineupPlayer(number: 12, name: 'Arthur'),
+      LineupPlayer(number: 21, name: 'Herrera'),
+    ],
+    [
+      LineupPlayer(number: 11, name: 'Danjuma'),
+      LineupPlayer(number: 10, name: 'Asprilla',
+          events: [LineupEvent(type: LineupEventType.redCard)]),
+    ],
+  ];
+
+  // Home: rows ordered attackers → GK (shown top → bottom in home half)
+  final List<List<LineupPlayer>> _homeRows = const [
+    [
+      LineupPlayer(number: 9, name: 'Lewandowski',
+          events: [LineupEvent(type: LineupEventType.subIn, minute: 82)]),
+    ],
+    [
+      LineupPlayer(number: 6,  name: 'Gavi',
+          events: [LineupEvent(type: LineupEventType.subOut, minute: 82)]),
+      LineupPlayer(number: 16, name: 'Lopez'),
+      LineupPlayer(number: 11, name: 'Lamine Yamal',
+          events: [LineupEvent(type: LineupEventType.goal)]),
+    ],
+    [
+      LineupPlayer(number: 8,  name: 'Pedri',
+          events: [LineupEvent(type: LineupEventType.goal)]),
+      LineupPlayer(number: 24, name: 'Eric Garcia',
+          events: [LineupEvent(type: LineupEventType.yellowCard)]),
+    ],
+    [
+      LineupPlayer(number: 35, name: 'Martin'),
+      LineupPlayer(number: 5,  name: 'Martinez',
+          events: [LineupEvent(type: LineupEventType.yellowCard)]),
+      LineupPlayer(number: 4,  name: 'Araujo'),
+      LineupPlayer(number: 23, name: 'Koundé'),
+    ],
+    [LineupPlayer(number: 25, name: 'Szczesny')],
+  ];
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric( vertical: 48),
+      padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildScoreHeader(),
-          const SizedBox(height: 12,),
-          _buildMatchEvents(),
-          if (!isLive)...[
-            const SizedBox(height: 24),
-            _buildHighlights(),
-          ],
+          MatchScoreHeader(
+            homeLogoAsset: 'TeamLogos/Barcelona.png',
+            awayLogoAsset: 'TeamLogos/Girona.png',
+            homeTeamName: 'Team Name',
+            awayTeamName: 'Team Name',
+            homeScore: '#',
+            awayScore: '#',
+            statusLabel: isLive ? '42:02' : 'Final',
+            venueName: 'Venue Name',
+          ),
+          const SizedBox(height: 12),
+          MatchEventsSection(events: _goalEvents),
           if (!isLive) ...[
+            const SizedBox(height: 24),
+            const MatchHighlights(imageAsset: 'assets/highlight1.png'),
             const SizedBox(height: 32),
-            _buildPlayerOfTheMatch(),
+            const PlayerOfTheMatch(
+              rating: '8.9',
+              playerName: 'Player\nName',
+              teamAndNumber: 'Team Name • ##',
+            ),
           ],
           const SizedBox(height: 48),
-          _buildMomentumChart(),
+          const MomentumChart(),
           const SizedBox(height: 48),
-          _buildStatBars(),
+          StatBarsSection(bars: _statBars),
           const SizedBox(height: 48),
-          _buildLineup(),
+          LineupPitch(
+            awayRows: _awayRows,
+            homeRows: _homeRows,
+            onPlayerTap: _onPlayerTap,
+          ),
           const SizedBox(height: 48),
-          _buildSubstitutesAndCoach(
-            subsA: subsTeamA,
-            subsB: subsTeamB,
-            coachA: coachA,
-            coachB: coachB,
+          SubstitutesAndCoach(
+            subsA: _subsA,
+            subsB: _subsB,
+            coachA: 'Xavi',
+            coachB: 'Michel',
           ),
           const SizedBox(height: 100),
         ],
@@ -65,377 +146,28 @@ class MatchInfoTab extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _teamBlock("TeamLogos/Barcelona.png", "Team Name"),
-        const SizedBox(width: 20,),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF272828),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text('#', style: Heading1.style),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF272828),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text('#', style: Heading1.style),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(isLive ? "42:02" : "Final", style: Body2_b.style),
-            const SizedBox(height: 8),
-            Opacity(
-              opacity: 0.30,
-              child: Container(
-                width: 24,
-                height: 1,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text("Venue Name", style: Body2.style),
-          ],
-        ),
-        const SizedBox(width: 20,),
-        _teamBlock("TeamLogos/Girona.png", "Team Name"),
-      ],
-    );
+  void _onPlayerTap(BuildContext context, LineupPlayer player) {
+    showPlayerMatchStatSheet(context, _buildStatData(player));
   }
 
-  Widget _teamBlock(String logo, String name) {
-    return Column(
-      children: [
-        Image.asset(logo, width: 72, height: 72),
-        const SizedBox(height: 8),
-        Text(name, style: Body1.style),
-      ],
-    );
-  }
-
-  Widget _buildMatchEvents() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _eventRowLeft("Player Name", "##’"),
-          const SizedBox(height: 16),
-          _eventRowRight("##’", "Player Name"),
-          const SizedBox(height: 16),
-          _eventRowRight("##’", "Player Name"),
-        ],
-      ),
-    );
-  }
-
-  Widget _eventRowLeft(String player, String minute) {
-    return Row(
-      children: [
-        const Icon(Icons.sports_soccer, color: Colors.white, size: 20),
-        const SizedBox(width: 6),
-        Text(player, style: Body1.style),
-        const Spacer(),
-        Text(minute, style: Body1.style),
-      ],
-    );
-  }
-
-  Widget _eventRowRight(String minute, String player) {
-    return Row(
-      children: [
-        Text(minute, style: Body1.style),
-        const Spacer(),
-        Text(player, style: Body1.style),
-        const SizedBox(width: 6),
-        const Icon(Icons.sports_soccer, color: Colors.white, size: 20),
-      ],
-    );
-  }
-
-  Widget _buildHighlights() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("HIGHLIGHTS", style: Body2_b.style),
-        const SizedBox(height: 16),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.asset(
-            'assets/highlight1.png',
-            width: double.infinity,
-            height: 194,
-            fit: BoxFit.cover,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlayerOfTheMatch() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("PLAYER OF THE MATCH", style: Body2_b.style),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: const Color(0xCC272929),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.emoji_events_outlined,
-                      color: Colors.white, size: 40),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("8.9", style: Heading2.style),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 42,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "Player\nName",
-                    style: Heading5.style,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'Team Name • ##',
-                    style: Body2.style,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget _buildMomentumChart() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text("MOMENTUM", style: Body2_b.style),
-        SizedBox(height: 12),
-        SizedBox(
-          height: 100,
-          child: Placeholder(), // Replace with real chart or live chart stream
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatBars() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        buildStatComparisonBar(
-          category: "Possession",
-          homePercent: 64,
-          awayPercent: 36,
-        ),
-        buildStatComparisonBar(
-          category: "Pass Accuracy",
-          homePercent: 82,
-          awayPercent: 78,
-        ),
-        // Add more bars as needed...
-      ],
-    );
-  }
-
-  Widget buildStatComparisonBar({
-    required String category,
-    required double homePercent,
-    required double awayPercent,
-  }) {
-    final totalPercent = homePercent + awayPercent;
-    final homeFlex = (homePercent / totalPercent * 100).round();
-    final awayFlex = 100 - homeFlex;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        children: [
-          // Category label centered
-          Center(
-            child: Text(
-              category.toUpperCase(),
-              style: Body2_b.style,
-            ),
-          ),
-          const SizedBox(height: 6),
-
-          // Bar row
-          Row(
-            children: [
-              Text("${homePercent.toInt()}%", style: Body2.style),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: homeFlex,
-                        child: Container(height: 8, color: Colors.redAccent),
-                      ),
-                      Expanded(
-                        flex: awayFlex,
-                        child: Container(height: 8, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text("${awayPercent.toInt()}%", style: Body2.style),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLineup() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text("LINEUP", style: Body2_b.style),
-        SizedBox(height: 12),
-        SizedBox(
-          height: 300,
-          child: Placeholder(), // Replace with 2-team lineup layout
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSubstitutesAndCoach({
-    required List<Substitute> subsA,
-    required List<Substitute> subsB,
-    required String coachA,
-    required String coachB,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("SUBSTITUTES", style: Body2_b.style),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Team A
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: subsA.map((sub) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Text(
-                          sub.name,
-                          style: Body1.style,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (sub.subIn) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.arrow_circle_left, size: 20, color: Colors.white),
-                        ],
-                        if (sub.minute != null) ...[
-                          const SizedBox(width: 4),
-                          Text("${sub.minute}’", style: Body1.style),
-                        ],
-                        if (sub.goal) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.sports_soccer, size: 20, color: Colors.white),
-                        ],
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            // Team B
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: subsB.map((sub) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (sub.goal) const Icon(Icons.sports_soccer, size: 20, color: Colors.white),
-                        if (sub.minute != null) ...[
-                          const SizedBox(width: 4),
-                          Text("${sub.minute}’", style: Body1.style),
-                        ],
-                        const SizedBox(width: 4),
-                        if (sub.subIn) const Icon(Icons.arrow_circle_left, size: 20, color: Colors.white),
-                        const SizedBox(width: 4),
-                        Text(
-                          sub.name,
-                          style: Body1.style,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        const Text("COACH", style: Body2_b.style),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(coachA, style: Body1.style),
-            Text(coachB, style: Body1.style),
+  /// Map a LineupPlayer to PlayerMatchStatData.
+  /// Replace stub sections with real data from your API model.
+  PlayerMatchStatData _buildStatData(LineupPlayer player) {
+    return PlayerMatchStatData(
+      name: player.name,
+      jerseyNumber: player.number,
+      positions: ['—'],        // TODO: from API
+      club: 'Club Name',       // TODO: from API
+      nationality: 'Country',  // TODO: from API
+      sections: const [
+        PlayerMatchStatSection(
+          category: 'FINISH',
+          rows: [
+            PlayerMatchStatRow(label: 'Goals', value: '0'),
+            PlayerMatchStatRow(label: 'xG',    value: '0.0'),
           ],
         ),
       ],
     );
   }
-
 }

@@ -11,25 +11,6 @@ class PlayerOverviewTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Background gradient behind player info
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 160,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
 
         // Content on top of background
         SingleChildScrollView(

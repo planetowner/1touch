@@ -52,7 +52,6 @@ class OnboardingScreen extends StatelessWidget {
                       : Body1.style,
                 ),
               ),
-              // 우측 균형 맞추기용 더미 공간
               const SizedBox(width: 40),
             ],
           ),

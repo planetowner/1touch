@@ -19,6 +19,7 @@ class _PlayerCardState extends State<PlayerCard>
   late TabController _tabController;
   double _scrollOffset = 0.0;
   int currentTabIndex = 0;
+  bool get isOverviewTab => currentTabIndex == 0;
 
   @override
   void initState() {
@@ -59,19 +60,22 @@ class _PlayerCardState extends State<PlayerCard>
             top: 0,
             left: 0,
             right: 0,
-            height: 333,
-            child: AnimatedOpacity(
-              opacity: gradientOpacity,
-              duration: const Duration(milliseconds: 50),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment(0.50, 1.00),
-                    end: Alignment(0.50, 0.00),
-                    colors: [
-                      widget.player.teamColor[0].withOpacity(0.4),
-                      widget.player.teamColor[1].withOpacity(0.0),
-                    ],
+            height: isOverviewTab ? 333 : 173,
+            child: IgnorePointer(
+              child: AnimatedOpacity(
+                opacity: gradientOpacity,
+                duration: const Duration(milliseconds: 50),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        widget.player.teamColor[0].withValues(alpha: 0.4),
+                        widget.player.teamColor[0].withValues(alpha: 0.2),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -112,7 +116,7 @@ class _PlayerCardState extends State<PlayerCard>
                                 icon: const Icon(Icons.search, size: 32, color: Colors.white),
                               ),
                               IconButton(
-                                onPressed: () => context.push('/compare', extra: widget.player.fullName,),
+                                onPressed: () => context.push('/compare', extra: widget.player.fullName,), //'{widget.player.id}/compare'
                                 icon: const Icon(Icons.safety_divider, size: 32, color: Colors.white),
                               ),
                             ],
@@ -135,9 +139,9 @@ class _PlayerCardState extends State<PlayerCard>
                       unselectedLabelStyle: Heading5.style,
                       indicatorSize: TabBarIndicatorSize.label,
                       dividerColor: Colors.transparent,
-                      padding: const EdgeInsets.only(left: 8, top: 24),
+                      padding: const EdgeInsets.only(left: 8),
                       indicator: const UnderlineTabIndicator(
-                        borderSide: BorderSide(color: Colors.white, width: 1.2),
+                        borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                       tabs: const [
                         Tab(text: "Overview"),

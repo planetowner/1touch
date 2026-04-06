@@ -87,6 +87,12 @@ final GoRouter _router = GoRouter(
                   return PlayerCard(player: player);
                 },
               ),
+              GoRoute(
+                path: '/compare',
+                builder: (context, state) => PlayerComparisonScreen(
+                  initialPlayerName: state.extra as String?,
+                ),
+              ),
             ],
           ),
         ]),
