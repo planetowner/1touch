@@ -77,6 +77,23 @@ class SportmonksClient:
                 break
             page += 1
 
+    def get_team(self, team_id: int) -> Dict:
+        return self._get(f"teams/{team_id}").get("data", {}) or {}
+
+    def get_team_with_sidelined(self, team_id: int) -> Dict:
+        """
+        실제 검증된 include:
+          sidelined.player;sidelined.type
+
+        주의:
+          sidelined.sideline 는 teams/{id}에서 5013 에러가 날 수 있으므로 사용하지 않음.
+          sidelined 자체에 start_date, end_date, completed 가 직접 들어옴.
+        """
+        return self._get(
+            f"teams/{team_id}",
+            params={"include": "sidelined.player;sidelined.type"}
+        ).get("data", {}) or {}
+
     # ----- Fixtures (season-wide, with includes & pagination) -----
     def iter_fixtures_by_season(self, season_id: int, per_page: int = 100,
                                 include: str = "participants;state;scores;round;stage;group") -> Iterable[dict]:
@@ -98,7 +115,6 @@ class SportmonksClient:
             if not has_more:
                 break
             page += 1
-
 
     # ----- States -----
     def get_states_map(self) -> Dict[int, str]:
