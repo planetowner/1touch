@@ -7,6 +7,10 @@ from one_touch_loader.loaders.points_pace import (
     build_points_pace_all, refresh_points_pace_current
 )
 from one_touch_loader.loaders.highlights_loader import refresh_highlights
+from one_touch_loader.loaders.injuries_loader import (
+    refresh_current_injuries,
+    refresh_team_injuries,
+)
 
 USAGE = """
 Usage:
@@ -19,6 +23,9 @@ Usage:
   python -m one_touch_loader.cli highlights
   python -m one_touch_loader.cli highlights refresh
   python -m one_touch_loader.cli highlights refresh <team_id,team_id,...>
+  python -m one_touch_loader.cli injuries refresh-current
+  python -m one_touch_loader.cli injuries refresh-current <team_id,team_id,...>
+  python -m one_touch_loader.cli injuries refresh-team <team_id>
 """
 
 def main():
@@ -79,6 +86,28 @@ def main():
         elif len(sys.argv) == 2:
             refresh_highlights()
             print("Highlights refresh done.")
+        else:
+            print(USAGE)
+
+    elif cmd == "injuries":
+        if len(sys.argv) < 3:
+            print(USAGE)
+            return
+
+        sub = sys.argv[2]
+
+        if sub == "refresh-current":
+            team_ids = None
+            if len(sys.argv) == 4:
+                team_ids = [int(x.strip()) for x in sys.argv[3].split(",") if x.strip()]
+            refresh_current_injuries(team_ids)
+            print("Injuries refresh-current done.")
+
+        elif sub == "refresh-team" and len(sys.argv) == 4:
+            team_id = int(sys.argv[3])
+            refresh_team_injuries(team_id)
+            print(f"Injuries refresh-team done: team={team_id}")
+
         else:
             print(USAGE)
 
