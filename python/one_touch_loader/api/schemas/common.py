@@ -55,6 +55,23 @@ class StandingRowOut(BaseModel):
     last5_form: List[str] = []
 
 
+class BestElevenPlayerOut(BaseModel):
+    slot_key: str
+    slot_index: int
+    player_id: int
+    player_name: Optional[str] = None
+    player_image: Optional[str] = None
+    position_name: Optional[str] = None
+    detailed_position_name: Optional[str] = None
+    starts: int = 0
+    total_minutes: int = 0
+
+
+class BestElevenResponse(BaseModel):
+    formation: str
+    players: List[BestElevenPlayerOut] = []
+
+
 class HomeResponse(BaseModel):
     favorite_team: Optional[TeamOut] = None
     following_teams: List[TeamOut] = []

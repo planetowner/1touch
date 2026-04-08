@@ -10,7 +10,8 @@ from ..repos.users_repo import ensure_user, set_favorite_team_id
 from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set_following_teams, find_team_current_context
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
 from ..repos.standings_repo import get_team_standing
-from ..schemas.common import TeamOut, FixtureOut, StandingRowOut
+from ..repos.best_eleven_repo import get_best_eleven
+from ..schemas.common import TeamOut, FixtureOut, StandingRowOut, BestElevenResponse
 
 
 router = APIRouter()
@@ -65,6 +66,27 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
         "last_match": last_match,
         "standing": standing,
     }
+
+
+@router.get("/teams/{team_id}/best-eleven", response_model=BestElevenResponse)
+def team_best_eleven(
+    team_id: int,
+    season_id: int | None = Query(default=None, description="season_id (생략 시 최신 시즌)"),
+    user_id: int = Depends(get_user_id),
+):
+    ensure_user(user_id)
+
+    sid = season_id
+    if sid is None:
+        ctx = find_team_current_context(team_id)
+        if not ctx:
+            raise HTTPException(status_code=404, detail="Team not found")
+        sid = ctx[1]
+
+    result = get_best_eleven(team_id, sid)
+    if not result:
+        raise HTTPException(status_code=404, detail="Best eleven not available")
+    return result
 
 
 @router.get("/teams/{team_id}/matches")
