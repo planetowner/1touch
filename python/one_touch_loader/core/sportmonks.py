@@ -130,6 +130,37 @@ class SportmonksClient:
             },
         ).get("data", {}) or {}
 
+    # ----- Transfers (team-level, paginated) -----
+    def iter_transfers_by_team(self, team_id: int, per_page: int = 50) -> Iterable[Dict]:
+        page = 1
+        while True:
+            obj = self._get(
+                f"transfers/teams/{team_id}",
+                params={
+                    "per_page": per_page,
+                    "page": page,
+                    "include": "player;fromTeam;toTeam;type",
+                },
+            )
+            items = obj.get("data", [])
+            if not items:
+                break
+            for item in items:
+                yield item
+            meta = obj.get("meta") or {}
+            has_more = obj.get("has_more", meta.get("has_more"))
+            if not has_more:
+                break
+            page += 1
+
+    # ----- Team Squad -----
+    def get_team_squad(self, team_id: int) -> List[Dict]:
+        obj = self._get(
+            f"squads/teams/{team_id}",
+            params={"include": "player;position"},
+        )
+        return obj.get("data", [])
+
     # ----- States -----
     def get_states_map(self) -> Dict[int, str]:
         data = self._get("states")

@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS team_transfers (
+  transfer_id     BIGINT NOT NULL PRIMARY KEY,
+  player_id       BIGINT NOT NULL,
+  player_name     VARCHAR(255) NULL,
+  player_image    VARCHAR(512) NULL,
+  from_team_id    BIGINT NULL,
+  from_team_name  VARCHAR(255) NULL,
+  to_team_id      BIGINT NULL,
+  to_team_name    VARCHAR(255) NULL,
+  type_id         INT NULL,
+  type_name       VARCHAR(100) NULL,
+  amount          BIGINT NULL,
+  transfer_date   DATE NULL,
+  window_id       BIGINT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_tt_from_team_window (from_team_id, window_id),
+  KEY idx_tt_to_team_window (to_team_id, window_id),
+  KEY idx_tt_player (player_id),
+  KEY idx_tt_window (window_id),
+  KEY idx_tt_date (transfer_date)
+);

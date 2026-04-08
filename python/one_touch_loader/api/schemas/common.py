@@ -72,6 +72,25 @@ class BestElevenResponse(BaseModel):
     players: List[BestElevenPlayerOut] = []
 
 
+class TransferOut(BaseModel):
+    transfer_id: int
+    player_id: int
+    player_name: Optional[str] = None
+    player_image: Optional[str] = None
+    direction: str                          # "in" | "out"
+    other_team_id: Optional[int] = None
+    other_team_name: Optional[str] = None
+    display_type: Optional[str] = None      # "Loan", "Free Agent", "€8.5M" etc.
+    amount: Optional[int] = None
+    transfer_date: Optional[str] = None
+
+
+class TeamTransfersResponse(BaseModel):
+    window_key: str                         # e.g. "2026 winter"
+    transfers_in: List[TransferOut] = []
+    transfers_out: List[TransferOut] = []
+
+
 class HomeResponse(BaseModel):
     favorite_team: Optional[TeamOut] = None
     following_teams: List[TeamOut] = []

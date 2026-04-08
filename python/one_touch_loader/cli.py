@@ -16,6 +16,11 @@ from one_touch_loader.loaders.best_eleven_loader import (
     refresh_best_eleven,
     validate_best_eleven,
 )
+from one_touch_loader.loaders.transfers_loader import (
+    refresh_current_transfers,
+    refresh_team_transfers,
+    refresh_team_squad,
+)
 
 USAGE = """
 Usage:
@@ -35,6 +40,10 @@ Usage:
   python -m one_touch_loader.cli best-eleven
   python -m one_touch_loader.cli best-eleven --days <N>
   python -m one_touch_loader.cli best-eleven validate
+  python -m one_touch_loader.cli transfers refresh-current
+  python -m one_touch_loader.cli transfers refresh-current <team_id,team_id,...>
+  python -m one_touch_loader.cli transfers refresh-team <team_id>
+  python -m one_touch_loader.cli transfers refresh-squad <team_id>
 """
 
 def main():
@@ -132,6 +141,33 @@ def main():
                 days = int(sys.argv[3])
             refresh_best_eleven(lookback_days=days)
             print("Best-eleven refresh done.")
+
+    elif cmd == "transfers":
+        if len(sys.argv) < 3:
+            print(USAGE)
+            return
+
+        sub = sys.argv[2]
+
+        if sub == "refresh-current":
+            team_ids = None
+            if len(sys.argv) == 4:
+                team_ids = [int(x.strip()) for x in sys.argv[3].split(",") if x.strip()]
+            refresh_current_transfers(team_ids)
+            print("Transfers refresh-current done.")
+
+        elif sub == "refresh-team" and len(sys.argv) == 4:
+            team_id = int(sys.argv[3])
+            refresh_team_transfers(team_id)
+            print(f"Transfers refresh-team done: team={team_id}")
+
+        elif sub == "refresh-squad" and len(sys.argv) == 4:
+            team_id = int(sys.argv[3])
+            refresh_team_squad(team_id)
+            print(f"Transfers refresh-squad done: team={team_id}")
+
+        else:
+            print(USAGE)
 
     else:
         print(USAGE)
