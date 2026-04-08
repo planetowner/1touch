@@ -116,6 +116,20 @@ class SportmonksClient:
                 break
             page += 1
 
+    # ----- Fixture Lineups (single fixture, heavy payload) -----
+    def get_fixture_lineups(self, fixture_id: int) -> Dict:
+        """
+        단일 fixture의 라인업·포메이션을 가져온다.
+        시즌-wide ingest와 분리하여 payload 크기를 제한한다.
+        """
+        return self._get(
+            f"fixtures/{fixture_id}",
+            params={
+                "include": "formations;lineups.player;lineups.position;"
+                           "lineups.detailedPosition;lineups.details"
+            },
+        ).get("data", {}) or {}
+
     # ----- States -----
     def get_states_map(self) -> Dict[int, str]:
         data = self._get("states")

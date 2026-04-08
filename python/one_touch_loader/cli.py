@@ -11,6 +11,11 @@ from one_touch_loader.loaders.injuries_loader import (
     refresh_current_injuries,
     refresh_team_injuries,
 )
+from one_touch_loader.loaders.best_eleven_loader import (
+    full_build_best_eleven,
+    refresh_best_eleven,
+    validate_best_eleven,
+)
 
 USAGE = """
 Usage:
@@ -26,6 +31,10 @@ Usage:
   python -m one_touch_loader.cli injuries refresh-current
   python -m one_touch_loader.cli injuries refresh-current <team_id,team_id,...>
   python -m one_touch_loader.cli injuries refresh-team <team_id>
+  python -m one_touch_loader.cli best-eleven --full
+  python -m one_touch_loader.cli best-eleven
+  python -m one_touch_loader.cli best-eleven --days <N>
+  python -m one_touch_loader.cli best-eleven validate
 """
 
 def main():
@@ -110,6 +119,19 @@ def main():
 
         else:
             print(USAGE)
+
+    elif cmd == "best-eleven":
+        if len(sys.argv) >= 3 and sys.argv[2] == "--full":
+            full_build_best_eleven()
+            print("Best-eleven full build done.")
+        elif len(sys.argv) >= 3 and sys.argv[2] == "validate":
+            validate_best_eleven()
+        else:
+            days = 2
+            if len(sys.argv) >= 4 and sys.argv[2] == "--days":
+                days = int(sys.argv[3])
+            refresh_best_eleven(lookback_days=days)
+            print("Best-eleven refresh done.")
 
     else:
         print(USAGE)
