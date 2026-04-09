@@ -72,26 +72,6 @@ ON DUPLICATE KEY UPDATE
   window_id      = VALUES(window_id)
 """
 
-# ---------------------------------------------------------------------------
-# SQL: team_squad (별도 적재용 — 추후 선수 목록 등에 활용)
-# ---------------------------------------------------------------------------
-
-SQL_UPSERT_SQUAD = """
-INSERT INTO team_squad (
-  team_id, player_id, player_name, transfer_id,
-  position_id, position_name, jersey_number,
-  start_date, end_date
-) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-ON DUPLICATE KEY UPDATE
-  player_name   = VALUES(player_name),
-  transfer_id   = VALUES(transfer_id),
-  position_id   = VALUES(position_id),
-  position_name = VALUES(position_name),
-  jersey_number = VALUES(jersey_number),
-  start_date    = VALUES(start_date),
-  end_date      = VALUES(end_date)
-"""
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -201,29 +181,6 @@ def _normalize_transfer_rows(
     return rows
 
 
-def _normalize_squad_rows(team_id: int, squad: List[Dict]) -> List[Tuple]:
-    rows: List[Tuple] = []
-    for s in squad:
-        player_id = _safe_int(s.get("player_id"))
-        if player_id is None:
-            continue
-
-        player = s.get("player") or {}
-        position = s.get("position") or {}
-
-        rows.append((
-            team_id,
-            player_id,
-            _player_name(player),
-            _safe_int(s.get("transfer_id")),
-            _safe_int(position.get("id") if position else s.get("position_id")),
-            position.get("name"),
-            _safe_int(s.get("jersey_number")),
-            s.get("start") or s.get("start_date"),
-            s.get("end") or s.get("end_date"),
-        ))
-    return rows
-
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -252,21 +209,6 @@ def refresh_team_transfers(team_id: int, window: Optional[Dict] = None) -> None:
         f"fetched={len(all_transfers)} filtered={len(transfers)} upserted={len(rows)}"
     )
 
-
-def refresh_team_squad(team_id: int) -> None:
-    """단일 팀의 squad만 별도 적재."""
-    sm = SportmonksClient()
-    squad = sm.get_team_squad(team_id)
-
-    if not squad:
-        print(f"[squad] team {team_id}: empty response from API")
-        return
-
-    rows = _normalize_squad_rows(team_id, squad)
-    if rows:
-        upsert_many(SQL_UPSERT_SQUAD, rows)
-
-    print(f"[squad] team {team_id}: fetched={len(squad)} normalized={len(rows)}")
 
 
 def refresh_current_transfers(team_ids: Optional[List[int]] = None) -> None:
