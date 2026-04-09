@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS `team_attribute_scores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- =========================================================
--- 6) 초기 score model 1개 생성
+-- 6) 상대평가 모델
 -- =========================================================
 INSERT INTO `score_models` (
   `model_name`,
@@ -191,7 +191,7 @@ VALUES (
   'match_attribute_v1',
   'fixture',
   1,
-  'Initial hand-crafted match attribute model for Attack/Progression/Pressure/Dominance/Defense/Possession',
+  'Initial hand-crafted match attribute model using within-fixture relative comparison',
   'minmax',
   1
 )
@@ -200,9 +200,30 @@ ON DUPLICATE KEY UPDATE
   `normalization_method` = VALUES(`normalization_method`);
 
 -- =========================================================
--- 7) 초기 weights 삽입
---    주의: 여기서는 같은 카테고리 내 상대 가중치만 저장.
---    실제 0~100 점수는 코드에서 min-max normalization 후 계산.
+-- 7) 리그/시즌 기준 정규화 모델
+-- =========================================================
+INSERT INTO `score_models` (
+  `model_name`,
+  `scope_type`,
+  `version`,
+  `description`,
+  `normalization_method`,
+  `is_active`
+)
+VALUES (
+  'season_attribute_v1',
+  'fixture',
+  1,
+  'League/season-scoped min-max normalized attribute model built from fixture_team_features distribution',
+  'minmax',
+  0
+)
+ON DUPLICATE KEY UPDATE
+  `description` = VALUES(`description`),
+  `normalization_method` = VALUES(`normalization_method`);
+
+-- =========================================================
+-- 8) 상대평가 모델 weights
 -- =========================================================
 INSERT INTO `score_model_weights` (`model_id`, `attribute_name`, `feature_name`, `weight`)
 SELECT sm.model_id, x.attribute_name, x.feature_name, x.weight
@@ -243,6 +264,54 @@ JOIN (
   UNION ALL SELECT 'Possession', 'successful_passes_percentage', 0.20
 ) x
 WHERE sm.model_name = 'match_attribute_v1'
+  AND sm.scope_type = 'fixture'
+  AND sm.version = 1
+ON DUPLICATE KEY UPDATE
+  `weight` = VALUES(`weight`);
+
+-- =========================================================
+-- 9) 리그/시즌 정규화 모델 weights
+--    1차 버전은 match_attribute_v1과 동일 weight 사용
+-- =========================================================
+INSERT INTO `score_model_weights` (`model_id`, `attribute_name`, `feature_name`, `weight`)
+SELECT sm.model_id, x.attribute_name, x.feature_name, x.weight
+FROM `score_models` sm
+JOIN (
+  SELECT 'Attack' AS attribute_name, 'goals' AS feature_name, 0.30 AS weight
+  UNION ALL SELECT 'Attack', 'shots_on_target', 0.25
+  UNION ALL SELECT 'Attack', 'big_chances_created', 0.20
+  UNION ALL SELECT 'Attack', 'shots_total', 0.15
+  UNION ALL SELECT 'Attack', 'dangerous_attacks', 0.10
+
+  UNION ALL SELECT 'Progression', 'key_passes', 0.25
+  UNION ALL SELECT 'Progression', 'successful_passes_percentage', 0.20
+  UNION ALL SELECT 'Progression', 'successful_long_passes', 0.20
+  UNION ALL SELECT 'Progression', 'accurate_crosses', 0.15
+  UNION ALL SELECT 'Progression', 'passes', 0.20
+
+  UNION ALL SELECT 'Pressure', 'tackles', 0.30
+  UNION ALL SELECT 'Pressure', 'interceptions', 0.30
+  UNION ALL SELECT 'Pressure', 'duels_won', 0.25
+  UNION ALL SELECT 'Pressure', 'fouls', 0.15
+
+  UNION ALL SELECT 'Dominance', 'ball_possession', 0.30
+  UNION ALL SELECT 'Dominance', 'ball_safe', 0.20
+  UNION ALL SELECT 'Dominance', 'attacks', 0.20
+  UNION ALL SELECT 'Dominance', 'passes', 0.15
+  UNION ALL SELECT 'Dominance', 'goals', 0.15
+
+  UNION ALL SELECT 'Defense', 'tackles', 0.25
+  UNION ALL SELECT 'Defense', 'interceptions', 0.25
+  UNION ALL SELECT 'Defense', 'shots_blocked', 0.20
+  UNION ALL SELECT 'Defense', 'saves', 0.15
+  UNION ALL SELECT 'Defense', 'duels_won', 0.15
+
+  UNION ALL SELECT 'Possession', 'ball_possession', 0.40
+  UNION ALL SELECT 'Possession', 'passes', 0.20
+  UNION ALL SELECT 'Possession', 'successful_passes', 0.20
+  UNION ALL SELECT 'Possession', 'successful_passes_percentage', 0.20
+) x
+WHERE sm.model_name = 'season_attribute_v1'
   AND sm.scope_type = 'fixture'
   AND sm.version = 1
 ON DUPLICATE KEY UPDATE
