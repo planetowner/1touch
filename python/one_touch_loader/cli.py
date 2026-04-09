@@ -39,6 +39,11 @@ from one_touch_loader.loaders.team_scores_loader import (
     build_team_attribute_scores_for_season,
     build_team_attribute_scores_for_current_seasons,
 )
+from one_touch_loader.loaders.team_scores_season_loader import (
+    build_team_attribute_scores_season_norm_for_fixture,
+    build_team_attribute_scores_season_norm_for_season,
+    build_team_attribute_scores_season_norm_for_current_seasons,
+)
 
 USAGE = """
 Usage:
@@ -81,6 +86,10 @@ Usage:
   python -m one_touch_loader.cli team-scores fixture <fixture_id>
   python -m one_touch_loader.cli team-scores season <season_id>
   python -m one_touch_loader.cli team-scores current
+
+  python -m one_touch_loader.cli team-scores-season fixture <fixture_id>
+  python -m one_touch_loader.cli team-scores-season season <season_id>
+  python -m one_touch_loader.cli team-scores-season current
 """
 
 
@@ -289,6 +298,30 @@ def main():
         elif sub == "current" and len(sys.argv) == 3:
             build_team_attribute_scores_for_current_seasons()
             print("Team-scores current done.")
+
+        else:
+            print(USAGE)
+
+    elif cmd == "team-scores-season":
+        if len(sys.argv) < 3:
+            print(USAGE)
+            return
+
+        sub = sys.argv[2]
+
+        if sub == "fixture" and len(sys.argv) == 4:
+            fixture_id = int(sys.argv[3])
+            build_team_attribute_scores_season_norm_for_fixture(fixture_id)
+            print(f"Team-scores-season fixture done: fixture={fixture_id}")
+
+        elif sub == "season" and len(sys.argv) == 4:
+            season_id = int(sys.argv[3])
+            build_team_attribute_scores_season_norm_for_season(season_id)
+            print(f"Team-scores-season season done: season={season_id}")
+
+        elif sub == "current" and len(sys.argv) == 3:
+            build_team_attribute_scores_season_norm_for_current_seasons()
+            print("Team-scores-season current done.")
 
         else:
             print(USAGE)
