@@ -10,7 +10,6 @@ CREATE TABLE team_youtube_sources (
     source_mode VARCHAR(50) NOT NULL,
     include_title_keywords TEXT NULL,
     exclude_title_keywords TEXT NULL,
-    notes TEXT NULL,
     max_candidate_items INT NOT NULL DEFAULT 40,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NULL,

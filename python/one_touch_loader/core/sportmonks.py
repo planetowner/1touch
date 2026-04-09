@@ -116,6 +116,24 @@ class SportmonksClient:
                 break
             page += 1
 
+    def get_fixture_with_statistics(self, fixture_id: int) -> Dict:
+        """
+        단일 fixture의 팀 통계를 가져온다.
+        include=participants;statistics.type
+        """
+        return self._get(
+            f"fixtures/{fixture_id}",
+            params={"include": "participants;statistics.type"}
+        ).get("data", {}) or {}
+    
+    def get_fixture_with_statistics(self, fixture_id: int) -> Dict:
+        return self._get(
+            f"fixtures/{fixture_id}",
+            params={
+                "include": "participants;statistics.type"
+            },
+        ).get("data", {}) or {}
+
     # ----- Fixture Lineups (single fixture, heavy payload) -----
     def get_fixture_lineups(self, fixture_id: int) -> Dict:
         """
@@ -152,14 +170,6 @@ class SportmonksClient:
             if not has_more:
                 break
             page += 1
-
-    # ----- Team Squad -----
-    def get_team_squad(self, team_id: int) -> List[Dict]:
-        obj = self._get(
-            f"squads/teams/{team_id}",
-            params={"include": "player;position"},
-        )
-        return obj.get("data", [])
 
     # ----- States -----
     def get_states_map(self) -> Dict[int, str]:
