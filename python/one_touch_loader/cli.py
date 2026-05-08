@@ -29,25 +29,26 @@ from one_touch_loader.loaders.team_stats_loader import (
     refresh_fixture_team_stats_for_season,
     refresh_fixture_team_stats_for_current_seasons,
 )
-from one_touch_loader.loaders.team_features_loader import (
-    build_fixture_team_features,
-    build_fixture_team_features_for_season,
-    build_fixture_team_features_for_current_seasons,
+from one_touch_loader.loaders.team_attribute_training_features_loader import (
+    build_team_attribute_training_features_for_seasons,
+    build_current_team_attribute_training_features,
 )
-from one_touch_loader.loaders.team_scores_loader import (
-    build_team_attribute_scores_for_fixture,
-    build_team_attribute_scores_for_season,
-    build_team_attribute_scores_for_current_seasons,
+from one_touch_loader.loaders.team_attribute_regression_trainer import (
+    train_team_attribute_regression_weights,
 )
-from one_touch_loader.loaders.team_scores_season_loader import (
-    build_team_attribute_scores_season_norm_for_fixture,
-    build_team_attribute_scores_season_norm_for_season,
-    build_team_attribute_scores_season_norm_for_current_seasons,
+from one_touch_loader.loaders.team_attribute_scores_loader import (
+    build_team_attribute_group_scores,
+    build_current_team_attribute_group_scores,
 )
+from one_touch_loader.loaders.team_attribute_refresh_loader import (
+    refresh_current_team_attributes,
+)
+
 
 USAGE = """
 Usage:
   python -m one_touch_loader.cli big5
+  python -m one_touch_loader.cli big5 <league_name,league_name,...>
 
   python -m one_touch_loader.cli standings build
   python -m one_touch_loader.cli standings refresh-current
@@ -79,18 +80,18 @@ Usage:
   python -m one_touch_loader.cli team-stats current
   python -m one_touch_loader.cli team-stats current <past|live|upcoming>
 
-  python -m one_touch_loader.cli team-features fixture <fixture_id>
-  python -m one_touch_loader.cli team-features season <season_id>
-  python -m one_touch_loader.cli team-features current
-
-  python -m one_touch_loader.cli team-scores fixture <fixture_id>
-  python -m one_touch_loader.cli team-scores season <season_id>
-  python -m one_touch_loader.cli team-scores current
-
-  python -m one_touch_loader.cli team-scores-season fixture <fixture_id>
-  python -m one_touch_loader.cli team-scores-season season <season_id>
-  python -m one_touch_loader.cli team-scores-season current
+  python -m one_touch_loader.cli team-attributes build-training-features
+  python -m one_touch_loader.cli team-attributes build-current-features
+  python -m one_touch_loader.cli team-attributes train-regression
+  python -m one_touch_loader.cli team-attributes build-scores
+  python -m one_touch_loader.cli team-attributes build-current-scores
+  python -m one_touch_loader.cli team-attributes refresh-current
+  python -m one_touch_loader.cli team-attributes refresh-current --skip-fixtures
 """
+
+
+def _parse_team_ids_csv(value: str) -> list[int]:
+    return [int(x.strip()) for x in value.split(",") if x.strip()]
 
 
 def main():
@@ -102,8 +103,10 @@ def main():
 
     if cmd == "big5":
         names = None
+
         if len(sys.argv) == 3:
             names = [x.strip() for x in sys.argv[2].split(",") if x.strip()]
+
         run_big5_bootstrap(names)
         print("Big5 bootstrap done.")
 
@@ -113,18 +116,23 @@ def main():
             return
 
         sub = sys.argv[2]
+
         if sub == "build":
             build_all_standings()
             print("Standings build done.")
+
         elif sub == "refresh-current":
             refresh_current_standings()
             print("Standings refresh-current done.")
+
         elif sub == "delta" and len(sys.argv) == 6:
             lid = int(sys.argv[3])
             sid = int(sys.argv[4])
             tid = int(sys.argv[5])
+
             delta, symbol = compute_rank_delta_since_last_match(tid, lid, sid)
             print(f"team {tid} @ league {lid} season {sid}: delta={delta} {symbol}")
+
         else:
             print(USAGE)
 
@@ -134,25 +142,32 @@ def main():
             return
 
         sub = sys.argv[2]
+
         if sub == "build":
             build_points_pace_all()
             print("Points pace build done.")
+
         elif sub == "refresh-current":
             refresh_points_pace_current()
             print("Points pace refresh-current done.")
+
         else:
             print(USAGE)
 
     elif cmd == "highlights":
         team_ids = None
+
         if len(sys.argv) >= 3 and sys.argv[2] == "refresh":
             if len(sys.argv) == 4:
-                team_ids = [int(x.strip()) for x in sys.argv[3].split(",") if x.strip()]
+                team_ids = _parse_team_ids_csv(sys.argv[3])
+
             refresh_highlights(team_ids)
             print("Highlights refresh done.")
+
         elif len(sys.argv) == 2:
             refresh_highlights()
             print("Highlights refresh done.")
+
         else:
             print(USAGE)
 
@@ -165,8 +180,10 @@ def main():
 
         if sub == "refresh-current":
             team_ids = None
+
             if len(sys.argv) == 4:
-                team_ids = [int(x.strip()) for x in sys.argv[3].split(",") if x.strip()]
+                team_ids = _parse_team_ids_csv(sys.argv[3])
+
             refresh_current_injuries(team_ids)
             print("Injuries refresh-current done.")
 
@@ -182,12 +199,16 @@ def main():
         if len(sys.argv) >= 3 and sys.argv[2] == "--full":
             full_build_best_eleven()
             print("Best-eleven full build done.")
+
         elif len(sys.argv) >= 3 and sys.argv[2] == "validate":
             validate_best_eleven()
+
         else:
             days = 2
+
             if len(sys.argv) >= 4 and sys.argv[2] == "--days":
                 days = int(sys.argv[3])
+
             refresh_best_eleven(lookback_days=days)
             print("Best-eleven refresh done.")
 
@@ -200,8 +221,10 @@ def main():
 
         if sub == "refresh-current":
             team_ids = None
+
             if len(sys.argv) == 4:
-                team_ids = [int(x.strip()) for x in sys.argv[3].split(",") if x.strip()]
+                team_ids = _parse_team_ids_csv(sys.argv[3])
+
             refresh_current_transfers(team_ids)
             print("Transfers refresh-current done.")
 
@@ -233,9 +256,11 @@ def main():
         elif sub == "season" and len(sys.argv) == 5:
             season_id = int(sys.argv[3])
             only_status = sys.argv[4].strip().lower()
+
             if only_status not in {"past", "live", "upcoming"}:
                 print(USAGE)
                 return
+
             refresh_fixture_team_stats_for_season(season_id, only_status=only_status)
             print(f"Team-stats season done: season={season_id} status={only_status}")
 
@@ -245,83 +270,58 @@ def main():
 
         elif sub == "current" and len(sys.argv) == 4:
             only_status = sys.argv[3].strip().lower()
+
             if only_status not in {"past", "live", "upcoming"}:
                 print(USAGE)
                 return
+
             refresh_fixture_team_stats_for_current_seasons(only_status=only_status)
             print(f"Team-stats current done: status={only_status}")
 
         else:
             print(USAGE)
 
-    elif cmd == "team-features":
+    elif cmd == "team-attributes":
         if len(sys.argv) < 3:
             print(USAGE)
             return
 
         sub = sys.argv[2]
 
-        if sub == "fixture" and len(sys.argv) == 4:
-            fixture_id = int(sys.argv[3])
-            build_fixture_team_features(fixture_id)
-            print(f"Team-features fixture done: fixture={fixture_id}")
+        if sub == "build-training-features" and len(sys.argv) == 3:
+            count = build_team_attribute_training_features_for_seasons()
+            print(f"Team-attributes training features done: rows={count}")
 
-        elif sub == "season" and len(sys.argv) == 4:
-            season_id = int(sys.argv[3])
-            build_fixture_team_features_for_season(season_id)
-            print(f"Team-features season done: season={season_id}")
+        elif sub == "build-current-features" and len(sys.argv) == 3:
+            count = build_current_team_attribute_training_features()
+            print(f"Team-attributes current training features done: rows={count}")
 
-        elif sub == "current" and len(sys.argv) == 3:
-            build_fixture_team_features_for_current_seasons()
-            print("Team-features current done.")
+        elif sub == "train-regression" and len(sys.argv) == 3:
+            model_id = train_team_attribute_regression_weights()
+            print(f"Team-attributes regression training done: model_id={model_id}")
 
-        else:
-            print(USAGE)
+        elif sub == "build-scores" and len(sys.argv) == 3:
+            count = build_team_attribute_group_scores()
+            print(f"Team-attributes group scores done: rows={count}")
 
-    elif cmd == "team-scores":
-        if len(sys.argv) < 3:
-            print(USAGE)
-            return
+        elif sub == "build-current-scores" and len(sys.argv) == 3:
+            count = build_current_team_attribute_group_scores()
+            print(f"Team-attributes current group scores done: rows={count}")
 
-        sub = sys.argv[2]
+        elif sub == "refresh-current" and len(sys.argv) in {3, 4}:
+            update_fixtures = True
 
-        if sub == "fixture" and len(sys.argv) == 4:
-            fixture_id = int(sys.argv[3])
-            build_team_attribute_scores_for_fixture(fixture_id)
-            print(f"Team-scores fixture done: fixture={fixture_id}")
+            if len(sys.argv) == 4:
+                flag = sys.argv[3].strip().lower()
 
-        elif sub == "season" and len(sys.argv) == 4:
-            season_id = int(sys.argv[3])
-            build_team_attribute_scores_for_season(season_id)
-            print(f"Team-scores season done: season={season_id}")
+                if flag == "--skip-fixtures":
+                    update_fixtures = False
+                else:
+                    print(USAGE)
+                    return
 
-        elif sub == "current" and len(sys.argv) == 3:
-            build_team_attribute_scores_for_current_seasons()
-            print("Team-scores current done.")
-
-        else:
-            print(USAGE)
-
-    elif cmd == "team-scores-season":
-        if len(sys.argv) < 3:
-            print(USAGE)
-            return
-
-        sub = sys.argv[2]
-
-        if sub == "fixture" and len(sys.argv) == 4:
-            fixture_id = int(sys.argv[3])
-            build_team_attribute_scores_season_norm_for_fixture(fixture_id)
-            print(f"Team-scores-season fixture done: fixture={fixture_id}")
-
-        elif sub == "season" and len(sys.argv) == 4:
-            season_id = int(sys.argv[3])
-            build_team_attribute_scores_season_norm_for_season(season_id)
-            print(f"Team-scores-season season done: season={season_id}")
-
-        elif sub == "current" and len(sys.argv) == 3:
-            build_team_attribute_scores_season_norm_for_current_seasons()
-            print("Team-scores-season current done.")
+            result = refresh_current_team_attributes(update_fixtures=update_fixtures)
+            print(f"Team-attributes refresh-current done: {result}")
 
         else:
             print(USAGE)
