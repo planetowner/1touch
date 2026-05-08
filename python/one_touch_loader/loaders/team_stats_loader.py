@@ -242,14 +242,32 @@ def refresh_fixture_team_stats_for_season(
     fixture_ids = [int(row[0]) for row in fixture_rows]
     total = 0
 
+    failed_fixture_ids = []
+
     for fixture_id in fixture_ids:
-        refresh_fixture_team_stats(fixture_id)
-        total += 1
+        try:
+            refresh_fixture_team_stats(fixture_id)
+            total += 1
+        except Exception as e:
+            failed_fixture_ids.append(fixture_id)
+            print(
+                f"[team-stats][ERROR] fixture {fixture_id} failed: "
+                f"{type(e).__name__}: {e}"
+            )
+            continue
 
     print(
         f"[team-stats] season {season_id}: "
-        f"fixtures_processed={total} status_filter={only_status or 'ALL'}"
+        f"fixtures_processed={total} "
+        f"fixtures_failed={len(failed_fixture_ids)} "
+        f"status_filter={only_status or 'ALL'}"
     )
+
+    if failed_fixture_ids:
+        print(
+            "[team-stats][failed_fixture_ids] "
+            + ",".join(str(x) for x in failed_fixture_ids)
+        )
 
 
 def refresh_fixture_team_stats_for_current_seasons(
