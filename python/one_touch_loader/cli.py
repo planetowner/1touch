@@ -6,6 +6,11 @@ from one_touch_loader.loaders.standings_loader import (
     refresh_current_standings,
     compute_rank_delta_since_last_match,
 )
+from one_touch_loader.loaders.xg_standings_loader import (
+    build_all_xg_standings,
+    refresh_current_xg_standings,
+    build_xg_standings_for_season,
+)
 from one_touch_loader.loaders.points_pace import (
     build_points_pace_all,
     refresh_points_pace_current,
@@ -53,6 +58,10 @@ Usage:
   python -m one_touch_loader.cli standings build
   python -m one_touch_loader.cli standings refresh-current
   python -m one_touch_loader.cli standings delta <league_id> <season_id> <team_id>
+
+  python -m one_touch_loader.cli xg-standings build
+  python -m one_touch_loader.cli xg-standings refresh-current
+  python -m one_touch_loader.cli xg-standings season <league_id> <season_id>
 
   python -m one_touch_loader.cli points-pace build
   python -m one_touch_loader.cli points-pace refresh-current
@@ -132,6 +141,39 @@ def main():
 
             delta, symbol = compute_rank_delta_since_last_match(tid, lid, sid)
             print(f"team {tid} @ league {lid} season {sid}: delta={delta} {symbol}")
+
+        else:
+            print(USAGE)
+
+    elif cmd == "xg-standings":
+        if len(sys.argv) < 3:
+            print(USAGE)
+            return
+
+        sub = sys.argv[2]
+
+        if sub == "build":
+            rows = build_all_xg_standings()
+            print(f"xG standings build done. rows={rows}")
+
+        elif sub == "refresh-current":
+            rows = refresh_current_xg_standings()
+            print(f"xG standings refresh-current done. rows={rows}")
+
+        elif sub == "season" and len(sys.argv) == 5:
+            league_id = int(sys.argv[3])
+            season_id = int(sys.argv[4])
+
+            rows = build_xg_standings_for_season(
+                league_id,
+                season_id,
+                no_cache=True,
+            )
+
+            print(
+                f"xG standings season done: "
+                f"league_id={league_id} season_id={season_id} rows={rows}"
+            )
 
         else:
             print(USAGE)
