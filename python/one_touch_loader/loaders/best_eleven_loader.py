@@ -7,7 +7,7 @@ Best Eleven loader
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Set, Tuple
 
 from ..core.db import fetch_all, upsert_many, execute
 from ..core.sportmonks import SportmonksClient
@@ -124,34 +124,26 @@ INSERT INTO team_best_eleven (
 # helpers
 # ---------------------------------------------------------------------------
 
-def _safe_int(v) -> Optional[int]:
-    try:
-        return int(v) if v is not None else None
-    except Exception:
-        return None
-
-
-def _player_display_name(player: Dict) -> str:
-    return (
-        player.get("display_name")
-        or player.get("common_name")
-        or player.get("name")
-        or f"player:{player.get('id', '?')}"
-    )
-
-
 MINUTES_PLAYED_TYPE_ID = 119  # Sportmonks type_id for "Minutes Played"
+STARTING_LINEUP_TYPE_ID = 11
 
-def _extract_minutes_played(details: list) -> int:
-    """lineups.details 배열에서 Minutes Played 값을 꺼낸다.
-    Sportmonks는 details에 type 객체를 포함하지 않고 type_id만 내려주므로
-    type_id=119 (Minutes Played) 로 직접 매칭한다.
+
+def _extract_minutes_played(details: list, *, require_minutes: bool) -> int | None:
     """
-    for d in details or []:
-        if d.get("type_id") == MINUTES_PLAYED_TYPE_ID:
-            val = d.get("data", {}).get("value") if isinstance(d.get("data"), dict) else d.get("value")
-            return _safe_int(val) or 0
-    return 0
+    Sportmonks v3 lineup details에서 minutes played를 읽는다.
+
+    확인된 구조:
+      detail["type_id"] == 119
+      detail["data"]["value"] = minutes played
+    """
+    for detail in details:
+        if detail["type_id"] == MINUTES_PLAYED_TYPE_ID:
+            return int(detail["data"]["value"])
+
+    if require_minutes:
+        raise RuntimeError("Starting lineup player is missing minutes played detail type_id=119.")
+
+    return None
 
 
 def _parse_formation_to_expected_slots(formation: str) -> List[str]:
@@ -162,20 +154,13 @@ def _parse_formation_to_expected_slots(formation: str) -> List[str]:
     """
     parts = formation.split("-")
     slots = ["1:1"]  # GK
+
     for row_idx, count_str in enumerate(parts, start=2):
         count = int(count_str)
         for col in range(1, count + 1):
             slots.append(f"{row_idx}:{col}")
+
     return slots
-
-
-def _formation_field_sort_key(field: str) -> Tuple[int, int]:
-    """formation_field "row:col" → (row, col) 로 정렬 키를 만든다."""
-    try:
-        parts = field.split(":")
-        return (int(parts[0]), int(parts[1]))
-    except Exception:
-        return (99, 99)
 
 
 # ---------------------------------------------------------------------------
@@ -188,60 +173,70 @@ def fetch_and_store_lineups(fixture_id: int, season_id: int, sm: SportmonksClien
     반환: 이 경기에 참여한 team_id set
     """
     data = sm.get_fixture_lineups(fixture_id)
-    if not data:
-        return set()
 
     team_ids: Set[int] = set()
 
     # --- formations ---
-    formations = data.get("formations") or []
+    formations = data["formations"]
     formation_rows = []
-    for fm in formations:
-        tid = _safe_int(fm.get("participant_id")) or _safe_int(fm.get("team_id"))
-        formation = fm.get("formation")
-        if tid and formation:
-            formation_rows.append((fixture_id, season_id, tid, formation))
-            team_ids.add(tid)
+
+    for formation_entry in formations:
+        team_id = int(formation_entry["participant_id"])
+        formation = formation_entry["formation"]
+
+        formation_rows.append((fixture_id, season_id, team_id, formation))
+        team_ids.add(team_id)
 
     if formation_rows:
         upsert_many(SQL_UPSERT_FORMATION, formation_rows)
 
     # --- lineups ---
-    lineups = data.get("lineups") or []
+    lineups = data["lineups"]
     lineup_rows = []
+
     for entry in lineups:
-        tid = _safe_int(entry.get("team_id"))
-        pid = _safe_int(entry.get("player_id"))
-        type_id = _safe_int(entry.get("type_id"))
-        if not tid or not pid or type_id is None:
-            continue
+        team_id = int(entry["team_id"])
+        player_id = int(entry["player_id"])
+        type_id = int(entry["type_id"])
 
-        team_ids.add(tid)
+        player = entry["player"]
+        position = entry["position"]
+        detailed_position = entry["detailedposition"]
+        details = entry["details"]
 
-        player = entry.get("player") or {}
-        position = entry.get("position") or {}
-        detailed_pos = entry.get("detailedposition") or entry.get("detailedPosition") or {}
-        details = entry.get("details") or []
+        is_starter = type_id == STARTING_LINEUP_TYPE_ID
+        minutes_played = _extract_minutes_played(
+            details,
+            require_minutes=is_starter,
+        )
 
-        lineup_rows.append((
-            fixture_id,
-            season_id,
-            tid,
-            pid,
-            _player_display_name(player),
-            player.get("image_path"),
-            _safe_int(position.get("id")) or _safe_int(entry.get("position_id")),
-            position.get("name"),
-            detailed_pos.get("name"),
-            entry.get("formation_field"),
-            type_id,
-            _extract_minutes_played(details),
-        ))
+        team_ids.add(team_id)
+
+        lineup_rows.append(
+            (
+                fixture_id,
+                season_id,
+                team_id,
+                player_id,
+                player["display_name"],
+                player["image_path"],
+                int(entry["position_id"]),
+                position["name"],
+                detailed_position["name"] if detailed_position is not None else None,
+                entry["formation_field"],
+                type_id,
+                minutes_played,
+            )
+        )
 
     if lineup_rows:
         upsert_many(SQL_UPSERT_LINEUP, lineup_rows)
 
-    print(f"  [lineup] fixture {fixture_id}: formations={len(formation_rows)} lineups={len(lineup_rows)}")
+    print(
+        f"  [lineup] fixture {fixture_id}: "
+        f"formations={len(formation_rows)} lineups={len(lineup_rows)}"
+    )
+
     return team_ids
 
 
@@ -261,20 +256,20 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
     if not rows:
         print(f"  [best11] team {team_id} season {season_id}: no formations found, skip")
         return
+
     formation = rows[0][0]
     formation_count = rows[0][1]
 
     # Step 2: 해당 포메이션을 쓴 경기 IDs
     fix_rows = fetch_all(SQL_FIXTURE_IDS_WITH_FORMATION, (team_id, season_id, formation))
     fixture_ids = [int(r[0]) for r in fix_rows]
+
     if not fixture_ids:
         return
 
     # Step 3: slot별 랭킹
     placeholders = ",".join(["%s"] * len(fixture_ids))
     sql = SQL_SLOT_RANKING.replace("{placeholders}", placeholders)
-    params = (team_id, season_id, 11, *fixture_ids)
-    # SQL_SLOT_RANKING 에서 type_id = 11 은 이미 하드코딩 되어 있으므로 params 재조정
     params = (team_id, season_id, *fixture_ids)
     ranking_rows = fetch_all(sql, params)
 
@@ -282,11 +277,13 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
     # r = (formation_field, player_id, player_name, player_image,
     #      position_id, position_name, detailed_position_name, starts, total_minutes)
     from collections import defaultdict
+
     slot_candidates: Dict[str, List[Tuple]] = defaultdict(list)
-    for r in ranking_rows:
-        slot = r[0]
+
+    for row in ranking_rows:
+        slot = row[0]
         if slot:
-            slot_candidates[slot].append(r)
+            slot_candidates[slot].append(row)
 
     # 포메이션에서 expected slot 목록 계산
     expected_slots = _parse_formation_to_expected_slots(formation)
@@ -297,60 +294,48 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
 
     for slot in expected_slots:
         for candidate in slot_candidates.get(slot, []):
-            pid = int(candidate[1])
-            if pid not in used_player_ids:
+            player_id = int(candidate[1])
+
+            if player_id not in used_player_ids:
                 best[slot] = candidate
-                used_player_ids.add(pid)
+                used_player_ids.add(player_id)
                 break
 
-    # fallback: 빈 slot이 있으면 같은 row의 다른 slot 후보 중에서 채우기
-    for slot in expected_slots:
-        if slot in best:
-            continue
-        row = slot.split(":")[0]
-        # 같은 row에 속한 모든 후보를 모아서 시도
-        row_candidates = []
-        for s, candidates in slot_candidates.items():
-            if s.startswith(f"{row}:"):
-                row_candidates.extend(candidates)
-        # starts DESC, total_minutes DESC 정렬
-        row_candidates.sort(key=lambda x: (-int(x[7]), -int(x[8])))
-        for candidate in row_candidates:
-            pid = int(candidate[1])
-            if pid not in used_player_ids:
-                best[slot] = candidate
-                used_player_ids.add(pid)
-                break
-
-    if not best:
-        print(f"  [best11] team {team_id} season {season_id}: no starters found, skip")
-        return
-
-    # Step 4: DB 저장 (delete-insert)
+    # 기존 row 제거 후 새 결과 저장
     execute(SQL_DELETE_BEST_ELEVEN, (team_id, season_id))
 
     insert_rows = []
-    for idx, slot_key in enumerate(expected_slots):
+
+    for index, slot_key in enumerate(expected_slots):
         if slot_key not in best:
             continue
-        r = best[slot_key]
-        insert_rows.append((
-            team_id, season_id, formation, slot_key, idx,
-            int(r[1]),   # player_id
-            r[2],        # player_name
-            r[3],        # player_image
-            r[5],        # position_name
-            r[6],        # detailed_position_name
-            int(r[7]),   # starts
-            int(r[8]),   # total_minutes
-        ))
+
+        row = best[slot_key]
+
+        insert_rows.append(
+            (
+                team_id,
+                season_id,
+                formation,
+                slot_key,
+                index,
+                int(row[1]),   # player_id
+                row[2],        # player_name
+                row[3],        # player_image
+                row[5],        # position_name
+                row[6],        # detailed_position_name
+                int(row[7]),   # starts
+                int(row[8]),   # total_minutes
+            )
+        )
 
     if insert_rows:
         upsert_many(SQL_INSERT_BEST_ELEVEN, insert_rows)
 
     slot_count = len(insert_rows)
-    missing = [s for s in expected_slots if s not in best]
+    missing = [slot for slot in expected_slots if slot not in best]
     warn = f" ⚠ missing slots: {missing}" if missing else ""
+
     print(
         f"  [best11] team {team_id} season {season_id}: "
         f"formation={formation} (used {formation_count}x), slots={slot_count}/11{warn}"
@@ -367,6 +352,7 @@ def refresh_best_eleven(lookback_days: int = 2) -> None:
     영향받은 팀만 Best Eleven을 재계산한다.
     """
     rows = fetch_all(SQL_RECENTLY_FINISHED_WITHOUT_LINEUP, (lookback_days,))
+
     if not rows:
         print("[best11] no new finished fixtures to process")
         return
@@ -377,21 +363,24 @@ def refresh_best_eleven(lookback_days: int = 2) -> None:
     for fixture_id, season_id, home_id, away_id in rows:
         try:
             team_ids = fetch_and_store_lineups(int(fixture_id), int(season_id), sm)
-            for tid in team_ids:
-                affected[tid] = int(season_id)
-        except Exception as e:
-            print(f"  [best11] ERROR fixture {fixture_id}: {e}")
+
+            for team_id in team_ids:
+                affected[team_id] = int(season_id)
+
+        except Exception as error:
+            print(f"  [best11] ERROR fixture {fixture_id}: {error}")
             continue
 
     print(f"[best11] lineups fetched: fixtures={len(rows)}, affected teams={len(affected)}")
 
-    for tid, sid in affected.items():
+    for team_id, season_id in affected.items():
         try:
-            compute_best_eleven(tid, sid)
-        except Exception as e:
-            print(f"  [best11] ERROR compute team {tid}: {e}")
+            compute_best_eleven(team_id, season_id)
 
-    print(f"[best11] refresh done")
+        except Exception as error:
+            print(f"  [best11] ERROR compute team {team_id}: {error}")
+
+    print("[best11] refresh done")
 
 
 def full_build_best_eleven() -> None:
@@ -400,6 +389,7 @@ def full_build_best_eleven() -> None:
     초기 구축용.
     """
     rows = fetch_all(SQL_ALL_PAST_WITHOUT_LINEUP)
+
     if not rows:
         print("[best11] no past fixtures without lineups")
         return
@@ -408,27 +398,30 @@ def full_build_best_eleven() -> None:
     affected: Dict[int, int] = {}
     total = len(rows)
 
-    for i, (fixture_id, season_id, home_id, away_id) in enumerate(rows, 1):
+    for index, (fixture_id, season_id, home_id, away_id) in enumerate(rows, 1):
         try:
             team_ids = fetch_and_store_lineups(int(fixture_id), int(season_id), sm)
-            for tid in team_ids:
-                affected[tid] = int(season_id)
-        except Exception as e:
-            print(f"  [best11] ERROR fixture {fixture_id}: {e}")
+
+            for team_id in team_ids:
+                affected[team_id] = int(season_id)
+
+        except Exception as error:
+            print(f"  [best11] ERROR fixture {fixture_id}: {error}")
             continue
 
-        if i % 50 == 0:
-            print(f"[best11] lineups progress: {i}/{total}")
+        if index % 50 == 0:
+            print(f"[best11] lineups progress: {index}/{total}")
 
     print(f"[best11] lineups done: fixtures={total}, affected teams={len(affected)}")
 
-    for tid, sid in affected.items():
+    for team_id, season_id in affected.items():
         try:
-            compute_best_eleven(tid, sid)
-        except Exception as e:
-            print(f"  [best11] ERROR compute team {tid}: {e}")
+            compute_best_eleven(team_id, season_id)
 
-    print(f"[best11] full build done")
+        except Exception as error:
+            print(f"  [best11] ERROR compute team {team_id}: {error}")
+
+    print("[best11] full build done")
 
 
 # ---------------------------------------------------------------------------
@@ -443,48 +436,68 @@ def validate_best_eleven() -> None:
     3) starter인데 total_minutes = 0
     """
     # 1) slot count 검사
-    groups = fetch_all("""
+    groups = fetch_all(
+        """
         SELECT team_id, season_id, formation, COUNT(*) as cnt
         FROM team_best_eleven
         GROUP BY team_id, season_id, formation
-    """)
+        """
+    )
+
     incomplete = []
-    for team_id, season_id, formation, cnt in groups:
+
+    for team_id, season_id, formation, count in groups:
         expected = _parse_formation_to_expected_slots(str(formation))
-        if int(cnt) < len(expected):
-            incomplete.append((team_id, season_id, formation, int(cnt), len(expected)))
+
+        if int(count) < len(expected):
+            incomplete.append((team_id, season_id, formation, int(count), len(expected)))
 
     print(f"[validate] 1) Incomplete teams: {len(incomplete)} / {len(groups)}")
-    for tid, sid, fm, actual, expected in incomplete[:10]:
-        print(f"  team={tid} season={sid} formation={fm}: {actual}/{expected} slots")
+
+    for team_id, season_id, formation, actual, expected in incomplete[:10]:
+        print(f"  team={team_id} season={season_id} formation={formation}: {actual}/{expected} slots")
+
     if len(incomplete) > 10:
         print(f"  ... and {len(incomplete) - 10} more")
 
     # 2) GK (1:1) 존재 여부
-    no_gk = fetch_all("""
+    no_gk = fetch_all(
+        """
         SELECT team_id, season_id, formation
         FROM team_best_eleven
         GROUP BY team_id, season_id, formation
         HAVING SUM(CASE WHEN slot_key = '1:1' THEN 1 ELSE 0 END) = 0
-    """)
+        """
+    )
+
     print(f"\n[validate] 2) Teams without GK (1:1): {len(no_gk)}")
-    for r in no_gk[:10]:
-        print(f"  team={r[0]} season={r[1]} formation={r[2]}")
+
+    for row in no_gk[:10]:
+        print(f"  team={row[0]} season={row[1]} formation={row[2]}")
 
     # 3) total_minutes = 0
-    zero_min = fetch_all("""
+    zero_min = fetch_all(
+        """
         SELECT team_id, season_id, slot_key, player_name, starts, total_minutes
         FROM team_best_eleven
         WHERE total_minutes = 0
         ORDER BY starts DESC
-    """)
+        """
+    )
+
     print(f"\n[validate] 3) Rows with total_minutes=0: {len(zero_min)}")
-    for r in zero_min[:10]:
-        print(f"  team={r[0]} season={r[1]} slot={r[2]} player={r[3]} starts={r[4]}")
+
+    for row in zero_min[:10]:
+        print(
+            f"  team={row[0]} season={row[1]} "
+            f"slot={row[2]} player={row[3]} starts={row[4]}"
+        )
+
     if len(zero_min) > 10:
         print(f"  ... and {len(zero_min) - 10} more")
 
     # summary
     total_teams = len(groups)
     ok_teams = total_teams - len(incomplete)
+
     print(f"\n[validate] Summary: {ok_teams}/{total_teams} teams fully complete")
