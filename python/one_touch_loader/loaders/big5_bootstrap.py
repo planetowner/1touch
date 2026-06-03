@@ -1,17 +1,18 @@
 # python/one_touch_loader/loaders/big5_bootstrap.py
 from __future__ import annotations
 
-from typing import Dict, Iterable, List, Optional, Tuple, Set, DefaultDict
 from collections import defaultdict
 from datetime import datetime
+from typing import DefaultDict, Dict, Iterable, List, Optional, Set, Tuple
 
-from ..core.db import upsert_many, fetch_all
+from ..core.db import execute, upsert_many
 from ..core.sportmonks import SportmonksClient
-from ..core.db import execute
+
 
 # =========================
 # Upsert SQL
 # =========================
+
 SQL_UPSERT_LEAGUE = """
 INSERT INTO leagues (league_id, name, image_path)
 VALUES (%s, %s, %s)
@@ -40,8 +41,6 @@ ON DUPLICATE KEY UPDATE
   image_path = VALUES(image_path)
 """
 
-# fixtures: stage/group 메타 + 승부차기 스코어 포함 버전
-# fixtures: stage/group 메타 + 승부차기 스코어 포함 버전
 SQL_UPSERT_FIXTURE = """
 INSERT INTO fixtures (
   fixture_id, season_id, league_id,
@@ -70,7 +69,6 @@ ON DUPLICATE KEY UPDATE
   away_penalty_score = VALUES(away_penalty_score)
 """
 
-# stage / group 메타
 SQL_UPSERT_STAGE = """
 INSERT INTO stages (stage_id, league_id, season_id, type_id, name)
 VALUES (%s, %s, %s, %s, %s)
@@ -91,586 +89,875 @@ ON DUPLICATE KEY UPDATE
   name=VALUES(name)
 """
 
+
 # =========================
 # Constants
 # =========================
-BIG5_NAMES = ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"]
 
-# 리그 ID들
+BIG5_NAME_TO_LEAGUE_ID = {
+    "Premier League": 8,
+    "Bundesliga": 82,
+    "Ligue 1": 301,
+    "Serie A": 384,
+    "La Liga": 564,
+}
+
 BIG5_LEAGUE_IDS = [8, 82, 301, 384, 564]
-EURO_LEAGUE_IDS = [2, 5, 2286]               # UCL, UEL, UECL
-DOMESTIC_CUP_LEAGUE_IDS = [24, 27, 390, 570] # FA, EFL, Coppa Italia, Copa del Rey
+EURO_LEAGUE_IDS = [2, 5, 2286]
+DOMESTIC_CUP_LEAGUE_IDS = [24, 27, 390, 570]
 
-STAGE_TYPE_GROUP = 223
-STAGE_TYPE_KNOCKOUT = 224
-STAGE_TYPE_QUALIFY = 225
+MIN_SEASON_START_YEAR = 2017
+MAX_SEASON_START_YEAR = 2025
 
-# =========================
-# Utilities
-# =========================
-def _pick_best_league(search_results: List[Dict], query: str) -> Optional[Dict]:
-    """
-    검색 결과에서 가장 적합해 보이는 리그를 하나 고른다.
-    (서브타입/이름 매칭 점수 기반)
-    """
-    q = (query or "").lower()
-    candidates = []
-    for x in search_results:
-        name = (x.get("name") or "").lower()
-        t = x.get("type")
-        st = (x.get("sub_type") or "").lower()
-        score = 0
-        if t == "league": score += 2
-        if q in name: score += 3
-        if st == "domestic": score += 2  # 국내 리그 가산점
-        if "play" in st: score -= 2      # 플레이오프/플레이아웃 감점
-        candidates.append((score, x))
-    if not candidates:
-        return None
-    candidates.sort(key=lambda p: p[0], reverse=True)
-    return candidates[0][1]
+SCORE_CURRENT_TYPE_ID = 1525
+SCORE_PENALTY_SHOOTOUT_TYPE_ID = 5
 
-def _coerce_list(obj) -> list:
-    if obj is None: return []
-    if isinstance(obj, list): return obj
-    if isinstance(obj, dict) and "data" in obj and isinstance(obj["data"], list):
-        return obj["data"]
-    return []
+STATE_TO_STATUS = {
+    "FT": "past",
+    "AET": "past",
+    "FT_PEN": "past",
+    "AWARDED": "past",
+    "ABANDONED": "past",
+    "POSTPONED": "upcoming",
+    "CANCELLED": "past",
+}
 
-def _normalize_dt(s: Optional[str]) -> Optional[str]:
-    if not s: return None
-    try:
-        s2 = s.replace("Z", "+00:00")
-        dt = datetime.fromisoformat(s2).replace(tzinfo=None)
-        return dt.strftime("%Y-%m-%d %H:%M:%S")
-    except Exception:
-        s3 = s.replace("T", " ").replace("Z", "")
-        if "+" in s3:
-            s3 = s3.split("+", 1)[0]
-        elif len(s3) >= 6 and s3[-6] in "+-" and s3[-3] == ":":
-            s3 = s3[:-6]
-        return s3[:19]
+STATES_ALLOWING_EMPTY_SCORES = {
+    "POSTPONED",
+    "CANCELLED",
+}
 
-def _parse_iso_to_dt(s: Optional[str]) -> Optional[datetime]:
-    if not s: return None
-    try:
-        s2 = s.replace("Z", "+00:00")
-        return datetime.fromisoformat(s2).replace(tzinfo=None)
-    except Exception:
-        try:
-            s3 = s.replace("T", " ").replace("Z", "")
-            if "+" in s3:
-                s3 = s3.split("+", 1)[0]
-            elif len(s3) >= 6 and s3[-6] in "+-" and s3[-3] == ":":
-                s3 = s3[:-6]
-            return datetime.fromisoformat(s3[:19])
-        except Exception:
-            return None
+LEAGUE_SUB_TYPE_TO_COMPETITION = {
+    "domestic": "league",
+    "domestic_cup": "domestic_cup",
+    "cup_international": "europe",
+}
 
-def _parse_leg_to_int(leg) -> Optional[int]:
-    if leg is None:
-        return None
-    if isinstance(leg, int):
-        return leg
-    if isinstance(leg, str):
-        s = leg.strip()
-        if "/" in s and s.split("/", 1)[0].strip().isdigit():
-            return int(s.split("/", 1)[0].strip())
-        if s.isdigit():
-            return int(s)
-    return None
-
-def _safe_round_name(fx: Dict) -> str:
-    """
-    round_name 보정: round.name -> stage.name -> group.name -> fx.name -> "Round {round_id}" -> "Unknown"
-    """
-    rnd = fx.get("round")
-    if isinstance(rnd, dict):
-        name = rnd.get("name") or (rnd.get("data") or {}).get("name")
-        if isinstance(name, str) and name.strip():
-            return name.strip()
-    stg = fx.get("stage")
-    if isinstance(stg, dict):
-        name = stg.get("name") or (stg.get("data") or {}).get("name")
-        if isinstance(name, str) and name.strip():
-            return name.strip()
-    grp = fx.get("group")
-    if isinstance(grp, dict):
-        name = grp.get("name") or (grp.get("data") or {}).get("name")
-        if isinstance(name, str) and name.strip():
-            return name.strip()
-    fname = fx.get("name")
-    if isinstance(fname, str) and fname.strip():
-        return fname.strip()
-    rid = fx.get("round_id")
-    if isinstance(rid, int):
-        return f"Round {rid}"
-    return "Unknown"
-
-def _extract_home_away_ids(participants: List[Dict]) -> Tuple[Optional[int], Optional[int]]:
-    home = away = None
-    for p in participants or []:
-        loc = ((p.get("meta") or {}).get("location") or "").lower()
-        if loc == "home": home = p.get("id")
-        elif loc == "away": away = p.get("id")
-    return home, away
-
-def _guess_home_away_by_scores(scores: List[Dict]) -> Tuple[Optional[int], Optional[int]]:
-    home_id = away_id = None
-    for s in scores or []:
-        side = ((s.get("score") or {}).get("participant") or "").lower()
-        pid = s.get("participant_id") or s.get("team_id") or s.get("participant")
-        if side == "home" and isinstance(pid, int): home_id = pid
-        elif side == "away" and isinstance(pid, int): away_id = pid
-    return home_id, away_id
-
-def _extract_scores(scores: List[Dict]) -> Tuple[Optional[int], Optional[int]]:
-    if not scores: return None, None
-    cur_home = cur_away = None
-    last_home = last_away = None
-    for s in scores:
-        score_obj = s.get("score") or {}
-        goals = score_obj.get("goals")
-        side = (score_obj.get("participant") or "").lower()
-        desc = (s.get("description") or "").upper()
-        if side == "home" and isinstance(goals, int):
-            last_home = goals
-            if desc == "CURRENT": cur_home = goals
-        elif side == "away" and isinstance(goals, int):
-            last_away = goals
-            if desc == "CURRENT": cur_away = goals
-    if cur_home is not None and cur_away is not None: return cur_home, cur_away
-    return last_home, last_away
-
-def _extract_penalty_shootout_scores(scores: List[dict]) -> Tuple[Optional[int], Optional[int]]:
-    """
-    include=scores 에서 승부차기 최종 누계를 추출.
-    description 에 'PEN' 문자열이 포함된 항목만 집계.
-    같은 쪽은 최댓값을 채택(부분 집계 방지).
-    """
-    pen_h = pen_a = None
-    for s in scores or []:
-        desc = str(s.get("description") or "").upper()
-        if "PEN" not in desc:
-            continue
-        sc = s.get("score") or {}
-        side = str(sc.get("participant") or "").lower()
-        goals = sc.get("goals")
-        if not isinstance(goals, int):
-            continue
-        if side == "home":
-            pen_h = goals if (pen_h is None or goals > pen_h) else pen_h
-        elif side == "away":
-            pen_a = goals if (pen_a is None or goals > pen_a) else pen_a
-    return pen_h, pen_a
-
-def _map_state_to_status(state_code: Optional[str]) -> str:
-    code = (state_code or "").upper()
-    if not code: return "upcoming"
-    if code.startswith("INPLAY") or code in {"HT", "BREAK"}: return "live"
-    if code in {"NS", "TBA"} or code.startswith("POSTP") or code.startswith("DELA"): return "upcoming"
-    return "past"
-
-def _map_league_sub_type_to_competition(sub_type: Optional[str]) -> str:
-    st = (sub_type or "").lower()
-    if st == "domestic": return "league"
-    if st == "domestic_cup": return "domestic_cup"
-    if st == "cup_international": return "europe"
-    return "league"
-
-def _parse_season_start_year(name: Optional[str]) -> Optional[int]:
-    if not name: return None
-    import re
-    m = re.search(r"(\d{4})\s*[/\-–]\s*(\d{2,4})", name)
-    if not m: return None
-    return int(m.group(1))
 
 # =========================
 # Caches
 # =========================
+
 class Caches:
-    def __init__(self):
-        self.league_meta: Dict[int, Dict] = {}                              # league_id -> {name, image_path, sub_type}
-        self.league_to_seasons: DefaultDict[int, List[int]] = defaultdict(list)  # league_id -> [season_id]
-        self.season_info: Dict[int, Dict] = {}                              # season_id -> {league_id, name, start_year}
+    def __init__(self) -> None:
+        self.league_meta: Dict[int, Dict] = {}
+        self.league_to_seasons: DefaultDict[int, List[int]] = defaultdict(list)
+        self.season_info: Dict[int, Dict] = {}
+
 
 # =========================
 # DB upsert helpers
 # =========================
-def upsert_leagues_rows(rows: List[Tuple[int, str, Optional[str]]]):
-    if rows: upsert_many(SQL_UPSERT_LEAGUE, rows)
 
-def upsert_teams_rows(rows: List[Tuple[int, str, Optional[str], Optional[str]]]):
-    if rows: upsert_many(SQL_UPSERT_TEAM, rows)
+def upsert_leagues_rows(rows: List[Tuple[int, str, Optional[str]]]) -> None:
+    if rows:
+        upsert_many(SQL_UPSERT_LEAGUE, rows)
 
-def upsert_fixtures_rows(rows: List[Tuple]):
-    if rows: upsert_many(SQL_UPSERT_FIXTURE, rows)
+
+def upsert_teams_rows(rows: List[Tuple[int, str, Optional[str], Optional[str]]]) -> None:
+    if rows:
+        upsert_many(SQL_UPSERT_TEAM, rows)
+
+
+def upsert_fixtures_rows(rows: List[Tuple]) -> None:
+    if rows:
+        upsert_many(SQL_UPSERT_FIXTURE, rows)
+
+
+# =========================
+# Strict payload helpers
+# =========================
+
+def _require_non_empty_str(value, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Missing or invalid string field: {field_name}")
+    return value.strip()
+
+
+def _normalize_dt(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Invalid datetime value: {value!r}")
+
+    dt = datetime.fromisoformat(value)
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _parse_iso_to_dt(value: Optional[str]) -> Optional[datetime]:
+    if value is None:
+        return None
+
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Invalid datetime value: {value!r}")
+
+    return datetime.fromisoformat(value)
+
+
+def _season_start_year(season: Dict) -> int:
+    starting_at = _require_non_empty_str(season["starting_at"], "season.starting_at")
+    return int(starting_at[:4])
+
+
+def _parse_leg_to_int(leg) -> Optional[int]:
+    if leg is None:
+        return None
+
+    if isinstance(leg, int):
+        return leg
+
+    if isinstance(leg, str):
+        value = leg.strip()
+
+        if "/" in value:
+            first_part = value.split("/", 1)[0].strip()
+            if first_part.isdigit():
+                return int(first_part)
+
+        if value.isdigit():
+            return int(value)
+
+    raise ValueError(f"Unsupported fixture leg value: {leg!r}")
+
+
+def _map_state_to_status(state_code: str) -> str:
+    if state_code not in STATE_TO_STATUS:
+        raise ValueError(f"Unsupported fixture state: {state_code!r}")
+
+    return STATE_TO_STATUS[state_code]
+
+
+def _map_league_sub_type_to_competition(sub_type: str) -> str:
+    if sub_type not in LEAGUE_SUB_TYPE_TO_COMPETITION:
+        raise ValueError(f"Unsupported league sub_type: {sub_type!r}")
+
+    return LEAGUE_SUB_TYPE_TO_COMPETITION[sub_type]
+
+
+def _resolve_big5_league_ids(league_names: Optional[List[str]]) -> List[int]:
+    if league_names is None:
+        return BIG5_LEAGUE_IDS
+
+    league_ids = []
+
+    for name in league_names:
+        if name not in BIG5_NAME_TO_LEAGUE_ID:
+            raise ValueError(
+                f"Unsupported Big5 league name: {name!r}. "
+                f"Allowed names: {sorted(BIG5_NAME_TO_LEAGUE_ID)}"
+            )
+
+        league_ids.append(BIG5_NAME_TO_LEAGUE_ID[name])
+
+    return league_ids
+
+
+def _extract_home_away_ids(participants: List[Dict]) -> Tuple[int, int]:
+    home_id = None
+    away_id = None
+
+    for participant in participants:
+        participant_id = participant["id"]
+        location = participant["meta"]["location"]
+
+        if not isinstance(participant_id, int):
+            raise ValueError(f"Invalid participant id: {participant_id!r}")
+
+        if location == "home":
+            if home_id is not None:
+                raise ValueError("Duplicate home participant in fixture payload.")
+            home_id = participant_id
+
+        elif location == "away":
+            if away_id is not None:
+                raise ValueError("Duplicate away participant in fixture payload.")
+            away_id = participant_id
+
+        else:
+            raise ValueError(f"Unsupported participant location: {location!r}")
+
+    if home_id is None or away_id is None:
+        raise ValueError("Fixture payload must contain exactly one home and one away participant.")
+
+    return home_id, away_id
+
+
+def _extract_current_scores(
+    scores: List[Dict],
+    state_code: str,
+) -> Tuple[Optional[int], Optional[int]]:
+    current_scores = [
+        score
+        for score in scores
+        if score["description"] == "CURRENT"
+        and score["type_id"] == SCORE_CURRENT_TYPE_ID
+    ]
+
+    if not current_scores:
+        if state_code in STATES_ALLOWING_EMPTY_SCORES and not scores:
+            return None, None
+
+        raise ValueError(
+            f"Expected 2 CURRENT score rows for state={state_code!r}, "
+            f"found 0."
+        )
+
+    if len(current_scores) != 2:
+        raise ValueError(
+            f"Expected exactly 2 CURRENT score rows for state={state_code!r}, "
+            f"found {len(current_scores)}."
+        )
+
+    home_score = None
+    away_score = None
+
+    for score in current_scores:
+        side = score["score"]["participant"]
+        goals = score["score"]["goals"]
+
+        if not isinstance(goals, int):
+            raise ValueError(f"Invalid CURRENT score goals value: {goals!r}")
+
+        if side == "home":
+            if home_score is not None:
+                raise ValueError("Duplicate home CURRENT score row.")
+            home_score = goals
+
+        elif side == "away":
+            if away_score is not None:
+                raise ValueError("Duplicate away CURRENT score row.")
+            away_score = goals
+
+        else:
+            raise ValueError(f"Unsupported CURRENT score participant side: {side!r}")
+
+    if home_score is None or away_score is None:
+        raise ValueError("CURRENT score rows must include both home and away.")
+
+    return home_score, away_score
+
+
+def _extract_penalty_shootout_scores(scores: List[Dict]) -> Tuple[Optional[int], Optional[int]]:
+    penalty_scores = [
+        score
+        for score in scores
+        if score["description"] == "PENALTY_SHOOTOUT"
+        and score["type_id"] == SCORE_PENALTY_SHOOTOUT_TYPE_ID
+    ]
+
+    if not penalty_scores:
+        return None, None
+
+    if len(penalty_scores) != 2:
+        raise ValueError(f"Expected exactly 2 PENALTY_SHOOTOUT score rows, found {len(penalty_scores)}.")
+
+    home_penalty_score = None
+    away_penalty_score = None
+
+    for score in penalty_scores:
+        side = score["score"]["participant"]
+        goals = score["score"]["goals"]
+
+        if not isinstance(goals, int):
+            raise ValueError(f"Invalid PENALTY_SHOOTOUT goals value: {goals!r}")
+
+        if side == "home":
+            if home_penalty_score is not None:
+                raise ValueError("Duplicate home PENALTY_SHOOTOUT score row.")
+            home_penalty_score = goals
+
+        elif side == "away":
+            if away_penalty_score is not None:
+                raise ValueError("Duplicate away PENALTY_SHOOTOUT score row.")
+            away_penalty_score = goals
+
+        else:
+            raise ValueError(f"Unsupported PENALTY_SHOOTOUT participant side: {side!r}")
+
+    if home_penalty_score is None or away_penalty_score is None:
+        raise ValueError("PENALTY_SHOOTOUT score rows must include both home and away.")
+
+    return home_penalty_score, away_penalty_score
+
+
+def _round_name(fixture: Dict) -> str:
+    round_obj = fixture["round"]
+
+    if round_obj is not None:
+        return _require_non_empty_str(round_obj["name"], "fixture.round.name")
+
+    return _require_non_empty_str(fixture["stage"]["name"], "fixture.stage.name")
+
+
+def _fixture_group_id(fixture: Dict) -> Optional[int]:
+    group_obj = fixture["group"]
+
+    if group_obj is None:
+        return None
+
+    group_id = group_obj["id"]
+
+    if group_id != fixture["group_id"]:
+        raise ValueError(
+            f"Fixture group_id mismatch: "
+            f"fixture.group_id={fixture['group_id']!r}, group.id={group_id!r}"
+        )
+
+    if group_obj["stage_id"] != fixture["stage_id"]:
+        raise ValueError(
+            f"Fixture group stage_id mismatch: "
+            f"fixture.stage_id={fixture['stage_id']!r}, group.stage_id={group_obj['stage_id']!r}"
+        )
+
+    if group_obj["league_id"] != fixture["league_id"]:
+        raise ValueError(
+            f"Fixture group league_id mismatch: "
+            f"fixture.league_id={fixture['league_id']!r}, group.league_id={group_obj['league_id']!r}"
+        )
+
+    if group_obj["season_id"] != fixture["season_id"]:
+        raise ValueError(
+            f"Fixture group season_id mismatch: "
+            f"fixture.season_id={fixture['season_id']!r}, group.season_id={group_obj['season_id']!r}"
+        )
+
+    return group_id
+
+
+def _group_row_from_fixture(fixture: Dict) -> Optional[Tuple[int, int, int, int, str]]:
+    group_obj = fixture["group"]
+
+    if group_obj is None:
+        return None
+
+    group_id = _fixture_group_id(fixture)
+    group_name = _require_non_empty_str(group_obj["name"], "fixture.group.name")
+
+    return (
+        group_id,
+        group_obj["stage_id"],
+        group_obj["league_id"],
+        group_obj["season_id"],
+        group_name,
+    )
+
+
+def _stage_row_from_fixture(fixture: Dict, league_id: int, season_id: int) -> Tuple[int, int, int, int, str]:
+    stage = fixture["stage"]
+
+    stage_id = stage["id"]
+    stage_type_id = stage["type_id"]
+    stage_name = _require_non_empty_str(stage["name"], "fixture.stage.name")
+
+    if not isinstance(stage_id, int):
+        raise ValueError(f"Invalid stage id: {stage_id!r}")
+
+    if not isinstance(stage_type_id, int):
+        raise ValueError(f"Invalid stage type_id: {stage_type_id!r}")
+
+    return stage_id, league_id, season_id, stage_type_id, stage_name
+
+
+def _fixture_row(
+    *,
+    fixture: Dict,
+    season_id: int,
+    league_id: int,
+    competition_type: str,
+) -> Tuple:
+    participants = fixture["participants"]
+    scores = fixture["scores"]
+
+    state_code = fixture["state"]["state"]
+    status = _map_state_to_status(state_code)
+
+    home_team_id, away_team_id = _extract_home_away_ids(participants)
+    home_score, away_score = _extract_current_scores(scores, state_code)
+    home_penalty_score, away_penalty_score = _extract_penalty_shootout_scores(scores)
+
+    stage = fixture["stage"]
+    group_id = _fixture_group_id(fixture)
+
+    return (
+        fixture["id"],
+        season_id,
+        league_id,
+        home_team_id,
+        away_team_id,
+        competition_type,
+        _round_name(fixture),
+        stage["type_id"],
+        stage["id"],
+        group_id,
+        _parse_leg_to_int(fixture["leg"]),
+        status,
+        _normalize_dt(fixture["starting_at"]),
+        home_score,
+        away_score,
+        home_penalty_score,
+        away_penalty_score,
+    )
+
 
 # =========================
 # API helpers
 # =========================
-def ensure_leagues(sm: SportmonksClient, names: List[str], caches: Caches) -> None:
+
+def ensure_leagues_by_ids(
+    sm: SportmonksClient,
+    league_ids: Iterable[int],
+    caches: Caches,
+) -> None:
     rows = []
-    for name in names:
-        best = _pick_best_league(sm.search_leagues(name), name)
-        if not best: continue
-        lgid = best["id"]
-        rows.append((lgid, best.get("name"), best.get("image_path")))
-        caches.league_meta[lgid] = {
-            "name": best.get("name"),
-            "image_path": best.get("image_path"),
-            "sub_type": best.get("sub_type"),
+
+    for league_id in league_ids:
+        if league_id in caches.league_meta:
+            continue
+
+        league = sm.get_league(league_id)
+
+        league_id_from_payload = league["id"]
+        name = _require_non_empty_str(league["name"], "league.name")
+        image_path = league["image_path"]
+        sub_type = _require_non_empty_str(league["sub_type"], "league.sub_type")
+
+        if league_id_from_payload != league_id:
+            raise ValueError(
+                f"Requested league_id={league_id}, "
+                f"but Sportmonks returned id={league_id_from_payload}."
+            )
+
+        rows.append((league_id_from_payload, name, image_path))
+
+        caches.league_meta[league_id_from_payload] = {
+            "name": name,
+            "image_path": image_path,
+            "sub_type": sub_type,
         }
+
     upsert_leagues_rows(rows)
     print(f"[leagues] upserted: {len(rows)}")
 
-def ensure_leagues_by_ids(sm: SportmonksClient, league_ids: Iterable[int], caches: Caches):
-    rows = []
-    for lid in league_ids:
-        if lid in caches.league_meta: continue
-        info = sm.get_league(lid)
-        if not info: continue
-        rows.append((info["id"], info.get("name"), info.get("image_path")))
-        caches.league_meta[info["id"]] = {
-            "name": info.get("name"),
-            "image_path": info.get("image_path"),
-            "sub_type": info.get("sub_type"),
-        }
-    upsert_leagues_rows(rows)
 
-def upsert_current_and_historical_seasons(sm: SportmonksClient, caches: Caches):
-    """
-    BIG5 리그의 17/18~현재 시즌 upsert + 캐시 구축
-    """
+def upsert_current_and_historical_seasons(
+    sm: SportmonksClient,
+    caches: Caches,
+) -> None:
     rows = []
     total = 0
-    for lgid in list(caches.league_meta.keys()):
-        league = sm.get_league_with_seasons(lgid)
-        seasons = _coerce_list(league.get("seasons"))
-        for s in seasons:
-            year = int((s.get("starting_at") or "0000")[:4]) if (s.get("starting_at") or "")[:4].isdigit() \
-                   else _parse_season_start_year(s.get("name"))
-            if year is None or year < 2017 or year > 2025:
+
+    for league_id in list(caches.league_meta.keys()):
+        league = sm.get_league_with_seasons(league_id)
+        seasons = league["seasons"]
+
+        if not isinstance(seasons, list):
+            raise ValueError(f"Expected league.seasons to be list for league_id={league_id}.")
+
+        for season in seasons:
+            start_year = _season_start_year(season)
+
+            if start_year < MIN_SEASON_START_YEAR or start_year > MAX_SEASON_START_YEAR:
                 continue
-            sid = s["id"]
-            rows.append((
-                sid, lgid, s.get("name"),
-                bool(s.get("is_current")),
-                _normalize_dt(s.get("starting_at")),
-                _normalize_dt(s.get("ending_at")),
-            ))
-            caches.league_to_seasons[lgid].append(sid)
-            caches.season_info[sid] = {"league_id": lgid, "name": s.get("name"), "start_year": year}
+
+            season_id = season["id"]
+
+            rows.append(
+                (
+                    season_id,
+                    league_id,
+                    season["name"],
+                    bool(season["is_current"]),
+                    _normalize_dt(season["starting_at"]),
+                    _normalize_dt(season["ending_at"]),
+                )
+            )
+
+            caches.league_to_seasons[league_id].append(season_id)
+            caches.season_info[season_id] = {
+                "league_id": league_id,
+                "name": season["name"],
+                "start_year": start_year,
+            }
+
             total += 1
+
     if rows:
         upsert_many(SQL_UPSERT_SEASON, rows)
+
     print(f"[seasons] upserted: {total}")
 
-def upsert_teams_for_season(sm: SportmonksClient, season_id: int):
-    rows: List[Tuple] = []; count = 0
+
+def upsert_teams_for_season(sm: SportmonksClient, season_id: int) -> None:
+    rows: List[Tuple[int, str, Optional[str], Optional[str]]] = []
+    count = 0
+
     for team in sm.iter_teams_by_season(season_id):
-        rows.append((team["id"], team.get("name"), team.get("short_code"), team.get("image_path"))); count += 1
-        if len(rows) >= 500: upsert_teams_rows(rows); rows.clear()
-    if rows: upsert_teams_rows(rows)
+        team_id = team["id"]
+        name = _require_non_empty_str(team["name"], "team.name")
+        short_code = team["short_code"]
+        image_path = team["image_path"]
+
+        rows.append((team_id, name, short_code, image_path))
+        count += 1
+
+        if len(rows) >= 500:
+            upsert_teams_rows(rows)
+            rows.clear()
+
+    if rows:
+        upsert_teams_rows(rows)
+
     print(f"[teams] season {season_id} upserted: {count}")
 
-def ensure_teams_from_participants(sm: SportmonksClient, participants: List[Dict]) -> None:
-    rows: List[Tuple] = []; seen: Set[int] = set()
-    for p in participants or []:
-        tid = p.get("id")
-        if not isinstance(tid, int) or tid in seen: continue
-        name = p.get("name"); short_code = p.get("short_code"); image_path = p.get("image_path")
-        if not name and hasattr(sm, "get_team"):
-            try:
-                detail = sm.get_team(tid) or {}
-                name = detail.get("name") or name
-                short_code = detail.get("short_code") or short_code
-                image_path = detail.get("image_path") or image_path
-            except Exception:
-                pass
-        if not name: continue
-        rows.append((tid, name, short_code, image_path)); seen.add(tid)
-        if len(rows) >= 500: upsert_teams_rows(rows); rows.clear()
-    if rows: upsert_teams_rows(rows)
 
-def classify_comp_by_league_id(league_id: Optional[int], caches: Caches, sm: SportmonksClient) -> str:
-    if not league_id: return "league"
+def ensure_teams_from_participants(participants: List[Dict]) -> None:
+    rows: List[Tuple[int, str, Optional[str], Optional[str]]] = []
+    seen: Set[int] = set()
+
+    for participant in participants:
+        team_id = participant["id"]
+
+        if not isinstance(team_id, int):
+            raise ValueError(f"Invalid participant team id: {team_id!r}")
+
+        if team_id in seen:
+            continue
+
+        name = _require_non_empty_str(participant["name"], "participant.name")
+        short_code = participant["short_code"]
+        image_path = participant["image_path"]
+
+        rows.append((team_id, name, short_code, image_path))
+        seen.add(team_id)
+
+        if len(rows) >= 500:
+            upsert_teams_rows(rows)
+            rows.clear()
+
+    if rows:
+        upsert_teams_rows(rows)
+
+
+def classify_comp_by_league_id(
+    league_id: int,
+    caches: Caches,
+    sm: SportmonksClient,
+) -> str:
     if league_id not in caches.league_meta:
         ensure_leagues_by_ids(sm, [league_id], caches)
-    sub = (caches.league_meta.get(league_id) or {}).get("sub_type")
-    if not sub:
-        if league_id in EURO_LEAGUE_IDS: return "europe"
-        if league_id in DOMESTIC_CUP_LEAGUE_IDS: return "domestic_cup"
-        return "league"
-    return _map_league_sub_type_to_competition(sub)
+
+    sub_type = caches.league_meta[league_id]["sub_type"]
+    return _map_league_sub_type_to_competition(sub_type)
+
 
 # =========================
-# Domestic leagues (BIG5) via fixtures API
+# Domestic leagues: BIG5
 # =========================
-def upsert_domestic_via_fixtures_api(sm: SportmonksClient, caches: Caches, states_map: Dict[int, str]) -> None:
-    rows: List[Tuple] = []; total = 0
-    for lid, season_ids in caches.league_to_seasons.items():
-        comp_type = classify_comp_by_league_id(lid, caches, sm)  # "league"
-        for sid in sorted(set(season_ids)):
-            for fx in sm.iter_fixtures_by_season(sid):
-                if not fx.get("starting_at"):
-                    continue
-                parts = _coerce_list(fx.get("participants"))
-                ensure_teams_from_participants(sm, parts)
 
-                home_id, away_id = _extract_home_away_ids(parts)
-                if home_id is None or away_id is None:
-                    g_home, g_away = _guess_home_away_by_scores(_coerce_list(fx.get("scores")))
-                    home_id = home_id or g_home
-                    away_id = away_id or g_away
+def upsert_domestic_via_fixtures_api(
+    sm: SportmonksClient,
+    caches: Caches,
+) -> None:
+    rows: List[Tuple] = []
+    total = 0
 
-                leg_number = _parse_leg_to_int(fx.get("leg"))
-                state_code = (fx.get("state") or {}).get("code") or states_map.get(fx.get("state_id"))
-                status = _map_state_to_status(state_code)
+    for league_id, season_ids in caches.league_to_seasons.items():
+        competition_type = classify_comp_by_league_id(league_id, caches, sm)
 
-                st = fx.get("stage") or {}
-                grp = fx.get("group") or {}
-                scores_inc = _coerce_list(fx.get("scores"))
+        if competition_type != "league":
+            raise ValueError(
+                f"Expected Big5 domestic league competition_type='league', "
+                f"got {competition_type!r} for league_id={league_id}."
+            )
 
-                hs = fx.get("home_score"); as_ = fx.get("away_score")
-                if hs is None and as_ is None:
-                    hs, as_ = _extract_scores(scores_inc)
-                pen_h, pen_a = _extract_penalty_shootout_scores(scores_inc)
+        for season_id in sorted(set(season_ids)):
+            for fixture in sm.iter_fixtures_by_season(season_id):
+                participants = fixture["participants"]
+                ensure_teams_from_participants(participants)
 
-                rows.append((
-                    fx["id"], sid, lid,
-                    home_id, away_id,
-                    comp_type, _safe_round_name(fx),
-                    st.get("type_id"), st.get("id"), grp.get("id"),
-                    leg_number, status, _normalize_dt(fx.get("starting_at")),
-                    hs, as_, pen_h, pen_a
-                ))
+                rows.append(
+                    _fixture_row(
+                        fixture=fixture,
+                        season_id=season_id,
+                        league_id=league_id,
+                        competition_type=competition_type,
+                    )
+                )
+
                 total += 1
-                if len(rows) >= 500: upsert_fixtures_rows(rows); rows.clear()
-    if rows: upsert_fixtures_rows(rows)
+
+                if len(rows) >= 500:
+                    upsert_fixtures_rows(rows)
+                    rows.clear()
+
+    if rows:
+        upsert_fixtures_rows(rows)
+
     print(f"[fixtures] domestic via fixtures API: upserted {total}")
 
+
 # =========================
-# Europe: ALL seasons FULL ingest (fixtures + stage/group meta)
+# Europe: UCL / UEL / UECL
 # =========================
-def ingest_euro_all_seasons_full(sm: SportmonksClient, caches: Caches, states_map: Dict[int, str]) -> None:
-    """
-    UCL/UEL/UECL: 2017/18~현재 '전 경기' 인제스트
-    - fixtures에 stage_type_id/stage_id/group_id + 승부차기 저장
-    - stages/stage_groups 메타 upsert
-    - seasons.starting_at/ending_at NULL이면 fixtures의 min/max로 보정
-    """
+
+def ingest_euro_all_seasons_full(
+    sm: SportmonksClient,
+    caches: Caches,
+) -> None:
     season_upserts = 0
-    stage_rows, group_rows, fix_rows = [], [], []
+    stage_rows: List[Tuple[int, int, int, int, str]] = []
+    group_rows: List[Tuple[int, int, int, int, str]] = []
+    fix_rows: List[Tuple] = []
     total_fixtures = 0
 
-    for lid in EURO_LEAGUE_IDS:
-        ensure_leagues_by_ids(sm, [lid], caches)
-        league = sm.get_league_with_seasons(lid)
-        seasons = _coerce_list(league.get("seasons"))
+    for league_id in EURO_LEAGUE_IDS:
+        ensure_leagues_by_ids(sm, [league_id], caches)
 
-        for s in seasons:
-            y1 = _parse_season_start_year(s.get("name")) \
-                 or (int((s.get("starting_at") or "0000")[:4]) if (s.get("starting_at") or "")[:4].isdigit() else None)
-            if y1 is None or y1 < 2017 or y1 > 2025:
+        league = sm.get_league_with_seasons(league_id)
+        seasons = league["seasons"]
+
+        if not isinstance(seasons, list):
+            raise ValueError(f"Expected league.seasons to be list for league_id={league_id}.")
+
+        for season in seasons:
+            start_year = _season_start_year(season)
+
+            if start_year < MIN_SEASON_START_YEAR or start_year > MAX_SEASON_START_YEAR:
                 continue
-            sid = s["id"]
 
-            fixtures = list(sm.iter_fixtures_by_season(sid))  # include: participants;state;scores;round;stage;group
+            season_id = season["id"]
+            fixtures = list(sm.iter_fixtures_by_season(season_id))
 
-            # 시즌 시작/종료 보정
-            start_norm = _normalize_dt(s.get("starting_at"))
-            end_norm   = _normalize_dt(s.get("ending_at"))
+            start_norm = _normalize_dt(season["starting_at"])
+            end_norm = _normalize_dt(season["ending_at"])
+
             if start_norm is None or end_norm is None:
-                min_dt = max_dt = None
-                for fx in fixtures:
-                    dt = _parse_iso_to_dt(fx.get("starting_at"))
-                    if not dt: continue
-                    min_dt = dt if min_dt is None or dt < min_dt else min_dt
-                    max_dt = dt if max_dt is None or dt > max_dt else max_dt
+                min_dt = None
+                max_dt = None
+
+                for fixture in fixtures:
+                    fixture_dt = _parse_iso_to_dt(fixture["starting_at"])
+
+                    if fixture_dt is None:
+                        continue
+
+                    min_dt = fixture_dt if min_dt is None or fixture_dt < min_dt else min_dt
+                    max_dt = fixture_dt if max_dt is None or fixture_dt > max_dt else max_dt
+
                 if start_norm is None and min_dt is not None:
                     start_norm = min_dt.strftime("%Y-%m-%d %H:%M:%S")
+
                 if end_norm is None and max_dt is not None:
                     end_norm = max_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-            if start_norm and end_norm:
-                upsert_many(SQL_UPSERT_SEASON, [(sid, lid, s.get("name"), bool(s.get("is_current")), start_norm, end_norm)])
-                season_upserts += 1
+            if start_norm is None or end_norm is None:
+                raise ValueError(f"Could not determine start/end date for season_id={season_id}.")
 
-            for fx in fixtures:
-                parts = _coerce_list(fx.get("participants"))
-                ensure_teams_from_participants(sm, parts)
+            upsert_many(
+                SQL_UPSERT_SEASON,
+                [
+                    (
+                        season_id,
+                        league_id,
+                        season["name"],
+                        bool(season["is_current"]),
+                        start_norm,
+                        end_norm,
+                    )
+                ],
+            )
+            season_upserts += 1
 
-                st = fx.get("stage") or {}
-                st_id   = st.get("id")
-                st_type = st.get("type_id")
-                st_name = st.get("name")
-                if isinstance(st_id, int) and isinstance(st_type, int) and st_name:
-                    stage_rows.append((st_id, lid, sid, st_type, st_name))
+            for fixture in fixtures:
+                participants = fixture["participants"]
+                ensure_teams_from_participants(participants)
 
-                grp = fx.get("group") or {}
-                g_id   = grp.get("id")
-                g_name = grp.get("name")
-                if isinstance(g_id, int) and g_name and isinstance(st_id, int):
-                    group_rows.append((g_id, st_id, lid, sid, g_name))
+                stage_rows.append(_stage_row_from_fixture(fixture, league_id, season_id))
 
-                home_id, away_id = _extract_home_away_ids(parts)
-                if home_id is None or away_id is None:
-                    g_home, g_away = _guess_home_away_by_scores(_coerce_list(fx.get("scores")))
-                    home_id = home_id or g_home
-                    away_id = away_id or g_away
+                group_row = _group_row_from_fixture(fixture)
+                if group_row is not None:
+                    group_rows.append(group_row)
 
-                state_code = (fx.get("state") or {}).get("code") or states_map.get(fx.get("state_id"))
-                status     = _map_state_to_status(state_code)
-                round_name = _safe_round_name(fx)
-                leg_number = _parse_leg_to_int(fx.get("leg"))
+                fix_rows.append(
+                    _fixture_row(
+                        fixture=fixture,
+                        season_id=season_id,
+                        league_id=league_id,
+                        competition_type="europe",
+                    )
+                )
 
-                scores_inc = _coerce_list(fx.get("scores"))
-                hs = fx.get("home_score"); as_ = fx.get("away_score")
-                if hs is None and as_ is None:
-                    hs, as_ = _extract_scores(scores_inc)
-                pen_h, pen_a = _extract_penalty_shootout_scores(scores_inc)
-
-                fix_rows.append((
-                    fx["id"], sid, lid,
-                    home_id, away_id,
-                    "europe", round_name, st_type, st_id, g_id,
-                    leg_number, status, _normalize_dt(fx.get("starting_at")),
-                    hs, as_, pen_h, pen_a
-                ))
                 total_fixtures += 1
 
                 if len(stage_rows) >= 500:
-                    upsert_many(SQL_UPSERT_STAGE, stage_rows); stage_rows.clear()
-                if len(group_rows) >= 500:
-                    upsert_many(SQL_UPSERT_GROUP_META, group_rows); group_rows.clear()
-                if len(fix_rows) >= 500:
-                    upsert_fixtures_rows(fix_rows); fix_rows.clear()
+                    upsert_many(SQL_UPSERT_STAGE, stage_rows)
+                    stage_rows.clear()
 
-    if stage_rows: upsert_many(SQL_UPSERT_STAGE, stage_rows)
-    if group_rows: upsert_many(SQL_UPSERT_GROUP_META, group_rows)
-    if fix_rows:   upsert_fixtures_rows(fix_rows)
+                if len(group_rows) >= 500:
+                    upsert_many(SQL_UPSERT_GROUP_META, group_rows)
+                    group_rows.clear()
+
+                if len(fix_rows) >= 500:
+                    upsert_fixtures_rows(fix_rows)
+                    fix_rows.clear()
+
+    if stage_rows:
+        upsert_many(SQL_UPSERT_STAGE, stage_rows)
+
+    if group_rows:
+        upsert_many(SQL_UPSERT_GROUP_META, group_rows)
+
+    if fix_rows:
+        upsert_fixtures_rows(fix_rows)
 
     print(f"[seasons] euro all seasons upserted: {season_upserts}")
     print(f"[fixtures] euro all seasons (full): upserted {total_fixtures}")
 
-# =========================
-# Domestic Cups: BIG5 팀 연관 경기만 (모든 시즌)
-# =========================
-def upsert_domestic_cups_big5_only(sm: SportmonksClient, caches: Caches, states_map: Dict[int, str]) -> None:
-    """
-    FA/EFL/Coppa/Copa del Rey: 2017/18~현재 모든 시즌에서
-    '그 시즌의 빅5 1부 팀'이 한 팀이라도 참가한 경기만 적재.
-    stage/group 메타 + 승부차기 스코어도 함께 저장.
-    """
-    # 시즌 시작연도 -> 빅5 팀 집합
-    year_to_big5_teams: Dict[int, Set[int]] = defaultdict(set)
-    for sid, info in caches.season_info.items():
-        y1 = info.get("start_year")
-        if y1 is None: continue
-        for t in sm.iter_teams_by_season(sid):
-            tid = t.get("id")
-            if isinstance(tid, int):
-                year_to_big5_teams[y1].add(tid)
 
-    stage_rows, group_rows, fix_rows = [], [], []
+# =========================
+# Domestic Cups: BIG5 team-related only
+# =========================
+
+def upsert_domestic_cups_big5_only(
+    sm: SportmonksClient,
+    caches: Caches,
+) -> None:
+    year_to_big5_teams: Dict[int, Set[int]] = defaultdict(set)
+
+    for season_id, info in caches.season_info.items():
+        start_year = info["start_year"]
+
+        for team in sm.iter_teams_by_season(season_id):
+            team_id = team["id"]
+
+            if not isinstance(team_id, int):
+                raise ValueError(f"Invalid team id from season teams payload: {team_id!r}")
+
+            year_to_big5_teams[start_year].add(team_id)
+
+    stage_rows: List[Tuple[int, int, int, int, str]] = []
+    group_rows: List[Tuple[int, int, int, int, str]] = []
+    fix_rows: List[Tuple] = []
     total = 0
 
-    for lid in DOMESTIC_CUP_LEAGUE_IDS:
-        ensure_leagues_by_ids(sm, [lid], caches)
-        league = sm.get_league_with_seasons(lid)
-        seasons = _coerce_list(league.get("seasons"))
+    for league_id in DOMESTIC_CUP_LEAGUE_IDS:
+        ensure_leagues_by_ids(sm, [league_id], caches)
 
-        for s in seasons:
-            y1 = _parse_season_start_year(s.get("name")) \
-                 or (int((s.get("starting_at") or "0000")[:4]) if (s.get("starting_at") or "")[:4].isdigit() else None)
-            if y1 is None or y1 < 2017 or y1 > 2025:
+        league = sm.get_league_with_seasons(league_id)
+        seasons = league["seasons"]
+
+        if not isinstance(seasons, list):
+            raise ValueError(f"Expected league.seasons to be list for league_id={league_id}.")
+
+        for season in seasons:
+            start_year = _season_start_year(season)
+
+            if start_year < MIN_SEASON_START_YEAR or start_year > MAX_SEASON_START_YEAR:
                 continue
-            allowed = year_to_big5_teams.get(y1, set())
-            if not allowed:
+
+            allowed_team_ids = year_to_big5_teams[start_year]
+
+            if not allowed_team_ids:
                 continue
 
-            sid = s["id"]
-            fixtures = list(sm.iter_fixtures_by_season(sid))
+            season_id = season["id"]
+            fixtures = list(sm.iter_fixtures_by_season(season_id))
 
-            # 시즌 시작/종료 보정
-            start_norm = _normalize_dt(s.get("starting_at"))
-            end_norm   = _normalize_dt(s.get("ending_at"))
+            start_norm = _normalize_dt(season["starting_at"])
+            end_norm = _normalize_dt(season["ending_at"])
+
             if start_norm is None or end_norm is None:
-                min_dt = max_dt = None
-                for fx in fixtures:
-                    dt = _parse_iso_to_dt(fx.get("starting_at"))
-                    if not dt: continue
-                    min_dt = dt if min_dt is None or dt < min_dt else min_dt
-                    max_dt = dt if max_dt is None or dt > max_dt else max_dt
+                min_dt = None
+                max_dt = None
+
+                for fixture in fixtures:
+                    fixture_dt = _parse_iso_to_dt(fixture["starting_at"])
+
+                    if fixture_dt is None:
+                        continue
+
+                    min_dt = fixture_dt if min_dt is None or fixture_dt < min_dt else min_dt
+                    max_dt = fixture_dt if max_dt is None or fixture_dt > max_dt else max_dt
+
                 if start_norm is None and min_dt is not None:
                     start_norm = min_dt.strftime("%Y-%m-%d %H:%M:%S")
+
                 if end_norm is None and max_dt is not None:
                     end_norm = max_dt.strftime("%Y-%m-%d %H:%M:%S")
-            if start_norm and end_norm:
-                upsert_many(SQL_UPSERT_SEASON, [(sid, lid, s.get("name"), bool(s.get("is_current")), start_norm, end_norm)])
 
-            for fx in fixtures:
-                parts = _coerce_list(fx.get("participants"))
-                pids = {p.get("id") for p in parts if isinstance(p.get("id"), int)}
-                if not pids or not (pids & allowed):
+            if start_norm is None or end_norm is None:
+                raise ValueError(f"Could not determine start/end date for season_id={season_id}.")
+
+            upsert_many(
+                SQL_UPSERT_SEASON,
+                [
+                    (
+                        season_id,
+                        league_id,
+                        season["name"],
+                        bool(season["is_current"]),
+                        start_norm,
+                        end_norm,
+                    )
+                ],
+            )
+
+            for fixture in fixtures:
+                participants = fixture["participants"]
+                participant_ids = {participant["id"] for participant in participants}
+
+                if not participant_ids & allowed_team_ids:
                     continue
 
-                ensure_teams_from_participants(sm, parts)
+                ensure_teams_from_participants(participants)
 
-                st = fx.get("stage") or {}
-                st_id   = st.get("id")
-                st_type = st.get("type_id")
-                st_name = st.get("name")
-                if isinstance(st_id, int) and isinstance(st_type, int) and st_name:
-                    stage_rows.append((st_id, lid, sid, st_type, st_name))
+                stage_rows.append(_stage_row_from_fixture(fixture, league_id, season_id))
 
-                grp = fx.get("group") or {}
-                g_id   = grp.get("id")
-                g_name = grp.get("name")
-                if isinstance(g_id, int) and g_name and isinstance(st_id, int):
-                    group_rows.append((g_id, st_id, lid, sid, g_name))
+                group_row = _group_row_from_fixture(fixture)
+                if group_row is not None:
+                    group_rows.append(group_row)
 
-                home_id, away_id = _extract_home_away_ids(parts)
-                if home_id is None or away_id is None:
-                    g_home, g_away = _guess_home_away_by_scores(_coerce_list(fx.get("scores")))
-                    home_id = home_id or g_home
-                    away_id = away_id or g_away
+                fix_rows.append(
+                    _fixture_row(
+                        fixture=fixture,
+                        season_id=season_id,
+                        league_id=league_id,
+                        competition_type="domestic_cup",
+                    )
+                )
 
-                state_code = (fx.get("state") or {}).get("code") or states_map.get(fx.get("state_id"))
-                status     = _map_state_to_status(state_code)
-                round_name = _safe_round_name(fx)
-                leg_number = _parse_leg_to_int(fx.get("leg"))
-
-                scores_inc = _coerce_list(fx.get("scores"))
-                hs = fx.get("home_score"); as_ = fx.get("away_score")
-                if hs is None and as_ is None:
-                    hs, as_ = _extract_scores(scores_inc)
-                pen_h, pen_a = _extract_penalty_shootout_scores(scores_inc)
-
-                fix_rows.append((
-                    fx["id"], sid, lid,
-                    home_id, away_id,
-                    "domestic_cup", round_name, st_type, st_id, g_id,
-                    leg_number, status, _normalize_dt(fx.get("starting_at")),
-                    hs, as_, pen_h, pen_a
-                ))
                 total += 1
 
                 if len(stage_rows) >= 500:
-                    upsert_many(SQL_UPSERT_STAGE, stage_rows); stage_rows.clear()
-                if len(group_rows) >= 500:
-                    upsert_many(SQL_UPSERT_GROUP_META, group_rows); group_rows.clear()
-                if len(fix_rows) >= 500:
-                    upsert_fixtures_rows(fix_rows); fix_rows.clear()
+                    upsert_many(SQL_UPSERT_STAGE, stage_rows)
+                    stage_rows.clear()
 
-    if stage_rows: upsert_many(SQL_UPSERT_STAGE, stage_rows)
-    if group_rows: upsert_many(SQL_UPSERT_GROUP_META, group_rows)
-    if fix_rows:   upsert_fixtures_rows(fix_rows)
+                if len(group_rows) >= 500:
+                    upsert_many(SQL_UPSERT_GROUP_META, group_rows)
+                    group_rows.clear()
+
+                if len(fix_rows) >= 500:
+                    upsert_fixtures_rows(fix_rows)
+                    fix_rows.clear()
+
+    if stage_rows:
+        upsert_many(SQL_UPSERT_STAGE, stage_rows)
+
+    if group_rows:
+        upsert_many(SQL_UPSERT_GROUP_META, group_rows)
+
+    if fix_rows:
+        upsert_fixtures_rows(fix_rows)
 
     print(f"[fixtures] domestic cups (big5-related, all seasons): upserted {total}")
 
-def finalize_knockout_winners():
+
+# =========================
+# Knockout winner backfill
+# =========================
+
+def finalize_knockout_winners() -> int:
     sql_pen_leg2 = """
     UPDATE knockout_ties kt
     JOIN fixtures f2 ON f2.fixture_id = kt.leg2_fixture_id
@@ -686,6 +973,7 @@ def finalize_knockout_winners():
       AND f2.home_penalty_score IS NOT NULL
       AND f2.away_penalty_score IS NOT NULL;
     """
+
     sql_pen_single = """
     UPDATE knockout_ties kt
     JOIN fixtures f1 ON f1.fixture_id = kt.leg1_fixture_id
@@ -702,6 +990,7 @@ def finalize_knockout_winners():
       AND f1.home_penalty_score IS NOT NULL
       AND f1.away_penalty_score IS NOT NULL;
     """
+
     sql_away_goals = """
     UPDATE knockout_ties kt
     JOIN seasons s           ON s.season_id = kt.season_id
@@ -746,43 +1035,46 @@ def finalize_knockout_winners():
       AND kt.league_id IN (2,5)
       AND YEAR(s.starting_at) <= 2020;
     """
+
     updated = 0
     updated += execute(sql_pen_leg2)
     updated += execute(sql_pen_single)
     updated += execute(sql_away_goals)
+
     return updated
+
 
 # =========================
 # Entry point
 # =========================
+
 def run_big5_bootstrap(league_names: Optional[List[str]] = None) -> None:
     sm = SportmonksClient()
     caches = Caches()
-    names = league_names or BIG5_NAMES
 
-    # 1) BIG5 리그 메타 upsert
-    ensure_leagues(sm, names, caches)
+    big5_league_ids = _resolve_big5_league_ids(league_names)
 
-    # 2) BIG5 시즌 upsert + season_info/league->seasons 캐시
+    # 1) BIG5 league meta
+    ensure_leagues_by_ids(sm, big5_league_ids, caches)
+
+    # 2) BIG5 seasons
     upsert_current_and_historical_seasons(sm, caches)
-    states_map = sm.get_states_map()
 
-    # 3) 시즌별 팀 upsert
+    # 3) BIG5 teams
     for league_id, season_ids in caches.league_to_seasons.items():
         for season_id in sorted(set(season_ids)):
             upsert_teams_for_season(sm, season_id)
 
-    # 4) BIG5 리그: fixtures API로 전 경기 적재(플레이오프 포함)
-    upsert_domestic_via_fixtures_api(sm, caches, states_map)
+    # 4) BIG5 league fixtures
+    upsert_domestic_via_fixtures_api(sm, caches)
 
-    # 5) 유럽대항전(UCL/UEL/UECL): 17/18~현재 '전 경기' + stage/group 메타 + 승부차기 저장
-    ingest_euro_all_seasons_full(sm, caches, states_map)
+    # 5) European competitions
+    ingest_euro_all_seasons_full(sm, caches)
 
-    # 6) 국내컵(FA/EFL/Coppa/Copa del Rey): 17/18~현재, BIG5 팀 관련 경기만 저장
-    upsert_domestic_cups_big5_only(sm, caches, states_map)
+    # 6) Domestic cups involving BIG5 teams
+    upsert_domestic_cups_big5_only(sm, caches)
 
     print("Big5 bootstrap done.")
 
     updated = finalize_knockout_winners()
-    
     print(f"[knockout_winners] backfilled: {updated}")
