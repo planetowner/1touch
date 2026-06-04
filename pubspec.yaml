@@ -40,6 +40,10 @@ dependencies:
   uuid: ^4.0.0
   http: ^0.13.6
   video_player: ^2.8.0
+  image_picker: ^1.1.2
+  firebase_core: ^3.0.0
+  firebase_auth: ^5.0.0
+  firebase_database: ^11.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -78,6 +82,11 @@ flutter:
     - assets/playerSilhouette.svg
     - assets/playerAvatar.png
     - assets/Onboarding.mp4
+    - assets/epl.png
+    - assets/seriea.png
+    - assets/league1.png
+    - assets/bundesliga.png
+    - assets/laliga.png
     - TeamLogos/
 
 

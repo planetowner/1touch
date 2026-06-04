@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
-import 'package:onetouch/data/post_type.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
+
+String _timeAgo(String createdAt) {
+  final created = DateTime.tryParse(createdAt) ?? DateTime.now();
+  final diff = DateTime.now().difference(created);
+  if (diff.inDays >= 1) return '${diff.inDays}d ago';
+  if (diff.inHours >= 1) return '${diff.inHours}h ago';
+  return '${diff.inMinutes}m ago';
+}
 
 class All extends StatefulWidget {
   final int selectedTabIndex;
+  final List<Post> posts;
 
-  const All({super.key, required this.selectedTabIndex});
+  const All({super.key, required this.selectedTabIndex, required this.posts});
 
   @override
   State<All> createState() => _AllState();
@@ -18,24 +26,34 @@ class _AllState extends State<All> {
   String _selectedFilter = "Newest";
   late int _selectedTabIndex;
 
-  List<PostType> _filteredPosts() {
-    // For now, let's just return hardcoded logic --> need to build our own logic
-    if (widget.selectedTabIndex == 1) {
-      return [PostType.textOnly]; // General
-    } else if (widget.selectedTabIndex == 2) {
-      return [PostType.video]; // Analysis
-    } else if (widget.selectedTabIndex == 3) {
-      return [PostType.image]; // News & Insights
-    } else {
-      return [PostType.video, PostType.image, PostType.textOnly]; // All
+  List<Post> _filteredPosts() {
+    List<Post> base;
+    switch (widget.selectedTabIndex) {
+      case 1:
+        base = widget.posts.where((p) => p.category == PostCategory.general).toList();
+        break;
+      case 2:
+        base = widget.posts.where((p) => p.category == PostCategory.analysis).toList();
+        break;
+      case 3:
+        base = widget.posts.where((p) => p.category == PostCategory.news).toList();
+        break;
+      default:
+        base = List.of(widget.posts);
+
     }
+
+    switch (_selectedFilter) {
+      case "Newest":
+        base.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+    // Popular / Best: placeholder — wire up likes count when available
+      default:
+        break;
+    }
+    return base;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedTabIndex = widget.selectedTabIndex;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +79,7 @@ class _AllState extends State<All> {
 
         const SizedBox(height: 24),
 
-        // 📜 Ground Rules button
+        // Ground Rules button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: GestureDetector(
@@ -90,7 +108,8 @@ class _AllState extends State<All> {
         ),
 
         const SizedBox(height: 24),
-        // 🧵 Post list
+
+        // Post list
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -98,10 +117,7 @@ class _AllState extends State<All> {
             itemBuilder: (context, index) => _buildPostCard(posts[index]),
             separatorBuilder: (context, index) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Container(
-                height: 1,
-                color: const Color(0xFF3A3A3A), // matches the divider image
-              ),
+              child: Container(height: 1, color: const Color(0xFF3A3A3A)),
             ),
           ),
         ),
@@ -113,16 +129,12 @@ class _AllState extends State<All> {
     final isSelected = _selectedFilter == label;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilter = label;
-        });
-      },
+      onTap: () => setState(() => _selectedFilter = label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : const Color(0xFF272828),
-          borderRadius: BorderRadius.circular(16), // Full pill shape
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label.toUpperCase(),
@@ -134,12 +146,14 @@ class _AllState extends State<All> {
     );
   }
 
-  Widget _buildPostCard(PostType type) {
+  Widget _buildPostCard(Post post) {
+    final hasMedia = post.mediaUrl != null;
+
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => PostDetailScreen(postType: type)),
+          context,
+          MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
         );
       },
       child: Padding(
@@ -147,12 +161,12 @@ class _AllState extends State<All> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left: Text content
+            // Left: text content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 👤 User Info Row
+                  // User info
                   Row(
                     children: [
                       const CircleAvatar(
@@ -161,93 +175,75 @@ class _AllState extends State<All> {
                       ),
                       const SizedBox(width: 8),
                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Username", style: Body1.style),
-                          Text("# hrs ago",
-                              style: Body2.style.copyWith(color: Colors.white54)),
+                          Text("User ${post.userId}", style: Body1.style),
+                          Text(
+                            _timeAgo(post.createdAt),
+                            style: Body2.style.copyWith(color: Colors.white54),
+                          ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
 
-                  Text("Title goes here", style: Body1_b.style),
+                  Text(post.title, style: Body1_b.style),
                   const SizedBox(height: 4),
 
                   Text(
-                    "First sentence goes here. Second sentence goes here. Third sentence goes here. Fourth sentence goes here...",
+                    post.body,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Body2.style,
                   ),
                   const SizedBox(height: 8),
 
-                  // ❤️ Like count
+                  // Like count (placeholder until likes are wired)
                   Row(
                     children: [
                       const Icon(Icons.thumb_up_alt_outlined,
                           color: Colors.white, size: 16),
                       const SizedBox(width: 6),
-                      Text("1,290", style: Body2.style),
+                      Text("—", style: Body2.style),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
 
-            const SizedBox(width: 16),
-
-            // Right: Media preview (if video or image)
-            if (type != PostType.textOnly)
-              Stack(
-                children: [
-                  Container(
-                    width: 96,
-                    height: 96,
+            // Right: media thumbnail
+            if (hasMedia) ...[
+              const SizedBox(width: 16),
+              Builder(
+                builder: (context) {
+                  final size = MediaQuery.of(context).size.width * 0.4;
+                  return Container(
+                    width: size*0.8,
+                    height: size,
                     decoration: BoxDecoration(
                       color: const Color(0xFF2C2C2C),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: type == PostType.video
-                        ? const Center(
-                        child: Icon(Icons.play_arrow_rounded,
-                            color: Colors.white, size: 32))
-                        : Image.asset("assets/highlight1.png", fit: BoxFit.cover),
-                  ),
-                  if (type == PostType.video)
-                    Positioned(
-                      bottom: 6,
-                      right: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(6),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        post.mediaUrl!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'assets/highlight1.png',
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
                         ),
-                        child:
-                        Text("+2", style: Body2.style.copyWith(fontSize: 12)),
                       ),
                     ),
-                ],
+                  );
+                },
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRule(int i, String title, String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: RichText(
-        text: TextSpan(
-          style: Body2.style,
-          children: [
-            TextSpan(text: "${i + 1}. ", style: Body1_b.style),
-            TextSpan(text: title, style: Body1_b.style),
-            const TextSpan(text: "\n"),
-            TextSpan(text: subtitle, style: Body1.style),
+            ],
           ],
         ),
       ),

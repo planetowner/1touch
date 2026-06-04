@@ -1,31 +1,32 @@
+import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/post_type.dart';
+import 'package:onetouch/models/post.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 
-enum Category {
-  general,
-  analysis,
-  newsAndInsights,
-}
+enum Category { general, analysis, newsAndInsights }
 
-class Addpost extends StatefulWidget {
-  final PostType? postType;
-
-  const Addpost({super.key, this.postType});
+class AddPost extends StatefulWidget {
+  const AddPost({super.key});
 
   @override
-  State<Addpost> createState() => _AddPostState();
+  State<AddPost> createState() => _AddPostState();
 }
 
-class _AddPostState extends State<Addpost> {
+class _AddPostState extends State<AddPost> {
   Category _selectedCategory = Category.general;
 
-  // 1. Add ScrollController
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
+
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _bodyController = TextEditingController();
+
+  final List<XFile> _mediaFiles = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -33,7 +34,6 @@ class _AddPostState extends State<Addpost> {
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
-          // Track scroll offset up to 150px
           _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
         });
       });
@@ -42,7 +42,64 @@ class _AddPostState extends State<Addpost> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _titleController.dispose();
+    _bodyController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickMedia() async {
+    final List<XFile> picked = await _picker.pickMultipleMedia();
+    if (picked.isNotEmpty) {
+      setState(() {
+        _mediaFiles.addAll(picked);
+      });
+    }
+  }
+
+  String _categoryLabel(Category cat) {
+    switch (cat) {
+      case Category.general:         return 'General';
+      case Category.analysis:        return 'Analysis';
+      case Category.newsAndInsights: return 'News & Insights';
+    }
+  }
+
+  PostCategory _mapCategory() {
+    switch (_selectedCategory) {
+      case Category.analysis:         return PostCategory.analysis;
+      case Category.newsAndInsights:  return PostCategory.news;
+      default:                        return PostCategory.general;
+    }
+  }
+
+  void _submitPost() {
+    final title = _titleController.text.trim();
+    final body  = _bodyController.text.trim();
+
+    if (title.isEmpty || body.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Title and body are required.")),
+      );
+      return;
+    }
+
+    final now = DateTime.now().toIso8601String();
+    final newPost = Post(
+      postId:    DateTime.now().millisecondsSinceEpoch, // temp local ID
+      userId:    1001,                                  // replace with auth user
+      category:  _mapCategory(),
+      title:     title,
+      body:      body,
+      mediaUrl:  _mediaFiles.isNotEmpty ? _mediaFiles.first.path : null,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    // Navigate to PostDetailScreen, replacing this screen in the stack
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => PostDetailScreen(post: newPost)),
+    );
   }
 
   @override
@@ -116,16 +173,13 @@ class _AddPostState extends State<Addpost> {
                       ),
                       child: DropdownButton<Category>(
                         value: _selectedCategory,
-                        onChanged: (Category? newValue) {
-                          setState(() {
-                            _selectedCategory = newValue!;
-                          });
-                        },
-                        items: Category.values.map((Category category) {
-                          return DropdownMenuItem<Category>(
-                            value: category,
+                        onChanged: (value) =>
+                            setState(() => _selectedCategory = value!),
+                        items: Category.values.map((cat) {
+                          return DropdownMenuItem(
+                            value: cat,
                             child: Text(
-                              category.toString().split('.').last.toUpperCase(),
+                              _categoryLabel(cat).toUpperCase(),
                               style: Body1_b.style,
                             ),
                           );
@@ -140,26 +194,89 @@ class _AddPostState extends State<Addpost> {
                 ),
                 const SizedBox(height: 24),
 
-                Text("Title goes here", style: Heading4.style),
+                // Title field
+                TextField(
+                  controller: _titleController,
+                  style: Heading4.style,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                    hintText: "Title...",
+                    hintStyle: Heading4.style.copyWith(color: Colors.white38),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
                 const SizedBox(height: 12),
 
-                Text(
-                  "FC Barcelona is more than just a football club; it's a symbol of passion and pride for its fans. "
-                      "The team's style of play, known as 'tiki-taka', showcases their commitment to teamwork and skill.\n\n"
-                      "With a rich history of success, including numerous La Liga and Champions League titles, "
-                      "Barcelona continues to inspire young athletes around the world...",
+                // Body field
+                TextField(
+                  controller: _bodyController,
                   style: Body2.style,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  decoration: InputDecoration(
+                    hintText: "Write something...",
+                    hintStyle: Body2.style.copyWith(color: Colors.white38),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
+                // Media preview (if any picked)
+                if (_mediaFiles.isNotEmpty) ...[
+                  SizedBox(
+                    height: 100,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _mediaFiles.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        return Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                File(_mediaFiles[index].path),
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 4, right: 4,
+                              child: GestureDetector(
+                                onTap: () => setState(() => _mediaFiles.removeAt(index)),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(4),
+                                  child: const Icon(Icons.close,
+                                      color: Colors.white, size: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Media picker button
                 DottedBorder(
                   color: Colors.white54,
                   strokeWidth: 1,
-                  dashPattern: [6, 6],
+                  dashPattern: const [6, 6],
                   borderType: BorderType.RRect,
-                  radius: Radius.circular(12),
+                  radius: const Radius.circular(12),
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: _pickMedia,
                     child: Container(
                       width: double.infinity,
                       height: 120,
@@ -187,12 +304,13 @@ class _AddPostState extends State<Addpost> {
           ),
         ],
       ),
+
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: _submitPost,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(

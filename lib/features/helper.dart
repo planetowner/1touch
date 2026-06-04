@@ -1,8 +1,19 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import "package:onetouch/core/stylesheet_dark.dart";
-// import 'package:onetouch/data/teamdata.dart';
-import 'package:onetouch/data/matchdata.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
+
+const _fallbackLogos = [
+  'TeamLogos/RealMadrid.png',
+  'TeamLogos/AcMilan.png',
+  'TeamLogos/Liverpool.png',
+  'TeamLogos/AtleticoMadrid.png',
+];
+
+String randomTeamLogo() => _fallbackLogos[Random().nextInt(_fallbackLogos.length)];
 
 // =============================================================================
 // UTILITIES & HELPERS
@@ -45,7 +56,7 @@ String determineMatchStatus(DateTime matchDateTime) {
 // =============================================================================
 
 class MatchCard extends StatelessWidget {
-  final MatchData? match;
+  final Fixture? match;
   final String? leagueName;
 
   const MatchCard({
@@ -56,8 +67,10 @@ class MatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final home = match?.homeTeam;
-    final away = match?.awayTeam;
+    if (match == null) return const SizedBox.shrink();
+
+    final homeTeam = mockTeamById(match!.homeTeamId);
+    final awayTeam = mockTeamById(match!.awayTeamId);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -72,8 +85,8 @@ class MatchCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _TeamDisplay(
-                  teamName: home?.name ?? 'Home',
-                  teamLogo: home?.imagePath ?? '',
+                  teamName: homeTeam.name,
+                  teamLogo: homeTeam.imagePath ?? '',
                 ),
               ),
               const SizedBox(width: 24),
@@ -81,8 +94,8 @@ class MatchCard extends StatelessWidget {
               const SizedBox(width: 24),
               Expanded(
                 child: _TeamDisplay(
-                  teamName: away?.name ?? 'Away',
-                  teamLogo: away?.imagePath ?? '',
+                  teamName: awayTeam.name,
+                  teamLogo: awayTeam.imagePath ?? '',
                 ),
               ),
             ],
@@ -94,12 +107,9 @@ class MatchCard extends StatelessWidget {
 }
 
 class MatchCard2 extends StatelessWidget {
-  final String date,
-      venue,
-      team1shortname,
-      team1Logo,
-      team2shortname,
-      team2Logo;
+  final String date, venue, team1shortname, team1Logo, team2shortname, team2Logo;
+  final int homeScore;
+  final int awayScore;
 
   const MatchCard2({
     super.key,
@@ -109,13 +119,13 @@ class MatchCard2 extends StatelessWidget {
     required this.team1Logo,
     required this.team2shortname,
     required this.team2Logo,
+    required this.homeScore,
+    required this.awayScore,
   });
 
   @override
   Widget build(BuildContext context) {
     // Example scores
-    const score1 = 3;
-    const score2 = 2;
 
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -140,11 +150,11 @@ class MatchCard2 extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const _ScoreBoard(score: score1, isDimmed: score1 < score2),
+                  _ScoreBoard(score: homeScore, isDimmed: homeScore < awayScore),
                   const SizedBox(width: 16),
                   _MatchInfo2(date: date, venue: venue),
                   const SizedBox(width: 16),
-                  const _ScoreBoard(score: score2, isDimmed: score2 < score1),
+                  _ScoreBoard(score: awayScore, isDimmed: awayScore < homeScore),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _TeamDisplay2(
@@ -161,61 +171,6 @@ class MatchCard2 extends StatelessWidget {
     );
   }
 }
-
-// class MatchCard3 extends StatelessWidget {
-//   final String date, venue, team1Name, team1Logo, team2Name, team2Logo;
-//
-//   const MatchCard3({
-//     super.key,
-//     required this.date,
-//     required this.venue,
-//     required this.team1Name,
-//     required this.team1Logo,
-//     required this.team2Name,
-//     required this.team2Logo,
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       padding: const EdgeInsets.all(16),
-//       decoration: const BoxDecoration(
-//         borderRadius: BorderRadius.only(
-//           topLeft: Radius.circular(20),
-//           topRight: Radius.circular(20),
-//           bottomLeft: Radius.circular(0),
-//           bottomRight: Radius.circular(0),
-//         ),
-//         color: Color(0xFF3D3D3D),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           const Text('NEXT MATCH', style: Body1_b.style),
-//           const SizedBox(height: 16),
-//           LayoutBuilder(
-//             builder: (context, constraints) {
-//               return Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Expanded(
-//                     child: _TeamDisplay(teamName: team1Name, teamLogo: team1Logo),
-//                   ),
-//                   const SizedBox(width: 24),
-//                   _MatchInfo(match: , leagueName: ,), // Commented out in original
-//                   const SizedBox(width: 24),
-//                   Expanded(
-//                     child: _TeamDisplay(teamName: team2Name, teamLogo: team2Logo),
-//                   ),
-//                 ],
-//               );
-//             },
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 class SearchMatchCard extends StatelessWidget {
   final String homeTeam;
@@ -361,7 +316,11 @@ class _TeamDisplay extends StatelessWidget {
             height: 72,
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) =>
-            const Icon(Icons.sports_soccer, color: Colors.white),
+                Image.asset(
+                  'TeamLogos/Barcelona.png',
+                  height: 72,
+                  width: 72,
+                ),
           ),
         const SizedBox(height: 8),
         Text(teamName, textAlign: TextAlign.center, style: Eyebrow.style),
@@ -379,8 +338,11 @@ class _TeamDisplay2 extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-            teamLogo, width: 48, height: 48, fit: BoxFit.cover
+        Image.network(
+          teamLogo,
+          width: 48,
+          height: 48,
+          errorBuilder: (_, __, ___) => Image.asset(randomTeamLogo(), height: 72, width: 72),
         ),
         const SizedBox(height: 8),
         Text(teamName, textAlign: TextAlign.center, style: Eyebrow.style),
@@ -390,7 +352,7 @@ class _TeamDisplay2 extends StatelessWidget {
 }
 
 class _MatchInfo extends StatelessWidget {
-  final MatchData? match;
+  final Fixture? match;
   final String? leagueName;
   const _MatchInfo({required this.match, this.leagueName});
 
@@ -401,16 +363,16 @@ class _MatchInfo extends StatelessWidget {
         SizedBox(
           width: 96,
           child: Text(
-            _formatDate(match!.date),
+            _formatDate(match!.startingAt),
             textAlign: TextAlign.center,
             style: Body2.style,
           ),
         ),
         const SizedBox(height: 8),
-        Container(width: 24, height: 1, color: Colors.white.withOpacity(0.3)),
+        Container(width: 24, height: 1, color: Colors.white.withValues(alpha:0.3)),
         const SizedBox(height: 8),
         Text(
-          '${leagueName ?? 'League'}  ${match?.roundId}',
+          '${leagueName ?? 'League'}  ${match?.roundName ?? ''}',
           style: Body2.style,
         ),
         const SizedBox(height: 4),
@@ -472,3 +434,60 @@ class _ScoreBoard extends StatelessWidget {
     );
   }
 }
+
+// just in case
+
+// class MatchCard3 extends StatelessWidget {
+//   final String date, venue, team1Name, team1Logo, team2Name, team2Logo;
+//
+//   const MatchCard3({
+//     super.key,
+//     required this.date,
+//     required this.venue,
+//     required this.team1Name,
+//     required this.team1Logo,
+//     required this.team2Name,
+//     required this.team2Logo,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(16),
+//       decoration: const BoxDecoration(
+//         borderRadius: BorderRadius.only(
+//           topLeft: Radius.circular(20),
+//           topRight: Radius.circular(20),
+//           bottomLeft: Radius.circular(0),
+//           bottomRight: Radius.circular(0),
+//         ),
+//         color: Color(0xFF3D3D3D),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           const Text('NEXT MATCH', style: Body1_b.style),
+//           const SizedBox(height: 16),
+//           LayoutBuilder(
+//             builder: (context, constraints) {
+//               return Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Expanded(
+//                     child: _TeamDisplay(teamName: team1Name, teamLogo: team1Logo),
+//                   ),
+//                   const SizedBox(width: 24),
+//                   _MatchInfo(match: , leagueName: ,), // Commented out in original
+//                   const SizedBox(width: 24),
+//                   Expanded(
+//                     child: _TeamDisplay(teamName: team2Name, teamLogo: team2Logo),
+//                   ),
+//                 ],
+//               );
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

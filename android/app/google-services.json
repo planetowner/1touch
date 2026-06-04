@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "490287981635",
+    "project_id": "touch-42626",
+    "storage_bucket": "touch-42626.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:490287981635:android:c4bfe25cec134e4e8720f6",
+        "android_client_info": {
+          "package_name": "com.example.onetouch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD51NHqyX6TEnUOXwtXePP1yS23N0lFRN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

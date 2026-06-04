@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:convert';
 import '../core/stylesheet_dark.dart';
-import '../data/teamdata.dart'; // Your model file path
-import '../data/matchdata.dart';
+import '../data/teamdata.dart';
+import '../models/fixture.dart';
+import '../models/mock_data.dart';
 import 'package:onetouch/features/index.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,73 +16,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
 
-  String fakeTeamsJson = """
-[
-  {
-    "id": 1,
-    "name": "FC Barcelona",
-    "short_code": "FCB",
-    "image_path": "https://example.com/images/fcb.png",
-    "league_id": 82,
-    "standing": {
-      "rank": 2,
-      "points": 76,
-      "wins": 24,
-      "draws": 4,
-      "losses": 6,
-      "goal_for": 75,
-      "goal_against": 32
-    },
-    "nextMatch": {
-      "id": 101,
-      "league_id": 82,
-      "season_id": 2025,
-      "round_id": 35,
-      "venue_id": 500,
-      "home_team_id": 1,
-      "away_team_id": 2,
-      "starting_at": "2025-09-15T20:00:00Z",
-      "status": "not_started",
-      "home_team": {
-        "id": 1,
-        "name": "FC Barcelona",
-        "short_code": "FCB",
-        "image_path": "https://example.com/images/fcb.png"
-      },
-      "away_team": {
-        "id": 2,
-        "name": "Real Madrid",
-        "short_code": "RMA",
-        "image_path": "https://example.com/images/rma.png"
-      }
-    },
-    "lastMatch": null
-  },
-  {
-    "id": 2,
-    "name": "Real Madrid",
-    "short_code": "RMA",
-    "image_path": "https://example.com/images/rma.png",
-    "league_id": 82,
-    "standing": {
-      "rank": 1,
-      "points": 80,
-      "wins": 26,
-      "draws": 2,
-      "losses": 6,
-      "goal_for": 82,
-      "goal_against": 28
-    },
-    "nextMatch": null,
-    "lastMatch": null
-  }
-]
-""";
-
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
 
-  List<Team> realteam = [];
+  List<Team> myTeam = [];
   bool isLoading = true;
 
 
@@ -98,15 +35,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // 🔹 Toggle here for testing
     // fetchHomeData();
-    loadFakeData();
+    loadMockData();
   }
 
-  void loadFakeData() {
-    final decoded = jsonDecode(fakeTeamsJson) as List<dynamic>;
-    final parsedTeams = decoded.map((t) => Team.fromJson(t)).toList();
+  void loadMockData() {
+    // mock user 1001: favorite = Barcelona, following = Barcelona + Bayern
+    final favoriteTeamId = mockUserProfiles
+        .firstWhere((p) => p.userId == 1001)
+        .favoriteTeamId;
+
+    final followingIds = followingTeamIds(1001);
+
+    final teams = followingIds.map((id) {
+      final team = mockTeamById(id);
+      final fixtures = fixturesByTeam(id);
+      return Team(
+        id: team.teamId,
+        name: team.name,
+        shortName: team.shortCode ?? '',
+        imagePath: team.imagePath ?? '',
+        nextMatch: fixtures.where((f) => f.status == FixtureStatus.upcoming).firstOrNull,
+        lastMatch: fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull,
+      );
+    }).toList();
 
     setState(() {
-      realteam = parsedTeams;
+      myTeam = teams;
       isLoading = false;
     });
   }
@@ -160,15 +114,15 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final allMatches = realteam
-        .where((t) => t.nextMatch != null)
-        .map((t) => t.nextMatch!)
-        .toList();
+    final allMatches = myTeam
+        .expand((t) => fixturesByTeam(t.id))
+        .toList()
+      ..sort((a, b) => a.startingAt.compareTo(b.startingAt));
 
-    MatchData? liveMatch;
-    if (realteam.isNotEmpty && realteam[0].nextMatch != null) {
-      final match = realteam[0].nextMatch!;
-      final status = determineMatchStatus(DateTime.parse(match.date));
+    Fixture? liveMatch;
+    if (myTeam.isNotEmpty && myTeam[0].nextMatch != null) {
+      final match = myTeam[0].nextMatch!;
+      final status = determineMatchStatus(DateTime.parse(match.startingAt));
 
       if (status == 'LIVE') {
         liveMatch = match;
@@ -244,15 +198,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
                               children: [
-                                Image.asset(
-                                  "TeamLogos/Barcelona.png",
+                                Image.network(
+                                  myTeam.isNotEmpty ? myTeam[0].imagePath : '',
                                   height: 24,
                                   width: 24,
+                                  errorBuilder: (_, __, ___) => Image.asset(
+                                    'TeamLogos/Barcelona.png',
+                                    height: 24,
+                                    width: 24,
+                                  ),
                                 ),
                                 const Icon(Icons.keyboard_arrow_down, color: Colors.white),
                               ],
@@ -275,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 48),
                   const SectionHeader(title: "FAVORITE TEAM"),
-                  MyTeams(teams: realteam),
+                  MyTeams(teams: myTeam),
                   const SizedBox(height: 32),
                   Row(
                     children: [
@@ -291,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  HardcodedCalendar(),
+                  HardcodedCalendar(allMatches: allMatches),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "HIGHLIGHTS"),
                   MyHighlights(highlights: team),

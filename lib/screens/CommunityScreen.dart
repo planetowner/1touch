@@ -1,13 +1,31 @@
-// import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/All.dart';
 
+
+bool _hasLiveFixture(int teamId) {
+  return mockFixtures.any((f) =>
+  (f.homeTeamId == teamId || f.awayTeamId == teamId) &&
+      f.status == FixtureStatus.live);
+}
+
+String _formatFollowers(int count) {
+  if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M Followers';
+  if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K Followers';
+  return '$count Followers';
+}
+
+
 class Community extends StatefulWidget {
-  const Community({super.key});
+  final int teamId;
+
+  const Community({super.key, required this.teamId});
 
   @override
   State<Community> createState() => _CommunityState();
@@ -20,9 +38,20 @@ class _CommunityState extends State<Community>
   double _scrollOffset = 0.0;
   int _selectedTabIndex = 0;
 
+  late Team _team;
+  late bool _isLive;
+  late int _followerCount;
+
   @override
   void initState() {
     super.initState();
+
+    _team = mockTeamById(widget.teamId);
+    _isLive = _hasLiveFixture(widget.teamId);
+    _followerCount = mockUserFollowingTeams
+        .where((f) => f.teamId == widget.teamId)
+        .length;
+
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -51,7 +80,7 @@ class _CommunityState extends State<Community>
         elevation: 0,
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const Addpost()),
+          MaterialPageRoute(builder: (context) => const AddPost()),
         ),
         child: SvgPicture.asset(
           'assets/addpost_icon.svg',
@@ -128,18 +157,26 @@ class _CommunityState extends State<Community>
                 ],
               ), // your existing AppBar
 
-              // "Team Info" section with logo, LIVE, followers
+              // "Team Info"
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'TeamLogos/Barcelona.png',
+                      _team.imagePath != null
+                          ? Image.network(
+                        _team.imagePath!,
                         height: 52,
                         width: 52,
-                      ),
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'TeamLogos/Barcelona.png',
+                          width: 52,
+                          height: 52,
+                          fit: BoxFit.cover,
+                        )
+                      )
+                          : const Icon(Icons.shield, color: Colors.white54, size: 52),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -147,23 +184,26 @@ class _CommunityState extends State<Community>
                           children: [
                             Row(
                               children: [
-                                Text("Team Name", style: Heading4.style),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent,
-                                    borderRadius: BorderRadius.circular(12),
+                                Text(_team.name, style: Heading4.style),
+                                if (_isLive) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.redAccent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text("LIVE",
+                                        style: Body2_b.style
+                                            .copyWith(color: Colors.white)),
                                   ),
-                                  child: Text("LIVE",
-                                      style: Body2_b.style
-                                          .copyWith(color: Colors.white)),
-                                ),
+                                ],
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Text("1.4M Followers", style: Body2.style),
+                            Text(_formatFollowers(_followerCount),
+                                style: Body2.style),
                           ],
                         ),
                       ),
@@ -204,7 +244,10 @@ class _CommunityState extends State<Community>
                 ),
               ),
             ],
-            body: All(selectedTabIndex: _selectedTabIndex),
+            body: All(
+              selectedTabIndex: _selectedTabIndex,
+              posts: mockPosts,
+            ),
           )
         ],
       ),

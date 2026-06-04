@@ -2,30 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
-class Match {
-  final int? matchid;
-  final String homeTeam;
-  final String awayTeam;
-  final DateTime startTime;
-  final DateTime endTime;
-  final int? homeScore;
-  final int? awayScore;
-  final String league;
-  final String round;
-
-  Match({
-    required this.homeTeam,
-    required this.awayTeam,
-    required this.startTime,
-    required this.endTime,
-    this.homeScore,
-    this.awayScore,
-    required this.league,
-    required this.round,
-    this.matchid,
-  });
-}
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
 
 class MatchesTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -40,230 +18,195 @@ class _MatchesTabState extends State<MatchesTab> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _liveSectionKey = GlobalKey();
 
-  List<Match> pastMatches = [];
-  List<Match> liveMatches = [];
-  List<Match> upcomingMatches = [];
+  List<Fixture> pastMatches = [];
+  List<Fixture> liveMatches = [];
+  List<Fixture> upcomingMatches = [];
 
   @override
   void initState() {
     super.initState();
-    final List<Match> allMatches = getDummyMatches();
-    categorizeMatches(allMatches);
+    _loadFixtures();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToLiveSection();
     });
   }
 
-  void scrollToLiveSection() {
-    final RenderBox? renderBox =
-    _liveSectionKey.currentContext?.findRenderObject() as RenderBox?;
+  void _loadFixtures() {
+    final teamId = widget.team?['id'] as int?;
+    if (teamId == null) return;
 
-    if (renderBox != null) {
-      final offset = renderBox.localToGlobal(Offset.zero).dy;
-      final screenHeight = MediaQuery.of(context).size.height;
-      final liveHeight = renderBox.size.height;
-
-      // Center the live section in the screen
-      final scrollOffset = _scrollController.offset + offset - (screenHeight / 2) + (liveHeight / 2);
-
-      _scrollController.jumpTo(scrollOffset);
-    }
+    final all = fixturesByTeam(teamId);
+    pastMatches = all.where((f) => f.status == FixtureStatus.past).toList();
+    liveMatches = all.where((f) => f.status == FixtureStatus.live).toList();
+    upcomingMatches =
+        all.where((f) => f.status == FixtureStatus.upcoming).toList();
   }
 
-  void categorizeMatches(List<Match> allMatches) {
-    final now = DateTime.now();
-    pastMatches.clear();
-    liveMatches.clear();
-    upcomingMatches.clear();
-
-    for (var match in allMatches) {
-      if (match.endTime.isBefore(now)) {
-        pastMatches.add(match);
-      } else if (match.startTime.isBefore(now) && match.endTime.isAfter(now)) {
-        liveMatches.add(match);
-      } else {
-        upcomingMatches.add(match);
-      }
-    }
+  void scrollToLiveSection() {
+    final box =
+    _liveSectionKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final offset = box.localToGlobal(Offset.zero).dy;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final scrollOffset = _scrollController.offset +
+        offset -
+        (screenHeight / 2) +
+        (box.size.height / 2);
+    _scrollController.jumpTo(
+      scrollOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        ListView(
-          controller: _scrollController,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          children: [
-            if (pastMatches.isNotEmpty) buildSection("PAST", pastMatches),
-            buildSection("• LIVE", liveMatches),
-            if (upcomingMatches.isNotEmpty) buildSection("UPCOMING", upcomingMatches),
-          ],
-        ),
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            height: 30,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black, Colors.transparent],
-              ),
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        // ── PAST section ──────────────────────────────────────────────
+        if (pastMatches.isNotEmpty) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickyHeaderDelegate(title: 'PAST'),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (_, i) => buildMatchCard(pastMatches[i]),
+              childCount: pastMatches.length,
             ),
           ),
+        ],
+
+        // Invisible marker for scrollToLiveSection() measurement
+        SliverToBoxAdapter(
+          child: SizedBox(key: _liveSectionKey, height: 0),
         ),
+
+        // ── LIVE section ──────────────────────────────────────────────
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _StickyHeaderDelegate(title: '• LIVE'),
+        ),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+                (_, i) => buildMatchCard(liveMatches[i]),
+            childCount: liveMatches.length,
+          ),
+        ),
+
+        // ── UPCOMING section ──────────────────────────────────────────
+        if (upcomingMatches.isNotEmpty) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickyHeaderDelegate(title: 'UPCOMING'),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (_, i) => buildMatchCard(upcomingMatches[i]),
+              childCount: upcomingMatches.length,
+            ),
+          ),
+        ],
+
+        const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
       ],
     );
   }
 
-  Widget buildSection(String title, List<Match> matches, {Key? key}) {
-    final showDivider = title != "PAST"; // Only show for LIVE and UPCOMING
-    final isLive = title == "• LIVE";
-
-    return Container(
-      key: isLive ? _liveSectionKey : null,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (showDivider)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Divider(
-                color: Color(0xFF3D3D3D),
-                thickness: 0.7,
-              ),
-            ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              title,
-              style: Body2_b.style,
-            ),
-          ),
-          const SizedBox(height: 8),
-          ...matches.map(buildMatchCard),
-        ],
-      ),
-    );
-  }
-
-  Widget buildMatchCard(Match match) {
-    final isUpcoming = match.startTime.isAfter(DateTime.now());
-    // final isLive = match.startTime.isBefore(DateTime.now()) && match.endTime.isAfter(DateTime.now());
-
-    final matchId = match.matchid.toString();
-
-    // final isDimmed;
+  Widget buildMatchCard(Fixture fixture) {
+    final isUpcoming = fixture.status == FixtureStatus.upcoming;
+    final home = mockTeamById(fixture.homeTeamId);
+    final away = mockTeamById(fixture.awayTeamId);
+    final league = mockLeagueById(fixture.leagueId);
+    final dt = DateTime.parse(fixture.startingAt).toLocal();
 
     return GestureDetector(
-      onTap: () {
-        final now = DateTime.now();
-        String matchStatus;
-
-        if (match.endTime.isBefore(now)) {
-          matchStatus = 'past';
-        } else if (match.startTime.isBefore(now) && match.endTime.isAfter(now)) {
-          matchStatus = 'live';
-        } else {
-          matchStatus = 'upcoming';
-        }
-
-        GoRouter.of(context).push('/match/$matchId?status=$matchStatus');
-      },
+      onTap: () =>
+          GoRouter.of(context).push(
+              '/match/${fixture.fixtureId}?status=${fixture.status.name}'),
       child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Color(0xFF3D3D3D),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.shield, color: Colors.black), // Placeholder
-                  const SizedBox(width: 10),
-                  Text(match.homeTeam, style: Heading5.style),
-                  const Spacer(),
-                  isUpcoming
-                      ? Text(
-                    DateFormat('E, MMM d\nh:mm a').format(match.startTime),
-                    style: Body2.style,
-                    textAlign: TextAlign.center,
-                  )
-                      : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Scoreboard(
-                        match.homeScore?? 0,
-                        isDimmed: match.homeScore! < match.awayScore!
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        ":",
-                        style: Heading5.style,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(width: 4),
-                      Scoreboard(
-                          match.awayScore ?? 0,
-                          isDimmed: match.awayScore! < match.homeScore!
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(match.awayTeam, style: Heading5.style),
-                  const SizedBox(width: 10),
-                  const Icon(Icons.shield, color: Colors.black),
-                ],
-              ),
-              isUpcoming
-                  ? Column(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Color(0xFF3D3D3D),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Image.network(
+                  home.imagePath ?? '',
+                  width: 32, height: 32,
+                  errorBuilder: (_, __, ___) =>
+                      Image.asset(
+                          'TeamLogos/Barcelona.png', width: 32, height: 32),
+                ),
+                const SizedBox(width: 10),
+                Text(home.shortCode ?? home.name, style: Heading5.style),
+                const Spacer(),
+                isUpcoming
+                    ? Text(
+                  DateFormat('E, MMM d\nh:mm a').format(dt),
+                  style: Body2.style,
+                  textAlign: TextAlign.center,
+                )
+                    : Row(
                   children: [
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(width: 24, height: 1, color: Colors.white.withOpacity(0.3)),
-                      ],
+                    scoreboard(fixture.homeScore ?? 0,
+                        isDimmed: (fixture.homeScore ?? 0) <
+                            (fixture.awayScore ?? 0)),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text(":", style: Heading5.style),
                     ),
-                    const SizedBox(height: 8),
-                  ]
-              )
-                  : const SizedBox(height: 8),
+                    scoreboard(fixture.awayScore ?? 0,
+                        isDimmed: (fixture.awayScore ?? 0) <
+                            (fixture.homeScore ?? 0)),
+                  ],
+                ),
+                const Spacer(),
+                Text(away.shortCode ?? away.name, style: Heading5.style),
+                const SizedBox(width: 10),
+                // Away logo
+                Image.network(
+                  away.imagePath ?? '',
+                  width: 32, height: 32,
+                  errorBuilder: (_, __, ___) =>
+                      Image.asset(
+                          'TeamLogos/RealMadrid.png', width: 32, height: 32),
+                ),
+              ],
+            ),
+            if (isUpcoming) ...[
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    match.league,
-                    style: Body2.style,
-                    textAlign: TextAlign.center,
-                  ),
-                  const Text(
-                    " • ",
-                    style: Body2.style,
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    match.round,
-                    style: Body2.style,
-                    textAlign: TextAlign.center,
-                  ),
+                  Container(width: 24,
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.3)),
                 ],
               ),
-            ],
-          )
+              const SizedBox(height: 8),
+            ] else
+              const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(league.name, style: Body2.style),
+                const Text(" • ", style: Body2.style),
+                Text(fixture.roundName, style: Body2.style),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget Scoreboard(int score, {required bool isDimmed}){
+  Widget scoreboard(int score, {required bool isDimmed}) {
     return Opacity(
       opacity: isDimmed ? 0.5 : 1.0,
       child: Material(
@@ -278,73 +221,52 @@ class _MatchesTabState extends State<MatchesTab> {
             color: Color(0xFF3D3D3D),
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(
-            score.toString(),
-            textAlign: TextAlign.center,
-            style: Heading3.style,
-          ),
+          child: Text(score.toString(), textAlign: TextAlign.center,
+              style: Heading3.style),
         ),
       ),
     );
   }
+}
 
-  /// Dummy data — Replace this with your real API/data
-  List<Match> getDummyMatches() {
-    final now = DateTime.now();
-    return [
-      Match(
-        matchid: 10,
-        homeTeam: 'ABC',
-        awayTeam: 'DEF',
-        startTime: now.subtract(const Duration(hours: 10)),
-        endTime: now.subtract(const Duration(hours: 5)),
-        homeScore: 3,
-        awayScore: 3,
-        league: 'La Liga',
-        round: 'Matchday 24',
+
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final String title;
+
+  _StickyHeaderDelegate({required this.title});
+
+  static const double _kHeight = 50; // 16 top + text + ~16 gap + divider
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      // Solid background so list items hide cleanly behind the pinned header.
+      // The AppBar's own gradient background bleeds down behind/over this
+      // as needed — no gradient added inside the header itself.
+      // color: Colors.black,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(title, style: Body2_b.style),
+          ),
+          const Spacer(), // ~16px gap between text and divider
+          Container(height: 0.7, color: const Color(0xFF3D3D3D)),
+        ],
       ),
-      Match(
-        matchid: 20,
-        homeTeam: 'ABC',
-        awayTeam: 'DEF',
-        startTime: now.subtract(const Duration(hours: 5)),
-        endTime: now.subtract(const Duration(hours: 2)),
-        homeScore: 4,
-        awayScore: 0,
-        league: 'La Liga',
-        round: 'Matchday 25',
-      ),
-      Match(
-        matchid: 30,
-        homeTeam: 'ABC',
-        awayTeam: 'DEF',
-        startTime: now.subtract(const Duration(hours: 3)),
-        endTime: now.subtract(const Duration(hours: 1)),
-        homeScore: 1,
-        awayScore: 2,
-        league: 'La Liga',
-        round: 'Matchday 26',
-      ),
-      Match(
-        matchid: 40,
-        homeTeam: 'ABC',
-        awayTeam: 'DEF',
-        startTime: now.subtract(const Duration(minutes: 30)),
-        endTime: now.add(const Duration(minutes: 60)),
-        homeScore: 0,
-        awayScore: 0,
-        league: 'Copa del Rey',
-        round: 'Semi-Final',
-      ),
-      Match(
-        matchid: 50,
-        homeTeam: 'ABC',
-        awayTeam: 'DEF',
-        startTime: now.add(const Duration(days: 1)),
-        endTime: now.add(const Duration(days: 1, hours: 2)),
-        league: 'UCL',
-        round: 'Round of 16',
-      ),
-    ];
+    );
   }
+
+  @override
+  double get maxExtent => _kHeight;
+
+  @override
+  double get minExtent => _kHeight;
+
+  @override
+  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>
+      oldDelegate.title != title;
 }

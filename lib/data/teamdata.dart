@@ -1,49 +1,42 @@
-import 'matchdata.dart';
-
-const Map<int, String> leagueNames = {
-  8: "Premier League",
-  82: "La Liga",
-  301: "Serie A",
-  384: "Bundesliga",
-  564: "Ligue 1",
-};
+import 'package:onetouch/models/fixture.dart';
 
 
 class Team {
+  // Matches SQL `teams` table: team_id, name, short_code, image_path
   final int id;
   final String name;
   final String shortName;
   final String imagePath;
-  final int leagueId;
+
+  // Derived fields — populated from API responses (standings, fixtures)
+  // not stored in the teams table itself
   final Map<String, dynamic>? standing;
-  final MatchData? nextMatch;
-  final MatchData? lastMatch;
+  final Fixture? nextMatch;
+  final Fixture? lastMatch;
 
   Team({
     required this.id,
     required this.name,
     required this.shortName,
     required this.imagePath,
-    required this.leagueId,
-    required this.standing,
+    this.standing,
     this.nextMatch,
-    this.lastMatch
+    this.lastMatch,
   });
 
   factory Team.fromJson(Map<String, dynamic> json) {
     return Team(
-      id: json['id'] ?? 0,
+      id: json['team_id'] ?? json['id'] ?? 0,
       name: json['name'] ?? 'Unknown',
       shortName: json['short_code'] ?? '',
       imagePath: json['image_path'] ?? '',
-      leagueId: json['league_id'] ?? 0, // ✅ prevents Null→int crash
       standing: json['standing'] as Map<String, dynamic>?,
-      nextMatch: json['nextMatch'] != null
-          ? MatchData.fromJson(json['nextMatch'])
+      nextMatch: json['next_match'] != null
+          ? Fixture.fromJson(json['next_match'])
           : null,
-      lastMatch: json['lastMatch'] != null
-          ? MatchData.fromJson(json['lastMatch'])
-          : null, // ✅ added
+      lastMatch: json['last_match'] != null
+          ? Fixture.fromJson(json['last_match'])
+          : null,
     );
   }
 }

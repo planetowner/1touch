@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
-import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
-import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
-import 'package:onetouch/screens/MatchScreen_tabs/livechat.dart';
-import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
+import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
+
+import '../core/stylesheet_dark.dart';
 
 class MatchScreen extends StatefulWidget {
   final String matchId;
@@ -18,23 +19,28 @@ class MatchScreen extends StatefulWidget {
 
 class _MatchScreenState extends State<MatchScreen> {
   int selectedIndex = 0;
-
   late List<String> tabs;
+  Fixture? fixture;
 
   @override
   void initState() {
     super.initState();
 
-    // Assume you are passing matchStatus when navigating
+    // Look up fixture from mock data
+    final id = int.tryParse(widget.matchId);
+    fixture = id != null
+        ? mockFixtures.where((f) => f.fixtureId == id).firstOrNull
+        : null;
+
     if (widget.matchStatus == 'past') {
       tabs = ['MATCH INFO', 'HEAD TO HEAD', 'ANALYSIS'];
     } else if (widget.matchStatus == 'live') {
       tabs = ['MATCH INFO', 'HEAD TO HEAD', 'LIVE CHAT'];
     } else {
-      // upcoming
       tabs = ['MATCH PREVIEW', 'HEAD TO HEAD'];
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,15 +60,6 @@ class _MatchScreenState extends State<MatchScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            // title: Text(
-            //   tabs[selectedIndex].toUpperCase(), // ✅ dynamic title
-            //   style: const TextStyle(
-            //     color: Colors.white,
-            //     fontSize: 16,
-            //     fontWeight: FontWeight.bold,
-            //     letterSpacing: 1.2,
-            //   ),
-            // ),
             centerTitle: true,
             actions: [
               IconButton(
@@ -113,11 +110,9 @@ class _MatchScreenState extends State<MatchScreen> {
                           ),
                           child: Text(
                             tabs[index],
-                            style: TextStyle(
-                              color: isSelected ? Colors.black : Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
+                            style: isSelected
+                                ? Body2_b.style.copyWith(color: Colors.black)
+                                : Body2_b.style,
                           ),
                         ),
                       ),
@@ -137,19 +132,27 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget _buildTabContent() {
-    final selectedTab = tabs[selectedIndex];
+    if (fixture == null) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(48),
+          child: Text('Match not found', style: TextStyle(color: Colors.white)),
+        ),
+      );
+    }
 
+    final selectedTab = tabs[selectedIndex];
     switch (selectedTab) {
       case 'MATCH INFO':
-        return MatchInfoTab(matchId: widget.matchId, matchStatus: widget.matchStatus,);
+        return MatchInfoTab(fixture: fixture!, matchStatus: widget.matchStatus);
       case 'MATCH PREVIEW':
-        return MatchPreviewTab(matchId: widget.matchId);
+        return MatchPreviewTab(fixture: fixture!);
       case 'HEAD TO HEAD':
-        return H2HTab();
+        return H2HTab(fixture: fixture!);
       case 'ANALYSIS':
-        return AnalysisTab();
+        return AnalysisTab(fixture: fixture!);
       case 'LIVE CHAT':
-        return LiveChatTab();
+        return LiveChatTab(matchId: fixture!.fixtureId,);
       default:
         return const SizedBox.shrink();
     }

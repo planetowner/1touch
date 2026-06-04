@@ -1,89 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:convert';
-// import 'package:http/http.dart' as http;
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/models/fixture.dart';
+import '../models/league.dart';
 import 'TeamScreen_tabs/index.dart';
-
 import '../data/teamdata.dart';
-
-String fakeTeamsJson = """
-[
-  {
-    "id": 1,
-    "name": "FC Barcelona",
-    "short_code": "FCB",
-    "image_path": "TeamLogos/Barcelona.png",
-    "league_id": 82,
-    "standing": {
-      "rank": 2,
-      "points": 76,
-      "wins": 24,
-      "draws": 4,
-      "losses": 6,
-      "goal_for": 75,
-      "goal_against": 32
-    },
-    "nextMatch": {
-      "id": 101,
-      "league_id": 82,
-      "season_id": 2025,
-      "round_id": 35,
-      "venue_id": 500,
-      "home_team_id": 1,
-      "away_team_id": 2,
-      "starting_at": "2025-09-15T20:00:00Z",
-      "status": "NS",
-      "date": "Sun, Sep 15",
-      "time": "20:00",
-      "isLive": false,
-      "home_team": {
-        "id": 1,
-        "name": "FC Barcelona",
-        "short_code": "FCB",
-        "image_path": "TeamLogos/Barcelona.png"
-      },
-      "away_team": {
-        "id": 2,
-        "name": "Real Madrid",
-        "short_code": "RMA",
-        "image_path": "TeamLogos/RealMadrid.png"
-      },
-      "home_score": 0,
-      "away_score": 0
-    },
-    "transfers": [
-      {
-        "name": "Dani Olmo",
-        "fee": "€60M",
-        "in": true,
-        "oldteam": "RB Leipzig",
-        "year": "2030",
-        "image": "assets/players/olmo.png"
-      }
-    ]
-  },
-  {
-    "id": 2,
-    "name": "Real Madrid",
-    "short_code": "RMA",
-    "image_path": "TeamLogos/RealMadrid.png",
-    "league_id": 82,
-    "standing": {
-      "rank": 1,
-      "points": 80,
-      "wins": 26,
-      "draws": 2,
-      "losses": 6,
-      "goal_for": 82,
-      "goal_against": 28
-    },
-    "nextMatch": null,
-    "transfers": []
-  }
-]
-""";
 
 
 class TeamScreen extends StatefulWidget {
@@ -101,8 +24,6 @@ class _TeamScreenState extends State<TeamScreen>
   late final TabController _tabController;
   double _scrollOffset = 0.0;
 
-  // ✅ initialize and add the view-model map your UI uses
-  List<Team> teams = [];
   Map<String, dynamic>? team;
   bool isLoading = true;
 
@@ -160,47 +81,66 @@ class _TeamScreenState extends State<TeamScreen>
     _tabController = TabController(length: 5, vsync: this); // ✅ add init
 
     // 🔁 Toggle which source to use
-    loadFakeData();     // local fake JSON
+    loadMockData();     // local fake JSON
     // fetchTeamData(); // real API
   }
 
-  void loadFakeData() {
-    final List<dynamic> decoded = jsonDecode(fakeTeamsJson);
+  void loadMockData() {
+    // Look up team from mock data
+    final mockTeam = mockTeams.where((t) => t.teamId == widget.teamId).firstOrNull;
+    if (mockTeam == null) {
+      setState(() => isLoading = false);
+      return;
+    }
 
-    // 1) route param(teamId)로 팀 선택 (없으면 첫 번째)
-    final Map<String, dynamic> rawTeamMap = decoded.firstWhere(
-          (t) => t['id'] == widget.teamId,
-      orElse: () => decoded[0],
-    ) as Map<String, dynamic>;
+    final fixtures = fixturesByTeam(widget.teamId);
+    final nextMatch = fixtures.where((f) => f.status == FixtureStatus.upcoming).firstOrNull;
+    final lastMatch = fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull;
 
-    // 2) position 문자열 안전 생성 (예: "La Liga 2nd")
-    const leagueNames = {
-      8: "Premier League",
-      82: "La Liga",
-      301: "Serie A",
-      384: "Bundesliga",
-      564: "Ligue 1",
-    };
+    // Get league from fixtures
+    final leagueId = nextMatch?.leagueId ?? lastMatch?.leagueId;
+    final standing = leagueId != null ? standingByTeam(leagueId, widget.teamId) : null;
+    final leagueName = leagueId != null ? (leagueNames[leagueId] ?? 'League') : 'League';
+    final position = standing != null
+        ? '$leagueName ${ordinal(standing.position)}'
+        : leagueName;
 
-    final int leagueId = rawTeamMap['league_id'] ?? 0;
-    final Map<String, dynamic>? standing =
-    rawTeamMap['standing'] as Map<String, dynamic>?;
-    final int? rank = standing?['rank'] as int?;
-
-    final position = rank != null
-        ? "${leagueNames[leagueId] ?? 'League'} ${ordinal(rank)}"
-        : (leagueNames[leagueId] ?? 'League');
+    // Build Team view model
+    final teamObj = Team(
+      id: mockTeam.teamId,
+      name: mockTeam.name,
+      shortName: mockTeam.shortCode ?? '',
+      imagePath: mockTeam.imagePath ?? '',
+      standing: standing != null ? {
+        'position': standing.position,
+        'points': standing.points,
+        'matches_played': standing.matchesPlayed,
+        'won': standing.won,
+        'draw': standing.draw,
+        'lost': standing.lost,
+        'goals_for': standing.goalsFor,
+        'goals_against': standing.goalsAgainst,
+        'goal_diff': standing.goalDiff,
+      } : null,
+      nextMatch: nextMatch,
+      lastMatch: lastMatch,
+    );
 
     setState(() {
-      // UI에서 쓰는 team map은 "rawTeamMap + computed fields"로 구성
-      // nextMatch / transfers / standing 등은 rawTeamMap에 이미 들어있으니 그대로 유지됨
       team = {
-        ...rawTeamMap,
-        "position": position,
-        "logo": rawTeamMap["image_path"], // UI에서 팀 로고로 쓰는 키
-        "rankChange": 1, // 더미
+        'id': teamObj.id,
+        'name': teamObj.name,
+        'short_code': teamObj.shortName,
+        'image_path': teamObj.imagePath,
+        'position': position,
+        'logo': teamObj.imagePath,
+        'rankChange': 0,
+        'standing': teamObj.standing,
+        'next_match': nextMatch,
+        'last_match': lastMatch,
+        // Pass raw team object for widgets that need it
+        'teamObj': teamObj,
       };
-
       isLoading = false;
     });
   }
@@ -222,7 +162,7 @@ class _TeamScreenState extends State<TeamScreen>
       );
     }
 
-    if (team == null) { // ✅ exists now
+    if (team == null) {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(child: Text("Team Not Found")),
@@ -237,7 +177,7 @@ class _TeamScreenState extends State<TeamScreen>
       body: Stack(
         children: [
           Positioned(
-            top: 0, left: 0, right: 0, height: 400,
+            top: 0, left: 0, right: 0, height: 550,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
@@ -275,36 +215,39 @@ class _TeamScreenState extends State<TeamScreen>
                   padding: const EdgeInsets.only(left: 8, top: 30),
                   child: Row(
                     children: [
-                      // render network or asset seamlessly
-                      (team?["logo"] as String).startsWith('http')
-                          ? Image.network(
-                        team?["logo"] as String,
+                      Image.network(
+                        team?['logo'],
                         height: 52, width: 53, fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.red),
-                      )
-                          : Image.asset(
-                        team?["logo"] as String,
-                        height: 52, width: 53,
-                        // clipBehavior: Clip.antiAlias,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'TeamLogos/Barcelona.png', height: 52, width: 53,
+                        ),
                       ),
                       const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(team?["name"] as String, style: Heading4.style),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("${team?["position"]}", style: Body2.style),
-                              Icon(Icons.arrow_drop_up, size: 16,),
-                              Text(
-                                  team?["rankChange"] != 0 ? " ${team?["rankChange"]}" : "",
-                                  style: Eyebrow.style
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              // '1. Fußballclub Heidenheim 1846 e.V',
+                              team?['name'],
+                              style: Heading4.style,
+                              maxLines: 1, // Ensure it stays on one line
+                              overflow: TextOverflow.ellipsis, // Now this will work correctly
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(team!['position'] as String, style: Body2.style),
+                                const Icon(Icons.arrow_drop_up, size: 16, color: Colors.green),
+                                Text(
+                                  team!['rankChange'] != 0 ? ' ${team!['rankChange']}' : '',
+                                  style: Eyebrow.style,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
                 ),

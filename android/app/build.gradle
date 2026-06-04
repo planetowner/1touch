@@ -1,23 +1,30 @@
 plugins {
     id "com.android.application"
+    // START: FlutterFire Configuration
+    id 'com.google.gms.google-services'
+    // END: FlutterFire Configuration
     id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
 
 android {
-    namespace = "com.example.onetouch"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    namespace = "com.example.onetouch" // 패키지명 확인
+    compileSdk = 36 // 최신 Gradle은 높은 SDK 버전을 선호합니다.
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"
     }
+
+
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
@@ -37,12 +44,4 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
-
-    dependencies {
-        implementation("androidx.customview:customview:1.1.0")
-    }
-}
-
-flutter {
-    source = "../.."
 }

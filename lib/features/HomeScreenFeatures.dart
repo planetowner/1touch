@@ -1,7 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../data/teamdata.dart';
+import '../models/fixture.dart';
+import '../models/league.dart';
+import '../models/mock_data.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/stylesheet_dark.dart";
 
@@ -89,13 +93,29 @@ class TeamSelectionSheet extends StatefulWidget {
 }
 
 class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
+  // Debug code
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   for (final id in followingTeamIds(1001)) {
+  //     final fixtures = fixturesByTeam(id);
+  //     print('teamId: $id, fixtures count: ${fixtures.length}, leagueName: ${leagueNames[fixtures.firstOrNull?.leagueId]}');
+  //   }
+  // }
+
   // Data moved inside the State class
-  final List<Map<String, dynamic>> _followingTeams = [
-    {'name': 'FC Barcelona', 'league': 'La Liga 1st', 'logo': 'TeamLogos/Barcelona.png', 'isSelected': true},
-    {'name': 'Real Madrid', 'league': 'La Liga 2nd', 'logo': 'TeamLogos/RealMadrid.png', 'isSelected': false},
-    {'name': 'Atletico Madrid', 'league': 'La Liga 3rd', 'logo': 'TeamLogos/AtleticoMadrid.png', 'isSelected': false},
-    {'name': 'Sevilla FC', 'league': 'La Liga 4th', 'logo': 'TeamLogos/Sevilla.png', 'isSelected': false},
-  ];
+  final List<Map<String, dynamic>> _followingTeams = followingTeamIds(1001).map((id) {
+    final t = mockTeamById(id);
+    final leagueId = fixturesByTeam(id).firstOrNull?.leagueId;
+    final position = leagueId != null ? standingByTeam(leagueId, id)?.position : null;
+    final leagueName = leagueId != null ? (leagueNames[leagueId] ?? '') : '';
+    return <String, dynamic>{
+      'name': t.name,
+      'league': position != null ? '$leagueName ${ordinal(position)}' : leagueName,
+      'logo': t.imagePath ?? '',
+      'isSelected': id == mockUserProfiles.firstWhere((p) => p.userId == 1001).favoriteTeamId,
+    };
+  }).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -129,12 +149,19 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                       team['logo'],
                       width: 24,
                       height: 24,
-                      errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.error, color: Colors.white),
+                      errorBuilder: (context, error, stackTrace) =>Image.asset(
+                        'TeamLogos/Barcelona.png',
+                        height: 24,
+                        width: 24,
+                      ),
                     ),
                   ),
-                  title: Text(team['name'], style: Body1_b.style),
-                  subtitle: Text(team['league'], style: Body2.style),
+                  title: Text(
+                    team['name'],
+                    style: Body1_b.style,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(team['league'] ?? '', style: Body2.style),
                   trailing: team['isSelected']
                       ? const Icon(Icons.check, color: Colors.white)
                       : null,
@@ -187,10 +214,13 @@ class MyTeams extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (teams.isEmpty) return SizedBox.shrink();
-    final team = teams[0]; // Show only the first favorite team
+    final team = teams[0];
     final match = team.nextMatch;
-    final rank = team.standing?['rank'];
-    final leagueName = leagueNames[team.leagueId] ?? 'Unknown League';
+    final leagueId = match?.leagueId ?? team.lastMatch?.leagueId;
+    final leagueName = leagueNames[leagueId] ?? '';
+    final rank = leagueId != null
+        ? standingByTeam(leagueId, team.id)?.position
+        : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -222,28 +252,38 @@ class MyTeams extends StatelessWidget {
                         team.imagePath,
                         width: 50,
                         height: 50,
-                        errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.error, color: Colors.red),
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'TeamLogos/Barcelona.png',
+                          height: 50,
+                          width: 50,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(team.name, style: Heading3.style),
-                        Row(
-                          children: [
-                            Text(
-                              "$leagueName ${rank != null ? ordinal(rank) : '-'}",
-                              style: Body2.style,
-                            ),
-                            const Icon(Icons.arrow_drop_up,
-                                color: Colors.green),
-                            const Text("1", style: Body2.style),
-                          ],
-                        )
-                      ],
-                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            team.name,
+                            // '1. Fußballclub Heidenheim 1846 e.V',
+                            style: Heading3.style,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                "$leagueName ${rank != null ? ordinal(rank) : '-'}",
+                                style: Body2.style,
+                              ),
+                              const Icon(Icons.arrow_drop_up,
+                                  color: Colors.green),
+                              const Text("1", style: Body2.style),
+                            ],
+                          )
+                        ],
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -254,34 +294,40 @@ class MyTeams extends StatelessWidget {
               if (match != null)
                 GestureDetector(
                     onTap: () {
-                      final matchDateTime = DateTime.parse(match.date);
-                      final status = determineMatchStatus(matchDateTime);
-                      context.push('/match/${match.id}?status=$status');
+                      final status = match.status.name;
+                      context.push('/match/${match.fixtureId}?status=$status');
                     },
                     child: MatchCard(
                       match: match,
-                      leagueName: leagueNames[team.leagueId], // 선택
+                      leagueName: leagueNames[match.leagueId],
                     )),
 
               const SizedBox(height: 12),
 
-              // HARDCODED SECOND MATCH (still dummy)
-              GestureDetector(
-                onTap: () {
-                  const matchId = "300";
-                  final matchDateTime = DateTime(2025, 9, 20, 15, 30);
-                  final status = determineMatchStatus(matchDateTime);
-                  context.push('/match/$matchId?status=$status');
-                },
-                child: MatchCard2(
-                  date: 'Sat, Sep 20 3:30 PM',
-                  venue: 'Venue Name',
-                  team1shortname: "FCB",
-                  team1Logo: 'TeamLogos/Barcelona.png',
-                  team2shortname: "GIR",
-                  team2Logo: 'TeamLogos/Girona.png',
+              // LAST MATCH
+              if (team.lastMatch != null)
+                GestureDetector(
+                  onTap: () {
+                    final last = team.lastMatch!;
+                    final status = last.status.name;
+                    context.push('/match/${last.fixtureId}?status=$status');
+                  },
+                  child: () {
+                    final last = team.lastMatch!;
+                    final home = mockTeamById(last.homeTeamId);
+                    final away = mockTeamById(last.awayTeamId);
+                    return MatchCard2(
+                      date: DateFormat('EEE, MMM d h:mm a').format(DateTime.parse(last.startingAt).toLocal()),
+                      venue: '',
+                      team1shortname: home.shortCode ?? home.name,
+                      team1Logo: home.imagePath ?? '',
+                      team2shortname: away.shortCode ?? away.name,
+                      team2Logo: away.imagePath ?? '',
+                      homeScore: last.homeScore ?? 0,
+                      awayScore: last.awayScore ?? 0,
+                    );
+                  }(),
                 ),
-              ),
             ],
           ),
         ),
@@ -293,53 +339,51 @@ class MyTeams extends StatelessWidget {
 class CalendarEvent {
   final String logoAsset;
   final Color dotColor;
-  CalendarEvent(this.logoAsset, this.dotColor);
+  final int fixtureId;
+  final String status; // 'past' | 'live' | 'upcoming'
+
+  CalendarEvent({
+    required this.logoAsset,
+    required this.dotColor,
+    required this.fixtureId,
+    required this.status,
+  });
 }
 
 class HardcodedCalendar extends StatefulWidget {
-  const HardcodedCalendar({super.key});
+  final List<Fixture> allMatches;
+
+  const HardcodedCalendar({super.key, required this.allMatches});
 
   @override
   State<HardcodedCalendar> createState() => _HardcodedCalendarState();
 }
 
 class _HardcodedCalendarState extends State<HardcodedCalendar> {
-  DateTime _currentMonth =
-  DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
 
   // Dynamic events generator - automatically creates events for any month/year
   Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(DateTime month) {
     final events = <DateTime, List<CalendarEvent>>{};
-    final random = Random(month.month + month.year * 12); // Seed for consistent results
 
-    final teamLogos = [
-      'TeamLogos/Barcelona.png',
-      'TeamLogos/Barcelona.png',
-      'TeamLogos/Barcelona.png',
-      'TeamLogos/Barcelona.png',
-    ];
+    for (final fixture in widget.allMatches) {
+      final dt = DateTime.parse(fixture.startingAt).toLocal();
+      final dateOnly = DateTime(dt.year, dt.month, dt.day);
+      if (dt.year != month.year || dt.month != month.month) continue;
 
-    final colors = [Colors.red, Colors.blue, Colors.green, Colors.orange];
+      final team = mockTeamById(fixture.homeTeamId);
+      final color = switch (fixture.competitionType) {
+        CompetitionType.league => Colors.red,
+        CompetitionType.europe => Colors.blue,
+        CompetitionType.cup => Colors.green,
+      };
 
-    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    final eventDays = <int>[];
-
-    // Generate 4-8 random event days per month
-    final numEvents = 4 + random.nextInt(5);
-    while (eventDays.length < numEvents) {
-      final day = 1 + random.nextInt(daysInMonth);
-      if (!eventDays.contains(day)) {
-        eventDays.add(day);
-      }
-    }
-
-    // Create events for selected days
-    for (final day in eventDays) {
-      final logo = teamLogos[random.nextInt(teamLogos.length)];
-      final color = colors[random.nextInt(colors.length)];
-      events[DateTime(month.year, month.month, day)] = [
-        CalendarEvent(logo, color)
-      ];
+      events.putIfAbsent(dateOnly, () => []).add(CalendarEvent(
+        logoAsset: team.imagePath ?? '',
+        dotColor: color,
+        fixtureId: fixture.fixtureId,
+        status: fixture.status.name,
+      ));
     }
 
     return events;
@@ -445,36 +489,28 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Container(
-                width: 16,
-                height: 16,
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                "UCL",
-                style: Body2_b.style,
-              ),
+              _buildLegendDot(Colors.red, 'League'),
               const SizedBox(width: 16),
-              Container(
-                width: 16,
-                height: 16,
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                "CDR",
-                style: Body2_b.style,
-              ),
+              _buildLegendDot(Colors.blue, 'UCL'),
+              const SizedBox(width: 16),
+              _buildLegendDot(Colors.green, 'Cup'),
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildLegendDot(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Text(label, style: Body2_b.style),
       ],
     );
   }
@@ -489,7 +525,7 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
 
     return Column(
       children: [
-        // ── top divider under the month title; starts at the first real day
+        // top divider under the month title; starts at the first real day
         LayoutBuilder(
           builder: (context, constraints) {
             final cellW = constraints.maxWidth / 7.0;
@@ -521,8 +557,8 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
               ),
 
               // Row divider: full width except
-              //   • first row: start under day 1 (left inset)
-              //   • penultimate row: stop at last real day (right inset)
+              // first row: start under day 1 (left inset)
+              // penultimate row: stop at last real day (right inset)
               if (week < weekCount - 1)
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -565,70 +601,70 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
     final dayEvents = events[date] ?? [];
     final today = DateTime.now();
     final todayDateOnly = DateTime(today.year, today.month, today.day);
-
     final isHighlighted = date == todayDateOnly;
-
-// Flutter의 weekday: Monday = 1, Sunday = 7
+    // Flutter의 weekday: Monday = 1, Sunday = 7
     final isWeekend = date.weekday == DateTime.saturday ||
         date.weekday == DateTime.sunday;
-    return Container(
-      height: 90,
-      decoration: BoxDecoration(
-        color: isHighlighted ? Colors.black : Colors.transparent,
-        borderRadius: isHighlighted ? BorderRadius.circular(8) : null,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Day number
-          Text(
-            dayNumber.toString(),
-            style: Heading4.style.copyWith(
-              color: isWeekend ? Colors.grey.shade500 : Colors.white,
-            ),
-          ),
 
-          const SizedBox(height: 8),
-
-          // Event logo and dot
-          if (dayEvents.isNotEmpty) ...[
-            SizedBox(
-              width: double.infinity,
-              height: 28,
-              child: Stack(
-                children: [
-                  Positioned(
-                    child: Image.asset(
-                      dayEvents.first.logoAsset,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Container(
-                        decoration: BoxDecoration(
-                          color: dayEvents.first.dotColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Icon(Icons.sports_soccer,
-                            color: Colors.white, size: 20),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: dayEvents.first.dotColor,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
+    return GestureDetector(
+      onTap: dayEvents.isNotEmpty
+          ? () => context.push(
+          '/match/${dayEvents.first.fixtureId}?status=${dayEvents.first.status}')
+          : null,
+      child: Container(
+        height: 90,
+        decoration: BoxDecoration(
+          color: isHighlighted ? Colors.black : Colors.transparent,
+          borderRadius: isHighlighted ? BorderRadius.circular(8) : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              dayNumber.toString(),
+              style: Heading4.style.copyWith(
+                color: isWeekend ? Colors.grey.shade500 : Colors.white,
               ),
             ),
-          ] else
-            const SizedBox(height: 28), // Maintain spacing when no events
-        ],
+            const SizedBox(height: 8),
+            if (dayEvents.isNotEmpty) ...[
+              SizedBox(
+                width: double.infinity,
+                height: 28,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.network(
+                      dayEvents.first.logoAsset,
+                      width: 28,
+                      height: 28,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        randomTeamLogo(),
+                        width: 28,
+                        height: 28,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: 3,
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: dayEvents.first.dotColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else
+              const SizedBox(height: 28),
+          ],
+        ),
       ),
     );
   }

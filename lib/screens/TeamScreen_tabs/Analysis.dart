@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:intl/intl.dart';
+import 'package:onetouch/models/mock_data.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
+import 'package:onetouch/models/team.dart';
 
 class AnalysisTab extends StatelessWidget {
   final Map<String, dynamic>? team;
@@ -17,11 +17,236 @@ class AnalysisTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AttributesSection(team: team),
           BestElevenSection(),
           CurrentFormSection(),
           ProbabilitySection(),
         ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTES — radar chart comparing the current team to a chosen reference
+// (same team, different season).
+// ─────────────────────────────────────────────────────────────────────────────
+
+class AttributesSection extends StatefulWidget {
+  final Map<String, dynamic>? team;
+  const AttributesSection({super.key, required this.team});
+
+  @override
+  State<AttributesSection> createState() => _AttributesSectionState();
+}
+
+class _AttributesSectionState extends State<AttributesSection> {
+  TeamAttributeScores? _myScores;
+  TeamAttributeScores? _comparisonScores;
+  List<TeamAttributeScores> _comparisonOptions = const [];
+
+  int get _teamId => widget.team?['id'] as int? ?? 83; // default Barcelona
+
+  @override
+  void initState() {
+    super.initState();
+    final all = teamAttributesByTeam(_teamId);
+    if (all.isEmpty) return;
+
+    // MY TEAM is always the current season — find it via the isCurrent flag,
+    // never assume "newest seasonId". Falls back to newest if no current match.
+    final currentSeasonIds =
+    mockSeasons.where((s) => s.isCurrent).map((s) => s.seasonId).toSet();
+    _myScores = all.firstWhere(
+          (a) => currentSeasonIds.contains(a.seasonId),
+      orElse: () => all.first,
+    );
+
+    // Everything except the current season is a comparison candidate.
+    _comparisonOptions =
+        all.where((a) => a.seasonId != _myScores!.seasonId).toList();
+    _comparisonScores =
+    _comparisonOptions.isNotEmpty ? _comparisonOptions.first : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_myScores == null) {
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
+        child: Text('No attribute data available',
+            style: TextStyle(color: Colors.white54)),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header: title + comparison picker ────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('ATTRIBUTES', style: Body2_b.style),
+              if (_comparisonOptions.isNotEmpty) _buildComparisonPill(),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // ── Radar chart container ────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF272828),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: _buildRadarChart(),
+          ),
+
+          // ── Legend ───────────────────────────────────────────────────
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _legendDot(const Color(0xFFE8434A), 'MY TEAM'),
+              if (_comparisonScores != null) ...[
+                const SizedBox(width: 20),
+                _legendDot(
+                  Colors.white,
+                  '${_comparisonScores!.seasonLabel} '
+                      '${mockTeamById(_comparisonScores!.teamId).name.toUpperCase()}',
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Comparison picker pill (season-only for now) ────────────────────────
+
+  Widget _buildComparisonPill() {
+    final team = mockTeamById(_teamId);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3D3D3D),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: _comparisonScores?.seasonId,
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+          dropdownColor: const Color(0xFF3D3D3D),
+          style: Body2_b.style,
+          onChanged: (seasonId) {
+            if (seasonId == null) return;
+            setState(() {
+              _comparisonScores = _comparisonOptions
+                  .firstWhere((s) => s.seasonId == seasonId);
+            });
+          },
+          selectedItemBuilder: (_) => _comparisonOptions
+              .map((s) => _pillContent(s.seasonLabel, team))
+              .toList(),
+          items: _comparisonOptions
+              .map(
+                (s) => DropdownMenuItem(
+              value: s.seasonId,
+              child: Text('${s.seasonLabel}  ${team.shortCode ?? team.name}',
+                  style: Body2_b.style),
+            ),
+          )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _pillContent(String seasonLabel, Team team) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(seasonLabel, style: Body2_b.style),
+        const SizedBox(width: 8),
+        Container(width: 1, height: 14, color: Colors.white24),
+        const SizedBox(width: 8),
+        Image.network(
+          team.imagePath ?? '',
+          width: 16,
+          height: 16,
+          errorBuilder: (_, __, ___) =>
+          const Icon(Icons.shield, size: 16, color: Colors.white54),
+        ),
+        const SizedBox(width: 6),
+        Text(team.shortCode ?? team.name, style: Body2_b.style),
+      ],
+    );
+  }
+
+  // ── Radar chart ─────────────────────────────────────────────────────────
+
+  Widget _buildRadarChart() {
+    return SizedBox(
+      height: 260,
+      child: RadarChart(
+        RadarChartData(
+          radarShape: RadarShape.polygon,
+          tickCount: 4,
+          gridBorderData: BorderSide(color: Colors.white.withOpacity(0.30), width: 1),
+          radarBorderData: BorderSide(color: Colors.white.withOpacity(0.30), width: 1),
+          tickBorderData: BorderSide(color: Colors.white.withOpacity(0.30), width: 1),
+          ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 0),
+
+          getTitle: (index, _) => RadarChartTitle(
+            text: teamAttributeLabels[index],
+            angle: 0,
+          ),
+          titleTextStyle: Eyebrow.style,
+          titlePositionPercentageOffset: 0.15,
+
+          dataSets: [
+            // MY TEAM — red
+            RadarDataSet(
+              fillColor: const Color(0xFFE8434A).withOpacity(0.3),
+              borderColor: const Color(0xFFE8434A),
+              borderWidth: 2,
+              entryRadius: 3,
+              dataEntries: _myScores!.radarValues
+                  .map((v) => RadarEntry(value: v))
+                  .toList(),
+            ),
+            // Comparison — white outline
+            if (_comparisonScores != null)
+              RadarDataSet(
+                fillColor: Colors.white.withOpacity(0.1),
+                borderColor: Colors.white.withOpacity(0.85),
+                borderWidth: 2,
+                entryRadius: 3,
+                dataEntries: _comparisonScores!.radarValues
+                    .map((v) => RadarEntry(value: v))
+                    .toList(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _legendDot(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Text(label, style: Body2_b.style),
+      ],
     );
   }
 }
@@ -84,24 +309,24 @@ class _BestElevenSectionState extends State<BestElevenSection> {
 
           // Formation Grid (hardcoded 4-2-3-1)
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            decoration: BoxDecoration(
-              color: const Color(0xFF272828),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              children: [
-                _formationRow(["# Name"]),
-                const SizedBox(height: 24), // more spacing
-                _formationRow(["# Name", "# Name", "# Name"]),
-                const SizedBox(height: 24),
-                _formationRow(["# Name", "# Name"]),
-                const SizedBox(height: 24),
-                _formationRow(["# Name", "# Name", "# Name", "# Name"]),
-                const SizedBox(height: 24),
-                _formationRow(["# Name"]),
-              ],
-            )
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF272828),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                children: [
+                  _formationRow(["# Name"]),
+                  const SizedBox(height: 24), // more spacing
+                  _formationRow(["# Name", "# Name", "# Name"]),
+                  const SizedBox(height: 24),
+                  _formationRow(["# Name", "# Name"]),
+                  const SizedBox(height: 24),
+                  _formationRow(["# Name", "# Name", "# Name", "# Name"]),
+                  const SizedBox(height: 24),
+                  _formationRow(["# Name"]),
+                ],
+              )
           )
         ],
       ),
@@ -410,4 +635,3 @@ class ProbabilitySection extends StatelessWidget {
     );
   }
 }
-

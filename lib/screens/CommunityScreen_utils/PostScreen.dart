@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/post_type.dart';
+import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
 
-class PostDetailScreen extends StatefulWidget {
-  final PostType postType;
+String _timeAgo(String createdAt) {
+  final created = DateTime.tryParse(createdAt) ?? DateTime.now();
+  final diff = DateTime.now().difference(created);
+  if (diff.inDays >= 1) return '${diff.inDays}d ago';
+  if (diff.inHours >= 1) return '${diff.inHours}h ago';
+  return '${diff.inMinutes}m ago';
+}
 
-  const PostDetailScreen({super.key, required this.postType});
+
+class PostDetailScreen extends StatefulWidget {
+  final Post post;
+
+  const PostDetailScreen({super.key, required this.post});
 
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -26,7 +34,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
-          // Clamp matches HomeScreen logic to stop calculating after 150px
           _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
         });
       });
@@ -42,6 +49,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget build(BuildContext context) {
     // 2. Calculate opacity (0.0 at top, 1.0 when scrolled down 150px)
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+    final post = widget.post;
+    final hasMedia = post.mediaUrl != null;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -129,12 +138,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 👤 Post content
+                    // Post content
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // User info
                           Row(
                             children: [
                               const CircleAvatar(
@@ -143,28 +153,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Username", style: Body1.style),
-                                  Text("# hrs ago",
-                                      style: Body2.style
-                                          .copyWith(color: Colors.white54)),
+                                  Text("User ${post.userId}", style: Body1.style),
+                                  Text(
+                                    _timeAgo(post.createdAt),
+                                    style: Body2.style.copyWith(color: Colors.white54),
+                                  ),
                                 ],
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
-                          Text("Title goes here", style: Body1_b.style),
+
+                          Text(post.title, style: Body1_b.style),
                           const SizedBox(height: 12),
-                          Text(
-                            "FC Barcelona is more than just a football club; it's a symbol of passion and pride for its fans..."
-                                "\n\nWith a rich history of success, including numerous La Liga and Champions League titles, Barcelona continues...",
-                            style: Body2.style,
-                          ),
+                          Text(post.body, style: Body2.style),
                           const SizedBox(height: 16),
 
                           // Media section
-                          if (widget.postType == PostType.video ||
-                              widget.postType == PostType.image)
-                            _buildMediaPreview(widget.postType),
+                          if (hasMedia) _buildMediaPreview(post.mediaUrl!),
+                          if (hasMedia) const SizedBox(height: 16),
+
                           const SizedBox(height: 16),
 
                           // Actions row
@@ -218,7 +226,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 💬 Comment section
+                    // Comment section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
@@ -294,37 +302,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  Widget _buildMediaPreview(PostType type) {
-    return Row(
-      children: [
-        Expanded(
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF3A3A3A),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: type == PostType.video
-                  ? const Icon(Icons.play_arrow, color: Colors.white, size: 48)
-                  : Image.asset("assets/highlight1.png", fit: BoxFit.cover),
-            ),
+  Widget _buildMediaPreview(String mediaUrl) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Image.network(
+          mediaUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: const Color(0xFF3A3A3A),
+            child: const Icon(Icons.image_not_supported_outlined,
+                color: Colors.white24, size: 48),
           ),
         ),
-        if (type == PostType.video) const SizedBox(width: 8),
-        if (type == PostType.video)
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3A3A3A),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-      ],
+      ),
     );
   }
 }

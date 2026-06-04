@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/features/betting_widgets.dart';
-
 import 'package:fl_chart/fl_chart.dart';
 
 class _StandingRow {
@@ -27,9 +29,8 @@ class _StandingRow {
 }
 
 class MatchPreviewTab extends StatefulWidget {
-  final String matchId;
-
-  const MatchPreviewTab({super.key, required this.matchId});
+  final Fixture fixture;
+  const MatchPreviewTab({super.key, required this.fixture});
 
   @override
   State<MatchPreviewTab> createState() => _MatchPreviewTabState();
@@ -88,14 +89,20 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   }
 
   Widget _buildHeader() {
+    final home = mockTeamById(widget.fixture.homeTeamId);
+    final away = mockTeamById(widget.fixture.awayTeamId);
+    final dt = DateTime.parse(widget.fixture.startingAt).toLocal();
+    final date = DateFormat('EEE, MMM d').format(dt);
+    final time = DateFormat('h:mm a').format(dt);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildTeamBlock("FCB", "TeamLogos/Barcelona.png"),
+        _buildTeamBlock(home.shortCode ?? home.name, home.imagePath ?? ''),
         Column(
           children: [
-            Text('Sun, Apr 27', style: Body2.style),
-            Text('3:00 PM', style: Body2.style),
+            Text(date, style: Body2.style),
+            Text(time, style: Body2.style),
             const SizedBox(height: 8),
             Opacity(
               opacity: 0.30,
@@ -112,7 +119,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             Text('Venue Name', style: Body2.style),
           ],
         ),
-        _buildTeamBlock("GIR", "TeamLogos/Girona.png"),
+        _buildTeamBlock(away.shortCode ?? away.name, away.imagePath ?? ''),
       ],
     );
   }
@@ -120,7 +127,12 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   Widget _buildTeamBlock(String name, String logoPath) {
     return Column(
       children: [
-        Image.asset(logoPath, width: 72, height: 72),
+        Image.network(
+          logoPath,
+          width: 72,
+          height: 72,
+          errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 72, height: 72),
+        ),
         const SizedBox(height: 4),
         Text(name, style: Body1.style),
       ],
@@ -139,17 +151,17 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
               // Grid rings
               gridBorderData: BorderSide(
-                color: Colors.white.withOpacity(0.30), // white 12%
+                color: Colors.white.withValues(alpha: 0.30), // white 12%
                 width: 1,
               ),
               // Outermost ring
               radarBorderData: BorderSide(
-                color: Colors.white.withOpacity(0.30),
+                color: Colors.white.withValues(alpha: 0.30),
                 width: 1,
               ),
               // Tick rings (same as grid)
               tickBorderData: BorderSide(
-                color: Colors.white.withOpacity(0.30),
+                color: Colors.white.withValues(alpha: 0.30),
                 width: 1,
               ),
 
@@ -180,7 +192,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
               dataSets: [
                 // Barcelona
                 RadarDataSet(
-                  fillColor: const Color(0xFFE8434A).withOpacity(0.3),
+                  fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
                   borderColor: const Color(0xFFE8434A),
                   borderWidth: 2,
                   entryRadius: 3,
@@ -195,8 +207,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 ),
                 // Girona
                 RadarDataSet(
-                  fillColor: Colors.white.withOpacity(0.10),
-                  borderColor: Colors.white.withOpacity(0.85),
+                  fillColor: Colors.white.withValues(alpha: 0.1),
+                  borderColor: Colors.white.withValues(alpha: 0.85),
                   borderWidth: 2,
                   entryRadius: 3,
                   dataEntries: const [
@@ -217,9 +229,9 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildLegendDot(const Color(0xFFE8434A), 'BARCELONA'),
+            _buildLegendDot(const Color(0xFFE8434A), mockTeamById(widget.fixture.homeTeamId).name.toUpperCase()),
             const SizedBox(width: 16),
-            _buildLegendDot(Colors.white, 'GIRONA'),
+            _buildLegendDot(Colors.white, mockTeamById(widget.fixture.awayTeamId).name.toUpperCase()),
           ],
         ),
       ],
@@ -245,6 +257,24 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   }
 
   Widget _buildLatestH2H() {
+    final homeId = widget.fixture.homeTeamId;
+    final awayId = widget.fixture.awayTeamId;
+
+    // Most recent past fixture between the two teams
+    final h2h = mockFixtures.where((f) =>
+    f.status == FixtureStatus.past &&
+        ((f.homeTeamId == homeId && f.awayTeamId == awayId) ||
+            (f.homeTeamId == awayId && f.awayTeamId == homeId))
+    ).lastOrNull;
+
+    if (h2h == null) return const SizedBox.shrink();
+
+    final home = mockTeamById(h2h.homeTeamId);
+    final away = mockTeamById(h2h.awayTeamId);
+    final dt = DateTime.parse(h2h.startingAt).toLocal();
+    final date = DateFormat('EEE, MMM d').format(dt);
+    final time = DateFormat('h:mm a').format(dt);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -259,18 +289,26 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildSimpleTeamCol("FCB", "TeamLogos/Barcelona.png"),
-              const SizedBox(height: 8),
-              _buildScoreBox('#'),
-              Column(
+              Row(
                 children: [
-                  Text("Sun, Sep 15", style: Body2.style),
-                  Text("10:15 AM", style: Body2.style),
+                  _buildSimpleTeamCol(home.shortCode ?? home.name, home.imagePath ?? ''),
+                  const SizedBox(width: 16),
+                  _buildScoreBox(h2h.homeScore?.toString() ?? '-'),
                 ],
               ),
-              _buildScoreBox('#'),
-              const SizedBox(height: 8),
-              _buildSimpleTeamCol("GIR", "TeamLogos/Girona.png"),
+              Column(
+                children: [
+                  Text(date, style: Body2.style),
+                  Text(time, style: Body2.style),
+                ],
+              ),
+              Row(
+                children: [
+                  _buildScoreBox(h2h.awayScore?.toString() ?? '-'),
+                  const SizedBox(width: 16),
+                  _buildSimpleTeamCol(away.shortCode ?? away.name, away.imagePath ?? ''),
+                ],
+              )
             ],
           ),
         ),
@@ -281,7 +319,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   Widget _buildSimpleTeamCol(String name, String asset) {
     return Column(
       children: [
-        Image.asset(asset, width: 48, height: 48),
+        Image.asset(
+            asset, width: 48, height: 48,
+        errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 48, height: 48),
+        ),
         const SizedBox(height: 4),
         Text(name, style: Body2.style),
       ],
@@ -326,13 +367,13 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
               Row(
                 children: [
                   Image.asset(
-                    'LeagueLogos/laliga.png',
-                    width: 22,
-                    height: 22,
+                    'assets/laliga.png',
+                    width: 24,
+                    height: 24,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.sports_soccer,
                       color: Color(0xFFE8434A),
-                      size: 22,
+                      size: 24,
                     ),
                   ),
                   const SizedBox(width: 10),

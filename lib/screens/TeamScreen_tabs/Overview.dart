@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
-// import 'Standing.dart';
-// import 'Analysis.dart';
 
 class OverviewTab extends StatelessWidget {
   final Map<String, dynamic>? team;

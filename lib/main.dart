@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/data/playerdata.dart';
+import 'package:onetouch/models/mock_data.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart';     // Imports all screens
@@ -17,9 +20,22 @@ import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/WelcomeScreen.dart';
 
 
+int _getFavoriteTeamId() {
+  return mockUserProfiles
+      .firstWhere((p) => p.userId == 1001)
+      .favoriteTeamId ?? 83;
+}
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // 이미 초기화된 경우 무시
+  }
+  runApp(const MyApp());
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -120,7 +136,7 @@ final GoRouter _router = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/community',
-            builder: (context, state) => const Community(),
+            builder: (context, state) => Community(teamId: _getFavoriteTeamId()),
           ),
         ]),
       ],
@@ -172,8 +188,9 @@ class MainScreen extends StatelessWidget {
   const MainScreen({super.key, required this.navigationShell});
 
   int getFavoriteTeamName() {
-    // This is just a placeholder. Replace with real user preference later.
-    return 1;
+    return mockUserProfiles
+        .firstWhere((p) => p.userId == 1001)
+        .favoriteTeamId ?? 83;
   }
 
   @override

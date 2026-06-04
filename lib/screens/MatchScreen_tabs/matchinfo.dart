@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/matchdata.dart';
+import 'package:flutter/material.dart';
+import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
 import 'package:onetouch/features/KaneRest.dart';
 
+import '../../data/matchdata.dart';
+
 class MatchInfoTab extends StatelessWidget {
-  final String matchId;
+  final Fixture fixture;
   final String matchStatus; // "past" | "live"
 
   MatchInfoTab({
     super.key,
-    required this.matchId,
+    required this.fixture,
     required this.matchStatus,
   });
 
@@ -96,18 +101,23 @@ class MatchInfoTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final homeTeam = mockTeamById(fixture.homeTeamId);
+    final awayTeam = mockTeamById(fixture.awayTeamId);
+    final homeScore = fixture.homeScore?.toString() ?? '#';
+    final awayScore = fixture.awayScore?.toString() ?? '#';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           MatchScoreHeader(
-            homeLogoAsset: 'TeamLogos/Barcelona.png',
-            awayLogoAsset: 'TeamLogos/Girona.png',
-            homeTeamName: 'Team Name',
-            awayTeamName: 'Team Name',
-            homeScore: '#',
-            awayScore: '#',
+            homeLogoAsset: homeTeam.imagePath ?? '',
+            awayLogoAsset: awayTeam.imagePath ?? '',
+            homeTeamName: homeTeam.name,
+            awayTeamName: awayTeam.name,
+            homeScore: homeScore,
+            awayScore: awayScore,
             statusLabel: isLive ? '42:02' : 'Final',
             venueName: 'Venue Name',
           ),
@@ -150,8 +160,7 @@ class MatchInfoTab extends StatelessWidget {
     showPlayerMatchStatSheet(context, _buildStatData(player));
   }
 
-  /// Map a LineupPlayer to PlayerMatchStatData.
-  /// Replace stub sections with real data from your API model.
+  /// todo: Replace stub sections with real data from your API model.
   PlayerMatchStatData _buildStatData(LineupPlayer player) {
     return PlayerMatchStatData(
       name: player.name,

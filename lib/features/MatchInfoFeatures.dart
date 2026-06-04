@@ -4,7 +4,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/matchdata.dart';
 
 
-enum LineupEventType { yellowCard, redCard, goal, subIn, subOut }
+enum LineupEventType { yellowCard, redCard, goal, subIn, subOut, assist, injury }
 
 class LineupEvent {
   final LineupEventType type;
@@ -90,7 +90,12 @@ class _TeamBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Image.asset(logoAsset, width: 72, height: 72),
+        Image.network(
+          logoAsset,
+          width: 72,
+          height: 72,
+          errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 72, height: 72),
+        ),
         const SizedBox(height: 8),
         Text(name, style: Body1.style),
       ],
@@ -443,6 +448,7 @@ class _PlayerDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final minute = player.events.map((e) => e.minute).whereType<int>().firstOrNull;
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -452,11 +458,26 @@ class _PlayerDot extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _PlayerCircle(number: player.number, isHome: isHome),
-              if (player.events.isNotEmpty) ...[
-                const SizedBox(width: 3),
-                _EventBadges(events: player.events),
-              ],
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _PlayerCircle(number: player.number, isHome: isHome),
+                  if (player.events.isNotEmpty)
+                    Positioned(
+                      right: -3,
+                      bottom: -2,
+                      child: _EventBadges(events: player.events),
+                    ),
+                  if (minute != null)
+                    Positioned(
+                      left: 40,
+                      bottom: -5,
+                      child: Center(
+                        child: Text("$minute'", style: Body2.style),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 5),
@@ -464,7 +485,7 @@ class _PlayerDot extends StatelessWidget {
             width: 64,
             child: Text(
               player.name,
-              style: Body2.style,
+              style: Eyebrow.style,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -489,14 +510,14 @@ class _PlayerCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 40,
-      height: 40,
+      width: 32,
+      height: 32,
       decoration: BoxDecoration(
         color: isHome ? _accent : Colors.white,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -505,12 +526,7 @@ class _PlayerCircle extends StatelessWidget {
       child: Center(
         child: Text(
           '$number',
-          style: TextStyle(
-            color: isHome ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w800,
-            fontSize: 14,
-            height: 1,
-          ),
+          style: Heading5.style.copyWith(color: isHome ? Colors.white : Colors.black,)
         ),
       ),
     );
@@ -525,17 +541,11 @@ class _EventBadges extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final minute = events.map((e) => e.minute).whereType<int>().firstOrNull;
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         for (final e in events) _iconFor(e),
-        if (minute != null) ...[
-          const SizedBox(width: 2),
-          Text("$minute'", style: Body2.style),
-        ],
       ],
     );
   }
@@ -544,9 +554,9 @@ class _EventBadges extends StatelessWidget {
     switch (event.type) {
       case LineupEventType.yellowCard:
         return Container(
-          width: 9,
-          height: 12,
-          margin: const EdgeInsets.only(right: 2),
+          width: 7,
+          height: 10,
+          margin: const EdgeInsets.only(left: 1),
           decoration: BoxDecoration(
             color: const Color(0xFFFFCC00),
             borderRadius: BorderRadius.circular(1.5),
@@ -554,36 +564,81 @@ class _EventBadges extends StatelessWidget {
         );
       case LineupEventType.redCard:
         return Container(
-          width: 9,
-          height: 12,
-          margin: const EdgeInsets.only(right: 2),
+          width: 7,
+          height: 10,
+          margin: const EdgeInsets.only(left: 1),
           decoration: BoxDecoration(
             color: const Color(0xFFE8000A),
             borderRadius: BorderRadius.circular(1.5),
           ),
         );
       case LineupEventType.goal:
-        return const Padding(
-          padding: EdgeInsets.only(right: 2),
-          child: Icon(Icons.sports_soccer, size: 14, color: Colors.white),
+        return Container(
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.only(left: 1),
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.sports_soccer, size: 10, color: Colors.black),
+        );
+      case LineupEventType.assist:
+        return Container(
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.only(left: 1),
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Text(
+            'A',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 8,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
         );
       case LineupEventType.subIn:
-        return const Padding(
-          padding: EdgeInsets.only(right: 2),
-          child: Icon(Icons.swap_horiz_rounded, size: 14, color: Color(0xFF4CAF50)),
+        return Container(
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.only(left: 1),
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Color(0xFF4CAF50),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.arrow_upward_rounded, size: 9, color: Colors.white),
         );
       case LineupEventType.subOut:
-        return Padding(
-          padding: const EdgeInsets.only(right: 2),
-          child: Container(
-            width: 14,
-            height: 14,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8000A),
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: const Icon(Icons.arrow_downward_rounded, size: 9, color: Colors.white),
+        return Container(
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.only(left: 1),
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Color(0xFFE8000A),
+            shape: BoxShape.circle,
           ),
+          child: const Icon(Icons.arrow_downward_rounded, size: 9, color: Colors.white),
+        );
+      case LineupEventType.injury:
+        return Container(
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.only(left: 1),
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Color(0xFFE8000A),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.add, size: 10, color: Colors.white),
         );
     }
   }

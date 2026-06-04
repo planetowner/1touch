@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:intl/intl.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/features/StandingFeatures.dart';
 
 class StandingTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -13,49 +14,124 @@ class StandingTab extends StatefulWidget {
 }
 
 class _StandingTabState extends State<StandingTab> {
-  String selectedLeague = "LA LIGA";
-  String selectedSeason = "24/25 season";
+  // xG standings are only available for Big 5 leagues
+  static const _big5LeagueIds = {8, 82, 301, 384, 564};
+
+  int selectedLeagueId = 8;
+  int selectedSeasonId = 23614;
   bool isScrolledToEnd = false;
 
-  final List<String> leagues = ["LA LIGA", "PREMIER LEAGUE", "SERIE A"];
-  final List<String> seasons = ["23/24 season", "24/25 season", "25/26 season"];
   final ScrollController _horizontalScrollController = ScrollController();
 
+  // Two separate data sources — different shapes, different endpoints.
   List<Map<String, dynamic>> standings = [];
+  List<Map<String, dynamic>> xgStandings = [];
+
+  int? currentTeamId;
+  List<int> _validLeagueIds = [];
+
+  StandingView _selectedView = StandingView.standing;
+  bool _isViewDropdownOpen = false;
+
+  bool get _xgAvailable => _big5LeagueIds.contains(selectedLeagueId);
 
   @override
   void initState() {
     super.initState();
-    _loadStandings();
 
-    _horizontalScrollController.addListener(() {
-      final controller = _horizontalScrollController;
-      final atEnd = controller.offset >= controller.position.maxScrollExtent - 4;
+    currentTeamId = widget.team?['id'] as int?;
+    final fixtures = currentTeamId != null
+        ? fixturesByTeam(currentTeamId!)
+        : const <Fixture>[];
 
-      if (isScrolledToEnd != atEnd) {
-        setState(() {
-          isScrolledToEnd = atEnd;
-        });
-      }
-    });
+    _validLeagueIds = fixtures
+        .map((f) => f.leagueId)
+        .toSet()
+        .where((id) => standingsByLeague(id).isNotEmpty)
+        .toList();
+
+    final leagueId = _validLeagueIds.isNotEmpty
+        ? _validLeagueIds.first
+        : mockLeagues.first.leagueId;
+
+    final seasonId = mockSeasons
+        .firstWhere(
+          (s) => s.leagueId == leagueId && s.isCurrent,
+      orElse: () => mockSeasons.first,
+    )
+        .seasonId;
+
+    selectedLeagueId = leagueId;
+    selectedSeasonId = seasonId;
+
+    _loadData();
+
+    _horizontalScrollController.addListener(_handleHorizontalScroll);
   }
 
-  void _loadStandings() {
-    // Simulate fetching standings based on selectedLeague and selectedSeason
-    setState(() {
-      standings = List.generate(20, (index) {
+  @override
+  void dispose() {
+    _horizontalScrollController.removeListener(_handleHorizontalScroll);
+    _horizontalScrollController.dispose();
+    super.dispose();
+  }
+
+  void _handleHorizontalScroll() {
+    final controller = _horizontalScrollController;
+    if (!controller.hasClients) return;
+
+    final atEnd = controller.offset >= controller.position.maxScrollExtent - 4;
+    if (isScrolledToEnd != atEnd) {
+      setState(() => isScrolledToEnd = atEnd);
+    }
+  }
+
+  void _loadData() {
+    // ── Standings (always) ───────────────────────────────────────────
+    final standingRows = standingsByLeague(selectedLeagueId);
+    final newStandings = standingRows.map((s) {
+      final team = mockTeamById(s.teamId);
+      return {
+        'rank': s.position,
+        'teamId': s.teamId,
+        'team': team.shortCode ?? team.name,
+        'logo': team.imagePath ?? '',
+        'mp': s.matchesPlayed,
+        'w': s.won,
+        'd': s.draw,
+        'l': s.lost,
+        'gf': s.goalsFor,
+        'ga': s.goalsAgainst,
+        'pts': s.points,
+        'last5': s.last5Form,
+      };
+    }).toList();
+
+    // ── xG standings (Big 5 only — different source/endpoint) ───────
+    List<Map<String, dynamic>> newXg = [];
+    if (_xgAvailable) {
+      final xgRows = xgStandingsByLeague(selectedLeagueId);
+      newXg = xgRows.map((x) {
+        final team = mockTeamById(x.teamId);
         return {
-          'rank': index + 1,
-          'team': 'ABC',
-          'mp': 38,
-          'w': 20,
-          'd': 10,
-          'l': 8,
-          'gf': 60,
-          'ga': 40,
-          'pts': 70,
+          'rank': x.position,
+          'teamId': x.teamId,
+          'team': team.shortCode ?? team.name,
+          'logo': team.imagePath ?? '',
+          'mp': x.matchesPlayed,
+          'w': x.won,
+          'd': x.draw,
+          'l': x.lost,
+          'xg': x.xg,
+          'xga': x.xga,
+          'xpts': x.xpts,
         };
-      });
+      }).toList();
+    }
+
+    setState(() {
+      standings = newStandings;
+      xgStandings = newXg;
     });
   }
 
@@ -71,41 +147,52 @@ class _StandingTabState extends State<StandingTab> {
                 padding: const EdgeInsets.only(left: 24, bottom: 24),
                 child: Row(
                   children: [
-                    _buildDropdown(
-                      selected: selectedLeague,
-                      items: leagues,
-                      onChanged: (val) {
-                        setState(() {
-                          selectedLeague = val!;
-                          _loadStandings();
-                        });
-                      },
-                    ),
+                    _buildLeagueDropdown(),
                     const SizedBox(width: 16),
-                    _buildDropdown(
-                      selected: selectedSeason,
-                      items: seasons,
-                      onChanged: (val) {
-                        setState(() {
-                          selectedSeason = val!;
-                          _loadStandings();
-                        });
-                      },
+                    _buildSeasonDropdown(),
+                  ],
+                ),
+              ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 24, bottom: 16),
+                        child: StandingViewSelector(
+                          selectedView: _selectedView,
+                          isOpen: _isViewDropdownOpen,
+                          onToggle: () {
+                            setState(() {
+                              _isViewDropdownOpen = !_isViewDropdownOpen;
+                            });
+                          },
+                        ),
+                      ),
+                      _buildSelectedTable(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          StandingsLegend(leagueId: selectedLeagueId),
+                        ],
+                      )
+                    ],
+                  ),
+                  if (_isViewDropdownOpen)
+                    Positioned(
+                      top: 42,
+                      left: 24,
+                      child: StandingViewOptions(
+                        selectedView: _selectedView,
+                        availableViews: _availableViews,
+                        onChanged: _changeStandingView,
+                      ),
                     ),
-                  ],
-                ),
+                ],
               ),
-              Container(
-                padding: EdgeInsets.only(left: 24, bottom: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Text("STANDING", style: Body2_b.style,)
-                  ],
-                ),
-              ),
-              _buildStandingBox(),
-              SizedBox(height: 144,)
+              const SizedBox(height: 144),
             ],
           ),
         ),
@@ -113,205 +200,123 @@ class _StandingTabState extends State<StandingTab> {
     );
   }
 
-  Widget _buildDropdown({
-    required String selected,
-    required List<String> items,
-    required void Function(String?) onChanged,
-  }) {
+  void _changeStandingView(StandingView view) {
+    setState(() {
+      _selectedView = view;
+      _isViewDropdownOpen = false;
+    });
+  }
+
+  // Which views are usable for the currently selected league.
+  // xG TABLE is hidden entirely for non-Big-5 leagues.
+  List<StandingView> get _availableViews => [
+    StandingView.standing,
+    if (_xgAvailable) StandingView.xgTable,
+  ];
+
+  Widget _buildSelectedTable() {
+    switch (_selectedView) {
+      case StandingView.standing:
+        return StandingTable(
+          standings: standings,
+          currentTeamId: currentTeamId,
+          leagueId: selectedLeagueId,
+          horizontalScrollController: _horizontalScrollController,
+          isScrolledToEnd: isScrolledToEnd,
+        );
+      case StandingView.xgTable:
+        return XgTable(
+          standings: xgStandings,
+          currentTeamId: currentTeamId,
+          leagueId: selectedLeagueId,
+          horizontalScrollController: _horizontalScrollController,
+          isScrolledToEnd: isScrolledToEnd,
+        );
+    }
+  }
+
+  Widget _buildLeagueDropdown() {
+    final availableLeagues = _validLeagueIds.isNotEmpty
+        ? mockLeagues.where((l) => _validLeagueIds.contains(l.leagueId)).toList()
+        : mockLeagues;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: ShapeDecoration(
         color: const Color(0xFF3D3D3D),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selected,
+        child: DropdownButton<int>(
+          value: selectedLeagueId,
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
           dropdownColor: const Color(0xFF3D3D3D),
           style: Body2_b.style,
-          onChanged: onChanged,
-          items: items.map((e) {
-            return DropdownMenuItem(
-              value: e,
-              child: Text(e, style: Body2_b.style),
+          onChanged: (val) {
+            if (val == null) return;
+            final season = mockSeasons.firstWhere(
+                  (s) => s.leagueId == val && s.isCurrent,
+              orElse: () => mockSeasons.firstWhere((s) => s.leagueId == val),
             );
-          }).toList(),
+            setState(() {
+              selectedLeagueId = val;
+              selectedSeasonId = season.seasonId;
+              _isViewDropdownOpen = false;
+              // If user was viewing xG and new league isn't Big 5, fall back
+              if (!_xgAvailable && _selectedView == StandingView.xgTable) {
+                _selectedView = StandingView.standing;
+              }
+            });
+            _loadData();
+          },
+          items: availableLeagues
+              .map(
+                (l) => DropdownMenuItem(
+              value: l.leagueId,
+              child: Text(l.name, style: Body2_b.style),
+            ),
+          )
+              .toList(),
         ),
       ),
     );
   }
-  Widget _buildStandingBox() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 24, right: 24),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// FIXED LEFT SIDE: CLUB
-            Container(
-              color: Color(0xFF1E1E1E),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header — Club
-                  Container(
-                    width: 146,
-                    color: const Color(0xFF3D3D3D),
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(left: 24, right: 24, top:24, bottom: 16),
-                    child: Text("Club", style: Body2.style),
-                  ),
-                  Container(height: 24,),
-                  // Body Rows — Left Side
-                  ...standings.map((team) {
-                    return Container(
-                      width: 146,
-                      color: const Color(0xFF1E1E1E),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            child: Text("${team['rank']}", style: Body2.style, textAlign: TextAlign.right),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(team['team'], style: Body2.style, overflow: TextOverflow.ellipsis),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                  Container(height: 24,),
-                ],
-              ),
-            ),
 
-            /// DIVIDER
-            Container(width: 1, color: Colors.black),
+  Widget _buildSeasonDropdown() {
+    final seasons = mockSeasons
+        .where((s) => s.leagueId == selectedLeagueId)
+        .toList();
 
-            /// RIGHT SIDE: STATS (scrollable)
-            Expanded(
-              child: Container(
-                color: Color(0xFF1E1E1E),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _horizontalScrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header — Stats
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topRight: isScrolledToEnd ? Radius.circular(16) : Radius.zero,
-                        ),
-                        child: Container(
-                          color: const Color(0xFF3D3D3D),
-                          padding: const EdgeInsets.only(left: 24, right: 16, top: 24, bottom: 16),
-                          child: Row(
-                            children: [
-                              _buildHeaderCell("MP"),
-                              _buildHeaderCell("W"),
-                              _buildHeaderCell("D"),
-                              _buildHeaderCell("L"),
-                              _buildHeaderCell("GF"),
-                              _buildHeaderCell("GA"),
-                              _buildHeaderCell("GD"),
-                              _buildHeaderCell("Pts"),
-                              _buildHeaderCell("Last 5", isWide: true),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Container(height: 24,),
-                      // Body Rows — Stat Cells
-                      ...standings.map((team) {
-                        return Container(
-                          color: const Color(0xFF1E1E1E),
-                          padding: const EdgeInsets.only(left: 24, right: 16),
-                          child: Row(
-                            children: [
-                              _buildStatCell("${team['mp']}"),
-                              _buildStatCell("${team['w']}"),
-                              _buildStatCell("${team['d']}"),
-                              _buildStatCell("${team['l']}"),
-                              _buildStatCell("${team['gf']}"),
-                              _buildStatCell("${team['ga']}"),
-                              _buildStatCell("${team['gf'] - team['ga']}"),
-                              _buildStatCell("${team['pts']}"),
-                              _buildLastFive(['W', 'W', 'D', 'L', 'W']),
-                            ],
-                          ),
-                        );
-                      }),
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          bottomRight: isScrolledToEnd ? Radius.circular(16) : Radius.zero,
-                        ),
-                        child: Container(
-                          height: 24,
-                          color: const Color(0xFF1E1E1E),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: ShapeDecoration(
+        color: const Color(0xFF3D3D3D),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: selectedSeasonId,
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+          dropdownColor: const Color(0xFF3D3D3D),
+          style: Body2_b.style,
+          onChanged: (val) {
+            if (val == null) return;
+            setState(() {
+              selectedSeasonId = val;
+              _isViewDropdownOpen = false;
+            });
+            _loadData();
+          },
+          items: seasons
+              .map(
+                (s) => DropdownMenuItem(
+              value: s.seasonId,
+              child: Text(s.name, style: Body2_b.style),
             ),
-          ],
+          )
+              .toList(),
         ),
       ),
-    );
-  }
-  Widget _buildLastFive(List<String> results) {
-    return SizedBox(
-      width: 100,
-      height: 44,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: results.map((r) {
-          Color color;
-          switch (r) {
-            case 'W': color = Colors.blue; break;
-            case 'D': color = Colors.grey; break;
-            case 'L': color = Colors.red; break;
-            default: color = Colors.white;
-          }
-          return Icon(Icons.check_circle, size: 19, color: color);
-        }).toList(),
-      ),
-    );
-  }
-  Widget _buildHeaderCell(String title, {bool isWide = false}) {
-    return Container(
-      width: isWide ? 100 : 32,
-      padding: EdgeInsets.only(right: 8),
-      alignment: Alignment.center,
-      color: const Color(0xFF3D3D3D),
-      child: Text(title, style: Body2.style),
-    );
-  }
-  Widget _buildStatCell(String text, {bool isWide = false}) {
-    return Container(
-      width: isWide ? 100 : 32,
-      padding: EdgeInsets.only(right: 8),
-      // height: 44,
-      alignment: Alignment.center,
-      color: const Color(0xFF1E1E1E),
-      child: Text(text, style: Body2.style),
     );
   }
 }

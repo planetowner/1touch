@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/data/teamdata.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/stylesheet_dark.dart";
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/models/bestXI.dart';
+import 'package:onetouch/models/mock_transfer_bestXI_data.dart';
+import 'package:intl/intl.dart';
+import '../models/league.dart';
+import '../models/transfer.dart';
 
-import '../data/matchdata.dart';
+String _formatMatchDate(String startingAt) {
+  final dt = DateTime.parse(startingAt).toLocal();
+  return DateFormat('EEE, MMM d h:mm a').format(dt);
+}
+
 
 class Fixtures extends StatefulWidget {
   Fixtures({super.key, this.teams});
@@ -19,19 +29,15 @@ class _FixturesState extends State<Fixtures> {
 
   @override
   Widget build(BuildContext context) {
-    MatchData? match;
-    String leagueName = "Unknown League";
+    if (widget.teams == null) return const SizedBox.shrink();
+    if (widget.teams is! Map<String, dynamic>) return const SizedBox.shrink();
 
-    if (widget.teams == null) {
-      return const SizedBox.shrink();
-    }
-    if (widget.teams is Map<String, dynamic>) {
-      final teamObj = Team.fromJson(widget.teams as Map<String, dynamic>);
-      match = teamObj.nextMatch;
-      leagueName = leagueNames[teamObj.leagueId] ?? "Unknown League";
-    }
+    final map = widget.teams as Map<String, dynamic>;
+    final Fixture? match = map['next_match'] as Fixture?;
+    final Fixture? lastMatch = map['last_match'] as Fixture?;
+    final leagueName = leagueNames[match?.leagueId ?? lastMatch?.leagueId] ?? "Unknown League";
 
-    if (match == null) return const SizedBox.shrink();
+    if (match == null && lastMatch == null) return const SizedBox.shrink();
 
 
     return SizedBox(
@@ -52,31 +58,32 @@ class _FixturesState extends State<Fixtures> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    final matchId = match!.id.toString();
-                    context.push('/match/$matchId');
-                  },
-                  child: MatchCard(
-                    match: match,
-                    leagueName: leagueName,
+                if (match != null)
+                  GestureDetector(
+                    onTap: () => context.push('/match/${match.fixtureId}'),
+                    child: MatchCard(
+                      match: match,
+                      leagueName: leagueName,
+                    ),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    const matchId = "300";
-                    GoRouter.of(context)
-                        .push('/match/$matchId'); // Navigate to MatchScreen
-                  },
-                  child: MatchCard2(
-                    date: "Sun, Sep 15 10:15 AM",
-                    venue: 'Venue Name',
-                    team1shortname: "FCB",
-                    team1Logo: "TeamLogos/Barcelona.png",
-                    team2shortname: "GIR",
-                    team2Logo: 'TeamLogos/Girona.png',
+                if (lastMatch != null)
+                  GestureDetector(
+                    onTap: () => context.push('/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}'),
+                    child: () {
+                      final home = mockTeamById(lastMatch.homeTeamId);
+                      final away = mockTeamById(lastMatch.awayTeamId);
+                      return MatchCard2(
+                        date: _formatMatchDate(lastMatch.startingAt),
+                        venue: '',
+                        team1shortname: home.shortCode ?? home.name,
+                        team1Logo: home.imagePath ?? '',
+                        team2shortname: away.shortCode ?? away.name,
+                        team2Logo: away.imagePath ?? '',
+                        homeScore: lastMatch.homeScore ?? 0,
+                        awayScore: lastMatch.awayScore ?? 0,
+                      );
+                    }(),
                   ),
-                ),
               ],
             ),
           ),
@@ -105,37 +112,52 @@ class _StandingState extends State<Standing> {
   static const double _gapW  = 16;
   static const double _statW = 28;
 
-  final List<String> leagues = ["La Liga", "Champions League", "Super League"];
-
-  // demo rows (3위 강조)
-  final List<Map<String, dynamic>> rows = const [
-    {"rank": 1, "team": "Team Name", "mp": "##", "w": "##", "d": "##", "l": "##", "hl": false},
-    {"rank": 2, "team": "Team Name", "mp": "##", "w": "##", "d": "##", "l": "##", "hl": false},
-    {"rank": 3, "team": "Team Name", "mp": "##", "w": "##", "d": "##", "l": "##", "hl": true },
-    {"rank": 4, "team": "Team Name", "mp": "##", "w": "##", "d": "##", "l": "##", "hl": false},
-    {"rank": 5, "team": "Team Name", "mp": "##", "w": "##", "d": "##", "l": "##", "hl": false},
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // Resolve team and leagueId from widget.teams
+    int? leagueId;
+    int? currentTeamId;
+    if (widget.teams is Map<String, dynamic>) {
+      final map = widget.teams as Map<String, dynamic>;
+      currentTeamId = map['id'] as int?;
+      final nextMatch = map['next_match'] as Fixture?;
+      final lastMatch = map['last_match'] as Fixture?;
+      leagueId = nextMatch?.leagueId ?? lastMatch?.leagueId;
+    }
+
+    if (leagueId == null) return const SizedBox.shrink();
+
+    final leagueName = leagueNames[leagueId] ?? 'League';
+    final standings = standingsByLeague(leagueId);
+
+    final allRows = standings.map((s) => {
+      'rank': s.position,
+      'team': mockTeamById(s.teamId).shortCode ?? mockTeamById(s.teamId).name,
+      'mp': s.matchesPlayed.toString(),
+      'w': s.won.toString(),
+      'd': s.draw.toString(),
+      'l': s.lost.toString(),
+      'hl': s.teamId == currentTeamId,
+    }).toList();
+
+    final currentIndex = allRows.indexWhere((r) => r['hl'] == true);
+    final start = (currentIndex - 2).clamp(0, allRows.length);
+    final end   = (currentIndex + 3).clamp(0, allRows.length);
+    final rows  = currentIndex == -1 ? allRows.take(5).toList() : allRows.sublist(start, end);
+
     return SizedBox(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: List.generate(
-            leagues.length,
-                (i) => _buildStandingCard(
-              leagues[i],
-              isFirst: i == 0,
-              isLast: i == leagues.length - 1,
-            ),
-          ),
+          children: [
+            _buildStandingCard(leagueName, rows: rows, isFirst: true, isLast: true),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildStandingCard(String leagueName, {required bool isFirst, required bool isLast}) {
+  Widget _buildStandingCard(String leagueName, {required List<Map<String, dynamic>> rows, required bool isFirst, required bool isLast}) {
     return Padding(
       padding: EdgeInsets.only(
         left: isFirst ? 24 : 0,
@@ -164,12 +186,10 @@ class _StandingState extends State<Standing> {
                     // league title line
                     Row(
                       children: [
-                        Container(
-                          width: 18, height: 18,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFDB0030),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                        Image.asset(
+                          'assets/laliga.png',
+                          width: 24,
+                          height: 24,
                         ),
                         const SizedBox(width: 10),
                         Text(leagueName, style: Heading4.style),
@@ -275,94 +295,189 @@ class _StandingState extends State<Standing> {
   }
 }
 
-class BestXI extends StatefulWidget {
+class BestXI extends StatelessWidget {
   const BestXI({super.key, this.teams});
 
   final teams;
 
   @override
-  State<BestXI> createState() => _BestXIState();
+  Widget build(BuildContext context) {
+    // Resolve team_id from the map
+    int? teamId;
+    if (teams is Map<String, dynamic>) {
+      teamId = (teams as Map<String, dynamic>)['id'] as int?;
+    }
+
+    final players = teamId != null
+        ? bestElevenByTeam(teamId)
+        : <BestElevenPlayer>[];
+
+    if (players.isEmpty) return const SizedBox.shrink();
+
+
+    final Map<int, List<BestElevenPlayer>> byRow = {};
+    for (final p in players) {
+      final parts = p.slotKey.split(':');
+      final row = int.parse(parts[0]);
+      byRow.putIfAbsent(row, () => []).add(p);
+    }
+    // Sort each row by col (left → right on pitch)
+    for (final list in byRow.values) {
+      list.sort((a, b) {
+        final aC = int.parse(a.slotKey.split(':')[1]);
+        final bC = int.parse(b.slotKey.split(':')[1]);
+        return aC.compareTo(bC);
+      });
+    }
+    // Row keys descending → attack at top, GK at bottom
+    final rowKeys = byRow.keys.toList()..sort((a, b) => b.compareTo(a));
+    final formationLabel = players.first.formation; // e.g. '4-3-3'
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Material(
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(color: Color(0xFF3D3D3D)),
+          child: Column(
+            children: [
+              // Formation
+              // Padding(
+              //   padding: const EdgeInsets.only(top: 16, bottom: 4),
+              //   // child: Text(formationLabel, style: Body2.style),
+              // ),
+              CustomPaint(
+                painter: _HalfCirclePainter(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: rowKeys.map((key) {
+                      final rowPlayers = byRow[key]!;
+                      return _BestXIRow(
+                        players: rowPlayers,
+                        isDefRow: key == rowKeys.last, // DEF row gets side-back offset
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _BestXIState extends State<BestXI> {
-  int mycolor = 0xFF3D3D3D;
+// Draws the faint half-circle arc at the top of the pitch area
+class _HalfCirclePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
 
-  final List<List<String>> formation = [
-    ["# Name"], // 1 Forward (ST)
-    ["# Name", "# Name", "# Name"], // 3 Midfielders (CAM/CM)
-    ["# Name", "# Name"], // 2 Midfielders (DM/CDM)
-    ["# Name", "# Name", "# Name", "# Name"], // 4 Defenders (LB, CB, CB, RB)
-    ["# Name"] // 1 Goalkeeper (GK)
-  ];
+    // Half-circle centred at top-centre, radius ~22% of width
+    final centre = Offset(size.width / 2, 0);
+    final radius = size.width * 0.28;
+    canvas.drawArc(
+      Rect.fromCircle(center: centre, radius: radius),
+      0,        // start angle (right side)
+      3.14159,  // sweep = π → bottom half of circle
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_HalfCirclePainter old) => false;
+}
+
+class _BestXIRow extends StatelessWidget {
+  final List<BestElevenPlayer> players;
+  // When true, first and last player (SBs) sit slightly higher than CBs
+  final bool isDefRow;
+
+  const _BestXIRow({required this.players, this.isDefRow = false});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Formation Box
-          Material(
-            elevation: 5,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Color(mycolor),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                children:
-                    formation.map((row) => _buildFormationRow(row)).toList(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    // For def row with 4 players: SBs get negative top padding (shift up),
+    // CBs stay at baseline. For all other rows: flat.
+    Widget dotWithOffset(int colIndex) {
+      double topOffset = 0;
+      if (isDefRow && players.length == 4) {
+        // col indices 0 (LB) and 3 (RB) → shift up 10px
+        if (colIndex == 0 || colIndex == players.length - 1) {
+          topOffset = -10;
+        }
+      }
+      return Padding(
+        padding: EdgeInsets.only(top: topOffset < 0 ? 0 : 0),
+        child: Transform.translate(
+          offset: Offset(0, topOffset),
+          child: _BestXIPlayerDot(player: players[colIndex]),
+        ),
+      );
+    }
 
-  // Builds each row of the formation
-  Widget _buildFormationRow(List<String> players) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: players.map((name) => _buildPlayer(name)).toList(),
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(players.length, (i) => dotWithOffset(i)),
       ),
     );
   }
+}
 
-  // Player Circle with Name
-  Widget _buildPlayer(String name) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+class _BestXIPlayerDot extends StatelessWidget {
+  final BestElevenPlayer player;
+  const _BestXIPlayerDot({required this.player});
+
+  @override
+  Widget build(BuildContext context) {
+    // Last name only
+    final label = player.playerName.split(' ').last;
+
+    return SizedBox(
+      width: 62,
       child: Column(
         children: [
-          // Circle for player avatar
+          // White circle with ## placeholder (jersey number TBD)
           Container(
-            width: 24,
-            height: 24,
+            width: 32,
+            height: 32,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white,
             ),
+            alignment: Alignment.center,
+            child: Text(
+              '##',
+                // player.jerseyNumber.toString(),
+              style: Heading5.style.copyWith(color: Colors.black)
+            ),
           ),
-          const SizedBox(height: 8),
-          // Player name
+          const SizedBox(height: 6),
           Text(
-            name,
-            style: Body2.style,
+            label,
+            style: Eyebrow.style,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 }
+
 
 class InjuryStatus extends StatefulWidget {
   const InjuryStatus({super.key, this.teams});
@@ -465,59 +580,56 @@ class Transfer extends StatefulWidget {
 class _TransferState extends State<Transfer> {
   bool showIn = true; // true = IN, false = OUT
 
-  final List<Map<String, String>> inPlayers = [
-    {
-      'number': '10',
-      'name': 'Player Name',
-      'fee': '€100.0m',
-      'oldteam': 'Team Name',
-      'year': 'Feb 2025 – Jun 2025',
-      'image': 'assets/messi.png',
-    },
-    {
-      'number': '8',
-      'name': 'Player Name',
-      'fee': '€0.0m',
-      'oldteam': 'Team Name',
-      'year': 'Feb 2025 – Jun 2025',
-      'image': 'assets/messi.png',
-    },
-  ];
-
-  final List<Map<String, String>> outPlayers = [
-    {
-      'number': '7',
-      'name': 'Player Name',
-      'fee': '€20.0m',
-      'oldteam': 'Team Name',
-      'year': 'Feb 2025 – Jun 2025',
-      'image': 'assets/messi.png',
+  String _formatFee(int? amount) {
+    if (amount == null) return 'On Loan';
+    if (amount == 0) return 'Free Agent';
+    if (amount >= 1000000) {
+      final m = amount / 1000000;
+      return '€${m % 1 == 0 ? m.toInt() : m.toStringAsFixed(1)}m';
     }
-  ];
+    return '€${(amount / 1000).toStringAsFixed(0)}k';
+  }
+
+  String _formatDate(String date) {
+    try {
+      final dt = DateTime.parse(date);
+      return DateFormat('MMM d, yyyy').format(dt);
+    } catch (_) {
+      return date;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final players = showIn ? inPlayers : outPlayers;
+    int? teamId;
+    if (widget.teams is Map<String, dynamic>) {
+      teamId = (widget.teams as Map<String, dynamic>)['id'] as int?;
+    }
+
+    final incoming = teamId != null ? incomingTransfers(teamId) : <TeamTransfer>[];
+    final outgoing = teamId != null ? outgoingTransfers(teamId) : <TeamTransfer>[];
+    final list = showIn ? incoming : outgoing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // TRANSFER SWITCH BUTTON
-        Container(
-          padding: EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
+        Padding(
+          padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
           child: Row(
             children: [
               Expanded(
                 child: GestureDetector(
                   onTap: () => setState(() => showIn = true),
                   child: Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: showIn ? Color(0xFF3D3D3D) : Colors.transparent,
-                      border: Border.all(color: Color(0xFF3D3D3D)),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8)),
+                      color: showIn ? const Color(0xFF3D3D3D) : Colors.transparent,
+                      border: Border.all(color: const Color(0xFF3D3D3D)),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                      ),
                     ),
                     alignment: Alignment.center,
                     child: Text("IN", style: Body2_b.style),
@@ -528,100 +640,150 @@ class _TransferState extends State<Transfer> {
                 child: GestureDetector(
                   onTap: () => setState(() => showIn = false),
                   child: Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: !showIn ? Color(0xFF3D3D3D) : Colors.transparent,
-                      border: Border.all(color: Color(0xFF3D3D3D)),
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8)),
+                      color: !showIn ? const Color(0xFF3D3D3D) : Colors.transparent,
+                      border: Border.all(color: const Color(0xFF3D3D3D)),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      ),
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      "OUT",
-                      style: Body2_b.style,
-                    ),
+                    child: Text("OUT", style: Body2_b.style),
                   ),
                 ),
               ),
             ],
           ),
         ),
+
         // PLAYER LIST
-        ...players.map((player) => _buildTransferTile(player)),
+        if (list.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Text('No transfers', style: Body2.style),
+          )
+        else
+          ...list.map((t) => TransferTile(
+            transfer: t,
+            showIn: showIn,
+            feeLabel: _formatFee(t.amount),
+            dateLabel: _formatDate(t.transferDate),
+          )),
+
+        const SizedBox(height: 8),
       ],
     );
   }
+}
 
-  Widget _buildTransferTile(Map<String, String> player) {
+class TransferTile extends StatelessWidget {
+  final TeamTransfer transfer;
+  final bool showIn;
+  final String feeLabel;
+  final String dateLabel;
+
+  const TransferTile({
+    super.key,
+    required this.transfer,
+    required this.showIn,
+    required this.feeLabel,
+    required this.dateLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final counterTeam = showIn ? transfer.fromTeamName : transfer.toTeamName;
+    // Loan badge colour vs transfer
+    final isLoan = transfer.typeName == TransferType.loan;
+
     return Container(
-      margin: EdgeInsets.only(left:24, right: 24, bottom: 16,top:8),
+      margin: const EdgeInsets.only(left: 24, right: 24, bottom: 16, top: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Player image and number badge
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CircleAvatar(
-                radius: 36,
-                backgroundImage:
-                    AssetImage(player['image'] ?? 'assets/messi.png'),
-                backgroundColor: Color(0xFF272828),
+          // Player photo
+          CircleAvatar(
+            radius: 36,
+            backgroundColor: const Color(0xFF3D3D3D),
+            child: ClipOval(
+              child: Image.network(
+                transfer.playerImage,
+                width: 68,
+                height: 68,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Image.asset(
+                  'assets/messi.png',
+                  width: 68,
+                  height: 68,
+                  fit: BoxFit.cover,
+                )
               ),
-              Positioned(
-                top: -6,
-                left: -10,
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Color(0xFF3D3D3D),
-                  child: Text(player['number'] ?? '#', style: Body2_b.style),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(width: 16),
 
-          // Player info
+          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Name, Fee
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(player['name'] ?? '', style: Heading5.style),
-                    Text(player['fee'] ?? '', style: Heading5.style),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF3D3D3D),
-                        borderRadius: BorderRadius.circular(4),
+                    Expanded(
+                      child: Text(
+                        transfer.playerName,
+                        style: Heading5.style,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      child: Text(showIn ? "FROM" : "TO", style: Eyebrow.style),
                     ),
                     const SizedBox(width: 8),
-                    Text(player['oldteam'] ?? '', style: Body1.style),
+                    Text(feeLabel, style: Heading5.style),
                   ],
                 ),
                 const SizedBox(height: 6),
+
+                // FROM / TO badge + team name
                 Row(
                   children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF3D3D3D),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text("CONTRACT", style: Eyebrow.style),
-                    ),
+                    Badge(label: showIn ? 'FROM' : 'TO'),
                     const SizedBox(width: 8),
-                    Text(player['year'] ?? '', style: Body1.style),
+                    Expanded(
+                      child: Text(
+                        counterTeam,
+                        style: Body1.style,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+
+                // DATE badge + formatted date, LOAN chip if applicable
+                Row(
+                  children: [
+                    Badge(label: 'DATE'),
+                    const SizedBox(width: 8),
+                    Text(dateLabel, style: Body1.style),
+                    if (isLoan) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD82457).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'LOAN',
+                          style: Eyebrow.style.copyWith(
+                              color: const Color(0xFFD82457)),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -629,6 +791,23 @@ class _TransferState extends State<Transfer> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class Badge extends StatelessWidget {
+  final String label;
+  const Badge({super.key, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3D3D3D),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(label, style: Eyebrow.style),
     );
   }
 }

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
+import 'package:intl/intl.dart';
 
 class H2HTab extends StatefulWidget {
-  const H2HTab({super.key});
+  final Fixture fixture;
+
+  const H2HTab({super.key, required this.fixture});
 
   @override
   State<H2HTab> createState() => _H2HTabState();
@@ -14,6 +19,34 @@ class _H2HTabState extends State<H2HTab> {
   final List<int> _matchOptions = [5, 10, 20];
 
   Widget build(BuildContext context) {
+    final homeId = widget.fixture.homeTeamId;
+    final awayId = widget.fixture.awayTeamId;
+
+    // All past H2H fixtures between these two teams
+    final allH2H = mockFixtures.where((f) =>
+    f.status == FixtureStatus.past &&
+        ((f.homeTeamId == homeId && f.awayTeamId == awayId) ||
+            (f.homeTeamId == awayId && f.awayTeamId == homeId))
+    ).toList()
+      ..sort((a, b) => b.startingAt.compareTo(a.startingAt)); // newest first
+
+    final h2hMatches = allH2H.take(_selectedMatches).toList();
+
+    // WDL from home team's perspective
+    int wins = 0, draws = 0, losses = 0;
+    for (final f in h2hMatches) {
+      final hs = f.homeScore ?? 0;
+      final as_ = f.awayScore ?? 0;
+      final homeIsOurHome = f.homeTeamId == homeId;
+      if (hs == as_) {
+        draws++;
+      } else if ((hs > as_ && homeIsOurHome) || (as_ > hs && !homeIsOurHome)) {
+        wins++;
+      } else {
+        losses++;
+      }
+    }
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -21,18 +54,27 @@ class _H2HTabState extends State<H2HTab> {
           const SizedBox(height: 48),
           _buildDropdownRow(),
           const SizedBox(height: 48),
-          _buildWDLBox(),
+          _buildWDLBox(wins, draws, losses),
           const SizedBox(height: 48),
           _buildBetsCard(),
           const Padding(
             padding: EdgeInsets.only(bottom: 8, top: 40),
             child: Text('PAST MATCHES', style: Body2_b.style),
           ),
-          ...List.generate(
-            5,
-                (i) =>
-                _buildPastMatchCard('ABC', 'DEF', '#', '#', 'League / Round'),
-          ),
+          ...h2hMatches.map((f) {
+            final home = mockTeamById(f.homeTeamId);
+            final away = mockTeamById(f.awayTeamId);
+            final league = mockLeagueById(f.leagueId);
+            return _buildPastMatchCard(
+              home.shortCode ?? home.name,
+              away.shortCode ?? away.name,
+              home.imagePath ?? '',
+              away.imagePath ?? '',
+              f.homeScore?.toString() ?? '-',
+              f.awayScore?.toString() ?? '-',
+              '${league.name} · ${f.roundName}',
+            );
+          }),
           const SizedBox(height: 140),
         ],
       ),
@@ -98,17 +140,18 @@ class _H2HTabState extends State<H2HTab> {
               shape: BoxShape.circle,
               color: Colors.white,
             ),
-            child: Image.asset(
-              "TeamLogos/Girona.png",
-              fit: BoxFit.contain,
+            child: Image.network(
+                    mockTeamById(widget.fixture.awayTeamId).imagePath ?? '',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Image.asset('TeamLogos/RealMadrid.png', fit: BoxFit.contain),
             ),
-          ),
+          )
         ],
       ),
     );
   }
 
-  Widget _buildWDLBox() {
+  Widget _buildWDLBox(int wins, int draws, int losses) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
@@ -118,9 +161,9 @@ class _H2HTabState extends State<H2HTab> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildWDLStat('5', 'Win'),
-          _buildWDLStat('3', 'Draw'),
-          _buildWDLStat('2', 'Lose'),
+          _buildWDLStat('$wins', 'Win'),
+          _buildWDLStat('$draws', 'Draw'),
+          _buildWDLStat('$losses', 'Lose'),
         ],
       ),
     );
@@ -237,8 +280,8 @@ class _H2HTabState extends State<H2HTab> {
     );
   }
 
-  Widget _buildPastMatchCard(String teamA, String teamB, String homeScore,
-      String awayScore, String league) {
+  Widget _buildPastMatchCard(String teamA, String teamB, String logoA,
+      String logoB, String homeScore, String awayScore, String league) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -250,10 +293,12 @@ class _H2HTabState extends State<H2HTab> {
         children: [
           Row(
             children: [
-              const CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.black,
-                child: Icon(Icons.shield, color: Colors.white),
+              ClipOval(
+                child: Image.network(
+                  logoA,
+                  width: 32, height: 32, fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 32, height: 32),
+                ),
               ),
               const SizedBox(width: 8),
               Text(teamA, style: Heading5.style),
@@ -264,10 +309,13 @@ class _H2HTabState extends State<H2HTab> {
               const Spacer(),
               Text(teamB, style: Heading5.style),
               const SizedBox(width: 8),
-              const CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.black,
-                child: Icon(Icons.shield, color: Colors.white),
+              ClipOval(
+                child: Image.network(
+                  logoB,
+                  width: 32, height: 32, fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      Image.asset('TeamLogos/RealMadrid.png', width: 32, height: 32),
+                ),
               ),
             ],
           ),

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/features/MatchInfoFeatures.dart';
 
 class AnalysisTab extends StatefulWidget {
-  const AnalysisTab({super.key});
+  final Fixture fixture;
+
+  const AnalysisTab({super.key, required this.fixture});
 
   @override
   State<AnalysisTab> createState() => _AnalysisTabState();
@@ -40,71 +45,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildScoreHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _teamBlock("TeamLogos/Barcelona.png", "Team Name"),
-        const SizedBox(
-          width: 20,
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF272828),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text('#', style: Heading1.style),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF272828),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text('#', style: Heading1.style),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(isLive ? "42:02" : "Final", style: Body2_b.style),
-            const SizedBox(height: 8),
-            Opacity(
-              opacity: 0.30,
-              child: Container(
-                width: 24,
-                height: 1,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text("Venue Name", style: Body2.style),
-          ],
-        ),
-        const SizedBox(
-          width: 20,
-        ),
-        _teamBlock("TeamLogos/Girona.png", "Team Name"),
-      ],
-    );
-  }
+    final home = mockTeamById(widget.fixture.homeTeamId);
+    final away = mockTeamById(widget.fixture.awayTeamId);
 
-  Widget _teamBlock(String logo, String name) {
-    return Column(
-      children: [
-        Image.asset(logo, width: 72, height: 72),
-        const SizedBox(height: 8),
-        Text(name, style: Body1.style),
-      ],
+    return MatchScoreHeader(
+      homeLogoAsset: home.imagePath ?? '',
+      awayLogoAsset: away.imagePath ?? '',
+      homeTeamName: home.name,
+      awayTeamName: away.name,
+      homeScore: widget.fixture.homeScore?.toString() ?? '#',
+      awayScore: widget.fixture.awayScore?.toString() ?? '#',
+      statusLabel: isLive ? '42:02' : 'Final',
+      venueName: 'Venue Name',
     );
   }
 
@@ -194,18 +146,13 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 children: [
                   Text(
                     '0.6',
-                    style: TextStyle(
-                      color: const Color(0xFF090A0A),
-                      fontSize: 14,
-                      fontFamily: 'Archivo',
-                      fontWeight: FontWeight.w700,
-                      height: 1.30,
-                    ),
+                    style: Body2_b.style
                   ),
                 ],
               ),
             ),
-          ]),
+          ]
+      ),
     );
   }
 
