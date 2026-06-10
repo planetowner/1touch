@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXISTS team_transfers (
   amount          BIGINT NULL,
   transfer_date   DATE NULL,
   window_id       BIGINT NULL,
-  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_tt_from_team_window (from_team_id, window_id),
   KEY idx_tt_to_team_window (to_team_id, window_id),
   KEY idx_tt_player (player_id),

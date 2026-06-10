@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple, Set
+from typing import Dict, List, Optional, Set, Tuple
 
-from ..core.db import fetch_all, upsert_many, execute
+from ..core.db import execute, fetch_all, upsert_many
 from ..core.sportmonks import SportmonksClient
 
 
@@ -64,60 +64,90 @@ ON DUPLICATE KEY UPDATE
 """
 
 
-def _safe_int(v) -> Optional[int]:
-    try:
-        return int(v) if v is not None else None
-    except Exception:
+def _require_int(value, field_name: str) -> int:
+    if not isinstance(value, int):
+        raise ValueError(f"Missing or invalid integer field: {field_name}={value!r}")
+
+    return value
+
+
+def _require_bool(value, field_name: str) -> bool:
+    if not isinstance(value, bool):
+        raise ValueError(f"Missing or invalid boolean field: {field_name}={value!r}")
+
+    return value
+
+
+def _require_non_empty_str(value, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Missing or invalid string field: {field_name}={value!r}")
+
+    return value.strip()
+
+
+def _require_optional_date_str(value, field_name: str) -> Optional[str]:
+    if value is None:
         return None
 
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Invalid optional date field: {field_name}={value!r}")
 
-def _player_name(player: Dict) -> str:
-    return (
-        player.get("display_name")
-        or player.get("common_name")
-        or player.get("name")
-        or f"player:{player.get('id', 'unknown')}"
-    )
-
-
-def _type_name(type_obj: Dict) -> Optional[str]:
-    return (
-        type_obj.get("name")
-        or type_obj.get("description")
-        or None
-    )
+    return value
 
 
 def _normalize_sidelined_rows(team_id: int, sidelined: List[Dict]) -> Tuple[List[Tuple], Set[int]]:
     rows: List[Tuple] = []
     incoming_ids: Set[int] = set()
 
-    for item in sidelined or []:
-        sideline_id = _safe_int(item.get("id"))
-        item_team_id = _safe_int(item.get("team_id")) or team_id
-        player_id = _safe_int(item.get("player_id"))
+    for item in sidelined:
+        sideline_id = _require_int(item["id"], "sidelined.id")
+        item_team_id = _require_int(item["team_id"], "sidelined.team_id")
+        player_id = _require_int(item["player_id"], "sidelined.player_id")
+        type_id = _require_int(item["type_id"], "sidelined.type_id")
+        category = _require_non_empty_str(item["category"], "sidelined.category")
+        start_date = _require_optional_date_str(item["start_date"], "sidelined.start_date")
+        end_date = _require_optional_date_str(item["end_date"], "sidelined.end_date")
+        games_missed = _require_int(item["games_missed"], "sidelined.games_missed")
+        completed = _require_bool(item["completed"], "sidelined.completed")
 
-        if sideline_id is None or player_id is None:
-            continue
+        player = item["player"]
+        type_obj = item["type"]
+
+        player_id_from_player = _require_int(player["id"], "sidelined.player.id")
+        type_id_from_type = _require_int(type_obj["id"], "sidelined.type.id")
+
+        if player_id_from_player != player_id:
+            raise ValueError(
+                f"Player id mismatch for sideline_id={sideline_id}: "
+                f"sidelined.player_id={player_id!r}, player.id={player_id_from_player!r}"
+            )
+
+        if type_id_from_type != type_id:
+            raise ValueError(
+                f"Type id mismatch for sideline_id={sideline_id}: "
+                f"sidelined.type_id={type_id!r}, type.id={type_id_from_type!r}"
+            )
+
+        player_name = _require_non_empty_str(player["display_name"], "sidelined.player.display_name")
+        type_name = _require_non_empty_str(type_obj["name"], "sidelined.type.name")
 
         incoming_ids.add(sideline_id)
 
-        player = item.get("player") or {}
-        type_obj = item.get("type") or {}
-
-        rows.append((
-            sideline_id,
-            item_team_id,
-            player_id,
-            _safe_int(item.get("type_id")),
-            item.get("category"),
-            _type_name(type_obj),
-            _player_name(player),
-            item.get("start_date"),
-            item.get("end_date"),
-            _safe_int(item.get("games_missed")),
-            1 if item.get("completed") else 0,
-        ))
+        rows.append(
+            (
+                sideline_id,
+                item_team_id,
+                player_id,
+                type_id,
+                category,
+                type_name,
+                player_name,
+                start_date,
+                end_date,
+                games_missed,
+                1 if completed else 0,
+            )
+        )
 
     return rows, incoming_ids
 
@@ -130,6 +160,7 @@ def _mark_missing_inactive(team_id: int, incoming_ids: Set[int]) -> int:
         return 0
 
     missing_ids = existing_ids - incoming_ids
+
     if not missing_ids:
         return 0
 
@@ -142,13 +173,29 @@ def _mark_missing_inactive(team_id: int, incoming_ids: Set[int]) -> int:
       AND is_active = 1
       AND sideline_id IN ({placeholders})
     """
+
     return execute(sql, (team_id, *sorted(missing_ids)))
 
 
 def refresh_team_injuries(team_id: int) -> None:
     sm = SportmonksClient()
     team = sm.get_team_with_sidelined(team_id)
-    sidelined = team.get("sidelined") or []
+
+    returned_team_id = _require_int(team["id"], "team.id")
+
+    if returned_team_id != team_id:
+        raise ValueError(
+            f"Requested team_id={team_id}, "
+            f"but Sportmonks returned team.id={returned_team_id}."
+        )
+
+    sidelined = team["sidelined"]
+
+    if not isinstance(sidelined, list):
+        raise ValueError(
+            f"Expected team.sidelined to be list for team_id={team_id}, "
+            f"got {type(sidelined).__name__}."
+        )
 
     rows, incoming_ids = _normalize_sidelined_rows(team_id, sidelined)
 
@@ -164,7 +211,11 @@ def refresh_team_injuries(team_id: int) -> None:
 
 
 def refresh_current_injuries(team_ids: Optional[List[int]] = None) -> None:
-    ids = team_ids or [int(row[0]) for row in fetch_all(SQL_SELECT_CURRENT_TEAM_IDS)]
+    if team_ids is None:
+        ids = [int(row[0]) for row in fetch_all(SQL_SELECT_CURRENT_TEAM_IDS)]
+    else:
+        ids = team_ids
+
     total = 0
 
     for team_id in ids:
