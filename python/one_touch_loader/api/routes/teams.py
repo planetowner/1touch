@@ -111,23 +111,28 @@ def team_matches(
 
 _LOAN_TYPE_IDS = {219, 220}  # SportMonks type IDs for loan-related transfers
 
-
 def _make_display_type(type_name: str | None, type_id: int | None, amount: int | None) -> str | None:
-    if type_id and type_id in _LOAN_TYPE_IDS:
-        return "On Loan"
-    if type_name and "loan" in type_name.lower():
-        return "On Loan"
-    if type_name and "free" in type_name.lower():
-        return "Free Agent"
-    if amount and amount > 0:
-        if amount >= 1_000_000:
-            return f"\u20ac{amount / 1_000_000:.1f}M".replace(".0M", "M")
-        elif amount >= 1_000:
-            return f"\u20ac{amount / 1_000:.0f}K"
-        else:
-            return f"\u20ac{amount}"
+    if type_id == 218:
+        return "Loan"
+
+    if type_id == 9688:
+        return "End of Loan"
+
+    if type_id == 220:
+        return "Free Transfer"
+
+    if type_id == 219:
+        if amount and amount > 0:
+            if amount >= 1_000_000:
+                return f"€{amount / 1_000_000:.1f}M".replace(".0M", "M")
+            if amount >= 1_000:
+                return f"€{amount / 1_000:.0f}K"
+            return f"€{amount}"
+        return "Transfer"
+
     if type_name:
         return type_name
+
     return None
 
 
