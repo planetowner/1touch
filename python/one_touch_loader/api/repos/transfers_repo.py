@@ -10,8 +10,7 @@ def get_latest_window() -> Optional[Dict[str, Any]]:
         """
         SELECT id, season_year, window_name, start_date, end_date
         FROM transfer_windows
-        WHERE start_date <= CURDATE()
-        ORDER BY start_date DESC
+        WHERE is_latest = 1
         LIMIT 1
         """
     )
