@@ -6,9 +6,8 @@ import 'package:onetouch/features/StandingFeatures.dart';
 
 class StandingTab extends StatefulWidget {
   final Map<String, dynamic>? team;
-  final double topPadding;
 
-  const StandingTab({super.key, required this.team, required this.topPadding});
+  const StandingTab({super.key, required this.team});
 
   @override
   State<StandingTab> createState() => _StandingTabState();
@@ -143,7 +142,7 @@ class _StandingTabState extends State<StandingTab> {
         SliverList(
           delegate: SliverChildListDelegate(
             [
-              SizedBox(height: widget.topPadding + 24),
+              const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.only(left: 24, bottom: 24),
                 child: Row(

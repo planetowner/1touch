@@ -7,14 +7,13 @@ import 'package:onetouch/models/team.dart';
 
 class AnalysisTab extends StatelessWidget {
   final Map<String, dynamic>? team;
-  final double topPadding;
 
-  const AnalysisTab({super.key, required this.team, required this.topPadding});
+  const AnalysisTab({super.key, required this.team});
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: topPadding, bottom: 24),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

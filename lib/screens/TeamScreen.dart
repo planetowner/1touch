@@ -20,18 +20,13 @@ class TeamScreen extends StatefulWidget {
 
 class _TeamScreenState extends State<TeamScreen>
     with SingleTickerProviderStateMixin {
+  late final ScrollController _scrollController;
   late final TabController _tabController;
-  late final TabBar _tabBar;
+  double _scrollOffset = 0.0;
 
   Map<String, dynamic>? team;
   bool isLoading = true;
   Color _teamColor = const Color(0xFFD82457);
-
-  // Measured height of the fixed header (logo/name/tabs) so each tab's
-  // scroll view can pad its top by exactly that much and start underneath
-  // it instead of being covered by it. Updated once the header lays out.
-  final GlobalKey _headerKey = GlobalKey();
-  double _headerHeight = 170;
 
   // Future<void> fetchTeamData() async {
   //   final url =
@@ -77,31 +72,14 @@ class _TeamScreenState extends State<TeamScreen>
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        setState(() {
+          _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
+        });
+      });
 
-    _tabController = TabController(length: 5, vsync: this);
-    _tabBar = TabBar(
-      controller: _tabController,
-      isScrollable: true,
-      tabAlignment: TabAlignment.start,
-      labelColor: Colors.white,
-      unselectedLabelColor: Colors.grey,
-      indicatorColor: Colors.white,
-      labelStyle: Heading5.style,
-      unselectedLabelStyle: Heading5.style,
-      indicatorSize: TabBarIndicatorSize.label,
-      dividerColor: Colors.transparent,
-      padding: const EdgeInsets.only(left: 8),
-      indicator: const UnderlineTabIndicator(
-        borderSide: BorderSide(color: Colors.white, width: 1.2),
-      ),
-      tabs: const [
-        Tab(text: "Overview"),
-        Tab(text: "Matches"),
-        Tab(text: "Standing"),
-        Tab(text: "Squad"),
-        Tab(text: "Analysis"),
-      ],
-    );
+    _tabController = TabController(length: 5, vsync: this); // ✅ add init
 
     // 🔁 Toggle which source to use
     loadMockData();     // local fake JSON
@@ -169,16 +147,10 @@ class _TeamScreenState extends State<TeamScreen>
     });
   }
 
-  void _measureHeader() {
-    final renderHeight = _headerKey.currentContext?.size?.height;
-    if (renderHeight == null) return;
-    if ((renderHeight - _headerHeight).abs() > 0.5) {
-      setState(() => _headerHeight = renderHeight);
-    }
-  }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -199,91 +171,93 @@ class _TeamScreenState extends State<TeamScreen>
       );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeader());
+    final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // ── Gradient — sits above the scrolling content, fades from the
-          // team color at the top down to transparent. Anything scrolling
-          // underneath fades out behind it near the top of the screen.
           Positioned(
             top: 0, left: 0, right: 0, height: 550,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                  colors: [_teamColor, _teamColor.withAlpha(0)],
-                  stops: const [0.0, 0.6],
+            child: AnimatedOpacity(
+              opacity: (1 - opacityFactor),
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                    colors: [_teamColor, _teamColor.withAlpha(0)],
+                    stops: const [0.0, 0.6],
+                  ),
                 ),
               ),
             ),
           ),
-
-          // ── Full-bleed scrollable content — starts at the very top so it
-          // scrolls underneath the fixed header below. Each tab pads its own
-          // scroll view by `_headerHeight` so its first item starts visually
-          // below the header instead of being hidden underneath it.
-          Positioned.fill(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                OverviewTab(team: team, topPadding: _headerHeight),
-                MatchesTab(team: team, topPadding: _headerHeight),
-                StandingTab(team: team, topPadding: _headerHeight),
-                SquadTab(team: team, topPadding: _headerHeight),
-                AnalysisTab(team: team, topPadding: _headerHeight),
-              ],
-            ),
-          ),
-
-          // ── Fixed header — logo/name/position + tab bar. Always on top,
-          // never scrolls.
-          Positioned(
-            top: 0, left: 0, right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                key: _headerKey,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          NestedScrollView(
+            controller: _scrollController,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                elevation: 0,
+                floating: true,
+                snap: true,
+                pinned: false,
+                toolbarHeight: 80,
+                flexibleSpace: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                      colors: [_teamColor, _teamColor.withAlpha(0)],
+                    ),
+                  ),
+                ),
+                title: Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 30),
+                  child: Row(
+                    children: [
+                      Image.network(
+                        team?['logo'],
+                        height: 52, width: 53, fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'TeamLogos/Barcelona.png', height: 52, width: 53,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              // '1. Fußballclub Heidenheim 1846 e.V',
+                              team?['name'],
+                              style: Heading4.style,
+                              maxLines: 1, // Ensure it stays on one line
+                              overflow: TextOverflow.ellipsis, // Now this will work correctly
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(team!['position'] as String, style: Body2.style),
+                                const Icon(Icons.arrow_drop_up, size: 16, color: Colors.green),
+                                Text(
+                                  team!['rankChange'] != 0 ? ' ${team!['rankChange']}' : '',
+                                  style: Eyebrow.style,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                actions: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
+                    padding: const EdgeInsets.only(right: 8, top: 30),
                     child: Row(
                       children: [
-                        Image.network(
-                          team?['logo'],
-                          height: 52, width: 53, fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => Image.asset(
-                            'TeamLogos/Barcelona.png', height: 52, width: 53,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                team?['name'],
-                                style: Heading4.style,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(team!['position'] as String, style: Body2.style),
-                                  const Icon(Icons.arrow_drop_up, size: 16, color: Colors.green),
-                                  Text(
-                                    team!['rankChange'] != 0 ? ' ${team!['rankChange']}' : '',
-                                    style: Eyebrow.style,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
                         IconButton(
                           onPressed: () => context.push('/profile'),
                           icon: const Icon(Icons.account_circle_outlined, size: 32),
@@ -295,14 +269,74 @@ class _TeamScreenState extends State<TeamScreen>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Align(alignment: Alignment.centerLeft, child: _tabBar),
                 ],
               ),
+              SliverPersistentHeader(
+                pinned: false,
+                delegate: _TabBarDelegate(
+                  TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: Colors.white,
+                    labelStyle: Heading5.style,
+                    unselectedLabelStyle: Heading5.style,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    dividerColor: Colors.transparent,
+                    padding: const EdgeInsets.only(left: 8, top: 24),
+                    indicator: const UnderlineTabIndicator(
+                      borderSide: BorderSide(color: Colors.white, width: 1.2),
+                    ),
+                    tabs: const [
+                      Tab(text: "Overview"),
+                      Tab(text: "Matches"),
+                      Tab(text: "Standing"),
+                      Tab(text: "Squad"),
+                      Tab(text: "Analysis"),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                OverviewTab(team: team),
+                MatchesTab(team: team),
+                StandingTab(team: team),
+                SquadTab(team: team),
+                AnalysisTab(team: team),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar _tabBar;
+
+  _TabBarDelegate(this._tabBar);
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height + 8; // a bit of top padding
+
+  @override
+  double get maxExtent => _tabBar.preferredSize.height + 8;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      // color: Colors.black, // solid bg so it looks clean when pinned
+      alignment: Alignment.centerLeft,
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_TabBarDelegate oldDelegate) => false;
 }
