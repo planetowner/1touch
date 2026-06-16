@@ -63,37 +63,6 @@ class _MatchesTabState extends State<MatchesTab> {
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
-        // ── PAST section ──────────────────────────────────────────────
-        if (pastMatches.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyHeaderDelegate(title: 'PAST'),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (_, i) => buildMatchCard(pastMatches[i]),
-              childCount: pastMatches.length,
-            ),
-          ),
-        ],
-
-        // Invisible marker for scrollToLiveSection() measurement
-        SliverToBoxAdapter(
-          child: SizedBox(key: _liveSectionKey, height: 0),
-        ),
-
-        // ── LIVE section ──────────────────────────────────────────────
-        SliverPersistentHeader(
-          pinned: true,
-          delegate: _StickyHeaderDelegate(title: '• LIVE'),
-        ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-                (_, i) => buildMatchCard(liveMatches[i]),
-            childCount: liveMatches.length,
-          ),
-        ),
-
         // ── UPCOMING section ──────────────────────────────────────────
         if (upcomingMatches.isNotEmpty) ...[
           SliverPersistentHeader(
@@ -104,6 +73,39 @@ class _MatchesTabState extends State<MatchesTab> {
             delegate: SliverChildBuilderDelegate(
                   (_, i) => buildMatchCard(upcomingMatches[i]),
               childCount: upcomingMatches.length,
+            ),
+          ),
+        ],
+
+        // Invisible marker for scrollToLiveSection() measurement
+        SliverToBoxAdapter(
+          child: SizedBox(key: _liveSectionKey, height: 0),
+        ),
+
+        // ── LIVE section ──────────────────────────────────────────────
+        if (liveMatches.isNotEmpty) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickyHeaderDelegate(title: '• LIVE'),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (_, i) => buildMatchCard(liveMatches[i]),
+              childCount: liveMatches.length,
+            ),
+          ),
+        ],
+
+        // ── PAST section ──────────────────────────────────────────────
+        if (pastMatches.isNotEmpty) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickyHeaderDelegate(title: 'PAST'),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (_, i) => buildMatchCard(pastMatches[i]),
+              childCount: pastMatches.length,
             ),
           ),
         ],

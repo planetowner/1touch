@@ -581,7 +581,9 @@ final _liveDortmund = Fixture(
     fixtureId: 19500007,
     seasonId: 23538,
     leagueId: 384,
-    homeTeamId: 185,
+    // Leverkusen (182), not Leipzig (185) — Leipzig is already the away team
+    // in `_liveBayern` above, and a team can't play two matches at once.
+    homeTeamId: 182,
     awayTeamId: 174,
     competitionType: CompetitionType.league,
     roundName: 'RO 29',
@@ -614,8 +616,10 @@ final _liveLyon = Fixture(
     homeScore: 1,
     awayScore: 1);
 
-// ── UCL live (Barcelona) ─────────────────────────────────────
-final _liveBarcaUCL = Fixture(
+// Note: a team can only ever play one match at a time, so each team gets
+// exactly one FixtureStatus.live entry. Barcelona's UCL QF home leg below is
+// upcoming rather than live to avoid colliding with `_liveBarca` (league).
+const _barcaUCLHomeLeg = Fixture(
     fixtureId: 20100001,
     seasonId: 23804,
     leagueId: 2,
@@ -623,11 +627,12 @@ final _liveBarcaUCL = Fixture(
     awayTeamId: 183,
     competitionType: CompetitionType.cup,
     roundName: 'QF',
-    status: FixtureStatus.live,
-    startingAt: _liveKickoff(38),
-    homeScore: 1,
-    awayScore: 1);
-final _liveArsenalUCL = Fixture(
+    legNumber: 1,
+    status: FixtureStatus.upcoming,
+    startingAt: '2025-04-15 20:00:00');
+// Upcoming rather than live — Arsenal (9) is already away in `_liveManCity`
+// and Real Madrid (86) is already home in `_liveAtletico`.
+const _arsenalUCLHomeLeg = Fixture(
     fixtureId: 20100005,
     seasonId: 23804,
     leagueId: 2,
@@ -635,10 +640,9 @@ final _liveArsenalUCL = Fixture(
     awayTeamId: 86,
     competitionType: CompetitionType.cup,
     roundName: 'QF',
-    status: FixtureStatus.live,
-    startingAt: _liveKickoff(52),
-    homeScore: 2,
-    awayScore: 1);
+    legNumber: 1,
+    status: FixtureStatus.upcoming,
+    startingAt: '2025-04-16 20:00:00');
 
 // Past & upcoming fixtures remain const.
 const _pastUpcomingFixtures = <Fixture>[
@@ -1462,8 +1466,8 @@ final mockFixtures = <Fixture>[
   _liveDortmund,
   _livePSG,
   _liveLyon,
-  _liveBarcaUCL,
-  _liveArsenalUCL,
+  _barcaUCLHomeLeg,
+  _arsenalUCLHomeLeg,
 ];
 
 List<Fixture> fixturesByTeam(int teamId) => mockFixtures
