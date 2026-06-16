@@ -282,8 +282,9 @@ List<SquadPlayer> _mockSquad() => const [
 
 class SquadTab extends StatefulWidget {
   final Map<String, dynamic>? team;
+  final double topPadding;
 
-  const SquadTab({super.key, required this.team});
+  const SquadTab({super.key, required this.team, required this.topPadding});
 
   @override
   State<SquadTab> createState() => _SquadTabState();
@@ -385,7 +386,7 @@ class _SquadTabState extends State<SquadTab> {
       }
 
       return ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: EdgeInsets.fromLTRB(16, widget.topPadding + 16, 16, 16),
         children: [
           _sortDropdown(),
           ..._positionOrder
@@ -401,7 +402,7 @@ class _SquadTabState extends State<SquadTab> {
     final sorted = [..._players]..sort(_compare);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: EdgeInsets.fromLTRB(16, widget.topPadding + 16, 16, 16),
       children: [
         IntrinsicWidth(
           child: _sortDropdown(),

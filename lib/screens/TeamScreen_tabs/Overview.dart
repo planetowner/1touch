@@ -4,8 +4,9 @@ import 'package:onetouch/features/TeamScreenFeatures.dart';
 
 class OverviewTab extends StatelessWidget {
   final Map<String, dynamic>? team;
+  final double topPadding;
 
-  const OverviewTab({super.key, required this.team});
+  const OverviewTab({super.key, required this.team, required this.topPadding});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class OverviewTab extends StatelessWidget {
         SliverList(
           delegate: SliverChildListDelegate(
             [
-              const SizedBox(height: 24),
+              SizedBox(height: topPadding + 24),
               const SectionHeader(title: "FIXTURE"),
               // Pass the whole team map
               Container(child: Fixtures(teams: team)),

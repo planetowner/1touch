@@ -7,8 +7,9 @@ import 'package:onetouch/models/mock_data.dart';
 
 class MatchesTab extends StatefulWidget {
   final Map<String, dynamic>? team;
+  final double topPadding;
 
-  const MatchesTab({super.key, required this.team});
+  const MatchesTab({super.key, required this.team, required this.topPadding});
 
   @override
   State<MatchesTab> createState() => _MatchesTabState();
@@ -63,6 +64,8 @@ class _MatchesTabState extends State<MatchesTab> {
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
+        SliverToBoxAdapter(child: SizedBox(height: widget.topPadding)),
+
         // ── UPCOMING section ──────────────────────────────────────────
         if (upcomingMatches.isNotEmpty) ...[
           SliverPersistentHeader(
