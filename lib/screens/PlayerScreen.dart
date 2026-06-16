@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/PlayerScreenFeatures.dart';
+import 'package:onetouch/models/mock_data.dart';
 
 import '../data/playerdata.dart';
 
@@ -26,6 +27,7 @@ class _PlayersState extends State<Players> {
   String selectedPosition = "FW";
 
   late final Player player;
+  Color _teamColor = const Color(0xFFD82457);
 
   @override
   void initState() {
@@ -36,6 +38,13 @@ class _PlayersState extends State<Players> {
           _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
         });
       });
+
+    final favoriteTeamId = mockUserProfiles
+        .firstWhere((p) => p.userId == 1001)
+        .favoriteTeamId;
+    if (favoriteTeamId != null) {
+      _teamColor = Color(mockTeamById(favoriteTeamId).primaryColor);
+    }
   }
 
   @override
@@ -84,17 +93,17 @@ class _PlayersState extends State<Players> {
         children: [
           // Background gradient
           Positioned(
-            top: 0, left: 0, right: 0, height: 400,
+            top: 0, left: 0, right: 0, height: 550,
             child: AnimatedOpacity(
               opacity: 1 - opacityFactor,
               duration: const Duration(milliseconds: 200),
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFFD82457), Color(0x00D82457)],
-                    stops: [0.0, 0.6],
+                    colors: [_teamColor, _teamColor.withAlpha(0)],
+                    stops: const [0.0, 0.6],
                   ),
                 ),
               ),
@@ -111,18 +120,20 @@ class _PlayersState extends State<Players> {
                 floating: true,
                 snap: true,
                 toolbarHeight: 80,
+                centerTitle: false,
+                titleSpacing: 0,
                 flexibleSpace: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFFD82457), Color(0x00D82457)],
+                      colors: [_teamColor, _teamColor.withAlpha(0)],
                     ),
                   ),
                 ),
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 8, top: 30),
+                  padding: const EdgeInsets.only(left: 24, top: 30),
                   child: SvgPicture.asset('assets/app_logo.svg', height: 23, width: 120),
                 ),
                 actions: [

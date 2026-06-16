@@ -16,13 +16,14 @@ class PlayerMatchStatSection {
 }
 
 class PlayerMatchStatData {
-  final String name;         // Full name, e.g. "M. Rashford"
+  final String name;
   final int jerseyNumber;
-  final List<String> positions; // e.g. ['ST', 'LW', 'LM']
+  final List<String> positions;
   final String club;
   final String nationality;
   final String? flagEmoji;
-  final String? playerImageUrl; // network URL for player headshot
+  final String? playerImageUrl;
+  final String? playerImageAsset;
   final List<PlayerMatchStatSection> sections;
 
   const PlayerMatchStatData({
@@ -33,6 +34,7 @@ class PlayerMatchStatData {
     required this.nationality,
     this.flagEmoji,
     this.playerImageUrl,
+    this.playerImageAsset,
     required this.sections,
   });
 }
@@ -109,12 +111,12 @@ class _Header extends StatelessWidget {
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFFD82457), // accent red (left / top)
+            Color(0xFFD82457), // bright at bottom
             Color(0xFF5A001F), // mid maroon
-            Color(0xFF260011), // deep dark (right / bottom)
+            Color(0xFF260011), // deep dark at top
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
         ),
       ),
       child: SafeArea(
@@ -155,7 +157,7 @@ class _Header extends StatelessWidget {
                     },
                   ),
                   _HeaderIconBtn(
-                    icon: Icons.compare, // compare players
+                    icon: Icons.safety_divider, // compare players
                     onTap: () {
                       // TODO: open comparison sheet
                     },
@@ -207,19 +209,25 @@ class _Header extends StatelessWidget {
                   ),
 
                   // Right: player headshot
-                  if (player.playerImageUrl != null)
+                  if (player.playerImageAsset != null)
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          player.playerImageUrl!,
-                          height: 130,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const SizedBox(
-                            width: 90,
-                            height: 130,
-                          ),
+                      child: Image.asset(
+                        player.playerImageAsset!,
+                        height: 140,
+                        fit: BoxFit.contain,
+                      ),
+                    )
+                  else if (player.playerImageUrl != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Image.network(
+                        player.playerImageUrl!,
+                        height: 140,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const SizedBox(
+                          width: 90,
+                          height: 140,
                         ),
                       ),
                     ),
@@ -262,7 +270,13 @@ class _StatSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(section.category, style: Eyebrow.style),
+        Text(
+          section.category,
+          style: Eyebrow.style.copyWith(
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.6,
+          ),
+        ),
         const SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(
@@ -311,7 +325,7 @@ final mockRashfordStats = PlayerMatchStatData(
   club: 'FC Barcelona',
   nationality: 'England',
   flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  playerImageUrl: null, // replace with real URL
+  playerImageAsset: 'assets/playerAvatar.png',
   sections: const [
     PlayerMatchStatSection(
       category: 'FINISH',

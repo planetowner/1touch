@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/models/mock_data.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -10,11 +11,32 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final nameController = TextEditingController(text: "John Doe");
-  final usernameController = TextEditingController(text: "john_doe");
-  final emailController = TextEditingController(text: "jdoe0507@gmail.com");
-  final passwordController = TextEditingController(text: "password123");
+  static const _currentUserId = 1001;
+
+  late final TextEditingController nameController;
+  late final TextEditingController usernameController;
+  late final TextEditingController emailController;
+  late final TextEditingController passwordController;
   bool isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = mockUserById(_currentUserId);
+    nameController     = TextEditingController(text: user.displayName);
+    usernameController = TextEditingController(text: user.username);
+    emailController    = TextEditingController(text: user.email);
+    passwordController = TextEditingController(text: '••••••••');
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,23 +67,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // Profile Image Section
               Center(
                 child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     const CircleAvatar(
                       radius: 54,
-                      backgroundColor: Color(0xFF2B2B2B), // Dark grey placeholder
-                      child: Icon(Icons.person, size: 60, color: Colors.white54),
-                      // backgroundImage: ... (Add image provider here if needed)
+                      backgroundColor: Color(0xFF2B2B2B),
+                      backgroundImage: AssetImage('assets/profileavatar.png'),
                     ),
                     Positioned(
-                      bottom: 0,
-                      right: 0,
+                      bottom: -4,
+                      right: -4,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF3D3D3D), // Badge color
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3D3D3D),
                           shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black, width: 2),
                         ),
-                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
                       ),
                     ),
                   ],

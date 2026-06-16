@@ -15,13 +15,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
 
   List<Team> myTeam = [];
   bool isLoading = true;
-
+  Color _teamColor = const Color(0xFFD82457);
+  int? _activeFavoriteTeamId;
 
   @override
   void initState() {
@@ -33,20 +33,22 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       });
 
-    // 🔹 Toggle here for testing
-    // fetchHomeData();
-    loadMockData();
+    final initialFavoriteId =
+        mockUserProfiles.firstWhere((p) => p.userId == 1001).favoriteTeamId ??
+            followingTeamIds(1001).first;
+    _reloadWithFavorite(initialFavoriteId);
   }
 
-  void loadMockData() {
-    // mock user 1001: favorite = Barcelona, following = Barcelona + Bayern
-    final favoriteTeamId = mockUserProfiles
-        .firstWhere((p) => p.userId == 1001)
-        .favoriteTeamId;
+  void _reloadWithFavorite(int newFavoriteId) {
+    _activeFavoriteTeamId = newFavoriteId;
 
     final followingIds = followingTeamIds(1001);
+    final ordered = [
+      newFavoriteId,
+      ...followingIds.where((id) => id != newFavoriteId),
+    ];
 
-    final teams = followingIds.map((id) {
+    final teams = ordered.map((id) {
       final team = mockTeamById(id);
       final fixtures = fixturesByTeam(id);
       return Team(
@@ -54,12 +56,16 @@ class _HomeScreenState extends State<HomeScreen> {
         name: team.name,
         shortName: team.shortCode ?? '',
         imagePath: team.imagePath ?? '',
-        nextMatch: fixtures.where((f) => f.status == FixtureStatus.upcoming).firstOrNull,
-        lastMatch: fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull,
+        nextMatch: fixtures
+            .where((f) => f.status == FixtureStatus.upcoming)
+            .firstOrNull,
+        lastMatch:
+            fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull,
       );
     }).toList();
 
     setState(() {
+      _teamColor = Color(mockTeamById(newFavoriteId).primaryColor);
       myTeam = teams;
       isLoading = false;
     });
@@ -70,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -103,8 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     ];
 
-
-
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
 
     if (isLoading) {
@@ -114,9 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final allMatches = myTeam
-        .expand((t) => fixturesByTeam(t.id))
-        .toList()
+    final allMatches = myTeam.expand((t) => fixturesByTeam(t.id)).toList()
       ..sort((a, b) => a.startingAt.compareTo(b.startingAt));
 
     Fixture? liveMatch;
@@ -137,17 +138,17 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 0,
             left: 0,
             right: 0,
-            height: 400,
+            height: 550,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFFD82457), Color(0x00D82457)],
-                    stops: [0.0, 0.6],
+                    colors: [_teamColor, _teamColor.withAlpha(0)],
+                    stops: const [0.0, 0.6],
                   ),
                 ),
               ),
@@ -158,23 +159,25 @@ class _HomeScreenState extends State<HomeScreen> {
             slivers: [
               SliverAppBar(
                 backgroundColor:
-                Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                    Color.lerp(Colors.transparent, Colors.black, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,
                 toolbarHeight: 80,
+                centerTitle: false,
+                titleSpacing: 0,
                 flexibleSpace: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFFD82457), Color(0x00D82457)],
+                      colors: [_teamColor, _teamColor.withAlpha(0)],
                     ),
                   ),
                 ),
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 8, top: 30),
+                  padding: const EdgeInsets.only(left: 24, top: 30),
                   child: SvgPicture.asset(
                     'assets/app_logo.svg',
                     height: 23,
@@ -194,9 +197,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         // New Dropdown Feature
                         GestureDetector(
-                          onTap: () => TeamSelectionSheet.show(context),
+                          onTap: () => TeamSelectionSheet.show(
+                            context,
+                            initialFavoriteTeamId:
+                                _activeFavoriteTeamId ?? myTeam.first.id,
+                            onSwitch: _reloadWithFavorite,
+                          ),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -213,7 +222,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 24,
                                   ),
                                 ),
-                                const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                                const Icon(Icons.keyboard_arrow_down,
+                                    color: Colors.white),
                               ],
                             ),
                           ),
@@ -222,8 +232,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () {
                             context.push('/profile');
                           },
-                          icon: const Icon(Icons.account_circle_outlined,
-                              size: 32),
+                          icon: const Icon(
+                            Icons.account_circle_outlined,
+                            size: 32,
+                          ),
                         ),
                       ],
                     ),

@@ -26,6 +26,7 @@ class _TeamScreenState extends State<TeamScreen>
 
   Map<String, dynamic>? team;
   bool isLoading = true;
+  Color _teamColor = const Color(0xFFD82457);
 
   // Future<void> fetchTeamData() async {
   //   final url =
@@ -92,6 +93,7 @@ class _TeamScreenState extends State<TeamScreen>
       setState(() => isLoading = false);
       return;
     }
+    _teamColor = Color(mockTeam.primaryColor);
 
     final fixtures = fixturesByTeam(widget.teamId);
     final nextMatch = fixtures.where((f) => f.status == FixtureStatus.upcoming).firstOrNull;
@@ -182,11 +184,11 @@ class _TeamScreenState extends State<TeamScreen>
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                    colors: [Color(0xFFD82457), Color(0x00D82457)],
-                    stops: [0.0, 0.6],
+                    colors: [_teamColor, _teamColor.withAlpha(0)],
+                    stops: const [0.0, 0.6],
                   ),
                 ),
               ),
@@ -204,10 +206,10 @@ class _TeamScreenState extends State<TeamScreen>
                 pinned: false,
                 toolbarHeight: 80,
                 flexibleSpace: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                      colors: [Color(0xFFD82457), Color(0x00D82457)],
+                      colors: [_teamColor, _teamColor.withAlpha(0)],
                     ),
                   ),
                 ),

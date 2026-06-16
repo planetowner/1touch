@@ -157,26 +157,6 @@ class MatchInfoTab extends StatelessWidget {
   }
 
   void _onPlayerTap(BuildContext context, LineupPlayer player) {
-    showPlayerMatchStatSheet(context, _buildStatData(player));
-  }
-
-  /// todo: Replace stub sections with real data from your API model.
-  PlayerMatchStatData _buildStatData(LineupPlayer player) {
-    return PlayerMatchStatData(
-      name: player.name,
-      jerseyNumber: player.number,
-      positions: ['—'],        // TODO: from API
-      club: 'Club Name',       // TODO: from API
-      nationality: 'Country',  // TODO: from API
-      sections: const [
-        PlayerMatchStatSection(
-          category: 'FINISH',
-          rows: [
-            PlayerMatchStatRow(label: 'Goals', value: '0'),
-            PlayerMatchStatRow(label: 'xG',    value: '0.0'),
-          ],
-        ),
-      ],
-    );
+    showPlayerMatchStatSheet(context, mockRashfordStats);
   }
 }

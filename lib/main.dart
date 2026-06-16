@@ -9,9 +9,9 @@ import 'package:onetouch/data/playerdata.dart';
 import 'package:onetouch/models/mock_data.dart';
 
 // Feature Modules
-import 'package:onetouch/screens/index.dart';     // Imports all screens
+import 'package:onetouch/screens/index.dart'; // Imports all screens
 import 'package:onetouch/comm_pages/index.dart'; // Imports all profile pages
-import 'package:onetouch/SignComps/index.dart';  // Imports auth components
+import 'package:onetouch/SignComps/index.dart'; // Imports auth components
 
 // Root Level Pages
 import 'package:onetouch/Splash.dart';
@@ -19,11 +19,9 @@ import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/WelcomeScreen.dart';
 
-
 int _getFavoriteTeamId() {
-  return mockUserProfiles
-      .firstWhere((p) => p.userId == 1001)
-      .favoriteTeamId ?? 83;
+  return mockUserProfiles.firstWhere((p) => p.userId == 1001).favoriteTeamId ??
+      83;
 }
 
 void main() async {
@@ -52,19 +50,18 @@ final GoRouter _router = GoRouter(
 
     // Onboarding
     GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
-      routes: [
-        GoRoute(
-          path: 'welcome',
-          builder: (context, state) => const WelcomeScreen(),
-        ),
-        GoRoute(
-          path: 'select-favorites',
-          builder: (context, state) => const SelectFavoriteTeamsScreen(),
-        ),
-      ]
-    ),
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+        routes: [
+          GoRoute(
+            path: 'welcome',
+            builder: (context, state) => const WelcomeScreen(),
+          ),
+          GoRoute(
+            path: 'select-favorites',
+            builder: (context, state) => const SelectFavoriteTeamsScreen(),
+          ),
+        ]),
     GoRoute(
       path: '/auth/signup',
       builder: (context, state) => const EmailSignUpScreen(),
@@ -136,7 +133,8 @@ final GoRouter _router = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/community',
-            builder: (context, state) => Community(teamId: _getFavoriteTeamId()),
+            builder: (context, state) =>
+                Community(teamId: _getFavoriteTeamId()),
           ),
         ]),
       ],
@@ -152,9 +150,14 @@ final GoRouter _router = GoRouter(
         return MatchScreen(matchId: matchId, matchStatus: matchStatus);
       },
     ),
+    GoRoute(
+        path: '/notifications',
+        builder: (c, s) => const NotificationInboxPage()),
     GoRoute(path: '/profile', builder: (c, s) => Profile()),
     GoRoute(path: '/profile/edit', builder: (c, s) => EditProfileScreen()),
-    GoRoute(path: '/profile/notification', builder: (c, s) => NotificationListPage()),
+    GoRoute(
+        path: '/profile/notification',
+        builder: (c, s) => NotificationListPage()),
     GoRoute(
       path: '/profile/notification/team/:name',
       builder: (c, s) => TeamNotificationDetailPage(
@@ -180,7 +183,6 @@ final GoRouter _router = GoRouter(
   ],
 );
 
-
 class MainScreen extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
@@ -189,8 +191,9 @@ class MainScreen extends StatelessWidget {
 
   int getFavoriteTeamName() {
     return mockUserProfiles
-        .firstWhere((p) => p.userId == 1001)
-        .favoriteTeamId ?? 83;
+            .firstWhere((p) => p.userId == 1001)
+            .favoriteTeamId ??
+        83;
   }
 
   @override

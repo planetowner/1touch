@@ -94,19 +94,17 @@ class _CommunityState extends State<Community>
             top: 0,
             left: 0,
             right: 0,
-            height: 400,
+            height: 550,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFD82457), Color(0x00D82457)
-                    ],
-                    stops: [0.0, 0.6],
+                    colors: [Color(_team.primaryColor), Color(_team.primaryColor).withAlpha(0)],
+                    stops: const [0.0, 0.6],
                   ),
                 ),
               ),
@@ -123,17 +121,19 @@ class _CommunityState extends State<Community>
                 floating: true,
                 snap: true,
                 toolbarHeight: 80,
+                centerTitle: false,
+                titleSpacing: 0,
                 flexibleSpace: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFFD82457), Color(0x00D82457)],
+                      colors: [Color(_team.primaryColor), Color(_team.primaryColor).withAlpha(0)],
                     ),
                   ),
                 ),
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 8, top: 30),
+                  padding: const EdgeInsets.only(left: 24, top: 30),
                   child: SvgPicture.asset('assets/app_logo.svg',
                       height: 23, width: 120),
                 ),

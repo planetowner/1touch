@@ -345,7 +345,13 @@ class _TeamDisplay2 extends StatelessWidget {
           errorBuilder: (_, __, ___) => Image.asset(randomTeamLogo(), height: 72, width: 72),
         ),
         const SizedBox(height: 8),
-        Text(teamName, textAlign: TextAlign.center, style: Eyebrow.style),
+        Text(
+          teamName,
+          textAlign: TextAlign.center,
+          style: Eyebrow.style,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

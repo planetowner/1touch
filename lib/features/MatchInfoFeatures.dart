@@ -51,7 +51,7 @@ class MatchScoreHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _TeamBlock(logoAsset: homeLogoAsset, name: homeTeamName),
+        Expanded(child: _TeamBlock(logoAsset: homeLogoAsset, name: homeTeamName)),
         const SizedBox(width: 20),
         Column(
           mainAxisSize: MainAxisSize.min,
@@ -75,7 +75,7 @@ class MatchScoreHeader extends StatelessWidget {
           ],
         ),
         const SizedBox(width: 20),
-        _TeamBlock(logoAsset: awayLogoAsset, name: awayTeamName),
+        Expanded(child: _TeamBlock(logoAsset: awayLogoAsset, name: awayTeamName)),
       ],
     );
   }
@@ -97,7 +97,13 @@ class _TeamBlock extends StatelessWidget {
           errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 72, height: 72),
         ),
         const SizedBox(height: 8),
-        Text(name, style: Body1.style),
+        Text(
+          name,
+          style: Body1.style,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

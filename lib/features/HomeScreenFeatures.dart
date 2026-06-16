@@ -74,17 +74,31 @@ class SyncDialog extends StatelessWidget {
 
 // 2. Converted _showTeamSelection to a reusable StatefulWidget class
 class TeamSelectionSheet extends StatefulWidget {
-  const TeamSelectionSheet({super.key});
+  final int initialFavoriteTeamId;
+  final void Function(int teamId) onSwitch;
+
+  const TeamSelectionSheet({
+    super.key,
+    required this.initialFavoriteTeamId,
+    required this.onSwitch,
+  });
 
   // Static helper to show the sheet easily from anywhere
-  static void show(BuildContext context) {
+  static void show(
+    BuildContext context, {
+    required int initialFavoriteTeamId,
+    required void Function(int teamId) onSwitch,
+  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF2C2C2C),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (BuildContext context) => const TeamSelectionSheet(),
+      builder: (BuildContext context) => TeamSelectionSheet(
+        initialFavoriteTeamId: initialFavoriteTeamId,
+        onSwitch: onSwitch,
+      ),
     );
   }
 
@@ -93,29 +107,27 @@ class TeamSelectionSheet extends StatefulWidget {
 }
 
 class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
-  // Debug code
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   for (final id in followingTeamIds(1001)) {
-  //     final fixtures = fixturesByTeam(id);
-  //     print('teamId: $id, fixtures count: ${fixtures.length}, leagueName: ${leagueNames[fixtures.firstOrNull?.leagueId]}');
-  //   }
-  // }
+  late List<Map<String, dynamic>> _followingTeams;
 
-  // Data moved inside the State class
-  final List<Map<String, dynamic>> _followingTeams = followingTeamIds(1001).map((id) {
-    final t = mockTeamById(id);
-    final leagueId = fixturesByTeam(id).firstOrNull?.leagueId;
-    final position = leagueId != null ? standingByTeam(leagueId, id)?.position : null;
-    final leagueName = leagueId != null ? (leagueNames[leagueId] ?? '') : '';
-    return <String, dynamic>{
-      'name': t.name,
-      'league': position != null ? '$leagueName ${ordinal(position)}' : leagueName,
-      'logo': t.imagePath ?? '',
-      'isSelected': id == mockUserProfiles.firstWhere((p) => p.userId == 1001).favoriteTeamId,
-    };
-  }).toList();
+  @override
+  void initState() {
+    super.initState();
+    _followingTeams = followingTeamIds(1001).map((id) {
+      final t = mockTeamById(id);
+      final leagueId = fixturesByTeam(id).firstOrNull?.leagueId;
+      final position =
+          leagueId != null ? standingByTeam(leagueId, id)?.position : null;
+      final leagueName = leagueId != null ? (leagueNames[leagueId] ?? '') : '';
+      return <String, dynamic>{
+        'id': id,
+        'name': t.name,
+        'league':
+            position != null ? '$leagueName ${ordinal(position)}' : leagueName,
+        'logo': t.imagePath ?? '',
+        'isSelected': id == widget.initialFavoriteTeamId,
+      };
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,15 +178,12 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                       ? const Icon(Icons.check, color: Colors.white)
                       : null,
                   onTap: () {
-                    // Handle team selection here
                     setState(() {
                       for (var t in _followingTeams) {
                         t['isSelected'] = false;
                       }
                       team['isSelected'] = true;
                     });
-                    // You would also update the main 'realteam' data here
-                    Navigator.of(context).pop();
                   },
                 );
               },
@@ -185,7 +194,11 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                // Logic to switch to the selected team
+                final selected = _followingTeams.firstWhere(
+                  (t) => t['isSelected'] == true,
+                  orElse: () => _followingTeams.first,
+                );
+                widget.onSwitch(selected['id'] as int);
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
