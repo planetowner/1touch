@@ -304,10 +304,17 @@ def _dedupe_by_video_id(candidates: List[Dict]) -> List[Dict]:
 # Per-team candidate collection
 # =========================================================
 
-def _collect_playlist_candidates(team_cfg: Dict) -> List[Dict]:
+def _collect_playlist_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
+    """Returns (candidates, had_failure).
+
+    `had_failure=True` when any playlist fetch raised — the caller must NOT
+    treat the partial result as authoritative, since some playlists may have
+    contributed highlights that are now missing from `candidates`.
+    """
     playlists = _load_team_playlists(team_cfg["team_id"])
     max_items = team_cfg["max_candidate_items"]
     candidates: List[Dict] = []
+    had_failure = False
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
@@ -319,6 +326,7 @@ def _collect_playlist_candidates(team_cfg: Dict) -> List[Dict]:
                 f"  [highlights] playlist fetch error "
                 f"team={team_cfg['team_name']!r} playlist_id={playlist_id!r}: {error}"
             )
+            had_failure = True
             continue
 
         for item in items:
@@ -330,10 +338,11 @@ def _collect_playlist_candidates(team_cfg: Dict) -> List[Dict]:
                 )
             )
 
-    return _dedupe_by_video_id(candidates)
+    return _dedupe_by_video_id(candidates), had_failure
 
 
-def _collect_channel_rule_candidates(team_cfg: Dict) -> List[Dict]:
+def _collect_channel_rule_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
+    """Returns (candidates, had_failure). See _collect_playlist_candidates."""
     channel_id = team_cfg["channel_id"]
     max_items = team_cfg["max_candidate_items"]
 
@@ -344,7 +353,7 @@ def _collect_channel_rule_candidates(team_cfg: Dict) -> List[Dict]:
             f"  [highlights] uploads playlist lookup error "
             f"team={team_cfg['team_name']!r}: {error}"
         )
-        return []
+        return [], True
 
     try:
         items = _fetch_playlist_items(uploads_playlist_id, max_results=max_items)
@@ -352,7 +361,7 @@ def _collect_channel_rule_candidates(team_cfg: Dict) -> List[Dict]:
         print(
             f"  [highlights] uploads fetch error team={team_cfg['team_name']!r}: {error}"
         )
-        return []
+        return [], True
 
     candidates: List[Dict] = []
 
@@ -365,7 +374,7 @@ def _collect_channel_rule_candidates(team_cfg: Dict) -> List[Dict]:
             )
         )
 
-    return _dedupe_by_video_id(candidates)
+    return _dedupe_by_video_id(candidates), False
 
 
 # =========================================================
@@ -441,11 +450,18 @@ def refresh_highlights(team_ids: Optional[List[int]] = None) -> None:
         print(f"[highlights] processing team={team_name!r} source_mode={source_mode!r}")
 
         if source_mode == "playlists":
-            candidates = _collect_playlist_candidates(team_cfg)
+            candidates, had_failure = _collect_playlist_candidates(team_cfg)
         elif source_mode == "channel_rules":
-            candidates = _collect_channel_rule_candidates(team_cfg)
+            candidates, had_failure = _collect_channel_rule_candidates(team_cfg)
         else:
             raise AssertionError(f"Unreachable source_mode={source_mode!r}")
+
+        if had_failure:
+            print(
+                f"  [highlights] one or more YouTube fetches failed; "
+                f"keeping existing cache for team {team_id}"
+            )
+            continue
 
         if not candidates:
             print(f"  [highlights] no candidates collected; clearing cache")

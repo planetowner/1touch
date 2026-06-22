@@ -294,16 +294,18 @@ def _result_for_team(
 
 
 def _last5_for_team(
-    fixtures_latest_first: List[Tuple[int, int, int, int, datetime]],
+    fixtures: List[Tuple[int, int, int, int, datetime]],
     team_id: int,
 ) -> List[str]:
-    """fixtures_latest_first는 최신 → 과거 순. 반환은 과거 → 최근 순 마지막 5개."""
-    sequence: List[str] = []
+    """Return the team's results for its 5 most recent matches, ordered past → most recent.
 
-    for h, _a, hs, as_, _ in reversed(fixtures_latest_first):
-        sequence.append(_result_for_team(h, hs, as_, team_id))
+    Sorts internally by starting_at, so the caller does not need to maintain
+    any particular SQL ORDER BY direction.
+    """
+    sorted_oldest_first = sorted(fixtures, key=lambda f: f[4])
+    recent5 = sorted_oldest_first[-5:]
 
-    return sequence[-5:]
+    return [_result_for_team(h, hs, as_, team_id) for h, _a, hs, as_, _ in recent5]
 
 
 def _rank_rows(rows: List[Dict]) -> List[Dict]:
