@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 import soccerdata as sd
@@ -11,10 +11,17 @@ import soccerdata as sd
 from ..core.db import execute, fetch_all, upsert_many
 
 
-BIG5_LEAGUE_IDS = [8, 82, 301, 384, 564]
+BIG5_LEAGUE_IDS: Tuple[int, ...] = (8, 82, 301, 384, 564)
 
 CALIBRATION_LOOKBACK_SEASONS = 5
 CALIBRATION_METHOD = "historical_draw_rate"
+
+MIN_SEASON_START_YEAR = 2017
+MAX_SEASON_START_YEAR = 2025
+
+XG_DECIMAL_PLACES = "0.001"
+XPTS_DECIMAL_PLACES = "0.00"
+DRAW_RATE_DECIMAL_PLACES = "0.000001"
 
 
 SQL_UPSERT_XG_STANDINGS = """
@@ -61,6 +68,125 @@ ON DUPLICATE KEY UPDATE
 """
 
 
+SQL_GET_UNDERSTAT_MAPPING_FOR_SEASON = """
+SELECT
+  ulm.understat_league_key,
+  usm.understat_season_key
+FROM understat_season_map usm
+JOIN seasons s
+  ON s.season_id = usm.sportmonks_season_id
+JOIN understat_league_map ulm
+  ON ulm.sportmonks_league_id = s.league_id
+WHERE s.league_id = %s
+  AND usm.sportmonks_season_id = %s
+LIMIT 1
+"""
+
+
+SQL_GET_TEAM_MAP = """
+SELECT understat_team_id, sportmonks_team_id
+FROM understat_team_map
+"""
+
+
+SQL_GET_CALIBRATION_SEASONS = """
+SELECT
+  s.season_id,
+  usm.understat_season_key
+FROM seasons s
+JOIN understat_season_map usm
+  ON usm.sportmonks_season_id = s.season_id
+WHERE s.league_id = %s
+  AND s.starting_at < (
+    SELECT target.starting_at
+    FROM seasons target
+    WHERE target.season_id = %s
+    LIMIT 1
+  )
+ORDER BY s.starting_at DESC
+LIMIT {limit}
+"""
+
+
+SQL_GET_ACTUAL_DRAW_RATE = """
+SELECT
+  COUNT(*) AS match_count,
+  CAST(SUM(CASE WHEN home_score = away_score THEN 1 ELSE 0 END) AS SIGNED) AS draw_count
+FROM fixtures
+WHERE league_id = %s
+  AND season_id IN ({placeholders})
+  AND competition_type = 'league'
+  AND status = 'past'
+  AND home_score IS NOT NULL
+  AND away_score IS NOT NULL
+"""
+
+
+SQL_GET_ELIGIBLE_BUILD_SEASONS = """
+SELECT
+  s.league_id,
+  s.season_id
+FROM seasons s
+JOIN understat_season_map usm
+  ON usm.sportmonks_season_id = s.season_id
+WHERE s.league_id IN (8, 82, 301, 384, 564)
+  AND YEAR(s.starting_at) BETWEEN %s AND %s
+  AND (
+    SELECT COUNT(*)
+    FROM seasons previous_s
+    JOIN understat_season_map previous_usm
+      ON previous_usm.sportmonks_season_id = previous_s.season_id
+    WHERE previous_s.league_id = s.league_id
+      AND previous_s.starting_at < s.starting_at
+  ) >= %s
+ORDER BY s.league_id, s.starting_at
+"""
+
+
+SQL_GET_CURRENT_BIG5_SEASONS = """
+SELECT s.league_id, s.season_id
+FROM seasons s
+JOIN understat_season_map usm
+  ON usm.sportmonks_season_id = s.season_id
+WHERE s.is_current = 1
+  AND s.league_id IN (8, 82, 301, 384, 564)
+ORDER BY s.league_id, s.starting_at
+"""
+
+
+SQL_DELETE_XG_STANDINGS = """
+DELETE FROM xg_standings
+WHERE league_id = %s
+  AND season_id = %s
+"""
+
+
+# =========================================================
+# Strict helpers
+# =========================================================
+
+def _require_int(value, field_name: str) -> int:
+    if type(value) is not int:
+        raise ValueError(f"Missing or invalid integer field: {field_name}={value!r}")
+
+    return value
+
+
+def _require_non_empty_str(value, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Missing or invalid string field: {field_name}={value!r}")
+
+    return value.strip()
+
+
+def _to_decimal(value: Any, places: str) -> Decimal:
+    return Decimal(str(value)).quantize(Decimal(places), rounding=ROUND_HALF_UP)
+
+
+# =========================================================
+# Dataclass
+# =========================================================
+
 @dataclass(frozen=True)
 class DrawBandCalibration:
     league_id: int
@@ -70,58 +196,14 @@ class DrawBandCalibration:
     calibration_match_count: int
     target_draw_rate: Decimal
     draw_band: Decimal
-    calibration_season_ids: list[int]
+    calibration_season_ids: List[int]
 
 
-def _decimal(value: Any, places: str = "0.001") -> Decimal:
-    if value is None:
-        return Decimal("0").quantize(Decimal(places))
+# =========================================================
+# Understat source loader
+# =========================================================
 
-    try:
-        if pd.isna(value):
-            return Decimal("0").quantize(Decimal(places))
-    except TypeError:
-        pass
-
-    return Decimal(str(value)).quantize(Decimal(places), rounding=ROUND_HALF_UP)
-
-
-def _safe_int(value: Any) -> Optional[int]:
-    if value is None:
-        return None
-
-    try:
-        if pd.isna(value):
-            return None
-    except TypeError:
-        pass
-
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    soccerdata can return a MultiIndex DataFrame depending on the method/source.
-    Resetting the index makes league/season/game fields available as columns.
-    """
-    if isinstance(df.index, pd.MultiIndex) or df.index.name is not None:
-        df = df.reset_index()
-
-    df.columns = [str(c) for c in df.columns]
-    return df
-
-
-def _first_existing_column(df: pd.DataFrame, candidates: Iterable[str]) -> Optional[str]:
-    for col in candidates:
-        if col in df.columns:
-            return col
-    return None
-
-
-def _load_understat_source(
+def _load_understat_schedule(
     understat_league_key: str,
     understat_season_key: str,
     *,
@@ -129,13 +211,12 @@ def _load_understat_source(
     no_store: bool,
 ) -> pd.DataFrame:
     """
-    Uses read_schedule because it exposes both teams and match-level xG.
-
-    Required normalized columns:
-      home_team_id
-      away_team_id
-      home_xg
-      away_xg
+    Verified against soccerdata.Understat.read_schedule:
+      - Returns a MultiIndex DataFrame.
+      - After reset_index, exposes columns including:
+          home_team_id, away_team_id, home_xg, away_xg
+      - For completed Big 5 seasons, all of those columns are fully populated
+        (NaN=0 in DB verification).
     """
     source = sd.Understat(
         leagues=understat_league_key,
@@ -144,45 +225,21 @@ def _load_understat_source(
         no_store=no_store,
     )
 
-    df = source.read_schedule(include_matches_without_data=True)
-    df = _normalize_columns(df)
-
-    required = ["home_team_id", "away_team_id", "home_xg", "away_xg"]
-    missing = [col for col in required if col not in df.columns]
-
-    if missing:
-        raise RuntimeError(
-            "Understat schedule is missing required columns "
-            f"{missing}. Available columns: {list(df.columns)}"
-        )
+    df = source.read_schedule(include_matches_without_data=True).reset_index()
+    df.columns = [str(c) for c in df.columns]
 
     return df
 
 
+# =========================================================
+# Mapping readers
+# =========================================================
+
 def _get_understat_mapping_for_season(
     league_id: int,
     season_id: int,
-) -> tuple[str, str]:
-    """
-    Returns:
-      understat_league_key, understat_season_key
-    """
-    rows = fetch_all(
-        """
-        SELECT
-          ulm.understat_league_key,
-          usm.understat_season_key
-        FROM understat_season_map usm
-        JOIN seasons s
-          ON s.season_id = usm.sportmonks_season_id
-        JOIN understat_league_map ulm
-          ON ulm.sportmonks_league_id = s.league_id
-        WHERE s.league_id = %s
-          AND usm.sportmonks_season_id = %s
-        LIMIT 1
-        """,
-        (league_id, season_id),
-    )
+) -> Tuple[str, str]:
+    rows = fetch_all(SQL_GET_UNDERSTAT_MAPPING_FOR_SEASON, (league_id, season_id))
 
     if not rows:
         raise RuntimeError(
@@ -190,71 +247,47 @@ def _get_understat_mapping_for_season(
             f"league_id={league_id}, season_id={season_id}"
         )
 
-    understat_league_key, understat_season_key = rows[0]
-    return str(understat_league_key), str(understat_season_key)
-
-
-def _get_team_map() -> dict[int, int]:
-    """
-    Returns:
-      {understat_team_id: sportmonks_team_id}
-    """
-    rows = fetch_all(
-        """
-        SELECT
-          understat_team_id,
-          sportmonks_team_id
-        FROM understat_team_map
-        """
+    return (
+        _require_non_empty_str(rows[0][0], "understat_league_key"),
+        _require_non_empty_str(rows[0][1], "understat_season_key"),
     )
 
-    mapping: dict[int, int] = {}
 
-    for understat_team_id, sportmonks_team_id in rows:
-        mapping[int(understat_team_id)] = int(sportmonks_team_id)
+def _get_team_map() -> Dict[int, int]:
+    """Returns {understat_team_id: sportmonks_team_id}."""
+    rows = fetch_all(SQL_GET_TEAM_MAP)
+    mapping: Dict[int, int] = {}
+
+    for row in rows:
+        understat_id = _require_int(row[0], "understat_team_map.understat_team_id")
+        sportmonks_id = _require_int(row[1], "understat_team_map.sportmonks_team_id")
+        mapping[understat_id] = sportmonks_id
 
     return mapping
 
 
+# =========================================================
+# Calibration: draw rate from Sportmonks + draw band from Understat
+# =========================================================
+
 def _get_calibration_seasons(
     league_id: int,
     season_id: int,
-    lookback_seasons: int = CALIBRATION_LOOKBACK_SEASONS,
-) -> list[dict[str, Any]]:
-    """
-    Returns exactly the previous N mapped seasons for the same league.
-
-    If fewer than N previous mapped seasons exist, the caller must skip
-    the target season.
-    """
+    lookback_seasons: int,
+) -> List[Dict[str, Any]]:
     if lookback_seasons <= 0:
-        raise ValueError("lookback_seasons must be greater than 0.")
+        raise ValueError(f"lookback_seasons must be > 0, got {lookback_seasons!r}")
 
-    rows = fetch_all(
-        f"""
-        SELECT
-          s.season_id,
-          usm.understat_season_key
-        FROM seasons s
-        JOIN understat_season_map usm
-          ON usm.sportmonks_season_id = s.season_id
-        WHERE s.league_id = %s
-          AND s.starting_at < (
-            SELECT target.starting_at
-            FROM seasons target
-            WHERE target.season_id = %s
-            LIMIT 1
-          )
-        ORDER BY s.starting_at DESC
-        LIMIT {int(lookback_seasons)}
-        """,
-        (league_id, season_id),
-    )
+    sql = SQL_GET_CALIBRATION_SEASONS.replace("{limit}", str(int(lookback_seasons)))
+    rows = fetch_all(sql, (league_id, season_id))
 
     return [
         {
-            "season_id": int(row[0]),
-            "understat_season_key": str(row[1]),
+            "season_id": _require_int(row[0], "seasons.season_id"),
+            "understat_season_key": _require_non_empty_str(
+                row[1],
+                "understat_season_map.understat_season_key",
+            ),
         }
         for row in rows
     ]
@@ -262,47 +295,17 @@ def _get_calibration_seasons(
 
 def _get_actual_draw_rate_from_fixtures(
     league_id: int,
-    season_ids: list[int],
-) -> tuple[Decimal, int]:
-    """
-    Calculates actual draw rate from Sportmonks fixtures.
-
-    Fixed condition:
-      league_id = target league
-      season_id IN previous 5 seasons
-      competition_type = 'league'
-      status = 'past'
-      home_score IS NOT NULL
-      away_score IS NOT NULL
-    """
+    season_ids: List[int],
+) -> Tuple[Decimal, int]:
     if not season_ids:
         raise RuntimeError("No calibration season IDs provided.")
 
     placeholders = ",".join(["%s"] * len(season_ids))
+    sql = SQL_GET_ACTUAL_DRAW_RATE.replace("{placeholders}", placeholders)
+    rows = fetch_all(sql, (league_id, *season_ids))
 
-    rows = fetch_all(
-        f"""
-        SELECT
-          COUNT(*) AS match_count,
-          COALESCE(
-            SUM(CASE WHEN home_score = away_score THEN 1 ELSE 0 END),
-            0
-          ) AS draw_count
-        FROM fixtures
-        WHERE league_id = %s
-          AND season_id IN ({placeholders})
-          AND competition_type = 'league'
-          AND status = 'past'
-          AND home_score IS NOT NULL
-          AND away_score IS NOT NULL
-        """,
-        tuple([league_id] + season_ids),
-    )
-
-    match_count_raw, draw_count_raw = rows[0]
-
-    match_count = int(match_count_raw or 0)
-    draw_count = int(draw_count_raw or 0)
+    match_count = _require_int(rows[0][0], "draw-rate calibration match_count")
+    draw_count = _require_int(rows[0][1], "draw-rate calibration draw_count")
 
     if match_count == 0:
         raise RuntimeError(
@@ -313,25 +316,18 @@ def _get_actual_draw_rate_from_fixtures(
     rate = Decimal(draw_count) / Decimal(match_count)
 
     return (
-        rate.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP),
+        rate.quantize(Decimal(DRAW_RATE_DECIMAL_PLACES), rounding=ROUND_HALF_UP),
         match_count,
     )
 
 
 def _empirical_percentile_threshold(
-    values: list[Decimal],
+    values: List[Decimal],
     percentile: Decimal,
 ) -> Decimal:
     """
-    Discrete empirical percentile.
-
-    Returns the smallest observed threshold such that at least `percentile`
-    of historical matches have abs(xG diff) <= threshold.
-
-    Example:
-      percentile = 0.25
-      n = 100
-      returns the 25th sorted value.
+    Discrete empirical percentile. Returns the smallest observed threshold
+    such that at least `percentile` of values are <= threshold.
     """
     if not values:
         raise RuntimeError("Cannot calculate percentile threshold from empty values.")
@@ -342,33 +338,29 @@ def _empirical_percentile_threshold(
     sorted_values = sorted(values)
 
     if percentile == Decimal("0"):
-        return Decimal("0.000")
+        return Decimal("0").quantize(Decimal(XG_DECIMAL_PLACES))
 
     index = math.ceil(len(sorted_values) * float(percentile)) - 1
     index = max(0, min(index, len(sorted_values) - 1))
 
-    return sorted_values[index].quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
+    return sorted_values[index].quantize(
+        Decimal(XG_DECIMAL_PLACES),
+        rounding=ROUND_HALF_UP,
+    )
 
 
 def _calculate_draw_band_from_understat(
     understat_league_key: str,
-    calibration_seasons: list[dict[str, Any]],
+    calibration_seasons: List[Dict[str, Any]],
     target_draw_rate: Decimal,
     *,
     no_cache: bool,
     no_store: bool,
 ) -> Decimal:
-    """
-    Calculates draw_band from historical xG-difference distribution.
-
-    Fixed method:
-      draw_band = empirical percentile of abs(home_xg - away_xg)
-      percentile = actual draw rate from previous 5 seasons
-    """
-    abs_diffs: list[Decimal] = []
+    abs_diffs: List[Decimal] = []
 
     for season in calibration_seasons:
-        df = _load_understat_source(
+        df = _load_understat_schedule(
             understat_league_key,
             season["understat_season_key"],
             no_cache=no_cache,
@@ -376,15 +368,8 @@ def _calculate_draw_band_from_understat(
         )
 
         for _, match in df.iterrows():
-            home_xg_raw = match.get("home_xg")
-            away_xg_raw = match.get("away_xg")
-
-            if pd.isna(home_xg_raw) or pd.isna(away_xg_raw):
-                continue
-
-            home_xg = _decimal(home_xg_raw, "0.001")
-            away_xg = _decimal(away_xg_raw, "0.001")
-
+            home_xg = _to_decimal(match["home_xg"], XG_DECIMAL_PLACES)
+            away_xg = _to_decimal(match["away_xg"], XG_DECIMAL_PLACES)
             abs_diffs.append(abs(home_xg - away_xg))
 
     if not abs_diffs:
@@ -409,9 +394,9 @@ def calibrate_draw_band_for_season(
     """
     Builds the xG draw threshold for one league-season.
 
-    Fixed logic:
-      1. Use exactly previous 5 mapped seasons in the same league.
-      2. If fewer than 5 previous seasons exist, return None.
+    Method:
+      1. Use exactly previous N mapped seasons in the same league.
+      2. If fewer than N previous seasons exist, return None (skip).
       3. Calculate actual draw rate from completed league fixtures.
       4. Calculate abs(home_xg - away_xg) distribution from Understat.
       5. draw_band = empirical percentile(abs_xg_diff, actual_draw_rate)
@@ -425,9 +410,7 @@ def calibrate_draw_band_for_season(
     if len(calibration_seasons) < lookback_seasons:
         return None
 
-    calibration_season_ids = [
-        row["season_id"] for row in calibration_seasons
-    ]
+    calibration_season_ids = [s["season_id"] for s in calibration_seasons]
 
     target_draw_rate, match_count = _get_actual_draw_rate_from_fixtures(
         league_id,
@@ -471,6 +454,10 @@ def _upsert_xg_standings_calibration(calibration: DrawBandCalibration) -> None:
     )
 
 
+# =========================================================
+# Standings aggregation
+# =========================================================
+
 def _empty_team_agg(team_id: int) -> Dict[str, Any]:
     return {
         "team_id": team_id,
@@ -478,21 +465,18 @@ def _empty_team_agg(team_id: int) -> Dict[str, Any]:
         "won": 0,
         "draw": 0,
         "lost": 0,
-        "xg": Decimal("0.000"),
-        "xga": Decimal("0.000"),
-        "xpts": Decimal("0.00"),
+        "xg": Decimal("0").quantize(Decimal(XG_DECIMAL_PLACES)),
+        "xga": Decimal("0").quantize(Decimal(XG_DECIMAL_PLACES)),
+        "xpts": Decimal("0").quantize(Decimal(XPTS_DECIMAL_PLACES)),
     }
 
 
 def _add_match_result(
-    agg: dict[int, Dict[str, Any]],
-    team_id: int,
+    row: Dict[str, Any],
     team_xg: Decimal,
     opponent_xg: Decimal,
     draw_band: Decimal,
 ) -> None:
-    row = agg[team_id]
-
     row["matches_played"] += 1
     row["xg"] += team_xg
     row["xga"] += opponent_xg
@@ -509,13 +493,10 @@ def _add_match_result(
         row["xpts"] += Decimal("1.00")
 
 
-def _rank_xg_rows(rows: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
+def _rank_xg_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Sorting:
-      xPts DESC
-      xG diff DESC
-      xG DESC
-      team_id ASC
+      xPts DESC, xG diff DESC, xG DESC, team_id ASC
     """
     rows.sort(
         key=lambda r: (
@@ -526,50 +507,15 @@ def _rank_xg_rows(rows: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
         )
     )
 
-    for index, row in enumerate(rows, start=1):
-        row["position"] = index
+    for position, row in enumerate(rows, start=1):
+        row["position"] = position
 
     return rows
 
 
-def _get_eligible_xg_standing_seasons(
-    *,
-    start_year: int,
-    end_year: int,
-    lookback_seasons: int = CALIBRATION_LOOKBACK_SEASONS,
-) -> list[tuple[int, int]]:
-    """
-    Returns mapped Big 5 seasons that have at least previous 5 mapped seasons.
-
-    Older seasons with insufficient previous seasons are excluded from build target.
-    """
-    rows = fetch_all(
-        """
-        SELECT
-          s.league_id,
-          s.season_id
-        FROM seasons s
-        JOIN understat_season_map usm
-          ON usm.sportmonks_season_id = s.season_id
-        WHERE s.league_id IN (8, 82, 301, 384, 564)
-          AND YEAR(s.starting_at) BETWEEN %s AND %s
-          AND (
-            SELECT COUNT(*)
-            FROM seasons previous_s
-            JOIN understat_season_map previous_usm
-              ON previous_usm.sportmonks_season_id = previous_s.season_id
-            WHERE previous_s.league_id = s.league_id
-              AND previous_s.starting_at < s.starting_at
-          ) >= %s
-        ORDER BY
-          s.league_id,
-          s.starting_at
-        """,
-        (start_year, end_year, lookback_seasons),
-    )
-
-    return [(int(league_id), int(season_id)) for league_id, season_id in rows]
-
+# =========================================================
+# Public API
+# =========================================================
 
 def build_xg_standings_for_season(
     league_id: int,
@@ -580,17 +526,16 @@ def build_xg_standings_for_season(
     delete_existing: bool = True,
 ) -> int:
     """
-    Build xG standings for one league-season.
+    Build xG standings for one Big 5 league-season.
 
     Important:
-    - xPts is NOT Understat expected points.
-    - xPts is calculated using 1touch xG-result rule.
-    - Draws are decided by calibrated draw_band:
-        team_xg - opponent_xg > draw_band => W, +3
-        abs(team_xg - opponent_xg) <= draw_band => D, +1
-        team_xg - opponent_xg < -draw_band => L, +0
-    - draw_band is calibrated from previous 5 seasons.
-    - If fewer than 5 previous mapped seasons exist, this season is skipped.
+      - xPts is NOT Understat expected points. It is 1touch's own xG-result rule.
+      - Draws are decided by calibrated draw_band:
+          team_xg - opponent_xg > draw_band       -> W, +3
+          abs(team_xg - opponent_xg) <= draw_band -> D, +1
+          team_xg - opponent_xg < -draw_band      -> L, +0
+      - draw_band is calibrated from previous N seasons.
+      - If fewer than N previous mapped seasons exist, this season is skipped.
     """
     if league_id not in BIG5_LEAGUE_IDS:
         raise ValueError(
@@ -614,8 +559,7 @@ def build_xg_standings_for_season(
 
     if calibration is None:
         print(
-            "[xg_standings] skipped "
-            f"league_id={league_id} season_id={season_id} "
+            f"[xg_standings] skipped league_id={league_id} season_id={season_id} "
             f"reason=not_enough_previous_mapped_seasons "
             f"required_previous_seasons={CALIBRATION_LOOKBACK_SEASONS}"
         )
@@ -625,117 +569,77 @@ def build_xg_standings_for_season(
 
     team_map = _get_team_map()
 
-    df = _load_understat_source(
+    df = _load_understat_schedule(
         understat_league_key,
         understat_season_key,
         no_cache=no_cache,
         no_store=no_store,
     )
 
-    agg: dict[int, Dict[str, Any]] = {}
-
-    skipped_without_xg = 0
-    skipped_unmapped = []
+    agg: Dict[int, Dict[str, Any]] = {}
+    unmapped: List[Tuple[str, int, str]] = []
 
     for _, match in df.iterrows():
-        home_understat_id = _safe_int(match.get("home_team_id"))
-        away_understat_id = _safe_int(match.get("away_team_id"))
+        home_understat_id = int(match["home_team_id"])
+        away_understat_id = int(match["away_team_id"])
 
-        home_xg_raw = match.get("home_xg")
-        away_xg_raw = match.get("away_xg")
-
-        if (
-            home_understat_id is None
-            or away_understat_id is None
-            or pd.isna(home_xg_raw)
-            or pd.isna(away_xg_raw)
-        ):
-            skipped_without_xg += 1
+        if home_understat_id not in team_map:
+            unmapped.append(("home", home_understat_id, str(match["home_team"])))
             continue
 
-        home_team_id = team_map.get(home_understat_id)
-        away_team_id = team_map.get(away_understat_id)
-
-        if home_team_id is None:
-            skipped_unmapped.append(("home", home_understat_id, match.get("home_team")))
+        if away_understat_id not in team_map:
+            unmapped.append(("away", away_understat_id, str(match["away_team"])))
             continue
 
-        if away_team_id is None:
-            skipped_unmapped.append(("away", away_understat_id, match.get("away_team")))
-            continue
+        home_team_id = team_map[home_understat_id]
+        away_team_id = team_map[away_understat_id]
 
-        home_xg = _decimal(home_xg_raw, "0.001")
-        away_xg = _decimal(away_xg_raw, "0.001")
+        home_xg = _to_decimal(match["home_xg"], XG_DECIMAL_PLACES)
+        away_xg = _to_decimal(match["away_xg"], XG_DECIMAL_PLACES)
 
         if home_team_id not in agg:
             agg[home_team_id] = _empty_team_agg(home_team_id)
-
         if away_team_id not in agg:
             agg[away_team_id] = _empty_team_agg(away_team_id)
 
-        _add_match_result(
-            agg,
-            home_team_id,
-            home_xg,
-            away_xg,
-            calibration.draw_band,
-        )
+        _add_match_result(agg[home_team_id], home_xg, away_xg, calibration.draw_band)
+        _add_match_result(agg[away_team_id], away_xg, home_xg, calibration.draw_band)
 
-        _add_match_result(
-            agg,
-            away_team_id,
-            away_xg,
-            home_xg,
-            calibration.draw_band,
-        )
-
-    if skipped_unmapped:
-        sample = skipped_unmapped[:10]
+    if unmapped:
         raise RuntimeError(
-            "Some Understat teams are not mapped to Sportmonks teams. "
-            f"league_id={league_id}, season_id={season_id}, "
-            f"sample={sample}"
+            f"Some Understat teams are not mapped to Sportmonks teams. "
+            f"league_id={league_id}, season_id={season_id}, sample={unmapped[:10]}"
         )
 
     ranked = _rank_xg_rows(list(agg.values()))
 
-    batch = []
-
-    for row in ranked:
-        batch.append(
-            (
-                league_id,
-                season_id,
-                row["team_id"],
-                row["position"],
-                row["matches_played"],
-                row["won"],
-                row["draw"],
-                row["lost"],
-                row["xg"].quantize(Decimal("0.001")),
-                row["xga"].quantize(Decimal("0.001")),
-                row["xpts"].quantize(Decimal("0.00")),
-            )
+    batch = [
+        (
+            league_id,
+            season_id,
+            row["team_id"],
+            row["position"],
+            row["matches_played"],
+            row["won"],
+            row["draw"],
+            row["lost"],
+            row["xg"].quantize(Decimal(XG_DECIMAL_PLACES)),
+            row["xga"].quantize(Decimal(XG_DECIMAL_PLACES)),
+            row["xpts"].quantize(Decimal(XPTS_DECIMAL_PLACES)),
         )
+        for row in ranked
+    ]
 
     if delete_existing:
-        execute(
-            """
-            DELETE FROM xg_standings
-            WHERE league_id = %s
-              AND season_id = %s
-            """,
-            (league_id, season_id),
-        )
+        execute(SQL_DELETE_XG_STANDINGS, (league_id, season_id))
 
     if batch:
         upsert_many(SQL_UPSERT_XG_STANDINGS, batch)
 
     print(
-        "[xg_standings] "
-        f"league_id={league_id} season_id={season_id} "
+        f"[xg_standings] league_id={league_id} season_id={season_id} "
         f"understat=({understat_league_key}, {understat_season_key}) "
-        f"teams={len(batch)} skipped_without_xg={skipped_without_xg} "
+        f"teams={len(batch)} "
         f"method={calibration.method} "
         f"lookback_seasons={calibration.lookback_seasons} "
         f"calibration_season_ids={calibration.calibration_season_ids} "
@@ -749,28 +653,22 @@ def build_xg_standings_for_season(
 
 def build_all_xg_standings(
     *,
-    start_year: int = 2017,
-    end_year: int = 2025,
+    start_year: int = MIN_SEASON_START_YEAR,
+    end_year: int = MAX_SEASON_START_YEAR,
     no_cache: bool = True,
     no_store: bool = False,
 ) -> int:
-    """
-    Build xG standings for all mapped Big 5 seasons.
-
-    Older seasons with fewer than 5 previous mapped seasons are excluded.
-    """
-    rows = _get_eligible_xg_standing_seasons(
-        start_year=start_year,
-        end_year=end_year,
-        lookback_seasons=CALIBRATION_LOOKBACK_SEASONS,
+    rows = fetch_all(
+        SQL_GET_ELIGIBLE_BUILD_SEASONS,
+        (start_year, end_year, CALIBRATION_LOOKBACK_SEASONS),
     )
 
     total = 0
 
     for league_id, season_id in rows:
         total += build_xg_standings_for_season(
-            int(league_id),
-            int(season_id),
+            _require_int(league_id, "seasons.league_id"),
+            _require_int(season_id, "seasons.season_id"),
             no_cache=no_cache,
             no_store=no_store,
             delete_existing=True,
@@ -785,33 +683,14 @@ def refresh_current_xg_standings(
     no_cache: bool = True,
     no_store: bool = False,
 ) -> int:
-    """
-    Refresh xG standings for current Big 5 seasons only.
-
-    If a current season has fewer than 5 previous mapped seasons, it is skipped.
-    """
-    rows = fetch_all(
-        """
-        SELECT
-          s.league_id,
-          s.season_id
-        FROM seasons s
-        JOIN understat_season_map usm
-          ON usm.sportmonks_season_id = s.season_id
-        WHERE s.is_current = 1
-          AND s.league_id IN (8, 82, 301, 384, 564)
-        ORDER BY
-          s.league_id,
-          s.starting_at
-        """
-    )
+    rows = fetch_all(SQL_GET_CURRENT_BIG5_SEASONS)
 
     total = 0
 
     for league_id, season_id in rows:
         total += build_xg_standings_for_season(
-            int(league_id),
-            int(season_id),
+            _require_int(league_id, "seasons.league_id"),
+            _require_int(season_id, "seasons.season_id"),
             no_cache=no_cache,
             no_store=no_store,
             delete_existing=True,
