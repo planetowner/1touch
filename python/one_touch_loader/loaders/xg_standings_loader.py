@@ -215,8 +215,11 @@ def _load_understat_schedule(
       - Returns a MultiIndex DataFrame.
       - After reset_index, exposes columns including:
           home_team_id, away_team_id, home_xg, away_xg
-      - For completed Big 5 seasons, all of those columns are fully populated
-        (NaN=0 in DB verification).
+
+    include_matches_without_data=False so future / not-yet-played matches
+    (which would arrive with NaN xG and NaN team_id) are excluded by the
+    source itself. This matters for in-season refreshes — the previous
+    True setting would inject NaN rows into the standings aggregation.
     """
     source = sd.Understat(
         leagues=understat_league_key,
@@ -225,7 +228,7 @@ def _load_understat_schedule(
         no_store=no_store,
     )
 
-    df = source.read_schedule(include_matches_without_data=True).reset_index()
+    df = source.read_schedule(include_matches_without_data=False).reset_index()
     df.columns = [str(c) for c in df.columns]
 
     return df
