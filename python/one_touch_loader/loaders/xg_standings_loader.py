@@ -542,7 +542,6 @@ def build_xg_standings_for_season(
     *,
     no_cache: bool = True,
     no_store: bool = False,
-    delete_existing: bool = True,
 ) -> int:
     """
     Build xG standings for one Big 5 league-season.
@@ -687,7 +686,6 @@ def build_all_xg_standings(
             _require_int(season_id, "seasons.season_id"),
             no_cache=no_cache,
             no_store=no_store,
-            delete_existing=True,
         )
 
     print(f"[xg_standings] build_all done. rows={total}")
@@ -709,7 +707,6 @@ def refresh_current_xg_standings(
             _require_int(season_id, "seasons.season_id"),
             no_cache=no_cache,
             no_store=no_store,
-            delete_existing=True,
         )
 
     print(f"[xg_standings] refresh_current done. rows={total}")
