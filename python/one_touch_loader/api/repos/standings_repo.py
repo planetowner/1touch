@@ -44,11 +44,12 @@ def list_standings(
         (league_id, season_id, phase, group_name),
     )
 
+    # standings.last5_form is a NOT NULL JSON column always written as a
+    # JSON list by standings_loader. Parse directly; any decode error is a
+    # real data corruption that should surface, not be masked into [].
     for r in rows:
-        try:
-            r["last5_form"] = json.loads(r.get("last5_form") or "[]")
-        except Exception:
-            r["last5_form"] = []
+        r["last5_form"] = json.loads(r["last5_form"])
+
     return rows
 
 
