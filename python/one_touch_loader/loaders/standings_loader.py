@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from ..core.db import fetch_all, upsert_many
+from ..core.db import fetch_all, transaction
 
 
 # =========================================================
@@ -217,6 +217,12 @@ WHERE league_id = %s
   AND competition_type = 'league'
   AND round_name REGEXP '^[0-9]+$'
   AND starting_at {cmp} %s
+"""
+
+SQL_DELETE_STANDINGS_FOR_LEAGUE_SEASON = """
+DELETE FROM standings
+WHERE league_id = %s
+  AND season_id = %s
 """
 
 
@@ -451,8 +457,15 @@ def build_league_standings_for_season(league_id: int, season_id: int) -> None:
         latest_by_team=latest_by_team,
     )
 
-    if batch:
-        upsert_many(SQL_UPSERT_STANDINGS, batch)
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                SQL_DELETE_STANDINGS_FOR_LEAGUE_SEASON,
+                (league_id, season_id),
+            )
+
+            if batch:
+                cur.executemany(SQL_UPSERT_STANDINGS, batch)
 
     print(
         f"[standings] league {league_id} season {season_id}: "
@@ -498,33 +511,43 @@ def build_euro_phase_standings_for_season_db(league_id: int, season_id: int) -> 
             )
             by_group_name[group_name].append(tup)
 
+    all_batches: List[Tuple] = []
+
     for group_name, games in by_group_name.items():
         ranked, latest_by_team = _aggregate_standings(games)
-        batch = _standings_batch(
-            league_id=league_id,
-            season_id=season_id,
-            phase="group",
-            group_name=group_name,
-            ranked=ranked,
-            latest_by_team=latest_by_team,
+        all_batches.extend(
+            _standings_batch(
+                league_id=league_id,
+                season_id=season_id,
+                phase="group",
+                group_name=group_name,
+                ranked=ranked,
+                latest_by_team=latest_by_team,
+            )
         )
-
-        if batch:
-            upsert_many(SQL_UPSERT_STANDINGS, batch)
 
     if league_phase_games:
         ranked, latest_by_team = _aggregate_standings(league_phase_games)
-        batch = _standings_batch(
-            league_id=league_id,
-            season_id=season_id,
-            phase="league_phase",
-            group_name="",
-            ranked=ranked,
-            latest_by_team=latest_by_team,
+        all_batches.extend(
+            _standings_batch(
+                league_id=league_id,
+                season_id=season_id,
+                phase="league_phase",
+                group_name="",
+                ranked=ranked,
+                latest_by_team=latest_by_team,
+            )
         )
 
-        if batch:
-            upsert_many(SQL_UPSERT_STANDINGS, batch)
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                SQL_DELETE_STANDINGS_FOR_LEAGUE_SEASON,
+                (league_id, season_id),
+            )
+
+            if all_batches:
+                cur.executemany(SQL_UPSERT_STANDINGS, all_batches)
 
     print(
         f"[standings] euro {league_id} season {season_id}: "
@@ -680,7 +703,9 @@ def build_knockout_brackets_for_season(league_id: int, season_id: int) -> None:
         )
 
     if batch:
-        upsert_many(SQL_UPSERT_TIE, batch)
+        with transaction() as conn:
+            with conn.cursor() as cur:
+                cur.executemany(SQL_UPSERT_TIE, batch)
 
     print(
         f"[knockout] league {league_id} season {season_id}: "

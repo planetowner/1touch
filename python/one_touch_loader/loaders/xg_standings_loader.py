@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 import soccerdata as sd
 
-from ..core.db import execute, fetch_all, upsert_many
+from ..core.db import fetch_all, transaction
 
 
 BIG5_LEAGUE_IDS: Tuple[int, ...] = (8, 82, 301, 384, 564)
@@ -440,21 +440,37 @@ def calibrate_draw_band_for_season(
     )
 
 
-def _upsert_xg_standings_calibration(calibration: DrawBandCalibration) -> None:
-    upsert_many(
-        SQL_UPSERT_XG_STANDINGS_CALIBRATION,
-        [
-            (
-                calibration.league_id,
-                calibration.season_id,
-                calibration.method,
-                calibration.lookback_seasons,
-                calibration.calibration_match_count,
-                calibration.target_draw_rate,
-                calibration.draw_band,
-            )
-        ],
+def _persist_xg_standings_atomically(
+    *,
+    calibration: DrawBandCalibration,
+    standings_batch: List[Tuple],
+) -> None:
+    """Calibration upsert + DELETE existing standings + INSERT new ones in one transaction.
+
+    Ensures we never leave calibration metadata ahead of the standings rows
+    they describe, and never wipe existing standings without a successful
+    replacement.
+    """
+    calibration_row = (
+        calibration.league_id,
+        calibration.season_id,
+        calibration.method,
+        calibration.lookback_seasons,
+        calibration.calibration_match_count,
+        calibration.target_draw_rate,
+        calibration.draw_band,
     )
+
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(SQL_UPSERT_XG_STANDINGS_CALIBRATION, calibration_row)
+            cur.execute(
+                SQL_DELETE_XG_STANDINGS,
+                (calibration.league_id, calibration.season_id),
+            )
+
+            if standings_batch:
+                cur.executemany(SQL_UPSERT_XG_STANDINGS, standings_batch)
 
 
 # =========================================================
@@ -568,8 +584,6 @@ def build_xg_standings_for_season(
         )
         return 0
 
-    _upsert_xg_standings_calibration(calibration)
-
     team_map = _get_team_map()
 
     df = _load_understat_schedule(
@@ -633,11 +647,10 @@ def build_xg_standings_for_season(
         for row in ranked
     ]
 
-    if delete_existing:
-        execute(SQL_DELETE_XG_STANDINGS, (league_id, season_id))
-
-    if batch:
-        upsert_many(SQL_UPSERT_XG_STANDINGS, batch)
+    _persist_xg_standings_atomically(
+        calibration=calibration,
+        standings_batch=batch,
+    )
 
     print(
         f"[xg_standings] league_id={league_id} season_id={season_id} "

@@ -1,4 +1,6 @@
 import os
+from contextlib import contextmanager
+
 import mysql.connector
 from mysql.connector import pooling
 from dotenv import load_dotenv
@@ -19,6 +21,27 @@ _pool = pooling.MySQLConnectionPool(pool_name="1touch_pool", pool_size=5, **DB_C
 
 def get_conn():
     return _pool.get_connection()
+
+
+@contextmanager
+def transaction():
+    """Yield a connection. Commit on success, roll back on any exception.
+
+    Use when several statements must succeed or fail together — e.g. a
+    DELETE + INSERT cache replacement, or a multi-table standings rebuild.
+    The caller is responsible for using cur.execute / cur.executemany on
+    cursors opened from the yielded connection.
+    """
+    conn = get_conn()
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
 
 def upsert_many(sql: str, rows: list[tuple]):
     if not rows:
