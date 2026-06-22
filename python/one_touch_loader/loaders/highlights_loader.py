@@ -1,69 +1,114 @@
-import os
-import html
-import requests
-from datetime import datetime
+from __future__ import annotations
 
-from one_touch_loader.core.db import fetch_all, execute
+import html
+import os
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
+
+import requests
+
+from one_touch_loader.core.db import execute, fetch_all
+
+
+# =========================================================
+# Constants
+# =========================================================
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
+YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3"
+HTTP_TIMEOUT_SECONDS = 30
 
-def safe_text(value):
-    if not value:
-        return ""
-    return html.unescape(str(value)).strip()
+# Verified against team_youtube_sources schema (DB scan): exactly these two
+# values appear, NOT NULL.
+VALID_SOURCE_MODES = frozenset({"playlists", "channel_rules"})
+
+# Verified against YouTube API v3 playlistItems response:
+# every video carries default/medium/high; standard/maxres only for HD source.
+# Priority picks the highest-resolution thumbnail that the API returned.
+THUMBNAIL_PRIORITY: Tuple[str, ...] = ("maxres", "standard", "high", "medium", "default")
+
+# YouTube API returns timestamps in RFC 3339 UTC form, e.g. "2026-06-19T14:00:30Z".
+YOUTUBE_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+TOP_N_HIGHLIGHTS = 3
 
 
-def normalize_text(value):
-    return safe_text(value).lower()
+# =========================================================
+# Strict helpers
+# =========================================================
+
+def _require_int(value, field_name: str) -> int:
+    if type(value) is not int:
+        raise ValueError(f"Missing or invalid integer field: {field_name}={value!r}")
+
+    return value
 
 
-def split_csv(value):
-    if not value:
+def _require_non_empty_str(value, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Missing or invalid string field: {field_name}={value!r}")
+
+    return value.strip()
+
+
+def _require_optional_str(value, field_name: str) -> Optional[str]:
+    if value is None:
+        return None
+
+    if not isinstance(value, str):
+        raise ValueError(f"Invalid optional string field: {field_name}={value!r}")
+
+    return value
+
+
+def _require_dict(value, field_name: str) -> Dict:
+    if not isinstance(value, dict):
+        raise ValueError(f"Missing or invalid object field: {field_name}={value!r}")
+
+    return value
+
+
+def _require_source_mode(value: str) -> str:
+    if value not in VALID_SOURCE_MODES:
+        raise ValueError(
+            f"Unsupported source_mode {value!r}. "
+            f"Expected one of {sorted(VALID_SOURCE_MODES)}."
+        )
+
+    return value
+
+
+def _parse_youtube_datetime(value: str) -> datetime:
+    return datetime.strptime(value, YOUTUBE_DATETIME_FORMAT)
+
+
+def _normalize_text(value: str) -> str:
+    return html.unescape(value).strip()
+
+
+def _split_keywords_csv(value: Optional[str]) -> List[str]:
+    if value is None:
         return []
-    return [x.strip().lower() for x in str(value).split(",") if x.strip()]
+
+    return [token.strip().lower() for token in value.split(",") if token.strip()]
 
 
-def parse_yt_datetime(value):
-    if not value:
-        return None
-    return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+# =========================================================
+# DB readers
+# =========================================================
 
-
-def yt_datetime_to_mysql(value):
-    dt = parse_yt_datetime(value)
-    if not dt:
-        return None
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
-
-
-def pick_thumbnail(snippet):
-    thumbs = snippet.get("thumbnails", {})
-    if "high" in thumbs:
-        return thumbs["high"].get("url")
-    if "medium" in thumbs:
-        return thumbs["medium"].get("url")
-    if "default" in thumbs:
-        return thumbs["default"].get("url")
-    return None
-
-
-def get_team_sources(team_ids=None):
+def _load_team_sources(team_ids: Optional[List[int]]) -> List[Dict]:
     sql = """
-        SELECT
-            team_id,
-            team_name,
-            channel_id,
-            channel_url,
-            source_mode,
-            include_title_keywords,
-            exclude_title_keywords,
-            notes,
-            max_candidate_items
-        FROM team_youtube_sources
-        WHERE is_active = 1
+    SELECT
+        team_id, team_name, channel_id, channel_url, source_mode,
+        include_title_keywords, exclude_title_keywords,
+        max_candidate_items
+    FROM team_youtube_sources
+    WHERE is_active = 1
     """
-    params = ()
+
+    params: Tuple = ()
 
     if team_ids:
         placeholders = ",".join(["%s"] * len(team_ids))
@@ -73,281 +118,370 @@ def get_team_sources(team_ids=None):
     sql += " ORDER BY team_id"
 
     rows = fetch_all(sql, params)
-    out = []
-    for r in rows:
-        out.append({
-            "team_id": int(r[0]),
-            "team_name": r[1],
-            "channel_id": r[2],
-            "channel_url": r[3],
-            "source_mode": r[4],
-            "include_title_keywords": split_csv(r[5]),
-            "exclude_title_keywords": split_csv(r[6]),
-            "notes": r[7],
-            "max_candidate_items": int(r[8] or 40),
-        })
-    return out
+    sources: List[Dict] = []
+
+    for row in rows:
+        sources.append(
+            {
+                "team_id": _require_int(row[0], "team_youtube_sources.team_id"),
+                "team_name": _require_non_empty_str(row[1], "team_youtube_sources.team_name"),
+                "channel_id": _require_non_empty_str(row[2], "team_youtube_sources.channel_id"),
+                "channel_url": _require_optional_str(row[3], "team_youtube_sources.channel_url"),
+                "source_mode": _require_source_mode(
+                    _require_non_empty_str(row[4], "team_youtube_sources.source_mode")
+                ),
+                "include_title_keywords": _split_keywords_csv(row[5]),
+                "exclude_title_keywords": _split_keywords_csv(row[6]),
+                "max_candidate_items": _require_int(
+                    row[7],
+                    "team_youtube_sources.max_candidate_items",
+                ),
+            }
+        )
+
+    return sources
 
 
-def get_team_playlists(team_id):
-    rows = fetch_all("""
+def _load_team_playlists(team_id: int) -> List[Dict]:
+    rows = fetch_all(
+        """
         SELECT playlist_name, playlist_id, playlist_url
         FROM team_youtube_playlists
         WHERE team_id = %s
           AND is_active = 1
         ORDER BY id
-    """, (team_id,))
-    return [
+        """,
+        (team_id,),
+    )
+
+    playlists: List[Dict] = []
+
+    for row in rows:
+        playlists.append(
+            {
+                "playlist_name": _require_optional_str(
+                    row[0],
+                    "team_youtube_playlists.playlist_name",
+                ),
+                "playlist_id": _require_non_empty_str(
+                    row[1],
+                    "team_youtube_playlists.playlist_id",
+                ),
+                "playlist_url": _require_optional_str(
+                    row[2],
+                    "team_youtube_playlists.playlist_url",
+                ),
+            }
+        )
+
+    return playlists
+
+
+# =========================================================
+# YouTube API
+# =========================================================
+
+def _yt_get(path: str, params: Dict) -> Dict:
+    if not YOUTUBE_API_KEY:
+        raise RuntimeError("YOUTUBE_API_KEY is missing")
+
+    full_params = {"key": YOUTUBE_API_KEY, **params}
+    response = requests.get(
+        f"{YOUTUBE_API_BASE}/{path}",
+        params=full_params,
+        timeout=HTTP_TIMEOUT_SECONDS,
+    )
+    response.raise_for_status()
+
+    return response.json()
+
+
+def _fetch_uploads_playlist_id(channel_id: str) -> str:
+    data = _yt_get(
+        "channels",
+        {"part": "contentDetails", "id": channel_id},
+    )
+
+    return _require_non_empty_str(
+        data["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"],
+        "channels.contentDetails.relatedPlaylists.uploads",
+    )
+
+
+def _fetch_playlist_items(playlist_id: str, max_results: int) -> List[Dict]:
+    data = _yt_get(
+        "playlistItems",
         {
-            "playlist_name": r[0],
-            "playlist_id": r[1],
-            "playlist_url": r[2],
-        }
-        for r in rows
-    ]
+            "part": "snippet,contentDetails",
+            "playlistId": playlist_id,
+            "maxResults": max_results,
+        },
+    )
+
+    return data["items"]
 
 
-def get_uploads_playlist_id(channel_id):
-    url = "https://www.googleapis.com/youtube/v3/channels"
-    params = {
-        "key": YOUTUBE_API_KEY,
-        "part": "contentDetails",
-        "id": channel_id,
-    }
-    resp = requests.get(url, params=params, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+# =========================================================
+# Candidate construction
+# =========================================================
 
-    items = data.get("items", [])
-    if not items:
-        return None
+def _pick_thumbnail_url(thumbnails: Dict) -> str:
+    """Return the highest-resolution thumbnail URL the API returned.
 
-    return items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
-
-
-def get_playlist_items(playlist_id, max_results=25):
-    url = "https://www.googleapis.com/youtube/v3/playlistItems"
-    params = {
-        "key": YOUTUBE_API_KEY,
-        "part": "snippet,contentDetails",
-        "playlistId": playlist_id,
-        "maxResults": max_results,
-    }
-    resp = requests.get(url, params=params, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data.get("items", [])
+    Verified against the v3 API: 'default' is always present, so the loop
+    is guaranteed to hit at least that size.
+    """
+    for size in THUMBNAIL_PRIORITY:
+        if size in thumbnails:
+            return _require_non_empty_str(
+                thumbnails[size]["url"],
+                f"thumbnails.{size}.url",
+            )
 
 
-def build_candidate_from_item(item, source_type, source_ref):
-    snippet = item.get("snippet", {})
-    content = item.get("contentDetails", {})
+def _build_candidate_from_playlist_item(
+    item: Dict,
+    *,
+    source_type: str,
+    source_ref: str,
+) -> Dict:
+    """
+    Build a single candidate from a YouTube playlistItems response item.
 
-    video_id = None
-    if content.get("videoId"):
-        video_id = content.get("videoId")
-    elif snippet.get("resourceId", {}).get("videoId"):
-        video_id = snippet.get("resourceId", {}).get("videoId")
+    Verified against the v3 API (part=snippet,contentDetails):
+      - snippet.resourceId.videoId and contentDetails.videoId are both always
+        present and always equal.
+      - snippet.publishedAt = when this item was added to the playlist.
+      - contentDetails.videoPublishedAt = when the video itself was uploaded
+        to YouTube. We use this one because users care about video recency,
+        not when the channel re-added it to a playlist.
+      - snippet.thumbnails always has at least default/medium/high; we pick
+        the highest-resolution size that the API returned.
+    """
+    snippet = _require_dict(item["snippet"], "playlistItem.snippet")
+    content = _require_dict(item["contentDetails"], "playlistItem.contentDetails")
 
-    if not video_id:
-        return None
+    video_id = _require_non_empty_str(content["videoId"], "contentDetails.videoId")
 
-    published_raw = content.get("videoPublishedAt") or snippet.get("publishedAt")
+    published_at_dt = _parse_youtube_datetime(
+        _require_non_empty_str(
+            content["videoPublishedAt"],
+            "contentDetails.videoPublishedAt",
+        )
+    )
+
+    title = _normalize_text(snippet["title"])
+    thumbnails = _require_dict(snippet["thumbnails"], "snippet.thumbnails")
 
     return {
         "video_id": video_id,
         "video_url": f"https://www.youtube.com/watch?v={video_id}",
-        "title": safe_text(snippet.get("title")),
-        "description": safe_text(snippet.get("description")),
-        "thumbnail_url": pick_thumbnail(snippet),
-        "published_at_raw": published_raw,
-        "published_at_dt": parse_yt_datetime(published_raw) if published_raw else None,
+        "title": title,
+        "thumbnail_url": _pick_thumbnail_url(thumbnails),
+        "published_at_dt": published_at_dt,
         "source_type": source_type,
         "source_ref": source_ref,
     }
 
 
-def dedupe_by_video_id(candidates):
-    out = []
-    seen = set()
+def _dedupe_by_video_id(candidates: List[Dict]) -> List[Dict]:
+    seen: set = set()
+    result: List[Dict] = []
 
-    for c in candidates:
-        vid = c["video_id"]
-        if vid in seen:
+    for candidate in candidates:
+        video_id = candidate["video_id"]
+
+        if video_id in seen:
             continue
-        seen.add(vid)
-        out.append(c)
 
-    return out
+        seen.add(video_id)
+        result.append(candidate)
+
+    return result
 
 
-def collect_playlist_candidates(team_cfg):
-    playlists = get_team_playlists(team_cfg["team_id"])
-    all_candidates = []
+# =========================================================
+# Per-team candidate collection
+# =========================================================
 
-    for pl in playlists:
+def _collect_playlist_candidates(team_cfg: Dict) -> List[Dict]:
+    playlists = _load_team_playlists(team_cfg["team_id"])
+    max_items = team_cfg["max_candidate_items"]
+    candidates: List[Dict] = []
+
+    for playlist in playlists:
+        playlist_id = playlist["playlist_id"]
+
         try:
-            items = get_playlist_items(pl["playlist_id"], max_results=team_cfg["max_candidate_items"])
-        except Exception as e:
-            print(f"  playlist fetch error team={team_cfg['team_name']} playlist={pl['playlist_id']}: {e}")
+            items = _fetch_playlist_items(playlist_id, max_results=max_items)
+        except requests.RequestException as error:
+            print(
+                f"  [highlights] playlist fetch error "
+                f"team={team_cfg['team_name']!r} playlist_id={playlist_id!r}: {error}"
+            )
             continue
 
         for item in items:
-            candidate = build_candidate_from_item(item, "playlist", pl["playlist_id"])
-            if candidate:
-                all_candidates.append(candidate)
+            candidates.append(
+                _build_candidate_from_playlist_item(
+                    item,
+                    source_type="playlist",
+                    source_ref=playlist_id,
+                )
+            )
 
-    return dedupe_by_video_id(all_candidates)
+    return _dedupe_by_video_id(candidates)
 
 
-def collect_channel_rule_candidates(team_cfg):
-    try:
-        uploads_playlist_id = get_uploads_playlist_id(team_cfg["channel_id"])
-    except Exception as e:
-        print(f"  uploads playlist lookup error team={team_cfg['team_name']}: {e}")
-        return []
-
-    if not uploads_playlist_id:
-        return []
+def _collect_channel_rule_candidates(team_cfg: Dict) -> List[Dict]:
+    channel_id = team_cfg["channel_id"]
+    max_items = team_cfg["max_candidate_items"]
 
     try:
-        items = get_playlist_items(uploads_playlist_id, max_results=team_cfg["max_candidate_items"])
-    except Exception as e:
-        print(f"  uploads fetch error team={team_cfg['team_name']}: {e}")
+        uploads_playlist_id = _fetch_uploads_playlist_id(channel_id)
+    except requests.RequestException as error:
+        print(
+            f"  [highlights] uploads playlist lookup error "
+            f"team={team_cfg['team_name']!r}: {error}"
+        )
         return []
 
-    all_candidates = []
+    try:
+        items = _fetch_playlist_items(uploads_playlist_id, max_results=max_items)
+    except requests.RequestException as error:
+        print(
+            f"  [highlights] uploads fetch error team={team_cfg['team_name']!r}: {error}"
+        )
+        return []
+
+    candidates: List[Dict] = []
+
     for item in items:
-        candidate = build_candidate_from_item(item, "channel_uploads", uploads_playlist_id)
-        if candidate:
-            all_candidates.append(candidate)
+        candidates.append(
+            _build_candidate_from_playlist_item(
+                item,
+                source_type="channel_uploads",
+                source_ref=uploads_playlist_id,
+            )
+        )
 
-    return dedupe_by_video_id(all_candidates)
-
-
-def matches_include_rules(title_text, include_keywords):
-    if not include_keywords:
-        return True
-
-    for kw in include_keywords:
-        if kw and kw in title_text:
-            return True
-
-    return False
+    return _dedupe_by_video_id(candidates)
 
 
-def matches_exclude_rules(title_text, exclude_keywords):
-    if not exclude_keywords:
-        return True
+# =========================================================
+# Filtering & sorting
+# =========================================================
 
-    for kw in exclude_keywords:
-        if kw and kw in title_text:
-            return False
+def _passes_keyword_filters(candidate: Dict, team_cfg: Dict) -> bool:
+    title_lower = candidate["title"].lower()
+    includes = team_cfg["include_title_keywords"]
+    excludes = team_cfg["exclude_title_keywords"]
 
-    return True
-
-
-def passes_filters(candidate, team_cfg):
-    title_l = normalize_text(candidate["title"])
-
-    include_keywords = team_cfg["include_title_keywords"]
-    exclude_keywords = team_cfg["exclude_title_keywords"]
-
-    if not matches_include_rules(title_l, include_keywords):
+    if includes and not any(kw in title_lower for kw in includes):
         return False
 
-    if not matches_exclude_rules(title_l, exclude_keywords):
+    if excludes and any(kw in title_lower for kw in excludes):
         return False
 
     return True
 
 
-def sort_candidates_latest(candidates):
-    return sorted(
-        candidates,
-        key=lambda x: x["published_at_dt"] or datetime.min,
-        reverse=True,
+def _sort_candidates_latest_first(candidates: List[Dict]) -> List[Dict]:
+    return sorted(candidates, key=lambda c: c["published_at_dt"], reverse=True)
+
+
+# =========================================================
+# Persistence
+# =========================================================
+
+def _replace_team_highlights(team_id: int, top: List[Dict]) -> None:
+    execute(
+        "DELETE FROM team_highlights_cache WHERE team_id = %s",
+        (team_id,),
     )
 
-
-def save_top3(team_id, candidates):
-    execute("DELETE FROM team_highlights_cache WHERE team_id = %s", (team_id,))
-
-    for idx, c in enumerate(candidates[:3], start=1):
-        execute("""
+    for rank_order, candidate in enumerate(top, start=1):
+        execute(
+            """
             INSERT INTO team_highlights_cache (
-                team_id,
-                video_id,
-                video_url,
-                title,
-                thumbnail_url,
-                published_at,
-                source_type,
-                source_ref,
-                rank_order,
-                created_at,
-                updated_at
+                team_id, video_id, video_url, title, thumbnail_url,
+                published_at, source_type, source_ref, rank_order,
+                created_at, updated_at
             ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())
-            ON DUPLICATE KEY UPDATE
-                video_url = VALUES(video_url),
-                title = VALUES(title),
-                thumbnail_url = VALUES(thumbnail_url),
-                published_at = VALUES(published_at),
-                source_type = VALUES(source_type),
-                source_ref = VALUES(source_ref),
-                rank_order = VALUES(rank_order),
-                updated_at = NOW()
-        """, (
-            team_id,
-            c["video_id"],
-            c["video_url"],
-            c["title"],
-            c["thumbnail_url"],
-            yt_datetime_to_mysql(c["published_at_raw"]),
-            c["source_type"],
-            c["source_ref"],
-            idx,
-        ))
+            """,
+            (
+                team_id,
+                candidate["video_id"],
+                candidate["video_url"],
+                candidate["title"],
+                candidate["thumbnail_url"],
+                candidate["published_at_dt"].strftime("%Y-%m-%d %H:%M:%S"),
+                candidate["source_type"],
+                candidate["source_ref"],
+                rank_order,
+            ),
+        )
 
 
-def refresh_highlights(team_ids=None):
+# =========================================================
+# Public API
+# =========================================================
+
+def refresh_highlights(team_ids: Optional[List[int]] = None) -> None:
     if not YOUTUBE_API_KEY:
         raise RuntimeError("YOUTUBE_API_KEY is missing")
 
-    team_sources = get_team_sources(team_ids)
+    team_sources = _load_team_sources(team_ids)
 
     for team_cfg in team_sources:
-        print(f"Processing {team_cfg['team_name']}")
+        team_id = team_cfg["team_id"]
+        team_name = team_cfg["team_name"]
+        source_mode = team_cfg["source_mode"]
 
-        if team_cfg["source_mode"] == "playlists":
-            candidates = collect_playlist_candidates(team_cfg)
-        elif team_cfg["source_mode"] == "channel_rules":
-            candidates = collect_channel_rule_candidates(team_cfg)
+        print(f"[highlights] processing team={team_name!r} source_mode={source_mode!r}")
+
+        if source_mode == "playlists":
+            candidates = _collect_playlist_candidates(team_cfg)
+        elif source_mode == "channel_rules":
+            candidates = _collect_channel_rule_candidates(team_cfg)
         else:
-            print(f"  unsupported source_mode: {team_cfg['source_mode']}")
-            continue
+            raise AssertionError(f"Unreachable source_mode={source_mode!r}")
 
         if not candidates:
-            print("  no candidates collected")
-            execute("DELETE FROM team_highlights_cache WHERE team_id = %s", (team_cfg["team_id"],))
+            print(f"  [highlights] no candidates collected; clearing cache")
+            execute(
+                "DELETE FROM team_highlights_cache WHERE team_id = %s",
+                (team_id,),
+            )
             continue
 
-        filtered = [c for c in candidates if passes_filters(c, team_cfg)]
-        filtered = sort_candidates_latest(filtered)
+        filtered = [c for c in candidates if _passes_keyword_filters(c, team_cfg)]
+        filtered = _sort_candidates_latest_first(filtered)
 
-        print(f"  candidates collected: {len(candidates)}")
-        print(f"  candidates after filtering: {len(filtered)}")
+        print(
+            f"  [highlights] collected={len(candidates)} filtered={len(filtered)}"
+        )
 
         if not filtered:
             for c in candidates[:10]:
-                print(f"    candidate: {c['title']} ({c['published_at_raw']})")
-            execute("DELETE FROM team_highlights_cache WHERE team_id = %s", (team_cfg["team_id"],))
+                print(
+                    f"    rejected: {c['title']!r} "
+                    f"({c['published_at_dt'].isoformat()})"
+                )
+            execute(
+                "DELETE FROM team_highlights_cache WHERE team_id = %s",
+                (team_id,),
+            )
             continue
 
-        top3 = filtered[:3]
-        save_top3(team_cfg["team_id"], top3)
+        top = filtered[:TOP_N_HIGHLIGHTS]
+        _replace_team_highlights(team_id, top)
 
-        for idx, c in enumerate(top3, start=1):
-            print(f"  saved rank {idx} -> {c['title']} ({c['published_at_raw']}, {c['source_type']})")
+        for rank_order, candidate in enumerate(top, start=1):
+            print(
+                f"  [highlights] saved rank {rank_order}: "
+                f"{candidate['title']!r} "
+                f"({candidate['published_at_dt'].isoformat()}, {candidate['source_type']})"
+            )
 
-        print("Done")
+    print("[highlights] refresh done")
