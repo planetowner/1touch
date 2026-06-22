@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Tuple
 
 import requests
 
-from one_touch_loader.core.db import execute, fetch_all
+from one_touch_loader.core.db import execute, fetch_all, transaction
 
 
 # =========================================================
@@ -404,32 +404,44 @@ def _sort_candidates_latest_first(candidates: List[Dict]) -> List[Dict]:
 # =========================================================
 
 def _replace_team_highlights(team_id: int, top: List[Dict]) -> None:
-    execute(
-        "DELETE FROM team_highlights_cache WHERE team_id = %s",
-        (team_id,),
-    )
+    """Atomically replace one team's cache rows.
 
-    for rank_order, candidate in enumerate(top, start=1):
-        execute(
-            """
-            INSERT INTO team_highlights_cache (
-                team_id, video_id, video_url, title, thumbnail_url,
-                published_at, source_type, source_ref, rank_order,
-                created_at, updated_at
-            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())
-            """,
-            (
-                team_id,
-                candidate["video_id"],
-                candidate["video_url"],
-                candidate["title"],
-                candidate["thumbnail_url"],
-                candidate["published_at_dt"].strftime("%Y-%m-%d %H:%M:%S"),
-                candidate["source_type"],
-                candidate["source_ref"],
-                rank_order,
-            ),
+    DELETE + executemany(INSERT) run in a single transaction so a mid-write
+    failure either leaves the previous cache intact or commits the new one.
+    """
+    insert_rows = [
+        (
+            team_id,
+            candidate["video_id"],
+            candidate["video_url"],
+            candidate["title"],
+            candidate["thumbnail_url"],
+            candidate["published_at_dt"].strftime("%Y-%m-%d %H:%M:%S"),
+            candidate["source_type"],
+            candidate["source_ref"],
+            rank_order,
         )
+        for rank_order, candidate in enumerate(top, start=1)
+    ]
+
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM team_highlights_cache WHERE team_id = %s",
+                (team_id,),
+            )
+
+            if insert_rows:
+                cur.executemany(
+                    """
+                    INSERT INTO team_highlights_cache (
+                        team_id, video_id, video_url, title, thumbnail_url,
+                        published_at, source_type, source_ref, rank_order,
+                        created_at, updated_at
+                    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())
+                    """,
+                    insert_rows,
+                )
 
 
 # =========================================================
