@@ -8,7 +8,7 @@ import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score
 
-from one_touch_loader.core.db import fetch_all, execute, upsert_many
+from one_touch_loader.core.db import fetch_all, transaction
 
 
 MODEL_NAME = "team_attribute_ridge_v1"
@@ -126,6 +126,11 @@ def _add_league_season_zscores(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     group_keys = ["league_id", "season_id"]
 
+    # std=0 inside a (league_id, season_id) means every team has the same
+    # value for that feature — verified to happen for stats Sportmonks did
+    # not track in some seasons. We keep z=0 in that case so the untracked
+    # feature contributes nothing to the regression instead of producing
+    # NaNs and breaking the fit.
     for feature in ALL_FEATURES:
         mean = out.groupby(group_keys)[feature].transform("mean")
         std = out.groupby(group_keys)[feature].transform(lambda s: s.std(ddof=0))
@@ -142,84 +147,106 @@ def _add_league_season_zscores(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def _create_model_row(rows_used: int, avg_r2_score: float, notes: dict) -> int:
-    execute(
-        """
-        UPDATE team_attribute_regression_models
-        SET is_active = 0
-        WHERE model_name = %s
-        """,
-        (MODEL_NAME,),
-    )
+def _persist_model_atomically(
+    *,
+    rows_used: int,
+    avg_r2_score: float,
+    notes: dict,
+    build_weight_rows: callable,
+) -> int:
+    """Deactivate prior versions, replace the model row, and insert all
+    feature weights — in a single transaction so the active model and its
+    weights are never out of sync.
 
-    execute(
-        """
-        DELETE FROM team_attribute_regression_models
-        WHERE model_name = %s
-          AND model_version = %s
-        """,
-        (MODEL_NAME, MODEL_VERSION),
-    )
+    `build_weight_rows(model_id)` returns the list of weight tuples once the
+    new model_id is known.
+    """
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE team_attribute_regression_models
+                SET is_active = 0
+                WHERE model_name = %s
+                """,
+                (MODEL_NAME,),
+            )
 
-    execute(
-        """
-        INSERT INTO team_attribute_regression_models (
-          model_name,
-          model_version,
-          target_name,
-          training_scope,
-          normalization_scope,
-          regression_method,
-          alpha,
-          rows_used,
-          r2_score,
-          notes,
-          is_active
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1)
-        """,
-        (
-            MODEL_NAME,
-            MODEL_VERSION,
-            TARGET_NAME,
-            TRAINING_SCOPE,
-            NORMALIZATION_SCOPE,
-            REGRESSION_METHOD,
-            ALPHA,
-            rows_used,
-            avg_r2_score,
-            json.dumps(notes, ensure_ascii=False),
-        ),
-    )
+            cur.execute(
+                """
+                DELETE FROM team_attribute_regression_models
+                WHERE model_name = %s
+                  AND model_version = %s
+                """,
+                (MODEL_NAME, MODEL_VERSION),
+            )
 
-    model_rows = fetch_all(
-        """
-        SELECT id
-        FROM team_attribute_regression_models
-        WHERE model_name = %s
-          AND model_version = %s
-        """,
-        (MODEL_NAME, MODEL_VERSION),
-    )
+            cur.execute(
+                """
+                INSERT INTO team_attribute_regression_models (
+                  model_name,
+                  model_version,
+                  target_name,
+                  training_scope,
+                  normalization_scope,
+                  regression_method,
+                  alpha,
+                  rows_used,
+                  r2_score,
+                  notes,
+                  is_active
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1)
+                """,
+                (
+                    MODEL_NAME,
+                    MODEL_VERSION,
+                    TARGET_NAME,
+                    TRAINING_SCOPE,
+                    NORMALIZATION_SCOPE,
+                    REGRESSION_METHOD,
+                    ALPHA,
+                    rows_used,
+                    avg_r2_score,
+                    json.dumps(notes, ensure_ascii=False),
+                ),
+            )
 
-    if not model_rows:
-        raise RuntimeError("Failed to create regression model row.")
+            model_id = int(cur.lastrowid)
 
-    return int(model_rows[0][0])
+            weight_rows = build_weight_rows(model_id)
+
+            if weight_rows:
+                cur.executemany(
+                    """
+                    INSERT INTO team_attribute_regression_weights (
+                      model_id,
+                      attribute_group,
+                      feature_name,
+                      coefficient,
+                      positive_coefficient,
+                      weight
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    weight_rows,
+                )
+
+    return model_id
 
 
 def _weights_from_coefficients(coefficients: np.ndarray) -> tuple[list[float], list[float]]:
     positive_coefficients = [max(float(coef), 0.0) for coef in coefficients]
     total_positive = sum(positive_coefficients)
 
-    if total_positive > 0:
-        weights = [coef / total_positive for coef in positive_coefficients]
-    else:
-        # Fallback. This should be rare.
-        # If all coefficients are negative, use equal weights instead of producing all zeros.
-        n = len(coefficients)
-        weights = [1.0 / n for _ in range(n)]
+    if total_positive <= 0:
+        raise RuntimeError(
+            "All coefficients in a feature group are non-positive — cannot "
+            "build non-negative display weights. Inspect the trained model "
+            "or feature definitions before continuing."
+        )
 
+    weights = [coef / total_positive for coef in positive_coefficients]
     return positive_coefficients, weights
 
 
@@ -230,7 +257,6 @@ def train_team_attribute_regression_weights() -> int:
     y = df[TARGET_NAME].astype(float).to_numpy()
 
     group_results = {}
-    weight_rows = []
 
     for attribute_group, features in FEATURE_GROUPS.items():
         z_features = [f"{feature}_z" for feature in features]
@@ -272,7 +298,24 @@ def train_team_attribute_regression_weights() -> int:
         np.mean([result["r2_score"] for result in group_results.values()])
     )
 
-    model_id = _create_model_row(
+    def _build_weight_rows(model_id: int) -> list[tuple]:
+        rows: list[tuple] = []
+        for attribute_group, features in FEATURE_GROUPS.items():
+            result = group_results[attribute_group]
+            for feature in features:
+                rows.append(
+                    (
+                        model_id,
+                        attribute_group,
+                        feature,
+                        float(result["coefficients"][feature]),
+                        float(result["positive_coefficients"][feature]),
+                        float(result["weights"][feature]),
+                    )
+                )
+        return rows
+
+    model_id = _persist_model_atomically(
         rows_used=len(df),
         avg_r2_score=avg_r2_score,
         notes={
@@ -287,44 +330,7 @@ def train_team_attribute_regression_weights() -> int:
             "lower_is_better_features": sorted(LOWER_IS_BETTER_FEATURES),
             "group_results": group_results,
         },
-    )
-
-    for attribute_group, features in FEATURE_GROUPS.items():
-        result = group_results[attribute_group]
-
-        for feature in features:
-            coef = result["coefficients"][feature]
-            pos_coef = result["positive_coefficients"][feature]
-            weight = result["weights"][feature]
-
-            weight_rows.append(
-                (
-                    model_id,
-                    attribute_group,
-                    feature,
-                    float(coef),
-                    float(pos_coef),
-                    float(weight),
-                )
-            )
-
-    upsert_many(
-        """
-        INSERT INTO team_attribute_regression_weights (
-          model_id,
-          attribute_group,
-          feature_name,
-          coefficient,
-          positive_coefficient,
-          weight
-        )
-        VALUES (%s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE
-          coefficient = VALUES(coefficient),
-          positive_coefficient = VALUES(positive_coefficient),
-          weight = VALUES(weight)
-        """,
-        weight_rows,
+        build_weight_rows=_build_weight_rows,
     )
 
     print(
