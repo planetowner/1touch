@@ -139,7 +139,7 @@ def build_team_attribute_training_features_for_seasons(
        AND f.season_id = r.season_id
       WHERE r.season_id IN (SELECT season_id FROM target_seasons)
         AND f.status = 'past'
-        AND COALESCE(f.round_name, '') REGEXP '^[0-9]+$'
+        AND f.round_name REGEXP '^[0-9]+$'
       GROUP BY
         r.league_id,
         r.season_id,
@@ -166,7 +166,7 @@ def build_team_attribute_training_features_for_seasons(
       WHERE r.season_id IN (SELECT season_id FROM target_seasons)
         AND r.opponent_team_id IS NOT NULL
         AND f.status = 'past'
-        AND COALESCE(f.round_name, '') REGEXP '^[0-9]+$'
+        AND f.round_name REGEXP '^[0-9]+$'
       GROUP BY
         r.league_id,
         r.season_id,

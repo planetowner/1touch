@@ -141,6 +141,11 @@ def _add_league_season_zscores(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     group_keys = ["league_id", "season_id"]
 
+    # std=0 inside a (league_id, season_id) means every team in that group has
+    # the same value for that feature — verified to occur for stats Sportmonks
+    # did not track in some seasons (e.g. key-passes, big-chances-created).
+    # In that case the z-score is undefined; we keep it at 0.0 so the team's
+    # display score is unaffected by an untracked feature.
     for feature in ALL_FEATURES:
         mean = out.groupby(group_keys)[feature].transform("mean")
         std = out.groupby(group_keys)[feature].transform(lambda s: s.std(ddof=0))
@@ -178,19 +183,13 @@ def build_team_attribute_group_scores(
         team_id = int(row["team_id"])
 
         for attribute_group, features in FEATURE_GROUPS.items():
-            group_weights = weights_by_group.get(attribute_group)
-
-            if not group_weights:
-                raise RuntimeError(
-                    f"No weights found for attribute_group={attribute_group}, "
-                    f"model_id={model_id}."
-                )
+            group_weights = weights_by_group[attribute_group]
 
             raw_score = 0.0
             contributions = {}
 
             for feature in features:
-                weight = float(group_weights.get(feature, 0.0))
+                weight = float(group_weights[feature])
                 z_value = float(row[f"{feature}_z"])
                 raw_value = float(row[feature])
                 contribution = z_value * weight
