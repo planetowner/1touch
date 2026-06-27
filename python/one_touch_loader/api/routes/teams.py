@@ -111,7 +111,12 @@ def team_matches(
 
 _LOAN_TYPE_IDS = {219, 220}  # SportMonks type IDs for loan-related transfers
 
-def _make_display_type(type_name: str | None, type_id: int | None, amount: int | None) -> str | None:
+def _make_display_type(type_id: int | None, amount: int | None) -> str | None:
+    # DB scan of team_transfers confirms exactly these four type_ids appear:
+    # 218 (Loan), 219 (Transfer), 220 (Free Transfer), 9688 (End of Loan).
+    # No silent fallback to type_name — if a new type_id starts arriving, the
+    # function will return None and that surfaces explicitly in the API
+    # response, so we revisit this mapping rather than masking it.
     if type_id == 218:
         return "Loan"
 
@@ -129,11 +134,6 @@ def _make_display_type(type_name: str | None, type_id: int | None, amount: int |
                 return f"€{amount / 1_000:.0f}K"
             return f"€{amount}"
         return "Transfer"
-
-    if type_name:
-        return type_name
-
-    return None
 
 
 def _build_transfer_out(row: dict, team_id: int) -> TransferOut:
@@ -155,7 +155,7 @@ def _build_transfer_out(row: dict, team_id: int) -> TransferOut:
         direction=direction,
         other_team_id=other_team_id,
         other_team_name=other_team_name,
-        display_type=_make_display_type(row.get("type_name"), row.get("type_id"), row.get("amount")),
+        display_type=_make_display_type(row.get("type_id"), row.get("amount")),
         amount=row.get("amount"),
         transfer_date=str(row["transfer_date"]) if row.get("transfer_date") else None,
     )
