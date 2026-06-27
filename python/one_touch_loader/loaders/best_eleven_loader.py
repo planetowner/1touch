@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Dict, List, Set, Tuple
 
+import requests
+
 from ..core.db import fetch_all, upsert_many, execute
 from ..core.sportmonks import SportmonksClient
 
@@ -181,9 +183,14 @@ def fetch_and_store_lineups(fixture_id: int, season_id: int, sm: SportmonksClien
     formation_rows = []
 
     for formation_entry in formations:
-        team_id = int(formation_entry["participant_id"])
+        participant_id = formation_entry["participant_id"]
         formation = formation_entry["formation"]
 
+        # Skip formation rows without an identified team or a formation string.
+        if participant_id is None or not formation:
+            continue
+
+        team_id = int(participant_id)
         formation_rows.append((fixture_id, season_id, team_id, formation))
         team_ids.add(team_id)
 
@@ -195,6 +202,13 @@ def fetch_and_store_lineups(fixture_id: int, season_id: int, sm: SportmonksClien
     lineup_rows = []
 
     for entry in lineups:
+        # Sportmonks occasionally returns a lineup slot with no identified
+        # player (player_id/player are null). It can't be stored (player_id is
+        # NOT NULL) and is unusable for Best Eleven, so skip it rather than
+        # aborting the whole fixture.
+        if entry.get("player_id") is None:
+            continue
+
         team_id = int(entry["team_id"])
         player_id = int(entry["player_id"])
         type_id = int(entry["type_id"])
@@ -204,11 +218,12 @@ def fetch_and_store_lineups(fixture_id: int, season_id: int, sm: SportmonksClien
         detailed_position = entry["detailedposition"]
         details = entry["details"]
 
-        is_starter = type_id == STARTING_LINEUP_TYPE_ID
-        minutes_played = _extract_minutes_played(
-            details,
-            require_minutes=is_starter,
-        )
+        # Minutes can be absent even for starters (Sportmonks sometimes omits the
+        # type_id=119 detail). Store NULL instead of dropping the whole fixture —
+        # otherwise one such starter loses every other player in the lineup too.
+        minutes_played = _extract_minutes_played(details, require_minutes=False)
+
+        position_id = entry["position_id"]
 
         team_ids.add(team_id)
 
@@ -218,10 +233,10 @@ def fetch_and_store_lineups(fixture_id: int, season_id: int, sm: SportmonksClien
                 season_id,
                 team_id,
                 player_id,
-                player["display_name"],
-                player["image_path"],
-                int(entry["position_id"]),
-                position["name"],
+                player["display_name"] if player is not None else None,
+                player["image_path"] if player is not None else None,
+                int(position_id) if position_id is not None else None,
+                position["name"] if position is not None else None,
                 detailed_position["name"] if detailed_position is not None else None,
                 entry["formation_field"],
                 type_id,
@@ -243,6 +258,63 @@ def fetch_and_store_lineups(fixture_id: int, season_id: int, sm: SportmonksClien
 # ---------------------------------------------------------------------------
 # 2. Best Eleven 계산
 # ---------------------------------------------------------------------------
+
+def _assign_players_to_slots(
+    expected_slots: List[str],
+    slot_candidates: Dict[str, List[Tuple]],
+) -> Dict[str, Tuple]:
+    """slot ↔ 선수 최대 이분매칭. 한 선수는 한 slot에만.
+
+    먼저 slot 순서대로 "그 slot의 1순위 미사용 선수"를 집는 greedy로 시드한다
+    (후보가 겹치지 않는 일반 팀은 이 단계에서 끝나고 기존 동작과 동일하다).
+    그 뒤 표본이 적어 선수가 여러 포지션을 오간 탓에 비어버린 slot이 있으면,
+    이미 배정된 선수를 그 선수의 다른 후보 slot으로 양보시키는 증강 경로(Kuhn)로
+    최대한 채운다. 증강은 빈 slot에서 끝나는 경로에서만 커밋되므로, 이미 11칸이
+    모두 찬 팀은 절대 재배치되지 않는다(결과 불변).
+    """
+    candidate_ids: Dict[str, List[int]] = {
+        slot: [int(c[1]) for c in slot_candidates.get(slot, [])]
+        for slot in expected_slots
+    }
+    row_by_slot_player: Dict[str, Dict[int, Tuple]] = {
+        slot: {int(c[1]): c for c in slot_candidates.get(slot, [])}
+        for slot in expected_slots
+    }
+
+    match_slot: Dict[str, int] = {}  # slot -> player_id
+    match_player: Dict[int, str] = {}  # player_id -> slot
+
+    def augment(player_id: int, seen_slots: Set[str]) -> bool:
+        for slot in expected_slots:
+            if player_id in candidate_ids[slot] and slot not in seen_slots:
+                seen_slots.add(slot)
+                if slot not in match_slot or augment(match_slot[slot], seen_slots):
+                    match_slot[slot] = player_id
+                    match_player[player_id] = slot
+                    return True
+        return False
+
+    # 1) greedy 시드 (기존 동작 보존)
+    used: Set[int] = set()
+    for slot in expected_slots:
+        for player_id in candidate_ids[slot]:
+            if player_id not in used:
+                match_slot[slot] = player_id
+                match_player[player_id] = slot
+                used.add(player_id)
+                break
+
+    # 2) 남은 빈 slot을 증강 경로로 채움
+    all_player_ids = {pid for slot in expected_slots for pid in candidate_ids[slot]}
+    for player_id in all_player_ids:
+        if player_id not in match_player:
+            augment(player_id, set())
+
+    return {
+        slot: row_by_slot_player[slot][player_id]
+        for slot, player_id in match_slot.items()
+    }
+
 
 def compute_best_eleven(team_id: int, season_id: int) -> None:
     """
@@ -288,18 +360,8 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
     # 포메이션에서 expected slot 목록 계산
     expected_slots = _parse_formation_to_expected_slots(formation)
 
-    # slot별 top-1 선택 (이미 뽑힌 선수는 제외)
-    best: Dict[str, Tuple] = {}
-    used_player_ids: Set[int] = set()
-
-    for slot in expected_slots:
-        for candidate in slot_candidates.get(slot, []):
-            player_id = int(candidate[1])
-
-            if player_id not in used_player_ids:
-                best[slot] = candidate
-                used_player_ids.add(player_id)
-                break
+    # slot별 선수 배정 (한 선수는 한 slot)
+    best = _assign_players_to_slots(expected_slots, slot_candidates)
 
     # 기존 row 제거 후 새 결과 저장
     execute(SQL_DELETE_BEST_ELEVEN, (team_id, season_id))
@@ -367,7 +429,13 @@ def refresh_best_eleven(lookback_days: int = 2) -> None:
             for team_id in team_ids:
                 affected[team_id] = int(season_id)
 
-        except Exception as error:
+        except (requests.RequestException, ValueError) as error:
+            # Sportmonks network/HTTP failures, plus malformed Sportmonks
+            # payloads (SportmonksClient raises ValueError on shape mismatch)
+            # and bad int() conversions — skip this fixture and continue the
+            # batch. Code-logic errors (KeyError, TypeError, AttributeError,
+            # mysql errors) bubble up so they surface immediately instead of
+            # silently dropping fixtures.
             print(f"  [best11] ERROR fixture {fixture_id}: {error}")
             continue
 
@@ -377,7 +445,11 @@ def refresh_best_eleven(lookback_days: int = 2) -> None:
         try:
             compute_best_eleven(team_id, season_id)
 
-        except Exception as error:
+        except ValueError as error:
+            # compute_best_eleven is DB-only; ValueError here means a
+            # malformed formation string in fixture_formations (int(parts[0])
+            # in _parse_formation_to_expected_slots). Everything else
+            # (KeyError, mysql errors) bubbles up.
             print(f"  [best11] ERROR compute team {team_id}: {error}")
 
     print("[best11] refresh done")
@@ -405,7 +477,8 @@ def full_build_best_eleven() -> None:
             for team_id in team_ids:
                 affected[team_id] = int(season_id)
 
-        except Exception as error:
+        except (requests.RequestException, ValueError) as error:
+            # See refresh_best_eleven for the catch-policy rationale.
             print(f"  [best11] ERROR fixture {fixture_id}: {error}")
             continue
 
@@ -418,7 +491,7 @@ def full_build_best_eleven() -> None:
         try:
             compute_best_eleven(team_id, season_id)
 
-        except Exception as error:
+        except ValueError as error:
             print(f"  [best11] ERROR compute team {team_id}: {error}")
 
     print("[best11] full build done")

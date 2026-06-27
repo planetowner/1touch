@@ -65,7 +65,7 @@ ON DUPLICATE KEY UPDATE
 
 
 def _require_int(value, field_name: str) -> int:
-    if not isinstance(value, int):
+    if type(value) is not int:
         raise ValueError(f"Missing or invalid integer field: {field_name}={value!r}")
 
     return value

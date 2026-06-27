@@ -244,28 +244,41 @@ def _build_candidate_from_playlist_item(
     *,
     source_type: str,
     source_ref: str,
-) -> Dict:
+) -> Optional[Dict]:
     """
     Build a single candidate from a YouTube playlistItems response item.
 
+    Returns None for private or deleted videos, which we skip rather than
+    treat as an error: such items are unusable as highlights and the API
+    omits the fields below for them (the item's title shows up as
+    "Private video" / "Deleted video").
+
     Verified against the v3 API (part=snippet,contentDetails):
-      - snippet.resourceId.videoId and contentDetails.videoId are both always
-        present and always equal.
+      - snippet.resourceId.videoId and contentDetails.videoId are both present
+        and equal for playable videos, but absent for deleted ones.
       - snippet.publishedAt = when this item was added to the playlist.
       - contentDetails.videoPublishedAt = when the video itself was uploaded
         to YouTube. We use this one because users care about video recency,
-        not when the channel re-added it to a playlist.
+        not when the channel re-added it to a playlist. Absent for
+        private/deleted videos.
       - snippet.thumbnails always has at least default/medium/high; we pick
         the highest-resolution size that the API returned.
     """
     snippet = _require_dict(item["snippet"], "playlistItem.snippet")
     content = _require_dict(item["contentDetails"], "playlistItem.contentDetails")
 
-    video_id = _require_non_empty_str(content["videoId"], "contentDetails.videoId")
+    # Private/deleted videos omit videoId and/or videoPublishedAt. They can
+    # appear in any playlist at any time, so skip them instead of crashing.
+    video_id = content.get("videoId")
+    published_at_raw = content.get("videoPublishedAt")
+    if not video_id or not published_at_raw:
+        return None
+
+    video_id = _require_non_empty_str(video_id, "contentDetails.videoId")
 
     published_at_dt = _parse_youtube_datetime(
         _require_non_empty_str(
-            content["videoPublishedAt"],
+            published_at_raw,
             "contentDetails.videoPublishedAt",
         )
     )
@@ -330,13 +343,13 @@ def _collect_playlist_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
             continue
 
         for item in items:
-            candidates.append(
-                _build_candidate_from_playlist_item(
-                    item,
-                    source_type="playlist",
-                    source_ref=playlist_id,
-                )
+            candidate = _build_candidate_from_playlist_item(
+                item,
+                source_type="playlist",
+                source_ref=playlist_id,
             )
+            if candidate is not None:
+                candidates.append(candidate)
 
     return _dedupe_by_video_id(candidates), had_failure
 
@@ -366,13 +379,13 @@ def _collect_channel_rule_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
     candidates: List[Dict] = []
 
     for item in items:
-        candidates.append(
-            _build_candidate_from_playlist_item(
-                item,
-                source_type="channel_uploads",
-                source_ref=uploads_playlist_id,
-            )
+        candidate = _build_candidate_from_playlist_item(
+            item,
+            source_type="channel_uploads",
+            source_ref=uploads_playlist_id,
         )
+        if candidate is not None:
+            candidates.append(candidate)
 
     return _dedupe_by_video_id(candidates), False
 
