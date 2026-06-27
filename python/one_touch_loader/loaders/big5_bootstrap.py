@@ -554,6 +554,15 @@ def upsert_current_and_historical_seasons(
         if not isinstance(seasons, list):
             raise ValueError(f"Expected league.seasons to be list for league_id={league_id}.")
 
+        # Build this league's rows first so we can apply the offseason fallback
+        # below: in the gap between seasons Sportmonks reports is_current=false
+        # for every season, which leaves downstream `WHERE is_current = 1`
+        # queries (injuries, transfers, standings, ...) with nothing to resolve.
+        league_rows: List[List] = []
+        any_current = False
+        latest_idx: Optional[int] = None
+        latest_start_year: Optional[int] = None
+
         for season in seasons:
             start_year = _season_start_year(season)
 
@@ -561,17 +570,23 @@ def upsert_current_and_historical_seasons(
                 continue
 
             season_id = season["id"]
+            is_current = bool(season["is_current"])
+            any_current = any_current or is_current
 
-            rows.append(
-                (
+            league_rows.append(
+                [
                     season_id,
                     league_id,
                     season["name"],
-                    bool(season["is_current"]),
+                    is_current,
                     _normalize_dt(season["starting_at"]),
                     _normalize_dt(season["ending_at"]),
-                )
+                ]
             )
+
+            if latest_start_year is None or start_year > latest_start_year:
+                latest_start_year = start_year
+                latest_idx = len(league_rows) - 1
 
             caches.league_to_seasons[league_id].append(season_id)
             caches.season_info[season_id] = {
@@ -581,6 +596,17 @@ def upsert_current_and_historical_seasons(
             }
 
             total += 1
+
+        # Offseason fallback: no season flagged current by the API, so treat the
+        # most-recent season as current until the new season opens.
+        if not any_current and latest_idx is not None:
+            league_rows[latest_idx][3] = True
+            print(
+                f"[seasons] league {league_id}: no current season from API; "
+                f"flagged most-recent season_id={league_rows[latest_idx][0]} as current"
+            )
+
+        rows.extend(tuple(row) for row in league_rows)
 
     if rows:
         upsert_many(SQL_UPSERT_SEASON, rows)

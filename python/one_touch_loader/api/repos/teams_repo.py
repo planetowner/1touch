@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from ..db import execute, executemany, fetch_all_dict, fetch_one_dict
+from ..db import execute, fetch_all_dict, fetch_one_dict, transaction
 
 
 def get_team(team_id: int) -> Optional[Dict[str, Any]]:
@@ -45,20 +45,30 @@ def list_following_team_ids(user_id: int) -> List[int]:
 
 
 def set_following_teams(user_id: int, team_ids: List[int]) -> None:
+    """Replace a user's following list atomically.
+
+    DELETE + executemany INSERT run in a single transaction so a mid-write
+    failure either keeps the previous list intact or commits the new one.
+    Otherwise a crash between the two statements would leave the user with
+    no follows at all.
     """
-    간단 구현:
-    - 기존 팔로우 전체 삭제 후 재삽입
-    (MVP는 충분. 이후 diff-upsert로 최적화 가능)
-    """
-    execute("DELETE FROM user_following_teams WHERE user_id=%s", (user_id,))
     rows = [(user_id, int(tid)) for tid in team_ids]
-    executemany(
-        """
-        INSERT INTO user_following_teams (user_id, team_id)
-        VALUES (%s, %s)
-        """,
-        rows,
-    )
+
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM user_following_teams WHERE user_id=%s",
+                (user_id,),
+            )
+
+            if rows:
+                cur.executemany(
+                    """
+                    INSERT INTO user_following_teams (user_id, team_id)
+                    VALUES (%s, %s)
+                    """,
+                    rows,
+                )
 
 
 def find_team_current_context(team_id: int) -> Optional[Tuple[int, int]]:
