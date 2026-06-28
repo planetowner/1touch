@@ -17,7 +17,6 @@ CALIBRATION_LOOKBACK_SEASONS = 5
 CALIBRATION_METHOD = "historical_draw_rate"
 
 MIN_SEASON_START_YEAR = 2017
-MAX_SEASON_START_YEAR = 2025
 
 XG_DECIMAL_PLACES = "0.001"
 XPTS_DECIMAL_PLACES = "0.00"
@@ -130,7 +129,7 @@ FROM seasons s
 JOIN understat_season_map usm
   ON usm.sportmonks_season_id = s.season_id
 WHERE s.league_id IN (8, 82, 301, 384, 564)
-  AND YEAR(s.starting_at) BETWEEN %s AND %s
+  AND YEAR(s.starting_at) >= %s
   AND (
     SELECT COUNT(*)
     FROM seasons previous_s
@@ -669,13 +668,16 @@ def build_xg_standings_for_season(
 def build_all_xg_standings(
     *,
     start_year: int = MIN_SEASON_START_YEAR,
-    end_year: int = MAX_SEASON_START_YEAR,
     no_cache: bool = True,
     no_store: bool = False,
 ) -> int:
+    # Lower bound only — no upper cap. The understat_season_map join already
+    # restricts to seasons with xG data, so future seasons are naturally
+    # excluded until their data exists; an explicit upper year would just need
+    # a manual yearly bump and silently drop the newest season.
     rows = fetch_all(
         SQL_GET_ELIGIBLE_BUILD_SEASONS,
-        (start_year, end_year, CALIBRATION_LOOKBACK_SEASONS),
+        (start_year, CALIBRATION_LOOKBACK_SEASONS),
     )
 
     total = 0

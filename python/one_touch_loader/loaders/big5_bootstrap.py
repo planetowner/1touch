@@ -113,8 +113,10 @@ BIG5_LEAGUE_IDS = [8, 82, 301, 384, 564]
 EURO_LEAGUE_IDS = [2, 5, 2286]
 DOMESTIC_CUP_LEAGUE_IDS = [24, 27, 390, 570]
 
+# Lower bound only: ingest every season from 2017 onward, including the
+# newest/upcoming one. No upper cap — capping the top would exclude the
+# current season once it rolls over and require a manual yearly bump.
 MIN_SEASON_START_YEAR = 2017
-MAX_SEASON_START_YEAR = 2025
 
 SCORE_CURRENT_TYPE_ID = 1525
 SCORE_PENALTY_SHOOTOUT_TYPE_ID = 5
@@ -563,7 +565,7 @@ def upsert_current_and_historical_seasons(
         for season in seasons:
             start_year = _season_start_year(season)
 
-            if start_year < MIN_SEASON_START_YEAR or start_year > MAX_SEASON_START_YEAR:
+            if start_year < MIN_SEASON_START_YEAR:
                 continue
 
             season_id = season["id"]
@@ -760,7 +762,7 @@ def ingest_euro_all_seasons_full(
         for season in seasons:
             start_year = _season_start_year(season)
 
-            if start_year < MIN_SEASON_START_YEAR or start_year > MAX_SEASON_START_YEAR:
+            if start_year < MIN_SEASON_START_YEAR:
                 continue
 
             season_id = season["id"]
@@ -877,7 +879,7 @@ def upsert_domestic_cups_big5_only(
         for season in seasons:
             start_year = _season_start_year(season)
 
-            if start_year < MIN_SEASON_START_YEAR or start_year > MAX_SEASON_START_YEAR:
+            if start_year < MIN_SEASON_START_YEAR:
                 continue
 
             allowed_team_ids = year_to_big5_teams[start_year]
