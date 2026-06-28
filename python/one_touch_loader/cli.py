@@ -21,7 +21,6 @@ from one_touch_loader.loaders.injuries_loader import (
     refresh_team_injuries,
 )
 from one_touch_loader.loaders.best_eleven_loader import (
-    full_build_best_eleven,
     refresh_best_eleven,
     validate_best_eleven,
 )
@@ -74,9 +73,7 @@ Usage:
   python -m one_touch_loader.cli injuries refresh-current <team_id,team_id,...>
   python -m one_touch_loader.cli injuries refresh-team <team_id>
 
-  python -m one_touch_loader.cli best-eleven --full
   python -m one_touch_loader.cli best-eleven
-  python -m one_touch_loader.cli best-eleven --days <N>
   python -m one_touch_loader.cli best-eleven validate
 
   python -m one_touch_loader.cli transfers refresh-current
@@ -238,20 +235,14 @@ def main():
             print(USAGE)
 
     elif cmd == "best-eleven":
-        if len(sys.argv) >= 3 and sys.argv[2] == "--full":
-            full_build_best_eleven()
-            print("Best-eleven full build done.")
-
-        elif len(sys.argv) >= 3 and sys.argv[2] == "validate":
+        if len(sys.argv) >= 3 and sys.argv[2] == "validate":
             validate_best_eleven()
 
         else:
-            days = 2
-
-            if len(sys.argv) >= 4 and sys.argv[2] == "--days":
-                days = int(sys.argv[3])
-
-            refresh_best_eleven(lookback_days=days)
+            # Single self-healing sync: loads lineups for every current-season
+            # past fixture still missing them and recomputes affected teams.
+            # Serves both initial build and routine refresh.
+            refresh_best_eleven()
             print("Best-eleven refresh done.")
 
     elif cmd == "transfers":
