@@ -19,18 +19,13 @@ from ..core.sportmonks import SportmonksClient
 # SQL
 # ---------------------------------------------------------------------------
 
-SQL_RECENTLY_FINISHED_WITHOUT_LINEUP = """
-SELECT f.fixture_id, f.season_id, f.home_team_id, f.away_team_id
-FROM fixtures f
-WHERE f.status = 'past'
-  AND f.starting_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
-  AND NOT EXISTS (
-    SELECT 1 FROM fixture_lineups fl WHERE fl.fixture_id = f.fixture_id
-  )
-ORDER BY f.starting_at DESC
-"""
-
-SQL_ALL_PAST_WITHOUT_LINEUP = """
+# Every current-season past fixture that still lacks lineups. This is the exact
+# set of work, so the sync is self-healing: it always retries any missing
+# lineup regardless of age (no time-window assumption that lineups arrive — and
+# that the job runs — within N days). The is_current scope keeps the set small
+# in steady state (only the latest matchday before lineups load) and avoids
+# forever-rescanning historical fixtures that may never get lineup data.
+SQL_CURRENT_PAST_FIXTURES_WITHOUT_LINEUP = """
 SELECT f.fixture_id, f.season_id, f.home_team_id, f.away_team_id
 FROM fixtures f
 JOIN seasons s ON s.season_id = f.season_id
@@ -405,24 +400,29 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 3. 증분 리프레시 (최근 종료 경기 → 해당 팀만)
+# 3. Best Eleven 동기화 (라인업 없는 현재 시즌 과거 경기 → 영향 팀 재계산)
 # ---------------------------------------------------------------------------
 
-def refresh_best_eleven(lookback_days: int = 2) -> None:
+def refresh_best_eleven() -> None:
     """
-    최근 N일 내 종료된 경기 중 아직 라인업이 없는 것을 적재하고,
-    영향받은 팀만 Best Eleven을 재계산한다.
+    라인업이 아직 없는 현재 시즌 과거 경기의 라인업을 적재하고, 영향받은 팀의
+    Best Eleven을 재계산한다.
+
+    "채워야 할 집합"(is_current + 라인업 없음)을 그대로 처리하므로 초기 구축과
+    증분 갱신을 겸한다. 누락된 라인업은 경기 시점과 무관하게 항상 재시도되어
+    시간 윈도우 밖으로 새는 경기가 없고, 정상 상태에서는 처리 대상이 작다.
     """
-    rows = fetch_all(SQL_RECENTLY_FINISHED_WITHOUT_LINEUP, (lookback_days,))
+    rows = fetch_all(SQL_CURRENT_PAST_FIXTURES_WITHOUT_LINEUP)
 
     if not rows:
-        print("[best11] no new finished fixtures to process")
+        print("[best11] no current-season fixtures awaiting lineups")
         return
 
     sm = SportmonksClient()
     affected: Dict[int, int] = {}  # team_id → season_id
+    total = len(rows)
 
-    for fixture_id, season_id, home_id, away_id in rows:
+    for index, (fixture_id, season_id, home_id, away_id) in enumerate(rows, 1):
         try:
             team_ids = fetch_and_store_lineups(int(fixture_id), int(season_id), sm)
 
@@ -439,49 +439,6 @@ def refresh_best_eleven(lookback_days: int = 2) -> None:
             print(f"  [best11] ERROR fixture {fixture_id}: {error}")
             continue
 
-    print(f"[best11] lineups fetched: fixtures={len(rows)}, affected teams={len(affected)}")
-
-    for team_id, season_id in affected.items():
-        try:
-            compute_best_eleven(team_id, season_id)
-
-        except ValueError as error:
-            # compute_best_eleven is DB-only; ValueError here means a
-            # malformed formation string in fixture_formations (int(parts[0])
-            # in _parse_formation_to_expected_slots). Everything else
-            # (KeyError, mysql errors) bubbles up.
-            print(f"  [best11] ERROR compute team {team_id}: {error}")
-
-    print("[best11] refresh done")
-
-
-def full_build_best_eleven() -> None:
-    """
-    현재 시즌의 모든 과거 경기에 대해 라인업을 적재하고 Best Eleven을 계산한다.
-    초기 구축용.
-    """
-    rows = fetch_all(SQL_ALL_PAST_WITHOUT_LINEUP)
-
-    if not rows:
-        print("[best11] no past fixtures without lineups")
-        return
-
-    sm = SportmonksClient()
-    affected: Dict[int, int] = {}
-    total = len(rows)
-
-    for index, (fixture_id, season_id, home_id, away_id) in enumerate(rows, 1):
-        try:
-            team_ids = fetch_and_store_lineups(int(fixture_id), int(season_id), sm)
-
-            for team_id in team_ids:
-                affected[team_id] = int(season_id)
-
-        except (requests.RequestException, ValueError) as error:
-            # See refresh_best_eleven for the catch-policy rationale.
-            print(f"  [best11] ERROR fixture {fixture_id}: {error}")
-            continue
-
         if index % 50 == 0:
             print(f"[best11] lineups progress: {index}/{total}")
 
@@ -492,9 +449,13 @@ def full_build_best_eleven() -> None:
             compute_best_eleven(team_id, season_id)
 
         except ValueError as error:
+            # compute_best_eleven is DB-only; ValueError here means a malformed
+            # formation string in fixture_formations (int(parts[0]) in
+            # _parse_formation_to_expected_slots). Everything else (KeyError,
+            # mysql errors) bubbles up.
             print(f"  [best11] ERROR compute team {team_id}: {error}")
 
-    print("[best11] full build done")
+    print("[best11] refresh done")
 
 
 # ---------------------------------------------------------------------------
