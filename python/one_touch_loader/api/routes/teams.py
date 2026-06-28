@@ -33,6 +33,15 @@ def get_following_teams(user_id: int = Depends(get_user_id)):
 @router.put("/users/me/following/teams")
 def put_following_teams(body: PutFollowingTeamsBody, user_id: int = Depends(get_user_id)):
     ensure_user(user_id)
+
+    # favorite은 홈 화면에 띄울 팀이며 항상 following 목록의 일원이어야 한다.
+    # (home_service는 이 불변식을 신뢰해 following 안에서만 favorite을 찾는다.)
+    if body.favoriteTeamId is not None and body.favoriteTeamId not in body.teamIds:
+        raise HTTPException(
+            status_code=400,
+            detail="favoriteTeamId must be one of teamIds",
+        )
+
     set_following_teams(user_id, body.teamIds)
     set_favorite_team_id(user_id, body.favoriteTeamId)
     return {"ok": True}

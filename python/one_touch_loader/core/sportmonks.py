@@ -299,33 +299,17 @@ class SportmonksClient:
 
             pagination = self._require_pagination(response, endpoint_name)
 
-            has_more = pagination["has_more"]
-
-            if type(has_more) is not bool:
-                raise ValueError(
-                    f"{endpoint_name}: pagination.has_more must be bool. "
-                    f"value={has_more!r}"
-                )
-
-            if not has_more:
+            if not pagination["has_more"]:
                 break
 
-            next_cursor = pagination.get("next_cursor")
-
-            if next_cursor is not None:
-                request_params = self._params_from_pagination_url(
-                    next_cursor,
-                    endpoint_name,
-                    "next_cursor",
-                )
-                continue
-
-            next_page = pagination.get("next_page")
-
+            # Verified live: when has_more=true, pagination.next_cursor is
+            # always a non-empty URL string (the legacy next_page is also
+            # present but redundant). Cursor-only — _params_from_pagination_url
+            # raises if next_cursor is unexpectedly missing or malformed.
             request_params = self._params_from_pagination_url(
-                next_page,
+                pagination["next_cursor"],
                 endpoint_name,
-                "next_page",
+                "next_cursor",
             )
 
     # ------------------------------------------------------------------

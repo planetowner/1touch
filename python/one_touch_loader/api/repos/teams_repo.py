@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ..db import execute, fetch_all_dict, fetch_one_dict, transaction
+from .standings_repo import get_current_season_id_for_league
 
 
 def get_team(team_id: int) -> Optional[Dict[str, Any]]:
@@ -73,14 +74,19 @@ def set_following_teams(user_id: int, team_ids: List[int]) -> None:
 
 def find_team_current_context(team_id: int) -> Optional[Tuple[int, int]]:
     """
-    team이 속한 최신 league_id/season_id를 fixtures에서 추정.
-    - standings 조회/overview 구성에 필요
+    team의 자국 리그 + 현재 시즌 (league_id, season_id).
+
+    standings 기본값(현재 시즌 자국 리그)과 best eleven 시즌 산출에 사용.
+    자국 리그는 가장 최근 league 경기로 식별하고, 그 리그의 is_current 시즌을
+    현재 시즌으로 본다. (컵/유럽대회 등 다른 대회/시즌은 호출부에서 명시적으로
+    league_id/season_id를 받아 처리한다.)
     """
     row = fetch_one_dict(
         """
-        SELECT league_id, season_id
+        SELECT league_id
         FROM fixtures
         WHERE (home_team_id=%s OR away_team_id=%s)
+          AND competition_type='league'
         ORDER BY starting_at DESC
         LIMIT 1
         """,
@@ -88,4 +94,10 @@ def find_team_current_context(team_id: int) -> Optional[Tuple[int, int]]:
     )
     if not row:
         return None
-    return int(row["league_id"]), int(row["season_id"])
+
+    league_id = int(row["league_id"])
+    season_id = get_current_season_id_for_league(league_id)
+    if season_id is None:
+        return None
+
+    return league_id, season_id
