@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from ..core.db import fetch_all, transaction
+from ..core.sportmonks import SportmonksClient
 
 
 # =========================================================
@@ -76,11 +77,12 @@ KNOCKOUT_ROUND_CANONICAL: Dict[str, str] = {
 
 SQL_UPSERT_STANDINGS = """
 INSERT INTO standings (
-  league_id, season_id, phase, group_name, team_id, position,
+  league_id, season_id, phase, group_name, team_id, position, prev_position,
   matches_played, won, draw, lost, goals_for, goals_against, goal_diff, points, last5_form
-) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 ON DUPLICATE KEY UPDATE
   position=VALUES(position),
+  prev_position=VALUES(prev_position),
   matches_played=VALUES(matches_played),
   won=VALUES(won), draw=VALUES(draw), lost=VALUES(lost),
   goals_for=VALUES(goals_for), goals_against=VALUES(goals_against),
@@ -193,30 +195,14 @@ WHERE is_current = 1
   AND league_id IN (8,82,301,384,564, 2,5,2286, 24,27,390,570)
 """
 
-SQL_SELECT_LAST_FIXTURE_FOR_TEAM = """
-SELECT starting_at
-FROM fixtures
+SQL_SELECT_TEAM_LEAGUE_STANDING = """
+SELECT position, prev_position
+FROM standings
 WHERE league_id = %s
   AND season_id = %s
-  AND status = 'past'
-  AND home_score IS NOT NULL
-  AND away_score IS NOT NULL
-  AND (home_team_id = %s OR away_team_id = %s)
-ORDER BY starting_at DESC
-LIMIT 1
-"""
-
-SQL_SELECT_LEAGUE_FIXTURES_ASOF = """
-SELECT home_team_id, away_team_id, home_score, away_score
-FROM fixtures
-WHERE league_id = %s
-  AND season_id = %s
-  AND status = 'past'
-  AND home_score IS NOT NULL
-  AND away_score IS NOT NULL
-  AND competition_type = 'league'
-  AND round_name REGEXP '^[0-9]+$'
-  AND starting_at {cmp} %s
+  AND phase = 'league'
+  AND group_name = ''
+  AND team_id = %s
 """
 
 SQL_DELETE_STANDINGS_FOR_LEAGUE_SEASON = """
@@ -314,149 +300,138 @@ def _last5_for_team(
     return [_result_for_team(h, hs, as_, team_id) for h, _a, hs, as_, _ in recent5]
 
 
-def _rank_rows(rows: List[Dict]) -> List[Dict]:
-    """정렬: pts desc, gd desc, gf desc, team_id asc."""
-    rows.sort(key=lambda r: (-r["pts"], -r["gd"], -r["gf"], r["team_id"]))
+def _last5_by_team(
+    fixtures: List[Tuple[int, int, int, int, datetime]],
+) -> Dict[int, List[str]]:
+    """{team_id: 최근 5경기 결과}. fixture 집계는 공식 순위가 아니라 last5_form 같은
+    앱 전용 보조 정보를 만드는 데에만 쓴다."""
+    by_team: Dict[int, List[Tuple[int, int, int, int, datetime]]] = defaultdict(list)
 
-    for position, row in enumerate(rows, start=1):
-        row["pos"] = position
+    for fx in fixtures:
+        by_team[fx[0]].append(fx)
+        by_team[fx[1]].append(fx)
 
-    return rows
+    return {team_id: _last5_for_team(games, team_id) for team_id, games in by_team.items()}
 
 
-def _aggregate_standings(
-    fixtures: List[Tuple[int, int, int, int, Optional[datetime]]],
-) -> Tuple[List[Dict], Dict[int, List[Tuple[int, int, int, int, Optional[datetime]]]]]:
-    """
-    fixtures: list of (home_team_id, away_team_id, home_score, away_score, starting_at)
-    returns: (ranked_rows, latest_by_team)
-    """
-    latest_by_team: Dict[
-        int, List[Tuple[int, int, int, int, Optional[datetime]]]
-    ] = defaultdict(list)
+# =========================================================
+# Official standings from the Sportmonks standings API
+# =========================================================
+#
+# Official league/group order comes from Sportmonks' standings `position`, not
+# from re-aggregating fixtures. Self-ranking by points→GD→GF→team_id cannot
+# reflect per-league tiebreakers (head-to-head etc.) and would force-split ties
+# by team_id, diverging from the official table. team_id is only used to
+# stabilise output order of equal positions on the read side, never to decide
+# the position value.
 
-    agg: Dict[int, Dict] = defaultdict(
-        lambda: {
-            "team_id": 0,
-            "mp": 0,
-            "w": 0,
-            "d": 0,
-            "l": 0,
-            "gf": 0,
-            "ga": 0,
-            "gd": 0,
-            "pts": 0,
-        }
-    )
+_DETAIL_MATCHES_PLAYED = "overall-matches-played"
+_DETAIL_WON = "overall-won"
+_DETAIL_DRAW = "overall-draw"
+_DETAIL_LOST = "overall-lost"
+_DETAIL_GOALS_FOR = "overall-goals-for"
+_DETAIL_GOALS_AGAINST = "overall-goals-against"
+_DETAIL_GOAL_DIFFERENCE = "goal-difference"
 
-    for home_id, away_id, home_score, away_score, dt in fixtures:
-        latest_by_team[home_id].append(
-            (home_id, away_id, home_score, away_score, dt)
+
+def _detail_value(details: List[Dict], code: str, context: str) -> int:
+    found: Optional[int] = None
+
+    for detail in details:
+        type_obj = detail.get("type") or {}
+        if type_obj.get("code") == code:
+            if found is not None:
+                raise ValueError(f"{context}: duplicate standing detail code {code!r}")
+            found = _require_int(detail["value"], f"{context}.{code}")
+
+    if found is None:
+        raise ValueError(f"{context}: missing standing detail code {code!r}")
+
+    return found
+
+
+def _parse_standing_row(row: Dict, context: str) -> Dict:
+    details = row["details"]
+    if not isinstance(details, list):
+        raise ValueError(
+            f"{context}: standing details must be a list, got {type(details).__name__}"
         )
-        latest_by_team[away_id].append(
-            (home_id, away_id, home_score, away_score, dt)
-        )
 
-        for tid, gf, ga in (
-            (home_id, home_score, away_score),
-            (away_id, away_score, home_score),
-        ):
-            agg[tid]["team_id"] = tid
-            agg[tid]["mp"] += 1
-            agg[tid]["gf"] += gf
-            agg[tid]["ga"] += ga
+    group_id = _require_optional_int(row["group_id"], f"{context}.group_id")
+    if group_id is None:
+        group_name = ""
+    else:
+        group_obj = row["group"]
+        if not isinstance(group_obj, dict):
+            raise ValueError(f"{context}: group_id={group_id} but group object missing")
+        group_name = _require_non_empty_str(group_obj["name"], f"{context}.group.name")
 
-        if home_score > away_score:
-            agg[home_id]["w"] += 1
-            agg[home_id]["pts"] += 3
-            agg[away_id]["l"] += 1
-        elif home_score < away_score:
-            agg[away_id]["w"] += 1
-            agg[away_id]["pts"] += 3
-            agg[home_id]["l"] += 1
-        else:
-            agg[home_id]["d"] += 1
-            agg[home_id]["pts"] += 1
-            agg[away_id]["d"] += 1
-            agg[away_id]["pts"] += 1
-
-    for row in agg.values():
-        row["gd"] = row["gf"] - row["ga"]
-
-    ranked = _rank_rows(list(agg.values()))
-
-    return ranked, latest_by_team
+    return {
+        "team_id": _require_int(row["participant_id"], f"{context}.participant_id"),
+        "position": _require_int(row["position"], f"{context}.position"),
+        "points": _require_int(row["points"], f"{context}.points"),
+        "mp": _detail_value(details, _DETAIL_MATCHES_PLAYED, context),
+        "w": _detail_value(details, _DETAIL_WON, context),
+        "d": _detail_value(details, _DETAIL_DRAW, context),
+        "l": _detail_value(details, _DETAIL_LOST, context),
+        "gf": _detail_value(details, _DETAIL_GOALS_FOR, context),
+        "ga": _detail_value(details, _DETAIL_GOALS_AGAINST, context),
+        "gd": _detail_value(details, _DETAIL_GOAL_DIFFERENCE, context),
+        "group_id": group_id,
+        "group_name": group_name,
+    }
 
 
-def _standings_batch(
-    *,
+def _parse_official_standings(api_rows: List[Dict], context: str) -> List[Dict]:
+    if not api_rows:
+        raise ValueError(f"{context}: empty standings response")
+
+    parsed: List[Dict] = []
+    seen: set = set()
+
+    for row in api_rows:
+        parsed_row = _parse_standing_row(row, context)
+        team_id = parsed_row["team_id"]
+        if team_id in seen:
+            raise ValueError(f"{context}: duplicate participant_id={team_id}")
+        seen.add(team_id)
+        parsed.append(parsed_row)
+
+    return parsed
+
+
+def _prev_round_position_map(sm: SportmonksClient, season_id: int) -> Dict[int, int]:
+    """{team_id: 직전 완료 라운드 기준 공식 position}.
+
+    완료된 라운드가 2개 미만이면(=직전 라운드 없음) 빈 dict. Big5 리그 rank delta
+    산출에만 쓴다. 라운드 순서는 name(매치데이 숫자) 기준.
+    """
+    rounds = sm.get_rounds_for_season(season_id)
+    finished = [r for r in rounds if r["finished"]]
+    finished.sort(key=lambda r: int(_require_non_empty_str(r["name"], "round.name")))
+
+    if len(finished) < 2:
+        return {}
+
+    prev_round_id = _require_int(finished[-2]["id"], "round.id")
+    context = f"standings/round {prev_round_id}"
+
+    out: Dict[int, int] = {}
+    for row in sm.get_standings_for_round(prev_round_id):
+        team_id = _require_int(row["participant_id"], f"{context}.participant_id")
+        position = _require_int(row["position"], f"{context}.position")
+        if team_id in out:
+            raise ValueError(f"{context}: duplicate participant_id={team_id}")
+        out[team_id] = position
+
+    return out
+
+
+def _store_standings_for_league_season(
     league_id: int,
     season_id: int,
-    phase: str,
-    group_name: str,
-    ranked: List[Dict],
-    latest_by_team: Dict[int, List[Tuple]],
-) -> List[Tuple]:
-    batch: List[Tuple] = []
-
-    for row in ranked:
-        team_id = row["team_id"]
-        last5 = _last5_for_team(latest_by_team[team_id], team_id)
-
-        batch.append(
-            (
-                league_id,
-                season_id,
-                phase,
-                group_name,
-                team_id,
-                row["pos"],
-                row["mp"],
-                row["w"],
-                row["d"],
-                row["l"],
-                row["gf"],
-                row["ga"],
-                row["gd"],
-                row["pts"],
-                json.dumps(last5, ensure_ascii=False),
-            )
-        )
-
-    return batch
-
-
-# =========================================================
-# 1) Big5 domestic league standings
-# =========================================================
-
-def build_league_standings_for_season(league_id: int, season_id: int) -> None:
-    rows = fetch_all(SQL_SELECT_LEAGUE_FIXTURES, (league_id, season_id))
-
-    fixtures: List[Tuple[int, int, int, int, datetime]] = []
-
-    for h, a, hs, as_, dt in rows:
-        fixtures.append(
-            (
-                _require_int(h, "fixtures.home_team_id"),
-                _require_int(a, "fixtures.away_team_id"),
-                _require_int(hs, "fixtures.home_score"),
-                _require_int(as_, "fixtures.away_score"),
-                _require_datetime(dt, "fixtures.starting_at"),
-            )
-        )
-
-    ranked, latest_by_team = _aggregate_standings(fixtures)
-
-    batch = _standings_batch(
-        league_id=league_id,
-        season_id=season_id,
-        phase="league",
-        group_name="",
-        ranked=ranked,
-        latest_by_team=latest_by_team,
-    )
-
+    batch: List[Tuple],
+) -> None:
     with transaction() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -467,92 +442,169 @@ def build_league_standings_for_season(league_id: int, season_id: int) -> None:
             if batch:
                 cur.executemany(SQL_UPSERT_STANDINGS, batch)
 
-    print(
-        f"[standings] league {league_id} season {season_id}: "
-        f"teams={len(batch)}"
+
+# =========================================================
+# 1) Big5 domestic league standings
+# =========================================================
+
+def _load_league_fixtures(
+    league_id: int,
+    season_id: int,
+) -> List[Tuple[int, int, int, int, datetime]]:
+    out: List[Tuple[int, int, int, int, datetime]] = []
+    for h, a, hs, as_, dt in fetch_all(SQL_SELECT_LEAGUE_FIXTURES, (league_id, season_id)):
+        out.append(
+            (
+                _require_int(h, "fixtures.home_team_id"),
+                _require_int(a, "fixtures.away_team_id"),
+                _require_int(hs, "fixtures.home_score"),
+                _require_int(as_, "fixtures.away_score"),
+                _require_datetime(dt, "fixtures.starting_at"),
+            )
+        )
+    return out
+
+
+def build_league_standings_for_season(
+    sm: SportmonksClient,
+    league_id: int,
+    season_id: int,
+) -> None:
+    context = f"league {league_id} season {season_id}"
+
+    # Official order comes from Sportmonks standings `position`.
+    parsed = _parse_official_standings(
+        sm.get_standings_for_season(season_id),
+        context,
     )
+
+    # last5_form: app-only extra from fixtures, merged onto the official rows.
+    last5_map = _last5_by_team(_load_league_fixtures(league_id, season_id))
+
+    # Rank delta: official position now vs official position at the previous
+    # completed round (Big5 league only).
+    prev_map = _prev_round_position_map(sm, season_id)
+
+    batch: List[Tuple] = []
+    for p in parsed:
+        if p["group_id"] is not None:
+            raise ValueError(
+                f"{context}: unexpected group_id={p['group_id']} on a domestic league standing"
+            )
+
+        team_id = p["team_id"]
+        if prev_map and team_id not in prev_map:
+            raise ValueError(
+                f"{context}: team {team_id} is in the current standings but missing "
+                f"from the previous-round standings"
+            )
+
+        batch.append(
+            (
+                league_id,
+                season_id,
+                "league",
+                "",
+                team_id,
+                p["position"],
+                prev_map.get(team_id),
+                p["mp"],
+                p["w"],
+                p["d"],
+                p["l"],
+                p["gf"],
+                p["ga"],
+                p["gd"],
+                p["points"],
+                json.dumps(last5_map.get(team_id, []), ensure_ascii=False),
+            )
+        )
+
+    _store_standings_for_league_season(league_id, season_id, batch)
+
+    print(f"[standings] {context}: teams={len(batch)}")
 
 
 # =========================================================
 # 2) European group / league-phase standings (stage_type_id=223)
 # =========================================================
 
-def build_euro_phase_standings_for_season_db(league_id: int, season_id: int) -> None:
+def _load_euro_fixtures(
+    league_id: int,
+    season_id: int,
+) -> List[Tuple[int, int, int, int, datetime]]:
+    out: List[Tuple[int, int, int, int, datetime]] = []
+    for row in fetch_all(SQL_SELECT_EURO_GROUP_FIXTURES, (league_id, season_id, STAGE_TYPE_GROUP)):
+        out.append(
+            (
+                _require_int(row[0], "fixtures.home_team_id"),
+                _require_int(row[1], "fixtures.away_team_id"),
+                _require_int(row[2], "fixtures.home_score"),
+                _require_int(row[3], "fixtures.away_score"),
+                _require_datetime(row[4], "fixtures.starting_at"),
+            )
+        )
+    return out
+
+
+def build_euro_phase_standings_for_season_db(
+    sm: SportmonksClient,
+    league_id: int,
+    season_id: int,
+) -> None:
     """
-    fixtures + stage_groups로 그룹/리그페이즈 standings 계산.
+    유로 대회 group / league-phase 공식 standings.
       - group_id 가 있으면 phase='group' (group_name별로)
       - group_id 가 NULL이면 phase='league_phase'
+    순위는 Sportmonks standings `position`을 그대로 쓰고, last5_form만 fixtures로
+    보강한다. rank delta(prev_position)는 Big5 리그 전용이라 여기선 NULL.
     """
-    rows = fetch_all(
-        SQL_SELECT_EURO_GROUP_FIXTURES,
-        (league_id, season_id, STAGE_TYPE_GROUP),
+    context = f"euro {league_id} season {season_id}"
+
+    parsed = _parse_official_standings(
+        sm.get_standings_for_season(season_id),
+        context,
     )
 
-    league_phase_games: List[Tuple[int, int, int, int, datetime]] = []
-    by_group_name: Dict[str, List[Tuple[int, int, int, int, datetime]]] = defaultdict(list)
+    # A team plays in exactly one group / the league-phase, so per-team last5
+    # over all euro fixtures is the team's own recent form.
+    last5_map = _last5_by_team(_load_euro_fixtures(league_id, season_id))
 
-    for row in rows:
-        home_id = _require_int(row[0], "fixtures.home_team_id")
-        away_id = _require_int(row[1], "fixtures.away_team_id")
-        home_score = _require_int(row[2], "fixtures.home_score")
-        away_score = _require_int(row[3], "fixtures.away_score")
-        starting_at = _require_datetime(row[4], "fixtures.starting_at")
-        group_id = _require_optional_int(row[5], "fixtures.group_id")
-        group_name_raw = row[6]
-
-        tup = (home_id, away_id, home_score, away_score, starting_at)
-
-        if group_id is None:
-            league_phase_games.append(tup)
+    batch: List[Tuple] = []
+    for p in parsed:
+        if p["group_id"] is None:
+            phase = "league_phase"
+            group_name = ""
         else:
-            group_name = _require_non_empty_str(
-                group_name_raw,
-                f"stage_groups.name for group_id={group_id}",
-            )
-            by_group_name[group_name].append(tup)
+            phase = "group"
+            group_name = p["group_name"]
 
-    all_batches: List[Tuple] = []
-
-    for group_name, games in by_group_name.items():
-        ranked, latest_by_team = _aggregate_standings(games)
-        all_batches.extend(
-            _standings_batch(
-                league_id=league_id,
-                season_id=season_id,
-                phase="group",
-                group_name=group_name,
-                ranked=ranked,
-                latest_by_team=latest_by_team,
-            )
-        )
-
-    if league_phase_games:
-        ranked, latest_by_team = _aggregate_standings(league_phase_games)
-        all_batches.extend(
-            _standings_batch(
-                league_id=league_id,
-                season_id=season_id,
-                phase="league_phase",
-                group_name="",
-                ranked=ranked,
-                latest_by_team=latest_by_team,
+        team_id = p["team_id"]
+        batch.append(
+            (
+                league_id,
+                season_id,
+                phase,
+                group_name,
+                team_id,
+                p["position"],
+                None,
+                p["mp"],
+                p["w"],
+                p["d"],
+                p["l"],
+                p["gf"],
+                p["ga"],
+                p["gd"],
+                p["points"],
+                json.dumps(last5_map.get(team_id, []), ensure_ascii=False),
             )
         )
 
-    with transaction() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                SQL_DELETE_STANDINGS_FOR_LEAGUE_SEASON,
-                (league_id, season_id),
-            )
+    _store_standings_for_league_season(league_id, season_id, batch)
 
-            if all_batches:
-                cur.executemany(SQL_UPSERT_STANDINGS, all_batches)
-
-    print(
-        f"[standings] euro {league_id} season {season_id}: "
-        f"groups={len(by_group_name)} league_phase_games={len(league_phase_games)}"
-    )
+    groups = {p["group_name"] for p in parsed if p["group_id"] is not None}
+    print(f"[standings] {context}: rows={len(batch)} groups={len(groups)}")
 
 
 # =========================================================
@@ -718,6 +770,8 @@ def build_knockout_brackets_for_season(league_id: int, season_id: int) -> None:
 # =========================================================
 
 def build_all_standings() -> None:
+    sm = SportmonksClient()
+
     big5_seasons = fetch_all(
         SQL_SELECT_BIG5_SEASONS_FOR_BUILD,
         (MIN_SEASON_START_YEAR,),
@@ -725,6 +779,7 @@ def build_all_standings() -> None:
 
     for sid, lid in big5_seasons:
         build_league_standings_for_season(
+            sm,
             _require_int(lid, "seasons.league_id"),
             _require_int(sid, "seasons.season_id"),
         )
@@ -736,6 +791,7 @@ def build_all_standings() -> None:
 
     for sid, lid in euro_seasons:
         build_euro_phase_standings_for_season_db(
+            sm,
             _require_int(lid, "seasons.league_id"),
             _require_int(sid, "seasons.season_id"),
         )
@@ -753,6 +809,7 @@ def build_all_standings() -> None:
 
 
 def refresh_current_standings() -> None:
+    sm = SportmonksClient()
     rows = fetch_all(SQL_SELECT_CURRENT_SEASONS_FOR_REFRESH)
 
     for sid, lid in rows:
@@ -760,17 +817,17 @@ def refresh_current_standings() -> None:
         season_id = _require_int(sid, "seasons.season_id")
 
         if league_id in BIG5_LEAGUE_IDS:
-            build_league_standings_for_season(league_id, season_id)
+            build_league_standings_for_season(sm, league_id, season_id)
 
         if league_id in EURO_LEAGUE_IDS:
-            build_euro_phase_standings_for_season_db(league_id, season_id)
+            build_euro_phase_standings_for_season_db(sm, league_id, season_id)
 
         if league_id in KNOCKOUT_BRACKET_LEAGUE_IDS:
             build_knockout_brackets_for_season(league_id, season_id)
 
 
 # =========================================================
-# 5) Rank delta vs previous match (BIG5 league only)
+# 5) Rank delta vs previous round (BIG5 league only)
 # =========================================================
 
 def compute_rank_delta_since_last_match(
@@ -779,33 +836,25 @@ def compute_rank_delta_since_last_match(
     season_id: int,
 ) -> Tuple[int, str]:
     """
-    팀의 '직전 종료 경기' 전후 standings를 비교해 등락 산출.
-    반환: (delta, symbol) 예) (+2, '▲'), (-1, '▼'), (0, '—')
+    저장된 공식 standings의 position vs prev_position(직전 완료 라운드 기준 공식
+    순위)로 등락 산출. 반환: (delta, symbol) 예) (+2, '▲'), (-1, '▼'), (0, '—').
+    공식 순위를 fixture로 재계산하지 않는다.
     """
     rows = fetch_all(
-        SQL_SELECT_LAST_FIXTURE_FOR_TEAM,
-        (league_id, season_id, team_id, team_id),
+        SQL_SELECT_TEAM_LEAGUE_STANDING,
+        (league_id, season_id, team_id),
     )
 
     if not rows:
         return (0, "—")
 
-    last_starting_at = _require_datetime(rows[0][0], "fixtures.starting_at")
+    position = _require_int(rows[0][0], "standings.position")
+    prev_position = _require_optional_int(rows[0][1], "standings.prev_position")
 
-    before = _compute_position_asof(
-        league_id, season_id, last_starting_at, include_cutoff=False,
-    )
-    after = _compute_position_asof(
-        league_id, season_id, last_starting_at, include_cutoff=True,
-    )
-
-    pos_before = before.get(team_id)
-    pos_after = after.get(team_id)
-
-    if pos_before is None or pos_after is None:
+    if prev_position is None:
         return (0, "—")
 
-    delta = pos_before - pos_after  # 순위가 올라가면 양수
+    delta = prev_position - position  # 순위가 올라가면 양수
 
     if delta > 0:
         symbol = "▲"
@@ -815,31 +864,3 @@ def compute_rank_delta_since_last_match(
         symbol = "—"
 
     return (delta, symbol)
-
-
-def _compute_position_asof(
-    league_id: int,
-    season_id: int,
-    cutoff: datetime,
-    include_cutoff: bool,
-) -> Dict[int, int]:
-    comparator = "<=" if include_cutoff else "<"
-    sql = SQL_SELECT_LEAGUE_FIXTURES_ASOF.replace("{cmp}", comparator)
-    rows = fetch_all(sql, (league_id, season_id, cutoff))
-
-    fixtures: List[Tuple[int, int, int, int, Optional[datetime]]] = []
-
-    for h, a, hs, as_ in rows:
-        fixtures.append(
-            (
-                _require_int(h, "fixtures.home_team_id"),
-                _require_int(a, "fixtures.away_team_id"),
-                _require_int(hs, "fixtures.home_score"),
-                _require_int(as_, "fixtures.away_score"),
-                None,
-            )
-        )
-
-    ranked, _ = _aggregate_standings(fixtures)
-
-    return {row["team_id"]: row["pos"] for row in ranked}

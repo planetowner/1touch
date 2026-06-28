@@ -436,6 +436,42 @@ class SportmonksClient:
         return self._require_data_dict(response, "get_fixture_lineups")
 
     # ------------------------------------------------------------------
+    # Standings
+    # ------------------------------------------------------------------
+
+    def _require_single_page(self, response: Dict, endpoint_name: str) -> None:
+        # Standings/rounds endpoints are verified to return every row in one
+        # page (no top-level 'pagination'). If that ever changes, surface it
+        # rather than silently dropping rows.
+        pagination = response.get("pagination")
+        if pagination is not None and pagination.get("has_more"):
+            raise ValueError(
+                f"{endpoint_name}: unexpected pagination (has_more=true); "
+                f"endpoint assumed single-page."
+            )
+
+    def get_standings_for_season(self, season_id: int) -> List[Dict]:
+        """Official standings for a season (league table / euro group / league-phase)."""
+        response = self._get(
+            f"standings/seasons/{season_id}",
+            params={"include": "details.type;participant;group"},
+        )
+        self._require_single_page(response, "get_standings_for_season")
+        return self._require_data_list(response, "get_standings_for_season")
+
+    def get_standings_for_round(self, round_id: int) -> List[Dict]:
+        """Official standings as of a specific round (for rank-delta vs previous round)."""
+        response = self._get(f"standings/rounds/{round_id}")
+        self._require_single_page(response, "get_standings_for_round")
+        return self._require_data_list(response, "get_standings_for_round")
+
+    def get_rounds_for_season(self, season_id: int) -> List[Dict]:
+        """All rounds of a season (round 'name' is the matchday number as a string)."""
+        response = self._get(f"rounds/seasons/{season_id}")
+        self._require_single_page(response, "get_rounds_for_season")
+        return self._require_data_list(response, "get_rounds_for_season")
+
+    # ------------------------------------------------------------------
     # Transfers
     # ------------------------------------------------------------------
 

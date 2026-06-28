@@ -39,6 +39,11 @@ class FixtureOut(BaseModel):
 
 class StandingRowOut(BaseModel):
     position: int
+    # Official position at the previous completed round, and the resulting
+    # movement (prev_position - position; positive = moved up). None when there
+    # is no previous round or it does not apply (euro group/league-phase).
+    prev_position: Optional[int] = None
+    rank_delta: Optional[int] = None
     team_id: int
     team_name: Optional[str] = None
     team_logo: Optional[str] = None
