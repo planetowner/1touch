@@ -50,7 +50,6 @@ SELECT
   latest_detection_source
 FROM transfer_windows
 WHERE is_latest = 1
-ORDER BY start_date DESC
 LIMIT 1
 """
 
@@ -481,7 +480,7 @@ def _load_transfers_for_window(
 # Public API
 # ---------------------------------------------------------------------------
 
-def refresh_team_transfers(team_id: int, window: Optional[Dict] = None) -> None:
+def refresh_team_transfers(team_id: int) -> None:
     """
     단일 Big5 current domestic team의 latest transfer window 데이터를 적재.
     transfers/teams/{team_id} 전체 이력을 쓰지 않는다.
@@ -494,12 +493,13 @@ def refresh_team_transfers(team_id: int, window: Optional[Dict] = None) -> None:
             f"team_id={team_id} is not a Big5 current domestic team."
         )
 
-    if window is None:
-        window = resolve_latest_window()
+    window = resolve_latest_window()
 
     if window is None:
-        print(f"[transfers] team {team_id}: SKIP - no transfer window configured")
-        return
+        raise ValueError(
+            "No transfer window found (transfer_windows has no is_latest=1 row). "
+            "Seed transfer_windows or run transfers refresh-current first."
+        )
 
     all_transfers = _load_transfers_for_window(
         sm=sm,
@@ -555,8 +555,10 @@ def refresh_current_transfers(team_ids: Optional[List[int]] = None) -> None:
     window = resolve_latest_window()
 
     if window is None:
-        print("[transfers] ERROR: no transfer window found. Seed transfer_windows first.")
-        return
+        raise ValueError(
+            "No transfer window found (transfer_windows has no is_latest=1 row). "
+            "Seed transfer_windows first."
+        )
 
     print(
         f"[transfers] latest window: "

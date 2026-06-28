@@ -7,12 +7,14 @@ from ..db import fetch_all_dict, fetch_one_dict
 
 
 def get_current_season_id_for_league(league_id: int) -> Optional[int]:
+    # Verified: Big5 leagues hold exactly one is_current=1 season; the other
+    # leagues currently hold zero. No ORDER BY fallback — a future state with
+    # multiple is_current=1 per league should surface, not be silently picked.
     row = fetch_one_dict(
         """
         SELECT season_id
         FROM seasons
         WHERE league_id=%s AND is_current=1
-        ORDER BY starting_at DESC
         LIMIT 1
         """,
         (league_id,),

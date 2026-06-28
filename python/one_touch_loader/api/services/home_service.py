@@ -16,19 +16,15 @@ def build_home_payload(
     following_teams = get_teams(following_ids)
 
     favorite_team_id = get_favorite_team_id(user_id)
-    if favorite_team_id is None and following_ids:
-        favorite_team_id = following_ids[0]
 
+    # favorite_team_id는 PUT 엔드포인트에서 following(teamIds)의 일원으로 강제되므로
+    # following_teams 안에서 반드시 찾을 수 있다.
     favorite_team = None
     if favorite_team_id:
         for t in following_teams:
             if int(t["team_id"]) == int(favorite_team_id):
                 favorite_team = t
                 break
-        if favorite_team is None:
-            # 팔로우 목록에 없더라도 팀 테이블에 있으면 반환
-            one = get_teams([favorite_team_id])
-            favorite_team = one[0] if one else None
 
     next_match = get_team_next_fixture(favorite_team_id) if favorite_team_id else None
     last_match = get_team_last_fixture(favorite_team_id) if favorite_team_id else None
