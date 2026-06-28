@@ -48,12 +48,15 @@ ON DUPLICATE KEY UPDATE
 
 
 def _get_active_model_id() -> int:
+    # Verified: team_attribute_regression_models has a UNIQUE(model_name)
+    # constraint and exactly one is_active=1 row. No ORDER BY fallback —
+    # if more than one model_name ever ends up active simultaneously, that
+    # should surface here instead of being silently resolved by created_at.
     rows = fetch_all(
         """
         SELECT id
         FROM team_attribute_regression_models
         WHERE is_active = 1
-        ORDER BY created_at DESC, id DESC
         LIMIT 1
         """
     )

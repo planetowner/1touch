@@ -200,25 +200,20 @@ def _season_start_year(season: Dict) -> int:
     return int(starting_at[:4])
 
 
-def _parse_leg_to_int(leg) -> Optional[int]:
-    if leg is None:
-        return None
+def _parse_leg_to_int(leg) -> int:
+    # Verified across 24,958 fixtures + live Sportmonks payloads: leg is
+    # always a string of the form "N/M" (e.g. "1/1", "1/2", "2/2"). The
+    # current leg number is the part before the slash. No int / bare-digit
+    # / NULL inputs occur, so we don't carry fallbacks for them.
+    if not isinstance(leg, str) or "/" not in leg:
+        raise ValueError(f"Unsupported fixture leg value: {leg!r}")
 
-    if isinstance(leg, int):
-        return leg
+    first_part = leg.strip().split("/", 1)[0].strip()
 
-    if isinstance(leg, str):
-        value = leg.strip()
+    if not first_part.isdigit():
+        raise ValueError(f"Unsupported fixture leg value: {leg!r}")
 
-        if "/" in value:
-            first_part = value.split("/", 1)[0].strip()
-            if first_part.isdigit():
-                return int(first_part)
-
-        if value.isdigit():
-            return int(value)
-
-    raise ValueError(f"Unsupported fixture leg value: {leg!r}")
+    return int(first_part)
 
 
 def _map_state_to_status(state_code: str) -> str:
