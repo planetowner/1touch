@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ..db import execute, fetch_all_dict, fetch_one_dict, transaction
-from .standings_repo import get_current_season_id_for_league
 
 
 def get_team(team_id: int) -> Optional[Dict[str, Any]]:
@@ -86,37 +85,35 @@ def find_team_current_context(team_id: int) -> Optional[Tuple[int, int]]:
     team의 현재 시즌 자국 리그 컨텍스트 (league_id, season_id).
 
     standings 기본값(현재 시즌 자국 리그)과 best eleven 시즌 산출에 사용.
-    리그는 "팀이 현재 시즌(is_current) 자국 리그 경기에 실제로 참가하는" 사실로
-    식별한다 — 가장 최근 경기로 추정하지 않으므로, 승격/강등 직후 이전 리그를
-    붙이거나 팀이 참가하지 않는 시즌을 만들어내지 않는다. 현재 시즌 리그 경기가
-    아직 없으면(승강 갭/일정 미생성) None을 반환한다(컨텍스트를 꾸며내지 않음).
+    team_seasons(자국 리그 소속, teams/seasons 엔드포인트 기반)에서 현재
+    시즌(is_current) 소속을 조회한다 — 가장 최근 경기로 추정하지 않으므로 승강
+    직후에도 이전 리그를 붙이지 않고, 해당 시즌 fixture가 아직 없어도(시즌 롤오버)
+    소속만 있으면 컨텍스트가 나온다. 현재 시즌 소속이 없으면 None을 반환한다.
 
     (컵/유럽대회 등 다른 대회/시즌은 호출부에서 명시적으로 league_id/season_id를
-    받아 처리한다. 정식 해법은 teams/seasons 소속을 저장하는 team_seasons 테이블로
-    조회하는 것이며, 현재는 fixtures의 현재-시즌 참가를 그 대용으로 쓴다.)
+    받아 처리한다. team_seasons에는 자국 리그 소속만 적재하므로 league_id는 항상
+    자국 리그다.)
     """
-    row = fetch_one_dict(
+    rows = fetch_all_dict(
         """
-        SELECT f.league_id
-        FROM fixtures f
-        JOIN seasons s ON s.season_id = f.season_id
-        WHERE (f.home_team_id=%s OR f.away_team_id=%s)
-          AND f.competition_type='league'
+        SELECT ts.league_id, ts.season_id
+        FROM team_seasons ts
+        JOIN seasons s ON s.season_id = ts.season_id
+        WHERE ts.team_id = %s
           AND s.is_current = 1
-        ORDER BY f.starting_at DESC
-        LIMIT 1
+        LIMIT 2
         """,
-        (team_id, team_id),
+        (team_id,),
     )
-    if not row:
+    if not rows:
         return None
 
-    # row는 현재-시즌 자국 리그 경기에서 왔으므로 그 리그엔 is_current 시즌이 있다.
-    # get_current_season_id_for_league는 그 시즌을 돌려주고, 한 리그에 is_current가
-    # 둘 이상이면 (#1) 에러로 표면화한다.
-    league_id = int(row["league_id"])
-    season_id = get_current_season_id_for_league(league_id)
-    if season_id is None:
-        return None
+    # 정상이면 정확히 1행(팀은 한 자국 리그의 현재 시즌에만 속한다). 2행 이상이면
+    # is_current 중복 등 데이터 불변식이 깨진 것이므로 (#1) 표면화한다.
+    if len(rows) > 1:
+        raise ValueError(
+            f"team_id={team_id} belongs to multiple current seasons: "
+            f"{[(int(r['league_id']), int(r['season_id'])) for r in rows]}"
+        )
 
-    return league_id, season_id
+    return int(rows[0]["league_id"]), int(rows[0]["season_id"])

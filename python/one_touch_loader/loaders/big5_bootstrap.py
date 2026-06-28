@@ -41,6 +41,13 @@ ON DUPLICATE KEY UPDATE
   image_path = VALUES(image_path)
 """
 
+SQL_UPSERT_TEAM_SEASON = """
+INSERT INTO team_seasons (team_id, season_id, league_id)
+VALUES (%s, %s, %s)
+ON DUPLICATE KEY UPDATE
+  league_id = VALUES(league_id)
+"""
+
 SQL_UPSERT_FIXTURE = """
 INSERT INTO fixtures (
   fixture_id, season_id, league_id,
@@ -157,6 +164,11 @@ def upsert_leagues_rows(rows: List[Tuple[int, str, Optional[str]]]) -> None:
 def upsert_teams_rows(rows: List[Tuple[int, str, Optional[str], Optional[str]]]) -> None:
     if rows:
         upsert_many(SQL_UPSERT_TEAM, rows)
+
+
+def upsert_team_seasons_rows(rows: List[Tuple[int, int, int]]) -> None:
+    if rows:
+        upsert_many(SQL_UPSERT_TEAM_SEASON, rows)
 
 
 def upsert_fixtures_rows(rows: List[Tuple]) -> None:
@@ -599,10 +611,20 @@ def upsert_current_and_historical_seasons(
     print(f"[seasons] upserted: {total}")
 
 
-def upsert_teams_for_season(sm: SportmonksClient, season_id: int) -> None:
+def upsert_teams_for_season(
+    sm: SportmonksClient,
+    league_id: int,
+    season_id: int,
+) -> None:
     rows: List[Tuple[int, str, Optional[str], Optional[str]]] = []
+    membership: List[Tuple[int, int, int]] = []
     count = 0
 
+    # teams/seasons/{season_id} is the authoritative roster for the season, so
+    # we record team↔season membership (team_seasons) here too. This lets the
+    # API resolve a team's current-season domestic league even before that
+    # season's fixtures exist (e.g. at season rollover), without inferring the
+    # league from the most recent fixture.
     for team in sm.iter_teams_by_season(season_id):
         team_id = team["id"]
         name = _require_non_empty_str(team["name"], "team.name")
@@ -610,16 +632,20 @@ def upsert_teams_for_season(sm: SportmonksClient, season_id: int) -> None:
         image_path = team["image_path"]
 
         rows.append((team_id, name, short_code, image_path))
+        membership.append((team_id, season_id, league_id))
         count += 1
 
         if len(rows) >= 500:
             upsert_teams_rows(rows)
+            upsert_team_seasons_rows(membership)
             rows.clear()
+            membership.clear()
 
     if rows:
         upsert_teams_rows(rows)
+        upsert_team_seasons_rows(membership)
 
-    print(f"[teams] season {season_id} upserted: {count}")
+    print(f"[teams] league {league_id} season {season_id} upserted: {count}")
 
 
 def ensure_teams_from_participants(participants: List[Dict]) -> None:
@@ -1045,10 +1071,10 @@ def run_big5_bootstrap(league_names: Optional[List[str]] = None) -> None:
     # 2) BIG5 seasons
     upsert_current_and_historical_seasons(sm, caches)
 
-    # 3) BIG5 teams
+    # 3) BIG5 teams (+ team_seasons membership)
     for league_id, season_ids in caches.league_to_seasons.items():
         for season_id in sorted(set(season_ids)):
-            upsert_teams_for_season(sm, season_id)
+            upsert_teams_for_season(sm, league_id, season_id)
 
     # 4) BIG5 league fixtures
     upsert_domestic_via_fixtures_api(sm, caches)
