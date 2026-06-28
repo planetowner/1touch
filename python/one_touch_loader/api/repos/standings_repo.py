@@ -3,23 +3,31 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional
 
-from ..db import fetch_all_dict, fetch_one_dict
+from ..db import fetch_all_dict
 
 
 def get_current_season_id_for_league(league_id: int) -> Optional[int]:
-    # Verified: Big5 leagues hold exactly one is_current=1 season; the other
-    # leagues currently hold zero. No ORDER BY fallback — a future state with
-    # multiple is_current=1 per league should surface, not be silently picked.
-    row = fetch_one_dict(
+    # A league holds at most one is_current=1 season, but no DB constraint
+    # enforces it. Read LIMIT 2 and check cardinality so a duplicate actually
+    # surfaces instead of being silently resolved to whichever row comes first:
+    #   0 rows -> None, 1 -> that season, >=2 -> error.
+    rows = fetch_all_dict(
         """
         SELECT season_id
         FROM seasons
         WHERE league_id=%s AND is_current=1
-        LIMIT 1
+        LIMIT 2
         """,
         (league_id,),
     )
-    return int(row["season_id"]) if row else None
+    if not rows:
+        return None
+    if len(rows) > 1:
+        raise ValueError(
+            f"league_id={league_id} has multiple is_current=1 seasons: "
+            f"{[int(r['season_id']) for r in rows]}"
+        )
+    return int(rows[0]["season_id"])
 
 
 def list_standings(
