@@ -185,16 +185,6 @@ def _normalize_dt(value: Optional[str]) -> Optional[str]:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _parse_iso_to_dt(value: Optional[str]) -> Optional[datetime]:
-    if value is None:
-        return None
-
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Invalid datetime value: {value!r}")
-
-    return datetime.fromisoformat(value)
-
-
 def _season_start_year(season: Dict) -> int:
     starting_at = _require_non_empty_str(season["starting_at"], "season.starting_at")
     return int(starting_at[:4])
@@ -753,27 +743,14 @@ def ingest_euro_all_seasons_full(
             start_norm = _normalize_dt(season["starting_at"])
             end_norm = _normalize_dt(season["ending_at"])
 
+            # Verified across all ingested leagues (Big5 + Euro + cups),
+            # 104 seasons in 2017-2025: Sportmonks always returns non-null
+            # starting_at/ending_at. No fixture-derived inference — a missing
+            # date should surface as an error, not be guessed from fixtures.
             if start_norm is None or end_norm is None:
-                min_dt = None
-                max_dt = None
-
-                for fixture in fixtures:
-                    fixture_dt = _parse_iso_to_dt(fixture["starting_at"])
-
-                    if fixture_dt is None:
-                        continue
-
-                    min_dt = fixture_dt if min_dt is None or fixture_dt < min_dt else min_dt
-                    max_dt = fixture_dt if max_dt is None or fixture_dt > max_dt else max_dt
-
-                if start_norm is None and min_dt is not None:
-                    start_norm = min_dt.strftime("%Y-%m-%d %H:%M:%S")
-
-                if end_norm is None and max_dt is not None:
-                    end_norm = max_dt.strftime("%Y-%m-%d %H:%M:%S")
-
-            if start_norm is None or end_norm is None:
-                raise ValueError(f"Could not determine start/end date for season_id={season_id}.")
+                raise ValueError(
+                    f"season_id={season_id} is missing starting_at/ending_at."
+                )
 
             upsert_many(
                 SQL_UPSERT_SEASON,
@@ -888,27 +865,14 @@ def upsert_domestic_cups_big5_only(
             start_norm = _normalize_dt(season["starting_at"])
             end_norm = _normalize_dt(season["ending_at"])
 
+            # Verified across all ingested leagues (Big5 + Euro + cups),
+            # 104 seasons in 2017-2025: Sportmonks always returns non-null
+            # starting_at/ending_at. No fixture-derived inference — a missing
+            # date should surface as an error, not be guessed from fixtures.
             if start_norm is None or end_norm is None:
-                min_dt = None
-                max_dt = None
-
-                for fixture in fixtures:
-                    fixture_dt = _parse_iso_to_dt(fixture["starting_at"])
-
-                    if fixture_dt is None:
-                        continue
-
-                    min_dt = fixture_dt if min_dt is None or fixture_dt < min_dt else min_dt
-                    max_dt = fixture_dt if max_dt is None or fixture_dt > max_dt else max_dt
-
-                if start_norm is None and min_dt is not None:
-                    start_norm = min_dt.strftime("%Y-%m-%d %H:%M:%S")
-
-                if end_norm is None and max_dt is not None:
-                    end_norm = max_dt.strftime("%Y-%m-%d %H:%M:%S")
-
-            if start_norm is None or end_norm is None:
-                raise ValueError(f"Could not determine start/end date for season_id={season_id}.")
+                raise ValueError(
+                    f"season_id={season_id} is missing starting_at/ending_at."
+                )
 
             upsert_many(
                 SQL_UPSERT_SEASON,

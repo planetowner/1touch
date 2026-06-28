@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ..deps import get_user_id
-from ..repos.users_repo import ensure_user, set_favorite_team_id
-from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set_following_teams, find_team_current_context
+from ..repos.users_repo import ensure_user
+from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set_following_and_favorite, find_team_current_context
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
 from ..repos.standings_repo import get_team_standing
 from ..repos.best_eleven_repo import get_best_eleven
@@ -42,8 +42,7 @@ def put_following_teams(body: PutFollowingTeamsBody, user_id: int = Depends(get_
             detail="favoriteTeamId must be one of teamIds",
         )
 
-    set_following_teams(user_id, body.teamIds)
-    set_favorite_team_id(user_id, body.favoriteTeamId)
+    set_following_and_favorite(user_id, body.teamIds, body.favoriteTeamId)
     return {"ok": True}
 
 
@@ -146,27 +145,31 @@ def _make_display_type(type_id: int | None, amount: int | None) -> str | None:
 
 
 def _build_transfer_out(row: dict, team_id: int) -> TransferOut:
-    is_in = row.get("to_team_id") == team_id
+    is_in = row["to_team_id"] == team_id
     direction = "in" if is_in else "out"
 
     if is_in:
-        other_team_id = row.get("from_team_id")
-        other_team_name = row.get("from_team_name")
+        other_team_id = row["from_team_id"]
+        other_team_name = row["from_team_name"]
     else:
-        other_team_id = row.get("to_team_id")
-        other_team_name = row.get("to_team_name")
+        other_team_id = row["to_team_id"]
+        other_team_name = row["to_team_name"]
 
+    # All keys are guaranteed by get_team_transfers_by_window's explicit SELECT;
+    # bracket access surfaces schema drift while still yielding None for the
+    # nullable columns (to_team_*, player_image, amount). transfer_date is
+    # NOT NULL (loader requires it), so no truthiness fallback.
     return TransferOut(
         transfer_id=row["transfer_id"],
         player_id=row["player_id"],
-        player_name=row.get("player_name"),
-        player_image=row.get("player_image"),
+        player_name=row["player_name"],
+        player_image=row["player_image"],
         direction=direction,
         other_team_id=other_team_id,
         other_team_name=other_team_name,
-        display_type=_make_display_type(row.get("type_id"), row.get("amount")),
-        amount=row.get("amount"),
-        transfer_date=str(row["transfer_date"]) if row.get("transfer_date") else None,
+        display_type=_make_display_type(row["type_id"], row["amount"]),
+        amount=row["amount"],
+        transfer_date=str(row["transfer_date"]),
     )
 
 

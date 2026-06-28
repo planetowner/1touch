@@ -48,21 +48,26 @@ ON DUPLICATE KEY UPDATE
 
 
 def _get_active_model_id() -> int:
-    # Verified: team_attribute_regression_models has a UNIQUE(model_name)
-    # constraint and exactly one is_active=1 row. No ORDER BY fallback —
-    # if more than one model_name ever ends up active simultaneously, that
-    # should surface here instead of being silently resolved by created_at.
+    # The UNIQUE constraint is on (model_name, model_version); it does NOT
+    # enforce a single is_active=1 row. Read LIMIT 2 and require exactly one:
+    #   0 -> error, 1 -> it, >=2 -> error (surface, don't silently pick first).
     rows = fetch_all(
         """
         SELECT id
         FROM team_attribute_regression_models
         WHERE is_active = 1
-        LIMIT 1
+        LIMIT 2
         """
     )
 
     if not rows:
         raise RuntimeError("No active team_attribute_regression_models row found.")
+
+    if len(rows) > 1:
+        raise RuntimeError(
+            "Multiple active team_attribute_regression_models rows: "
+            f"{[int(r[0]) for r in rows]}"
+        )
 
     return int(rows[0][0])
 

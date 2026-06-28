@@ -17,14 +17,20 @@ def build_home_payload(
 
     favorite_team_id = get_favorite_team_id(user_id)
 
-    # favorite_team_id는 PUT 엔드포인트에서 following(teamIds)의 일원으로 강제되므로
-    # following_teams 안에서 반드시 찾을 수 있다.
+    # favorite_team_id는 PUT 엔드포인트에서 following과 한 트랜잭션으로 저장되며
+    # favorite ∈ following이 강제되므로, following_teams 안에서 반드시 찾을 수 있다.
+    # 못 찾으면 데이터 불변식이 깨진 것이라 조용히 None으로 넘기지 않고 표면화한다.
     favorite_team = None
     if favorite_team_id:
         for t in following_teams:
             if int(t["team_id"]) == int(favorite_team_id):
                 favorite_team = t
                 break
+        if favorite_team is None:
+            raise ValueError(
+                f"favorite_team_id={favorite_team_id} is not in user {user_id}'s "
+                f"following list — favorite/following invariant violated."
+            )
 
     next_match = get_team_next_fixture(favorite_team_id) if favorite_team_id else None
     last_match = get_team_last_fixture(favorite_team_id) if favorite_team_id else None

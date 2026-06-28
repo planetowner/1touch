@@ -50,7 +50,7 @@ SELECT
   latest_detection_source
 FROM transfer_windows
 WHERE is_latest = 1
-LIMIT 1
+LIMIT 2
 """
 
 # ---------------------------------------------------------------------------
@@ -133,13 +133,14 @@ def _date_from_db(value, field_name: str) -> date:
     raise ValueError(f"Missing or invalid DB date field: {field_name}={value!r}")
 
 
-def _parse_transfer_date_for_filter(value, transfer_id: int) -> Optional[date]:
-    if value is None:
-        return None
-
+def _require_transfer_date_for_filter(value, transfer_id: int) -> date:
+    # Verified against a deadline-week sample (2,203 transfers, 457 Big5-related):
+    # Sportmonks always populates transfer.date. It is required, not optional —
+    # a null-date transfer must surface, not be silently dropped from the
+    # window filter (which would lose a Big5 transfer the user should see).
     if not isinstance(value, str) or not value.strip():
         raise ValueError(
-            f"Invalid transfer date for transfer_id={transfer_id}: {value!r}"
+            f"Missing or invalid transfer date for transfer_id={transfer_id}: {value!r}"
         )
 
     return date.fromisoformat(value)
@@ -229,10 +230,18 @@ def resolve_latest_window() -> Optional[Dict]:
     DB에 저장된 latest/effective window만 읽는다.
     Sportmonks API를 호출하지 않는다.
     """
+    # is_latest=1 has only a plain index, no uniqueness constraint, so check
+    # cardinality explicitly: 0 -> None, 1 -> it, >=2 -> surface as an error.
     rows = fetch_all(SQL_RESOLVE_FLAGGED_LATEST_WINDOW)
 
     if not rows:
         return None
+
+    if len(rows) > 1:
+        raise ValueError(
+            f"transfer_windows has multiple is_latest=1 rows: "
+            f"{[int(r[0]) for r in rows]}"
+        )
 
     (
         window_id,
@@ -310,13 +319,10 @@ def _filter_by_window(
     for transfer in transfers:
         transfer_id = _require_int(transfer["id"], "transfer.id")
 
-        transfer_date = _parse_transfer_date_for_filter(
+        transfer_date = _require_transfer_date_for_filter(
             transfer["date"],
             transfer_id,
         )
-
-        if transfer_date is None:
-            continue
 
         if not (effective_start_date <= transfer_date <= effective_end_date):
             continue
