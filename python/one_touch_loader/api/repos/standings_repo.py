@@ -39,7 +39,7 @@ def list_standings(
     rows = fetch_all_dict(
         """
         SELECT
-          s.position, s.team_id,
+          s.position, s.prev_position, s.team_id,
           t.name AS team_name,
           t.image_path AS team_logo,
           s.matches_played, s.won, s.draw, s.lost,
@@ -49,16 +49,25 @@ def list_standings(
         LEFT JOIN teams t ON t.team_id = s.team_id
         WHERE s.league_id=%s AND s.season_id=%s
           AND s.phase=%s AND s.group_name=%s
-        ORDER BY s.position ASC
+        ORDER BY s.position ASC, s.team_id ASC
         """,
         (league_id, season_id, phase, group_name),
     )
 
-    # standings.last5_form is a NOT NULL JSON column always written as a
-    # JSON list by standings_loader. Parse directly; any decode error is a
-    # real data corruption that should surface, not be masked into [].
+    # position is the official Sportmonks value (source of truth); team_id only
+    # stabilises the output order of equal positions, it never decides position.
+    # rank_delta = prev_position - position (positive = moved up); None when
+    # there is no previous round (e.g. matchday 1) or it doesn't apply.
     for r in rows:
+        # standings.last5_form is a NOT NULL JSON column always written as a
+        # JSON list by standings_loader. Parse directly; any decode error is a
+        # real data corruption that should surface, not be masked into [].
         r["last5_form"] = json.loads(r["last5_form"])
+
+        prev_position = r["prev_position"]
+        r["rank_delta"] = (
+            prev_position - r["position"] if prev_position is not None else None
+        )
 
     return rows
 
