@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import DefaultDict, Dict, Iterable, List, Optional, Set, Tuple
 
-from ..core.db import execute, upsert_many
+from ..core.db import execute, transaction, upsert_many
 from ..core.sportmonks import SportmonksClient
 
 
@@ -168,9 +168,23 @@ def upsert_teams_rows(rows: List[Tuple[int, str, Optional[str], Optional[str]]])
         upsert_many(SQL_UPSERT_TEAM, rows)
 
 
-def upsert_team_seasons_rows(rows: List[Tuple[int, int, int]]) -> None:
-    if rows:
-        upsert_many(SQL_UPSERT_TEAM_SEASON, rows)
+def replace_team_seasons_for_season(
+    season_id: int,
+    membership: List[Tuple[int, int, int]],
+) -> None:
+    """team_seasons는 teams/seasons/{season_id} 명단의 authoritative 스냅샷이다.
+    season별 membership을 한 트랜잭션 안에서 통째로 교체(delete + insert)하여,
+    Sportmonks 명단에서 빠진 팀이 stale row로 남지 않게 한다. 명단이 비면(예: 아직
+    시작 안 한 시즌) 해당 시즌 membership은 비워진다."""
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM team_seasons WHERE season_id = %s",
+                (season_id,),
+            )
+
+            if membership:
+                cur.executemany(SQL_UPSERT_TEAM_SEASON, membership)
 
 
 def upsert_fixtures_rows(rows: List[Tuple]) -> None:
@@ -618,36 +632,29 @@ def upsert_teams_for_season(
     league_id: int,
     season_id: int,
 ) -> None:
-    rows: List[Tuple[int, str, Optional[str], Optional[str]]] = []
+    team_rows: List[Tuple[int, str, Optional[str], Optional[str]]] = []
     membership: List[Tuple[int, int, int]] = []
-    count = 0
 
-    # teams/seasons/{season_id} is the authoritative roster for the season, so
-    # we record team↔season membership (team_seasons) here too. This lets the
-    # API resolve a team's current-season domestic league even before that
-    # season's fixtures exist (e.g. at season rollover), without inferring the
-    # league from the most recent fixture.
+    # teams/seasons/{season_id} is the authoritative roster for the season. We
+    # also record team↔season membership (team_seasons) so the API can resolve a
+    # team's current-season domestic league even before that season's fixtures
+    # exist (e.g. at season rollover), without inferring it from fixtures.
     for team in sm.iter_teams_by_season(season_id):
         team_id = team["id"]
         name = _require_non_empty_str(team["name"], "team.name")
         short_code = team["short_code"]
         image_path = team["image_path"]
 
-        rows.append((team_id, name, short_code, image_path))
+        team_rows.append((team_id, name, short_code, image_path))
         membership.append((team_id, season_id, league_id))
-        count += 1
 
-        if len(rows) >= 500:
-            upsert_teams_rows(rows)
-            upsert_team_seasons_rows(membership)
-            rows.clear()
-            membership.clear()
+    # teams is a global registry shared across seasons → upsert (never delete).
+    upsert_teams_rows(team_rows)
 
-    if rows:
-        upsert_teams_rows(rows)
-        upsert_team_seasons_rows(membership)
+    # team_seasons is a per-season authoritative snapshot → replace.
+    replace_team_seasons_for_season(season_id, membership)
 
-    print(f"[teams] league {league_id} season {season_id} upserted: {count}")
+    print(f"[teams] league {league_id} season {season_id} upserted: {len(team_rows)}")
 
 
 def ensure_teams_from_participants(participants: List[Dict]) -> None:
