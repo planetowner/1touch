@@ -28,6 +28,13 @@ def get_fixture(fixture_id: int) -> Optional[Dict[str, Any]]:
 
 
 def get_team_next_fixture(team_id: int) -> Optional[Dict[str, Any]]:
+    # A live match's starting_at is in the past, so it sorts before upcoming
+    # matches and is correctly surfaced as the "next" match while in progress.
+    # The 2-hour floor (≈ a match's duration) guards against a stale 'live'
+    # record whose status was never transitioned to 'past': without it, such a
+    # row would have the earliest starting_at and be shown as the next match
+    # indefinitely. Remove this once live→past status transitions are
+    # guaranteed reliable; until then it defends the display.
     return fetch_one_dict(
         _BASE_SELECT
         + """
