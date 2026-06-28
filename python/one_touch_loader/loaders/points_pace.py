@@ -170,6 +170,14 @@ def refresh_points_pace_current() -> None:
     """Big5 각 리그의 is_current 시즌만 경량 갱신."""
     for league_id in BIG5_LEAGUE_IDS:
         season_rows = fetch_all(SQL_SELECT_CURRENT_SEASON_ID, (league_id,))
+        # A league must have exactly one is_current season. 0 rows or >=2 (no DB
+        # uniqueness constraint enforces it) are both errors to surface, not a
+        # missing-row crash or an arbitrary first-row pick.
+        if len(season_rows) != 1:
+            raise ValueError(
+                f"league {league_id} must have exactly one is_current season, "
+                f"found {len(season_rows)}"
+            )
         season_id = _require_int(season_rows[0][0], "seasons.season_id")
 
         rows = _rows_for_league_season(league_id, season_id)

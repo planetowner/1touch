@@ -154,9 +154,14 @@ def _persist_model_atomically(
     notes: dict,
     build_weight_rows: callable,
 ) -> int:
-    """Deactivate prior versions, replace the model row, and insert all
-    feature weights — in a single transaction so the active model and its
-    weights are never out of sync.
+    """Deactivate any currently-active model, replace this model row, and
+    insert all feature weights — in a single transaction so the active model
+    and its weights are never out of sync.
+
+    The reader (_get_active_model_id) treats "the active model" as a single
+    global row, so activation is global: exactly one is_active=1 across the
+    whole table at a time. Deactivate every active row (not just this
+    model_name) before inserting the new active one.
 
     `build_weight_rows(model_id)` returns the list of weight tuples once the
     new model_id is known.
@@ -167,9 +172,8 @@ def _persist_model_atomically(
                 """
                 UPDATE team_attribute_regression_models
                 SET is_active = 0
-                WHERE model_name = %s
-                """,
-                (MODEL_NAME,),
+                WHERE is_active = 1
+                """
             )
 
             cur.execute(
