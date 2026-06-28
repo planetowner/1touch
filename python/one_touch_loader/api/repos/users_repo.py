@@ -29,11 +29,4 @@ def get_favorite_team_id(user_id: int) -> Optional[int]:
     )
     if not row:
         return None
-    return row.get("favorite_team_id")
-    
-
-def set_favorite_team_id(user_id: int, team_id: int | None) -> None:
-    execute(
-        "UPDATE user_profiles SET favorite_team_id=%s WHERE user_id=%s",
-        (team_id, user_id),
-    )
+    return row["favorite_team_id"]

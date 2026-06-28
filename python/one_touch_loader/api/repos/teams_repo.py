@@ -45,13 +45,17 @@ def list_following_team_ids(user_id: int) -> List[int]:
     return [int(r["team_id"]) for r in rows]
 
 
-def set_following_teams(user_id: int, team_ids: List[int]) -> None:
-    """Replace a user's following list atomically.
+def set_following_and_favorite(
+    user_id: int,
+    team_ids: List[int],
+    favorite_team_id: Optional[int],
+) -> None:
+    """Replace the following list AND set the favorite in one transaction.
 
-    DELETE + executemany INSERT run in a single transaction so a mid-write
-    failure either keeps the previous list intact or commits the new one.
-    Otherwise a crash between the two statements would leave the user with
-    no follows at all.
+    All three statements (DELETE + INSERT following, UPDATE favorite) commit
+    together or not at all, so the invariant "favorite is always one of the
+    followed teams" can never be left half-applied by a mid-write failure.
+    The caller validates favorite_team_id ∈ team_ids before calling.
     """
     rows = [(user_id, int(tid)) for tid in team_ids]
 
@@ -71,23 +75,35 @@ def set_following_teams(user_id: int, team_ids: List[int]) -> None:
                     rows,
                 )
 
+            cur.execute(
+                "UPDATE user_profiles SET favorite_team_id=%s WHERE user_id=%s",
+                (favorite_team_id, user_id),
+            )
+
 
 def find_team_current_context(team_id: int) -> Optional[Tuple[int, int]]:
     """
-    team의 자국 리그 + 현재 시즌 (league_id, season_id).
+    team의 현재 시즌 자국 리그 컨텍스트 (league_id, season_id).
 
     standings 기본값(현재 시즌 자국 리그)과 best eleven 시즌 산출에 사용.
-    자국 리그는 가장 최근 league 경기로 식별하고, 그 리그의 is_current 시즌을
-    현재 시즌으로 본다. (컵/유럽대회 등 다른 대회/시즌은 호출부에서 명시적으로
-    league_id/season_id를 받아 처리한다.)
+    리그는 "팀이 현재 시즌(is_current) 자국 리그 경기에 실제로 참가하는" 사실로
+    식별한다 — 가장 최근 경기로 추정하지 않으므로, 승격/강등 직후 이전 리그를
+    붙이거나 팀이 참가하지 않는 시즌을 만들어내지 않는다. 현재 시즌 리그 경기가
+    아직 없으면(승강 갭/일정 미생성) None을 반환한다(컨텍스트를 꾸며내지 않음).
+
+    (컵/유럽대회 등 다른 대회/시즌은 호출부에서 명시적으로 league_id/season_id를
+    받아 처리한다. 정식 해법은 teams/seasons 소속을 저장하는 team_seasons 테이블로
+    조회하는 것이며, 현재는 fixtures의 현재-시즌 참가를 그 대용으로 쓴다.)
     """
     row = fetch_one_dict(
         """
-        SELECT league_id
-        FROM fixtures
-        WHERE (home_team_id=%s OR away_team_id=%s)
-          AND competition_type='league'
-        ORDER BY starting_at DESC
+        SELECT f.league_id
+        FROM fixtures f
+        JOIN seasons s ON s.season_id = f.season_id
+        WHERE (f.home_team_id=%s OR f.away_team_id=%s)
+          AND f.competition_type='league'
+          AND s.is_current = 1
+        ORDER BY f.starting_at DESC
         LIMIT 1
         """,
         (team_id, team_id),
@@ -95,6 +111,9 @@ def find_team_current_context(team_id: int) -> Optional[Tuple[int, int]]:
     if not row:
         return None
 
+    # row는 현재-시즌 자국 리그 경기에서 왔으므로 그 리그엔 is_current 시즌이 있다.
+    # get_current_season_id_for_league는 그 시즌을 돌려주고, 한 리그에 is_current가
+    # 둘 이상이면 (#1) 에러로 표면화한다.
     league_id = int(row["league_id"])
     season_id = get_current_season_id_for_league(league_id)
     if season_id is None:
