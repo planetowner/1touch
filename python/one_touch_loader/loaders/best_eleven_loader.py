@@ -306,9 +306,19 @@ def _assign_players_to_slots(
                 used.add(player_id)
                 break
 
-    # 2) 남은 빈 slot을 증강 경로로 채움
-    all_player_ids = {pid for slot in expected_slots for pid in candidate_ids[slot]}
-    for player_id in all_player_ids:
+    # 2) 남은 빈 slot을 증강 경로로 채움. 미배정 선수를 후보 등장 순서(SQL의
+    #    starts DESC, total_minutes DESC, player_id ASC를 그대로 보존)대로
+    #    결정적으로 순회한다. set으로 순회하면 hash 버킷 순서라 비결정적이고,
+    #    다중 매칭 상황에서 랭킹 낮은 선수가 먼저 빈 slot을 차지할 수 있다.
+    seen_player_ids: Set[int] = set()
+    ordered_player_ids: List[int] = []
+    for slot in expected_slots:
+        for player_id in candidate_ids[slot]:
+            if player_id not in seen_player_ids:
+                seen_player_ids.add(player_id)
+                ordered_player_ids.append(player_id)
+
+    for player_id in ordered_player_ids:
         if player_id not in match_player:
             augment(player_id, set())
 
