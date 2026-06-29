@@ -68,9 +68,12 @@ SELECT formation, COUNT(*) AS cnt
 FROM fixture_formations
 WHERE team_id = %s AND season_id = %s
 GROUP BY formation
-ORDER BY cnt DESC
+ORDER BY cnt DESC, formation ASC
 LIMIT 1
 """
+# formation ASC is a deterministic tiebreak when two formations are used the
+# same number of times: it only breaks exact ties (cnt is the real criterion),
+# so the chosen dominant formation is reproducible instead of DB-order-arbitrary.
 
 # 해당 포메이션을 쓴 경기 목록
 SQL_FIXTURE_IDS_WITH_FORMATION = """
@@ -99,8 +102,12 @@ WHERE fl.team_id = %s
 GROUP BY fl.formation_field,
          fl.player_id, fl.player_name, fl.player_image,
          fl.position_id, fl.position_name, fl.detailed_position_name
-ORDER BY fl.formation_field, starts DESC, total_minutes DESC
+ORDER BY fl.formation_field, starts DESC, total_minutes DESC, fl.player_id ASC
 """
+# player_id ASC is a deterministic final tiebreak: starts/total_minutes are the
+# real ranking, but slot assignment seeds greedily from this candidate order, so
+# without a stable tie-break two players equal on both would make the Best
+# Eleven non-deterministic across runs.
 
 SQL_DELETE_BEST_ELEVEN = """
 DELETE FROM team_best_eleven
