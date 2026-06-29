@@ -19,20 +19,29 @@ from ..core.sportmonks import SportmonksClient
 # SQL
 # ---------------------------------------------------------------------------
 
-# Every current-season past fixture that still lacks lineups. This is the exact
-# set of work, so the sync is self-healing: it always retries any missing
-# lineup regardless of age (no time-window assumption that lineups arrive — and
-# that the job runs — within N days). The is_current scope keeps the set small
-# in steady state (only the latest matchday before lineups load) and avoids
-# forever-rescanning historical fixtures that may never get lineup data.
-SQL_CURRENT_PAST_FIXTURES_WITHOUT_LINEUP = """
+# Every current-season past fixture whose lineups are not yet complete. A
+# fixture is complete only when BOTH participants have lineup rows — checking
+# "any lineup row exists" would freeze a partial load (e.g. only the home team's
+# lineup was published when we fetched) as if it were done, so the other team's
+# lineup would never be retried. Re-fetching a past fixture returns both teams,
+# so this converges. (The is_current scope keeps the set small in steady state
+# and avoids forever-rescanning historical fixtures; re-storing an already-
+# present team's rows is a harmless upsert.)
+SQL_CURRENT_PAST_FIXTURES_INCOMPLETE_LINEUP = """
 SELECT f.fixture_id, f.season_id, f.home_team_id, f.away_team_id
 FROM fixtures f
 JOIN seasons s ON s.season_id = f.season_id
 WHERE f.status = 'past'
   AND s.is_current = 1
-  AND NOT EXISTS (
-    SELECT 1 FROM fixture_lineups fl WHERE fl.fixture_id = f.fixture_id
+  AND (
+    NOT EXISTS (
+      SELECT 1 FROM fixture_lineups fl
+      WHERE fl.fixture_id = f.fixture_id AND fl.team_id = f.home_team_id
+    )
+    OR NOT EXISTS (
+      SELECT 1 FROM fixture_lineups fl
+      WHERE fl.fixture_id = f.fixture_id AND fl.team_id = f.away_team_id
+    )
   )
 ORDER BY f.starting_at ASC
 """
@@ -422,14 +431,14 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
 
 def refresh_best_eleven() -> None:
     """
-    라인업이 아직 없는 현재 시즌 과거 경기의 라인업을 적재하고, 영향받은 팀의
-    Best Eleven을 재계산한다.
+    라인업이 아직 완전하지 않은(양팀 중 한 팀이라도 라인업이 없는) 현재 시즌
+    과거 경기의 라인업을 적재하고, 영향받은 팀의 Best Eleven을 재계산한다.
 
-    "채워야 할 집합"(is_current + 라인업 없음)을 그대로 처리하므로 초기 구축과
-    증분 갱신을 겸한다. 누락된 라인업은 경기 시점과 무관하게 항상 재시도되어
-    시간 윈도우 밖으로 새는 경기가 없고, 정상 상태에서는 처리 대상이 작다.
+    "채워야 할 집합"(is_current + 라인업 미완)을 그대로 처리하므로 초기 구축과
+    증분 갱신을 겸한다. 미완 라인업은 경기 시점과 무관하게 항상 재시도되어
+    시간 윈도우 밖으로 새는 경기도, 부분 적재로 동결되는 경기도 없다.
     """
-    rows = fetch_all(SQL_CURRENT_PAST_FIXTURES_WITHOUT_LINEUP)
+    rows = fetch_all(SQL_CURRENT_PAST_FIXTURES_INCOMPLETE_LINEUP)
 
     if not rows:
         print("[best11] no current-season fixtures awaiting lineups")
