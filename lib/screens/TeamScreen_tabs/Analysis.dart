@@ -4,6 +4,9 @@ import 'package:onetouch/models/mock_data.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/bestXI.dart';
+import 'package:onetouch/models/mock_transfer_bestXI_data.dart';
+import 'package:onetouch/features/TeamScreenFeatures.dart';
 
 class AnalysisTab extends StatelessWidget {
   final Map<String, dynamic>? team;
@@ -18,7 +21,7 @@ class AnalysisTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AttributesSection(team: team),
-          BestElevenSection(),
+          BestElevenSection(team: team),
           CurrentFormSection(),
           ProbabilitySection(),
         ],
@@ -50,6 +53,21 @@ class _AttributesSectionState extends State<AttributesSection> {
   @override
   void initState() {
     super.initState();
+    _loadAttributes();
+  }
+
+  @override
+  void didUpdateWidget(AttributesSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // This section's State is reused across team switches (the Team-tab
+    // branch stays alive in the bottom-nav shell), so reload instead of
+    // only loading once in initState.
+    if (widget.team?['id'] != oldWidget.team?['id']) {
+      setState(_loadAttributes);
+    }
+  }
+
+  void _loadAttributes() {
     final all = teamAttributesByTeam(_teamId);
     if (all.isEmpty) return;
 
@@ -252,20 +270,69 @@ class _AttributesSectionState extends State<AttributesSection> {
 }
 
 class BestElevenSection extends StatefulWidget {
-  const BestElevenSection({super.key});
+  final Map<String, dynamic>? team;
+  const BestElevenSection({super.key, required this.team});
 
   @override
   State<BestElevenSection> createState() => _BestElevenSectionState();
 }
 
 class _BestElevenSectionState extends State<BestElevenSection> {
-  String selectedFormation = "4-2-3-1 (90%)";
-
-  final List<String> formations = [
+  // Recommended-formation options with confidence %, eventually populated by
+  // a backend model. The lineup shown below is re-fetched per selection —
+  // mock data currently only has one real formation per team, so picking an
+  // option with no matching data shows the empty state.
+  static const List<String> formations = [
     "4-2-3-1 (90%)",
     "4-3-3 (88%)",
     "3-5-2 (82%)",
   ];
+
+  late String selectedFormation;
+  List<BestElevenPlayer> _players = [];
+
+  int get _teamId => widget.team?['id'] as int? ?? 83; // default Barcelona
+
+  String _formationKey(String option) => option.split(' ').first;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetForTeam();
+  }
+
+  @override
+  void didUpdateWidget(BestElevenSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // This section's State is reused across team switches (the Team-tab
+    // branch stays alive in the bottom-nav shell), so reload instead of
+    // only loading once in initState.
+    if (widget.team?['id'] != oldWidget.team?['id']) {
+      setState(_resetForTeam);
+    }
+  }
+
+  // Defaults the dropdown to whichever option matches the team's actual
+  // mocked formation, so it doesn't open on an empty state.
+  void _resetForTeam() {
+    final actualFormation = bestElevenByTeam(_teamId).firstOrNull?.formation;
+    selectedFormation = formations.firstWhere(
+      (f) => _formationKey(f) == actualFormation,
+      orElse: () => formations.first,
+    );
+    _loadPlayers();
+  }
+
+  void _loadPlayers() {
+    _players = bestElevenByTeam(_teamId, formation: _formationKey(selectedFormation));
+  }
+
+  void _changeFormation(String formation) {
+    setState(() {
+      selectedFormation = formation;
+      _loadPlayers();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +359,7 @@ class _BestElevenSectionState extends State<BestElevenSection> {
                     dropdownColor: const Color(0xFF3D3D3D),
                     style: Body2_b.style,
                     onChanged: (val) {
-                      setState(() => selectedFormation = val!);
+                      if (val != null) _changeFormation(val);
                     },
                     items: formations.map((f) {
                       return DropdownMenuItem(
@@ -307,52 +374,17 @@ class _BestElevenSectionState extends State<BestElevenSection> {
           ),
           const SizedBox(height: 16),
 
-          // Formation Grid (hardcoded 4-2-3-1)
-          Container(
+          if (_players.isEmpty)
+            Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
-              decoration: BoxDecoration(
-                color: const Color(0xFF272828),
-                borderRadius: BorderRadius.circular(24),
+              child: Text(
+                'No lineup data for this formation yet',
+                style: Body2.style,
               ),
-              child: Column(
-                children: [
-                  _formationRow(["# Name"]),
-                  const SizedBox(height: 24), // more spacing
-                  _formationRow(["# Name", "# Name", "# Name"]),
-                  const SizedBox(height: 24),
-                  _formationRow(["# Name", "# Name"]),
-                  const SizedBox(height: 24),
-                  _formationRow(["# Name", "# Name", "# Name", "# Name"]),
-                  const SizedBox(height: 24),
-                  _formationRow(["# Name"]),
-                ],
-              )
-          )
+            )
+          else
+            BestElevenPitch(players: _players),
         ],
-      ),
-    );
-  }
-
-  Widget _formationRow(List<String> players) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: players.map((name) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.white,
-                ),
-                const SizedBox(height: 4),
-                Text(name, style: Body2.style),
-              ],
-            ),
-          );
-        }).toList(),
       ),
     );
   }

@@ -157,15 +157,12 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                   contentPadding: EdgeInsets.zero,
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
+                    child: Image.network(
                       team['logo'],
                       width: 24,
                       height: 24,
-                      errorBuilder: (context, error, stackTrace) =>Image.asset(
-                        'TeamLogos/Barcelona.png',
-                        height: 24,
-                        width: 24,
-                      ),
+                      errorBuilder: (context, error, stackTrace) =>
+                          teamLogoFallback(team['id'] as int, size: 24),
                     ),
                   ),
                   title: Text(
@@ -265,11 +262,8 @@ class MyTeams extends StatelessWidget {
                         team.imagePath,
                         width: 50,
                         height: 50,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'TeamLogos/Barcelona.png',
-                          height: 50,
-                          width: 50,
-                        ),
+                        errorBuilder: (_, __, ___) =>
+                            teamLogoFallback(team.id, size: 50),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -334,8 +328,10 @@ class MyTeams extends StatelessWidget {
                       venue: '',
                       team1shortname: home.shortCode ?? home.name,
                       team1Logo: home.imagePath ?? '',
+                      team1Id: home.teamId,
                       team2shortname: away.shortCode ?? away.name,
                       team2Logo: away.imagePath ?? '',
+                      team2Id: away.teamId,
                       homeScore: last.homeScore ?? 0,
                       awayScore: last.awayScore ?? 0,
                     );
@@ -351,12 +347,14 @@ class MyTeams extends StatelessWidget {
 
 class CalendarEvent {
   final String logoAsset;
+  final int teamId;
   final Color dotColor;
   final int fixtureId;
   final String status; // 'past' | 'live' | 'upcoming'
 
   CalendarEvent({
     required this.logoAsset,
+    required this.teamId,
     required this.dotColor,
     required this.fixtureId,
     required this.status,
@@ -393,6 +391,7 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
 
       events.putIfAbsent(dateOnly, () => []).add(CalendarEvent(
         logoAsset: team.imagePath ?? '',
+        teamId: team.teamId,
         dotColor: color,
         fixtureId: fixture.fixtureId,
         status: fixture.status.name,
@@ -652,12 +651,8 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
                       width: 28,
                       height: 28,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Image.asset(
-                        randomTeamLogo(),
-                        width: 28,
-                        height: 28,
-                        fit: BoxFit.contain,
-                      ),
+                      errorBuilder: (_, __, ___) =>
+                          teamLogoFallback(dayEvents.first.teamId, size: 28),
                     ),
                     Positioned(
                       top: 0,

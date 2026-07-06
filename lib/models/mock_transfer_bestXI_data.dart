@@ -240,6 +240,11 @@ const mockBestEleven = <BestElevenPlayer>[
   ),
 ];
 
-/// Filter helper — later swap with API call
-List<BestElevenPlayer> bestElevenByTeam(int teamId) =>
-    mockBestEleven.where((p) => p.teamId == teamId).toList();
+/// Filter helper — later swap with API call. Pass [formation] (e.g. '4-3-3')
+/// to get the lineup for that specific formation once the backend can return
+/// more than one per team; omitted, it returns whatever's mocked for the team.
+List<BestElevenPlayer> bestElevenByTeam(int teamId, {String? formation}) {
+  final players = mockBestEleven.where((p) => p.teamId == teamId);
+  if (formation == null) return players.toList();
+  return players.where((p) => p.formation == formation).toList();
+}

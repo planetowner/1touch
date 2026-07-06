@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:flutter/material.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
@@ -38,12 +35,24 @@ class MatchInfoTab extends StatelessWidget {
   final List<Map<String, dynamic>> _goalEvents = const [
     {'player': 'Lewandowski', 'minute': "23'", 'team': 'home'},
     {'player': 'Lewandowski', 'minute': "67'", 'team': 'home'},
+    {'player': 'Yamal',       'minute': "45'", 'team': 'home'},
+    {'player': 'Yamal',       'minute': "45'+7'", 'team': 'home'},
+    {'player': 'Yamal',       'minute': "90'+9'", 'team': 'home'},
     {'player': 'Dovbyk',      'minute': "45'", 'team': 'away'},
+    {'player': 'Gutiérrez',   'minute': "78'", 'team': 'away', 'type': 'redCard'},
   ];
 
   final List<StatBarData> _statBars = const [
-    StatBarData(category: "Possession",    homePercent: 64, awayPercent: 36),
-    StatBarData(category: "Pass Accuracy", homePercent: 82, awayPercent: 78),
+    StatBarData(category: "Possession",      homePercent: 64,  awayPercent: 36),
+    StatBarData(category: "Expected Goals",  homePercent: 2.7, awayPercent: 0.6, isPercent: false),
+    StatBarData(category: "Shots",           homePercent: 10,  awayPercent: 6,   isPercent: false),
+    StatBarData(category: "Shots on Target", homePercent: 6,   awayPercent: 2,   isPercent: false),
+    StatBarData(category: "Pass Accuracy",   homePercent: 82,  awayPercent: 78),
+    StatBarData(category: "Fouls",           homePercent: 9,   awayPercent: 14,  isPercent: false),
+    StatBarData(category: "Corners",         homePercent: 7,   awayPercent: 3,   isPercent: false),
+    StatBarData(category: "Offsides",        homePercent: 1,   awayPercent: 2,   isPercent: false),
+    StatBarData(category: "Yellow Cards",    homePercent: 2,   awayPercent: 3,   isPercent: false),
+    StatBarData(category: "Saves",           homePercent: 1,   awayPercent: 3,   isPercent: false),
   ];
 
   // Away: rows ordered GK → attackers (shown top → bottom on pitch)
@@ -114,12 +123,14 @@ class MatchInfoTab extends StatelessWidget {
           MatchScoreHeader(
             homeLogoAsset: homeTeam.imagePath ?? '',
             awayLogoAsset: awayTeam.imagePath ?? '',
+            homeTeamId: homeTeam.teamId,
+            awayTeamId: awayTeam.teamId,
             homeTeamName: homeTeam.name,
             awayTeamName: awayTeam.name,
             homeScore: homeScore,
             awayScore: awayScore,
             statusLabel: isLive ? '42:02' : 'Final',
-            venueName: 'Venue Name',
+            roundLabel: fixture.roundName,
           ),
           const SizedBox(height: 12),
           MatchEventsSection(events: _goalEvents),

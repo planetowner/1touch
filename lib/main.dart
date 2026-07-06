@@ -5,8 +5,8 @@ import 'firebase_options.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
+import 'package:onetouch/data/favorite_team.dart';
 import 'package:onetouch/data/playerdata.dart';
-import 'package:onetouch/models/mock_data.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens
@@ -18,11 +18,6 @@ import 'package:onetouch/Splash.dart';
 import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/WelcomeScreen.dart';
-
-int _getFavoriteTeamId() {
-  return mockUserProfiles.firstWhere((p) => p.userId == 1001).favoriteTeamId ??
-      83;
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -133,8 +128,11 @@ final GoRouter _router = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/community',
-            builder: (context, state) =>
-                Community(teamId: _getFavoriteTeamId()),
+            builder: (context, state) => ValueListenableBuilder<int>(
+              valueListenable: FavoriteTeam.id,
+              builder: (context, favoriteTeamId, _) =>
+                  Community(teamId: favoriteTeamId),
+            ),
           ),
         ]),
       ],
@@ -189,12 +187,7 @@ class MainScreen extends StatelessWidget {
   // The 'child' parameter is not needed for StatefulShellRoute.indexedStack
   const MainScreen({super.key, required this.navigationShell});
 
-  int getFavoriteTeamName() {
-    return mockUserProfiles
-            .firstWhere((p) => p.userId == 1001)
-            .favoriteTeamId ??
-        83;
-  }
+  int getFavoriteTeamName() => FavoriteTeam.id.value;
 
   @override
   Widget build(BuildContext context) {

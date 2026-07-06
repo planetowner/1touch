@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/helper.dart';
 
@@ -268,7 +269,7 @@ class StandingTable extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildClubColumn(),
+            _buildClubColumn(context),
             Container(width: 1, color: Colors.black),
             Expanded(child: _buildStatsSide()),
           ],
@@ -277,7 +278,7 @@ class StandingTable extends StatelessWidget {
     );
   }
 
-  Widget _buildClubColumn() {
+  Widget _buildClubColumn(BuildContext context) {
     return Container(
       color: const Color(0xFF1E1E1E),
       child: Column(
@@ -285,7 +286,7 @@ class StandingTable extends StatelessWidget {
         children: [
           _buildClubHeader(),
           const SizedBox(height: 24),
-          ...standings.map(_buildClubRow),
+          ...standings.map((team) => _buildClubRow(context, team)),
           const SizedBox(height: 24),
         ],
       ),
@@ -302,7 +303,7 @@ class StandingTable extends StatelessWidget {
     );
   }
 
-  Widget _buildClubRow(Map<String, dynamic> team) {
+  Widget _buildClubRow(BuildContext context, Map<String, dynamic> team) {
     final isCurrentTeam = team['teamId'] == currentTeamId;
     final textStyle = Body2.style.copyWith(
       color: isCurrentTeam ? Colors.white : Colors.white54,
@@ -336,14 +337,14 @@ class StandingTable extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Image.network(
-                    team['logo'],
-                    width: 20,
-                    height: 20,
-                    errorBuilder: (_, __, ___) => Image.asset(
-                      randomTeamLogo(),
+                  GestureDetector(
+                    onTap: () => context.push('/team/${team['teamId']}'),
+                    child: Image.network(
+                      team['logo'],
                       width: 20,
                       height: 20,
+                      errorBuilder: (_, __, ___) =>
+                          teamLogoFallback(team['teamId'] as int, size: 20),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -490,7 +491,7 @@ class XgTable extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildClubColumn(),
+            _buildClubColumn(context),
             Container(width: 1, color: Colors.black),
             Expanded(child: _buildStatsSide()),
           ],
@@ -499,7 +500,7 @@ class XgTable extends StatelessWidget {
     );
   }
 
-  Widget _buildClubColumn() {
+  Widget _buildClubColumn(BuildContext context) {
     return Container(
       color: const Color(0xFF1E1E1E),
       child: Column(
@@ -507,7 +508,7 @@ class XgTable extends StatelessWidget {
         children: [
           _buildClubHeader(),
           const SizedBox(height: 24),
-          ...standings.map(_buildClubRow),
+          ...standings.map((team) => _buildClubRow(context, team)),
           const SizedBox(height: 24),
         ],
       ),
@@ -524,7 +525,7 @@ class XgTable extends StatelessWidget {
     );
   }
 
-  Widget _buildClubRow(Map<String, dynamic> team) {
+  Widget _buildClubRow(BuildContext context, Map<String, dynamic> team) {
     final isCurrentTeam = team['teamId'] == currentTeamId;
     final textStyle = Body2.style.copyWith(
       color: isCurrentTeam ? Colors.white : Colors.white54,
@@ -558,14 +559,14 @@ class XgTable extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Image.network(
-                    team['logo'],
-                    width: 20,
-                    height: 20,
-                    errorBuilder: (_, __, ___) => Image.asset(
-                      randomTeamLogo(),
+                  GestureDetector(
+                    onTap: () => context.push('/team/${team['teamId']}'),
+                    child: Image.network(
+                      team['logo'],
                       width: 20,
                       height: 20,
+                      errorBuilder: (_, __, ___) =>
+                          teamLogoFallback(team['teamId'] as int, size: 20),
                     ),
                   ),
                   const SizedBox(width: 12),

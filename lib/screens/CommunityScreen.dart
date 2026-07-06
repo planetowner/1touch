@@ -5,6 +5,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/All.dart';
 
@@ -46,11 +47,7 @@ class _CommunityState extends State<Community>
   void initState() {
     super.initState();
 
-    _team = mockTeamById(widget.teamId);
-    _isLive = _hasLiveFixture(widget.teamId);
-    _followerCount = mockUserFollowingTeams
-        .where((f) => f.teamId == widget.teamId)
-        .length;
+    _loadTeam();
 
     _scrollController = ScrollController()
       ..addListener(() {
@@ -60,6 +57,25 @@ class _CommunityState extends State<Community>
       });
 
     _tabController = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void didUpdateWidget(Community oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The favorite team can change while this screen stays alive (its branch
+    // in the bottom-nav shell is kept in memory), so re-resolve when the
+    // parent route hands us a different teamId instead of only on first load.
+    if (widget.teamId != oldWidget.teamId) {
+      setState(_loadTeam);
+    }
+  }
+
+  void _loadTeam() {
+    _team = mockTeamById(widget.teamId);
+    _isLive = _hasLiveFixture(widget.teamId);
+    _followerCount = mockUserFollowingTeams
+        .where((f) => f.teamId == widget.teamId)
+        .length;
   }
 
   @override
@@ -164,19 +180,18 @@ class _CommunityState extends State<Community>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _team.imagePath != null
-                          ? Image.network(
-                        _team.imagePath!,
-                        height: 52,
-                        width: 52,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'TeamLogos/Barcelona.png',
-                          width: 52,
+                      GestureDetector(
+                        onTap: () => context.push('/team/${_team.teamId}'),
+                        child: _team.imagePath != null
+                            ? Image.network(
+                          _team.imagePath!,
                           height: 52,
-                          fit: BoxFit.cover,
+                          width: 52,
+                          errorBuilder: (_, __, ___) =>
+                              teamLogoFallback(_team.teamId, size: 52),
                         )
-                      )
-                          : const Icon(Icons.shield, color: Colors.white54, size: 52),
+                            : const Icon(Icons.shield, color: Colors.white54, size: 52),
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(

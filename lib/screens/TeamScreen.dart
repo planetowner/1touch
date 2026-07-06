@@ -86,6 +86,18 @@ class _TeamScreenState extends State<TeamScreen>
     // fetchTeamData(); // real API
   }
 
+  @override
+  void didUpdateWidget(TeamScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // This screen's State is reused across team switches (the Team-tab
+    // branch stays alive in the bottom-nav shell), so reload instead of
+    // only loading once in initState — otherwise it keeps showing whichever
+    // team was loaded first, forever.
+    if (widget.teamId != oldWidget.teamId) {
+      loadMockData();
+    }
+  }
+
   void loadMockData() {
     // Look up team from mock data
     final mockTeam = mockTeams.where((t) => t.teamId == widget.teamId).firstOrNull;
@@ -217,11 +229,13 @@ class _TeamScreenState extends State<TeamScreen>
                   padding: const EdgeInsets.only(left: 8, top: 30),
                   child: Row(
                     children: [
-                      Image.network(
-                        team?['logo'],
-                        height: 52, width: 53, fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'TeamLogos/Barcelona.png', height: 52, width: 53,
+                      GestureDetector(
+                        onTap: () => context.push('/team/${team!['id']}'),
+                        child: Image.network(
+                          team?['logo'],
+                          height: 52, width: 53, fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) =>
+                              teamLogoFallback(team!['id'] as int, size: 52),
                         ),
                       ),
                       const SizedBox(width: 16),

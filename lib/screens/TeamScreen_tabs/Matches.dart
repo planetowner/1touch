@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/features/helper.dart';
 
 class MatchesTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -30,6 +31,17 @@ class _MatchesTabState extends State<MatchesTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToLiveSection();
     });
+  }
+
+  @override
+  void didUpdateWidget(MatchesTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // This tab's State is reused across team switches (the Team-tab branch
+    // stays alive in the bottom-nav shell), so reload instead of only
+    // loading once in initState.
+    if (widget.team?['id'] != oldWidget.team?['id']) {
+      setState(_loadFixtures);
+    }
   }
 
   void _loadFixtures() {
@@ -142,8 +154,7 @@ class _MatchesTabState extends State<MatchesTab> {
                   home.imagePath ?? '',
                   width: 32, height: 32,
                   errorBuilder: (_, __, ___) =>
-                      Image.asset(
-                          'TeamLogos/Barcelona.png', width: 32, height: 32),
+                      teamLogoFallback(home.teamId, size: 32),
                 ),
                 const SizedBox(width: 10),
                 Text(home.shortCode ?? home.name, style: Heading5.style),
@@ -176,8 +187,7 @@ class _MatchesTabState extends State<MatchesTab> {
                   away.imagePath ?? '',
                   width: 32, height: 32,
                   errorBuilder: (_, __, ___) =>
-                      Image.asset(
-                          'TeamLogos/RealMadrid.png', width: 32, height: 32),
+                      teamLogoFallback(away.teamId, size: 32),
                 ),
               ],
             ),

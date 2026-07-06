@@ -1,19 +1,72 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import "package:onetouch/core/stylesheet_dark.dart";
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/mock_data.dart';
 
-const _fallbackLogos = [
-  'TeamLogos/RealMadrid.png',
-  'TeamLogos/AcMilan.png',
-  'TeamLogos/Liverpool.png',
-  'TeamLogos/AtleticoMadrid.png',
-];
+// Maps a team's id to its local crest file in TeamLogos/, used as the
+// fallback when the network image fails to load. Filenames don't follow a
+// clean rule from `name`/`shortCode` (mixed casing, missing spaces, accents),
+// so this is hand-built from what's actually sitting in the asset folder.
+const _teamLogoFiles = <int, String>{
+  // Premier League
+  14: 'ManCity', 15: 'ManUtd', 10: 'Liverpool', 9: 'Arsenal', 5: 'Chelsea',
+  6: 'Tottenham', 19: 'NewCastle', 7: 'AstonVilla',
+  // La Liga
+  83: 'Barcelona', 87: 'AtleticoMadrid', 86: 'RealMadrid', 90: 'Sevilla',
+  92: 'Villarreal', 100: 'Valencia', 95: 'AthleticClub', 89: 'RealBetis',
+  94: 'Real Sociedad', 97: 'Osasuna', 98: 'Mallorca', 88: 'Getafe',
+  96: 'CeltaVigo', 728: 'RayoVallecano', 546: 'Girona',
+  715: 'DeportivoAlavés', 91: 'Espanyol',
+  // 332 (CD Leganes), 99 (Real Valladolid), 399 (Las Palmas): relegated from
+  // La Liga and have no crest in the asset folder yet — `teamLogoAsset`
+  // returns null for these and callers fall back to a generic shield icon.
+  // Serie A
+  498: 'InterMilan', 503: 'AcMilan', 506: 'Juventus', 505: 'Napoli',
+  512: 'Lazio', 517: 'AsRoma',
+  // Bundesliga
+  183: 'BayernMunich', 174: 'BorussiaDortmund', 182: 'BayerLeverkusen',
+  185: 'RbLeipzig', 181: 'Wolfsburg', 176: 'Stuttgart',
+  // Ligue 1
+  583: 'ParisSaintGermain', 574: 'OlympiqueLyon', 576: 'Marseille',
+  580: 'AsMonaco', 578: 'Nice', 575: 'Lille',
+};
 
-String randomTeamLogo() => _fallbackLogos[Random().nextInt(_fallbackLogos.length)];
+/// Local crest asset for [teamId] to use when the network image fails to
+/// load. Returns null if there's no matching asset for this team.
+String? teamLogoAsset(int teamId) {
+  final file = _teamLogoFiles[teamId];
+  return file == null ? null : 'TeamLogos/$file.png';
+}
+
+/// Image.network errorBuilder fallback: the team's local crest if we have
+/// one, otherwise a generic shield icon rather than guessing wrong.
+Widget teamLogoFallback(int teamId, {double size = 32}) {
+  final asset = teamLogoAsset(teamId);
+  if (asset == null) {
+    return Icon(Icons.shield, color: Colors.white54, size: size);
+  }
+  return Image.asset(asset, width: size, height: size, fit: BoxFit.contain);
+}
+
+// Local crests for the Big 5 domestic leagues, used as the errorBuilder
+// fallback when a league's network logo fails to load. No local asset
+// exists for UCL/Europa/cups, so those fall back to a generic icon.
+const _leagueLogoFiles = <int, String>{
+  8: 'assets/epl.png',
+  82: 'assets/laliga.png',
+  301: 'assets/seriea.png',
+  384: 'assets/bundesliga.png',
+  564: 'assets/league1.png',
+};
+
+Widget leagueLogoFallback(int leagueId, {double size = 24}) {
+  final asset = _leagueLogoFiles[leagueId];
+  if (asset == null) {
+    return Icon(Icons.shield, color: Colors.white54, size: size);
+  }
+  return Image.asset(asset, width: size, height: size, fit: BoxFit.contain);
+}
 
 // =============================================================================
 // UTILITIES & HELPERS
@@ -85,6 +138,7 @@ class MatchCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _TeamDisplay(
+                  teamId: homeTeam.teamId,
                   teamName: homeTeam.name,
                   teamLogo: homeTeam.imagePath ?? '',
                 ),
@@ -94,6 +148,7 @@ class MatchCard extends StatelessWidget {
               const SizedBox(width: 24),
               Expanded(
                 child: _TeamDisplay(
+                  teamId: awayTeam.teamId,
                   teamName: awayTeam.name,
                   teamLogo: awayTeam.imagePath ?? '',
                 ),
@@ -108,6 +163,8 @@ class MatchCard extends StatelessWidget {
 
 class MatchCard2 extends StatelessWidget {
   final String date, venue, team1shortname, team1Logo, team2shortname, team2Logo;
+  final int team1Id;
+  final int team2Id;
   final int homeScore;
   final int awayScore;
 
@@ -117,8 +174,10 @@ class MatchCard2 extends StatelessWidget {
     required this.venue,
     required this.team1shortname,
     required this.team1Logo,
+    required this.team1Id,
     required this.team2shortname,
     required this.team2Logo,
+    required this.team2Id,
     required this.homeScore,
     required this.awayScore,
   });
@@ -145,6 +204,7 @@ class MatchCard2 extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _TeamDisplay2(
+                      teamId: team1Id,
                       teamName: team1shortname,
                       teamLogo: team1Logo,
                     ),
@@ -158,6 +218,7 @@ class MatchCard2 extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _TeamDisplay2(
+                      teamId: team2Id,
                       teamName: team2shortname,
                       teamLogo: team2Logo,
                     ),
@@ -301,8 +362,9 @@ class SearchMatchCard extends StatelessWidget {
 // =============================================================================
 
 class _TeamDisplay extends StatelessWidget {
+  final int teamId;
   final String teamName, teamLogo;
-  const _TeamDisplay({required this.teamName, required this.teamLogo});
+  const _TeamDisplay({required this.teamId, required this.teamName, required this.teamLogo});
 
   @override
   Widget build(BuildContext context) {
@@ -315,12 +377,7 @@ class _TeamDisplay extends StatelessWidget {
             width: 72,
             height: 72,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                Image.asset(
-                  'TeamLogos/Barcelona.png',
-                  height: 72,
-                  width: 72,
-                ),
+            errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 72),
           ),
         const SizedBox(height: 8),
         Text(teamName, textAlign: TextAlign.center, style: Eyebrow.style),
@@ -330,8 +387,9 @@ class _TeamDisplay extends StatelessWidget {
 }
 
 class _TeamDisplay2 extends StatelessWidget {
+  final int teamId;
   final String teamName, teamLogo;
-  const _TeamDisplay2({required this.teamName, required this.teamLogo});
+  const _TeamDisplay2({required this.teamId, required this.teamName, required this.teamLogo});
 
   @override
   Widget build(BuildContext context) {
@@ -342,7 +400,7 @@ class _TeamDisplay2 extends StatelessWidget {
           teamLogo,
           width: 48,
           height: 48,
-          errorBuilder: (_, __, ___) => Image.asset(randomTeamLogo(), height: 72, width: 72),
+          errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 48),
         ),
         const SizedBox(height: 8),
         Text(

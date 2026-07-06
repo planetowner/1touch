@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../core/stylesheet_dark.dart';
+import '../data/favorite_team.dart';
 import '../data/teamdata.dart';
 import '../models/fixture.dart';
 import '../models/mock_data.dart';
@@ -41,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _reloadWithFavorite(int newFavoriteId) {
     _activeFavoriteTeamId = newFavoriteId;
+    FavoriteTeam.id.value = newFavoriteId;
 
     final followingIds = followingTeamIds(1001);
     final ordered = [

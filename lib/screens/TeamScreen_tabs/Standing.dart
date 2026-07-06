@@ -39,6 +39,25 @@ class _StandingTabState extends State<StandingTab> {
   void initState() {
     super.initState();
 
+    _setDefaultLeagueAndSeason();
+    _loadData();
+
+    _horizontalScrollController.addListener(_handleHorizontalScroll);
+  }
+
+  @override
+  void didUpdateWidget(StandingTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // This tab's State is reused across team switches (the Team-tab branch
+    // stays alive in the bottom-nav shell), so redo the team-based setup
+    // instead of only doing it once in initState.
+    if (widget.team?['id'] != oldWidget.team?['id']) {
+      _setDefaultLeagueAndSeason();
+      _loadData();
+    }
+  }
+
+  void _setDefaultLeagueAndSeason() {
     currentTeamId = widget.team?['id'] as int?;
     final fixtures = currentTeamId != null
         ? fixturesByTeam(currentTeamId!)
@@ -63,10 +82,6 @@ class _StandingTabState extends State<StandingTab> {
 
     selectedLeagueId = leagueId;
     selectedSeasonId = seasonId;
-
-    _loadData();
-
-    _horizontalScrollController.addListener(_handleHorizontalScroll);
   }
 
   @override

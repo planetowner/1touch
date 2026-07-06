@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/features/betting_widgets.dart';
+import 'package:onetouch/features/helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class _StandingRow {
@@ -98,7 +100,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildTeamBlock(home.shortCode ?? home.name, home.imagePath ?? ''),
+        _buildTeamBlock(home.shortCode ?? home.name, home.imagePath ?? '', home.teamId),
         Column(
           children: [
             Text(date, style: Body2.style),
@@ -119,19 +121,26 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             Text('Venue Name', style: Body2.style),
           ],
         ),
-        _buildTeamBlock(away.shortCode ?? away.name, away.imagePath ?? ''),
+        _buildTeamBlock(away.shortCode ?? away.name, away.imagePath ?? '', away.teamId),
       ],
     );
   }
 
-  Widget _buildTeamBlock(String name, String logoPath) {
+  Widget _buildTeamBlock(String name, String logoPath, int teamId) {
     return Column(
       children: [
-        Image.network(
-          logoPath,
-          width: 72,
-          height: 72,
-          errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 72, height: 72),
+        GestureDetector(
+          // The match screen sits on the root navigator (see main.dart's
+          // '/match/:matchId'), but '/team/:id' belongs to the bottom-nav
+          // shell's own navigator — push() would land there invisibly,
+          // behind this screen. go() replaces the location so it surfaces.
+          onTap: () => context.go('/team/$teamId'),
+          child: Image.network(
+            logoPath,
+            width: 72,
+            height: 72,
+            errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 72),
+          ),
         ),
         const SizedBox(height: 4),
         Text(name, style: Body1.style),
@@ -291,7 +300,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             children: [
               Row(
                 children: [
-                  _buildSimpleTeamCol(home.shortCode ?? home.name, home.imagePath ?? ''),
+                  _buildSimpleTeamCol(home.shortCode ?? home.name, home.imagePath ?? '', home.teamId),
                   const SizedBox(width: 16),
                   _buildScoreBox(h2h.homeScore?.toString() ?? '-'),
                 ],
@@ -306,7 +315,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 children: [
                   _buildScoreBox(h2h.awayScore?.toString() ?? '-'),
                   const SizedBox(width: 16),
-                  _buildSimpleTeamCol(away.shortCode ?? away.name, away.imagePath ?? ''),
+                  _buildSimpleTeamCol(away.shortCode ?? away.name, away.imagePath ?? '', away.teamId),
                 ],
               )
             ],
@@ -316,12 +325,15 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     );
   }
 
-  Widget _buildSimpleTeamCol(String name, String asset) {
+  Widget _buildSimpleTeamCol(String name, String asset, int teamId) {
     return Column(
       children: [
-        Image.asset(
-            asset, width: 48, height: 48,
-        errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 48, height: 48),
+        GestureDetector(
+          onTap: () => context.go('/team/$teamId'),
+          child: Image.network(
+              asset, width: 48, height: 48,
+          errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 48),
+          ),
         ),
         const SizedBox(height: 4),
         Text(name, style: Body2.style),

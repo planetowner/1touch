@@ -77,8 +77,10 @@ class _FixturesState extends State<Fixtures> {
                         venue: '',
                         team1shortname: home.shortCode ?? home.name,
                         team1Logo: home.imagePath ?? '',
+                        team1Id: home.teamId,
                         team2shortname: away.shortCode ?? away.name,
                         team2Logo: away.imagePath ?? '',
+                        team2Id: away.teamId,
                         homeScore: lastMatch.homeScore ?? 0,
                         awayScore: lastMatch.awayScore ?? 0,
                       );
@@ -114,22 +116,49 @@ class _StandingState extends State<Standing> {
 
   @override
   Widget build(BuildContext context) {
-    // Resolve team and leagueId from widget.teams
-    int? leagueId;
     int? currentTeamId;
     if (widget.teams is Map<String, dynamic>) {
-      final map = widget.teams as Map<String, dynamic>;
-      currentTeamId = map['id'] as int?;
-      final nextMatch = map['next_match'] as Fixture?;
-      final lastMatch = map['last_match'] as Fixture?;
-      leagueId = nextMatch?.leagueId ?? lastMatch?.leagueId;
+      currentTeamId = (widget.teams as Map<String, dynamic>)['id'] as int?;
     }
+    if (currentTeamId == null) return const SizedBox.shrink();
 
-    if (leagueId == null) return const SizedBox.shrink();
+    // Every competition this team currently has fixtures in — domestic
+    // league first, then UCL/Europa if they've qualified for one. Each gets
+    // its own card; swipe sideways to see the next, same as team picking.
+    final leagueIds = fixturesByTeam(currentTeamId)
+        .map((f) => f.leagueId)
+        .toSet()
+        .where((id) => standingsByLeague(id).isNotEmpty)
+        .toList()
+      ..sort((a, b) {
+        final aIsDomestic = leagueNames.containsKey(a);
+        final bIsDomestic = leagueNames.containsKey(b);
+        if (aIsDomestic != bIsDomestic) return aIsDomestic ? -1 : 1;
+        return a.compareTo(b);
+      });
 
-    final leagueName = leagueNames[leagueId] ?? 'League';
+    if (leagueIds.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (int i = 0; i < leagueIds.length; i++)
+              _buildStandingCard(
+                leagueIds[i],
+                rows: _rowsForLeague(leagueIds[i], currentTeamId),
+                isFirst: i == 0,
+                isLast: i == leagueIds.length - 1,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _rowsForLeague(int leagueId, int? currentTeamId) {
     final standings = standingsByLeague(leagueId);
-
     final allRows = standings.map((s) => {
       'rank': s.position,
       'team': mockTeamById(s.teamId).shortCode ?? mockTeamById(s.teamId).name,
@@ -141,23 +170,30 @@ class _StandingState extends State<Standing> {
     }).toList();
 
     final currentIndex = allRows.indexWhere((r) => r['hl'] == true);
-    final start = (currentIndex - 2).clamp(0, allRows.length);
-    final end   = (currentIndex + 3).clamp(0, allRows.length);
-    final rows  = currentIndex == -1 ? allRows.take(5).toList() : allRows.sublist(start, end);
+    if (currentIndex == -1) return allRows.take(3).toList();
 
-    return SizedBox(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildStandingCard(leagueName, rows: rows, isFirst: true, isLast: true),
-          ],
-        ),
-      ),
-    );
+    // Slide the 3-row window so it always shows 3 rows (not just clamps each
+    // edge independently) — otherwise a team near the top/bottom of a
+    // smaller competition (e.g. a 12-team UCL table) gets a shorter window
+    // than a team in the middle of a 20-team domestic league, making the
+    // two cards different heights.
+    const windowSize = 3;
+    var start = currentIndex - 1;
+    var end = start + windowSize;
+    if (start < 0) {
+      end -= start;
+      start = 0;
+    }
+    if (end > allRows.length) {
+      start -= (end - allRows.length);
+      end = allRows.length;
+    }
+    start = start.clamp(0, allRows.length);
+    return allRows.sublist(start, end);
   }
 
-  Widget _buildStandingCard(String leagueName, {required List<Map<String, dynamic>> rows, required bool isFirst, required bool isLast}) {
+  Widget _buildStandingCard(int leagueId, {required List<Map<String, dynamic>> rows, required bool isFirst, required bool isLast}) {
+    final league = mockLeagueById(leagueId);
     return Padding(
       padding: EdgeInsets.only(
         left: isFirst ? 24 : 0,
@@ -186,13 +222,22 @@ class _StandingState extends State<Standing> {
                     // league title line
                     Row(
                       children: [
-                        Image.asset(
-                          'assets/laliga.png',
+                        Image.network(
+                          league.imagePath ?? '',
                           width: 24,
                           height: 24,
+                          errorBuilder: (_, __, ___) =>
+                              leagueLogoFallback(leagueId, size: 24),
                         ),
                         const SizedBox(width: 10),
-                        Text(leagueName, style: Heading4.style),
+                        Expanded(
+                          child: Text(
+                            league.name,
+                            style: Heading4.style,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -265,7 +310,12 @@ class _StandingState extends State<Standing> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(r["team"], overflow: TextOverflow.ellipsis, style: TextStyle(color: c, fontWeight: w)),
+              child: Text(
+                r["team"],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: c, fontWeight: w),
+              ),
             ),
             const SizedBox.shrink(),
             Padding(
@@ -314,6 +364,23 @@ class BestXI extends StatelessWidget {
 
     if (players.isEmpty) return const SizedBox.shrink();
 
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: BestElevenPitch(players: players),
+    );
+  }
+}
+
+// Pitch + player-dot rendering for a best-eleven lineup, shared by the Team
+// Overview tab (BestXI, above) and the Analysis tab's formation picker so
+// both render from the exact same widget rather than near-duplicate UIs.
+class BestElevenPitch extends StatelessWidget {
+  final List<BestElevenPlayer> players;
+  const BestElevenPitch({super.key, required this.players});
+
+  @override
+  Widget build(BuildContext context) {
+    if (players.isEmpty) return const SizedBox.shrink();
 
     final Map<int, List<BestElevenPlayer>> byRow = {};
     for (final p in players) {
@@ -331,42 +398,33 @@ class BestXI extends StatelessWidget {
     }
     // Row keys descending → attack at top, GK at bottom
     final rowKeys = byRow.keys.toList()..sort((a, b) => b.compareTo(a));
-    final formationLabel = players.first.formation; // e.g. '4-3-3'
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Material(
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          width: double.infinity,
-          decoration: const BoxDecoration(color: Color(0xFF3D3D3D)),
-          child: Column(
-            children: [
-              // Formation
-              // Padding(
-              //   padding: const EdgeInsets.only(top: 16, bottom: 4),
-              //   // child: Text(formationLabel, style: Body2.style),
-              // ),
-              CustomPaint(
-                painter: _HalfCirclePainter(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: rowKeys.map((key) {
-                      final rowPlayers = byRow[key]!;
-                      return _BestXIRow(
-                        players: rowPlayers,
-                        isDefRow: key == rowKeys.last, // DEF row gets side-back offset
-                      );
-                    }).toList(),
-                  ),
+    return Material(
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(color: Color(0xFF3D3D3D)),
+        child: Column(
+          children: [
+            CustomPaint(
+              painter: _HalfCirclePainter(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: rowKeys.map((key) {
+                    final rowPlayers = byRow[key]!;
+                    return _BestXIRow(
+                      players: rowPlayers,
+                      isDefRow: key == rowKeys.last, // DEF row gets side-back offset
+                    );
+                  }).toList(),
                 ),
               ),
-              const SizedBox(height: 12),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+          ],
         ),
       ),
     );

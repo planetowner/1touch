@@ -5,6 +5,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/PlayerScreenFeatures.dart';
 import 'package:onetouch/models/mock_data.dart';
 
+import '../data/favorite_team.dart';
 import '../data/playerdata.dart';
 
 class Players extends StatefulWidget {
@@ -39,16 +40,22 @@ class _PlayersState extends State<Players> {
         });
       });
 
-    final favoriteTeamId = mockUserProfiles
-        .firstWhere((p) => p.userId == 1001)
-        .favoriteTeamId;
-    if (favoriteTeamId != null) {
-      _teamColor = Color(mockTeamById(favoriteTeamId).primaryColor);
-    }
+    _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    // This tab stays alive in the bottom-nav shell, so listen for favorite
+    // team switches made elsewhere (e.g. HomeScreen) instead of only
+    // resolving the color once.
+    FavoriteTeam.id.addListener(_handleFavoriteTeamChanged);
+  }
+
+  void _handleFavoriteTeamChanged() {
+    setState(() {
+      _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    });
   }
 
   @override
   void dispose() {
+    FavoriteTeam.id.removeListener(_handleFavoriteTeamChanged);
     _scrollController.dispose();
     super.dispose();
   }

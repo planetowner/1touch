@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:intl/intl.dart';
+import 'package:onetouch/features/helper.dart';
 
 class H2HTab extends StatefulWidget {
   final Fixture fixture;
@@ -14,20 +16,33 @@ class H2HTab extends StatefulWidget {
 }
 
 class _H2HTabState extends State<H2HTab> {
-
   int _selectedMatches = 5;
   final List<int> _matchOptions = [5, 10, 20];
+
+  // "AGAINST" means the opponent of the team the user actually follows, not
+  // just whichever side happens to be away. If neither team in this fixture
+  // is followed, there's no "my team" to take the perspective of, so it
+  // falls back to the away team (i.e. against the home team).
+  int get _againstTeamId {
+    final homeId = widget.fixture.homeTeamId;
+    final awayId = widget.fixture.awayTeamId;
+    final following = followingTeamIds(1001);
+    if (following.contains(homeId)) return awayId;
+    if (following.contains(awayId)) return homeId;
+    return awayId;
+  }
 
   Widget build(BuildContext context) {
     final homeId = widget.fixture.homeTeamId;
     final awayId = widget.fixture.awayTeamId;
 
     // All past H2H fixtures between these two teams
-    final allH2H = mockFixtures.where((f) =>
-    f.status == FixtureStatus.past &&
-        ((f.homeTeamId == homeId && f.awayTeamId == awayId) ||
-            (f.homeTeamId == awayId && f.awayTeamId == homeId))
-    ).toList()
+    final allH2H = mockFixtures
+        .where((f) =>
+            f.status == FixtureStatus.past &&
+            ((f.homeTeamId == homeId && f.awayTeamId == awayId) ||
+                (f.homeTeamId == awayId && f.awayTeamId == homeId)))
+        .toList()
       ..sort((a, b) => b.startingAt.compareTo(a.startingAt)); // newest first
 
     final h2hMatches = allH2H.take(_selectedMatches).toList();
@@ -70,6 +85,8 @@ class _H2HTabState extends State<H2HTab> {
               away.shortCode ?? away.name,
               home.imagePath ?? '',
               away.imagePath ?? '',
+              home.teamId,
+              away.teamId,
               f.homeScore?.toString() ?? '-',
               f.awayScore?.toString() ?? '-',
               '${league.name} · ${f.roundName}',
@@ -138,12 +155,18 @@ class _H2HTabState extends State<H2HTab> {
             height: 40,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white,
+              color: Colors.transparent,
             ),
-            child: Image.network(
-                    mockTeamById(widget.fixture.awayTeamId).imagePath ?? '',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Image.asset('TeamLogos/RealMadrid.png', fit: BoxFit.contain),
+            child: GestureDetector(
+              // Match screen is on the root navigator; '/team/:id' is on the
+              // shell's navigator. go() (not push()) so it actually surfaces.
+              onTap: () => context.go('/team/$_againstTeamId'),
+              child: Image.network(
+                mockTeamById(_againstTeamId).imagePath ?? '',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) =>
+                    teamLogoFallback(_againstTeamId, size: 40),
+              ),
             ),
           )
         ],
@@ -191,7 +214,7 @@ class _H2HTabState extends State<H2HTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-            'BETS',
+          'BETS',
           style: Body2_b.style,
         ),
         const SizedBox(height: 16),
@@ -255,8 +278,8 @@ class _H2HTabState extends State<H2HTab> {
                 color: isWhite
                     ? Colors.white
                     : i == 0
-                    ? const Color(0xFFFF5B5B)
-                    : const Color(0xFF272828),
+                        ? const Color(0xFFFF5B5B)
+                        : const Color(0xFF272828),
               ),
               alignment: Alignment.center,
               child: Row(
@@ -265,12 +288,14 @@ class _H2HTabState extends State<H2HTab> {
                   Text(
                     '$value%',
                     style: Body2_b.style.copyWith(
-                      color: isWhite ? Colors.black : null, // If false, 'null' keeps the default Body2_b color
+                      color: isWhite
+                          ? Colors.black
+                          : null, // If false, 'null' keeps the default Body2_b color
                     ),
                   ),
-
                   if (i == 0 && showCheckOnFirst)
-                    const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                    const Icon(Icons.check_circle,
+                        color: Colors.white, size: 20),
                 ],
               ),
             ),
@@ -280,8 +305,16 @@ class _H2HTabState extends State<H2HTab> {
     );
   }
 
-  Widget _buildPastMatchCard(String teamA, String teamB, String logoA,
-      String logoB, String homeScore, String awayScore, String league) {
+  Widget _buildPastMatchCard(
+      String teamA,
+      String teamB,
+      String logoA,
+      String logoB,
+      int idA,
+      int idB,
+      String homeScore,
+      String awayScore,
+      String league) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -293,11 +326,17 @@ class _H2HTabState extends State<H2HTab> {
         children: [
           Row(
             children: [
-              ClipOval(
-                child: Image.network(
-                  logoA,
-                  width: 32, height: 32, fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Image.asset('TeamLogos/Barcelona.png', width: 32, height: 32),
+              GestureDetector(
+                onTap: () => context.go('/team/$idA'),
+                child: ClipOval(
+                  child: Image.network(
+                    logoA,
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                        teamLogoFallback(idA, size: 32),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -309,12 +348,17 @@ class _H2HTabState extends State<H2HTab> {
               const Spacer(),
               Text(teamB, style: Heading5.style),
               const SizedBox(width: 8),
-              ClipOval(
-                child: Image.network(
-                  logoB,
-                  width: 32, height: 32, fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) =>
-                      Image.asset('TeamLogos/RealMadrid.png', width: 32, height: 32),
+              GestureDetector(
+                onTap: () => context.go('/team/$idB'),
+                child: ClipOval(
+                  child: Image.network(
+                    logoB,
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                        teamLogoFallback(idB, size: 32),
+                  ),
                 ),
               ),
             ],

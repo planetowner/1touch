@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,8 +26,10 @@ class _LiveChatTabState extends State<LiveChatTab> {
   User? _firebaseUser;
   String _myUsername = '';
   bool _isInitialized = false;
+  String? _initError;
 
   late DatabaseReference _messagesRef;
+  StreamSubscription<DatabaseEvent>? _messagesSub;
 
   @override
   void initState() {
@@ -34,33 +38,50 @@ class _LiveChatTabState extends State<LiveChatTab> {
   }
 
   Future<void> _initChat() async {
-    // Anonymous Firebase Auth
-    final auth = FirebaseAuth.instance;
-    if (auth.currentUser == null) {
-      await auth.signInAnonymously();
-    }
-    _firebaseUser = auth.currentUser;
-
-    // Assign username
-    _myUsername = await _fetchUsername();
-
-    // Setup RTDB listener
-    _messagesRef = FirebaseDatabase.instance
-        .ref('chats/${widget.matchId}/messages');
-
-    _messagesRef.onChildAdded.listen((event) {
-      final data = event.snapshot.value as Map<dynamic, dynamic>?;
-      if (data == null) return;
-      final msg = ChatMessage.fromSnapshot(event.snapshot.key ?? '', data);
-      if (mounted) {
-        setState(() => _messages.add(msg));
-        _scrollToBottom();
+    try {
+      // Anonymous Firebase Auth
+      final auth = FirebaseAuth.instance;
+      if (auth.currentUser == null) {
+        await auth.signInAnonymously();
       }
-    });
+      _firebaseUser = auth.currentUser;
 
-    if (mounted) {
-      setState(() => _isInitialized = true);
+      // Assign username
+      _myUsername = await _fetchUsername();
+
+      // Setup RTDB listener
+      _messagesRef = FirebaseDatabase.instance
+          .ref('chats/${widget.matchId}/messages');
+
+      // Only replay the most recent messages, and keep the subscription
+      // handle so it can be cancelled when this tab is disposed.
+      _messagesSub =
+          _messagesRef.limitToLast(50).onChildAdded.listen((event) {
+        final data = event.snapshot.value as Map<dynamic, dynamic>?;
+        if (data == null) return;
+        final msg = ChatMessage.fromSnapshot(event.snapshot.key ?? '', data);
+        if (mounted) {
+          setState(() => _messages.add(msg));
+          _scrollToBottom();
+        }
+      });
+
+      if (mounted) {
+        setState(() => _isInitialized = true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _initError = e.toString());
+      }
     }
+  }
+
+  void _retryInit() {
+    setState(() {
+      _initError = null;
+      _isInitialized = false;
+    });
+    _initChat();
   }
 
   Future<String> _fetchUsername() async {
@@ -150,6 +171,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
 
   @override
   void dispose() {
+    _messagesSub?.cancel();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -157,6 +179,41 @@ class _LiveChatTabState extends State<LiveChatTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (_initError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.wifi_off, color: Colors.white54, size: 40),
+              const SizedBox(height: 16),
+              Text('Couldn\'t connect to chat',
+                  style: Body1.style, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Opacity(
+                opacity: 0.5,
+                child: Text(_initError!,
+                    style: Eyebrow.style, textAlign: TextAlign.center),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: _retryInit,
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF3D3D3D),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                ),
+                child: Text('Retry', style: Body2_b.style),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (!_isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
