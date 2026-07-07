@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../data/teamdata.dart';
+import '../models/team_overview.dart';
 import '../models/fixture.dart';
 import '../models/league.dart';
 import '../models/mock_data.dart';
@@ -217,7 +217,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
 }
 
 class MyTeams extends StatelessWidget {
-  final List<Team> teams;
+  final List<TeamOverview> teams;
 
   const MyTeams({super.key, required this.teams});
 

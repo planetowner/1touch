@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
-import 'package:onetouch/data/favorite_team.dart';
+import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/models/user.dart';
 import 'package:onetouch/models/user_profile.dart';

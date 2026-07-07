@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/playerdata.dart';
+import 'package:onetouch/models/playerdata.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/index.dart';
 
 class PlayerCard extends StatefulWidget {

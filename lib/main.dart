@@ -5,8 +5,8 @@ import 'firebase_options.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
-import 'package:onetouch/data/favorite_team.dart';
-import 'package:onetouch/data/playerdata.dart';
+import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/models/playerdata.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens

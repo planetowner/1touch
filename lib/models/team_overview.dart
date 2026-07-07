@@ -1,8 +1,10 @@
 import 'package:onetouch/models/fixture.dart';
 
 
-class Team {
-  // Matches SQL `teams` table: team_id, name, short_code, image_path
+/// UI aggregate for the Home/Team screens: a team plus its derived
+/// standing and next/last fixtures. Distinct from the schema-aligned
+/// [Team] in models/team.dart.
+class TeamOverview {
   final int id;
   final String name;
   final String shortName;
@@ -14,7 +16,7 @@ class Team {
   final Fixture? nextMatch;
   final Fixture? lastMatch;
 
-  Team({
+  TeamOverview({
     required this.id,
     required this.name,
     required this.shortName,
@@ -24,8 +26,8 @@ class Team {
     this.lastMatch,
   });
 
-  factory Team.fromJson(Map<String, dynamic> json) {
-    return Team(
+  factory TeamOverview.fromJson(Map<String, dynamic> json) {
+    return TeamOverview(
       id: json['team_id'] ?? json['id'] ?? 0,
       name: json['name'] ?? 'Unknown',
       shortName: json['short_code'] ?? '',

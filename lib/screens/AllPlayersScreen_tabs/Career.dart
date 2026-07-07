@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/data/playerdata.dart'; // assuming Player model lives here
+import 'package:onetouch/models/playerdata.dart'; // assuming Player model lives here
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 class CareerTab extends StatefulWidget {

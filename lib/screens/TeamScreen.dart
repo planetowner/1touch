@@ -6,7 +6,7 @@ import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/models/fixture.dart';
 import '../models/league.dart';
 import 'TeamScreen_tabs/index.dart';
-import '../data/teamdata.dart';
+import '../models/team_overview.dart';
 
 
 class TeamScreen extends StatefulWidget {
@@ -119,8 +119,8 @@ class _TeamScreenState extends State<TeamScreen>
         ? '$leagueName ${ordinal(standing.position)}'
         : leagueName;
 
-    // Build Team view model
-    final teamObj = Team(
+    // Build team view model
+    final teamObj = TeamOverview(
       id: mockTeam.teamId,
       name: mockTeam.name,
       shortName: mockTeam.shortCode ?? '',

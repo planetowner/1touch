@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/data/playerdata.dart'; // assuming Player model lives here
+import 'package:onetouch/models/playerdata.dart'; // assuming Player model lives here
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'dart:math' show cos, sin, sqrt;
 

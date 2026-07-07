@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../core/stylesheet_dark.dart';
-import '../data/favorite_team.dart';
-import '../data/teamdata.dart';
+import '../core/favorite_team.dart';
+import '../models/team_overview.dart';
 import '../models/fixture.dart';
 import '../models/mock_data.dart';
 import 'package:onetouch/features/index.dart';
@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
 
-  List<Team> myTeam = [];
+  List<TeamOverview> myTeam = [];
   bool isLoading = true;
   Color _teamColor = const Color(0xFFD82457);
   int? _activeFavoriteTeamId;
@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final teams = ordered.map((id) {
       final team = mockTeamById(id);
       final fixtures = fixturesByTeam(id);
-      return Team(
+      return TeamOverview(
         id: team.teamId,
         name: team.name,
         shortName: team.shortCode ?? '',

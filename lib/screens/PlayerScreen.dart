@@ -5,8 +5,8 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/PlayerScreenFeatures.dart';
 import 'package:onetouch/models/mock_data.dart';
 
-import '../data/favorite_team.dart';
-import '../data/playerdata.dart';
+import '../core/favorite_team.dart';
+import '../models/playerdata.dart';
 
 class Players extends StatefulWidget {
   const Players({super.key});
