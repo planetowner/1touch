@@ -213,9 +213,9 @@ class _AttributesSectionState extends State<AttributesSection> {
         RadarChartData(
           radarShape: RadarShape.polygon,
           tickCount: 4,
-          gridBorderData: BorderSide(color: Colors.white.withOpacity(0.30), width: 1),
-          radarBorderData: BorderSide(color: Colors.white.withOpacity(0.30), width: 1),
-          tickBorderData: BorderSide(color: Colors.white.withOpacity(0.30), width: 1),
+          gridBorderData: BorderSide(color: Colors.white.withValues(alpha: 0.30), width: 1),
+          radarBorderData: BorderSide(color: Colors.white.withValues(alpha: 0.30), width: 1),
+          tickBorderData: BorderSide(color: Colors.white.withValues(alpha: 0.30), width: 1),
           ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 0),
 
           getTitle: (index, _) => RadarChartTitle(
@@ -228,7 +228,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           dataSets: [
             // MY TEAM — red
             RadarDataSet(
-              fillColor: const Color(0xFFE8434A).withOpacity(0.3),
+              fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
               borderColor: const Color(0xFFE8434A),
               borderWidth: 2,
               entryRadius: 3,
@@ -239,8 +239,8 @@ class _AttributesSectionState extends State<AttributesSection> {
             // Comparison — white outline
             if (_comparisonScores != null)
               RadarDataSet(
-                fillColor: Colors.white.withOpacity(0.1),
-                borderColor: Colors.white.withOpacity(0.85),
+                fillColor: Colors.white.withValues(alpha: 0.1),
+                borderColor: Colors.white.withValues(alpha: 0.85),
                 borderWidth: 2,
                 entryRadius: 3,
                 dataEntries: _comparisonScores!.radarValues
@@ -511,7 +511,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                               show: true,
                               drawVerticalLine: false,
                               getDrawingHorizontalLine: (value) => FlLine(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha: 0.1),
                                 strokeWidth: 1,
                               ),
                             ),

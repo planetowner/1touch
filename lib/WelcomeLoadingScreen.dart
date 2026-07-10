@@ -73,8 +73,8 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.0),
-                    Colors.black.withOpacity(0.8),
+                    Colors.black.withValues(alpha: 0.0),
+                    Colors.black.withValues(alpha: 0.8),
                     Colors.black,
                   ],
                   // Adjust these stops to control where the fade happens
@@ -147,7 +147,7 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                         "Your setup is complete. Let’s see what\nyour favorites are up to.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 16,
                           height: 1.4, // Line height for readability
                         ),

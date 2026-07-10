@@ -287,7 +287,7 @@ class RadarChartPainter extends CustomPainter {
 
     // --- Grid rings ---
     final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withValues(alpha: 0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -311,7 +311,7 @@ class RadarChartPainter extends CustomPainter {
 
     // --- Axis lines ---
     final axisPaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withValues(alpha: 0.1)
       ..strokeWidth = 1;
 
     for (int i = 0; i < count; i++) {
@@ -406,7 +406,7 @@ class PerformanceChartPainter extends CustomPainter {
 
     // --- Horizontal grid lines ---
     final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
+      ..color = Colors.white.withValues(alpha: 0.08)
       ..strokeWidth = 1;
 
     const double lineGap = 25;
@@ -427,7 +427,7 @@ class PerformanceChartPainter extends CustomPainter {
 
     // --- Dashed vertical line at selected index ---
     final dashedPaint = Paint()
-      ..color = Colors.white.withOpacity(0.4)
+      ..color = Colors.white.withValues(alpha: 0.4)
       ..strokeWidth = 1;
 
     final selectedX = points[selectedIndex].dx;
@@ -483,7 +483,7 @@ class PerformanceChartPainter extends CustomPainter {
         children: [
           TextSpan(
             text: "$selectedLabel   ",
-            style: Eyebrow.style.copyWith(color: Colors.white.withOpacity(0.5),)
+            style: Eyebrow.style.copyWith(color: Colors.white.withValues(alpha: 0.5),)
           ),
           TextSpan(
             text: selectedValue,

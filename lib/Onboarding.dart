@@ -22,7 +22,7 @@ class OnboardingScreen extends StatelessWidget {
       required VoidCallback onTap,
     }) {
       final bgColor =
-          isLight ? Colors.black.withOpacity(0.1): Color(0xFF3D3D3D);
+          isLight ? Colors.black.withValues(alpha: 0.1): Color(0xFF3D3D3D);
 
       return SizedBox(
         width: double.infinity,
@@ -61,7 +61,7 @@ class OnboardingScreen extends StatelessWidget {
 
     // Divider 색상 테마 대응
     final dividerColor =
-        isLight ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.2);
+        isLight ? Colors.black.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.2);
 
     return Scaffold(
       body: SafeArea(

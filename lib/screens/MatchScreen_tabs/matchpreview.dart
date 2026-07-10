@@ -419,7 +419,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 ],
               ),
               const SizedBox(height: 14),
-              Container(height: 1, color: Colors.black.withOpacity(0.40)),
+              Container(height: 1, color: Colors.black.withValues(alpha: 0.40)),
             ],
           ),
         ),

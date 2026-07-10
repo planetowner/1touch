@@ -551,7 +551,7 @@ class _HeaderArea extends StatelessWidget {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: [
-                      p1!.teamColor.withOpacity(0.35),
+                      p1!.teamColor.withValues(alpha: 0.35),
                       Colors.transparent
                     ],
                   ),
@@ -571,7 +571,7 @@ class _HeaderArea extends StatelessWidget {
                     begin: Alignment.centerRight,
                     end: Alignment.centerLeft,
                     colors: [
-                      p2!.teamColor.withOpacity(0.35),
+                      p2!.teamColor.withValues(alpha: 0.35),
                       Colors.transparent
                     ],
                   ),
@@ -717,13 +717,13 @@ class _PlayerPhoto extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      player!.teamColor.withOpacity(0.08),
-                      player!.teamColor.withOpacity(0.20),
+                      player!.teamColor.withValues(alpha: 0.08),
+                      player!.teamColor.withValues(alpha: 0.20),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: player!.teamColor.withOpacity(0.25), width: 1),
+                      color: player!.teamColor.withValues(alpha: 0.25), width: 1),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -823,7 +823,7 @@ class _ComparisonCard extends StatelessWidget {
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                             colors: [
-                              p1.teamColor.withOpacity(0.45),
+                              p1.teamColor.withValues(alpha: 0.45),
                               Colors.transparent
                             ],
                           ),
@@ -837,7 +837,7 @@ class _ComparisonCard extends StatelessWidget {
                             begin: Alignment.centerRight,
                             end: Alignment.centerLeft,
                             colors: [
-                              p2.teamColor.withOpacity(0.45),
+                              p2.teamColor.withValues(alpha: 0.45),
                               Colors.transparent
                             ],
                           ),
@@ -874,7 +874,7 @@ class _ComparisonCard extends StatelessWidget {
                   ),
                   // Name strip
                   Container(
-                    color: Colors.black.withOpacity(0.55),
+                    color: Colors.black.withValues(alpha: 0.55),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     child: Row(
@@ -945,10 +945,10 @@ class _CardAvatar extends StatelessWidget {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: player.teamColor.withOpacity(0.18),
+            color: player.teamColor.withValues(alpha: 0.18),
             shape: BoxShape.circle,
             border: Border.all(
-                color: player.teamColor.withOpacity(0.35), width: 1.5),
+                color: player.teamColor.withValues(alpha: 0.35), width: 1.5),
           ),
           child: Center(
             child: Text(initials,
@@ -1274,12 +1274,12 @@ class _RadarPainter extends CustomPainter {
     final radius = math.min(size.width, size.height) / 2 - 38;
 
     final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.07)
+      ..color = Colors.white.withValues(alpha: 0.07)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
     final axisPaint = Paint()
-      ..color = Colors.white.withOpacity(0.10)
+      ..color = Colors.white.withValues(alpha: 0.10)
       ..strokeWidth = 0.8;
 
     // Background rings
@@ -1296,7 +1296,7 @@ class _RadarPainter extends CustomPainter {
     canvas.drawPath(
       _valueShape(center, radius, values1),
       Paint()
-        ..color = color1.withOpacity(0.22)
+        ..color = color1.withValues(alpha: 0.22)
         ..style = PaintingStyle.fill,
     );
     canvas.drawPath(
@@ -1311,7 +1311,7 @@ class _RadarPainter extends CustomPainter {
     canvas.drawPath(
       _valueShape(center, radius, values2),
       Paint()
-        ..color = color2.withOpacity(0.22)
+        ..color = color2.withValues(alpha: 0.22)
         ..style = PaintingStyle.fill,
     );
     canvas.drawPath(
@@ -1455,7 +1455,7 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
                     leading: CircleAvatar(
-                      backgroundColor: p.teamColor.withOpacity(0.18),
+                      backgroundColor: p.teamColor.withValues(alpha: 0.18),
                       child: Text(
                         p.fullName.split(' ').map((e) => e[0]).take(2).join(),
                         style: TextStyle(
@@ -1555,7 +1555,7 @@ class _SeasonPickerSheet extends StatelessWidget {
                               height: 36,
                               margin: const EdgeInsets.only(right: 10),
                               decoration: BoxDecoration(
-                                color: player.teamColor.withOpacity(0.18),
+                                color: player.teamColor.withValues(alpha: 0.18),
                                 shape: BoxShape.circle,
                               ),
                               child: Center(

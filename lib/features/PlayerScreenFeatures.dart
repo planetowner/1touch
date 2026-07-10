@@ -226,7 +226,7 @@ class FullRankingPopup extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.20),
+                  color: Colors.white.withValues(alpha: 0.20),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -235,7 +235,7 @@ class FullRankingPopup extends StatelessWidget {
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: "Look for players",
-                          hintStyle: Body1.style.copyWith(color: Colors.white.withOpacity(0.5)),
+                          hintStyle: Body1.style.copyWith(color: Colors.white.withValues(alpha: 0.5)),
                           border: InputBorder.none,
                         ),
                         style: const TextStyle(color: Colors.white),

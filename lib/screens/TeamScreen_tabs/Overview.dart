@@ -17,23 +17,23 @@ class OverviewTab extends StatelessWidget {
               const SizedBox(height: 24),
               const SectionHeader(title: "FIXTURE"),
               // Pass the whole team map
-              Container(child: Fixtures(teams: team)),
+              Fixtures(teams: team),
 
               const SizedBox(height: 32),
               const SectionHeader(title: "STANDING"),
-              Container(child: Standing(teams: team)),
+              Standing(teams: team),
 
               const SizedBox(height: 32),
               const SectionHeader(title: "BEST XI"),
-              Container(child: BestXI(teams: team)),
+              BestXI(teams: team),
 
               const SizedBox(height: 32),
               const SectionHeader(title: "INJURY STATUS"),
-              Container(child: InjuryStatus(teams: team)),
+              InjuryStatus(teams: team),
 
               const SizedBox(height: 20),
               const SectionHeader(title: "TRANSFERS"),
-              Container(child: Transfer(teams: team)),
+              Transfer(teams: team),
 
               Padding(
                 padding: const EdgeInsets.all(24),

@@ -2,10 +2,10 @@
 // league_id | name | image_path
 const Map<int, String> leagueNames = {
   8: "Premier League",
-  82: "La Liga",
-  301: "Serie A",
-  384: "Bundesliga",
-  564: "Ligue 1",
+  564: "La Liga",
+  82: "Bundesliga",
+  384: "Serie A",
+  301: "Ligue 1",
 };
 
 class League {

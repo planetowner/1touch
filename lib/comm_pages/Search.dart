@@ -126,7 +126,7 @@ class _SearchContentState extends State<SearchContent> {
                       hintText: "Search...",
                       hintStyle: Body1.style.copyWith(color: Colors.white54),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.12),
+                      fillColor: Colors.white.withValues(alpha: 0.12),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),

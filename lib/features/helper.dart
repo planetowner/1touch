@@ -8,28 +8,29 @@ import 'package:onetouch/models/mock_data.dart';
 // fallback when the network image fails to load. Filenames don't follow a
 // clean rule from `name`/`shortCode` (mixed casing, missing spaces, accents),
 // so this is hand-built from what's actually sitting in the asset folder.
+// Keyed by the real Sportmonks team_id. Only teams whose crest is actually in
+// the asset folder are listed; every other team (most of the 96) has no local
+// crest and falls back to a generic shield icon via `teamLogoAsset` returning
+// null.
 const _teamLogoFiles = <int, String>{
   // Premier League
-  14: 'ManCity', 15: 'ManUtd', 10: 'Liverpool', 9: 'Arsenal', 5: 'Chelsea',
-  6: 'Tottenham', 19: 'NewCastle', 7: 'AstonVilla',
+  9: 'ManCity', 14: 'ManUtd', 8: 'Liverpool', 19: 'Arsenal', 18: 'Chelsea',
+  6: 'Tottenham', 20: 'NewCastle', 15: 'AstonVilla',
   // La Liga
-  83: 'Barcelona', 87: 'AtleticoMadrid', 86: 'RealMadrid', 90: 'Sevilla',
-  92: 'Villarreal', 100: 'Valencia', 95: 'AthleticClub', 89: 'RealBetis',
-  94: 'Real Sociedad', 97: 'Osasuna', 98: 'Mallorca', 88: 'Getafe',
-  96: 'CeltaVigo', 728: 'RayoVallecano', 546: 'Girona',
-  715: 'DeportivoAlavés', 91: 'Espanyol',
-  // 332 (CD Leganes), 99 (Real Valladolid), 399 (Las Palmas): relegated from
-  // La Liga and have no crest in the asset folder yet — `teamLogoAsset`
-  // returns null for these and callers fall back to a generic shield icon.
+  83: 'Barcelona', 7980: 'AtleticoMadrid', 3468: 'RealMadrid', 676: 'Sevilla',
+  3477: 'Villarreal', 214: 'Valencia', 13258: 'AthleticClub', 485: 'RealBetis',
+  594: 'Real Sociedad', 459: 'Osasuna', 645: 'Mallorca', 106: 'Getafe',
+  36: 'CeltaVigo', 377: 'RayoVallecano', 231: 'Girona',
+  2975: 'DeportivoAlavés', 528: 'Espanyol',
   // Serie A
-  498: 'InterMilan', 503: 'AcMilan', 506: 'Juventus', 505: 'Napoli',
-  512: 'Lazio', 517: 'AsRoma',
+  2930: 'InterMilan', 113: 'AcMilan', 625: 'Juventus', 597: 'Napoli',
+  43: 'Lazio', 37: 'AsRoma',
   // Bundesliga
-  183: 'BayernMunich', 174: 'BorussiaDortmund', 182: 'BayerLeverkusen',
-  185: 'RbLeipzig', 181: 'Wolfsburg', 176: 'Stuttgart',
+  503: 'BayernMunich', 68: 'BorussiaDortmund', 3321: 'BayerLeverkusen',
+  277: 'RbLeipzig', 510: 'Wolfsburg', 3319: 'Stuttgart',
   // Ligue 1
-  583: 'ParisSaintGermain', 574: 'OlympiqueLyon', 576: 'Marseille',
-  580: 'AsMonaco', 578: 'Nice', 575: 'Lille',
+  591: 'ParisSaintGermain', 79: 'OlympiqueLyon', 44: 'Marseille',
+  6789: 'AsMonaco', 450: 'Nice', 690: 'Lille',
 };
 
 /// Local crest asset for [teamId] to use when the network image fails to
@@ -54,10 +55,10 @@ Widget teamLogoFallback(int teamId, {double size = 32}) {
 // exists for UCL/Europa/cups, so those fall back to a generic icon.
 const _leagueLogoFiles = <int, String>{
   8: 'assets/epl.png',
-  82: 'assets/laliga.png',
-  301: 'assets/seriea.png',
-  384: 'assets/bundesliga.png',
-  564: 'assets/league1.png',
+  564: 'assets/laliga.png',
+  82: 'assets/bundesliga.png',
+  384: 'assets/seriea.png',
+  301: 'assets/league1.png',
 };
 
 Widget leagueLogoFallback(int leagueId, {double size = 24}) {
