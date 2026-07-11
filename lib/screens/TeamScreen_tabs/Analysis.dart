@@ -21,9 +21,9 @@ class AnalysisTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AttributesSection(team: team),
+          ProbabilitySection(),
           BestElevenSection(team: team),
           CurrentFormSection(),
-          ProbabilitySection(),
         ],
       ),
     );
@@ -206,6 +206,15 @@ class _AttributesSectionState extends State<AttributesSection> {
 
   // ── Radar chart ─────────────────────────────────────────────────────────
 
+  // Fixed frame for the radar's scale. fl_chart derives the chart's center and
+  // radius from the min/max value across ALL datasets, so without a pinned
+  // range MY TEAM's polygon would rescale (and visibly change shape) every time
+  // a different comparison season is picked. Anchoring the floor/ceiling keeps
+  // MY TEAM identical no matter what it's compared to. Attribute values are
+  // clamped to 5-95, so 0..100 gives clean headroom and aligns with tickCount.
+  static const double _radarFloor = 0;
+  static const double _radarCeil = 100;
+
   Widget _buildRadarChart() {
     return SizedBox(
       height: 260,
@@ -247,8 +256,27 @@ class _AttributesSectionState extends State<AttributesSection> {
                     .map((v) => RadarEntry(value: v))
                     .toList(),
               ),
+            // Invisible anchor — pins the scale to a fixed [floor, ceil] range
+            // so the visible polygons never rescale between comparisons.
+            _scaleAnchorDataSet(),
           ],
         ),
+      ),
+    );
+  }
+
+  // Fully transparent dataset carrying one floor value and the rest at the
+  // ceiling, so both minEntry and maxEntry across the chart stay constant.
+  RadarDataSet _scaleAnchorDataSet() {
+    final count = _myScores!.radarValues.length;
+    return RadarDataSet(
+      fillColor: Colors.transparent,
+      borderColor: Colors.transparent,
+      borderWidth: 0,
+      entryRadius: 0,
+      dataEntries: List.generate(
+        count,
+        (i) => RadarEntry(value: i == 0 ? _radarFloor : _radarCeil),
       ),
     );
   }

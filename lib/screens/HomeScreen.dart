@@ -119,7 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final allMatches = myTeam.expand((t) => fixturesByTeam(t.id)).toList()
+    final favoriteTeamId = _activeFavoriteTeamId ?? myTeam.first.id;
+    final favoriteMatches = fixturesByTeam(favoriteTeamId)
       ..sort((a, b) => a.startingAt.compareTo(b.startingAt));
 
     Fixture? liveMatch;
@@ -264,7 +265,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  HardcodedCalendar(allMatches: allMatches),
+                  FixtureCalendar(
+                    allMatches: favoriteMatches,
+                    favoriteTeamId: favoriteTeamId,
+                  ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "HIGHLIGHTS"),
                   MyHighlights(highlights: team),

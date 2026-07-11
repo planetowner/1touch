@@ -11,7 +11,6 @@ class PlayerOverviewTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-
         // Content on top of background
         SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -76,7 +75,12 @@ class PlayerOverviewTab extends StatelessWidget {
       {"label": "Market Value", "value": "5.6M", "icon": null},
       {"label": "Squad Role", "value": "Captain", "icon": null},
       {"label": "Market Value", "value": "5.6M", "icon": null},
-      {"label": "Cost-Effectiveness", "value": "Very Good", "icon": "refresh", "infoOnLabel": true},
+      {
+        "label": "Cost-Effectiveness",
+        "value": "Very Good",
+        "icon": "refresh",
+        "infoOnLabel": true
+      },
     ];
 
     // Split into rows of 3
@@ -105,7 +109,8 @@ class PlayerOverviewTab extends StatelessWidget {
                   final cellIndex = cellEntry.key;
                   final stat = cellEntry.value;
                   final isLast = cellIndex == row.length - 1;
-                  final isWide = row.length == 1 || (row.length == 2 && cellIndex == 1);
+                  final isWide =
+                      row.length == 1 || (row.length == 2 && cellIndex == 1);
 
                   return Expanded(
                     flex: (stat["label"] == "Cost-Effectiveness") ? 2 : 1,
@@ -120,12 +125,14 @@ class PlayerOverviewTab extends StatelessWidget {
                                 children: [
                                   Text(
                                     stat["label"] as String,
-                                    style: Body2.style.copyWith(color: Colors.white54),
+                                    style: Body2.style
+                                        .copyWith(color: Colors.white54),
                                   ),
                                   if (stat["infoOnLabel"] == true)
                                     const Padding(
                                       padding: EdgeInsets.only(left: 4),
-                                      child: Icon(Icons.info_outline, size: 14, color: Colors.white54),
+                                      child: Icon(Icons.info_outline,
+                                          size: 14, color: Colors.white54),
                                     ),
                                 ],
                               ),
@@ -140,7 +147,8 @@ class PlayerOverviewTab extends StatelessWidget {
                                   if (stat["icon"] == "refresh")
                                     const Padding(
                                       padding: EdgeInsets.only(left: 6),
-                                      child: Icon(Icons.refresh, size: 16, color: Colors.white70),
+                                      child: Icon(Icons.refresh,
+                                          size: 16, color: Colors.white70),
                                     ),
                                 ],
                               ),
@@ -193,19 +201,26 @@ class PlayerOverviewTab extends StatelessWidget {
                   children: [
                     Expanded(
                       flex: 3,
-                      child: Text("League", style: Body2.style.copyWith(color: Colors.white54)),
+                      child: Text("League",
+                          style: Body2.style.copyWith(color: Colors.white54)),
                     ),
                     Expanded(
                       flex: 2,
-                      child: Text("MP", textAlign: TextAlign.center, style: Body2.style.copyWith(color: Colors.white54)),
+                      child: Text("MP",
+                          textAlign: TextAlign.center,
+                          style: Body2.style.copyWith(color: Colors.white54)),
                     ),
                     Expanded(
                       flex: 2,
-                      child: Text("WR", textAlign: TextAlign.center, style: Body2.style.copyWith(color: Colors.white54)),
+                      child: Text("WR",
+                          textAlign: TextAlign.center,
+                          style: Body2.style.copyWith(color: Colors.white54)),
                     ),
                     Expanded(
                       flex: 2,
-                      child: Text("Rating", textAlign: TextAlign.right, style: Body2.style.copyWith(color: Colors.white54)),
+                      child: Text("Rating",
+                          textAlign: TextAlign.right,
+                          style: Body2.style.copyWith(color: Colors.white54)),
                     ),
                   ],
                 ),
@@ -228,23 +243,29 @@ class PlayerOverviewTab extends StatelessWidget {
                           ),
                           Expanded(
                             flex: 2,
-                            child: Text(comp["mp"]!, textAlign: TextAlign.center, style: Heading5.style),
+                            child: Text(comp["mp"]!,
+                                textAlign: TextAlign.center,
+                                style: Heading5.style),
                           ),
                           Expanded(
                             flex: 2,
-                            child: Text(comp["wr"]!, textAlign: TextAlign.center, style: Heading5.style),
+                            child: Text(comp["wr"]!,
+                                textAlign: TextAlign.center,
+                                style: Heading5.style),
                           ),
                           Expanded(
                             flex: 2,
                             child: Align(
                               alignment: Alignment.centerRight,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF3D3D3D),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Text(comp["rating"]!, style: Heading5.style),
+                                child: Text(comp["rating"]!,
+                                    style: Heading5.style),
                               ),
                             ),
                           ),
@@ -269,7 +290,7 @@ class PlayerOverviewTab extends StatelessWidget {
         "result": "DEF",
         "score": "0-2",
         "competition": "League / Round",
-        "againstLogo": "assets/placeholder_team.png",
+        "againstLogo": null,
         "stats": [
           {"label": "Goal", "value": "1"},
           {"label": "Assist", "value": "2"},
@@ -281,7 +302,7 @@ class PlayerOverviewTab extends StatelessWidget {
         "result": "DEF",
         "score": "0-2",
         "competition": "League / Round",
-        "againstLogo": "assets/placeholder_team.png",
+        "againstLogo": null,
         "stats": [
           {"label": "Goal", "value": "1"},
           {"label": "Assist", "value": "2"},
@@ -293,7 +314,7 @@ class PlayerOverviewTab extends StatelessWidget {
         "result": "DEF",
         "score": "0-2",
         "competition": "League / Round",
-        "againstLogo": "assets/placeholder_team.png",
+        "againstLogo": null,
         "stats": [
           {"label": "Goal", "value": "1"},
           {"label": "Assist", "value": "2"},
@@ -338,11 +359,19 @@ class PlayerOverviewTab extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: ClipOval(
-                          child: Image.asset(
-                            match["againstLogo"] as String,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const SizedBox(),
-                          ),
+                          child: match["againstLogo"] != null
+                              ? Image.asset(
+                                  match["againstLogo"] as String,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.shield_outlined,
+                                    color: Colors.white54,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.shield_outlined,
+                                  color: Colors.white54,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -364,7 +393,8 @@ class PlayerOverviewTab extends StatelessWidget {
                   Row(
                     children: [
                       // Stat pairs
-                      ...(match["stats"] as List<Map<String, String>>).map((stat) {
+                      ...(match["stats"] as List<Map<String, String>>)
+                          .map((stat) {
                         return Padding(
                           padding: const EdgeInsets.only(right: 12),
                           child: Row(
@@ -372,7 +402,8 @@ class PlayerOverviewTab extends StatelessWidget {
                             children: [
                               Text(
                                 stat["label"]!,
-                                style: Body2.style.copyWith(color: Colors.white54),
+                                style:
+                                    Body2.style.copyWith(color: Colors.white54),
                               ),
                               const SizedBox(width: 6),
                               Container(

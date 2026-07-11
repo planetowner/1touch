@@ -11,7 +11,8 @@ import 'package:fl_chart/fl_chart.dart';
 class _StandingRow {
   final int pos;
   final String name;
-  final String logo;
+  final int teamId;
+  final String? logoUrl;
   final String mp;
   final String w;
   final String d;
@@ -21,7 +22,8 @@ class _StandingRow {
   const _StandingRow({
     required this.pos,
     required this.name,
-    required this.logo,
+    required this.teamId,
+    required this.logoUrl,
     required this.mp,
     required this.w,
     required this.d,
@@ -43,19 +45,29 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   final int userBalance = 1200;
 
   void _openBettingModal() {
+    final homeTeam = mockTeamById(widget.fixture.homeTeamId);
+    final awayTeam = mockTeamById(widget.fixture.awayTeamId);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         // Using the widget from the new file
-        return BettingFlowModal(userBalance: userBalance);
+        return BettingFlowModal(
+          userBalance: userBalance,
+          homeTeam: homeTeam,
+          awayTeam: awayTeam,
+        );
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final homeTeam = mockTeamById(widget.fixture.homeTeamId);
+    final awayTeam = mockTeamById(widget.fixture.awayTeamId);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,6 +88,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           MatchBettingSection(
             userBalance: userBalance,
             onPlaceBet: _openBettingModal,
+            homeTeam: homeTeam,
+            awayTeam: awayTeam,
           ),
 
           const SizedBox(height: 48),
@@ -100,7 +114,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildTeamBlock(home.shortCode ?? home.name, home.imagePath ?? '', home.teamId),
+        _buildTeamBlock(
+            home.shortCode ?? home.name, home.imagePath ?? '', home.teamId),
         Column(
           children: [
             Text(date, style: Body2.style),
@@ -121,7 +136,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             Text('Venue Name', style: Body2.style),
           ],
         ),
-        _buildTeamBlock(away.shortCode ?? away.name, away.imagePath ?? '', away.teamId),
+        _buildTeamBlock(
+            away.shortCode ?? away.name, away.imagePath ?? '', away.teamId),
       ],
     );
   }
@@ -199,7 +215,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
               titlePositionPercentageOffset: 0.15,
 
               dataSets: [
-                // Barcelona
+                // Home team
                 RadarDataSet(
                   fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
                   borderColor: const Color(0xFFE8434A),
@@ -214,7 +230,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                     RadarEntry(value: 65), // Possession
                   ],
                 ),
-                // Girona
+                // Away team
                 RadarDataSet(
                   fillColor: Colors.white.withValues(alpha: 0.1),
                   borderColor: Colors.white.withValues(alpha: 0.85),
@@ -238,9 +254,11 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildLegendDot(const Color(0xFFE8434A), mockTeamById(widget.fixture.homeTeamId).name.toUpperCase()),
+            _buildLegendDot(const Color(0xFFE8434A),
+                mockTeamById(widget.fixture.homeTeamId).name.toUpperCase()),
             const SizedBox(width: 16),
-            _buildLegendDot(Colors.white, mockTeamById(widget.fixture.awayTeamId).name.toUpperCase()),
+            _buildLegendDot(Colors.white,
+                mockTeamById(widget.fixture.awayTeamId).name.toUpperCase()),
           ],
         ),
       ],
@@ -257,10 +275,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: Body2_b.style
-        ),
+        Text(label, style: Body2_b.style),
       ],
     );
   }
@@ -270,11 +285,12 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final awayId = widget.fixture.awayTeamId;
 
     // Most recent past fixture between the two teams
-    final h2h = mockFixtures.where((f) =>
-    f.status == FixtureStatus.past &&
-        ((f.homeTeamId == homeId && f.awayTeamId == awayId) ||
-            (f.homeTeamId == awayId && f.awayTeamId == homeId))
-    ).lastOrNull;
+    final h2h = mockFixtures
+        .where((f) =>
+            f.status == FixtureStatus.past &&
+            ((f.homeTeamId == homeId && f.awayTeamId == awayId) ||
+                (f.homeTeamId == awayId && f.awayTeamId == homeId)))
+        .lastOrNull;
 
     if (h2h == null) return const SizedBox.shrink();
 
@@ -300,7 +316,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             children: [
               Row(
                 children: [
-                  _buildSimpleTeamCol(home.shortCode ?? home.name, home.imagePath ?? '', home.teamId),
+                  _buildSimpleTeamCol(home.shortCode ?? home.name,
+                      home.imagePath ?? '', home.teamId),
                   const SizedBox(width: 16),
                   _buildScoreBox(h2h.homeScore?.toString() ?? '-'),
                 ],
@@ -315,7 +332,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 children: [
                   _buildScoreBox(h2h.awayScore?.toString() ?? '-'),
                   const SizedBox(width: 16),
-                  _buildSimpleTeamCol(away.shortCode ?? away.name, away.imagePath ?? '', away.teamId),
+                  _buildSimpleTeamCol(away.shortCode ?? away.name,
+                      away.imagePath ?? '', away.teamId),
                 ],
               )
             ],
@@ -331,8 +349,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         GestureDetector(
           onTap: () => context.go('/team/$teamId'),
           child: Image.network(
-              asset, width: 48, height: 48,
-          errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 48),
+            asset,
+            width: 48,
+            height: 48,
+            errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 48),
           ),
         ),
         const SizedBox(height: 4),
@@ -344,21 +364,44 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   Widget _buildScoreBox(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+          color: Colors.black, borderRadius: BorderRadius.circular(4)),
       child: Text(text, style: Heading3.style),
     );
   }
 
   Widget _buildStandingTable() {
-    const rows = [
-      _StandingRow(pos: 1,  name: 'Team Name', logo: 'TeamLogos/placeholder.png', mp: '##', w: '##', d: '##', l: '##', highlight: false),
-      _StandingRow(pos: 2,  name: 'Team Name', logo: 'TeamLogos/placeholder.png', mp: '##', w: '##', d: '##', l: '##', highlight: false),
-      _StandingRow(pos: 3,  name: 'Team Name', logo: 'TeamLogos/Barcelona.png',   mp: '##', w: '##', d: '##', l: '##', highlight: true),
-      _StandingRow(pos: 4,  name: 'Team Name', logo: 'TeamLogos/placeholder.png', mp: '##', w: '##', d: '##', l: '##', highlight: false),
-      _StandingRow(pos: 5,  name: 'Team Name', logo: 'TeamLogos/placeholder.png', mp: '##', w: '##', d: '##', l: '##', highlight: false),
-      _StandingRow(pos: 12, name: 'Team Name', logo: 'TeamLogos/Girona.png',       mp: '##', w: '##', d: '##', l: '##', highlight: true),
-    ];
-    const int dividerIndex = 5; // "..." appears before this index
+    final league = mockLeagueById(widget.fixture.leagueId);
+    final standings = standingsByLeague(widget.fixture.leagueId);
+    if (standings.isEmpty) return const SizedBox.shrink();
+
+    final matchTeamIds = {
+      widget.fixture.homeTeamId,
+      widget.fixture.awayTeamId,
+    };
+    final leaders = standings.take(5).toList();
+    final leaderIds = leaders.map((standing) => standing.teamId).toSet();
+    final featured = standings
+        .where((standing) =>
+            matchTeamIds.contains(standing.teamId) &&
+            !leaderIds.contains(standing.teamId))
+        .toList();
+    final visibleStandings = [...leaders, ...featured];
+    final dividerIndex = featured.isEmpty ? -1 : leaders.length;
+    final rows = visibleStandings.map((standing) {
+      final team = mockTeamById(standing.teamId);
+      return _StandingRow(
+        pos: standing.position,
+        name: team.shortCode ?? team.name,
+        teamId: team.teamId,
+        logoUrl: team.imagePath,
+        mp: standing.matchesPlayed.toString(),
+        w: standing.won.toString(),
+        d: standing.draw.toString(),
+        l: standing.lost.toString(),
+        highlight: matchTeamIds.contains(team.teamId),
+      );
+    }).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,20 +421,17 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
               // League logo + name
               Row(
                 children: [
-                  Image.asset(
-                    'assets/laliga.png',
+                  Image.network(
+                    league.imagePath ?? '',
                     width: 24,
                     height: 24,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.sports_soccer,
-                      color: Color(0xFFE8434A),
-                      size: 24,
-                    ),
+                    errorBuilder: (_, __, ___) =>
+                        leagueLogoFallback(league.leagueId, size: 24),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
-                    'La Liga',
-                    style: TextStyle(
+                  Text(
+                    league.name,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -460,15 +500,15 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   }
 
   List<Widget> _colLabel(String text) => [
-    SizedBox(
-      width: 32,
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.grey, fontSize: 12),
-      ),
-    ),
-  ];
+        SizedBox(
+          width: 32,
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+        ),
+      ];
 
   Widget _buildStandingRowWidget(_StandingRow row) {
     final textStyle = TextStyle(
@@ -498,19 +538,16 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           Expanded(
             child: Row(
               children: [
-                Image.asset(
-                  row.logo,
-                  width: 20,
-                  height: 20,
-                  errorBuilder: (_, __, ___) => Container(
+                if (row.logoUrl != null && row.logoUrl!.isNotEmpty)
+                  Image.network(
+                    row.logoUrl!,
                     width: 20,
                     height: 20,
-                    decoration: const BoxDecoration(
-                      color: Colors.white24,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
+                    errorBuilder: (_, __, ___) =>
+                        teamLogoFallback(row.teamId, size: 20),
+                  )
+                else
+                  teamLogoFallback(row.teamId, size: 20),
                 const SizedBox(width: 8),
                 Text(row.name, style: textStyle),
               ],

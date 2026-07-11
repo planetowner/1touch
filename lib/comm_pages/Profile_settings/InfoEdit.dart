@@ -23,9 +23,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = mockUserById(_currentUserId);
-    nameController     = TextEditingController(text: user.displayName);
+    nameController = TextEditingController(text: user.displayName);
     usernameController = TextEditingController(text: user.username);
-    emailController    = TextEditingController(text: user.email);
+    emailController = TextEditingController(text: user.email);
     passwordController = TextEditingController(text: '••••••••');
   }
 
@@ -72,7 +72,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const CircleAvatar(
                       radius: 54,
                       backgroundColor: Color(0xFF2B2B2B),
-                      backgroundImage: AssetImage('assets/profileavatar.png'),
+                      backgroundImage: AssetImage('assets/profileAvatar.png'),
                     ),
                     Positioned(
                       bottom: -4,
@@ -84,7 +84,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.black, width: 2),
                         ),
-                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                        child: const Icon(Icons.camera_alt,
+                            color: Colors.white, size: 18),
                       ),
                     ),
                   ],
@@ -92,8 +93,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
 
               const SizedBox(height: 48),
-              
-              Text("LOGIN", style: Body2_b.style,),
+
+              Text(
+                "LOGIN",
+                style: Body2_b.style,
+              ),
 
               const SizedBox(height: 16),
 
@@ -129,30 +133,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 48),
 
               // Social Accounts Section
-              Text(
-                "SOCIAL ACCOUNTS",
-                style: Body2_b.style
-              ),
+              Text("SOCIAL ACCOUNTS", style: Body2_b.style),
               const SizedBox(height: 16),
 
               // Updated to use SVGs
               _buildSocialRow(
                   iconPath: 'assets/google.svg',
                   name: 'Google',
-                  status: 'Connected'
-              ),
+                  status: 'Connected'),
               _divider(),
               _buildSocialRow(
                   iconPath: 'assets/apple.svg',
                   name: 'Apple',
-                  status: 'Not Connected'
-              ),
+                  status: 'Not Connected'),
               _divider(),
               _buildSocialRow(
                   iconPath: 'assets/facebook.svg',
                   name: 'Facebook',
-                  status: 'Not Connected'
-              ),
+                  status: 'Not Connected'),
               _divider(),
 
               const SizedBox(height: 48),
@@ -226,17 +224,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         floatingLabelStyle: Body1.style.copyWith(color: Colors.white70),
         suffixIcon: isPassword
             ? IconButton(
-          icon: Icon(
-            isObscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: Colors.white,
-            size: 20,
-          ),
-          onPressed: onSuffixTap,
-        )
+                icon: Icon(
+                  isObscure
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onPressed: onSuffixTap,
+              )
             : IconButton(
-          icon: const Icon(Icons.cancel, color: Colors.white, size: 20),
-          onPressed: () => controller.clear(),
-        ),
+                icon: const Icon(Icons.cancel, color: Colors.white, size: 20),
+                onPressed: () => controller.clear(),
+              ),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.white24),
         ),
@@ -248,7 +248,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildSocialRow({required String iconPath, required String name, required String status}) {
+  Widget _buildSocialRow(
+      {required String iconPath,
+      required String name,
+      required String status}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(

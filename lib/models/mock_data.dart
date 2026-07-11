@@ -618,7 +618,8 @@ const mockLeagues = <League>[
   League(
       leagueId: 564,
       name: 'La Liga',
-      imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/564/564.png'),
+      imagePath:
+          'https://cdn.sportmonks.com/images/soccer/leagues/564/564.png'),
   League(
       leagueId: 82,
       name: 'Bundesliga',
@@ -626,11 +627,13 @@ const mockLeagues = <League>[
   League(
       leagueId: 384,
       name: 'Serie A',
-      imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/384/384.png'),
+      imagePath:
+          'https://cdn.sportmonks.com/images/soccer/leagues/384/384.png'),
   League(
       leagueId: 301,
       name: 'Ligue 1',
-      imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/301/301.png'),
+      imagePath:
+          'https://cdn.sportmonks.com/images/soccer/leagues/301/301.png'),
   // ── European competitions ─────────────────────────────────
   League(
       leagueId: 2,
@@ -652,19 +655,23 @@ const mockLeagues = <League>[
   League(
       leagueId: 570,
       name: 'Copa del Rey',
-      imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/570/570.png'),
+      imagePath:
+          'https://cdn.sportmonks.com/images/soccer/leagues/570/570.png'),
   League(
       leagueId: 390,
       name: 'Coppa Italia',
-      imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/390/390.png'),
+      imagePath:
+          'https://cdn.sportmonks.com/images/soccer/leagues/390/390.png'),
   League(
       leagueId: 392,
       name: 'DFB Pokal',
-      imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/392/392.png'),
+      imagePath:
+          'https://cdn.sportmonks.com/images/soccer/leagues/392/392.png'),
   League(
       leagueId: 569,
       name: 'Coupe de France',
-      imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/569/569.png'),
+      imagePath:
+          'https://cdn.sportmonks.com/images/soccer/leagues/569/569.png'),
 ];
 
 League mockLeagueById(int id) => mockLeagues.firstWhere(
@@ -922,7 +929,7 @@ const _barcaUCLHomeLeg = Fixture(
     leagueId: 2,
     homeTeamId: 83,
     awayTeamId: 503,
-    competitionType: CompetitionType.cup,
+    competitionType: CompetitionType.europe,
     roundName: 'QF',
     legNumber: 1,
     status: FixtureStatus.upcoming,
@@ -935,7 +942,7 @@ const _arsenalUCLHomeLeg = Fixture(
     leagueId: 2,
     homeTeamId: 19,
     awayTeamId: 3468,
-    competitionType: CompetitionType.cup,
+    competitionType: CompetitionType.europe,
     roundName: 'QF',
     legNumber: 1,
     status: FixtureStatus.upcoming,
@@ -1514,7 +1521,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 2,
       homeTeamId: 591,
       awayTeamId: 83,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'R16',
       status: FixtureStatus.past,
       startingAt: '2026-03-11 20:00:00',
@@ -1526,7 +1533,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 2,
       homeTeamId: 83,
       awayTeamId: 2930,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'QF',
       status: FixtureStatus.past,
       startingAt: '2026-04-01 20:00:00',
@@ -1538,7 +1545,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 2,
       homeTeamId: 503,
       awayTeamId: 83,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'QF',
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-22 20:00:00'),
@@ -1550,7 +1557,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 2,
       homeTeamId: 8,
       awayTeamId: 3468,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'R16',
       status: FixtureStatus.past,
       startingAt: '2026-03-04 20:00:00',
@@ -1562,7 +1569,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 2,
       homeTeamId: 9,
       awayTeamId: 19,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'SF',
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-29 20:00:00'),
@@ -1572,7 +1579,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 2,
       homeTeamId: 2930,
       awayTeamId: 591,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'SF',
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-30 20:00:00'),
@@ -1584,7 +1591,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 5,
       homeTeamId: 14,
       awayTeamId: 37,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'QF',
       status: FixtureStatus.past,
       startingAt: '2026-04-10 20:00:00',
@@ -1596,7 +1603,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 5,
       homeTeamId: 6,
       awayTeamId: 79,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'SF',
       status: FixtureStatus.upcoming,
       startingAt: '2026-05-01 20:00:00'),
@@ -1606,7 +1613,7 @@ const _pastUpcomingFixtures = <Fixture>[
       leagueId: 5,
       homeTeamId: 277,
       awayTeamId: 597,
-      competitionType: CompetitionType.cup,
+      competitionType: CompetitionType.europe,
       roundName: 'QF',
       status: FixtureStatus.past,
       startingAt: '2026-04-10 20:00:00',
@@ -5212,35 +5219,35 @@ const mockUsers = <User>[
       displayName: 'Alex Kim',
       username: 'alexkim',
       email: 'alexkim@gmail.com',
-      avatarAsset: 'assets/profileavatar.png',
+      avatarAsset: 'assets/profileAvatar.png',
       createdAt: '2024-08-15 09:00:00'), // Barcelona fan
   User(
       userId: 1002,
       displayName: 'Maria Schmidt',
       username: 'mariaschmidt',
       email: 'maria.schmidt@web.de',
-      avatarAsset: 'assets/profileavatar.png',
+      avatarAsset: 'assets/profileAvatar.png',
       createdAt: '2024-09-01 12:30:00'), // Bayern fan
   User(
       userId: 1003,
       displayName: 'James Walker',
       username: 'jwalker',
       email: 'jwalker@outlook.com',
-      avatarAsset: 'assets/profileavatar.png',
+      avatarAsset: 'assets/profileAvatar.png',
       createdAt: '2024-10-20 18:45:00'), // Man City fan
   User(
       userId: 1004,
       displayName: 'Sophie Martin',
       username: 'sophiem',
       email: 'sophie.martin@laposte.fr',
-      avatarAsset: 'assets/profileavatar.png',
+      avatarAsset: 'assets/profileAvatar.png',
       createdAt: '2025-01-05 11:00:00'), // PSG fan
   User(
       userId: 1005,
       displayName: 'Lucas Santos',
       username: 'lsantos',
       email: 'lucas.santos@bol.com.br',
-      avatarAsset: 'assets/profileavatar.png',
+      avatarAsset: 'assets/profileAvatar.png',
       createdAt: '2025-02-14 08:00:00'), // Liverpool fan
 ];
 
@@ -5309,8 +5316,7 @@ const mockUserFollowingTeams = <UserFollowingTeam>[
   // 1002 Maria Schmidt: Bayern + Dortmund
   UserFollowingTeam(
       userId: 1002, teamId: 503, createdAt: '2024-09-01 12:31:00'),
-  UserFollowingTeam(
-      userId: 1002, teamId: 68, createdAt: '2024-09-01 12:32:00'),
+  UserFollowingTeam(userId: 1002, teamId: 68, createdAt: '2024-09-01 12:32:00'),
   // 1003 James Walker: Man City + Inter Milan
   UserFollowingTeam(userId: 1003, teamId: 9, createdAt: '2024-10-20 18:46:00'),
   UserFollowingTeam(
@@ -5318,8 +5324,7 @@ const mockUserFollowingTeams = <UserFollowingTeam>[
   // 1004 Sophie Martin: PSG + Marseille
   UserFollowingTeam(
       userId: 1004, teamId: 591, createdAt: '2025-01-05 11:01:00'),
-  UserFollowingTeam(
-      userId: 1004, teamId: 44, createdAt: '2025-01-05 11:02:00'),
+  UserFollowingTeam(userId: 1004, teamId: 44, createdAt: '2025-01-05 11:02:00'),
   // 1005 Lucas Santos: Liverpool + Arsenal
   UserFollowingTeam(userId: 1005, teamId: 8, createdAt: '2025-02-14 08:01:00'),
   UserFollowingTeam(userId: 1005, teamId: 19, createdAt: '2025-02-14 08:02:00'),

@@ -19,9 +19,7 @@ class Search extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black
-                ],
+                colors: [Colors.black],
                 stops: [0.0, 0.4],
               ),
             ),
@@ -52,20 +50,20 @@ class _SearchContentState extends State<SearchContent> {
       'type': 'player',
       'name': 'Player Name',
       'team': 'Team Name',
-      'image': 'assets/rashford.png'
+      'image': 'assets/playerAvatar.png'
     },
     {
       'type': 'team',
       'name': 'Team Name',
       'league': 'League #th',
-      'logo': 'assets/barcelona.png'
+      'logo': 'TeamLogos/Barcelona.png'
     },
     {
       'type': 'match',
       'homeTeam': 'AAA',
-      'homeLogo': 'assets/barcelona.png',
+      'homeLogo': 'TeamLogos/Barcelona.png',
       'awayTeam': 'BBB',
-      'awayLogo': 'assets/girona.png',
+      'awayLogo': 'TeamLogos/Girona.png',
       'date': 'Sun, Sep 15',
       'time': '10:15 AM'
     },
@@ -75,16 +73,16 @@ class _SearchContentState extends State<SearchContent> {
     {
       'type': 'match',
       'homeTeam': 'Man City',
-      'homeLogo': 'assets/mancity.png',
+      'homeLogo': 'TeamLogos/ManCity.png',
       'awayTeam': 'Liverpool',
-      'awayLogo': 'assets/liverpool.png',
+      'awayLogo': 'TeamLogos/Liverpool.png',
       'time': '20:00',
       'date': 'Today'
     },
     {
       'type': 'team',
       'name': 'Manchester United',
-      'logo': 'assets/manutd.png',
+      'logo': 'TeamLogos/ManUtd.png',
       'league': 'Premier League'
     },
   ];
@@ -108,7 +106,8 @@ class _SearchContentState extends State<SearchContent> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                  icon:
+                      const Icon(Icons.arrow_back_ios_new, color: Colors.white),
                   onPressed: () => context.pop(),
                 ),
                 const SizedBox(width: 8),
@@ -127,22 +126,25 @@ class _SearchContentState extends State<SearchContent> {
                       hintStyle: Body1.style.copyWith(color: Colors.white54),
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.12),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Colors.white54),
                       suffixIcon: _isSearching
                           ? IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _isSearching = false;
-                          });
-                        },
-                      )
+                              icon: const Icon(Icons.close,
+                                  color: Colors.white, size: 20),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _isSearching = false;
+                                });
+                              },
+                            )
                           : null,
                     ),
                   ),
@@ -181,14 +183,15 @@ class _SearchContentState extends State<SearchContent> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: item['type'] == 'match'
-                ? SearchMatchCard( // Uses Helper Widget
-              homeTeam: item['homeTeam'],
-              homeLogo: item['homeLogo'],
-              awayTeam: item['awayTeam'],
-              awayLogo: item['awayLogo'],
-              date: item['date'],
-              time: item['time'],
-            )
+                ? SearchMatchCard(
+                    // Uses Helper Widget
+                    homeTeam: item['homeTeam'],
+                    homeLogo: item['homeLogo'],
+                    awayTeam: item['awayTeam'],
+                    awayLogo: item['awayLogo'],
+                    date: item['date'],
+                    time: item['time'],
+                  )
                 : _buildStandardCard(item),
           );
         }),
@@ -214,9 +217,11 @@ class _SearchContentState extends State<SearchContent> {
                   child: GestureDetector(
                     onTap: () => setState(() => _selectedIndex = index),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white : const Color(0xFF3D3D3D),
+                        color:
+                            isSelected ? Colors.white : const Color(0xFF3D3D3D),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
@@ -248,22 +253,22 @@ class _SearchContentState extends State<SearchContent> {
         itemBuilder: (context, index) {
           final result = _searchResults[index];
           return result['type'] == 'match'
-              ? SearchMatchCard( // Uses Helper Widget
-            homeTeam: result['homeTeam'],
-            homeLogo: result['homeLogo'],
-            awayTeam: result['awayTeam'],
-            awayLogo: result['awayLogo'],
-            date: result['date'],
-            time: result['time'],
-          )
+              ? SearchMatchCard(
+                  // Uses Helper Widget
+                  homeTeam: result['homeTeam'],
+                  homeLogo: result['homeLogo'],
+                  awayTeam: result['awayTeam'],
+                  awayLogo: result['awayLogo'],
+                  date: result['date'],
+                  time: result['time'],
+                )
               : _buildStandardCard(result);
         },
       );
     }
     return Center(
         child: Text("${_tabs[_selectedIndex]} RESULTS",
-            style: const TextStyle(color: Colors.white))
-    );
+            style: const TextStyle(color: Colors.white)));
   }
 
   Widget _buildStandardCard(Map<String, dynamic> item) {
@@ -277,7 +282,8 @@ class _SearchContentState extends State<SearchContent> {
       child: Row(
         children: [
           Container(
-            width: 48, height: 48,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.grey[800],
@@ -287,14 +293,16 @@ class _SearchContentState extends State<SearchContent> {
                 onError: (e, s) {},
               ),
             ),
-            child: const Icon(Icons.image_not_supported, color: Colors.transparent),
+            child: const Icon(Icons.image_not_supported,
+                color: Colors.transparent),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item['name'], style: Heading4.style.copyWith(fontSize: 16)),
+                Text(item['name'],
+                    style: Heading4.style.copyWith(fontSize: 16)),
                 const SizedBox(height: 4),
                 Text(
                   isTeam ? item['league'] : item['team'],

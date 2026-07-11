@@ -7,7 +7,8 @@ class User {
   final String displayName;
   final String username;
   final String email;
-  final String? avatarAsset; // local asset path, e.g. 'assets/profileavatar.png'
+  final String?
+      avatarAsset; // local asset path, e.g. 'assets/profileAvatar.png'
   final String createdAt;
 
   const User({
@@ -21,12 +22,12 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      userId:      json['user_id'] as int,
+      userId: json['user_id'] as int,
       displayName: json['display_name'] as String,
-      username:    json['username'] as String,
-      email:       json['email'] as String,
+      username: json['username'] as String,
+      email: json['email'] as String,
       avatarAsset: json['avatar_asset'] as String?,
-      createdAt:   json['created_at'] as String,
+      createdAt: json['created_at'] as String,
     );
   }
 }

@@ -257,19 +257,17 @@ class _H2HTabState extends State<H2HTab> {
 
   Widget _buildBar(
       {required List<int> values, required bool showCheckOnFirst}) {
-    const radius = Radius.circular(6);
     final segments = [
-      // [value, isFirst, isLast, isWhite]
-      (values[0], true, false, false),
-      (values[1], false, false, false),
-      (values[2], false, true, true),
+      (values[0], false),
+      (values[1], false),
+      (values[2], true),
     ];
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Row(
         children: List.generate(segments.length, (i) {
-          final (value, isFirst, isLast, isWhite) = segments[i];
+          final (value, isWhite) = segments[i];
           return Expanded(
             flex: value,
             child: Container(
@@ -282,21 +280,27 @@ class _H2HTabState extends State<H2HTab> {
                         : const Color(0xFF272828),
               ),
               alignment: Alignment.center,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '$value%',
-                    style: Body2_b.style.copyWith(
-                      color: isWhite
-                          ? Colors.black
-                          : null, // If false, 'null' keeps the default Body2_b color
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$value%',
+                      style: Body2_b.style.copyWith(
+                        color: isWhite ? Colors.black : null,
+                      ),
                     ),
-                  ),
-                  if (i == 0 && showCheckOnFirst)
-                    const Icon(Icons.check_circle,
-                        color: Colors.white, size: 20),
-                ],
+                    if (i == 0 && showCheckOnFirst) ...[
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.check_circle,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           );

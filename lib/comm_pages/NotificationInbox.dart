@@ -30,12 +30,17 @@ class _MockNotif {
   bool matchesFilter(_Filter f) {
     if (f == _Filter.all) return true;
     switch (f) {
-      case _Filter.team:    return category == _NotifCategory.team;
-      case _Filter.player:  return category == _NotifCategory.player;
-      case _Filter.posts:   return category == _NotifCategory.reaction ||
-                                   category == _NotifCategory.comment;
-      case _Filter.betting: return category == _NotifCategory.betting;
-      default:              return true;
+      case _Filter.team:
+        return category == _NotifCategory.team;
+      case _Filter.player:
+        return category == _NotifCategory.player;
+      case _Filter.posts:
+        return category == _NotifCategory.reaction ||
+            category == _NotifCategory.comment;
+      case _Filter.betting:
+        return category == _NotifCategory.betting;
+      default:
+        return true;
     }
   }
 }
@@ -122,18 +127,17 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
   _Filter _selected = _Filter.all;
 
   static const _filters = <_Filter, String>{
-    _Filter.all:     'ALL',
-    _Filter.team:    'TEAM',
-    _Filter.player:  'PLAYER',
-    _Filter.posts:   'POSTS',
+    _Filter.all: 'ALL',
+    _Filter.team: 'TEAM',
+    _Filter.player: 'PLAYER',
+    _Filter.posts: 'POSTS',
     _Filter.betting: 'BETTING',
   };
 
   @override
   Widget build(BuildContext context) {
-    final visible = _mockNotifications
-        .where((n) => n.matchesFilter(_selected))
-        .toList();
+    final visible =
+        _mockNotifications.where((n) => n.matchesFilter(_selected)).toList();
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -292,7 +296,7 @@ class _Avatar extends StatelessWidget {
           backgroundColor: const Color(0xFF2B2B2B),
           backgroundImage: notif.imageUrl != null
               ? NetworkImage(notif.imageUrl!) as ImageProvider
-              : const AssetImage('assets/profileavatar.png'),
+              : const AssetImage('assets/profileAvatar.png'),
         ),
 
         // Badge for reaction

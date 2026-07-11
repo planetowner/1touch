@@ -699,7 +699,7 @@ class _PlayerPhoto extends StatelessWidget {
       child: player == null
           ? SizedBox(
               child: SvgPicture.asset(
-                'playerSilhouette.svg',
+                'assets/playerSilhouette.svg',
                 width: 130,
                 height: 130,
               ),
@@ -723,7 +723,8 @@ class _PlayerPhoto extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: player!.teamColor.withValues(alpha: 0.25), width: 1),
+                      color: player!.teamColor.withValues(alpha: 0.25),
+                      width: 1),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

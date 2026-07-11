@@ -346,43 +346,56 @@ class MyTeams extends StatelessWidget {
 }
 
 class CalendarEvent {
-  final String logoAsset;
-  final int teamId;
+  final String opponentLogoUrl;
+  final int opponentTeamId;
   final Color dotColor;
   final int fixtureId;
   final String status; // 'past' | 'live' | 'upcoming'
 
   CalendarEvent({
-    required this.logoAsset,
-    required this.teamId,
+    required this.opponentLogoUrl,
+    required this.opponentTeamId,
     required this.dotColor,
     required this.fixtureId,
     required this.status,
   });
 }
 
-class HardcodedCalendar extends StatefulWidget {
+class FixtureCalendar extends StatefulWidget {
   final List<Fixture> allMatches;
+  final int favoriteTeamId;
 
-  const HardcodedCalendar({super.key, required this.allMatches});
+  const FixtureCalendar({
+    super.key,
+    required this.allMatches,
+    required this.favoriteTeamId,
+  });
 
   @override
-  State<HardcodedCalendar> createState() => _HardcodedCalendarState();
+  State<FixtureCalendar> createState() => _FixtureCalendarState();
 }
 
-class _HardcodedCalendarState extends State<HardcodedCalendar> {
+class _FixtureCalendarState extends State<FixtureCalendar> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
 
   // Dynamic events generator - automatically creates events for any month/year
   Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(DateTime month) {
     final events = <DateTime, List<CalendarEvent>>{};
+    final addedFixtureIds = <int>{};
 
     for (final fixture in widget.allMatches) {
+      final favoriteIsHome = fixture.homeTeamId == widget.favoriteTeamId;
+      final favoriteIsAway = fixture.awayTeamId == widget.favoriteTeamId;
+      if (!favoriteIsHome && !favoriteIsAway) continue;
+      if (!addedFixtureIds.add(fixture.fixtureId)) continue;
+
       final dt = DateTime.parse(fixture.startingAt).toLocal();
       final dateOnly = DateTime(dt.year, dt.month, dt.day);
       if (dt.year != month.year || dt.month != month.month) continue;
 
-      final team = mockTeamById(fixture.homeTeamId);
+      final opponentTeamId =
+          favoriteIsHome ? fixture.awayTeamId : fixture.homeTeamId;
+      final opponent = mockTeamById(opponentTeamId);
       final color = switch (fixture.competitionType) {
         CompetitionType.league => Colors.red,
         CompetitionType.europe => Colors.blue,
@@ -390,8 +403,8 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
       };
 
       events.putIfAbsent(dateOnly, () => []).add(CalendarEvent(
-        logoAsset: team.imagePath ?? '',
-        teamId: team.teamId,
+        opponentLogoUrl: opponent.imagePath ?? '',
+        opponentTeamId: opponent.teamId,
         dotColor: color,
         fixtureId: fixture.fixtureId,
         status: fixture.status.name,
@@ -503,7 +516,7 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
             children: [
               _buildLegendDot(Colors.red, 'League'),
               const SizedBox(width: 16),
-              _buildLegendDot(Colors.blue, 'UCL'),
+              _buildLegendDot(Colors.blue, 'Europe'),
               const SizedBox(width: 16),
               _buildLegendDot(Colors.green, 'Cup'),
             ],
@@ -647,12 +660,15 @@ class _HardcodedCalendarState extends State<HardcodedCalendar> {
                   alignment: Alignment.center,
                   children: [
                     Image.network(
-                      dayEvents.first.logoAsset,
+                      dayEvents.first.opponentLogoUrl,
                       width: 28,
                       height: 28,
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) =>
-                          teamLogoFallback(dayEvents.first.teamId, size: 28),
+                          teamLogoFallback(
+                            dayEvents.first.opponentTeamId,
+                            size: 28,
+                          ),
                     ),
                     Positioned(
                       top: 0,

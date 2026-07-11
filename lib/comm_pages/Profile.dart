@@ -35,7 +35,7 @@ class _ProfileState extends State<Profile> {
         });
       });
 
-    _user        = mockUserById(_currentUserId);
+    _user = mockUserById(_currentUserId);
     _userProfile = mockUserProfileById(_currentUserId);
 
     _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
@@ -237,7 +237,7 @@ class _ProfileState extends State<Profile> {
               radius: 54,
               backgroundColor: const Color(0xFF3D3D3D),
               backgroundImage: AssetImage(
-                _user.avatarAsset ?? 'assets/profileavatar.png',
+                _user.avatarAsset ?? 'assets/profileAvatar.png',
               ),
             ),
           ),
@@ -306,7 +306,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _buildTeamList() {
-    final teamIds  = followingTeamIds(_currentUserId);
+    final teamIds = followingTeamIds(_currentUserId);
     final favoriteId = FavoriteTeam.id.value;
 
     return SizedBox(
@@ -317,9 +317,9 @@ class _ProfileState extends State<Profile> {
         itemCount: teamIds.length,
         separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
-          final team       = mockTeamById(teamIds[index]);
+          final team = mockTeamById(teamIds[index]);
           final isFavorite = team.teamId == favoriteId;
-          final label      = teamLeagueLabel(team.teamId);
+          final label = teamLeagueLabel(team.teamId);
 
           return Stack(
             children: [
@@ -337,7 +337,8 @@ class _ProfileState extends State<Profile> {
                       team.imagePath ?? '',
                       height: 80,
                       width: 80,
-                      errorBuilder: (_, __, ___) => const SizedBox(height: 80, width: 80),
+                      errorBuilder: (_, __, ___) =>
+                          const SizedBox(height: 80, width: 80),
                     ),
                     const SizedBox(height: 8),
                     Padding(
@@ -396,7 +397,8 @@ class _ProfileState extends State<Profile> {
                     radius: 37,
                     backgroundImage: player.imageUrl != null
                         ? NetworkImage(player.imageUrl!)
-                        : const AssetImage('assets/playerAvatar.png') as ImageProvider,
+                        : const AssetImage('assets/playerAvatar.png')
+                            as ImageProvider,
                     backgroundColor: const Color(0xFF272828),
                   ),
                   Positioned(

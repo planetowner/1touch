@@ -45,7 +45,8 @@ class _CareerTabState extends State<CareerTab> {
                   context: context,
                   backgroundColor: const Color(0xFF2A2A2A),
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   builder: (_) => Column(
                     mainAxisSize: MainAxisSize.min,
@@ -119,7 +120,7 @@ class _CareerTabState extends State<CareerTab> {
           padding: EdgeInsets.symmetric(vertical: 20),
           child: Divider(height: 1, color: Colors.white12),
         ),
-        _buildClubHeader("SPORTING CP", "TeamLogos/SportingCP.png", 2),
+        _buildClubHeader("SPORTING CP", null, 2),
         const SizedBox(height: 16),
         _buildTrophyItem("Portuguese Cup", ["19/20"]),
         const SizedBox(height: 16),
@@ -139,7 +140,7 @@ class _CareerTabState extends State<CareerTab> {
     );
   }
 
-  Widget _buildClubHeader(String clubName, String path, int trophyCount) {
+  Widget _buildClubHeader(String clubName, String? path, int trophyCount) {
     return Row(
       children: [
         Container(
@@ -147,13 +148,25 @@ class _CareerTabState extends State<CareerTab> {
             color: const Color(0xFF3D3D3D),
           ),
           child: ClipRRect(
-            child: Image.asset(
-              path,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox(),
-              width: 32,  // Replaced 'size' with width
-              height: 32, // Replaced 'size' with height
-            ),
+            child: path != null
+                ? Image.asset(
+                    path,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.shield_outlined,
+                      color: Colors.white54,
+                    ),
+                    width: 32,
+                    height: 32,
+                  )
+                : const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: Icon(
+                      Icons.shield_outlined,
+                      color: Colors.white54,
+                    ),
+                  ),
           ),
         ),
         const SizedBox(width: 10),
@@ -170,7 +183,8 @@ class _CareerTabState extends State<CareerTab> {
       children: [
         Row(
           children: [
-            const Icon(Icons.emoji_events_outlined, color: Colors.white, size: 18),
+            const Icon(Icons.emoji_events_outlined,
+                color: Colors.white, size: 18),
             const SizedBox(width: 8),
             Text(title, style: Heading5.style),
           ],
@@ -250,7 +264,7 @@ class _CareerTabState extends State<CareerTab> {
     },
     {
       "season": "19/20",
-      "teamLogo": "TeamLogos/Rennes.png",
+      "teamLogo": "TeamLogos/StadeRennais.png",
       "teamAbbr": "SRFC",
       "mp": "40",
       "wr": "70%",
@@ -259,7 +273,7 @@ class _CareerTabState extends State<CareerTab> {
     },
     {
       "season": "18/19",
-      "teamLogo": "TeamLogos/SportingCP.png",
+      "teamLogo": null,
       "teamAbbr": "SCP",
       "mp": "40",
       "wr": "70%",
@@ -283,13 +297,15 @@ class _CareerTabState extends State<CareerTab> {
                   context: context,
                   backgroundColor: const Color(0xFF2A2A2A),
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   builder: (_) => Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const SizedBox(height: 16),
-                      ...["ALL LEAGUES", "LA LIGA", "UCL", "COPA DEL REY"].map((option) {
+                      ...["ALL LEAGUES", "LA LIGA", "UCL", "COPA DEL REY"]
+                          .map((option) {
                         return ListTile(
                           title: Text(
                             option,
@@ -382,7 +398,8 @@ class _CareerTabState extends State<CareerTab> {
                 final data = entry.value;
                 final season = data["season"] as String;
                 final isExpanded = _expandedSeasons.contains(season);
-                final subLeagues = (data["subLeagues"] as List<dynamic>).cast<Map<String, dynamic>>();
+                final subLeagues = (data["subLeagues"] as List<dynamic>)
+                    .cast<Map<String, dynamic>>();
                 final hasSubLeagues = subLeagues.isNotEmpty;
 
                 return Column(
@@ -391,14 +408,14 @@ class _CareerTabState extends State<CareerTab> {
                     InkWell(
                       onTap: hasSubLeagues
                           ? () {
-                        setState(() {
-                          if (isExpanded) {
-                            _expandedSeasons.remove(season);
-                          } else {
-                            _expandedSeasons.add(season);
-                          }
-                        });
-                      }
+                              setState(() {
+                                if (isExpanded) {
+                                  _expandedSeasons.remove(season);
+                                } else {
+                                  _expandedSeasons.add(season);
+                                }
+                              });
+                            }
                           : null,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -423,12 +440,22 @@ class _CareerTabState extends State<CareerTab> {
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(4),
-                                      child: Image.asset(
-                                        data["teamLogo"] as String,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                        const SizedBox(),
-                                      ),
+                                      child: data["teamLogo"] != null
+                                          ? Image.asset(
+                                              data["teamLogo"] as String,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  const Icon(
+                                                Icons.shield_outlined,
+                                                color: Colors.white54,
+                                                size: 16,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.shield_outlined,
+                                              color: Colors.white54,
+                                              size: 16,
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(width: 6),
@@ -472,12 +499,12 @@ class _CareerTabState extends State<CareerTab> {
                               width: 24,
                               child: hasSubLeagues
                                   ? Icon(
-                                isExpanded
-                                    ? Icons.keyboard_arrow_up
-                                    : Icons.keyboard_arrow_down,
-                                color: Colors.white,
-                                size: 18,
-                              )
+                                      isExpanded
+                                          ? Icons.keyboard_arrow_up
+                                          : Icons.keyboard_arrow_down,
+                                      color: Colors.white,
+                                      size: 18,
+                                    )
                                   : const SizedBox(),
                             ),
                           ],
@@ -496,8 +523,8 @@ class _CareerTabState extends State<CareerTab> {
                                 flex: 5,
                                 child: Text(
                                   sub["name"] as String,
-                                  style:
-                                  Body2.style.copyWith(color: Colors.white38),
+                                  style: Body2.style
+                                      .copyWith(color: Colors.white38),
                                 ),
                               ),
                               // MP

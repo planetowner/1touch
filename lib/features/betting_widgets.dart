@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/models/team.dart';
 
 // --- Widget 1: The Main Page Betting Dashboard ---
 class MatchBettingSection extends StatelessWidget {
   final int userBalance;
   final VoidCallback onPlaceBet;
+  final Team homeTeam;
+  final Team awayTeam;
 
   const MatchBettingSection({
     super.key,
     required this.userBalance,
     required this.onPlaceBet,
+    required this.homeTeam,
+    required this.awayTeam,
   });
 
   @override
@@ -23,7 +29,7 @@ class MatchBettingSection extends StatelessWidget {
       child: Column(
         children: [
           // Visual stats header
-          const MatchStatsHeader(),
+          MatchStatsHeader(homeTeam: homeTeam, awayTeam: awayTeam),
 
           const SizedBox(height: 24),
 
@@ -67,7 +73,15 @@ class MatchBettingSection extends StatelessWidget {
 // --- Widget 2: The Modal Flow ---
 class BettingFlowModal extends StatefulWidget {
   final int userBalance;
-  const BettingFlowModal({super.key, required this.userBalance});
+  final Team homeTeam;
+  final Team awayTeam;
+
+  const BettingFlowModal({
+    super.key,
+    required this.userBalance,
+    required this.homeTeam,
+    required this.awayTeam,
+  });
 
   @override
   State<BettingFlowModal> createState() => _BettingFlowModalState();
@@ -77,7 +91,7 @@ enum BetStep { selection, amount, success }
 
 class _BettingFlowModalState extends State<BettingFlowModal> {
   BetStep _currentStep = BetStep.selection;
-  int? _selectedOptionIndex; // 0: FCB, 1: Draw, 2: GIR
+  int? _selectedOptionIndex; // 0: home, 1: draw, 2: away
   int _wagerAmount = 120;
 
   void _nextStep() {
@@ -128,7 +142,10 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
             Column(
               children: [
                 // PERSISTENT HEADER: This stays for both Selection and Amount steps
-                const MatchStatsHeader(),
+                MatchStatsHeader(
+                  homeTeam: widget.homeTeam,
+                  awayTeam: widget.awayTeam,
+                ),
 
                 const SizedBox(height: 24),
 
@@ -170,18 +187,37 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
   }
 
   Widget _buildSelectionStep() {
+    final homeLabel = widget.homeTeam.shortCode ?? widget.homeTeam.name;
+    final awayLabel = widget.awayTeam.shortCode ?? widget.awayTeam.name;
+
     return Column(
       children: [
-        _buildRadioOption(0, "FCB Win", "+120 pts", "TeamLogos/Barcelona.png"),
+        _buildRadioOption(
+          0,
+          "$homeLabel Win",
+          "+120 pts",
+          team: widget.homeTeam,
+        ),
         const SizedBox(height: 12),
-        _buildRadioOption(1, "Draw", "+80 pts", "TeamLogos/Barcelona.png", isDraw: true),
+        _buildRadioOption(1, "Draw", "+80 pts", isDraw: true),
         const SizedBox(height: 12),
-        _buildRadioOption(2, "BBB Win", "+320 pts", "TeamLogos/Girona.png"),
+        _buildRadioOption(
+          2,
+          "$awayLabel Win",
+          "+320 pts",
+          team: widget.awayTeam,
+        ),
       ],
     );
   }
 
-  Widget _buildRadioOption(int index, String title, String subtitle, String iconPath, {bool isDraw = false}) {
+  Widget _buildRadioOption(
+    int index,
+    String title,
+    String subtitle, {
+    Team? team,
+    bool isDraw = false,
+  }) {
     bool isSelected = _selectedOptionIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _selectedOptionIndex = index),
@@ -198,12 +234,18 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
             // Stacked icons for Draw
               SizedBox(width: 40, height: 40, child: Stack(
                 children: [
-                  Align(alignment: Alignment.topLeft, child: Image.asset("TeamLogos/Barcelona.png", width: 28)),
-                  Align(alignment: Alignment.bottomRight, child: Image.asset("TeamLogos/Girona.png", width: 28)),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: _buildTeamImage(widget.homeTeam, 28),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: _buildTeamImage(widget.awayTeam, 28),
+                  ),
                 ],
               ))
             else
-              Image.asset(iconPath, width: 40, height: 40),
+              _buildTeamImage(team!, 40),
 
             const SizedBox(width: 16),
             Expanded(
@@ -229,6 +271,20 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTeamImage(Team team, double size) {
+    final imagePath = team.imagePath;
+    if (imagePath == null || imagePath.isEmpty) {
+      return teamLogoFallback(team.teamId, size: size);
+    }
+    return Image.network(
+      imagePath,
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => teamLogoFallback(team.teamId, size: size),
     );
   }
 
@@ -346,7 +402,14 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
 
 // --- Shared Component: The Logos, W/D/L Stats, and Percentage Bar ---
 class MatchStatsHeader extends StatelessWidget {
-  const MatchStatsHeader({super.key});
+  final Team homeTeam;
+  final Team awayTeam;
+
+  const MatchStatsHeader({
+    super.key,
+    required this.homeTeam,
+    required this.awayTeam,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -357,7 +420,7 @@ class MatchStatsHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTeamLogo('FCB', "TeamLogos/Barcelona.png"),
+            _buildTeamLogo(homeTeam),
 
             // Odds Stats
             Row(
@@ -370,7 +433,7 @@ class MatchStatsHeader extends StatelessWidget {
               ],
             ),
 
-            _buildTeamLogo('GIR', "TeamLogos/Girona.png"),
+            _buildTeamLogo(awayTeam),
           ],
         ),
 
@@ -415,22 +478,51 @@ class MatchStatsHeader extends StatelessWidget {
         // 3. Text Descriptions under bar
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text("FCB Win\n(+120)", style: Body2.style),
-            Text("Draw\n(+80)", style: Body2.style, textAlign: TextAlign.center),
-            Text("GIR Win\n(+320)", style: Body2.style, textAlign: TextAlign.right),
+          children: [
+            Text(
+              "${homeTeam.shortCode ?? homeTeam.name} Win\n(+120)",
+              style: Body2.style,
+            ),
+            const Text(
+              "Draw\n(+80)",
+              style: Body2.style,
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              "${awayTeam.shortCode ?? awayTeam.name} Win\n(+320)",
+              style: Body2.style,
+              textAlign: TextAlign.right,
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildTeamLogo(String name, String assetPath) {
+  Widget _buildTeamLogo(Team team) {
+    final label = team.shortCode ?? team.name;
+    final imagePath = team.imagePath;
+
     return Column(
       children: [
-        Image.asset(assetPath, width: 48, height: 48),
+        if (imagePath != null && imagePath.isNotEmpty)
+          Image.network(
+            imagePath,
+            width: 48,
+            height: 48,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) =>
+                teamLogoFallback(team.teamId, size: 48),
+          )
+        else
+          teamLogoFallback(team.teamId, size: 48),
         const SizedBox(height: 4),
-        Text(name, style: Body1_b.style),
+        Text(
+          label,
+          style: Body1_b.style,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

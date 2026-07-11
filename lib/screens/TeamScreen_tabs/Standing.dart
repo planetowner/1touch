@@ -3,6 +3,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
+import 'package:onetouch/features/knockout_bracket.dart';
 
 class StandingTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -34,6 +35,17 @@ class _StandingTabState extends State<StandingTab> {
   bool _isViewDropdownOpen = false;
 
   bool get _xgAvailable => _big5LeagueIds.contains(selectedLeagueId);
+
+  List<Fixture> get _selectedKnockoutFixtures => mockFixtures
+      .where((fixture) =>
+          fixture.leagueId == selectedLeagueId &&
+          fixture.seasonId == selectedSeasonId &&
+          fixture.competitionType == CompetitionType.europe &&
+          knockoutRoundFromName(fixture.roundName) != null)
+      .toList();
+
+  bool get _showKnockoutBracket =>
+      hasEuropeanKnockoutStage(_selectedKnockoutFixtures);
 
   @override
   void initState() {
@@ -168,45 +180,51 @@ class _StandingTabState extends State<StandingTab> {
                   ],
                 ),
               ),
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 24, bottom: 16),
-                        child: StandingViewSelector(
+              if (_showKnockoutBracket)
+                KnockoutBracket(
+                  fixtures: _selectedKnockoutFixtures,
+                  currentTeamId: currentTeamId,
+                )
+              else
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 24, bottom: 16),
+                          child: StandingViewSelector(
+                            selectedView: _selectedView,
+                            isOpen: _isViewDropdownOpen,
+                            onToggle: () {
+                              setState(() {
+                                _isViewDropdownOpen = !_isViewDropdownOpen;
+                              });
+                            },
+                          ),
+                        ),
+                        _buildSelectedTable(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            StandingsLegend(leagueId: selectedLeagueId),
+                          ],
+                        )
+                      ],
+                    ),
+                    if (_isViewDropdownOpen)
+                      Positioned(
+                        top: 42,
+                        left: 24,
+                        child: StandingViewOptions(
                           selectedView: _selectedView,
-                          isOpen: _isViewDropdownOpen,
-                          onToggle: () {
-                            setState(() {
-                              _isViewDropdownOpen = !_isViewDropdownOpen;
-                            });
-                          },
+                          availableViews: _availableViews,
+                          onChanged: _changeStandingView,
                         ),
                       ),
-                      _buildSelectedTable(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          StandingsLegend(leagueId: selectedLeagueId),
-                        ],
-                      )
-                    ],
-                  ),
-                  if (_isViewDropdownOpen)
-                    Positioned(
-                      top: 42,
-                      left: 24,
-                      child: StandingViewOptions(
-                        selectedView: _selectedView,
-                        availableViews: _availableViews,
-                        onChanged: _changeStandingView,
-                      ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
               const SizedBox(height: 144),
             ],
           ),
