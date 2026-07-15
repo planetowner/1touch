@@ -116,7 +116,10 @@ class _PlayerCardState extends State<PlayerCard>
                                 icon: const Icon(Icons.search, size: 32, color: Colors.white),
                               ),
                               IconButton(
-                                onPressed: () => context.push('/compare', extra: widget.player.fullName,), //'{widget.player.id}/compare'
+                                onPressed: () => context.push(
+                                  '/compare',
+                                  extra: widget.player.id,
+                                ),
                                 icon: const Icon(Icons.safety_divider, size: 32, color: Colors.white),
                               ),
                             ],

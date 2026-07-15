@@ -117,7 +117,7 @@ class OnboardingScreen extends StatelessWidget {
                           color: isLight ? Colors.white : Colors.black,
                         ),
                         label: 'Continue with email',
-                        onTap: () => context.go('/auth/signup'),
+                        onTap: () => context.push('/auth/signup'),
                       ),
                       const SizedBox(height: 32),
                     ],

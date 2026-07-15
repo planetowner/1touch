@@ -57,6 +57,40 @@ const List<String> _kRadarLabels = [
 
 final List<ComparisonPlayer> kComparisonPlayers = [
   ComparisonPlayer(
+    id: 'son',
+    fullName: 'Heungmin Son',
+    shortName: 'H. SON',
+    team: 'Tottenham Hotspur',
+    number: 7,
+    teamColor: const Color(0xFF132257),
+    clubSeasons: {
+      'Tottenham Hotspur': [
+        '15/16',
+        '16/17',
+        '17/18',
+        '18/19',
+        '19/20',
+        '20/21',
+        '21/22',
+        '22/23',
+        '23/24',
+        '24/25',
+      ],
+      'Bayer Leverkusen': ['13/14', '14/15'],
+      'Hamburg': ['10/11', '11/12', '12/13'],
+    },
+    radarValues: [0.88, 0.89, 0.76, 0.86, 0.48, 0.74],
+    statCategories: [
+      CompStatCategory(label: 'FINISH', rows: [
+        CompStatRow(name: 'Goals', value: 17, display: '17'),
+        CompStatRow(name: 'xG', value: 0.62, display: '0.62'),
+      ]),
+      CompStatCategory(label: 'PLAY MAKING', rows: [
+        CompStatRow(name: 'Key Passes', value: 38, display: '38'),
+      ]),
+    ],
+  ),
+  ComparisonPlayer(
     id: 'mctominay',
     fullName: 'Scott McTominay',
     shortName: 'SCOTT MCT...',
@@ -288,21 +322,13 @@ ComparisonPlayer? _findById(String id) {
   return null;
 }
 
-ComparisonPlayer? findComparisonPlayerByName(String name) {
-  final lower = name.toLowerCase();
-  for (final p in kComparisonPlayers) {
-    if (p.fullName.toLowerCase() == lower) return p;
-  }
-  return null;
-}
-
 // PLAYER COMPARISON SCREEN
 
 class PlayerComparisonScreen extends StatefulWidget {
-  /// Pass the current player's fullName to pre-fill slot 1
-  final String? initialPlayerName;
+  /// Pass a player ID only when entering from a specific player page.
+  final String? initialPlayerId;
 
-  const PlayerComparisonScreen({super.key, this.initialPlayerName});
+  const PlayerComparisonScreen({super.key, this.initialPlayerId});
 
   @override
   State<PlayerComparisonScreen> createState() => _PlayerComparisonScreenState();
@@ -327,8 +353,8 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
         });
       });
 
-    if (widget.initialPlayerName != null) {
-      _p1 = findComparisonPlayerByName(widget.initialPlayerName!);
+    if (widget.initialPlayerId != null) {
+      _p1 = _findById(widget.initialPlayerId!);
       if (_p1 != null && _p1!.clubSeasons.isNotEmpty) {
         _s1 = _p1!.clubSeasons.values.first.last;
       }

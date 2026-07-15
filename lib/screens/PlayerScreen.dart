@@ -153,7 +153,7 @@ class _PlayersState extends State<Players> {
                           icon: const Icon(Icons.search, size: 32),
                         ),
                         IconButton(
-                          onPressed: () => context.push('/compare', extra: player.fullName,),
+                          onPressed: () => context.push('/compare'),
                           icon: const Icon(Icons.safety_divider, size: 32, color: Colors.white),
                         ),
                         IconButton(

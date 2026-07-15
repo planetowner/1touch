@@ -33,8 +33,8 @@ void main() async {
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
-  // initialLocation: '/', // 스플래시부터 시작
-  initialLocation: '/home', // 테스팅 페이지
+  initialLocation: '/', // 스플래시부터 시작
+  // initialLocation: '/home', // 테스팅 페이지
   navigatorKey: _rootNavigatorKey,
   routes: [
     // Splash
@@ -98,7 +98,7 @@ final GoRouter _router = GoRouter(
               // GoRoute(
               //   path: '/compare',
               //   builder: (context, state) => PlayerComparisonScreen(
-              //     initialPlayerName: state.extra as String?,
+              //     initialPlayerId: state.extra as String?,
               //   ),
               // ),
             ],
@@ -175,7 +175,7 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/compare',
       builder: (context, state) => PlayerComparisonScreen(
-        initialPlayerName: state.extra as String?,
+        initialPlayerId: state.extra as String?,
       ),
     ),
   ],
