@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/models/mock_data.dart';
 
 const _divider = Divider(
@@ -29,7 +30,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final teamIds = followingTeamIds(_currentUserId);
+    final teamIds = currentUserPreferences.followedTeamIds.value;
     final players = followingPlayersByUser(_currentUserId);
 
     return Scaffold(

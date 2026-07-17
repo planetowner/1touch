@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/models/team.dart';
 
@@ -40,8 +41,6 @@ class EditFollowingTeamsSheet extends StatefulWidget {
 }
 
 class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
-  static const _currentUserId = 1001;
-
   final TextEditingController _searchController = TextEditingController();
 
   late List<_TeamEntry> _followedTeams;
@@ -57,9 +56,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   @override
   void initState() {
     super.initState();
-    _favoriteTeamId = mockUserProfileById(_currentUserId).favoriteTeamId;
+    _favoriteTeamId = currentUserPreferences.favoriteTeamId.value;
 
-    _followedTeams = followingTeamIds(_currentUserId)
+    _followedTeams = currentUserPreferences.followedTeamIds.value
         .map((id) => _toEntry(mockTeamById(id)))
         .toList();
 

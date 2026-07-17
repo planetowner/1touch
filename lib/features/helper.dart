@@ -163,7 +163,12 @@ class MatchCard extends StatelessWidget {
 }
 
 class MatchCard2 extends StatelessWidget {
-  final String date, venue, team1shortname, team1Logo, team2shortname, team2Logo;
+  final String date,
+      venue,
+      team1shortname,
+      team1Logo,
+      team2shortname,
+      team2Logo;
   final int team1Id;
   final int team2Id;
   final int homeScore;
@@ -211,11 +216,13 @@ class MatchCard2 extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _ScoreBoard(score: homeScore, isDimmed: homeScore < awayScore),
+                  _ScoreBoard(
+                      score: homeScore, isDimmed: homeScore < awayScore),
                   const SizedBox(width: 16),
                   _MatchInfo2(date: date, venue: venue),
                   const SizedBox(width: 16),
-                  _ScoreBoard(score: awayScore, isDimmed: awayScore < homeScore),
+                  _ScoreBoard(
+                      score: awayScore, isDimmed: awayScore < homeScore),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _TeamDisplay2(
@@ -254,7 +261,6 @@ class SearchMatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     const score1 = 3;
     const score2 = 2;
 
@@ -278,7 +284,7 @@ class SearchMatchCard extends StatelessWidget {
                     homeLogo,
                     fit: BoxFit.contain,
                     errorBuilder: (c, o, s) =>
-                    const Icon(Icons.shield, color: Colors.white),
+                        const Icon(Icons.shield, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -338,7 +344,7 @@ class SearchMatchCard extends StatelessWidget {
                     awayLogo,
                     fit: BoxFit.contain,
                     errorBuilder: (c, o, s) =>
-                    const Icon(Icons.shield, color: Colors.white),
+                        const Icon(Icons.shield, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -365,7 +371,8 @@ class SearchMatchCard extends StatelessWidget {
 class _TeamDisplay extends StatelessWidget {
   final int teamId;
   final String teamName, teamLogo;
-  const _TeamDisplay({required this.teamId, required this.teamName, required this.teamLogo});
+  const _TeamDisplay(
+      {required this.teamId, required this.teamName, required this.teamLogo});
 
   @override
   Widget build(BuildContext context) {
@@ -373,12 +380,18 @@ class _TeamDisplay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (teamLogo.isNotEmpty)
-          Image.network(
-            teamLogo,
+          SizedBox(
             width: 72,
             height: 72,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 72),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Image.network(
+                teamLogo,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) =>
+                    teamLogoFallback(teamId, size: 72),
+              ),
+            ),
           ),
         const SizedBox(height: 8),
         Text(teamName, textAlign: TextAlign.center, style: Eyebrow.style),
@@ -390,7 +403,8 @@ class _TeamDisplay extends StatelessWidget {
 class _TeamDisplay2 extends StatelessWidget {
   final int teamId;
   final String teamName, teamLogo;
-  const _TeamDisplay2({required this.teamId, required this.teamName, required this.teamLogo});
+  const _TeamDisplay2(
+      {required this.teamId, required this.teamName, required this.teamLogo});
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +448,8 @@ class _MatchInfo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Container(width: 24, height: 1, color: Colors.white.withValues(alpha:0.3)),
+        Container(
+            width: 24, height: 1, color: Colors.white.withValues(alpha: 0.3)),
         const SizedBox(height: 8),
         Text(
           '${leagueName ?? 'League'}  ${match?.roundName ?? ''}',

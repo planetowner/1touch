@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/models/playerdata.dart';
 
 // Feature Modules
@@ -21,6 +22,7 @@ import 'package:onetouch/WelcomeScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await currentUserPreferences.initialize();
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,

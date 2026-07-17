@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/WelcomeLoadingScreen.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/models/team.dart';
 
@@ -18,6 +19,7 @@ class RankFavoriteTeamsScreen extends StatefulWidget {
 
 class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
   late List<Team> _myTeams;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -56,6 +58,22 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
       final team = _myTeams.removeAt(oldIndex);
       _myTeams.insert(newIndex, team);
     });
+  }
+
+  Future<void> _completeOnboarding() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    await currentUserPreferences.updateTeamSelection(
+      _myTeams.map((team) => team.teamId),
+    );
+    if (!mounted) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()),
+    );
+    if (mounted) setState(() => _isSaving = false);
   }
 
   @override
@@ -141,19 +159,25 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const WelcomeLoadingScreen()),
-                        ),
+                        onPressed: _isSaving ? null : _completeOnboarding,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 56),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: Text("CONTINUE",
-                            style: Body2_b.style.copyWith(color: Colors.black)),
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.black,
+                                ),
+                              )
+                            : Text("CONTINUE",
+                                style: Body2_b.style
+                                    .copyWith(color: Colors.black)),
                       ),
                     ],
                   ),

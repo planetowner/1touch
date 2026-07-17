@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../core/stylesheet_dark.dart';
-import '../core/favorite_team.dart';
+import '../core/user_preferences.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
+import '../models/home_content_item.dart';
 import '../models/mock_data.dart';
+import '../data/home_content_service.dart';
 import 'package:onetouch/features/index.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,6 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   Color _teamColor = const Color(0xFFD82457);
   int? _activeFavoriteTeamId;
+  final HomeContentService _contentService = HomeContentService();
+  List<HomeContentItem> _highlights = List.of(homeContentFallbackItems);
+  List<HomeContentItem> _news = List.of(homeContentFallbackItems);
+  int _contentRequestId = 0;
 
   @override
   void initState() {
@@ -34,17 +40,13 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       });
 
-    final initialFavoriteId =
-        mockUserProfiles.firstWhere((p) => p.userId == 1001).favoriteTeamId ??
-            followingTeamIds(1001).first;
-    _reloadWithFavorite(initialFavoriteId);
+    _reloadWithFavorite(currentUserPreferences.favoriteTeamId.value);
   }
 
   void _reloadWithFavorite(int newFavoriteId) {
     _activeFavoriteTeamId = newFavoriteId;
-    FavoriteTeam.id.value = newFavoriteId;
 
-    final followingIds = followingTeamIds(1001);
+    final followingIds = currentUserPreferences.followedTeamIds.value;
     final ordered = [
       newFavoriteId,
       ...followingIds.where((id) => id != newFavoriteId),
@@ -71,45 +73,46 @@ class _HomeScreenState extends State<HomeScreen> {
       myTeam = teams;
       isLoading = false;
     });
+
+    _loadHomeContent(newFavoriteId);
+  }
+
+  void _switchFavoriteTeam(int teamId) {
+    currentUserPreferences.setFavoriteTeam(teamId);
+    _reloadWithFavorite(teamId);
+  }
+
+  Future<void> _loadHomeContent(int favoriteTeamId) async {
+    final requestId = ++_contentRequestId;
+    final results = await Future.wait([
+      _contentService.fetchHighlights(favoriteTeamId: favoriteTeamId),
+      _contentService.fetchNews(),
+    ]);
+
+    if (!mounted || requestId != _contentRequestId) return;
+    setState(() {
+      _highlights = _withFallbacks(results[0]);
+      _news = _withFallbacks(results[1]);
+    });
+  }
+
+  List<HomeContentItem> _withFallbacks(List<HomeContentItem> items) {
+    final result = items.take(homeContentFallbackItems.length).toList();
+    while (result.length < homeContentFallbackItems.length) {
+      result.add(homeContentFallbackItems[result.length]);
+    }
+    return result;
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _contentService.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<List<Object>> team = [
-      [
-        "FC Barcelona",
-        "La Liga 1st",
-        "TeamLogos/Barcelona.png",
-        "100",
-        "200",
-        {
-          "title": "Manchester United v. Brighton | PREMIER LEAGUE",
-          "source": "NBC Sports",
-          "time": "1 day ago",
-          "image": "assets/highlight1.png"
-        }
-      ],
-      [
-        "FC Barcelona",
-        "La Liga 1st",
-        "TeamLogos/Barcelona.png",
-        "100",
-        "200",
-        {
-          "title": "Manchester United v. Brighton | PREMIER LEAGUE",
-          "source": "NBC Sports",
-          "time": "1 day ago",
-          "image": "assets/highlight1.png"
-        }
-      ],
-    ];
-
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
 
     if (isLoading) {
@@ -204,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             context,
                             initialFavoriteTeamId:
                                 _activeFavoriteTeamId ?? myTeam.first.id,
-                            onSwitch: _reloadWithFavorite,
+                            onSwitch: _switchFavoriteTeam,
                           ),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -271,10 +274,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "HIGHLIGHTS"),
-                  MyHighlights(highlights: team),
+                  MyHighlights(highlights: _highlights),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "NEWS"),
-                  MyNews(news: team),
+                  MyNews(news: _news),
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Container(

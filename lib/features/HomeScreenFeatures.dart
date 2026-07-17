@@ -1,13 +1,15 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
 import '../models/league.dart';
+import '../models/home_content_item.dart';
 import '../models/mock_data.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/stylesheet_dark.dart";
+import 'package:onetouch/core/user_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // 1. Converted _showSyncDialog to a reusable Widget class
 class SyncDialog extends StatelessWidget {
@@ -112,7 +114,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   @override
   void initState() {
     super.initState();
-    _followingTeams = followingTeamIds(1001).map((id) {
+    _followingTeams = currentUserPreferences.followedTeamIds.value.map((id) {
       final t = mockTeamById(id);
       final leagueId = fixturesByTeam(id).firstOrNull?.leagueId;
       final position =
@@ -694,65 +696,44 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
   }
 }
 
-class MyHighlights extends StatefulWidget {
-  const MyHighlights({super.key, this.highlights});
+class MyHighlights extends StatelessWidget {
+  const MyHighlights({super.key, required this.highlights});
 
-  final highlights;
+  final List<HomeContentItem> highlights;
 
   @override
-  State<MyHighlights> createState() => _MyHighlightsState();
+  Widget build(BuildContext context) => _HomeContentList(items: highlights);
 }
 
-class _MyHighlightsState extends State<MyHighlights> {
+class MyNews extends StatelessWidget {
+  const MyNews({super.key, required this.news});
+
+  final List<HomeContentItem> news;
+
+  @override
+  Widget build(BuildContext context) => _HomeContentList(items: news);
+}
+
+class _HomeContentList extends StatelessWidget {
+  const _HomeContentList({required this.items});
+
+  final List<HomeContentItem> items;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      // height: 300, // Fixed height to prevent overflow
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(
-            widget.highlights?.length ?? 0,
-                (i) => Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      widget.highlights![i][5]["image"] as String,
-                      // Logo path
-                      width: 119,
-                      height: 68,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.error,
-                          color:
-                          Colors.red), // Error handling for missing image
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 210,
-                        height: 37,
-                        child: Text(
-                          widget.highlights![i][5]["title"] as String,
-                          style: Body1_b.style,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "${widget.highlights![i][5]["source"]} ${widget.highlights![i][5]["time"]}",
-                        style: Body2.style,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List.generate(
+          items.length,
+          (index) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _HomeContentCard(
+              key: ValueKey('${items[index].destinationUrl}-$index'),
+              item: items[index],
+              fallback:
+                  homeContentFallbackItems[index % homeContentFallbackItems.length],
             ),
           ),
         ),
@@ -761,67 +742,114 @@ class _MyHighlightsState extends State<MyHighlights> {
   }
 }
 
-class MyNews extends StatefulWidget {
-  const MyNews({super.key, this.news});
+class _HomeContentCard extends StatefulWidget {
+  const _HomeContentCard({
+    super.key,
+    required this.item,
+    required this.fallback,
+  });
 
-  final news;
+  final HomeContentItem item;
+  final HomeContentItem fallback;
 
   @override
-  State<MyNews> createState() => _MyNewsState();
+  State<_HomeContentCard> createState() => _HomeContentCardState();
 }
 
-class _MyNewsState extends State<MyNews> {
+class _HomeContentCardState extends State<_HomeContentCard> {
+  bool _useFallback = false;
+
+  @override
+  void didUpdateWidget(_HomeContentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.imageUrl != widget.item.imageUrl) {
+      _useFallback = false;
+    }
+  }
+
+  Future<void> _openDestination(String? value) async {
+    final uri = value == null ? null : Uri.tryParse(value);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _handleImageError() {
+    if (_useFallback) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_useFallback) setState(() => _useFallback = true);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      // height: 300, // Fixed height to prevent overflow
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(
-            widget.news?.length ?? 0,
-                (i) => Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      widget.news![i][5]["image"] as String, // Logo path
-                      width: 119,
-                      height: 68,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.error,
-                          color:
-                          Colors.red), // Error handling for missing image
-                    ),
+    final item = _useFallback ? widget.fallback : widget.item;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: item.destinationUrl == null
+          ? null
+          : () => _openDestination(item.destinationUrl),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: _buildImage(),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 37,
+                  child: Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Body1_b.style,
                   ),
-                  SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 210,
-                        height: 37,
-                        child: Text(
-                          widget.news![i][5]["title"] as String,
-                          style: Body1_b.style,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "${widget.news![i][5]["source"]} ${widget.news![i][5]["time"]}",
-                        style: Body2.style,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${item.source} ${item.timeLabel}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Body2.style,
+                ),
+              ],
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    final imageUrl = widget.item.imageUrl;
+    if (!_useFallback && imageUrl != null && imageUrl.isNotEmpty) {
+      return Image.network(
+        imageUrl,
+        width: 119,
+        height: 68,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          _handleImageError();
+          return _fallbackImage();
+        },
+      );
+    }
+    return _fallbackImage();
+  }
+
+  Widget _fallbackImage() {
+    return Image.asset(
+      widget.fallback.fallbackAsset,
+      width: 119,
+      height: 68,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const SizedBox(
+        width: 119,
+        height: 68,
+        child: Icon(Icons.error, color: Colors.red),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/models/league.dart';
 import 'package:onetouch/models/team.dart';
@@ -50,9 +51,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
           .where((s) => s.leagueId == league.leagueId)
           .toList()
         ..sort((a, b) => a.position.compareTo(b.position));
-      _leagueTeams[league.leagueId] = standingsForLeague
-          .map((s) => mockTeamById(s.teamId))
-          .toList();
+      _leagueTeams[league.leagueId] =
+          standingsForLeague.map((s) => mockTeamById(s.teamId)).toList();
     }
 
     selectedLeague = _leagues.first.name;
@@ -96,8 +96,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
   // --- OVERLAY LOGIC ---
 
-  void _toggleDropdown() =>
-      _isDropdownOpen ? _removeOverlay() : _showOverlay();
+  void _toggleDropdown() => _isDropdownOpen ? _removeOverlay() : _showOverlay();
 
   void _removeOverlay() {
     _overlayEntry?.remove();
@@ -157,12 +156,11 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                 children: [
                                   Image.network(
                                     league.imagePath ?? '',
-                                    height: 20,
-                                    width: 20,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                        Icons.shield,
-                                        size: 20,
-                                        color: Colors.white),
+                                    width: 24,
+                                    height: 24,
+                                    errorBuilder: (_, __, ___) =>
+                                        leagueLogoFallback(league.leagueId,
+                                            size: 24),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -286,8 +284,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
-                    padding:
-                        EdgeInsets.symmetric(horizontal: sidePadding),
+                    padding: EdgeInsets.symmetric(horizontal: sidePadding),
                     itemCount: teams.length,
                     itemBuilder: (context, index) {
                       final team = teams[index];
@@ -400,8 +397,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                             runSpacing: 10,
                             children: _selectedTeams.values.map((team) {
                               return Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                                padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF333333),
                                   borderRadius: BorderRadius.circular(16),
@@ -418,9 +414,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                     GestureDetector(
                                       onTap: () {
                                         setState(() {
-                                          _selectedTeams.removeWhere(
-                                              (_, v) =>
-                                                  v.teamId == team.teamId);
+                                          _selectedTeams.removeWhere((_, v) =>
+                                              v.teamId == team.teamId);
                                         });
                                       },
                                       child: const Icon(Icons.close,
@@ -448,8 +443,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => RankFavoriteTeamsScreen(
-                                  selectedTeams:
-                                      _selectedTeams.values.toList(),
+                                  selectedTeams: _selectedTeams.values.toList(),
                                 ),
                               ),
                             );
@@ -495,12 +489,10 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                 children: [
                   Image.network(
                     league.imagePath ?? '',
-                    height: 24,
                     width: 24,
-                    errorBuilder: (_, __, ___) => const Icon(
-                        Icons.sports_soccer,
-                        size: 24,
-                        color: Colors.white),
+                    height: 24,
+                    errorBuilder: (_, __, ___) =>
+                        leagueLogoFallback(league.leagueId, size: 24),
                   ),
                   const SizedBox(width: 8),
                   Text(selectedLeague, style: Heading5.style),

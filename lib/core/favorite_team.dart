@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../models/mock_data.dart';
+import 'package:onetouch/core/user_preferences.dart';
 
 /// Single shared source of truth for the current user's favorite team.
 ///
@@ -9,7 +9,5 @@ import '../models/mock_data.dart';
 class FavoriteTeam {
   FavoriteTeam._();
 
-  static final ValueNotifier<int> id = ValueNotifier<int>(
-    mockUserProfiles.firstWhere((p) => p.userId == 1001).favoriteTeamId ?? 83,
-  );
+  static ValueNotifier<int> get id => currentUserPreferences.favoriteTeamId;
 }

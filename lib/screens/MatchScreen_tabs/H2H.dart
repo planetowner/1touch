@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/mock_data.dart';
 import 'package:intl/intl.dart';
@@ -26,7 +27,7 @@ class _H2HTabState extends State<H2HTab> {
   int get _againstTeamId {
     final homeId = widget.fixture.homeTeamId;
     final awayId = widget.fixture.awayTeamId;
-    final following = followingTeamIds(1001);
+    final following = currentUserPreferences.followedTeamIds.value;
     if (following.contains(homeId)) return awayId;
     if (following.contains(awayId)) return homeId;
     return awayId;

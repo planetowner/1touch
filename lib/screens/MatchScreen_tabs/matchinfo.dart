@@ -136,7 +136,11 @@ class MatchInfoTab extends StatelessWidget {
           MatchEventsSection(events: _goalEvents),
           if (!isLive) ...[
             const SizedBox(height: 24),
-            const MatchHighlights(imageAsset: 'assets/highlight1.png'),
+            MatchHighlights(
+              imageAsset: 'assets/highlight1.png',
+              homeTeamId: homeTeam.teamId,
+              awayTeamId: awayTeam.teamId,
+            ),
             const SizedBox(height: 32),
             const PlayerOfTheMatch(
               rating: '8.9',
