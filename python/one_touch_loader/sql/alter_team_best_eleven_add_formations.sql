@@ -1,0 +1,30 @@
+-- One-time migration from the single-dominant-formation Best Eleven schema.
+-- Run before rebuilding current Best Eleven results with the updated loader.
+
+ALTER TABLE team_best_eleven
+  DROP INDEX uq_tbe_team_season_slot,
+  ADD UNIQUE KEY uq_tbe_team_season_formation_slot
+    (team_id, season_id, formation, slot_key);
+
+CREATE TABLE IF NOT EXISTS team_best_eleven_formations (
+  id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+  team_id             BIGINT NOT NULL,
+  season_id           BIGINT NOT NULL,
+  formation           VARCHAR(20) NOT NULL,
+  matches_used        INT NOT NULL,
+  total_valid_matches INT NOT NULL,
+  is_default          TINYINT(1) NOT NULL DEFAULT 0,
+
+  updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                        ON UPDATE CURRENT_TIMESTAMP,
+
+  UNIQUE KEY uq_tbef_team_season_formation
+    (team_id, season_id, formation),
+  KEY idx_tbef_team_season_default
+    (team_id, season_id, is_default),
+
+  CONSTRAINT chk_tbef_matches
+    CHECK (matches_used > 0 AND total_valid_matches >= matches_used),
+  CONSTRAINT chk_tbef_default
+    CHECK (is_default IN (0, 1))
+);

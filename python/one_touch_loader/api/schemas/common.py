@@ -72,8 +72,20 @@ class BestElevenPlayerOut(BaseModel):
     total_minutes: int = 0
 
 
+class BestElevenFormationOut(BaseModel):
+    formation: str
+    matches_used: int
+    total_valid_matches: int
+    usage_percentage: float
+    is_default: bool
+
+
 class BestElevenResponse(BaseModel):
     formation: str
+    matches_used: int
+    total_valid_matches: int
+    usage_percentage: float
+    formations: List[BestElevenFormationOut] = []
     players: List[BestElevenPlayerOut] = []
 
 
