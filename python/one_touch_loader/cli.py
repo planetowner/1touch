@@ -14,6 +14,7 @@ from one_touch_loader.loaders.xg_standings_loader import (
 from one_touch_loader.loaders.points_pace import (
     build_points_pace_all,
     refresh_points_pace_current,
+    validate_points_pace,
 )
 from one_touch_loader.loaders.highlights_loader import refresh_highlights
 from one_touch_loader.loaders.injuries_loader import (
@@ -65,6 +66,7 @@ Usage:
 
   python -m one_touch_loader.cli points-pace build
   python -m one_touch_loader.cli points-pace refresh-current
+  python -m one_touch_loader.cli points-pace validate
 
   python -m one_touch_loader.cli highlights
   python -m one_touch_loader.cli highlights refresh
@@ -192,6 +194,9 @@ def main():
         elif sub == "refresh-current":
             refresh_points_pace_current()
             print("Points pace refresh-current done.")
+
+        elif sub == "validate":
+            validate_points_pace()
 
         else:
             print(USAGE)
