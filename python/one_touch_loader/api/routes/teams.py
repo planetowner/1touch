@@ -11,8 +11,22 @@ from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
 from ..repos.standings_repo import get_team_standing
 from ..repos.best_eleven_repo import get_best_eleven
+from ..repos.points_pace_repo import (
+    build_current_form_comparison,
+    get_points_pace_series,
+    list_current_form_options,
+)
 from ..repos.transfers_repo import get_latest_window, get_team_transfers_by_window
-from ..schemas.common import TeamOut, FixtureOut, StandingRowOut, BestElevenResponse, TeamTransfersResponse, TransferOut
+from ..schemas.common import (
+    BestElevenResponse,
+    CurrentFormOptionsResponse,
+    CurrentFormResponse,
+    FixtureOut,
+    StandingRowOut,
+    TeamOut,
+    TeamTransfersResponse,
+    TransferOut,
+)
 
 
 router = APIRouter()
@@ -113,6 +127,72 @@ def team_best_eleven(
         )
         raise HTTPException(status_code=404, detail=detail)
     return result
+
+
+@router.get(
+    "/teams/{team_id}/current-form/options",
+    response_model=CurrentFormOptionsResponse,
+)
+def team_current_form_options(
+    team_id: int,
+    search: str | None = Query(default=None, max_length=100),
+    limit: int = Query(default=200, ge=1, le=1000),
+    user_id: int = Depends(get_user_id),
+):
+    ensure_user(user_id)
+    if not get_team(team_id):
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    return {
+        "items": list_current_form_options(search=search, limit=limit),
+        "limit": limit,
+    }
+
+
+@router.get(
+    "/teams/{team_id}/current-form",
+    response_model=CurrentFormResponse,
+)
+def team_current_form(
+    team_id: int,
+    compare_team_id: int = Query(gt=0),
+    compare_season_id: int = Query(gt=0),
+    season_id: int | None = Query(
+        default=None,
+        description="현재 팀의 Big 5 정규리그 season_id (생략 시 현재 시즌)",
+    ),
+    user_id: int = Depends(get_user_id),
+):
+    ensure_user(user_id)
+
+    current_season_id = season_id
+    if current_season_id is None:
+        context = find_team_current_context(team_id)
+        if context is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Current Big 5 team-season not found",
+            )
+        current_season_id = context[1]
+
+    current = get_points_pace_series(team_id, current_season_id)
+    if current is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Current team-season not available for points pace",
+        )
+
+    comparison = get_points_pace_series(
+        compare_team_id,
+        compare_season_id,
+    )
+    if comparison is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Comparison team-season not available for points pace",
+        )
+
+    return build_current_form_comparison(current, comparison)
 
 
 @router.get("/teams/{team_id}/matches")

@@ -89,6 +89,52 @@ class BestElevenResponse(BaseModel):
     players: List[BestElevenPlayerOut] = []
 
 
+class CurrentFormPointOut(BaseModel):
+    round_no: int
+    match_date: Optional[str] = None
+    cumulative_points: int
+
+
+class CurrentFormSeriesOut(BaseModel):
+    team_id: int
+    team_name: Optional[str] = None
+    team_short_code: Optional[str] = None
+    team_logo: Optional[str] = None
+    league_id: int
+    season_id: int
+    season_name: str
+    season_starting_at: Optional[str] = None
+    season_ending_at: Optional[str] = None
+    is_current: bool
+    points: List[CurrentFormPointOut] = []
+
+
+class CurrentFormResponse(BaseModel):
+    current: CurrentFormSeriesOut
+    comparison: CurrentFormSeriesOut
+    max_round: int
+    max_points: int
+
+
+class CurrentFormOptionOut(BaseModel):
+    team_id: int
+    team_name: Optional[str] = None
+    team_short_code: Optional[str] = None
+    team_logo: Optional[str] = None
+    league_id: int
+    season_id: int
+    season_name: str
+    season_starting_at: Optional[str] = None
+    season_ending_at: Optional[str] = None
+    rounds_available: int
+    latest_round: int
+
+
+class CurrentFormOptionsResponse(BaseModel):
+    items: List[CurrentFormOptionOut] = []
+    limit: int
+
+
 class TransferOut(BaseModel):
     transfer_id: int
     player_id: int
