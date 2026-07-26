@@ -2,16 +2,16 @@
 Best Eleven loader
 ==================
 1) fetch_and_store_lineups  – Sportmonks fixture → fixture_lineups / fixture_formations
-2) compute_best_eleven      – formation_field slot 별 선발 횟수·출장 시간으로 Best 11 계산
-3) refresh_best_eleven      – 최근 종료 경기 라인업 적재 → 영향 팀만 재계산
+2) compute_best_eleven      – Big 5 팀의 동일 시즌명 전 대회 라인업을 합산해 Best 11 계산
+3) refresh_best_eleven      – 현재 캠페인의 미완 라인업 적재 → 영향 팀만 재계산
 """
 from __future__ import annotations
 
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import requests
 
-from ..core.db import fetch_all, upsert_many, execute
+from ..core.db import fetch_all, transaction, upsert_many
 from ..core.sportmonks import SportmonksClient
 
 
@@ -19,29 +19,67 @@ from ..core.sportmonks import SportmonksClient
 # SQL
 # ---------------------------------------------------------------------------
 
-# Every current-season past fixture whose lineups are not yet complete. A
-# fixture is complete only when BOTH participants have lineup rows — checking
-# "any lineup row exists" would freeze a partial load (e.g. only the home team's
-# lineup was published when we fetched) as if it were done, so the other team's
-# lineup would never be retried. Re-fetching a past fixture returns both teams,
-# so this converges. (The is_current scope keeps the set small in steady state
-# and avoids forever-rescanning historical fixtures; re-storing an already-
-# present team's rows is a harmless upsert.)
-SQL_CURRENT_PAST_FIXTURES_INCOMPLETE_LINEUP = """
+BIG5_LEAGUE_IDS: Tuple[int, ...] = (8, 82, 301, 384, 564)
+BIG5_LEAGUE_IDS_SQL = ", ".join(str(league_id) for league_id in BIG5_LEAGUE_IDS)
+
+# A team-fixture lineup is usable only when it has a non-empty formation and
+# exactly 11 distinct starters occupying 11 distinct, non-empty formation
+# slots. Keep this predicate in one place so refresh selection and Best Eleven
+# computation cannot disagree about which fixtures are complete.
+def _sql_has_valid_starters(fixture_id_expr: str, team_id_expr: str) -> str:
+    return f"""
+    EXISTS (
+      SELECT 1
+      FROM fixture_lineups fl_valid
+      WHERE fl_valid.fixture_id = {fixture_id_expr}
+        AND fl_valid.team_id = {team_id_expr}
+        AND fl_valid.type_id = 11
+        AND fl_valid.formation_field IS NOT NULL
+        AND TRIM(fl_valid.formation_field) <> ''
+      GROUP BY fl_valid.fixture_id, fl_valid.team_id
+      HAVING COUNT(*) = 11
+         AND COUNT(DISTINCT fl_valid.player_id) = 11
+         AND COUNT(DISTINCT fl_valid.formation_field) = 11
+    )
+    """.strip()
+
+
+def _sql_has_valid_team_lineup(fixture_id_expr: str, team_id_expr: str) -> str:
+    return f"""
+    EXISTS (
+      SELECT 1
+      FROM fixture_formations ff_valid
+      WHERE ff_valid.fixture_id = {fixture_id_expr}
+        AND ff_valid.team_id = {team_id_expr}
+        AND TRIM(ff_valid.formation) <> ''
+        AND {_sql_has_valid_starters(fixture_id_expr, team_id_expr)}
+    )
+    """.strip()
+
+
+# Every past fixture in a current Big 5 club campaign for which either
+# participant does not yet have a valid formation plus 11 complete starter
+# slots. Competition season IDs differ (league/cup/Europe), so the fixture's
+# season name is matched to the tracked club's current domestic-league season
+# name instead of trusting the competition season's is_current flag.
+SQL_CURRENT_PAST_FIXTURES_INCOMPLETE_LINEUP = f"""
 SELECT f.fixture_id, f.season_id, f.home_team_id, f.away_team_id
 FROM fixtures f
-JOIN seasons s ON s.season_id = f.season_id
+JOIN seasons source_season ON source_season.season_id = f.season_id
 WHERE f.status = 'past'
-  AND s.is_current = 1
+  AND EXISTS (
+    SELECT 1
+    FROM team_seasons ts
+    JOIN seasons canonical_season
+      ON canonical_season.season_id = ts.season_id
+    WHERE ts.team_id IN (f.home_team_id, f.away_team_id)
+      AND canonical_season.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+      AND canonical_season.is_current = 1
+      AND canonical_season.name = source_season.name
+  )
   AND (
-    NOT EXISTS (
-      SELECT 1 FROM fixture_lineups fl
-      WHERE fl.fixture_id = f.fixture_id AND fl.team_id = f.home_team_id
-    )
-    OR NOT EXISTS (
-      SELECT 1 FROM fixture_lineups fl
-      WHERE fl.fixture_id = f.fixture_id AND fl.team_id = f.away_team_id
-    )
+    NOT {_sql_has_valid_team_lineup("f.fixture_id", "f.home_team_id")}
+    OR NOT {_sql_has_valid_team_lineup("f.fixture_id", "f.away_team_id")}
   )
 ORDER BY f.starting_at ASC
 """
@@ -71,24 +109,73 @@ ON DUPLICATE KEY UPDATE
   formation = VALUES(formation)
 """
 
-# 최다 사용 포메이션
-SQL_DOMINANT_FORMATION = """
-SELECT formation, COUNT(*) AS cnt
-FROM fixture_formations
-WHERE team_id = %s AND season_id = %s
-GROUP BY formation
-ORDER BY cnt DESC, formation ASC
-LIMIT 1
+# Source competition season -> tracked Big 5 team's canonical domestic season.
+# LIMIT 2 lets the caller surface duplicate canonical memberships rather than
+# silently picking one.
+SQL_CANONICAL_SEASON_FOR_TEAM_SOURCE_SEASON = f"""
+SELECT canonical_season.season_id
+FROM seasons source_season
+JOIN seasons canonical_season
+  ON canonical_season.name = source_season.name
+JOIN team_seasons ts
+  ON ts.season_id = canonical_season.season_id
+WHERE source_season.season_id = %s
+  AND ts.team_id = %s
+  AND canonical_season.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+LIMIT 2
+"""
+
+
+# 포메이션별 사용 경기 수. 대표 정규리그 season_id의 시즌명을 기준으로 모든
+# 대회를 합산하고, 부분 라인업 경기는 포메이션 횟수와 선수 집계 모두에서 제외한다.
+SQL_FORMATION_COUNTS = f"""
+SELECT ff.formation, COUNT(*) AS cnt
+FROM fixture_formations ff
+JOIN fixtures f
+  ON f.fixture_id = ff.fixture_id
+ AND f.season_id = ff.season_id
+JOIN seasons source_season
+  ON source_season.season_id = ff.season_id
+JOIN seasons canonical_season
+  ON canonical_season.season_id = %s
+ AND canonical_season.name = source_season.name
+JOIN team_seasons ts
+  ON ts.team_id = ff.team_id
+ AND ts.season_id = canonical_season.season_id
+WHERE ff.team_id = %s
+  AND canonical_season.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+  AND f.status = 'past'
+  AND TRIM(ff.formation) <> ''
+  AND {_sql_has_valid_starters("ff.fixture_id", "ff.team_id")}
+GROUP BY ff.formation
+ORDER BY cnt DESC, ff.formation ASC
 """
 # formation ASC is a deterministic tiebreak when two formations are used the
-# same number of times: it only breaks exact ties (cnt is the real criterion),
-# so the chosen dominant formation is reproducible instead of DB-order-arbitrary.
+# same number of times. The first row is the default/dominant formation.
 
-# 해당 포메이션을 쓴 경기 목록
-SQL_FIXTURE_IDS_WITH_FORMATION = """
-SELECT fixture_id
-FROM fixture_formations
-WHERE team_id = %s AND season_id = %s AND formation = %s
+# Retained for read-only diagnostics and compatibility with existing commands.
+SQL_DOMINANT_FORMATION = SQL_FORMATION_COUNTS + "\nLIMIT 1"
+
+# 같은 캠페인의 전 대회 중 해당 포메이션을 썼고 선발 11개 슬롯이 완전한 경기 목록
+SQL_FIXTURE_IDS_WITH_FORMATION = f"""
+SELECT ff.fixture_id
+FROM fixture_formations ff
+JOIN fixtures f
+  ON f.fixture_id = ff.fixture_id
+ AND f.season_id = ff.season_id
+JOIN seasons source_season
+  ON source_season.season_id = ff.season_id
+JOIN seasons canonical_season
+  ON canonical_season.season_id = %s
+ AND canonical_season.name = source_season.name
+JOIN team_seasons ts
+  ON ts.team_id = ff.team_id
+ AND ts.season_id = canonical_season.season_id
+WHERE ff.team_id = %s
+  AND canonical_season.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+  AND f.status = 'past'
+  AND ff.formation = %s
+  AND {_sql_has_valid_starters("ff.fixture_id", "ff.team_id")}
 """
 
 # slot별 선발 랭킹 (해당 포메이션 경기만)
@@ -105,7 +192,6 @@ SELECT
   COALESCE(SUM(fl.minutes_played), 0) AS total_minutes
 FROM fixture_lineups fl
 WHERE fl.team_id = %s
-  AND fl.season_id = %s
   AND fl.type_id = 11
   AND fl.fixture_id IN ({placeholders})
 GROUP BY fl.formation_field,
@@ -132,6 +218,80 @@ INSERT INTO team_best_eleven (
 ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
+SQL_DELETE_BEST_ELEVEN_FORMATIONS = """
+DELETE FROM team_best_eleven_formations
+WHERE team_id = %s AND season_id = %s
+"""
+
+SQL_INSERT_BEST_ELEVEN_FORMATION = """
+INSERT INTO team_best_eleven_formations (
+  team_id, season_id, formation,
+  matches_used, total_valid_matches, is_default
+) VALUES (%s,%s,%s,%s,%s,%s)
+"""
+
+
+SQL_BIG5_CANONICAL_TEAM_SEASONS = f"""
+SELECT ts.team_id, ts.season_id
+FROM team_seasons ts
+JOIN seasons s ON s.season_id = ts.season_id
+WHERE s.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+  AND (%s = 0 OR s.is_current = 1)
+ORDER BY s.starting_at ASC, ts.team_id ASC
+"""
+
+
+# Old code stored separate rows under cup/European competition season IDs.
+# Only (team_id, domestic Big 5 season_id) is canonical after aggregation.
+SQL_DELETE_NONCANONICAL_BEST_ELEVEN = f"""
+DELETE tbe
+FROM team_best_eleven tbe
+LEFT JOIN team_seasons ts
+  ON ts.team_id = tbe.team_id
+ AND ts.season_id = tbe.season_id
+LEFT JOIN seasons s
+  ON s.season_id = ts.season_id
+WHERE ts.team_id IS NULL
+   OR s.league_id NOT IN ({BIG5_LEAGUE_IDS_SQL})
+"""
+
+
+SQL_COUNT_NONCANONICAL_BEST_ELEVEN = f"""
+SELECT COUNT(*)
+FROM team_best_eleven tbe
+LEFT JOIN team_seasons ts
+  ON ts.team_id = tbe.team_id
+ AND ts.season_id = tbe.season_id
+LEFT JOIN seasons s
+  ON s.season_id = ts.season_id
+WHERE ts.team_id IS NULL
+   OR s.league_id NOT IN ({BIG5_LEAGUE_IDS_SQL})
+"""
+
+SQL_DELETE_NONCANONICAL_BEST_ELEVEN_FORMATIONS = f"""
+DELETE tbef
+FROM team_best_eleven_formations tbef
+LEFT JOIN team_seasons ts
+  ON ts.team_id = tbef.team_id
+ AND ts.season_id = tbef.season_id
+LEFT JOIN seasons s
+  ON s.season_id = ts.season_id
+WHERE ts.team_id IS NULL
+   OR s.league_id NOT IN ({BIG5_LEAGUE_IDS_SQL})
+"""
+
+SQL_COUNT_NONCANONICAL_BEST_ELEVEN_FORMATIONS = f"""
+SELECT COUNT(*)
+FROM team_best_eleven_formations tbef
+LEFT JOIN team_seasons ts
+  ON ts.team_id = tbef.team_id
+ AND ts.season_id = tbef.season_id
+LEFT JOIN seasons s
+  ON s.season_id = ts.season_id
+WHERE ts.team_id IS NULL
+   OR s.league_id NOT IN ({BIG5_LEAGUE_IDS_SQL})
+"""
+
 
 # ---------------------------------------------------------------------------
 # helpers
@@ -139,6 +299,27 @@ INSERT INTO team_best_eleven (
 
 MINUTES_PLAYED_TYPE_ID = 119  # Sportmonks type_id for "Minutes Played"
 STARTING_LINEUP_TYPE_ID = 11
+
+
+def find_canonical_season_id(team_id: int, source_season_id: int) -> Optional[int]:
+    """Map a competition season to the team's Big 5 domestic campaign season.
+
+    League, cup and European competitions use different season IDs, while the
+    shared season name (for example, 2025/2026) identifies the club campaign.
+    Teams outside the tracked Big 5 team_seasons scope return None.
+    """
+    rows = fetch_all(
+        SQL_CANONICAL_SEASON_FOR_TEAM_SOURCE_SEASON,
+        (source_season_id, team_id),
+    )
+    if not rows:
+        return None
+    if len(rows) > 1:
+        raise ValueError(
+            f"team_id={team_id} source_season_id={source_season_id} maps to "
+            f"multiple Big 5 canonical seasons: {[int(row[0]) for row in rows]}"
+        )
+    return int(rows[0][0])
 
 
 def _extract_minutes_played(details: list, *, require_minutes: bool) -> int | None:
@@ -172,6 +353,12 @@ def _parse_formation_to_expected_slots(formation: str) -> List[str]:
         count = int(count_str)
         for col in range(1, count + 1):
             slots.append(f"{row_idx}:{col}")
+
+    if len(slots) != 11:
+        raise ValueError(
+            f"Formation must describe 10 outfield players plus one goalkeeper: "
+            f"formation={formation!r} slots={len(slots)}"
+        )
 
     return slots
 
@@ -337,65 +524,52 @@ def _assign_players_to_slots(
     }
 
 
-def compute_best_eleven(team_id: int, season_id: int) -> None:
-    """
-    1) 최다 포메이션 결정
-    2) 해당 포메이션 경기만 필터
-    3) formation_field slot별 top-1 선발 선수 선택
-    4) team_best_eleven 테이블에 저장
-    """
-    # Step 1: dominant formation
-    rows = fetch_all(SQL_DOMINANT_FORMATION, (team_id, season_id))
-    if not rows:
-        print(f"  [best11] team {team_id} season {season_id}: no formations found, skip")
-        return
-
-    formation = rows[0][0]
-    formation_count = rows[0][1]
-
-    # Step 2: 해당 포메이션을 쓴 경기 IDs
-    fix_rows = fetch_all(SQL_FIXTURE_IDS_WITH_FORMATION, (team_id, season_id, formation))
-    fixture_ids = [int(r[0]) for r in fix_rows]
+def _build_formation_best_eleven_rows(
+    team_id: int,
+    season_id: int,
+    formation: str,
+) -> List[Tuple]:
+    """Build exactly 11 persisted player rows for one formation."""
+    fix_rows = fetch_all(
+        SQL_FIXTURE_IDS_WITH_FORMATION,
+        (season_id, team_id, formation),
+    )
+    fixture_ids = [int(row[0]) for row in fix_rows]
 
     if not fixture_ids:
-        return
+        raise RuntimeError(
+            f"team_id={team_id} canonical season_id={season_id} "
+            f"formation={formation} has no valid fixtures"
+        )
 
-    # Step 3: slot별 랭킹
     placeholders = ",".join(["%s"] * len(fixture_ids))
     sql = SQL_SLOT_RANKING.replace("{placeholders}", placeholders)
-    params = (team_id, season_id, *fixture_ids)
-    ranking_rows = fetch_all(sql, params)
+    ranking_rows = fetch_all(sql, (team_id, *fixture_ids))
 
-    # ranking_rows를 slot별로 그룹핑 (정렬 유지: starts DESC, total_minutes DESC)
-    # r = (formation_field, player_id, player_name, player_image,
-    #      position_id, position_name, detailed_position_name, starts, total_minutes)
+    # ranking_rows order is starts DESC, total_minutes DESC, player_id ASC.
     from collections import defaultdict
 
     slot_candidates: Dict[str, List[Tuple]] = defaultdict(list)
-
     for row in ranking_rows:
         slot = row[0]
         if slot:
             slot_candidates[slot].append(row)
 
-    # 포메이션에서 expected slot 목록 계산
     expected_slots = _parse_formation_to_expected_slots(formation)
-
-    # slot별 선수 배정 (한 선수는 한 slot)
     best = _assign_players_to_slots(expected_slots, slot_candidates)
+    missing = [slot for slot in expected_slots if slot not in best]
 
-    # 기존 row 제거 후 새 결과 저장
-    execute(SQL_DELETE_BEST_ELEVEN, (team_id, season_id))
+    if missing:
+        raise RuntimeError(
+            f"team_id={team_id} canonical season_id={season_id} "
+            f"formation={formation} produced incomplete Best Eleven: "
+            f"slots={len(best)}/{len(expected_slots)} missing={missing}"
+        )
 
-    insert_rows = []
-
+    rows: List[Tuple] = []
     for index, slot_key in enumerate(expected_slots):
-        if slot_key not in best:
-            continue
-
         row = best[slot_key]
-
-        insert_rows.append(
+        rows.append(
             (
                 team_id,
                 season_id,
@@ -407,22 +581,86 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
                 row[3],        # player_image
                 row[5],        # position_name
                 row[6],        # detailed_position_name
-                int(row[7]),   # starts
-                int(row[8]),   # total_minutes
+                int(row[7]),   # starts in this formation
+                int(row[8]),   # total minutes in this formation
             )
         )
 
-    if insert_rows:
-        upsert_many(SQL_INSERT_BEST_ELEVEN, insert_rows)
+    return rows
 
-    slot_count = len(insert_rows)
-    missing = [slot for slot in expected_slots if slot not in best]
-    warn = f" ⚠ missing slots: {missing}" if missing else ""
 
-    print(
-        f"  [best11] team {team_id} season {season_id}: "
-        f"formation={formation} (used {formation_count}x), slots={slot_count}/11{warn}"
+def compute_best_eleven(team_id: int, season_id: int) -> bool:
+    """
+    season_id는 team_seasons의 Big 5 정규리그 대표 시즌 ID다.
+
+    1) 대표 시즌과 시즌명이 같은 모든 대회의 포메이션 사용 횟수 계산
+    2) 포메이션마다 해당 경기만 사용해 slot별 Best Eleven 계산
+    3) 포메이션 요약과 모든 포메이션의 선수 결과를 원자적으로 교체
+
+    유효 경기가 없으면 기존 파생 결과를 삭제하고 False를 반환한다.
+    """
+    count_rows = fetch_all(SQL_FORMATION_COUNTS, (season_id, team_id))
+    formation_counts = [
+        (str(formation), int(matches_used))
+        for formation, matches_used in count_rows
+    ]
+
+    if not formation_counts:
+        with transaction() as conn:
+            with conn.cursor() as cur:
+                cur.execute(SQL_DELETE_BEST_ELEVEN, (team_id, season_id))
+                cur.execute(
+                    SQL_DELETE_BEST_ELEVEN_FORMATIONS,
+                    (team_id, season_id),
+                )
+        print(
+            f"  [best11] team {team_id} canonical season {season_id}: "
+            "no valid formations; cleared cached result"
+        )
+        return False
+
+    total_valid_matches = sum(matches_used for _, matches_used in formation_counts)
+    formation_rows = []
+    player_rows: List[Tuple] = []
+
+    for index, (formation, matches_used) in enumerate(formation_counts):
+        formation_rows.append(
+            (
+                team_id,
+                season_id,
+                formation,
+                matches_used,
+                total_valid_matches,
+                1 if index == 0 else 0,
+            )
+        )
+        player_rows.extend(
+            _build_formation_best_eleven_rows(team_id, season_id, formation)
+        )
+
+    # Derived-cache replacement must be atomic: readers see either the old
+    # complete formation set or the new one, never a DELETE/INSERT gap.
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(SQL_DELETE_BEST_ELEVEN, (team_id, season_id))
+            cur.execute(
+                SQL_DELETE_BEST_ELEVEN_FORMATIONS,
+                (team_id, season_id),
+            )
+            cur.executemany(SQL_INSERT_BEST_ELEVEN_FORMATION, formation_rows)
+            cur.executemany(SQL_INSERT_BEST_ELEVEN, player_rows)
+
+    default_formation, default_matches = formation_counts[0]
+    formation_summary = ", ".join(
+        f"{formation}={matches_used}/{total_valid_matches}"
+        for formation, matches_used in formation_counts
     )
+    print(
+        f"  [best11] team {team_id} canonical season {season_id}: "
+        f"default={default_formation} ({default_matches}x), "
+        f"formations=[{formation_summary}], player_rows={len(player_rows)}"
+    )
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -431,12 +669,13 @@ def compute_best_eleven(team_id: int, season_id: int) -> None:
 
 def refresh_best_eleven() -> None:
     """
-    라인업이 아직 완전하지 않은(양팀 중 한 팀이라도 라인업이 없는) 현재 시즌
-    과거 경기의 라인업을 적재하고, 영향받은 팀의 Best Eleven을 재계산한다.
+    Big 5 팀의 현재 정규리그 시즌명과 같은 모든 대회에서, 라인업이 아직
+    완전하지 않은(양 팀 중 한 팀이라도 유효한 포메이션 또는 서로 다른 11명의
+    선발/포메이션 슬롯이 없는) 과거 경기의 라인업을 적재한다. 그 뒤 영향받은
+    Big 5 팀을 대표 정규리그 season_id로 매핑해 전 대회 Best Eleven을 재계산한다.
 
-    "채워야 할 집합"(is_current + 라인업 미완)을 그대로 처리하므로 초기 구축과
-    증분 갱신을 겸한다. 미완 라인업은 경기 시점과 무관하게 항상 재시도되어
-    시간 윈도우 밖으로 새는 경기도, 부분 적재로 동결되는 경기도 없다.
+    현재 대표 시즌명 + 라인업 미완 집합을 그대로 처리하므로 초기 구축과 증분
+    갱신을 겸한다. 컵/유럽대항전 season.is_current 값에는 의존하지 않는다.
     """
     rows = fetch_all(SQL_CURRENT_PAST_FIXTURES_INCOMPLETE_LINEUP)
 
@@ -445,16 +684,12 @@ def refresh_best_eleven() -> None:
         return
 
     sm = SportmonksClient()
-    affected: Dict[int, int] = {}  # team_id → season_id
+    affected: Set[Tuple[int, int]] = set()  # (team_id, canonical season_id)
     total = len(rows)
 
     for index, (fixture_id, season_id, home_id, away_id) in enumerate(rows, 1):
         try:
-            team_ids = fetch_and_store_lineups(int(fixture_id), int(season_id), sm)
-
-            for team_id in team_ids:
-                affected[team_id] = int(season_id)
-
+            fetch_and_store_lineups(int(fixture_id), int(season_id), sm)
         except (requests.RequestException, ValueError) as error:
             # Sportmonks network/HTTP failures, plus malformed Sportmonks
             # payloads (SportmonksClient raises ValueError on shape mismatch)
@@ -465,12 +700,24 @@ def refresh_best_eleven() -> None:
             print(f"  [best11] ERROR fixture {fixture_id}: {error}")
             continue
 
+        # Map the source competition season to each participant's canonical
+        # Big 5 domestic season. External opponents without team_seasons
+        # membership are source data only and intentionally have no result.
+        # Cardinality errors from this DB-only mapping intentionally bubble up.
+        for team_id in (int(home_id), int(away_id)):
+            canonical_season_id = find_canonical_season_id(
+                team_id,
+                int(season_id),
+            )
+            if canonical_season_id is not None:
+                affected.add((team_id, canonical_season_id))
+
         if index % 50 == 0:
             print(f"[best11] lineups progress: {index}/{total}")
 
     print(f"[best11] lineups done: fixtures={total}, affected teams={len(affected)}")
 
-    for team_id, season_id in affected.items():
+    for team_id, season_id in sorted(affected):
         try:
             compute_best_eleven(team_id, season_id)
 
@@ -484,80 +731,301 @@ def refresh_best_eleven() -> None:
     print("[best11] refresh done")
 
 
+def rebuild_best_eleven(*, current_only: bool) -> None:
+    """Recompute canonical all-competition results from stored valid lineups.
+
+    This function performs no Sportmonks requests. A full rebuild also removes
+    legacy rows keyed by cup/European season IDs before rebuilding every tracked
+    Big 5 team-season.
+    """
+    if not current_only:
+        with transaction() as conn:
+            with conn.cursor() as cur:
+                cur.execute(SQL_DELETE_NONCANONICAL_BEST_ELEVEN)
+                removed_players = cur.rowcount
+                cur.execute(SQL_DELETE_NONCANONICAL_BEST_ELEVEN_FORMATIONS)
+                removed_formations = cur.rowcount
+        print(
+            "[best11] removed noncanonical rows: "
+            f"players={removed_players}, formations={removed_formations}"
+        )
+
+    rows = fetch_all(
+        SQL_BIG5_CANONICAL_TEAM_SEASONS,
+        (1 if current_only else 0,),
+    )
+    total = len(rows)
+    built = 0
+    empty = 0
+
+    for index, (team_id, season_id) in enumerate(rows, 1):
+        if compute_best_eleven(int(team_id), int(season_id)):
+            built += 1
+        else:
+            empty += 1
+
+        if index % 50 == 0:
+            print(f"[best11] rebuild progress: {index}/{total}")
+
+    scope = "current" if current_only else "all"
+    print(
+        f"[best11] rebuild-{scope} done: "
+        f"team-seasons={total}, built={built}, empty={empty}"
+    )
+
+
 # ---------------------------------------------------------------------------
 # 4. 검증
 # ---------------------------------------------------------------------------
 
 def validate_best_eleven() -> None:
     """
-    team_best_eleven 테이블 전체를 검증한다.
-    1) expected slot 수 != 실제 row 수
-    2) GK (1:1) 미존재
-    3) starter인데 total_minutes = 0
+    현재 Big 5 대표 정규리그 season_id로 저장된 통합 결과를 검증한다.
+
+    0) 컵/유럽대항전 season_id로 남은 비대표 row
+    1) 현재 팀-시즌 중 결과가 전혀 없는 대상
+    2) 포메이션별 11개 slot / 11명 / GK 완전성
+    3) 팀-시즌별 기본 포메이션과 사용 경기 합계
+    4) 포메이션 요약이 없는 선수 결과
+    5) starter인데 total_minutes = 0
     """
-    # 1) slot count 검사
-    groups = fetch_all(
+    noncanonical_player_rows = int(
+        fetch_all(SQL_COUNT_NONCANONICAL_BEST_ELEVEN)[0][0]
+    )
+    noncanonical_formation_rows = int(
+        fetch_all(SQL_COUNT_NONCANONICAL_BEST_ELEVEN_FORMATIONS)[0][0]
+    )
+    print(
+        "[validate] 0) Noncanonical rows: "
+        f"players={noncanonical_player_rows}, "
+        f"formations={noncanonical_formation_rows}"
+    )
+
+    missing_team_seasons = fetch_all(
+        f"""
+        SELECT ts.team_id, ts.season_id
+        FROM team_seasons ts
+        JOIN seasons s ON s.season_id = ts.season_id
+        LEFT JOIN team_best_eleven_formations tbef
+          ON tbef.team_id = ts.team_id
+         AND tbef.season_id = ts.season_id
+        WHERE s.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+          AND s.is_current = 1
+        GROUP BY ts.team_id, ts.season_id
+        HAVING COUNT(tbef.id) = 0
+        ORDER BY ts.team_id, ts.season_id
         """
-        SELECT team_id, season_id, formation, COUNT(*) as cnt
-        FROM team_best_eleven
-        GROUP BY team_id, season_id, formation
+    )
+
+    print(
+        "[validate] 1) Current team-seasons without a formation result: "
+        f"{len(missing_team_seasons)}"
+    )
+    for team_id, season_id in missing_team_seasons[:10]:
+        print(f"  team={team_id} season={season_id}")
+    if len(missing_team_seasons) > 10:
+        print(f"  ... and {len(missing_team_seasons) - 10} more")
+
+    formation_groups = fetch_all(
+        f"""
+        SELECT
+          tbef.team_id,
+          tbef.season_id,
+          tbef.formation,
+          COUNT(tbe.id) AS player_rows,
+          COUNT(DISTINCT tbe.player_id) AS distinct_players,
+          SUM(CASE WHEN tbe.slot_key = '1:1' THEN 1 ELSE 0 END) AS gk_rows
+        FROM team_best_eleven_formations tbef
+        JOIN team_seasons ts
+          ON ts.team_id = tbef.team_id
+         AND ts.season_id = tbef.season_id
+        JOIN seasons s ON s.season_id = ts.season_id
+        LEFT JOIN team_best_eleven tbe
+          ON tbe.team_id = tbef.team_id
+         AND tbe.season_id = tbef.season_id
+         AND tbe.formation = tbef.formation
+        WHERE s.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+          AND s.is_current = 1
+        GROUP BY tbef.team_id, tbef.season_id, tbef.formation
+        ORDER BY tbef.team_id, tbef.season_id, tbef.formation
         """
     )
 
     incomplete = []
+    no_gk = []
 
-    for team_id, season_id, formation, count in groups:
-        expected = _parse_formation_to_expected_slots(str(formation))
+    for (
+        team_id,
+        season_id,
+        formation,
+        player_rows,
+        distinct_players,
+        gk_rows,
+    ) in formation_groups:
+        expected_rows = len(_parse_formation_to_expected_slots(str(formation)))
+        actual_rows = int(player_rows)
+        actual_players = int(distinct_players)
 
-        if int(count) < len(expected):
-            incomplete.append((team_id, season_id, formation, int(count), len(expected)))
+        if actual_rows != expected_rows or actual_players != expected_rows:
+            incomplete.append(
+                (
+                    team_id,
+                    season_id,
+                    formation,
+                    actual_rows,
+                    actual_players,
+                    expected_rows,
+                )
+            )
+        if int(gk_rows or 0) != 1:
+            no_gk.append((team_id, season_id, formation, int(gk_rows or 0)))
 
-    print(f"[validate] 1) Incomplete teams: {len(incomplete)} / {len(groups)}")
-
-    for team_id, season_id, formation, actual, expected in incomplete[:10]:
-        print(f"  team={team_id} season={season_id} formation={formation}: {actual}/{expected} slots")
+    print(
+        "\n[validate] 2) Incomplete formation results: "
+        f"{len(incomplete)} / {len(formation_groups)}"
+    )
+    for row in incomplete[:10]:
+        print(
+            f"  team={row[0]} season={row[1]} formation={row[2]}: "
+            f"rows={row[3]}/{row[5]} players={row[4]}/{row[5]}"
+        )
 
     if len(incomplete) > 10:
         print(f"  ... and {len(incomplete) - 10} more")
 
-    # 2) GK (1:1) 존재 여부
-    no_gk = fetch_all(
-        """
-        SELECT team_id, season_id, formation
-        FROM team_best_eleven
-        GROUP BY team_id, season_id, formation
-        HAVING SUM(CASE WHEN slot_key = '1:1' THEN 1 ELSE 0 END) = 0
+    print(f"[validate] 2a) Formation results without exactly one GK: {len(no_gk)}")
+    for team_id, season_id, formation, gk_rows in no_gk[:10]:
+        print(
+            f"  team={team_id} season={season_id} "
+            f"formation={formation}: gk_rows={gk_rows}"
+        )
+    if len(no_gk) > 10:
+        print(f"  ... and {len(no_gk) - 10} more")
+
+    invalid_usage = fetch_all(
+        f"""
+        SELECT
+          tbef.team_id,
+          tbef.season_id,
+          COUNT(*) AS formation_count,
+          SUM(tbef.is_default) AS default_count,
+          SUM(tbef.matches_used) AS summed_matches,
+          MIN(tbef.total_valid_matches) AS min_total_matches,
+          MAX(tbef.total_valid_matches) AS max_total_matches
+        FROM team_best_eleven_formations tbef
+        JOIN team_seasons ts
+          ON ts.team_id = tbef.team_id
+         AND ts.season_id = tbef.season_id
+        JOIN seasons s ON s.season_id = ts.season_id
+        WHERE s.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+          AND s.is_current = 1
+        GROUP BY tbef.team_id, tbef.season_id
+        HAVING SUM(tbef.is_default) <> 1
+            OR MIN(tbef.total_valid_matches) <> MAX(tbef.total_valid_matches)
+            OR SUM(tbef.matches_used) <> MAX(tbef.total_valid_matches)
+        ORDER BY tbef.team_id, tbef.season_id
         """
     )
 
-    print(f"\n[validate] 2) Teams without GK (1:1): {len(no_gk)}")
+    print(
+        "\n[validate] 3) Invalid default/usage summaries: "
+        f"{len(invalid_usage)}"
+    )
+    for row in invalid_usage[:10]:
+        print(
+            f"  team={row[0]} season={row[1]} formations={row[2]} "
+            f"defaults={row[3]} summed={row[4]} "
+            f"total_range={row[5]}..{row[6]}"
+        )
+    if len(invalid_usage) > 10:
+        print(f"  ... and {len(invalid_usage) - 10} more")
 
-    for row in no_gk[:10]:
-        print(f"  team={row[0]} season={row[1]} formation={row[2]}")
+    orphan_players = fetch_all(
+        f"""
+        SELECT
+          tbe.team_id,
+          tbe.season_id,
+          tbe.formation,
+          COUNT(*) AS player_rows
+        FROM team_best_eleven tbe
+        JOIN team_seasons ts
+          ON ts.team_id = tbe.team_id
+         AND ts.season_id = tbe.season_id
+        JOIN seasons s ON s.season_id = ts.season_id
+        LEFT JOIN team_best_eleven_formations tbef
+          ON tbef.team_id = tbe.team_id
+         AND tbef.season_id = tbe.season_id
+         AND tbef.formation = tbe.formation
+        WHERE s.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+          AND s.is_current = 1
+          AND tbef.id IS NULL
+        GROUP BY tbe.team_id, tbe.season_id, tbe.formation
+        ORDER BY tbe.team_id, tbe.season_id, tbe.formation
+        """
+    )
 
-    # 3) total_minutes = 0
+    print(
+        "\n[validate] 4) Player formation results without a summary: "
+        f"{len(orphan_players)}"
+    )
+    for team_id, season_id, formation, player_rows in orphan_players[:10]:
+        print(
+            f"  team={team_id} season={season_id} "
+            f"formation={formation}: rows={player_rows}"
+        )
+    if len(orphan_players) > 10:
+        print(f"  ... and {len(orphan_players) - 10} more")
+
     zero_min = fetch_all(
-        """
-        SELECT team_id, season_id, slot_key, player_name, starts, total_minutes
-        FROM team_best_eleven
-        WHERE total_minutes = 0
-        ORDER BY starts DESC
+        f"""
+        SELECT
+          tbe.team_id,
+          tbe.season_id,
+          tbe.formation,
+          tbe.slot_key,
+          tbe.player_name,
+          tbe.starts
+        FROM team_best_eleven tbe
+        JOIN team_seasons ts
+          ON ts.team_id = tbe.team_id
+         AND ts.season_id = tbe.season_id
+        JOIN seasons s ON s.season_id = ts.season_id
+        WHERE s.league_id IN ({BIG5_LEAGUE_IDS_SQL})
+          AND s.is_current = 1
+          AND tbe.total_minutes = 0
+        ORDER BY tbe.starts DESC, tbe.team_id, tbe.formation, tbe.slot_index
         """
     )
 
-    print(f"\n[validate] 3) Rows with total_minutes=0: {len(zero_min)}")
-
+    print(f"\n[validate] 5) Rows with total_minutes=0: {len(zero_min)}")
     for row in zero_min[:10]:
         print(
             f"  team={row[0]} season={row[1]} "
-            f"slot={row[2]} player={row[3]} starts={row[4]}"
+            f"formation={row[2]} slot={row[3]} "
+            f"player={row[4]} starts={row[5]}"
         )
-
     if len(zero_min) > 10:
         print(f"  ... and {len(zero_min) - 10} more")
 
-    # summary
-    total_teams = len(groups)
-    ok_teams = total_teams - len(incomplete)
-
-    print(f"\n[validate] Summary: {ok_teams}/{total_teams} teams fully complete")
+    current_team_seasons = {
+        (int(row[0]), int(row[1])) for row in formation_groups
+    }
+    current_team_seasons.update(
+        (int(row[0]), int(row[1])) for row in missing_team_seasons
+    )
+    passed = (
+        noncanonical_player_rows == 0
+        and noncanonical_formation_rows == 0
+        and not missing_team_seasons
+        and not incomplete
+        and not no_gk
+        and not invalid_usage
+        and not orphan_players
+        and not zero_min
+    )
+    print(
+        "\n[validate] Summary: "
+        f"status={'PASS' if passed else 'FAIL'}, "
+        f"current team-seasons={len(current_team_seasons)}, "
+        f"formation results={len(formation_groups)}"
+    )

@@ -80,7 +80,19 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
 @router.get("/teams/{team_id}/best-eleven", response_model=BestElevenResponse)
 def team_best_eleven(
     team_id: int,
-    season_id: int | None = Query(default=None, description="season_id (생략 시 최신 시즌)"),
+    season_id: int | None = Query(
+        default=None,
+        description=(
+            "Big 5 정규리그 대표 season_id "
+            "(해당 시즌명의 정규리그·컵·유럽대항전 전체 합산; 생략 시 현재 시즌)"
+        ),
+    ),
+    formation: str | None = Query(
+        default=None,
+        min_length=1,
+        max_length=20,
+        description="선택 포메이션 (생략 시 가장 많이 사용한 포메이션)",
+    ),
     user_id: int = Depends(get_user_id),
 ):
     ensure_user(user_id)
@@ -92,9 +104,14 @@ def team_best_eleven(
             raise HTTPException(status_code=404, detail="Team not found")
         sid = ctx[1]
 
-    result = get_best_eleven(team_id, sid)
+    result = get_best_eleven(team_id, sid, formation=formation)
     if not result:
-        raise HTTPException(status_code=404, detail="Best eleven not available")
+        detail = (
+            f"Best eleven formation not available: {formation}"
+            if formation is not None
+            else "Best eleven not available"
+        )
+        raise HTTPException(status_code=404, detail=detail)
     return result
 
 
