@@ -41,8 +41,10 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
   }
 
   void _selectInitialPlayer() {
-    _p1 = _findById(widget.initialPlayerId ?? 'scott-mctominay') ??
-        _findById('scott-mctominay');
+    final initialPlayerId = widget.initialPlayerId;
+    if (initialPlayerId == null) return;
+
+    _p1 = _findById(initialPlayerId);
     _s1 = _latestSeason(_p1);
   }
 

@@ -4,6 +4,30 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 
 void main() {
+  testWidgets('opening from Players starts with two neutral player slots',
+      (tester) async {
+    final router = _comparisonRouter();
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open empty comparison'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PLAYER 1'), findsOneWidget);
+    expect(find.text('PLAYER 2'), findsOneWidget);
+
+    for (final slot in [1, 2]) {
+      final image = tester.widget<Image>(
+        find.byKey(Key('comparison-header-photo-$slot')),
+      );
+      expect(
+        (image.image as AssetImage).assetName,
+        'assets/player_comparison/player_placeholder.png',
+      );
+    }
+  });
+
   testWidgets('back from selection returns to the route that pushed it',
       (tester) async {
     final router = _comparisonRouter();
@@ -60,11 +84,18 @@ GoRouter _comparisonRouter() {
       GoRoute(
         path: '/player',
         builder: (context, state) => Scaffold(
-          body: Center(
-            child: TextButton(
-              onPressed: () => context.push('/compare', extra: 'son'),
-              child: const Text('Open comparison'),
-            ),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () => context.push('/compare', extra: 'son'),
+                child: const Text('Open comparison'),
+              ),
+              TextButton(
+                onPressed: () => context.push('/compare'),
+                child: const Text('Open empty comparison'),
+              ),
+            ],
           ),
         ),
       ),

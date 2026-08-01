@@ -151,14 +151,14 @@ class _HeaderArea extends StatelessWidget {
             top: 167,
             width: 130,
             height: 128,
-            child: _PlayerPhoto(player: p1),
+            child: _PlayerPhoto(player: p1, slot: 1),
           ),
           Positioned(
             right: 24,
             top: 167,
             width: 130,
             height: 128,
-            child: _PlayerPhoto(player: p2),
+            child: _PlayerPhoto(player: p2, slot: 2),
           ),
           const Positioned(
             left: 0,
@@ -272,14 +272,16 @@ class _PlayerChip extends StatelessWidget {
 
 class _PlayerPhoto extends StatelessWidget {
   final ComparisonPlayer? player;
+  final int slot;
 
-  const _PlayerPhoto({required this.player});
+  const _PlayerPhoto({required this.player, required this.slot});
 
   @override
   Widget build(BuildContext context) {
     return Image.asset(
       player?.playerImageAsset ??
           'assets/player_comparison/player_placeholder.png',
+      key: Key('comparison-header-photo-$slot'),
       width: 130,
       height: 128,
       fit: BoxFit.cover,
