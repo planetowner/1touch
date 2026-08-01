@@ -23,6 +23,7 @@ import 'package:onetouch/WelcomeScreen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await currentUserPreferences.initialize();
+  await playerRepository.initializeFollowing();
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,

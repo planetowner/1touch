@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/features/helper.dart'; // Import helper
@@ -51,8 +52,9 @@ class _SearchContentState extends State<SearchContent> {
   final List<Map<String, dynamic>> _recentItems = [
     {
       'type': 'team',
-      'name': 'Team Name',
-      'league': 'League #th',
+      'teamId': 83,
+      'name': 'FC Barcelona',
+      'league': 'La Liga',
       'logo': 'TeamLogos/Barcelona.png'
     },
     {
@@ -78,6 +80,7 @@ class _SearchContentState extends State<SearchContent> {
     },
     {
       'type': 'team',
+      'teamId': 14,
       'name': 'Manchester United',
       'logo': 'TeamLogos/ManUtd.png',
       'league': 'Premier League'
@@ -85,7 +88,20 @@ class _SearchContentState extends State<SearchContent> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    currentUserPreferences.followedTeamIds.addListener(_onFollowingChanged);
+    playerRepository.followedPlayerIds.addListener(_onFollowingChanged);
+  }
+
+  void _onFollowingChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    currentUserPreferences.followedTeamIds.removeListener(_onFollowingChanged);
+    playerRepository.followedPlayerIds.removeListener(_onFollowingChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -315,6 +331,19 @@ class _SearchContentState extends State<SearchContent> {
                 ],
               ),
             ),
+            IconButton(
+              tooltip: playerRepository.isFollowing(player.id)
+                  ? 'Unfollow player'
+                  : 'Follow player',
+              onPressed: () => playerRepository.toggleFollowing(player.id),
+              icon: Icon(
+                playerRepository.isFollowing(player.id)
+                    ? Icons.star
+                    : Icons.star_outline,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
             Text(player.positionLabel, style: Body2.style),
           ],
         ),
@@ -324,6 +353,9 @@ class _SearchContentState extends State<SearchContent> {
 
   Widget _buildStandardCard(Map<String, dynamic> item) {
     bool isTeam = item['type'] == 'team';
+    final teamId = item['teamId'] as int?;
+    final isFollowing = teamId != null &&
+        currentUserPreferences.followedTeamIds.value.contains(teamId);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -362,7 +394,17 @@ class _SearchContentState extends State<SearchContent> {
               ],
             ),
           ),
-          if (isTeam) const Icon(Icons.star, color: Colors.white, size: 24),
+          if (isTeam && teamId != null)
+            IconButton(
+              tooltip: isFollowing ? 'Unfollow team' : 'Follow team',
+              onPressed: () =>
+                  currentUserPreferences.toggleFollowedTeam(teamId),
+              icon: Icon(
+                isFollowing ? Icons.star : Icons.star_outline,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
         ],
       ),
     );

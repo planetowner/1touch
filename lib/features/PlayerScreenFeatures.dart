@@ -12,87 +12,92 @@ class FavoritePlayersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final players = playerRepository.favorites;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
+    return AnimatedBuilder(
+      animation: playerRepository.followedPlayerIds,
+      builder: (context, _) {
+        final players = playerRepository.favorites;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("FAVORITE PLAYERS", style: Body2_b.style),
-            const Spacer(),
-            IconButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => const EditFollowingPlayersSheet(),
-                );
-              },
-              icon:
-                  const Icon(Icons.border_color, size: 24, color: Colors.white),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Text("FAVORITE PLAYERS", style: Body2_b.style),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const EditFollowingPlayersSheet(),
+                    );
+                  },
+                  icon: const Icon(Icons.border_color,
+                      size: 24, color: Colors.white),
+                ),
+              ],
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 148,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: players.length,
-            itemBuilder: (context, index) {
-              final player = players[index];
-              return GestureDetector(
-                onTap: () => context.push('/players/${player.id}'),
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: SizedBox(
-                    width: 82,
-                    child: Column(
-                      children: [
-                        Stack(
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 148,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: players.length,
+                itemBuilder: (context, index) {
+                  final player = players[index];
+                  return GestureDetector(
+                    onTap: () => context.push('/players/${player.id}'),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: SizedBox(
+                        width: 82,
+                        child: Column(
                           children: [
-                            SizedBox(
-                              width: 74,
-                              height: 74,
-                              child:
-                                  ClipOval(child: PlayerImage(player: player)),
+                            Stack(
+                              children: [
+                                SizedBox(
+                                  width: 74,
+                                  height: 74,
+                                  child: ClipOval(
+                                      child: PlayerImage(player: player)),
+                                ),
+                                Positioned(
+                                  left: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF3D3D3D),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      '${player.jerseyNumber}',
+                                      style: Body2_b.style,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Positioned(
-                              left: 0,
-                              top: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF3D3D3D),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  '${player.jerseyNumber}',
-                                  style: Body2_b.style,
-                                ),
-                              ),
+                            const SizedBox(height: 8),
+                            Text(
+                              player.fullName,
+                              style: Body1.style,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          player.fullName,
-                          style: Body1.style,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -242,7 +247,7 @@ class FullRankingPopup extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final rank = index + 1;
                   final player = players[index];
-                  final showStar = player.isFavorite;
+                  final showStar = playerRepository.isFollowing(player.id);
                   final showArrow = player.rankingChange != 0;
 
                   return Padding(
@@ -275,7 +280,7 @@ class FullRankingPopup extends StatelessWidget {
                             ],
                           ),
                         ),
-                        if (!showArrow && showStar)
+                        if (showStar)
                           const Icon(Icons.star, color: Colors.white),
                         Text(
                           player.rankingScore.toStringAsFixed(1),
@@ -606,6 +611,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
   bool _isSearching = false;
   String? _selectedPlayerId;
   bool _updateEnabled = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -637,6 +643,21 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
 
   bool _isFollowed(String id) =>
       _followedPlayers.any((player) => player.id == id);
+
+  Future<void> _saveChanges() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    final selectedId = _selectedPlayerId;
+    if (selectedId != null && !_isFollowed(selectedId)) {
+      final player = playerRepository.findById(selectedId);
+      if (player != null) _followedPlayers.add(player);
+    }
+    await playerRepository.updateFollowing(
+      _followedPlayers.map((player) => player.id),
+    );
+    if (mounted) Navigator.of(context).pop(true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -703,9 +724,8 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _updateEnabled
-                        ? () => Navigator.of(context).pop()
-                        : null,
+                    onPressed:
+                        _updateEnabled && !_isSaving ? _saveChanges : null,
                     style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.resolveWith<Color>(
                           (states) => states.contains(WidgetState.disabled)
@@ -722,8 +742,17 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                             borderRadius: BorderRadius.circular(16)),
                       ),
                     ),
-                    child: Text("UPDATE",
-                        style: Body2_b.style.copyWith(color: Colors.black)),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
+                          )
+                        : Text("UPDATE",
+                            style: Body2_b.style.copyWith(color: Colors.black)),
                   ),
                 ),
               ),

@@ -21,6 +21,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
   String? _selectedPlayerId;
   bool _isSearching = false;
   bool _updateEnabled = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -49,6 +50,23 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
         _selectedPlayerId = null;
       });
     }
+  }
+
+  Future<void> _saveChanges() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    final selectedId = _selectedPlayerId;
+    if (selectedId != null &&
+        !_followedPlayers.any((player) => player.id == selectedId)) {
+      final selectedPlayer = playerRepository.findById(selectedId);
+      if (selectedPlayer != null) _followedPlayers.add(selectedPlayer);
+    }
+
+    await playerRepository.updateFollowing(
+      _followedPlayers.map((player) => player.id),
+    );
+    if (mounted) Navigator.of(context).pop(true);
   }
 
   @override
@@ -124,8 +142,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                      _updateEnabled ? () => Navigator.of(context).pop() : null,
+                  onPressed: _updateEnabled && !_isSaving ? _saveChanges : null,
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.resolveWith<Color>(
                       (states) => states.contains(WidgetState.disabled)
@@ -144,8 +161,17 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                           borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
-                  child: Text("UPDATE",
-                      style: Body2_b.style.copyWith(color: Colors.black)),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black,
+                          ),
+                        )
+                      : Text("UPDATE",
+                          style: Body2_b.style.copyWith(color: Colors.black)),
                 ),
               ),
               const SizedBox(height: 24),
@@ -239,6 +265,8 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
       itemBuilder: (context, index) {
         final player = _filteredPlayers[index];
         final isSelected = _selectedPlayerId == player.id;
+        final alreadyFollowed =
+            _followedPlayers.any((entry) => entry.id == player.id);
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: SizedBox(
@@ -252,13 +280,17 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
             style: Eyebrow.style,
           ),
           trailing: GestureDetector(
-            onTap: () => setState(() {
-              _selectedPlayerId = player.id;
-              _updateEnabled = true;
-            }),
+            onTap: alreadyFollowed
+                ? null
+                : () => setState(() {
+                      _selectedPlayerId = player.id;
+                      _updateEnabled = true;
+                    }),
             child: Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: Colors.white,
+              isSelected || alreadyFollowed
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_off,
+              color: alreadyFollowed ? Colors.white38 : Colors.white,
             ),
           ),
         );

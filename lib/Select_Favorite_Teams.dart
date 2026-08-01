@@ -78,7 +78,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
   @override
   void dispose() {
-    _removeOverlay();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     _scrollController.dispose();
     super.dispose();
   }
@@ -243,226 +244,266 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
         Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(
-            child: Column(
-              children: [
-                // Top bar
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/app_logo.svg',
-                        height: 23,
-                        width: 120,
-                        placeholderBuilder: (_) => const Text("1TOUCH",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20)),
-                      ),
-                      Switch(
-                        value: false,
-                        onChanged: (_) {},
-                        activeThumbColor: Colors.white,
-                        inactiveTrackColor: Colors.white24,
-                      ),
-                    ],
-                  ),
-                ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final heightScale =
+                    ((constraints.maxHeight - 560) / 240).clamp(0.0, 1.0);
+                final topBarPadding = lerpDouble(20, 30, heightScale)!;
+                final topGap = lerpDouble(8, 20, heightScale)!;
+                final carouselHeight = lerpDouble(180, 220, heightScale)!;
+                final bottomGap = lerpDouble(16, 32, heightScale)!;
 
-                const SizedBox(height: 20),
-
-                // Dropdown
-                _buildLeagueDropdown(),
-
-                const Spacer(flex: 1),
-
-                // Smooth-scrolling carousel
-                SizedBox(
-                  height: 220,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                    itemCount: teams.length,
-                    itemBuilder: (context, index) {
-                      final team = teams[index];
-                      return AnimatedBuilder(
-                        animation: _scrollController,
-                        builder: (context, child) {
-                          double scale;
-                          if (_scrollController.hasClients) {
-                            final offset = _scrollController.offset;
-                            final distanceInPages =
-                                ((index * _itemWidth) - offset).abs() /
-                                    _itemWidth;
-                            final value =
-                                (1 - distanceInPages * 0.4).clamp(0.0, 1.0);
-                            scale = Curves.easeOut.transform(value);
-                          } else {
-                            scale = index == _focusedIndex ? 1.0 : 0.6;
-                          }
-                          return Transform.scale(scale: scale, child: child);
-                        },
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (_selectedTeams[_selectedLeagueId]?.teamId ==
-                                  team.teamId) {
-                                _selectedTeams.remove(_selectedLeagueId);
-                              } else {
-                                _selectedTeams[_selectedLeagueId] = team;
-                              }
-                            });
-                          },
-                          child: SizedBox(
-                            width: _itemWidth,
-                            child: Container(
-                              margin: const EdgeInsets.all(10),
-                              child: Image.network(
-                                team.imagePath ?? '',
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                    Icons.shield,
-                                    color: Colors.white54,
-                                    size: 80),
-                              ),
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          // Top bar
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: topBarPadding,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/app_logo.svg',
+                                  height: 23,
+                                  width: 120,
+                                  placeholderBuilder: (_) => const Text(
+                                      "1TOUCH",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20)),
+                                ),
+                                Switch(
+                                  value: false,
+                                  onChanged: (_) {},
+                                  activeThumbColor: Colors.white,
+                                  inactiveTrackColor: Colors.white24,
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
 
-                const SizedBox(height: 10),
+                          SizedBox(height: topGap),
 
-                // Team name + checkmark
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          focusedTeam?.name ?? '',
-                          style: Heading4.style,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut,
-                        child: isFocusedTeamSelected
-                            ? const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(width: 8),
-                                  Icon(Icons.check_circle,
-                                      color: Colors.blueAccent, size: 24),
-                                ],
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
-                ),
+                          // Dropdown
+                          _buildLeagueDropdown(),
 
-                const Spacer(flex: 2),
+                          const Spacer(flex: 1),
 
-                // Instruction text
-                const Column(
-                  children: [
-                    Text("Select your favorite club(s)", style: Heading5.style),
-                    SizedBox(height: 6),
-                    Text("You may choose up to 1 team per league",
-                        style: Body2.style),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // Selected team chips
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  constraints:
-                      const BoxConstraints(minHeight: 50, maxHeight: 150),
-                  child: _selectedTeams.isNotEmpty
-                      ? SingleChildScrollView(
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 10,
-                            children: _selectedTeams.values.map((team) {
-                              return Container(
-                                padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF333333),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      team.shortCode ?? team.name,
-                                      style: Body2_b.style
-                                          .copyWith(color: Colors.white70),
+                          // Smooth-scrolling carousel
+                          SizedBox(
+                            height: carouselHeight,
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              padding:
+                                  EdgeInsets.symmetric(horizontal: sidePadding),
+                              itemCount: teams.length,
+                              itemBuilder: (context, index) {
+                                final team = teams[index];
+                                return AnimatedBuilder(
+                                  animation: _scrollController,
+                                  builder: (context, child) {
+                                    double scale;
+                                    if (_scrollController.hasClients) {
+                                      final offset = _scrollController.offset;
+                                      final distanceInPages =
+                                          ((index * _itemWidth) - offset)
+                                                  .abs() /
+                                              _itemWidth;
+                                      final value = (1 - distanceInPages * 0.4)
+                                          .clamp(0.0, 1.0);
+                                      scale = Curves.easeOut.transform(value);
+                                    } else {
+                                      scale =
+                                          index == _focusedIndex ? 1.0 : 0.6;
+                                    }
+                                    return Transform.scale(
+                                        scale: scale, child: child);
+                                  },
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        if (_selectedTeams[_selectedLeagueId]
+                                                ?.teamId ==
+                                            team.teamId) {
+                                          _selectedTeams
+                                              .remove(_selectedLeagueId);
+                                        } else {
+                                          _selectedTeams[_selectedLeagueId] =
+                                              team;
+                                        }
+                                      });
+                                    },
+                                    child: SizedBox(
+                                      width: _itemWidth,
+                                      child: Container(
+                                        margin: const EdgeInsets.all(10),
+                                        child: Image.network(
+                                          team.imagePath ?? '',
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (_, __, ___) =>
+                                              const Icon(Icons.shield,
+                                                  color: Colors.white54,
+                                                  size: 80),
+                                        ),
+                                      ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedTeams.removeWhere((_, v) =>
-                                              v.teamId == team.teamId);
-                                        });
-                                      },
-                                      child: const Icon(Icons.close,
-                                          size: 24, color: Colors.white70),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        )
-                      : const SizedBox(height: 50),
-                ),
 
-                const SizedBox(height: 20),
+                          const SizedBox(height: 10),
 
-                // Continue button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: ElevatedButton(
-                    onPressed: _selectedTeams.isEmpty
-                        ? null
-                        : () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RankFavoriteTeamsScreen(
-                                  selectedTeams: _selectedTeams.values.toList(),
+                          // Team name + checkmark
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 48),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    focusedTeam?.name ?? '',
+                                    style: Heading4.style,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
+                                AnimatedSize(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeInOut,
+                                  child: isFocusedTeamSelected
+                                      ? const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SizedBox(width: 8),
+                                            Icon(Icons.check_circle,
+                                                color: Colors.blueAccent,
+                                                size: 24),
+                                          ],
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const Spacer(flex: 2),
+
+                          // Instruction text
+                          const Column(
+                            children: [
+                              Text("Select your favorite club(s)",
+                                  style: Heading5.style),
+                              SizedBox(height: 6),
+                              Text("You may choose up to 1 team per league",
+                                  style: Body2.style),
+                            ],
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Selected team chips
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            constraints: const BoxConstraints(
+                                minHeight: 50, maxHeight: 150),
+                            child: _selectedTeams.isNotEmpty
+                                ? SingleChildScrollView(
+                                    child: Wrap(
+                                      spacing: 8,
+                                      runSpacing: 10,
+                                      children:
+                                          _selectedTeams.values.map((team) {
+                                        return Container(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              16, 8, 8, 8),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF333333),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                team.shortCode ?? team.name,
+                                                style: Body2_b.style.copyWith(
+                                                    color: Colors.white70),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    _selectedTeams.removeWhere(
+                                                        (_, v) =>
+                                                            v.teamId ==
+                                                            team.teamId);
+                                                  });
+                                                },
+                                                child: const Icon(Icons.close,
+                                                    size: 24,
+                                                    color: Colors.white70),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  )
+                                : const SizedBox(height: 50),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Continue button
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: ElevatedButton(
+                              onPressed: _selectedTeams.isEmpty
+                                  ? null
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              RankFavoriteTeamsScreen(
+                                            selectedTeams:
+                                                _selectedTeams.values.toList(),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                minimumSize: const Size(double.infinity, 56),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                                disabledBackgroundColor: Colors.white10,
                               ),
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      disabledBackgroundColor: Colors.white10,
+                              child: Text("CONTINUE",
+                                  style: Body2_b.style
+                                      .copyWith(color: Colors.black)),
+                            ),
+                          ),
+                          SizedBox(height: bottomGap),
+                        ],
+                      ),
                     ),
-                    child: Text("CONTINUE",
-                        style: Body2_b.style.copyWith(color: Colors.black)),
                   ),
-                ),
-                const SizedBox(height: 32),
-              ],
+                );
+              },
             ),
           ),
         ),
@@ -485,20 +526,28 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
             border: Border.all(color: Colors.white12),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Image.network(
-                    league.imagePath ?? '',
-                    width: 24,
-                    height: 24,
-                    errorBuilder: (_, __, ___) =>
-                        leagueLogoFallback(league.leagueId, size: 24),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(selectedLeague, style: Heading5.style),
-                ],
+              Expanded(
+                child: Row(
+                  children: [
+                    Image.network(
+                      league.imagePath ?? '',
+                      width: 24,
+                      height: 24,
+                      errorBuilder: (_, __, ___) =>
+                          leagueLogoFallback(league.leagueId, size: 24),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        selectedLeague,
+                        style: Heading5.style,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 8),
               Icon(

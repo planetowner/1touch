@@ -1,12 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:onetouch/data/players/mock/player_catalog_25_26.dart';
 import 'package:onetouch/data/players/player_repository.dart';
 import 'package:onetouch/models/player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockPlayerRepository implements PlayerRepository {
+  static const _followedPlayersKey = 'current_user.followed_player_ids';
+
   final List<Player> _players;
+  late final ValueNotifier<List<String>> _followedPlayerIds;
 
   MockPlayerRepository({List<Player>? players})
-      : _players = List.unmodifiable(players ?? mockPlayerCatalog2526);
+      : _players = List.unmodifiable(players ?? mockPlayerCatalog2526) {
+    _followedPlayerIds = ValueNotifier(
+      List.unmodifiable(
+        _players
+            .where((player) => player.isFavorite)
+            .map((player) => player.id),
+      ),
+    );
+  }
 
   @override
   List<Player> get allPlayers => _players;
@@ -42,8 +55,66 @@ class MockPlayerRepository implements PlayerRepository {
       .toList(growable: false);
 
   @override
-  List<Player> get favorites =>
-      _players.where((player) => player.isFavorite).toList(growable: false);
+  List<Player> get favorites => _followedPlayerIds.value
+      .map(findById)
+      .whereType<Player>()
+      .toList(growable: false);
+
+  @override
+  ValueListenable<List<String>> get followedPlayerIds => _followedPlayerIds;
+
+  @override
+  bool isFollowing(String playerId) =>
+      _followedPlayerIds.value.contains(playerId.toLowerCase().trim());
+
+  @override
+  Future<void> initializeFollowing() async {
+    try {
+      final storage = await SharedPreferences.getInstance();
+      final storedIds = storage.getStringList(_followedPlayersKey);
+      if (storedIds != null) _setFollowedIds(storedIds);
+    } on Object catch (error) {
+      debugPrint('Unable to load followed players: $error');
+    }
+  }
+
+  @override
+  Future<void> updateFollowing(Iterable<String> playerIds) async {
+    _setFollowedIds(playerIds);
+    try {
+      final storage = await SharedPreferences.getInstance();
+      await storage.setStringList(
+        _followedPlayersKey,
+        _followedPlayerIds.value,
+      );
+    } on Object catch (error) {
+      debugPrint('Unable to save followed players: $error');
+    }
+  }
+
+  @override
+  Future<bool> toggleFollowing(String playerId) async {
+    final player = findById(playerId);
+    if (player == null) return false;
+
+    final ids = _followedPlayerIds.value.toList();
+    if (ids.contains(player.id)) {
+      ids.remove(player.id);
+    } else {
+      ids.add(player.id);
+    }
+    await updateFollowing(ids);
+    return true;
+  }
+
+  void _setFollowedIds(Iterable<String> playerIds) {
+    final validIds = <String>[];
+    for (final rawId in playerIds) {
+      final id = rawId.toLowerCase().trim();
+      if (findById(id) != null && !validIds.contains(id)) validIds.add(id);
+    }
+    _followedPlayerIds.value = List.unmodifiable(validIds);
+  }
 
   @override
   List<Player> get onesToWatch =>

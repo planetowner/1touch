@@ -43,10 +43,24 @@ class _ProfileState extends State<Profile> {
     _userProfile = mockUserProfileById(_currentUserId);
 
     _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    currentUserPreferences.favoriteTeamId.addListener(_onPreferencesChanged);
+    currentUserPreferences.followedTeamIds.addListener(_onPreferencesChanged);
+    playerRepository.followedPlayerIds.addListener(_onPreferencesChanged);
+  }
+
+  void _onPreferencesChanged() {
+    if (!mounted) return;
+    setState(() {
+      _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    });
   }
 
   @override
   void dispose() {
+    currentUserPreferences.favoriteTeamId.removeListener(_onPreferencesChanged);
+    currentUserPreferences.followedTeamIds
+        .removeListener(_onPreferencesChanged);
+    playerRepository.followedPlayerIds.removeListener(_onPreferencesChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -166,7 +180,7 @@ class _ProfileState extends State<Profile> {
                           style: Body2_b.style,
                         ),
                         IconButton(
-                          icon: const Icon(Icons.edit,
+                          icon: const Icon(Icons.border_color,
                               color: Colors.white, size: 20),
                           onPressed: () {
                             showModalBottomSheet(
@@ -197,7 +211,7 @@ class _ProfileState extends State<Profile> {
                           style: Body2_b.style,
                         ),
                         IconButton(
-                          icon: const Icon(Icons.edit,
+                          icon: const Icon(Icons.border_color,
                               color: Colors.white, size: 20),
                           onPressed: () {
                             showModalBottomSheet(

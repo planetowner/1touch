@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/index.dart';
 
@@ -37,12 +38,18 @@ class _PlayerCardState extends State<PlayerCard>
         currentTabIndex = _tabController.index;
       });
     });
+    playerRepository.followedPlayerIds.addListener(_onFollowingChanged);
+  }
+
+  void _onFollowingChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _tabController.dispose();
+    playerRepository.followedPlayerIds.removeListener(_onFollowingChanged);
     super.dispose();
   }
 
@@ -127,38 +134,12 @@ class _PlayerCardState extends State<PlayerCard>
                   toolbarHeight: 100,
                   flexibleSpace: LayoutBuilder(
                     builder: (context, constraints) {
-                      return Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 24, right: 24, bottom: 24),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(widget.player.fullName,
-                                  style: Heading3.style),
-                              const Spacer(),
-                              IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.star_outline,
-                                    size: 32, color: Colors.white),
-                              ),
-                              IconButton(
-                                onPressed: () => context.push('/search'),
-                                icon: const Icon(Icons.search,
-                                    size: 32, color: Colors.white),
-                              ),
-                              IconButton(
-                                onPressed: () => context.push(
-                                  '/compare',
-                                  extra: widget.player.id,
-                                ),
-                                icon: const Icon(Icons.safety_divider,
-                                    size: 32, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
+                      final horizontalPadding =
+                          (constraints.maxWidth * 0.05).clamp(16.0, 24.0);
+
+                      return PlayerScreenHeader(
+                        player: widget.player,
+                        horizontalPadding: horizontalPadding,
                       );
                     },
                   ),
@@ -204,6 +185,73 @@ class _PlayerCardState extends State<PlayerCard>
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PlayerScreenHeader extends StatelessWidget {
+  final Player player;
+  final double horizontalPadding;
+
+  const PlayerScreenHeader({
+    super.key,
+    required this.player,
+    required this.horizontalPadding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: horizontalPadding,
+          right: horizontalPadding,
+          bottom: 24,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                player.fullName,
+                style: Heading3.style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              key: const Key('player-follow-button'),
+              tooltip: playerRepository.isFollowing(player.id)
+                  ? 'Unfollow player'
+                  : 'Follow player',
+              onPressed: () => playerRepository.toggleFollowing(player.id),
+              icon: Icon(
+                playerRepository.isFollowing(player.id)
+                    ? Icons.star
+                    : Icons.star_outline,
+                size: 32,
+                color: Colors.white,
+              ),
+            ),
+            IconButton(
+              onPressed: () => context.push('/search'),
+              icon: const Icon(Icons.search, size: 32, color: Colors.white),
+            ),
+            IconButton(
+              onPressed: () => context.push(
+                '/compare',
+                extra: player.id,
+              ),
+              icon: const Icon(
+                Icons.safety_divider,
+                size: 32,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

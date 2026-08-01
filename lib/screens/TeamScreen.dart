@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
@@ -9,7 +10,6 @@ import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'TeamScreen_tabs/index.dart';
 import '../models/team_overview.dart';
-
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
@@ -82,10 +82,24 @@ class _TeamScreenState extends State<TeamScreen>
       });
 
     _tabController = TabController(length: 5, vsync: this); // ✅ add init
+    currentUserPreferences.followedTeamIds.addListener(_onFollowingChanged);
 
     // 🔁 Toggle which source to use
-    loadMockData();     // local fake JSON
+    loadMockData(); // local fake JSON
     // fetchTeamData(); // real API
+  }
+
+  void _onFollowingChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _toggleFollowing() async {
+    final changed =
+        await currentUserPreferences.toggleFollowedTeam(widget.teamId);
+    if (!mounted || changed) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('At least one team must stay followed.')),
+    );
   }
 
   @override
@@ -102,7 +116,8 @@ class _TeamScreenState extends State<TeamScreen>
 
   void loadMockData() {
     // Look up team from mock data
-    final mockTeam = mockTeams.where((t) => t.teamId == widget.teamId).firstOrNull;
+    final mockTeam =
+        mockTeams.where((t) => t.teamId == widget.teamId).firstOrNull;
     if (mockTeam == null) {
       setState(() => isLoading = false);
       return;
@@ -110,13 +125,17 @@ class _TeamScreenState extends State<TeamScreen>
     _teamColor = Color(mockTeam.primaryColor);
 
     final fixtures = fixturesByTeam(widget.teamId);
-    final nextMatch = fixtures.where((f) => f.status == FixtureStatus.upcoming).firstOrNull;
-    final lastMatch = fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull;
+    final nextMatch =
+        fixtures.where((f) => f.status == FixtureStatus.upcoming).firstOrNull;
+    final lastMatch =
+        fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull;
 
     // Get league from fixtures
     final leagueId = nextMatch?.leagueId ?? lastMatch?.leagueId;
-    final standing = leagueId != null ? standingByTeam(leagueId, widget.teamId) : null;
-    final leagueName = leagueId != null ? (leagueNames[leagueId] ?? 'League') : 'League';
+    final standing =
+        leagueId != null ? standingByTeam(leagueId, widget.teamId) : null;
+    final leagueName =
+        leagueId != null ? (leagueNames[leagueId] ?? 'League') : 'League';
     final position = standing != null
         ? '$leagueName ${ordinal(standing.position)}'
         : leagueName;
@@ -127,17 +146,19 @@ class _TeamScreenState extends State<TeamScreen>
       name: mockTeam.name,
       shortName: mockTeam.shortCode ?? '',
       imagePath: mockTeam.imagePath ?? '',
-      standing: standing != null ? {
-        'position': standing.position,
-        'points': standing.points,
-        'matches_played': standing.matchesPlayed,
-        'won': standing.won,
-        'draw': standing.draw,
-        'lost': standing.lost,
-        'goals_for': standing.goalsFor,
-        'goals_against': standing.goalsAgainst,
-        'goal_diff': standing.goalDiff,
-      } : null,
+      standing: standing != null
+          ? {
+              'position': standing.position,
+              'points': standing.points,
+              'matches_played': standing.matchesPlayed,
+              'won': standing.won,
+              'draw': standing.draw,
+              'lost': standing.lost,
+              'goals_for': standing.goalsFor,
+              'goals_against': standing.goalsAgainst,
+              'goal_diff': standing.goalDiff,
+            }
+          : null,
       nextMatch: nextMatch,
       lastMatch: lastMatch,
     );
@@ -161,9 +182,9 @@ class _TeamScreenState extends State<TeamScreen>
     });
   }
 
-
   @override
   void dispose() {
+    currentUserPreferences.followedTeamIds.removeListener(_onFollowingChanged);
     _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
@@ -193,14 +214,18 @@ class _TeamScreenState extends State<TeamScreen>
       body: Stack(
         children: [
           Positioned(
-            top: 0, left: 0, right: 0, height: 550,
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 550,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                     colors: [_teamColor, _teamColor.withAlpha(0)],
                     stops: const [0.0, 0.6],
                   ),
@@ -213,7 +238,8 @@ class _TeamScreenState extends State<TeamScreen>
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverAppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor:
+                    Color.lerp(Colors.transparent, Colors.black, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -222,7 +248,8 @@ class _TeamScreenState extends State<TeamScreen>
                 flexibleSpace: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [_teamColor, _teamColor.withAlpha(0)],
                     ),
                   ),
@@ -235,7 +262,9 @@ class _TeamScreenState extends State<TeamScreen>
                         onTap: () => context.push('/team/${team!['id']}'),
                         child: Image.network(
                           team?['logo'],
-                          height: 52, width: 53, fit: BoxFit.contain,
+                          height: 52,
+                          width: 53,
+                          fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) =>
                               teamLogoFallback(team!['id'] as int, size: 52),
                         ),
@@ -250,15 +279,20 @@ class _TeamScreenState extends State<TeamScreen>
                               team?['name'],
                               style: Heading4.style,
                               maxLines: 1, // Ensure it stays on one line
-                              overflow: TextOverflow.ellipsis, // Now this will work correctly
+                              overflow: TextOverflow
+                                  .ellipsis, // Now this will work correctly
                             ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(team!['position'] as String, style: Body2.style),
-                                const Icon(Icons.arrow_drop_up, size: 16, color: Colors.green),
+                                Text(team!['position'] as String,
+                                    style: Body2.style),
+                                const Icon(Icons.arrow_drop_up,
+                                    size: 16, color: Colors.green),
                                 Text(
-                                  team!['rankChange'] != 0 ? ' ${team!['rankChange']}' : '',
+                                  team!['rankChange'] != 0
+                                      ? ' ${team!['rankChange']}'
+                                      : '',
                                   style: Eyebrow.style,
                                 ),
                               ],
@@ -275,8 +309,24 @@ class _TeamScreenState extends State<TeamScreen>
                     child: Row(
                       children: [
                         IconButton(
+                          key: const Key('team-follow-button'),
+                          tooltip: currentUserPreferences.followedTeamIds.value
+                                  .contains(widget.teamId)
+                              ? 'Unfollow team'
+                              : 'Follow team',
+                          onPressed: _toggleFollowing,
+                          icon: Icon(
+                            currentUserPreferences.followedTeamIds.value
+                                    .contains(widget.teamId)
+                                ? Icons.star
+                                : Icons.star_outline,
+                            size: 32,
+                          ),
+                        ),
+                        IconButton(
                           onPressed: () => context.push('/profile'),
-                          icon: const Icon(Icons.account_circle_outlined, size: 32),
+                          icon: const Icon(Icons.account_circle_outlined,
+                              size: 32),
                         ),
                         IconButton(
                           onPressed: () => context.push('/search'),
@@ -339,13 +389,15 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   _TabBarDelegate(this._tabBar);
 
   @override
-  double get minExtent => _tabBar.preferredSize.height + 8; // a bit of top padding
+  double get minExtent =>
+      _tabBar.preferredSize.height + 8; // a bit of top padding
 
   @override
   double get maxExtent => _tabBar.preferredSize.height + 8;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       // color: Colors.black, // solid bg so it looks clean when pinned
       alignment: Alignment.centerLeft,

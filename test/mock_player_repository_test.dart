@@ -6,6 +6,7 @@ import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/Career.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   test('2025/26 catalog has unique stable IDs and balanced coverage', () {
@@ -51,6 +52,24 @@ void main() {
       playerRepository.search('Minjae Kim').single.id,
       'kim-min-jae',
     );
+  });
+
+  test('followed players update reactively and persist locally', () async {
+    SharedPreferences.setMockInitialValues({});
+    final repository = MockPlayerRepository();
+
+    await repository.updateFollowing(['lee-kang-in', 'harry-kane']);
+    expect(
+      repository.favorites.map((player) => player.id),
+      ['lee-kang-in', 'harry-kane'],
+    );
+
+    await repository.toggleFollowing('lee-kang-in');
+    expect(repository.isFollowing('lee-kang-in'), isFalse);
+
+    final restored = MockPlayerRepository();
+    await restored.initializeFollowing();
+    expect(restored.followedPlayerIds.value, ['harry-kane']);
   });
 
   test('detailed career seasons connect players to teams and team trophies',

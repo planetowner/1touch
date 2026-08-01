@@ -55,6 +55,23 @@ void main() {
     expect(repository.saved?.followedTeamIds, [8, 83, 503]);
   });
 
+  test('post-onboarding team edits update and persist following', () async {
+    final repository = _FakeUserPreferencesRepository();
+    final preferences = CurrentUserPreferences(
+      repository: repository,
+      fallback: fallback,
+    );
+
+    expect(await preferences.updateFollowedTeams([8, 19]), isTrue);
+    expect(preferences.favoriteTeamId.value, 8);
+    expect(preferences.followedTeamIds.value, [8, 19]);
+
+    expect(await preferences.toggleFollowedTeam(19), isTrue);
+    expect(preferences.followedTeamIds.value, [8]);
+    expect(await preferences.toggleFollowedTeam(8), isFalse);
+    expect(repository.saved?.followedTeamIds, [8]);
+  });
+
   test('local repository persists preferences between instances', () async {
     SharedPreferences.setMockInitialValues({});
     final writer = LocalUserPreferencesRepository();

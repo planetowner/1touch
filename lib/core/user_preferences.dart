@@ -112,6 +112,41 @@ class CurrentUserPreferences {
     await _persist();
   }
 
+  /// Replaces the user's followed-team list while preserving the current
+  /// favorite whenever it is still selected.
+  Future<bool> updateFollowedTeams(Iterable<int> teamIds) async {
+    final selectedIds = _validDistinctTeamIds(teamIds);
+    if (selectedIds.isEmpty) return false;
+
+    final favoriteId = selectedIds.contains(favoriteTeamId.value)
+        ? favoriteTeamId.value
+        : selectedIds.first;
+    _apply(
+      UserTeamPreferences(
+        favoriteTeamId: favoriteId,
+        followedTeamIds: selectedIds,
+      ),
+    );
+    await _persist();
+    return true;
+  }
+
+  /// Adds or removes a followed team. At least one team must remain because
+  /// the home, team, and community tabs all require a current favorite.
+  Future<bool> toggleFollowedTeam(int teamId) async {
+    if (!_isValidTeamId(teamId)) return false;
+
+    final selectedIds = followedTeamIds.value.toList();
+    if (!selectedIds.contains(teamId)) {
+      selectedIds.add(teamId);
+    } else {
+      if (selectedIds.length == 1) return false;
+      selectedIds.remove(teamId);
+    }
+
+    return updateFollowedTeams(selectedIds);
+  }
+
   void _apply(UserTeamPreferences preferences) {
     var selectedIds = _validDistinctTeamIds(preferences.followedTeamIds);
     var favoriteId = preferences.favoriteTeamId;

@@ -53,6 +53,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   _TeamEntry? _conflictTeam;
   bool _isSearching = false;
   bool _updateEnabled = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -113,6 +114,45 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     });
   }
 
+  void _removeTeam(int index) {
+    if (_followedTeams.length == 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('At least one team must stay followed.')),
+      );
+      return;
+    }
+    setState(() {
+      _followedTeams.removeAt(index);
+      _updateEnabled = true;
+    });
+  }
+
+  Future<void> _saveChanges() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    final selectedTeam = _selectedTeam;
+    if (selectedTeam != null &&
+        !_followedTeams.any((team) => team.teamId == selectedTeam.teamId)) {
+      if (_conflictTeam != null) {
+        _followedTeams.removeWhere(
+          (team) => team.teamId == _conflictTeam!.teamId,
+        );
+      }
+      _followedTeams.add(selectedTeam);
+    }
+
+    final saved = await currentUserPreferences.updateFollowedTeams(
+      _followedTeams.map((team) => team.teamId),
+    );
+    if (!mounted) return;
+    if (saved) {
+      Navigator.of(context).pop(true);
+    } else {
+      setState(() => _isSaving = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -154,8 +194,8 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   controller: _searchController,
                   style: Body1.style,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     hintText: "Search teams to add!",
                     hintStyle: Body1.style.copyWith(color: Colors.white54),
                     border: InputBorder.none,
@@ -222,8 +262,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                      _updateEnabled ? () => Navigator.of(context).pop() : null,
+                  onPressed: _updateEnabled && !_isSaving ? _saveChanges : null,
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.resolveWith<Color>(
                       (states) => states.contains(WidgetState.disabled)
@@ -243,8 +282,17 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                           borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
-                  child: Text("UPDATE",
-                      style: Body2_b.style.copyWith(color: Colors.black)),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black,
+                          ),
+                        )
+                      : Text("UPDATE",
+                          style: Body2_b.style.copyWith(color: Colors.black)),
                 ),
               ),
               const SizedBox(height: 24),
@@ -277,10 +325,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
             children: [
               // Remove button
               GestureDetector(
-                onTap: () => setState(() {
-                  _followedTeams.removeAt(index);
-                  _updateEnabled = true;
-                }),
+                onTap: () => _removeTeam(index),
                 child: const CircleAvatar(
                   backgroundColor: Color(0xFFF54E5C),
                   radius: 10,
@@ -295,13 +340,10 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                 child: entry.imagePath != null
                     ? Image.network(
                         entry.imagePath!,
-                        errorBuilder: (_, __, ___) => const Icon(
-                            Icons.shield,
-                            color: Colors.white38,
-                            size: 40),
+                        errorBuilder: (_, __, ___) => const Icon(Icons.shield,
+                            color: Colors.white38, size: 40),
                       )
-                    : const Icon(Icons.shield,
-                        color: Colors.white38, size: 40),
+                    : const Icon(Icons.shield, color: Colors.white38, size: 40),
               ),
               const SizedBox(width: 16),
               // Name + league label
@@ -357,6 +399,8 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       itemBuilder: (context, index) {
         final team = _filteredTeams[index];
         final isSelected = _selectedTeam?.teamId == team.teamId;
+        final alreadyFollowed =
+            _followedTeams.any((entry) => entry.teamId == team.teamId);
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: SizedBox(
@@ -375,12 +419,12 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               ? Text(team.leagueLabel, style: Eyebrow.style)
               : null,
           trailing: GestureDetector(
-            onTap: () => _onSelectTeam(team),
+            onTap: alreadyFollowed ? null : () => _onSelectTeam(team),
             child: Icon(
-              isSelected
+              isSelected || alreadyFollowed
                   ? Icons.radio_button_checked
                   : Icons.radio_button_off,
-              color: Colors.white,
+              color: alreadyFollowed ? Colors.white38 : Colors.white,
             ),
           ),
         );

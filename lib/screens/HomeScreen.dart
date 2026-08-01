@@ -43,6 +43,15 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
     _reloadWithFavorite(currentUserPreferences.favoriteTeamId.value);
+    currentUserPreferences.favoriteTeamId
+        .addListener(_onUserTeamPreferencesChanged);
+    currentUserPreferences.followedTeamIds
+        .addListener(_onUserTeamPreferencesChanged);
+  }
+
+  void _onUserTeamPreferencesChanged() {
+    if (!mounted) return;
+    _reloadWithFavorite(currentUserPreferences.favoriteTeamId.value);
   }
 
   void _reloadWithFavorite(int newFavoriteId) {
@@ -81,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _switchFavoriteTeam(int teamId) {
     currentUserPreferences.setFavoriteTeam(teamId);
-    _reloadWithFavorite(teamId);
   }
 
   Future<void> _loadHomeContent(int favoriteTeamId) async {
@@ -108,6 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    currentUserPreferences.favoriteTeamId
+        .removeListener(_onUserTeamPreferencesChanged);
+    currentUserPreferences.followedTeamIds
+        .removeListener(_onUserTeamPreferencesChanged);
     _scrollController.dispose();
     _contentService.dispose();
     super.dispose();
