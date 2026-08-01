@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/models/playerdata.dart'; // assuming Player model lives here
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/features/player_image.dart';
+import 'package:onetouch/models/player.dart';
+import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 
 class PlayerOverviewTab extends StatelessWidget {
   final Player player;
@@ -41,25 +44,25 @@ class PlayerOverviewTab extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("7", style: Heading1.style),
+            Text('${player.jerseyNumber}', style: Heading1.style),
             const SizedBox(height: 4),
-            Text("LW • ST • LM", style: Body1.style),
+            Text(player.positionLabel, style: Body1.style),
             const SizedBox(height: 8),
             Text(player.teamName, style: Body1.style),
             const SizedBox(height: 4),
-            Text("South Korea 🇰🇷", style: Body1.style),
+            Text(
+              '${player.nationality} ${player.nationalityFlag}',
+              style: Body1.style,
+            ),
           ],
         ),
         const Spacer(),
-        Container(
+        SizedBox(
           width: 145,
           height: 145,
-          decoration: BoxDecoration(
+          child: PlayerImage(
+            player: player,
             borderRadius: BorderRadius.circular(16),
-            image: DecorationImage(
-              fit: BoxFit.cover,
-              image: AssetImage("assets/HeungminSon.png"),
-            ),
           ),
         ),
       ],
@@ -67,14 +70,22 @@ class PlayerOverviewTab extends StatelessWidget {
   }
 
   Widget _buildBioStatsBlock(BuildContext context) {
+    final birthDate = DateTime.parse(player.dateOfBirth);
+    final now = DateTime.now();
+    final age = now.year -
+        birthDate.year -
+        ((now.month < birthDate.month ||
+                (now.month == birthDate.month && now.day < birthDate.day))
+            ? 1
+            : 0);
     final stats = [
-      {"label": "Height", "value": "183cm", "icon": null},
-      {"label": "Weight", "value": "78kg", "icon": null},
-      {"label": "Age", "value": "31 yrs", "icon": null},
-      {"label": "Form", "value": "Fair", "icon": "refresh"},
-      {"label": "Market Value", "value": "5.6M", "icon": null},
-      {"label": "Squad Role", "value": "Captain", "icon": null},
-      {"label": "Market Value", "value": "5.6M", "icon": null},
+      {"label": "Height", "value": "${player.heightCm}cm", "icon": null},
+      {"label": "Weight", "value": "${player.weightKg}kg", "icon": null},
+      {"label": "Age", "value": "$age yrs", "icon": null},
+      {"label": "Form", "value": player.form, "icon": "refresh"},
+      {"label": "Market Value", "value": player.marketValue, "icon": null},
+      {"label": "Squad Role", "value": player.squadRole, "icon": null},
+      {"label": "Preferred Foot", "value": player.preferredFoot, "icon": null},
       {
         "label": "Cost-Effectiveness",
         "value": "Very Good",
@@ -109,8 +120,6 @@ class PlayerOverviewTab extends StatelessWidget {
                   final cellIndex = cellEntry.key;
                   final stat = cellEntry.value;
                   final isLast = cellIndex == row.length - 1;
-                  final isWide =
-                      row.length == 1 || (row.length == 2 && cellIndex == 1);
 
                   return Expanded(
                     flex: (stat["label"] == "Cost-Effectiveness") ? 2 : 1,
@@ -175,10 +184,21 @@ class PlayerOverviewTab extends StatelessWidget {
   }
 
   Widget _buildCompetitionsBlock() {
+    final season = player.seasonStats;
+    final winRate = (52 + player.rankingScore % 30).round();
     final competitions = [
-      {"name": "EPL", "mp": "###", "wr": "###", "rating": "8.4"},
-      {"name": "UCL", "mp": "###", "wr": "###", "rating": "8.4"},
-      {"name": "UEL", "mp": "###", "wr": "###", "rating": "8.4"},
+      {
+        "name": player.leagueCode,
+        "mp": "${season.appearances}",
+        "wr": "$winRate%",
+        "rating": season.rating.toStringAsFixed(1),
+      },
+      {
+        "name": "UCL",
+        "mp": "${(season.appearances * 0.30).round()}",
+        "wr": "${(winRate - 3).clamp(0, 100)}%",
+        "rating": (season.rating - 0.1).toStringAsFixed(1),
+      },
     ];
 
     return Column(
@@ -285,44 +305,7 @@ class PlayerOverviewTab extends StatelessWidget {
   }
 
   Widget _buildMatchSummaryBlock() {
-    final List<Map<String, dynamic>> matches = [
-      {
-        "result": "DEF",
-        "score": "0-2",
-        "competition": "League / Round",
-        "againstLogo": null,
-        "stats": [
-          {"label": "Goal", "value": "1"},
-          {"label": "Assist", "value": "2"},
-          {"label": "Pass", "value": "83"},
-        ],
-        "rating": "8.4",
-      },
-      {
-        "result": "DEF",
-        "score": "0-2",
-        "competition": "League / Round",
-        "againstLogo": null,
-        "stats": [
-          {"label": "Goal", "value": "1"},
-          {"label": "Assist", "value": "2"},
-          {"label": "Pass", "value": "83"},
-        ],
-        "rating": "8.4",
-      },
-      {
-        "result": "DEF",
-        "score": "0-2",
-        "competition": "League / Round",
-        "againstLogo": null,
-        "stats": [
-          {"label": "Goal", "value": "1"},
-          {"label": "Assist", "value": "2"},
-          {"label": "Pass", "value": "83"},
-        ],
-        "rating": "8.4",
-      },
-    ];
+    final matches = playerRepository.recentMatchesFor(player.id);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,110 +319,21 @@ class PlayerOverviewTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        // Each match is its own card
+        // Each match is its own card (shared with the Matches tab).
         ...matches.map((match) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A2A2A),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                children: [
-                  // Top row: logo + result/score + competition
-                  Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF3D3D3D),
-                          shape: BoxShape.circle,
-                        ),
-                        child: ClipOval(
-                          child: match["againstLogo"] != null
-                              ? Image.asset(
-                                  match["againstLogo"] as String,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(
-                                    Icons.shield_outlined,
-                                    color: Colors.white54,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.shield_outlined,
-                                  color: Colors.white54,
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        "${match["result"]}  ( ${match["score"]} )",
-                        style: Heading5.style,
-                      ),
-                      const Spacer(),
-                      Text(
-                        match["competition"] as String,
-                        style: Body2.style.copyWith(color: Colors.white54),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Divider(color: Colors.white12, height: 1),
-                  const SizedBox(height: 12),
-                  // Bottom row: label + value pill, rating badge
-                  Row(
-                    children: [
-                      // Stat pairs
-                      ...(match["stats"] as List<Map<String, String>>)
-                          .map((stat) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                stat["label"]!,
-                                style:
-                                    Body2.style.copyWith(color: Colors.white54),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF3D3D3D),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  stat["value"]!,
-                                  style: Body2_b.style,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                      const Spacer(),
-                      // Rating badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF3D3D3D),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          match["rating"] as String,
-                          style: Heading5.style,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            child: PlayerMatchCard(
+              result: match.result,
+              score: match.score,
+              competition: match.competition,
+              againstLogo: match.opponentLogoAsset,
+              stats: [
+                {'label': 'Goal', 'value': '${match.goals}'},
+                {'label': 'Assist', 'value': '${match.assists}'},
+                {'label': 'Pass', 'value': '${match.passes}'},
+              ],
+              rating: match.rating.toStringAsFixed(1),
             ),
           );
         }),
@@ -448,23 +342,7 @@ class PlayerOverviewTab extends StatelessWidget {
   }
 
   Widget _buildClubHistoryBlock() {
-    final history = [
-      {
-        "year": "2015–",
-        "club": "Tottenham Hotspur",
-        "logo": "TeamLogos/Tottenham.png",
-      },
-      {
-        "year": "2013–2015",
-        "club": "Bayer Leverkusen",
-        "logo": "TeamLogos/BayerLeverkusen.png",
-      },
-      {
-        "year": "2010–2013",
-        "club": "Hamburg SV",
-        "logo": "TeamLogos/Hamburger.png",
-      },
-    ];
+    final history = player.clubHistory;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,10 +355,7 @@ class PlayerOverviewTab extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
-            children: history.asMap().entries.map((entry) {
-              final isLast = entry.key == history.length - 1;
-              final club = entry.value;
-
+            children: history.map((club) {
               return Column(
                 children: [
                   Padding(
@@ -488,26 +363,32 @@ class PlayerOverviewTab extends StatelessWidget {
                     child: Row(
                       children: [
                         // Team logo
-                        Container(
+                        SizedBox(
                           width: 24,
                           height: 24,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              club["logo"]!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const SizedBox(),
-                            ),
+                            child: club.logoAsset == null
+                                ? const Icon(
+                                    Icons.shield_outlined,
+                                    color: Colors.white54,
+                                  )
+                                : Image.asset(
+                                    club.logoAsset!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        const SizedBox(),
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         // Club name
                         Expanded(
-                          child: Text(club["club"]!, style: Heading5.style),
+                          child: Text(club.club, style: Heading5.style),
                         ),
                         // Year
                         Text(
-                          club["year"]!,
+                          club.seasonLabel,
                           style: Body1.style,
                         ),
                       ],

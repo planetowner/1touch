@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/features/PlayerScreenFeatures.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/models/player.dart';
 
 import '../core/favorite_team.dart';
-import '../models/playerdata.dart';
 
 class Players extends StatefulWidget {
   const Players({super.key});
@@ -19,15 +20,20 @@ class _PlayersState extends State<Players> {
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
 
-  final List<String> leagues   = ["Premier League", "La Liga", "Bundesliga", "Ligue 1", "Serie A"];
-  final List<String> seasons   = ["2024/2025", "2023/2024", "2022/2023"];
+  final List<String> leagues = [
+    "Premier League",
+    "La Liga",
+    "Bundesliga",
+    "Ligue 1",
+    "Serie A"
+  ];
+  final List<String> seasons = ["2025/2026", "2024/2025", "2023/2024"];
   final List<String> positions = ["FW", "MF", "DF", "GK"];
 
-  String selectedLeague   = "Premier League";
-  String selectedSeason   = "2024/2025";
+  String selectedLeague = "Premier League";
+  String selectedSeason = "2025/2026";
   String selectedPosition = "FW";
 
-  late final Player player;
   Color _teamColor = const Color(0xFFD82457);
 
   @override
@@ -71,16 +77,16 @@ class _PlayersState extends State<Players> {
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.85,
         child: FilterSheet(
-          initialLeague:   selectedLeague,
-          initialSeason:   selectedSeason,
+          initialLeague: selectedLeague,
+          initialSeason: selectedSeason,
           initialPosition: selectedPosition,
-          leagues:   leagues,
-          seasons:   seasons,
+          leagues: leagues,
+          seasons: seasons,
           positions: positions,
           onApply: (league, season, position) {
             setState(() {
-              selectedLeague   = league;
-              selectedSeason   = season;
+              selectedLeague = league;
+              selectedSeason = season;
               selectedPosition = position;
             });
           },
@@ -92,6 +98,14 @@ class _PlayersState extends State<Players> {
   @override
   Widget build(BuildContext context) {
     final opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+    final position = PlayerPosition.values.firstWhere(
+      (value) => value.label == selectedPosition,
+      orElse: () => PlayerPosition.forward,
+    );
+    final rankedPlayers = playerRepository.ranking
+        .where((player) => player.leagueName == selectedLeague)
+        .where((player) => player.positions.contains(position))
+        .toList(growable: false);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -100,7 +114,10 @@ class _PlayersState extends State<Players> {
         children: [
           // Background gradient
           Positioned(
-            top: 0, left: 0, right: 0, height: 550,
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 550,
             child: AnimatedOpacity(
               opacity: 1 - opacityFactor,
               duration: const Duration(milliseconds: 200),
@@ -122,7 +139,8 @@ class _PlayersState extends State<Players> {
             slivers: [
               // App bar
               SliverAppBar(
-                backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor:
+                    Color.lerp(Colors.transparent, Colors.black, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -141,7 +159,8 @@ class _PlayersState extends State<Players> {
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
                   padding: const EdgeInsets.only(left: 24, top: 30),
-                  child: SvgPicture.asset('assets/app_logo.svg', height: 23, width: 120),
+                  child: SvgPicture.asset('assets/app_logo.svg',
+                      height: 23, width: 120),
                 ),
                 actions: [
                   Padding(
@@ -154,11 +173,13 @@ class _PlayersState extends State<Players> {
                         ),
                         IconButton(
                           onPressed: () => context.push('/compare'),
-                          icon: const Icon(Icons.safety_divider, size: 32, color: Colors.white),
+                          icon: const Icon(Icons.safety_divider,
+                              size: 32, color: Colors.white),
                         ),
                         IconButton(
                           onPressed: () => context.push('/profile'),
-                          icon: const Icon(Icons.account_circle_outlined, size: 32),
+                          icon: const Icon(Icons.account_circle_outlined,
+                              size: 32),
                         ),
                       ],
                     ),
@@ -183,9 +204,11 @@ class _PlayersState extends State<Players> {
                               children: const [
                                 Text("1TOUCH RANKING", style: Body2_b.style),
                                 SizedBox(width: 8),
-                                Icon(Icons.help_outline, size: 20, color: Colors.white),
+                                Icon(Icons.help_outline,
+                                    size: 20, color: Colors.white),
                                 SizedBox(width: 8),
-                                Icon(Icons.keyboard_arrow_down, size: 24, color: Colors.white),
+                                Icon(Icons.keyboard_arrow_down,
+                                    size: 24, color: Colors.white),
                               ],
                             ),
                             IconButton(
@@ -199,27 +222,31 @@ class _PlayersState extends State<Players> {
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             children: [
-                              FilterPill(label: "ALL LEAGUES",   onTap: _openFilterSheet),
+                              FilterPill(
+                                  label: selectedLeague.toUpperCase(),
+                                  onTap: _openFilterSheet),
                               const SizedBox(width: 12),
-                              FilterPill(label: "ALL SEASONS",   onTap: _openFilterSheet),
+                              FilterPill(
+                                  label: selectedSeason,
+                                  onTap: _openFilterSheet),
                               const SizedBox(width: 12),
-                              FilterPill(label: "ALL POSITIONS", onTap: _openFilterSheet),
+                              FilterPill(
+                                  label: selectedPosition,
+                                  onTap: _openFilterSheet),
                             ],
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const PlayerRankingBox(
-                          players: [
-                            'Player1', 'Player2', 'Player3',
-                            'Player4', 'Player5', 'Player6', 'Player7',
-                          ],
+                        PlayerRankingBox(
+                          players: rankedPlayers,
                         ),
                         const SizedBox(height: 48),
                         Row(
                           children: const [
                             Text("ONES TO WATCH", style: Body2_b.style),
                             SizedBox(width: 8),
-                            Icon(Icons.help_outline, size: 16, color: Colors.white),
+                            Icon(Icons.help_outline,
+                                size: 16, color: Colors.white),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -227,12 +254,10 @@ class _PlayersState extends State<Players> {
                           height: 200,
                           child: ListView(
                             scrollDirection: Axis.horizontal,
-                            children: const [
-                              OnesToWatchCard(playerName: "Heungmin Son", teamName: "Tottenham", shirtNumber: 7, imageUrl: ""),
-                              OnesToWatchCard(playerName: "Heungmin Son", teamName: "Tottenham", shirtNumber: 7, imageUrl: ""),
-                              OnesToWatchCard(playerName: "Heungmin Son", teamName: "Tottenham", shirtNumber: 7, imageUrl: ""),
-                              OnesToWatchCard(playerName: "Heungmin Son", teamName: "Tottenham", shirtNumber: 7, imageUrl: ""),
-                            ],
+                            children: playerRepository.onesToWatch
+                                .map(
+                                    (player) => OnesToWatchCard(player: player))
+                                .toList(),
                           ),
                         ),
                         const SizedBox(height: 144),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/home_content_service.dart';
-import 'package:onetouch/data/matchdata.dart';
+import 'package:onetouch/data/home/home_content_service.dart';
+import 'package:onetouch/models/match_data.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:url_launcher/url_launcher.dart';

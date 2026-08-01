@@ -1,4 +1,4 @@
-import 'miniteam.dart';
+import 'package:onetouch/models/mini_team.dart';
 
 class MatchData {
   final int id;

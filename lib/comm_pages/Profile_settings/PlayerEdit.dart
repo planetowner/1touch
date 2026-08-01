@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/features/player_image.dart';
+import 'package:onetouch/models/player.dart';
 
 class EditFollowingPlayersSheet extends StatefulWidget {
   const EditFollowingPlayersSheet({super.key});
@@ -11,24 +13,19 @@ class EditFollowingPlayersSheet extends StatefulWidget {
 }
 
 class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
-  static const _currentUserId = 1001;
-
   final TextEditingController _searchController = TextEditingController();
 
-  late List<MockFollowingPlayer> _followedPlayers;
+  late List<Player> _followedPlayers;
 
-  // Search pool: all unique players across all users
-  final List<MockFollowingPlayer> _allPlayers = mockUserFollowingPlayers;
-
-  List<MockFollowingPlayer> _filteredPlayers = [];
-  int? _selectedPlayerId;
+  List<Player> _filteredPlayers = [];
+  String? _selectedPlayerId;
   bool _isSearching = false;
   bool _updateEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    _followedPlayers = followingPlayersByUser(_currentUserId).toList();
+    _followedPlayers = playerRepository.favorites.toList();
     _searchController.addListener(_onSearch);
   }
 
@@ -48,9 +45,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
     } else {
       setState(() {
         _isSearching = true;
-        _filteredPlayers = _allPlayers
-            .where((p) => p.playerName.toLowerCase().contains(query))
-            .toList();
+        _filteredPlayers = playerRepository.search(query);
         _selectedPlayerId = null;
       });
     }
@@ -176,7 +171,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
       itemBuilder: (context, index) {
         final player = _followedPlayers[index];
         return Padding(
-          key: ValueKey(player.playerId),
+          key: ValueKey(player.id),
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
@@ -194,17 +189,10 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
               ),
               const SizedBox(width: 16),
               // Avatar with jersey number badge
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: const Color(0xFF3D3D3D),
-                    backgroundImage: player.imageUrl != null
-                        ? NetworkImage(player.imageUrl!) as ImageProvider
-                        : const AssetImage('assets/playerAvatar.png'),
-                  ),
-                ],
+              SizedBox(
+                width: 52,
+                height: 52,
+                child: ClipOval(child: PlayerImage(player: player)),
               ),
               const SizedBox(width: 16),
               // Name + team
@@ -212,7 +200,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(player.playerName, style: Heading5.style),
+                    Text(player.fullName, style: Heading5.style),
                     const SizedBox(height: 4),
                     Text(
                       '${player.teamName} · #${player.jerseyNumber}',
@@ -250,24 +238,22 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
           const Divider(color: Color(0xFF3D3D3D), thickness: 1, height: 1),
       itemBuilder: (context, index) {
         final player = _filteredPlayers[index];
-        final isSelected = _selectedPlayerId == player.playerId;
+        final isSelected = _selectedPlayerId == player.id;
         return ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: CircleAvatar(
-            radius: 26,
-            backgroundColor: const Color(0xFF3D3D3D),
-            backgroundImage: player.imageUrl != null
-                ? NetworkImage(player.imageUrl!) as ImageProvider
-                : const AssetImage('assets/playerAvatar.png'),
+          leading: SizedBox(
+            width: 52,
+            height: 52,
+            child: ClipOval(child: PlayerImage(player: player)),
           ),
-          title: Text(player.playerName, style: Heading5.style),
+          title: Text(player.fullName, style: Heading5.style),
           subtitle: Text(
             '${player.teamName} · #${player.jerseyNumber}',
             style: Eyebrow.style,
           ),
           trailing: GestureDetector(
             onTap: () => setState(() {
-              _selectedPlayerId = player.playerId;
+              _selectedPlayerId = player.id;
               _updateEnabled = true;
             }),
             child: Icon(

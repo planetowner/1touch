@@ -15,16 +15,3 @@ class HomeContentItem {
     this.fallbackAsset = 'assets/highlight1.png',
   });
 }
-
-const homeContentFallbackItems = <HomeContentItem>[
-  HomeContentItem(
-    title: 'Manchester United v. Brighton | PREMIER LEAGUE',
-    source: 'NBC Sports',
-    timeLabel: '1 day ago',
-  ),
-  HomeContentItem(
-    title: 'Manchester United v. Brighton | PREMIER LEAGUE',
-    source: 'NBC Sports',
-    timeLabel: '1 day ago',
-  ),
-];

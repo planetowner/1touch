@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/team.dart';
 
 const _domesticLeagueIds = {8, 82, 301, 384, 564};

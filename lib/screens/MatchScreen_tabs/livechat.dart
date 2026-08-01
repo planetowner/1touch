@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/models/chatmsg.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/models/chat_message.dart';
 
 
 class LiveChatTab extends StatefulWidget {
@@ -90,8 +91,9 @@ class _LiveChatTabState extends State<LiveChatTab> {
     // final number = Random().nextInt(9000) + 1000;
     // return '${name}_$number';
 
-    final mockNames = ['Mbappe', 'Haaland', 'Bellingham', 'Vinicius', 'Pedri', 'Salah', 'Saka'];
-    final name = mockNames[DateTime.now().millisecond % mockNames.length];
+    final players = playerRepository.allPlayers;
+    final player = players[DateTime.now().millisecond % players.length];
+    final name = player.fullName.split(' ').last;
     final number = (DateTime.now().microsecond % 9000) + 1000;
     return '${name}_$number';
   }

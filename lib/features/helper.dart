@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import "package:onetouch/core/stylesheet_dark.dart";
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:onetouch/models/mock_data.dart';
 
 // Maps a team's id to its local crest file in TeamLogos/, used as the
 // fallback when the network image fails to load. Filenames don't follow a

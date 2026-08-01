@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/data/competitions/mock/season_catalog.dart';
+import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_form_comparison.dart';
-import 'package:onetouch/models/mock_team_form_data.dart';
-import 'package:onetouch/models/bestXI.dart';
-import 'package:onetouch/models/mock_transfer_bestXI_data.dart';
+import 'package:onetouch/data/teams/mock/team_form_catalog.dart';
+import 'package:onetouch/models/best_eleven.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 
 class AnalysisTab extends StatelessWidget {

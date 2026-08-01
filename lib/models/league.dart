@@ -1,13 +1,5 @@
 // SQL table: leagues
 // league_id | name | image_path
-const Map<int, String> leagueNames = {
-  8: "Premier League",
-  564: "La Liga",
-  82: "Bundesliga",
-  384: "Serie A",
-  301: "Ligue 1",
-};
-
 class League {
   final int leagueId;
   final String name;
@@ -21,8 +13,8 @@ class League {
 
   factory League.fromJson(Map<String, dynamic> json) {
     return League(
-      leagueId:  json['league_id'] as int,
-      name:      json['name'] as String,
+      leagueId: json['league_id'] as int,
+      name: json['name'] as String,
       imagePath: json['image_path'] as String?,
     );
   }

@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/data/community/mock/community_catalog.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});

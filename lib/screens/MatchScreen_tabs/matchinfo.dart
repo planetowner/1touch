@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
 import 'package:onetouch/features/KaneRest.dart';
 
-import '../../data/matchdata.dart';
+import '../../models/match_data.dart';
 
 class MatchInfoTab extends StatelessWidget {
   final Fixture fixture;

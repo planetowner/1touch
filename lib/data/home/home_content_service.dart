@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:onetouch/data/teams/mock/team_highlight_catalog.dart';
 import 'package:onetouch/models/home_content_item.dart';
-import 'package:onetouch/models/mock_highlights_data.dart';
 import 'package:xml/xml.dart';
 
 class HomeContentService {

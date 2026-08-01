@@ -1,7 +1,8 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:onetouch/models/playerdata.dart'; // assuming Player model lives here
+import 'package:onetouch/models/player.dart'; // assuming Player model lives here
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'dart:math' show cos, sin, sqrt;
+import 'dart:math' show cos, sin;
 
 class AnalysisTab extends StatefulWidget {
   final Player player;
@@ -13,9 +14,40 @@ class AnalysisTab extends StatefulWidget {
 }
 
 class _AnalysisTabState extends State<AnalysisTab> {
-  String _selectedSeason = "22/23";
+  String _selectedSeason = "25/26";
 
-  final List<String> _seasons = ["22/23", "21/22", "20/21", "19/20"];
+  List<String> get _seasons {
+    final seasons = <String>{'25/26'};
+    for (final period in widget.player.clubHistory) {
+      seasons.add(period.toSeason);
+      seasons.add(period.fromSeason);
+    }
+    return seasons.toList();
+  }
+
+  List<double> get _performanceRatings {
+    final rating = widget.player.seasonStats.rating;
+    return [
+      rating - 0.5,
+      rating - 0.2,
+      rating + 0.1,
+      rating - 0.3,
+      rating + 0.4,
+      rating,
+      rating + 0.2,
+      rating - 0.1,
+      rating + 0.5,
+      rating + 0.3,
+      rating - 0.4,
+      rating + 0.1,
+      rating + 0.6,
+      rating + 0.2,
+    ].map((value) => value.clamp(0.0, 10.0)).toList();
+  }
+
+  // Round currently highlighted by the marker/tooltip. Defaults to Round 8 and
+  // follows the user's finger as they drag across the line.
+  int _selectedRoundIndex = 7;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +64,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           const SizedBox(height: 48),
           _buildAttributesBlockPlaceholder(),
           const SizedBox(height: 48),
-          _buildPerformanceChartPlaceholder(),
+          _buildPerformanceChart(),
           const SizedBox(height: 144),
         ],
       ),
@@ -60,7 +92,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             return DropdownMenuItem(
               value: season,
               child: Text(
-                "${season} SEASON",
+                "$season SEASON",
                 style: Body2_b.style,
               ),
             );
@@ -71,6 +103,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildTopStatsBlock() {
+    final stats = widget.player.seasonStats;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -85,11 +118,29 @@ class _AnalysisTabState extends State<AnalysisTab> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _StatBox(value: "3", label: "Goals", rank: "#1")),
+              Expanded(
+                child: _statBox(
+                  value: '${stats.goals}',
+                  label: "Goals",
+                  rank: '#${(100 - widget.player.rankingScore).round() + 1}',
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: _StatBox(value: "5", label: "Assists", rank: "#3")),
+              Expanded(
+                child: _statBox(
+                  value: '${stats.assists}',
+                  label: "Assists",
+                  rank: '#${(105 - widget.player.rankingScore).round() + 1}',
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: _StatBox(value: "72%", label: "Shot Accuracy", rank: "#7")),
+              Expanded(
+                child: _statBox(
+                  value: '${(stats.passAccuracy * 100).round()}%',
+                  label: "Pass Accuracy",
+                  rank: '#${(110 - widget.player.rankingScore).round() + 1}',
+                ),
+              ),
             ],
           ),
         ),
@@ -97,7 +148,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _StatBox({
+  Widget _statBox({
     required String value,
     required String label,
     required String rank,
@@ -150,12 +201,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildInfluenceBlock() {
+    final stats = widget.player.seasonStats;
+    final startingRate =
+        stats.appearances == 0 ? 0 : stats.starts / stats.appearances;
+    final goalContribution = stats.goals + stats.assists;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("INFLUENCE", style: Body2_b.style),
         const SizedBox(height: 16),
         GridView.count(
+          padding: EdgeInsets.zero,
+          primary: false,
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
@@ -163,10 +220,22 @@ class _AnalysisTabState extends State<AnalysisTab> {
           physics: const NeverScrollableScrollPhysics(),
           childAspectRatio: 1,
           children: [
-            _influenceCard("Starting Rate", "92", "%"),
-            _influenceCard("Win Rate with\nHeungmin", "80", "%"),
-            _influenceCard("Minutes Played\nPer Game", "80", "Min."),
-            _influenceCard("Contribution to\nGoals", "18", "%"),
+            _influenceCard(
+              "Starting Rate",
+              "${(startingRate * 100).round()}",
+              "%",
+            ),
+            _influenceCard(
+              "Win Rate with\n${widget.player.shortName}",
+              "${(52 + widget.player.rankingScore % 30).round()}",
+              "%",
+            ),
+            _influenceCard("Minutes Played\nPer Game", "84", "Min."),
+            _influenceCard(
+              "Goal\nContributions",
+              "$goalContribution",
+              "",
+            ),
           ],
         ),
       ],
@@ -225,8 +294,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
             height: 260,
             child: CustomPaint(
               painter: RadarChartPainter(
-                values: [0.85, 0.75, 0.90, 0.70, 0.80], // 0.0 to 1.0
-                labels: ["Dominance", "Dominance", "Dominance", "Dominance", "Dominance"],
+                values: widget.player.radarValues,
+                labels: const [
+                  "Pace",
+                  "Shooting",
+                  "Passing",
+                  "Defending",
+                  "Physical",
+                ],
               ),
             ),
           ),
@@ -235,7 +310,23 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _buildPerformanceChartPlaceholder() {
+  Widget _buildPerformanceChart() {
+    final spots = [
+      for (int i = 0; i < _performanceRatings.length; i++)
+        FlSpot((i + 1).toDouble(), _performanceRatings[i]),
+    ];
+
+    // Defined up front so it can be referenced by showingTooltipIndicators to
+    // keep the tooltip/dot pinned to the selected round without an active touch.
+    final lineBarData = LineChartBarData(
+      spots: spots,
+      color: const Color(0xFF5C92FF),
+      barWidth: 2,
+      isCurved: false,
+      dotData: const FlDotData(show: false),
+      showingIndicators: [_selectedRoundIndex],
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -243,24 +334,138 @@ class _AnalysisTabState extends State<AnalysisTab> {
         const SizedBox(height: 16),
         Container(
           width: double.infinity,
+          height: 345,
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           decoration: BoxDecoration(
             color: const Color(0xFF2A2A2A),
             borderRadius: BorderRadius.circular(16),
           ),
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            height: 345,
-            child: CustomPaint(
-              painter: PerformanceChartPainter(
-                dataPoints: [
-                  0.1, 0.15, 0.2, 0.2, 0.3, 0.35, 0.4, 0.45,
-                  0.6, 0.62, 0.75, 0.8, 0.85, 0.95
-                ],
-                selectedIndex: 7, // Round 8
-                selectedLabel: "Round 8",
-                selectedValue: "Rating 4.5",
+          child: Column(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    RotatedBox(
+                      quarterTurns: 3,
+                      child: Text("PERFORMANCE", style: Body2_b.style),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: LineChart(
+                        LineChartData(
+                          minX: 1,
+                          maxX: _performanceRatings.length.toDouble(),
+                          minY: 0,
+                          maxY: 10,
+                          gridData: FlGridData(
+                            drawVerticalLine: false,
+                            horizontalInterval: 10 / 8,
+                            getDrawingHorizontalLine: (_) => FlLine(
+                              color: Colors.white.withValues(alpha: 0.08),
+                              strokeWidth: 1,
+                            ),
+                          ),
+                          borderData: FlBorderData(show: false),
+                          titlesData: const FlTitlesData(
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            topTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                          ),
+                          // Full-height dashed marker at the selected round.
+                          extraLinesData: ExtraLinesData(
+                            verticalLines: [
+                              VerticalLine(
+                                x: (_selectedRoundIndex + 1).toDouble(),
+                                color: Colors.white.withValues(alpha: 0.4),
+                                strokeWidth: 1,
+                                dashArray: const [4, 4],
+                              ),
+                            ],
+                          ),
+                          lineTouchData: LineTouchData(
+                            touchTooltipData: LineTouchTooltipData(
+                              getTooltipColor: (_) => const Color(0xFF090A0A),
+                              tooltipRoundedRadius: 6,
+                              fitInsideHorizontally: true,
+                              fitInsideVertically: true,
+                              getTooltipItems: (touched) => touched
+                                  .map(
+                                    (spot) => LineTooltipItem(
+                                      "Round ${spot.x.toInt()}   ",
+                                      Eyebrow.style.copyWith(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.5),
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text:
+                                              "Rating ${spot.y.toStringAsFixed(1)}",
+                                          style: Eyebrow.style.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                            getTouchedSpotIndicator: (bar, indexes) => indexes
+                                .map(
+                                  // The vertical guide is drawn via extraLines,
+                                  // so hide the built-in indicator line and keep
+                                  // only the dot on the point.
+                                  (_) => TouchedSpotIndicatorData(
+                                    const FlLine(color: Colors.transparent),
+                                    FlDotData(
+                                      getDotPainter: (_, __, ___, ____) =>
+                                          FlDotCirclePainter(
+                                        radius: 4,
+                                        color: const Color(0xFF5C92FF),
+                                        strokeWidth: 2,
+                                        strokeColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            touchCallback: (event, response) {
+                              final spot = response?.lineBarSpots?.first;
+                              if (spot == null) return;
+                              if (spot.spotIndex == _selectedRoundIndex) return;
+                              setState(
+                                  () => _selectedRoundIndex = spot.spotIndex);
+                            },
+                          ),
+                          showingTooltipIndicators: [
+                            ShowingTooltipIndicators([
+                              LineBarSpot(
+                                lineBarData,
+                                0,
+                                lineBarData.spots[_selectedRoundIndex],
+                              ),
+                            ]),
+                          ],
+                          lineBarsData: [lineBarData],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text("ROUND", style: Body2_b.style),
+              ),
+            ],
           ),
         ),
       ],
@@ -277,9 +482,8 @@ class RadarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width < size.height
-        ? size.width / 2 - 32
-        : size.height / 2 - 32;
+    final radius =
+        size.width < size.height ? size.width / 2 - 32 : size.height / 2 - 32;
     final int count = values.length;
     final double angleStep = (2 * 3.141592653589793) / count;
     // Start from top (- pi/2)
@@ -376,222 +580,4 @@ class RadarChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(RadarChartPainter oldDelegate) =>
       oldDelegate.values != values;
-}
-
-class PerformanceChartPainter extends CustomPainter {
-  final List<double> dataPoints; // 0.0 to 1.0
-  final int selectedIndex;
-  final String selectedLabel;
-  final String selectedValue;
-
-  PerformanceChartPainter({
-    required this.dataPoints,
-    required this.selectedIndex,
-    required this.selectedLabel,
-    required this.selectedValue,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double leftPad = 32; // space for rotated "PERFORMANCE" label
-    const double bottomPad = 24; // space for "ROUND" label
-    const double topPad = 16;
-
-    final chartLeft = leftPad;
-    final chartRight = size.width;
-    final chartTop = topPad;
-    final chartBottom = size.height - bottomPad;
-    final chartWidth = chartRight - chartLeft;
-    final chartHeight = chartBottom - chartTop;
-
-    // --- Horizontal grid lines ---
-    final gridPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..strokeWidth = 1;
-
-    const double lineGap = 25;
-    final int gridLines = (chartHeight / lineGap).floor();
-
-    for (int i = 0; i <= gridLines; i++) {
-      final y = chartTop + lineGap * i;
-      canvas.drawLine(Offset(chartLeft, y), Offset(chartRight, y), gridPaint);
-    }
-
-    // --- Compute point positions ---
-    List<Offset> points = [];
-    for (int i = 0; i < dataPoints.length; i++) {
-      final x = chartLeft + chartWidth * i / (dataPoints.length - 1);
-      final y = chartBottom - chartHeight * dataPoints[i];
-      points.add(Offset(x, y));
-    }
-
-    // --- Dashed vertical line at selected index ---
-    final dashedPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.4)
-      ..strokeWidth = 1;
-
-    final selectedX = points[selectedIndex].dx;
-    _drawDashedLine(
-      canvas,
-      Offset(selectedX, chartTop),
-      Offset(selectedX, chartBottom),
-      dashedPaint,
-      dashLength: 4,
-      gapLength: 4,
-    );
-
-    // --- Pin at bottom of dashed line ---
-    final pinPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(Offset(selectedX, chartBottom + 6), 4, pinPaint);
-
-    // --- Blue line ---
-    final linePaint = Paint()
-      ..color = const Color(0xFF5C92FF)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke
-      ..strokeJoin = StrokeJoin.round;
-
-    final linePath = Path();
-    for (int i = 0; i < points.length; i++) {
-      if (i == 0) {
-        linePath.moveTo(points[i].dx, points[i].dy);
-      } else {
-        linePath.lineTo(points[i].dx, points[i].dy);
-      }
-    }
-    canvas.drawPath(linePath, linePaint);
-
-    // --- Dot at selected point ---
-    canvas.drawCircle(
-      points[selectedIndex],
-      4,
-      Paint()..color = const Color(0xFF5C92FF),
-    );
-    canvas.drawCircle(
-      points[selectedIndex],
-      2,
-      Paint()..color = Colors.white,
-    );
-
-    // --- Tooltip ---
-    final tooltipText = "$selectedLabel   $selectedValue";
-    final tp = TextPainter(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: "$selectedLabel   ",
-            style: Eyebrow.style.copyWith(color: Colors.white.withValues(alpha: 0.5),)
-          ),
-          TextSpan(
-            text: selectedValue,
-            style: Eyebrow.style.copyWith(fontWeight: FontWeight.w700)
-          ),
-        ],
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final tooltipPadding = const EdgeInsets.symmetric(horizontal: 10, vertical: 6);
-    final tooltipWidth = tp.width + tooltipPadding.horizontal;
-    final tooltipHeight = tp.height + tooltipPadding.vertical;
-
-    // Position tooltip to the right of the dashed line, slightly above center
-    double tooltipX = selectedX + 8;
-    double tooltipY = points[selectedIndex].dy - tooltipHeight / 2;
-
-    // Clamp so it doesn't go off screen
-    if (tooltipX + tooltipWidth > size.width) {
-      tooltipX = selectedX - tooltipWidth - 8;
-    }
-
-    final tooltipRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(tooltipX, tooltipY, tooltipWidth, tooltipHeight),
-      const Radius.circular(6),
-    );
-
-    canvas.drawRRect(
-      tooltipRect,
-      Paint()..color = const Color(0xFF090A0A),
-    );
-
-    tp.paint(
-      canvas,
-      Offset(tooltipX + tooltipPadding.left, tooltipY + tooltipPadding.top),
-    );
-
-    // --- Rotated "PERFORMANCE" Y-axis label ---
-    final perfPainter = TextPainter(
-      text: const TextSpan(
-        text: "PERFORMANCE",
-        style: Body2_b.style
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    canvas.save();
-    canvas.translate(10, chartTop + chartHeight / 2 + perfPainter.width / 2);
-    canvas.rotate(-3.141592653589793 / 2);
-    perfPainter.paint(canvas, Offset.zero);
-    canvas.restore();
-
-    // --- "ROUND" X-axis label ---
-    final roundPainter = TextPainter(
-      text: const TextSpan(
-        text: "ROUND",
-        style: Body2_b.style
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    roundPainter.paint(
-      canvas,
-      Offset(
-        chartRight - roundPainter.width,
-        size.height - roundPainter.height,
-      ),
-    );
-  }
-
-  void _drawDashedLine(
-      Canvas canvas,
-      Offset start,
-      Offset end,
-      Paint paint, {
-        double dashLength = 5,
-        double gapLength = 4,
-      }) {
-    final dx = end.dx - start.dx;
-    final dy = end.dy - start.dy;
-    final totalLength = sqrt(dx * dx + dy * dy);
-    final normX = dx / totalLength;
-    final normY = dy / totalLength;
-
-    double drawn = 0;
-    bool drawing = true;
-
-    while (drawn < totalLength) {
-      final segLength =
-      drawing ? dashLength : gapLength;
-      final next = (drawn + segLength).clamp(0, totalLength).toDouble();
-
-      if (drawing) {
-        canvas.drawLine(
-          Offset(start.dx + normX * drawn, start.dy + normY * drawn),
-          Offset(start.dx + normX * next, start.dy + normY * next),
-          paint,
-        );
-      }
-
-      drawn = next;
-      drawing = !drawing;
-    }
-  }
-
-  @override
-  bool shouldRepaint(PerformanceChartPainter oldDelegate) =>
-      oldDelegate.selectedIndex != selectedIndex ||
-          oldDelegate.dataPoints != dataPoints;
 }

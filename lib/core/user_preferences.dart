@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 @immutable

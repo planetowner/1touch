@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 
 const _divider = Divider(
   color: Color(0xFF3D3D3D),
@@ -19,8 +20,6 @@ class NotificationListPage extends StatefulWidget {
 }
 
 class _NotificationListPageState extends State<NotificationListPage> {
-  static const _currentUserId = 1001;
-
   bool _postsReactions = true;
   bool _postsComments = true;
   bool _postsFollowing = true;
@@ -31,7 +30,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
   @override
   Widget build(BuildContext context) {
     final teamIds = currentUserPreferences.followedTeamIds.value;
-    final players = followingPlayersByUser(_currentUserId);
+    final players = playerRepository.favorites;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -105,9 +104,9 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       return Column(
                         children: [
                           _listRow(
-                            label: player.playerName,
+                            label: player.fullName,
                             onTap: () => context.push(
-                              '/profile/notification/player/${Uri.encodeComponent(player.playerName)}',
+                              '/profile/notification/player/${Uri.encodeComponent(player.fullName)}',
                             ),
                           ),
                           if (i != players.length - 1)

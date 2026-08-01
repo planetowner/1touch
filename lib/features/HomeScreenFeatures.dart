@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
+import 'package:onetouch/data/home/mock/home_content_catalog.dart';
+import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
-import '../models/league.dart';
 import '../models/home_content_item.dart';
-import '../models/mock_data.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/stylesheet_dark.dart";
 import 'package:onetouch/core/user_preferences.dart';

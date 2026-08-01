@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/data/home/mock/home_content_catalog.dart';
+import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import '../core/stylesheet_dark.dart';
 import '../core/user_preferences.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
 import '../models/home_content_item.dart';
-import '../models/mock_data.dart';
-import '../data/home_content_service.dart';
+import '../data/home/home_content_service.dart';
 import 'package:onetouch/features/index.dart';
 
 class HomeScreen extends StatefulWidget {

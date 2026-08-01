@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/features/player_image.dart';
+import 'package:onetouch/models/player.dart';
 
 // 1. FavoritePlayersSection
 
@@ -9,6 +12,7 @@ class FavoritePlayersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final players = playerRepository.favorites;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -26,7 +30,8 @@ class FavoritePlayersSection extends StatelessWidget {
                   builder: (_) => const EditFollowingPlayersSheet(),
                 );
               },
-              icon: const Icon(Icons.border_color, size: 24, color: Colors.white),
+              icon:
+                  const Icon(Icons.border_color, size: 24, color: Colors.white),
             ),
           ],
         ),
@@ -35,37 +40,45 @@ class FavoritePlayersSection extends StatelessWidget {
           height: 148,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: 5,
+            itemCount: players.length,
             itemBuilder: (context, index) {
-              if (index == 0) {
-                return GestureDetector(
-                  onTap: () => context.push('/players/son'),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 16),
+              final player = players[index];
+              return GestureDetector(
+                onTap: () => context.push('/players/${player.id}'),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: SizedBox(
+                    width: 82,
                     child: Column(
                       children: [
                         Stack(
                           children: [
-                            const CircleAvatar(
-                              radius: 37,
-                              backgroundImage: AssetImage('assets/HeungminSon.png'),
-                              backgroundColor: Color(0xFF272828),
+                            SizedBox(
+                              width: 74,
+                              height: 74,
+                              child:
+                                  ClipOval(child: PlayerImage(player: player)),
                             ),
                             Positioned(
+                              left: 0,
+                              top: 0,
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: const BoxDecoration(
                                   color: Color(0xFF3D3D3D),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Text("7", style: Body2_b.style),
+                                child: Text(
+                                  '${player.jerseyNumber}',
+                                  style: Body2_b.style,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "Heungmin Son".replaceAll(' ', '\n'),
+                          player.fullName,
                           style: Body1.style,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -74,41 +87,6 @@ class FavoritePlayersSection extends StatelessWidget {
                       ],
                     ),
                   ),
-                );
-              }
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Column(
-                  children: [
-                    Stack(
-                      children: [
-                        const CircleAvatar(
-                          radius: 37,
-                          backgroundImage: AssetImage('assets/playerAvatar.png'),
-                          backgroundColor: Color(0xFF272828),
-                        ),
-                        Positioned(
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF3D3D3D),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Text("##", style: Body2_b.style),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Player Name".replaceAll(' ', '\n'),
-                      style: Body1.style,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
                 ),
               );
             },
@@ -122,7 +100,7 @@ class FavoritePlayersSection extends StatelessWidget {
 // 2. PlayerRankingBox + FullRankingPopup
 
 class PlayerRankingBox extends StatefulWidget {
-  final List<String> players;
+  final List<Player> players;
 
   const PlayerRankingBox({super.key, required this.players});
 
@@ -131,11 +109,9 @@ class PlayerRankingBox extends StatefulWidget {
 }
 
 class _PlayerRankingBoxState extends State<PlayerRankingBox> {
-  bool _showAll = false;
-
   @override
   Widget build(BuildContext context) {
-    final visibleCount = _showAll ? widget.players.length : 5;
+    final visibleCount = widget.players.length < 5 ? widget.players.length : 5;
 
     return Container(
       decoration: BoxDecoration(
@@ -152,23 +128,32 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
                 children: [
                   Text("${i + 1}", style: Heading3.style),
                   const SizedBox(width: 16),
-                  const CircleAvatar(
-                    radius: 28,
-                    backgroundImage: AssetImage('assets/playerAvatar.png'),
-                    backgroundColor: Color(0xFF272828),
+                  SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: ClipOval(
+                      child: PlayerImage(player: widget.players[i]),
+                    ),
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.players[i], style: Heading5.style),
-                      const SizedBox(height: 4),
-                      const Text("Team Name • ##", style: Body2.style),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.players[i].fullName, style: Heading5.style),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${widget.players[i].teamName} • #${widget.players[i].jerseyNumber}',
+                          style: Body2.style,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(
-                    width: 80,
-                    child: Text('99.7', textAlign: TextAlign.right, style: Heading5.style),
+                  Text(
+                    widget.players[i].rankingScore.toStringAsFixed(1),
+                    textAlign: TextAlign.right,
+                    style: Heading5.style,
                   ),
                 ],
               ),
@@ -202,6 +187,7 @@ class FullRankingPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final players = playerRepository.ranking;
     return Scaffold(
       backgroundColor: const Color(0xFF272828),
       body: SafeArea(
@@ -224,7 +210,8 @@ class FullRankingPopup extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.20),
                   borderRadius: BorderRadius.circular(8),
@@ -235,7 +222,8 @@ class FullRankingPopup extends StatelessWidget {
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: "Look for players",
-                          hintStyle: Body1.style.copyWith(color: Colors.white.withValues(alpha: 0.5)),
+                          hintStyle: Body1.style.copyWith(
+                              color: Colors.white.withValues(alpha: 0.5)),
                           border: InputBorder.none,
                         ),
                         style: const TextStyle(color: Colors.white),
@@ -250,11 +238,12 @@ class FullRankingPopup extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: 20,
+                itemCount: players.length,
                 itemBuilder: (context, index) {
-                  final rank      = index + 1;
-                  final showStar  = rank == 2 || rank == 6;
-                  final showArrow = rank == 1 || rank == 4 || rank == 6;
+                  final rank = index + 1;
+                  final player = players[index];
+                  final showStar = player.isFavorite;
+                  final showArrow = player.rankingChange != 0;
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -263,29 +252,33 @@ class FullRankingPopup extends StatelessWidget {
                         Text("$rank", style: Heading4.style),
                         const SizedBox(width: 8),
                         if (showArrow)
-                          const Icon(Icons.arrow_drop_up, color: Colors.blueAccent)
+                          const Icon(Icons.arrow_drop_up,
+                              color: Colors.blueAccent)
                         else
                           const SizedBox(width: 24),
-                        const CircleAvatar(
-                          radius: 28,
-                          backgroundImage: AssetImage('assets/playerAvatar.png'),
-                          backgroundColor: Color(0xFF272828),
+                        SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: ClipOval(child: PlayerImage(player: player)),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text("Player Name", style: Heading5.style),
-                              SizedBox(height: 2),
-                              Text("Team Name • ##", style: Body2.style),
+                            children: [
+                              Text(player.fullName, style: Heading5.style),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${player.teamName} • #${player.jerseyNumber}',
+                                style: Body2.style,
+                              ),
                             ],
                           ),
                         ),
                         if (!showArrow && showStar)
                           const Icon(Icons.star, color: Colors.white),
                         Text(
-                          (99.7 - index * 0.3).toStringAsFixed(1),
+                          player.rankingScore.toStringAsFixed(1),
                           style: Heading5.style,
                         ),
                       ],
@@ -304,19 +297,11 @@ class FullRankingPopup extends StatelessWidget {
 // 3. OnesToWatchCard
 
 class OnesToWatchCard extends StatelessWidget {
-  final String playerName;
-  final String teamName;
-  final int shirtNumber;
-  final String imageUrl;
-  final int rankChange;
+  final Player player;
 
   const OnesToWatchCard({
     super.key,
-    required this.playerName,
-    required this.teamName,
-    required this.shirtNumber,
-    required this.imageUrl,
-    this.rankChange = -1,
+    required this.player,
   });
 
   @override
@@ -333,25 +318,15 @@ class OnesToWatchCard extends StatelessWidget {
             Expanded(
               child: Stack(
                 children: [
-                  Container(width: double.infinity, color: const Color(0xFF272828)),
+                  Container(
+                      width: double.infinity, color: const Color(0xFF272828)),
                   Positioned(
                     right: 0,
                     top: 0,
                     bottom: 0,
-                    child: imageUrl.isNotEmpty
-                        ? Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Image.asset(
-                        'assets/HeungminSon.png',
-                        fit: BoxFit.cover,
-                        width: 88,
-                      ),
-                    )
-                        : Image.asset(
-                      'assets/HeungminSon.png',
-                      fit: BoxFit.cover,
+                    child: SizedBox(
                       width: 88,
+                      child: PlayerImage(player: player),
                     ),
                   ),
                   Positioned(
@@ -361,17 +336,22 @@ class OnesToWatchCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('#$shirtNumber', style: Heading2.style),
+                        Text('#${player.jerseyNumber}', style: Heading2.style),
                         const SizedBox(height: 4),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              rankChange <= 0 ? Icons.arrow_drop_down : Icons.arrow_drop_up,
+                              player.rankingChange < 0
+                                  ? Icons.arrow_drop_down
+                                  : Icons.arrow_drop_up,
                               color: const Color(0xFFE8003D),
                               size: 24,
                             ),
-                            Text('${rankChange.abs()}', style: Body2_b.style),
+                            Text(
+                              '${player.rankingChange.abs()}',
+                              style: Body2_b.style,
+                            ),
                           ],
                         ),
                       ],
@@ -388,14 +368,17 @@ class OnesToWatchCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    playerName.replaceAll(' ', '\n'),
+                    player.fullName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Body1_b.style,
                     textAlign: TextAlign.start,
                   ),
                   const SizedBox(height: 4),
-                  Text('$teamName • $shirtNumber', style: Eyebrow.style),
+                  Text(
+                    '${player.teamName} • ${player.jerseyNumber}',
+                    style: Eyebrow.style,
+                  ),
                 ],
               ),
             ),
@@ -440,8 +423,8 @@ class _FilterSheetState extends State<FilterSheet> {
   @override
   void initState() {
     super.initState();
-    _tempLeague   = widget.initialLeague;
-    _tempSeason   = widget.initialSeason;
+    _tempLeague = widget.initialLeague;
+    _tempSeason = widget.initialSeason;
     _tempPosition = widget.initialPosition;
   }
 
@@ -474,14 +457,16 @@ class _FilterSheetState extends State<FilterSheet> {
                 Text("LEAGUE", style: Body2_b.style),
                 const SizedBox(height: 16),
                 ...List.generate(widget.leagues.length, (index) {
-                  final league     = widget.leagues[index];
+                  final league = widget.leagues[index];
                   final isSelected = _tempLeague == league;
                   return Column(
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(league, style: Body1.style),
-                        trailing: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.white)
+                            : null,
                         onTap: () => setState(() => _tempLeague = league),
                       ),
                       if (index != widget.leagues.length - 1)
@@ -519,14 +504,16 @@ class _FilterSheetState extends State<FilterSheet> {
                 Text("POSITION", style: Body2_b.style),
                 const SizedBox(height: 16),
                 ...List.generate(widget.positions.length, (index) {
-                  final position   = widget.positions[index];
+                  final position = widget.positions[index];
                   final isSelected = _tempPosition == position;
                   return Column(
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(position, style: Body1.style),
-                        trailing: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.white)
+                            : null,
                         onTap: () => setState(() => _tempPosition = position),
                       ),
                       if (index != widget.positions.length - 1)
@@ -557,9 +544,11 @@ class _FilterSheetState extends State<FilterSheet> {
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
-              child: Text("UPDATE FILTER", style: Body2_b.style.copyWith(color: Colors.black)),
+              child: Text("UPDATE FILTER",
+                  style: Body2_b.style.copyWith(color: Colors.black)),
             ),
           ),
         ),
@@ -589,7 +578,8 @@ class FilterPill extends StatelessWidget {
           children: [
             Text(label, style: Body2_b.style),
             const SizedBox(width: 6),
-            const Icon(Icons.keyboard_arrow_down, size: 24, color: Colors.white),
+            const Icon(Icons.keyboard_arrow_down,
+                size: 24, color: Colors.white),
           ],
         ),
       ),
@@ -603,47 +593,37 @@ class EditFollowingPlayersSheet extends StatefulWidget {
   const EditFollowingPlayersSheet({super.key});
 
   @override
-  State<EditFollowingPlayersSheet> createState() => _EditFollowingPlayersSheetState();
+  State<EditFollowingPlayersSheet> createState() =>
+      _EditFollowingPlayersSheetState();
 }
 
 class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> _allPlayers = [
-    {"name": "Heungmin Son",      "team": "Tottenham",   "number": 7,  "imageUrl": null},
-    {"name": "Erling Haaland",    "team": "Man City",    "number": 9,  "imageUrl": null},
-    {"name": "Eduardo Camavinga", "team": "Real Madrid", "number": 6,  "imageUrl": null},
-    {"name": "Éder Militao",      "team": "Real Madrid", "number": 3,  "imageUrl": null},
-    {"name": "Hugo Ekitike",      "team": "Liverpool",   "number": 22, "imageUrl": null},
-    {"name": "Enzo Fernández",    "team": "Chelsea",     "number": 8,  "imageUrl": null},
-  ];
-
-  late List<Map<String, dynamic>> _followedPlayers;
-  List<Map<String, dynamic>> _filteredPlayers = [];
+  late List<Player> _followedPlayers;
+  List<Player> _filteredPlayers = [];
 
   bool _isSearching = false;
-  String? _selectedPlayerName;
+  String? _selectedPlayerId;
   bool _updateEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    _followedPlayers = _allPlayers.take(4).toList();
+    _followedPlayers = playerRepository.favorites.toList();
 
     _searchController.addListener(() {
       final query = _searchController.text.toLowerCase();
       if (query.isNotEmpty) {
         setState(() {
           _isSearching = true;
-          _filteredPlayers = _allPlayers
-              .where((p) => (p['name'] as String).toLowerCase().contains(query))
-              .toList();
+          _filteredPlayers = playerRepository.search(query);
         });
       } else {
         setState(() {
-          _isSearching      = false;
-          _selectedPlayerName = null;
-          _updateEnabled    = false;
+          _isSearching = false;
+          _selectedPlayerId = null;
+          _updateEnabled = false;
         });
       }
     });
@@ -655,8 +635,8 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
     super.dispose();
   }
 
-  bool _isFollowed(String name) =>
-      _followedPlayers.any((p) => p['name'] == name);
+  bool _isFollowed(String id) =>
+      _followedPlayers.any((player) => player.id == id);
 
   @override
   Widget build(BuildContext context) {
@@ -686,7 +666,6 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
@@ -697,44 +676,54 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                   controller: _searchController,
                   style: Body1.style,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     hintText: "Search players to add!",
                     hintStyle: Body1.style.copyWith(color: Colors.white54),
                     border: InputBorder.none,
                     suffixIcon: _isSearching
                         ? IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                      onPressed: () => _searchController.clear(),
-                    )
-                        : const Icon(Icons.search, color: Colors.white, size: 24),
+                            icon: const Icon(Icons.close,
+                                color: Colors.white, size: 20),
+                            onPressed: () => _searchController.clear(),
+                          )
+                        : const Icon(Icons.search,
+                            color: Colors.white, size: 24),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-
               Expanded(
                 child: _isSearching
                     ? _buildSearchResultList(scrollController)
                     : _buildFollowedPlayerList(scrollController),
               ),
-
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _updateEnabled ? () => Navigator.of(context).pop() : null,
+                    onPressed: _updateEnabled
+                        ? () => Navigator.of(context).pop()
+                        : null,
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.resolveWith<Color>((states) =>
-                      states.contains(WidgetState.disabled) ? Colors.grey.shade700 : Colors.white),
-                      foregroundColor: WidgetStateProperty.resolveWith<Color>((states) =>
-                      states.contains(WidgetState.disabled) ? Colors.grey.shade400 : Colors.black),
-                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 16)),
+                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                          (states) => states.contains(WidgetState.disabled)
+                              ? Colors.grey.shade700
+                              : Colors.white),
+                      foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                          (states) => states.contains(WidgetState.disabled)
+                              ? Colors.grey.shade400
+                              : Colors.black),
+                      padding: WidgetStateProperty.all(
+                          const EdgeInsets.symmetric(vertical: 16)),
                       shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
                     ),
-                    child: Text("UPDATE", style: Body2_b.style.copyWith(color: Colors.black)),
+                    child: Text("UPDATE",
+                        style: Body2_b.style.copyWith(color: Colors.black)),
                   ),
                 ),
               ),
@@ -749,9 +738,10 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
     return ListView.separated(
       controller: controller,
       itemCount: _followedPlayers.length,
-      separatorBuilder: (_, __) => const Divider(color: Color(0xFF3D3D3D), height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: Color(0xFF3D3D3D), height: 1),
       itemBuilder: (context, index) {
-        final player    = _followedPlayers[index];
+        final player = _followedPlayers[index];
         final isPrimary = index == 0;
 
         return Padding(
@@ -772,12 +762,10 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                 ),
               ),
               const SizedBox(width: 16),
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: Colors.white24,
-                backgroundImage: player['imageUrl'] != null
-                    ? NetworkImage(player['imageUrl'] as String)
-                    : null,
+              SizedBox(
+                width: 52,
+                height: 52,
+                child: ClipOval(child: PlayerImage(player: player)),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -786,16 +774,20 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                   children: [
                     Row(
                       children: [
-                        Text(player['name'] as String, style: Heading5.style),
+                        Text(player.fullName, style: Heading5.style),
                         if (isPrimary)
                           const Padding(
                             padding: EdgeInsets.only(left: 6),
-                            child: Icon(Icons.star, color: Colors.white, size: 18),
+                            child:
+                                Icon(Icons.star, color: Colors.white, size: 18),
                           ),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text("${player['team']} #${player['number']}", style: Body2.style),
+                    Text(
+                      '${player.teamName} #${player.jerseyNumber}',
+                      style: Body2.style,
+                    ),
                   ],
                 ),
               ),
@@ -811,11 +803,12 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
     return ListView.separated(
       controller: controller,
       itemCount: _filteredPlayers.length,
-      separatorBuilder: (_, __) => const Divider(color: Color(0xFF3D3D3D), height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: Color(0xFF3D3D3D), height: 1),
       itemBuilder: (context, index) {
-        final player          = _filteredPlayers[index];
-        final isSelected      = _selectedPlayerName == player['name'];
-        final alreadyFollowed = _isFollowed(player['name'] as String);
+        final player = _filteredPlayers[index];
+        final isSelected = _selectedPlayerId == player.id;
+        final alreadyFollowed = _isFollowed(player.id);
 
         return Opacity(
           opacity: alreadyFollowed ? 0.4 : 1.0,
@@ -823,26 +816,29 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                radius: 26,
-                backgroundColor: Colors.white24,
-                backgroundImage: player['imageUrl'] != null
-                    ? NetworkImage(player['imageUrl'] as String)
-                    : null,
+              leading: SizedBox(
+                width: 52,
+                height: 52,
+                child: ClipOval(child: PlayerImage(player: player)),
               ),
-              title: Text(player['name'] as String, style: Heading5.style),
-              subtitle: Text("${player['team']} #${player['number']}", style: Body2.style),
+              title: Text(player.fullName, style: Heading5.style),
+              subtitle: Text(
+                '${player.teamName} #${player.jerseyNumber}',
+                style: Body2.style,
+              ),
               trailing: GestureDetector(
                 onTap: alreadyFollowed
                     ? null
                     : () {
-                  setState(() {
-                    _selectedPlayerName = player['name'] as String;
-                    _updateEnabled = true;
-                  });
-                },
+                        setState(() {
+                          _selectedPlayerId = player.id;
+                          _updateEnabled = true;
+                        });
+                      },
                 child: Icon(
-                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
                   color: Colors.white,
                 ),
               ),

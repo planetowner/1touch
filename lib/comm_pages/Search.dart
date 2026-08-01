@@ -1,7 +1,10 @@
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/features/helper.dart'; // Import helper
+import 'package:onetouch/models/player.dart';
 
 class Search extends StatelessWidget {
   const Search({super.key});
@@ -46,12 +49,6 @@ class _SearchContentState extends State<SearchContent> {
   final List<String> _tabs = ["ALL", "PLAYERS", "TEAMS", "EVENTS"];
 
   final List<Map<String, dynamic>> _recentItems = [
-    {
-      'type': 'player',
-      'name': 'Player Name',
-      'team': 'Team Name',
-      'image': 'assets/playerAvatar.png'
-    },
     {
       'type': 'team',
       'name': 'Team Name',
@@ -179,6 +176,11 @@ class _SearchContentState extends State<SearchContent> {
           ),
         ),
         const SizedBox(height: 16),
+        if (playerRepository.findById('lee-kang-in') case final player?)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildPlayerCard(player),
+          ),
         ..._recentItems.map((item) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -245,13 +247,21 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   Widget _buildTabContent() {
-    if (_selectedIndex == 0) {
+    final players = playerRepository.search(_searchController.text);
+
+    if (_selectedIndex == 0 || _selectedIndex == 1) {
+      final includeOtherResults = _selectedIndex == 0;
+      final itemCount =
+          players.length + (includeOtherResults ? _searchResults.length : 0);
       return ListView.separated(
         padding: const EdgeInsets.all(20),
-        itemCount: _searchResults.length,
+        itemCount: itemCount,
         separatorBuilder: (c, i) => const SizedBox(height: 16),
         itemBuilder: (context, index) {
-          final result = _searchResults[index];
+          if (index < players.length) {
+            return _buildPlayerCard(players[index]);
+          }
+          final result = _searchResults[index - players.length];
           return result['type'] == 'match'
               ? SearchMatchCard(
                   // Uses Helper Widget
@@ -269,6 +279,47 @@ class _SearchContentState extends State<SearchContent> {
     return Center(
         child: Text("${_tabs[_selectedIndex]} RESULTS",
             style: const TextStyle(color: Colors.white)));
+  }
+
+  Widget _buildPlayerCard(Player player) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => context.push('/players/${player.id}'),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: ClipOval(child: PlayerImage(player: player)),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    player.fullName,
+                    style: Heading4.style.copyWith(fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${player.teamName} • #${player.jerseyNumber}',
+                    style: Body2.style.copyWith(color: Colors.white54),
+                  ),
+                ],
+              ),
+            ),
+            Text(player.positionLabel, style: Body2.style),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildStandardCard(Map<String, dynamic> item) {

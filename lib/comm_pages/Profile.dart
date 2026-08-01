@@ -6,7 +6,10 @@ import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/models/mock_data.dart';
+import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/user.dart';
 import 'package:onetouch/models/user_profile.dart';
 
@@ -378,7 +381,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _buildPlayerList() {
-    final players = followingPlayersByUser(_currentUserId);
+    final players = playerRepository.favorites;
 
     return SizedBox(
       height: 120,
@@ -394,13 +397,10 @@ class _ProfileState extends State<Profile> {
             children: [
               Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 37,
-                    backgroundImage: player.imageUrl != null
-                        ? NetworkImage(player.imageUrl!)
-                        : const AssetImage('assets/playerAvatar.png')
-                            as ImageProvider,
-                    backgroundColor: const Color(0xFF272828),
+                  SizedBox(
+                    width: 74,
+                    height: 74,
+                    child: ClipOval(child: PlayerImage(player: player)),
                   ),
                   Positioned(
                     top: 0,
@@ -420,7 +420,7 @@ class _ProfileState extends State<Profile> {
               SizedBox(
                 width: 80,
                 child: Text(
-                  player.playerName,
+                  player.fullName,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

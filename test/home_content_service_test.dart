@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:onetouch/data/home_content_service.dart';
+import 'package:onetouch/data/home/home_content_service.dart';
 
 void main() {
   test('loads a real YouTube highlight feed entry', () async {

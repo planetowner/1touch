@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/models/playerdata.dart';
+import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/index.dart';
 
 class PlayerCard extends StatefulWidget {
@@ -46,21 +46,49 @@ class _PlayerCardState extends State<PlayerCard>
     super.dispose();
   }
 
+  // Fixed pixel heights of the chrome the gradient sits behind.
+  static const double _appBarHeight = 100; // SliverAppBar.toolbarHeight below
+  static const double _tabBarHeight =
+      48; // text TabBar (46) + indicatorWeight (2)
+  static const double _overviewPadding =
+      16; // PlayerOverviewTab vertical padding
+  static const double _headerPhotoHeight = 145; // player photo in the top block
+
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     double gradientOpacity = 1.0 - opacityFactor;
 
+    // The gradient should fade out exactly where the header content ends. Those
+    // anchor points are fixed in logical pixels *below the status bar*, so we add
+    // the device's top inset to keep the gradient aligned across notch / Dynamic
+    // Island / Android status-bar sizes instead of hardcoding a single-device value.
+    final double topInset = MediaQuery.of(context).padding.top;
+    final double gradientHeight = isOverviewTab
+        // Overview: fade ends at the bottom of the number/photo header block.
+        ? topInset +
+            _appBarHeight +
+            _tabBarHeight +
+            _overviewPadding +
+            _headerPhotoHeight
+        // Other tabs: fade ends just past the tab bar.
+        : topInset + _appBarHeight + _tabBarHeight;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Global gradient behind everything including tab bar
-          Positioned(
+          // Global gradient behind everything including tab bar.
+          // AnimatedPositioned smoothly eases the height between the tall
+          // Overview gradient and the compact one on the other tabs, so the
+          // fade point glides into place instead of snapping on tab change.
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
             top: 0,
             left: 0,
             right: 0,
-            height: isOverviewTab ? 333 : 173,
+            height: gradientHeight,
             child: IgnorePointer(
               child: AnimatedOpacity(
                 opacity: gradientOpacity,
@@ -90,7 +118,8 @@ class _PlayerCardState extends State<PlayerCard>
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 SliverAppBar(
                   automaticallyImplyLeading: false,
-                  backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                  backgroundColor: Color.lerp(
+                      Colors.transparent, Colors.black, opacityFactor),
                   elevation: 0,
                   floating: true,
                   snap: true,
@@ -101,26 +130,31 @@ class _PlayerCardState extends State<PlayerCard>
                       return Align(
                         alignment: Alignment.bottomLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                          padding: const EdgeInsets.only(
+                              left: 24, right: 24, bottom: 24),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(widget.player.fullName, style: Heading3.style),
+                              Text(widget.player.fullName,
+                                  style: Heading3.style),
                               const Spacer(),
                               IconButton(
                                 onPressed: () {},
-                                icon: const Icon(Icons.star_outline, size: 32, color: Colors.white),
+                                icon: const Icon(Icons.star_outline,
+                                    size: 32, color: Colors.white),
                               ),
                               IconButton(
                                 onPressed: () => context.push('/search'),
-                                icon: const Icon(Icons.search, size: 32, color: Colors.white),
+                                icon: const Icon(Icons.search,
+                                    size: 32, color: Colors.white),
                               ),
                               IconButton(
                                 onPressed: () => context.push(
                                   '/compare',
                                   extra: widget.player.id,
                                 ),
-                                icon: const Icon(Icons.safety_divider, size: 32, color: Colors.white),
+                                icon: const Icon(Icons.safety_divider,
+                                    size: 32, color: Colors.white),
                               ),
                             ],
                           ),
@@ -163,7 +197,7 @@ class _PlayerCardState extends State<PlayerCard>
                 children: [
                   PlayerOverviewTab(player: widget.player),
                   AnalysisTab(player: widget.player),
-                  CareerTab(player: widget.player),
+                  MatchesTab(player: widget.player),
                   CareerTab(player: widget.player),
                 ],
               ),
@@ -188,7 +222,8 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
       child: _tabBar,

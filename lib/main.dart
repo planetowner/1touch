@@ -7,7 +7,7 @@ import 'firebase_options.dart';
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/models/playerdata.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens
@@ -92,17 +92,12 @@ final GoRouter _router = GoRouter(
               GoRoute(
                 path: ':id',
                 builder: (context, state) {
-                  var playerId = state.pathParameters['id']!;
-                  var player = getPlayerById(playerId);
+                  final playerId = state.pathParameters['id']!;
+                  final player = playerRepository.findById(playerId) ??
+                      playerRepository.allPlayers.first;
                   return PlayerCard(player: player);
                 },
               ),
-              // GoRoute(
-              //   path: '/compare',
-              //   builder: (context, state) => PlayerComparisonScreen(
-              //     initialPlayerId: state.extra as String?,
-              //   ),
-              // ),
             ],
           ),
         ]),

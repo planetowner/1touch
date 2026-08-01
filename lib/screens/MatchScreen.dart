@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:onetouch/models/mock_data.dart';
 
 import '../core/stylesheet_dark.dart';
 

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/season_catalog.dart';
+import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
+import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:onetouch/models/mock_data.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/knockout_bracket.dart';
 

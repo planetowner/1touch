@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/stylesheet_dark.dart";
+import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
+import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/transfers/mock/transfer_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:onetouch/models/mock_data.dart';
-import 'package:onetouch/models/bestXI.dart';
-import 'package:onetouch/models/mock_transfer_bestXI_data.dart';
+import 'package:onetouch/models/best_eleven.dart';
 import 'package:intl/intl.dart';
-import '../models/league.dart';
 import '../models/transfer.dart';
 
 String _formatMatchDate(String startingAt) {

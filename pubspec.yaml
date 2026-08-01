@@ -85,6 +85,7 @@ flutter:
     - assets/playerSilhouette.svg
     - assets/playerAvatar.png
     - assets/Onboarding.mp4
+    - assets/player_comparison/
     - assets/epl.png
     - assets/seriea.png
     - assets/league1.png
