@@ -25,10 +25,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isLight ? Colors.white : const Color(0xFF0B0B0B),
       body: SafeArea(
         child: Center(
           child: SvgPicture.asset(
@@ -37,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
             height: 23, // 세로 맞춤
             fit: BoxFit.contain,
             colorFilter: ColorFilter.mode(
-              isLight ? Colors.black : Colors.white,
+              colors.onSurface,
               BlendMode.srcIn,
             ), // 라이트/다크 모드 색 반전
           ),

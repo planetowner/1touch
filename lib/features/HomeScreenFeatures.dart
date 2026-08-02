@@ -10,7 +10,8 @@ import '../models/team_overview.dart';
 import '../models/fixture.dart';
 import '../models/home_content_item.dart';
 import "package:onetouch/features/helper.dart";
-import "package:onetouch/core/stylesheet_dark.dart";
+import "package:onetouch/core/style.dart";
+import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -29,8 +30,11 @@ class SyncDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Dialog(
-      backgroundColor: const Color(0xFF2C2C2C),
+      backgroundColor: appColors.cardBackground,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
@@ -52,15 +56,17 @@ class SyncDialog extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
+                  backgroundColor: colorScheme.onSurface,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text("YES, SYNC IT!",
-                    style: Body2_b.style.copyWith(color: Colors.black)),
+                child: Text(
+                  "YES, SYNC IT!",
+                  style: Body2_b.style.copyWith(color: colorScheme.onPrimary),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -94,9 +100,10 @@ class TeamSelectionSheet extends StatefulWidget {
     required int initialFavoriteTeamId,
     required void Function(int teamId) onSwitch,
   }) {
+    final appColors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2C2C2C),
+      backgroundColor: appColors.cardBackground,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -136,6 +143,8 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
       child: Column(
@@ -147,7 +156,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
               const SizedBox(width: 24), // Spacing for centering
               Text("Following Teams", style: Heading5.style),
               IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: Icon(Icons.close, color: colorScheme.onSurface),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -177,7 +186,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                   ),
                   subtitle: Text(team['league'] ?? '', style: Body2.style),
                   trailing: team['isSelected']
-                      ? const Icon(Icons.check, color: Colors.white)
+                      ? Icon(Icons.check, color: colorScheme.onSurface)
                       : null,
                   onTap: () {
                     setState(() {
@@ -204,15 +213,17 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                backgroundColor: colorScheme.onSurface,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text("SWITCH",
-                  style: Body2_b.style.copyWith(color: Colors.black)),
+              child: Text(
+                "SWITCH",
+                style: Body2_b.style.copyWith(color: colorScheme.onPrimary),
+              ),
             ),
           ),
         ],
@@ -229,24 +240,25 @@ class MyTeams extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (teams.isEmpty) return SizedBox.shrink();
+    final appColors = AppColors.of(context);
     final team = teams[0];
     final match = team.nextMatch;
     final leagueId = match?.leagueId ?? team.lastMatch?.leagueId;
     final leagueName = leagueNames[leagueId] ?? '';
-    final rank = leagueId != null
-        ? standingByTeam(leagueId, team.id)?.position
-        : null;
+    final rank =
+        leagueId != null ? standingByTeam(leagueId, team.id)?.position : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Material(
+        color: appColors.cardBackground,
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
           width: 375,
           padding: const EdgeInsets.symmetric(vertical: 24),
           decoration: BoxDecoration(
-            color: const Color(0xFF272828),
+            color: appColors.cardBackground,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -329,7 +341,8 @@ class MyTeams extends StatelessWidget {
                     final home = mockTeamById(last.homeTeamId);
                     final away = mockTeamById(last.awayTeamId);
                     return MatchCard2(
-                      date: DateFormat('EEE, MMM d h:mm a').format(DateTime.parse(last.startingAt).toLocal()),
+                      date: DateFormat('EEE, MMM d h:mm a')
+                          .format(DateTime.parse(last.startingAt).toLocal()),
                       venue: '',
                       team1shortname: home.shortCode ?? home.name,
                       team1Logo: home.imagePath ?? '',
@@ -381,7 +394,8 @@ class FixtureCalendar extends StatefulWidget {
 }
 
 class _FixtureCalendarState extends State<FixtureCalendar> {
-  DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime _currentMonth =
+      DateTime(DateTime.now().year, DateTime.now().month, 1);
 
   // Dynamic events generator - automatically creates events for any month/year
   Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(DateTime month) {
@@ -408,12 +422,12 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
       };
 
       events.putIfAbsent(dateOnly, () => []).add(CalendarEvent(
-        opponentLogoUrl: opponent.imagePath ?? '',
-        opponentTeamId: opponent.teamId,
-        dotColor: color,
-        fixtureId: fixture.fixtureId,
-        status: fixture.status.name,
-      ));
+            opponentLogoUrl: opponent.imagePath ?? '',
+            opponentTeamId: opponent.teamId,
+            dotColor: color,
+            fixtureId: fixture.fixtureId,
+            status: fixture.status.name,
+          ));
     }
 
     return events;
@@ -452,13 +466,15 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
   @override
   Widget build(BuildContext context) {
     final events = _generateEventsForMonth(_currentMonth);
+    final appColors = AppColors.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: [
         // Calendar container
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
+            color: appColors.cardBackground,
             borderRadius: BorderRadius.circular(28),
           ),
           margin: const EdgeInsets.all(24),
@@ -473,9 +489,9 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                   children: [
                     IconButton(
                       onPressed: _previousMonth,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.chevron_left,
-                        color: Colors.white,
+                        color: colorScheme.onSurface,
                         size: 24,
                       ),
                       padding: EdgeInsets.zero,
@@ -485,9 +501,9 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                         style: Heading3.style),
                     IconButton(
                       onPressed: _nextMonth,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.chevron_right,
-                        color: Colors.white,
+                        color: colorScheme.onSurface,
                         size: 24,
                       ),
                       padding: EdgeInsets.zero,
@@ -546,12 +562,15 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
   }
 
   Widget _buildCalendarGrid(Map<DateTime, List<CalendarEvent>> events) {
-    final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
-    final firstWeekday = DateTime(_currentMonth.year, _currentMonth.month, 1).weekday; // Mon=1..Sun=7
+    final daysInMonth =
+        DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
+    final firstWeekday = DateTime(_currentMonth.year, _currentMonth.month, 1)
+        .weekday; // Mon=1..Sun=7
     final startDay = firstWeekday % 7; // Sun=0
     final totalCells = startDay + daysInMonth;
     final weekCount = (totalCells / 7).ceil(); // 4..6 rows
-    final lastDayIndex = (startDay + daysInMonth - 1) % 7; // 0..6 index within its row
+    final lastDayIndex =
+        (startDay + daysInMonth - 1) % 7; // 0..6 index within its row
 
     return Column(
       children: [
@@ -562,7 +581,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
             return Container(
               margin: EdgeInsets.only(left: startDay * cellW + 12.0),
               height: 1,
-              color: Colors.grey.shade600,
+              color: AppColors.of(context).divider,
             );
           },
         ),
@@ -600,7 +619,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                     return Container(
                       margin: EdgeInsets.only(left: left, right: right),
                       height: 1,
-                      color: Colors.grey.shade600,
+                      color: AppColors.of(context).divider,
                     );
                   },
                 ),
@@ -611,12 +630,12 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
   }
 
   Widget _buildCalendarCell(
-      int week,
-      int dayOfWeek,
-      int startDay,
-      int daysInMonth,
-      Map<DateTime, List<CalendarEvent>> events,
-      ) {
+    int week,
+    int dayOfWeek,
+    int startDay,
+    int daysInMonth,
+    Map<DateTime, List<CalendarEvent>> events,
+  ) {
     final dayNumber = week * 7 + dayOfWeek - startDay + 1;
 
     // Don't show days outside the current month
@@ -633,18 +652,20 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     final todayDateOnly = DateTime(today.year, today.month, today.day);
     final isHighlighted = date == todayDateOnly;
     // Flutter의 weekday: Monday = 1, Sunday = 7
-    final isWeekend = date.weekday == DateTime.saturday ||
-        date.weekday == DateTime.sunday;
+    final isWeekend =
+        date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
+    final appColors = AppColors.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: dayEvents.isNotEmpty
           ? () => context.push(
-          '/match/${dayEvents.first.fixtureId}?status=${dayEvents.first.status}')
+              '/match/${dayEvents.first.fixtureId}?status=${dayEvents.first.status}')
           : null,
       child: Container(
         height: 90,
         decoration: BoxDecoration(
-          color: isHighlighted ? Colors.black : Colors.transparent,
+          color: isHighlighted ? colorScheme.onSurface : Colors.transparent,
           borderRadius: isHighlighted ? BorderRadius.circular(8) : null,
         ),
         child: Column(
@@ -653,7 +674,11 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
             Text(
               dayNumber.toString(),
               style: Heading4.style.copyWith(
-                color: isWeekend ? Colors.grey.shade500 : Colors.white,
+                color: isHighlighted
+                    ? colorScheme.onPrimary
+                    : isWeekend
+                        ? appColors.mutedForeground
+                        : colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -669,11 +694,10 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                       width: 28,
                       height: 28,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
-                          teamLogoFallback(
-                            dayEvents.first.opponentTeamId,
-                            size: 28,
-                          ),
+                      errorBuilder: (_, __, ___) => teamLogoFallback(
+                        dayEvents.first.opponentTeamId,
+                        size: 28,
+                      ),
                     ),
                     Positioned(
                       top: 0,
@@ -735,8 +759,8 @@ class _HomeContentList extends StatelessWidget {
             child: _HomeContentCard(
               key: ValueKey('${items[index].destinationUrl}-$index'),
               item: items[index],
-              fallback:
-                  homeContentFallbackItems[index % homeContentFallbackItems.length],
+              fallback: homeContentFallbackItems[
+                  index % homeContentFallbackItems.length],
             ),
           ),
         ),

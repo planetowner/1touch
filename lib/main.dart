@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
+import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
@@ -22,6 +23,7 @@ import 'package:onetouch/WelcomeScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await appThemeController.initialize();
   await currentUserPreferences.initialize();
   await playerRepository.initializeFollowing();
   try {
@@ -193,7 +195,6 @@ class MainScreen extends StatelessWidget {
       // The body should simply be the navigationShell
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.grey[900],
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
           // Special case for the 'Team' tab (index 2)
@@ -246,9 +247,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      theme: style.darktheme,
-      routerConfig: _router,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appThemeController,
+      builder: (context, themeMode, _) => MaterialApp.router(
+        theme: style.whitetheme,
+        darkTheme: style.darktheme,
+        themeMode: themeMode,
+        routerConfig: _router,
+      ),
     );
   }
 }

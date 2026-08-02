@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
-import '../core/stylesheet_dark.dart';
+import '../core/style.dart';
+import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
@@ -128,11 +129,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+    final appColors = AppColors.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final appBarForeground = Color.lerp(
+      appColors.onBrand,
+      colorScheme.onSurface,
+      opacityFactor,
+    )!;
 
     if (isLoading) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: appColors.pageBackground,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -151,6 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
+      backgroundColor: appColors.pageBackground,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
@@ -167,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [_teamColor, _teamColor.withAlpha(0)],
+                    colors: [_teamColor, appColors.pageBackground],
                     stops: const [0.0, 0.6],
                   ),
                 ),
@@ -178,8 +187,12 @@ class _HomeScreenState extends State<HomeScreen> {
             controller: _scrollController,
             slivers: [
               SliverAppBar(
-                backgroundColor:
-                    Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor: Color.lerp(
+                  Colors.transparent,
+                  appColors.pageBackground,
+                  opacityFactor,
+                ),
+                foregroundColor: appBarForeground,
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -191,7 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [_teamColor, _teamColor.withAlpha(0)],
+                      colors: [
+                        _teamColor.withValues(alpha: 1 - opacityFactor),
+                        _teamColor.withValues(alpha: 0),
+                      ],
                     ),
                   ),
                 ),
@@ -202,6 +218,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     'assets/app_logo.svg',
                     height: 23,
                     width: 120,
+                    colorFilter: ColorFilter.mode(
+                      appBarForeground,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 actions: [
@@ -213,7 +233,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () {
                             context.push('/search');
                           },
-                          icon: const Icon(Icons.search, size: 32),
+                          icon: Icon(
+                            Icons.search,
+                            color: appBarForeground,
+                            size: 32,
+                          ),
                         ),
                         // New Dropdown Feature
                         GestureDetector(
@@ -227,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: appColors.onBrand.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
@@ -242,8 +266,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 24,
                                   ),
                                 ),
-                                const Icon(Icons.keyboard_arrow_down,
-                                    color: Colors.white),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: appBarForeground,
+                                ),
                               ],
                             ),
                           ),
@@ -252,8 +278,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () {
                             context.push('/profile');
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.account_circle_outlined,
+                            color: appBarForeground,
                             size: 32,
                           ),
                         ),
@@ -275,8 +302,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 24),
                         child: IconButton(
-                          icon: const Icon(Icons.sync,
-                              color: Colors.white, size: 24),
+                          icon: Icon(
+                            Icons.sync,
+                            color: colorScheme.onSurface,
+                            size: 24,
+                          ),
                           onPressed: () => SyncDialog.show(context),
                         ),
                       ),
@@ -299,12 +329,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 108,
                       padding: const EdgeInsets.all(8),
                       decoration: ShapeDecoration(
-                        color: const Color(0xFF3D3D3D),
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? AppPalette.black
+                            : AppPalette.darkGrey,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Center(
-                        child: Text("Ad", style: Heading4.style),
+                      child: Center(
+                        child: Text(
+                          "Ad",
+                          style: Heading4.style.copyWith(
+                            color: AppPalette.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),

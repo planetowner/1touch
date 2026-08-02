@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 class OnboardingScreen extends StatelessWidget {
@@ -8,7 +9,8 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
 
     Future<void> proceed() async {
       // TODO: 실제 로그인 처리 후 홈으로
@@ -21,16 +23,14 @@ class OnboardingScreen extends StatelessWidget {
       required String label,
       required VoidCallback onTap,
     }) {
-      final bgColor =
-          isLight ? Colors.black.withValues(alpha: 0.1): Color(0xFF3D3D3D);
-
       return SizedBox(
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
-            backgroundColor: bgColor,
+            backgroundColor: appColors.cardBackground,
+            foregroundColor: colors.onSurface,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             elevation: 0,
@@ -47,9 +47,7 @@ class OnboardingScreen extends StatelessWidget {
                 child: Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: isLight
-                      ? Body1.style.copyWith(color: Colors.black)
-                      : Body1.style,
+                  style: Body1.style,
                 ),
               ),
               const SizedBox(width: 40),
@@ -60,13 +58,10 @@ class OnboardingScreen extends StatelessWidget {
     }
 
     // Divider 색상 테마 대응
-    final dividerColor =
-        isLight ? Colors.black.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.2);
-
     return Scaffold(
       body: SafeArea(
         child: Container(
-            color: isLight ? Colors.white : Colors.black,
+            color: appColors.pageBackground,
             child: Column(
               children: [
                 const SizedBox(height: 200),
@@ -77,7 +72,7 @@ class OnboardingScreen extends StatelessWidget {
                   height: 35,
                   fit: BoxFit.contain,
                   colorFilter: ColorFilter.mode(
-                    isLight ? Colors.black : Colors.white,
+                    colors.onSurface,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -96,7 +91,10 @@ class OnboardingScreen extends StatelessWidget {
                       socialBtn(
                         icon: SvgPicture.asset(
                           'assets/apple.svg',
-                          color: isLight ? Colors.white : Colors.black,
+                          colorFilter: ColorFilter.mode(
+                            colors.onSurface,
+                            BlendMode.srcIn,
+                          ),
                         ),
                         label: 'Continue with Apple',
                         onTap: proceed,
@@ -108,13 +106,13 @@ class OnboardingScreen extends StatelessWidget {
                         onTap: proceed,
                       ),
                       const SizedBox(height: 12),
-                      Divider(color: dividerColor, thickness: 1),
+                      Divider(color: appColors.divider, thickness: 1),
                       const SizedBox(height: 12),
                       socialBtn(
                         icon: Icon(
                           Icons.mail_outline,
                           size: 24,
-                          color: isLight ? Colors.white : Colors.black,
+                          color: colors.onSurface,
                         ),
                         label: 'Continue with email',
                         onTap: () => context.push('/auth/signup'),

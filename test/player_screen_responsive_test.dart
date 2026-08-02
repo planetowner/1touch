@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/Overview.dart';
@@ -21,6 +22,7 @@ void main() {
       final horizontalPadding = (size.width * 0.05).clamp(16.0, 24.0);
       await tester.pumpWidget(
         MaterialApp(
+          theme: app_style.darktheme,
           home: Scaffold(
             body: Column(
               children: [

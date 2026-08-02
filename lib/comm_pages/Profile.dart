@@ -1,7 +1,9 @@
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
 import 'package:onetouch/core/favorite_team.dart';
@@ -69,11 +71,14 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     // Logic copied from HomeScreen to fade out the gradient
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final appBarForeground =
+        Color.lerp(appColors.onBrand, colors.onSurface, opacityFactor)!;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor:
-          const Color(0xFF0E0E0E), // Dark background behind the gradient
+      backgroundColor: appColors.pageBackground,
       body: Stack(
         children: [
           // Background Gradient with AnimatedOpacity
@@ -91,7 +96,10 @@ class _ProfileState extends State<Profile> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [_teamColor, _teamColor.withAlpha(0)],
+                    colors: [
+                      _teamColor,
+                      appColors.pageBackground.withValues(alpha: 0),
+                    ],
                     stops: const [0.0, 0.6],
                   ),
                 ),
@@ -104,8 +112,8 @@ class _ProfileState extends State<Profile> {
               SliverAppBar(
                 automaticallyImplyLeading: false,
                 // App bar becomes dark as you scroll down
-                backgroundColor: Color.lerp(
-                    Colors.transparent, const Color(0xFF0E0E0E), opacityFactor),
+                backgroundColor: Color.lerp(Colors.transparent,
+                    appColors.pageBackground, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -120,6 +128,8 @@ class _ProfileState extends State<Profile> {
                     height: 23,
                     width: 120,
                     clipBehavior: Clip.antiAlias,
+                    colorFilter:
+                        ColorFilter.mode(appBarForeground, BlendMode.srcIn),
                   ),
                 ),
                 actions: [
@@ -133,8 +143,8 @@ class _ProfileState extends State<Profile> {
                           children: [
                             IconButton(
                               onPressed: () => context.push('/notifications'),
-                              icon: const Icon(Icons.notifications_none_rounded,
-                                  size: 32, color: Colors.white),
+                              icon: Icon(Icons.notifications_none_rounded,
+                                  size: 32, color: appBarForeground),
                             ),
                             Positioned(
                               top: 8,
@@ -152,8 +162,8 @@ class _ProfileState extends State<Profile> {
                         ),
                         IconButton(
                           onPressed: () => context.push('/search'),
-                          icon: const Icon(Icons.search,
-                              size: 32, color: Colors.white),
+                          icon: Icon(Icons.search,
+                              size: 32, color: appBarForeground),
                         ),
                       ],
                     ),
@@ -180,8 +190,8 @@ class _ProfileState extends State<Profile> {
                           style: Body2_b.style,
                         ),
                         IconButton(
-                          icon: const Icon(Icons.border_color,
-                              color: Colors.white, size: 20),
+                          icon: Icon(Icons.border_color,
+                              color: colors.onSurface, size: 20),
                           onPressed: () {
                             showModalBottomSheet(
                               context: context,
@@ -211,8 +221,8 @@ class _ProfileState extends State<Profile> {
                           style: Body2_b.style,
                         ),
                         IconButton(
-                          icon: const Icon(Icons.border_color,
-                              color: Colors.white, size: 20),
+                          icon: Icon(Icons.border_color,
+                              color: colors.onSurface, size: 20),
                           onPressed: () {
                             showModalBottomSheet(
                               context: context,
@@ -244,6 +254,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _buildProfileHeader(BuildContext context) {
+    final appColors = AppColors.of(context);
     return Center(
       child: Column(
         children: [
@@ -253,7 +264,7 @@ class _ProfileState extends State<Profile> {
             },
             child: CircleAvatar(
               radius: 54,
-              backgroundColor: const Color(0xFF3D3D3D),
+              backgroundColor: appColors.subtleBackground,
               backgroundImage: AssetImage(
                 _user.avatarAsset ?? 'assets/profileAvatar.png',
               ),
@@ -271,12 +282,13 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _buildStatRow() {
+    final appColors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
         height: 70,
         decoration: BoxDecoration(
-          color: const Color(0xFF2B2B2B),
+          color: appColors.cardBackground,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -312,7 +324,7 @@ class _ProfileState extends State<Profile> {
     return Container(
       width: 1,
       height: 40,
-      color: Colors.white24,
+      color: AppColors.of(context).divider,
     );
   }
 
@@ -324,6 +336,8 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _buildTeamList() {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
     final teamIds = currentUserPreferences.followedTeamIds.value;
     final favoriteId = FavoriteTeam.id.value;
 
@@ -345,7 +359,7 @@ class _ProfileState extends State<Profile> {
                 width: 135,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2B2B2B),
+                  color: appColors.cardBackground,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -382,10 +396,10 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
               if (isFavorite)
-                const Positioned(
+                Positioned(
                   top: 12,
                   right: 12,
-                  child: Icon(Icons.star, color: Colors.white, size: 18),
+                  child: Icon(Icons.star, color: colors.onSurface, size: 18),
                 ),
             ],
           );
@@ -395,6 +409,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _buildPlayerList() {
+    final appColors = AppColors.of(context);
     final players = playerRepository.favorites;
 
     return SizedBox(
@@ -421,7 +436,7 @@ class _ProfileState extends State<Profile> {
                     left: 0,
                     child: CircleAvatar(
                       radius: 16,
-                      backgroundColor: const Color(0xFF3D3D3D),
+                      backgroundColor: appColors.subtleBackground,
                       child: Text(
                         player.jerseyNumber.toString(),
                         style: Body2_b.style,
@@ -457,10 +472,8 @@ class SettingsList extends StatefulWidget {
 }
 
 class _SettingsListState extends State<SettingsList> {
-  bool isDarkTheme = false;
-
-  Widget _divider() => const Divider(
-        color: Color(0xFF3A3A3A),
+  Widget _divider() => Divider(
+        color: AppColors.of(context).divider,
         thickness: 2,
         height: 1,
         indent: 24,
@@ -470,9 +483,9 @@ class _SettingsListState extends State<SettingsList> {
   Widget _settingItem(
       {required IconData icon, required String title, VoidCallback? onTap}) {
     return ListTile(
-      leading: Icon(icon, color: Colors.white),
+      leading: Icon(icon),
       title: Text(title, style: Body1.style),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+      trailing: const Icon(Icons.arrow_forward_ios),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
     );
@@ -510,21 +523,9 @@ class _SettingsListState extends State<SettingsList> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            leading:
-                const Icon(Icons.brightness_4_outlined, color: Colors.white),
+            leading: const Icon(Icons.brightness_4_outlined),
             title: Text("Dark Theme", style: Body1.style),
-            trailing: Switch(
-              value: isDarkTheme,
-              activeThumbColor: Colors.white,
-              activeTrackColor: Colors.white30,
-              inactiveTrackColor: Colors.white10,
-              inactiveThumbColor: Colors.white24,
-              onChanged: (value) {
-                setState(() {
-                  isDarkTheme = value;
-                });
-              },
-            ),
+            trailing: const AppThemeSwitch(),
           ),
         ),
         _divider(),

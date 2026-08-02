@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart'; // Add this import
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/theme_controller.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -37,10 +39,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0B0B),
+      backgroundColor: appColors.pageBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -54,12 +57,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     'assets/app_logo.svg',
                     height: 23,
                     width: 100,
-                    placeholderBuilder: (_) => Text("1TOUCH", style: Heading4.style),
+                    colorFilter:
+                        ColorFilter.mode(colors.onSurface, BlendMode.srcIn),
+                    placeholderBuilder: (_) =>
+                        Text("1TOUCH", style: Heading4.style),
                   ),
-                  Icon(
-                    isLight ? Icons.dark_mode : Icons.light_mode,
-                    color: Colors.white,
-                  ),
+                  const AppThemeIconButton(),
                 ],
               ),
             ),
@@ -97,11 +100,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: FilledButton(
                   onPressed: () => context.go('/onboarding/select-favorites'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    backgroundColor: colors.onSurface,
+                    foregroundColor: colors.surface,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: Text('CONTINUE', style: Body2_b.style.copyWith(color: Colors.black)),
+                  child: Text('CONTINUE',
+                      style: Body2_b.style.copyWith(color: colors.surface)),
                 ),
               ),
             ),
@@ -114,12 +119,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   // Helper widget to handle the video states
   Widget _buildVideoContent() {
+    final mutedColor = AppColors.of(context).mutedForeground;
     if (_hasError) {
-      return const Icon(Icons.sports_soccer, size: 100, color: Colors.white24);
+      return Icon(Icons.sports_soccer, size: 100, color: mutedColor);
     }
 
     if (!_controller.value.isInitialized) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white24));
+      return Center(child: CircularProgressIndicator(color: mutedColor));
     }
 
     return AspectRatio(

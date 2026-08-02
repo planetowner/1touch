@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/WelcomeLoadingScreen.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
@@ -79,18 +81,17 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final pageBackground = Theme.of(context).brightness == Brightness.light
+        ? AppPalette.white
+        : AppPalette.black;
+
     return Stack(
       children: [
-        const ColoredBox(color: Color(0xFF000000)),
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment(0.10, -0.00),
-                end: Alignment(0.10, 1.00),
-                colors: [Color(0xFF282929), Color(0x00282929)],
-              ),
-            ),
+        Positioned.fill(
+          child: ColoredBox(
+            key: const ValueKey('rank-favorites-background'),
+            color: pageBackground,
           ),
         ),
         Scaffold(
@@ -107,20 +108,15 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new,
-                            color: Colors.white),
+                        icon: Icon(Icons.arrow_back_ios_new,
+                            color: colors.onSurface),
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.brightness_4,
-                              color: Colors.white, size: 20),
+                          Icon(Icons.brightness_4,
+                              color: colors.onSurface, size: 20),
                           const SizedBox(width: 8),
-                          Switch(
-                            value: false,
-                            onChanged: (_) {},
-                            activeThumbColor: Colors.white,
-                            inactiveTrackColor: Colors.white54,
-                          ),
+                          const AppThemeSwitch(),
                         ],
                       ),
                     ],
@@ -162,23 +158,23 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                       ElevatedButton(
                         onPressed: _isSaving ? null : _completeOnboarding,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
+                          backgroundColor: colors.onSurface,
                           minimumSize: const Size(double.infinity, 56),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16)),
                         ),
                         child: _isSaving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.black,
+                                  color: colors.surface,
                                 ),
                               )
                             : Text("CONTINUE",
                                 style: Body2_b.style
-                                    .copyWith(color: Colors.black)),
+                                    .copyWith(color: colors.surface)),
                       ),
                     ],
                   ),
@@ -192,6 +188,8 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
   }
 
   Widget _buildTeamCard(int index, Team team) {
+    final colors = Theme.of(context).colorScheme;
+    final onBrand = AppColors.of(context).onBrand;
     final isFirst = index == 0;
     final primaryColor = Color(team.primaryColor);
     final darkerColor = Color.lerp(primaryColor, Colors.black, 0.55)!;
@@ -207,8 +205,9 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
             width: 32,
             child: Center(
               child: isFirst
-                  ? const Icon(Icons.star, color: Colors.white, size: 18)
-                  : Text('${index + 1}', style: Heading5.style),
+                  ? Icon(Icons.star, color: colors.onSurface, size: 18)
+                  : Text('${index + 1}',
+                      style: Heading5.style.copyWith(color: colors.onSurface)),
             ),
           ),
           const SizedBox(width: 8),
@@ -267,13 +266,15 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(team.name, style: Heading5.style),
+                            Text(team.name,
+                                style: Heading5.style.copyWith(color: onBrand)),
                             if (subtitle.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
                                 subtitle,
                                 style: Body2.style.copyWith(
-                                    fontSize: 12, color: Colors.white70),
+                                    fontSize: 12,
+                                    color: onBrand.withValues(alpha: 0.7)),
                               ),
                             ],
                           ],
@@ -287,13 +288,12 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                         child: ReorderableDragStartListener(
                           index: index,
                           child: Container(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             color: Colors.transparent,
                             child: Center(
                               child: Icon(
                                 Icons.drag_handle_rounded,
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: onBrand.withValues(alpha: 0.7),
                               ),
                             ),
                           ),

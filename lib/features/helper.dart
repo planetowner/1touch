@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import "package:onetouch/core/stylesheet_dark.dart";
+import "package:onetouch/core/style.dart";
+import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
 
@@ -128,7 +129,9 @@ class MatchCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(color: Color(0xFF3D3D3D)),
+      decoration: BoxDecoration(
+        color: AppColors.of(context).subtleBackground,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -194,7 +197,9 @@ class MatchCard2 extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-      decoration: const BoxDecoration(color: Color(0x00B40000)),
+      decoration: BoxDecoration(
+        color: AppColors.of(context).cardBackground,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -449,11 +454,20 @@ class _MatchInfo extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Container(
-            width: 24, height: 1, color: Colors.white.withValues(alpha: 0.3)),
+          width: 24,
+          height: 1,
+          color: AppColors.of(context).divider,
+        ),
         const SizedBox(height: 8),
-        Text(
-          '${leagueName ?? 'League'}  ${match?.roundName ?? ''}',
-          style: Body2.style,
+        SizedBox(
+          width: 96,
+          child: Text(
+            '${leagueName ?? 'League'}  ${match?.roundName ?? ''}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Body2.style,
+          ),
         ),
         const SizedBox(height: 4),
         // Text('Venue ID ${match?.venueId}', style: .style),
@@ -490,6 +504,7 @@ class _ScoreBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Opacity(
       opacity: isDimmed ? 0.5 : 1.0,
       child: Material(
@@ -501,13 +516,13 @@ class _ScoreBoard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: colorScheme.onPrimary,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             score.toString(),
             textAlign: TextAlign.center,
-            style: Heading3.style,
+            style: Heading3.style.copyWith(color: colorScheme.primary),
           ),
         ),
       ),

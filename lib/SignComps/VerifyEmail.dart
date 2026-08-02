@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 class EmailVerifyScreen extends StatefulWidget {
@@ -15,25 +16,24 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   final _code = TextEditingController();
   bool _submitting = false;
 
-  InputDecoration _dec(String hint) =>
-      InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white70),
-        filled: true,
-        fillColor: const Color(0xFF3C3C3C),
-        contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide.none),
-      );
+  InputDecoration _dec(BuildContext context, String hint) {
+    final appColors = AppColors.of(context);
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: appColors.mutedForeground),
+      filled: true,
+      fillColor: appColors.subtleBackground,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+    );
+  }
 
   Future<void> _continue() async {
     // TODO: 실제 인증 코드 검증 API
-    if (_code.text
-        .trim()
-        .length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enter the code.')));
+    if (_code.text.trim().length < 4) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Enter the code.')));
       return;
     }
     setState(() => _submitting = true);
@@ -53,14 +53,13 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isLight ? Colors.white : const Color(0xFF0B0B0B),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: BackButton(color: isLight ? Colors.black :  Colors.white),
+        leading: BackButton(color: colors.onSurface),
         centerTitle: true,
         title: const Text('Verify your email', style: Body1.style),
       ),
@@ -97,7 +96,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                     TextField(
                       controller: _code,
                       keyboardType: TextInputType.number,
-                      decoration: _dec('204182'),
+                      decoration: _dec(context, '204182'),
                       style: Body1.style,
                     ),
 
@@ -108,13 +107,14 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                         GestureDetector(
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Code sent again.')));
+                                const SnackBar(
+                                    content: Text('Code sent again.')));
                           },
                           child: Text(
                             'Send again',
                             style: Body1.style.copyWith(
                               decoration: TextDecoration.underline,
-                              decorationColor: Colors.white,
+                              decorationColor: colors.onSurface,
                             ),
                           ),
                         ),
@@ -130,19 +130,21 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                       child: FilledButton(
                         onPressed: _submitting ? null : _continue,
                         style: FilledButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
+                          backgroundColor: colors.onSurface,
+                          foregroundColor: colors.surface,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
                         ),
                         child: _submitting
                             ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2))
+                                height: 22,
+                                width: 22,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))
                             : Text('CONTINUE',
-                            style: Body1_b.style.copyWith(color: Colors.black)),
+                                style: Body1_b.style
+                                    .copyWith(color: colors.surface)),
                       ),
                     ),
                     const SizedBox(height: 24),

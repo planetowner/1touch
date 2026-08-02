@@ -1,33 +1,156 @@
 import 'package:flutter/material.dart';
 
-var darktheme = ThemeData(
-  scaffoldBackgroundColor: Color(0xFF090A0A), // Makes the home background black
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    backgroundColor: Colors.black12, // Bottom navigation bar background
-    elevation: 2,
-    selectedItemColor: Colors.white, // Selected item color
-    unselectedItemColor: Colors.white, // Unselected item color
-  ),
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.black, // AppBar background
-    elevation: 2,
-    iconTheme: IconThemeData(color: Colors.white), // Icon color in AppBar
-    // titleTextStyle: TextStyle(color: Colors.white, fontSize: 20), // Title text style
-  ),
+abstract final class AppPalette {
+  static const black = Color(0xFF090A0A);
+  static const white = Color(0xFFFFFFFF);
+  static const darkGrey = Color(0xFF3D3D3D);
+  static const lightGrey = Color(0xFFF1F1F1);
+  static const lightGreyBox = Color(0xFFF7F7F7);
+}
+
+@immutable
+class AppColors extends ThemeExtension<AppColors> {
+  const AppColors({
+    required this.pageBackground,
+    required this.cardBackground,
+    required this.subtleBackground,
+    required this.mutedForeground,
+    required this.divider,
+    required this.onBrand,
+  });
+
+  final Color pageBackground;
+  final Color cardBackground;
+  final Color subtleBackground;
+  final Color mutedForeground;
+  final Color divider;
+  final Color onBrand;
+
+  static AppColors of(BuildContext context) {
+    return Theme.of(context).extension<AppColors>()!;
+  }
+
+  @override
+  AppColors copyWith({
+    Color? pageBackground,
+    Color? cardBackground,
+    Color? subtleBackground,
+    Color? mutedForeground,
+    Color? divider,
+    Color? onBrand,
+  }) {
+    return AppColors(
+      pageBackground: pageBackground ?? this.pageBackground,
+      cardBackground: cardBackground ?? this.cardBackground,
+      subtleBackground: subtleBackground ?? this.subtleBackground,
+      mutedForeground: mutedForeground ?? this.mutedForeground,
+      divider: divider ?? this.divider,
+      onBrand: onBrand ?? this.onBrand,
+    );
+  }
+
+  @override
+  AppColors lerp(covariant AppColors? other, double t) {
+    if (other == null) return this;
+    return AppColors(
+      pageBackground: Color.lerp(pageBackground, other.pageBackground, t)!,
+      cardBackground: Color.lerp(cardBackground, other.cardBackground, t)!,
+      subtleBackground:
+          Color.lerp(subtleBackground, other.subtleBackground, t)!,
+      mutedForeground: Color.lerp(mutedForeground, other.mutedForeground, t)!,
+      divider: Color.lerp(divider, other.divider, t)!,
+      onBrand: Color.lerp(onBrand, other.onBrand, t)!,
+    );
+  }
+}
+
+const _darkColors = AppColors(
+  pageBackground: AppPalette.black,
+  cardBackground: Color(0xFF2A2A2A),
+  subtleBackground: AppPalette.darkGrey,
+  mutedForeground: Color(0x99FFFFFF),
+  divider: Color(0x1FFFFFFF),
+  onBrand: AppPalette.white,
 );
 
-var whitetheme = ThemeData(
-  scaffoldBackgroundColor: Colors.white, // Makes the home background black
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    backgroundColor: Colors.white, // Bottom navigation bar background
-    elevation: 2,
-    selectedItemColor: Colors.black, // Selected item color
-    unselectedItemColor: Colors.black, // Unselected item color
-  ),
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.white, // AppBar background
-    elevation: 2,
-    iconTheme: IconThemeData(color: Colors.black), // Icon color in AppBar
-    // titleTextStyle: TextStyle(color: Colors.white, fontSize: 20), // Title text style
-  ),
+const _lightColors = AppColors(
+  pageBackground: AppPalette.lightGrey,
+  cardBackground: AppPalette.white,
+  subtleBackground: AppPalette.lightGreyBox,
+  mutedForeground: Color(0x99090A0A),
+  divider: Color(0x1F090A0A),
+  onBrand: AppPalette.white,
 );
+
+ThemeData _buildTheme(Brightness brightness, AppColors colors) {
+  final isDark = brightness == Brightness.dark;
+  final foreground = isDark ? AppPalette.white : AppPalette.black;
+  final inverseForeground = isDark ? AppPalette.black : AppPalette.white;
+  final colorScheme = ColorScheme(
+    brightness: brightness,
+    primary: foreground,
+    onPrimary: inverseForeground,
+    secondary: foreground,
+    onSecondary: inverseForeground,
+    error: const Color(0xFFBA1A1A),
+    onError: AppPalette.white,
+    surface: colors.cardBackground,
+    onSurface: foreground,
+  );
+  final base = ThemeData(
+    useMaterial3: true,
+    brightness: brightness,
+    colorScheme: colorScheme,
+    fontFamily: 'Archivo',
+  );
+
+  return base.copyWith(
+    scaffoldBackgroundColor: colors.pageBackground,
+    canvasColor: colors.pageBackground,
+    cardColor: colors.cardBackground,
+    dividerColor: colors.divider,
+    iconTheme: IconThemeData(color: foreground),
+    textTheme: base.textTheme.apply(
+      bodyColor: foreground,
+      displayColor: foreground,
+      fontFamily: 'Archivo',
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: colors.pageBackground,
+      foregroundColor: foreground,
+      elevation: 0,
+      iconTheme: IconThemeData(color: foreground),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: colors.cardBackground,
+      elevation: 2,
+      selectedItemColor: foreground,
+      unselectedItemColor: colors.mutedForeground,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: colors.subtleBackground,
+      hintStyle: TextStyle(color: colors.mutedForeground),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        return states.contains(WidgetState.selected)
+            ? foreground
+            : colors.mutedForeground;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        return states.contains(WidgetState.selected)
+            ? foreground.withValues(alpha: 0.3)
+            : colors.divider;
+      }),
+    ),
+    extensions: [colors],
+  );
+}
+
+final ThemeData darktheme = _buildTheme(Brightness.dark, _darkColors);
+final ThemeData whitetheme = _buildTheme(Brightness.light, _lightColors);

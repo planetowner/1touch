@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 class EmailSignUpScreen extends StatefulWidget {
@@ -22,17 +23,18 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   bool _agreed = false;
   bool _submitting = false;
 
-  InputDecoration _dec(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: Body1.style.copyWith(color: Colors.white70),
-        filled: true,
-        fillColor: const Color(0xFF3C3C3C),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none),
-      );
+  InputDecoration _dec(BuildContext context, String hint) {
+    final appColors = AppColors.of(context);
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: Body1.style.copyWith(color: appColors.mutedForeground),
+      filled: true,
+      fillColor: appColors.subtleBackground,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+    );
+  }
 
   bool get _canSubmit =>
       _agreed &&
@@ -71,15 +73,14 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isLight ? Colors.white : const Color(0xFF0B0B0B),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: BackButton(
-          color: isLight ? Colors.black : Colors.white,
+          color: colors.onSurface,
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -89,8 +90,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           },
         ),
         centerTitle: true,
-        title:
-            Text('Sign up', style: Body1.style.copyWith(color: Colors.black)),
+        title: Text('Sign up', style: Body1.style),
       ),
       body: SafeArea(
         child: CustomScrollView(
@@ -112,7 +112,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _firstName,
-                        decoration: _dec('John'),
+                        decoration: _dec(context, 'John'),
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Enter first name'
                             : null,
@@ -124,7 +124,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _lastName,
-                        decoration: _dec('Doe'),
+                        decoration: _dec(context, 'Doe'),
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Enter last name'
                             : null,
@@ -136,7 +136,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _username,
-                        decoration: _dec('john_doe'),
+                        decoration: _dec(context, 'john_doe'),
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Enter username'
                             : null,
@@ -149,7 +149,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       TextFormField(
                         controller: _email,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: _dec('johndoe@gmail.com'),
+                        decoration: _dec(context, 'johndoe@gmail.com'),
                         validator: (v) {
                           if (v == null || v.trim().isEmpty)
                             return 'Enter email';
@@ -166,13 +166,13 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       TextFormField(
                         controller: _password,
                         obscureText: _obscure,
-                        decoration: _dec('• • • • • • • •').copyWith(
+                        decoration: _dec(context, '• • • • • • • •').copyWith(
                           suffixIcon: IconButton(
                             icon: Icon(
                                 _obscure
                                     ? Icons.visibility_off
                                     : Icons.visibility,
-                                color: Colors.white),
+                                color: colors.onSurface),
                             onPressed: () =>
                                 setState(() => _obscure = !_obscure),
                           ),
@@ -233,8 +233,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         child: FilledButton(
                           onPressed: _canSubmit ? _submit : null,
                           style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
+                            backgroundColor: colors.onSurface,
+                            foregroundColor: colors.surface,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24)),
                           ),
@@ -246,7 +246,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                       CircularProgressIndicator(strokeWidth: 2))
                               : Text('SIGN UP',
                                   style: Body2_b.style
-                                      .copyWith(color: Colors.black)),
+                                      .copyWith(color: colors.surface)),
                         ),
                       ),
                       const SizedBox(height: 24),

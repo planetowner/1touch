@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
@@ -86,14 +88,15 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
   List<Team> get _currentTeams => _leagueTeams[_selectedLeagueId] ?? [];
 
-  Gradient _gradientForFocusedTeam() {
+  Gradient _gradientForFocusedTeam(BuildContext context) {
     final color = _focusedTeam != null
         ? Color(_focusedTeam!.primaryColor)
         : const Color(0xFF1F1F1F);
+    final pageBackground = AppColors.of(context).pageBackground;
     return LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [color, Colors.black],
+      colors: [color, pageBackground],
     );
   }
 
@@ -111,88 +114,96 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
     final dropdownWidth = MediaQuery.of(context).size.width * 0.6;
 
     _overlayEntry = OverlayEntry(
-      builder: (context) => Stack(
-        children: [
-          GestureDetector(
-            onTap: _removeOverlay,
-            behavior: HitTestBehavior.translucent,
-            child: Container(color: Colors.transparent),
-          ),
-          Positioned(
-            width: dropdownWidth,
-            child: CompositedTransformFollower(
-              link: _layerLink,
-              showWhenUnlinked: false,
-              offset: Offset.zero,
-              child: Material(
-                color: Colors.transparent,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF5C4C3A).withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2)),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: _leagues.map((league) {
-                          final isSelected = league.name == selectedLeague;
-                          return InkWell(
-                            onTap: () {
-                              setState(() {
-                                selectedLeague = league.name;
-                                _focusedIndex = 0;
-                                _focusedTeam =
-                                    _leagueTeams[league.leagueId]?.first;
-                              });
-                              _scrollController.jumpTo(0);
-                              _removeOverlay();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  Image.network(
-                                    league.imagePath ?? '',
-                                    width: 24,
-                                    height: 24,
-                                    errorBuilder: (_, __, ___) =>
-                                        leagueLogoFallback(league.leagueId,
-                                            size: 24),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      league.name,
-                                      style: isSelected
-                                          ? Heading5.style.copyWith(
-                                              fontWeight: FontWeight.bold)
-                                          : Heading5.style
-                                              .copyWith(color: Colors.white70),
+      builder: (context) {
+        final appColors = AppColors.of(context);
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: _removeOverlay,
+              behavior: HitTestBehavior.translucent,
+              child: Container(color: Colors.transparent),
+            ),
+            Positioned(
+              width: dropdownWidth,
+              child: CompositedTransformFollower(
+                link: _layerLink,
+                showWhenUnlinked: false,
+                offset: Offset.zero,
+                child: Material(
+                  color: Colors.transparent,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color:
+                              appColors.cardBackground.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: _leagues.map((league) {
+                            final isSelected = league.name == selectedLeague;
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  selectedLeague = league.name;
+                                  _focusedIndex = 0;
+                                  _focusedTeam =
+                                      _leagueTeams[league.leagueId]?.first;
+                                });
+                                _scrollController.jumpTo(0);
+                                _removeOverlay();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    Image.network(
+                                      league.imagePath ?? '',
+                                      width: 24,
+                                      height: 24,
+                                      errorBuilder: (_, __, ___) =>
+                                          leagueLogoFallback(league.leagueId,
+                                              size: 24),
                                     ),
-                                  ),
-                                  if (isSelected)
-                                    const Icon(Icons.keyboard_arrow_up,
-                                        color: Colors.white, size: 20),
-                                ],
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        league.name,
+                                        style: isSelected
+                                            ? Heading5.style.copyWith(
+                                                fontWeight: FontWeight.bold)
+                                            : Heading5.style.copyWith(
+                                                color:
+                                                    appColors.mutedForeground),
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Icon(Icons.keyboard_arrow_up,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          size: 20),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
 
     Overlay.of(context).insert(_overlayEntry!);
@@ -201,6 +212,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     _itemWidth = screenWidth * 0.6;
     final sidePadding = (screenWidth - _itemWidth) / 2;
@@ -217,22 +230,22 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeInOut,
-          decoration: BoxDecoration(gradient: _gradientForFocusedTeam()),
+          decoration: BoxDecoration(gradient: _gradientForFocusedTeam(context)),
         ),
 
         // 2) Vignette
         Positioned.fill(
           child: IgnorePointer(
             child: DecoratedBox(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
                     Colors.transparent,
-                    Color(0xFF0C0C0C),
-                    Color(0xFF000000),
+                    appColors.pageBackground.withValues(alpha: 0.85),
+                    appColors.pageBackground,
                   ],
                   stops: [0.0, 0.40, 0.85, 1.0],
                 ),
@@ -273,6 +286,10 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                   'assets/app_logo.svg',
                                   height: 23,
                                   width: 120,
+                                  colorFilter: ColorFilter.mode(
+                                    appColors.onBrand,
+                                    BlendMode.srcIn,
+                                  ),
                                   placeholderBuilder: (_) => const Text(
                                       "1TOUCH",
                                       style: TextStyle(
@@ -280,11 +297,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                           fontWeight: FontWeight.bold,
                                           fontSize: 20)),
                                 ),
-                                Switch(
-                                  value: false,
-                                  onChanged: (_) {},
-                                  activeThumbColor: Colors.white,
-                                  inactiveTrackColor: Colors.white24,
+                                AppThemeSwitch(
+                                  foregroundColor: appColors.onBrand,
                                 ),
                               ],
                             ),
@@ -430,7 +444,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                           padding: const EdgeInsets.fromLTRB(
                                               16, 8, 8, 8),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF333333),
+                                            color: appColors.cardBackground,
                                             borderRadius:
                                                 BorderRadius.circular(16),
                                           ),
@@ -440,7 +454,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                               Text(
                                                 team.shortCode ?? team.name,
                                                 style: Body2_b.style.copyWith(
-                                                    color: Colors.white70),
+                                                    color: colors.onSurface),
                                               ),
                                               const SizedBox(width: 8),
                                               GestureDetector(
@@ -453,8 +467,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                                   });
                                                 },
                                                 child: const Icon(Icons.close,
-                                                    size: 24,
-                                                    color: Colors.white70),
+                                                    size: 24),
                                               ),
                                             ],
                                           ),
@@ -486,15 +499,16 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                       );
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
+                                backgroundColor: colors.onSurface,
                                 minimumSize: const Size(double.infinity, 56),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16)),
-                                disabledBackgroundColor: Colors.white10,
+                                disabledBackgroundColor:
+                                    appColors.subtleBackground,
                               ),
                               child: Text("CONTINUE",
                                   style: Body2_b.style
-                                      .copyWith(color: Colors.black)),
+                                      .copyWith(color: colors.surface)),
                             ),
                           ),
                           SizedBox(height: bottomGap),
@@ -513,6 +527,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
   Widget _buildLeagueDropdown() {
     final league = _leagues.firstWhere((l) => l.name == selectedLeague);
+    final onBrand = AppColors.of(context).onBrand;
     return CompositedTransformTarget(
       link: _layerLink,
       child: GestureDetector(
@@ -541,7 +556,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                     Expanded(
                       child: Text(
                         selectedLeague,
-                        style: Heading5.style,
+                        style: Heading5.style.copyWith(color: onBrand),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -554,7 +569,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                 _isDropdownOpen
                     ? Icons.keyboard_arrow_up
                     : Icons.keyboard_arrow_down,
-                color: Colors.white,
+                color: onBrand,
               ),
             ],
           ),

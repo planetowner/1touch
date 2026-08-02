@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'core/style.dart';
 import 'core/stylesheet_dark.dart';
+import 'core/theme_controller.dart';
 
 class WelcomeLoadingScreen extends StatefulWidget {
   const WelcomeLoadingScreen({super.key});
@@ -40,8 +42,11 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.black, // Dark background
+      backgroundColor: appColors.pageBackground,
       body: Stack(
         children: [
           // --- LAYER 1: THE VIDEO ---
@@ -73,9 +78,9 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.0),
-                    Colors.black.withValues(alpha: 0.8),
-                    Colors.black,
+                    appColors.pageBackground.withValues(alpha: 0.0),
+                    appColors.pageBackground.withValues(alpha: 0.8),
+                    appColors.pageBackground,
                   ],
                   // Adjust these stops to control where the fade happens
                   stops: const [0.0, 0.4, 0.6, 1.0],
@@ -100,6 +105,10 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                         'assets/app_logo.svg',
                         height: 23,
                         width: 100,
+                        colorFilter: ColorFilter.mode(
+                          appColors.onBrand,
+                          BlendMode.srcIn,
+                        ),
                         placeholderBuilder: (_) => const Text("1TOUCH",
                             style: TextStyle(
                                 color: Colors.white,
@@ -110,15 +119,10 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                       // Switch (Visual only)
                       Row(
                         children: [
-                          const Icon(Icons.wb_sunny_outlined,
-                              color: Colors.white, size: 20),
+                          Icon(Icons.wb_sunny_outlined,
+                              color: appColors.onBrand, size: 20),
                           const SizedBox(width: 8),
-                          Switch(
-                            value: false,
-                            onChanged: (v) {},
-                            activeColor: Colors.white,
-                            inactiveTrackColor: Colors.grey,
-                          ),
+                          AppThemeSwitch(foregroundColor: appColors.onBrand),
                         ],
                       )
                     ],
@@ -132,25 +136,17 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         "Welcome to 1Touch!",
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28, // Large Size
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Arial', // Replace with your font
-                        ),
+                        style:
+                            Heading3.style.copyWith(color: appColors.onBrand),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         "Your setup is complete. Let’s see what\nyour favorites are up to.",
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 16,
-                          height: 1.4, // Line height for readability
-                        ),
+                        style: Body2_b.style.copyWith(color: appColors.onBrand),
                       ),
                     ],
                   ),
@@ -168,19 +164,17 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                       context.go('/home');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: colors.onSurface,
                       // Grey/Brownish tone from image
-                      foregroundColor: Colors.black,
+                      foregroundColor: colors.surface,
                       // Text color
                       minimumSize: const Size(double.infinity, 56),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Text(
-                      "CONTINUE",
-                      style: Body2_b.style.copyWith(color: Colors.black)
-                    ),
+                    child: Text("CONTINUE",
+                        style: Body2_b.style.copyWith(color: colors.surface)),
                   ),
                 ),
               ],
