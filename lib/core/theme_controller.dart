@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppThemeController extends ValueNotifier<ThemeMode> {
@@ -35,6 +36,42 @@ class AppThemeController extends ValueNotifier<ThemeMode> {
 }
 
 final appThemeController = AppThemeController();
+
+class AppThemeToggle extends StatelessWidget {
+  const AppThemeToggle({super.key, this.foregroundColor});
+
+  final Color? foregroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.brightness_4_outlined,
+          color: foregroundColor ?? colors.onSurface,
+          size: 24,
+        ),
+        const SizedBox(width: 8),
+        Switch(
+          value: isLight,
+          activeThumbColor: AppPalette.white,
+          inactiveThumbColor: AppPalette.white,
+          activeTrackColor: AppPalette.darkGrey,
+          inactiveTrackColor: AppPalette.darkGrey,
+          trackOutlineColor:
+              const WidgetStatePropertyAll<Color>(Colors.transparent),
+          onChanged: (value) => appThemeController.setMode(
+            value ? ThemeMode.light : ThemeMode.dark,
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class AppThemeSwitch extends StatelessWidget {
   const AppThemeSwitch({super.key, this.foregroundColor});

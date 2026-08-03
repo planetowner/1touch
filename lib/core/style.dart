@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 abstract final class AppPalette {
   static const black = Color(0xFF090A0A);
   static const white = Color(0xFFFFFFFF);
-  static const darkGrey = Color(0xFF3D3D3D);
-  static const lightGrey = Color(0xFFF1F1F1);
-  static const lightGreyBox = Color(0xFFF7F7F7);
+  static const darkGrey = Color(0xFF282929);
+  static const lightGrey = Color(0xFF3D3D3D);
+  static const lightGreyBox = Color(0xFFF5F5F5);
 }
 
 @immutable
@@ -74,12 +74,12 @@ const _darkColors = AppColors(
 );
 
 const _lightColors = AppColors(
-  pageBackground: AppPalette.lightGrey,
+  pageBackground: AppPalette.white,
   cardBackground: AppPalette.white,
   subtleBackground: AppPalette.lightGreyBox,
   mutedForeground: Color(0x99090A0A),
   divider: Color(0x1F090A0A),
-  onBrand: AppPalette.white,
+  onBrand: AppPalette.black,
 );
 
 ThemeData _buildTheme(Brightness brightness, AppColors colors) {

@@ -32,8 +32,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
   final Map<int, Team> _selectedTeams = {};
 
-  late ScrollController _scrollController;
-  double _itemWidth = 0; // set in build from MediaQuery
+  late final PageController _pageController;
   int _focusedIndex = 0;
   Team? _focusedTeam;
 
@@ -62,27 +61,14 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
     selectedLeague = _leagues.first.name;
     _focusedTeam = _leagueTeams[_selectedLeagueId]?.first;
 
-    _scrollController = ScrollController()..addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (_itemWidth == 0) return;
-    final newIndex = (_scrollController.offset / _itemWidth)
-        .round()
-        .clamp(0, _currentTeams.length - 1);
-    if (newIndex != _focusedIndex) {
-      setState(() {
-        _focusedIndex = newIndex;
-        _focusedTeam = _currentTeams[newIndex];
-      });
-    }
+    _pageController = PageController(viewportFraction: 0.6);
   }
 
   @override
   void dispose() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    _scrollController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -155,7 +141,9 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                   _focusedTeam =
                                       _leagueTeams[league.leagueId]?.first;
                                 });
-                                _scrollController.jumpTo(0);
+                                if (_pageController.hasClients) {
+                                  _pageController.jumpToPage(0);
+                                }
                                 _removeOverlay();
                               },
                               child: Padding(
@@ -214,10 +202,6 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-    _itemWidth = screenWidth * 0.6;
-    final sidePadding = (screenWidth - _itemWidth) / 2;
-
     final teams = _currentTeams;
     final focusedTeam =
         _focusedIndex < teams.length ? teams[_focusedIndex] : null;
@@ -284,10 +268,11 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                               children: [
                                 SvgPicture.asset(
                                   'assets/app_logo.svg',
+                                  key: const ValueKey('gradient-header-logo'),
                                   height: 23,
                                   width: 120,
-                                  colorFilter: ColorFilter.mode(
-                                    appColors.onBrand,
+                                  colorFilter: const ColorFilter.mode(
+                                    AppPalette.white,
                                     BlendMode.srcIn,
                                   ),
                                   placeholderBuilder: (_) => const Text(
@@ -297,8 +282,10 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                           fontWeight: FontWeight.bold,
                                           fontSize: 20)),
                                 ),
-                                AppThemeSwitch(
-                                  foregroundColor: appColors.onBrand,
+                                AppThemeToggle(
+                                  key: const ValueKey(
+                                      'gradient-header-theme-toggle'),
+                                  foregroundColor: AppPalette.white,
                                 ),
                               ],
                             ),
@@ -314,32 +301,33 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                           // Smooth-scrolling carousel
                           SizedBox(
                             height: carouselHeight,
-                            child: ListView.builder(
-                              controller: _scrollController,
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              padding:
-                                  EdgeInsets.symmetric(horizontal: sidePadding),
+                            child: PageView.builder(
+                              controller: _pageController,
+                              pageSnapping: true,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _focusedIndex = index;
+                                  _focusedTeam = teams[index];
+                                });
+                              },
                               itemCount: teams.length,
                               itemBuilder: (context, index) {
                                 final team = teams[index];
                                 return AnimatedBuilder(
-                                  animation: _scrollController,
+                                  animation: _pageController,
                                   builder: (context, child) {
-                                    double scale;
-                                    if (_scrollController.hasClients) {
-                                      final offset = _scrollController.offset;
-                                      final distanceInPages =
-                                          ((index * _itemWidth) - offset)
-                                                  .abs() /
-                                              _itemWidth;
-                                      final value = (1 - distanceInPages * 0.4)
-                                          .clamp(0.0, 1.0);
-                                      scale = Curves.easeOut.transform(value);
-                                    } else {
-                                      scale =
-                                          index == _focusedIndex ? 1.0 : 0.6;
-                                    }
+                                    final page = _pageController.hasClients &&
+                                            _pageController
+                                                .position.hasContentDimensions
+                                        ? (_pageController.page ??
+                                            _focusedIndex.toDouble())
+                                        : _focusedIndex.toDouble();
+                                    final distanceInPages =
+                                        (index - page).abs();
+                                    final value = (1 - distanceInPages * 0.4)
+                                        .clamp(0.0, 1.0);
+                                    final scale =
+                                        Curves.easeOut.transform(value);
                                     return Transform.scale(
                                         scale: scale, child: child);
                                   },
@@ -357,18 +345,15 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                         }
                                       });
                                     },
-                                    child: SizedBox(
-                                      width: _itemWidth,
-                                      child: Container(
-                                        margin: const EdgeInsets.all(10),
-                                        child: Image.network(
-                                          team.imagePath ?? '',
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (_, __, ___) =>
-                                              const Icon(Icons.shield,
-                                                  color: Colors.white54,
-                                                  size: 80),
-                                        ),
+                                    child: Container(
+                                      margin: const EdgeInsets.all(10),
+                                      child: Image.network(
+                                        team.imagePath ?? '',
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(Icons.shield,
+                                                color: Colors.white54,
+                                                size: 80),
                                       ),
                                     ),
                                   ),
@@ -438,9 +423,17 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                     child: Wrap(
                                       spacing: 8,
                                       runSpacing: 10,
+                                      alignment: WrapAlignment.center,
                                       children:
                                           _selectedTeams.values.map((team) {
                                         return Container(
+                                          key: ValueKey(
+                                              'selected-team-${team.teamId}'),
+                                          constraints: BoxConstraints(
+                                            maxWidth: MediaQuery.sizeOf(context)
+                                                    .width -
+                                                48,
+                                          ),
                                           padding: const EdgeInsets.fromLTRB(
                                               16, 8, 8, 8),
                                           decoration: BoxDecoration(
@@ -451,10 +444,15 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text(
-                                                team.shortCode ?? team.name,
-                                                style: Body2_b.style.copyWith(
-                                                    color: colors.onSurface),
+                                              Flexible(
+                                                child: Text(
+                                                  team.name,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: Body2_b.style.copyWith(
+                                                      color: colors.onSurface),
+                                                ),
                                               ),
                                               const SizedBox(width: 8),
                                               GestureDetector(

@@ -103,10 +103,11 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                       // Logo
                       SvgPicture.asset(
                         'assets/app_logo.svg',
+                        key: const ValueKey('gradient-header-logo'),
                         height: 23,
                         width: 100,
-                        colorFilter: ColorFilter.mode(
-                          appColors.onBrand,
+                        colorFilter: const ColorFilter.mode(
+                          AppPalette.white,
                           BlendMode.srcIn,
                         ),
                         placeholderBuilder: (_) => const Text("1TOUCH",
@@ -117,14 +118,10 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                       ),
 
                       // Switch (Visual only)
-                      Row(
-                        children: [
-                          Icon(Icons.wb_sunny_outlined,
-                              color: appColors.onBrand, size: 20),
-                          const SizedBox(width: 8),
-                          AppThemeSwitch(foregroundColor: appColors.onBrand),
-                        ],
-                      )
+                      const AppThemeToggle(
+                        key: ValueKey('gradient-header-theme-toggle'),
+                        foregroundColor: AppPalette.white,
+                      ),
                     ],
                   ),
                 ),

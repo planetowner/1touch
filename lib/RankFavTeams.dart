@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/WelcomeLoadingScreen.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -82,9 +83,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final pageBackground = Theme.of(context).brightness == Brightness.light
-        ? AppPalette.white
-        : AppPalette.black;
+    final pageBackground = AppColors.of(context).pageBackground;
 
     return Stack(
       children: [
@@ -92,6 +91,27 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
           child: ColoredBox(
             key: const ValueKey('rank-favorites-background'),
             color: pageBackground,
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: MediaQuery.sizeOf(context).height * 0.62,
+          child: DecoratedBox(
+            key: const ValueKey('rank-favorites-top-gradient'),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppPalette.lightGrey,
+                  AppPalette.lightGrey.withValues(alpha: 0.72),
+                  Colors.transparent,
+                ],
+                stops: const [0, 0.35, 1],
+              ),
+            ),
           ),
         ),
         Scaffold(
@@ -106,18 +126,19 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.arrow_back_ios_new,
-                            color: colors.onSurface),
+                      SvgPicture.asset(
+                        'assets/app_logo.svg',
+                        key: const ValueKey('gradient-header-logo'),
+                        height: 23,
+                        width: 120,
+                        colorFilter: const ColorFilter.mode(
+                          AppPalette.white,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                      Row(
-                        children: [
-                          Icon(Icons.brightness_4,
-                              color: colors.onSurface, size: 20),
-                          const SizedBox(width: 8),
-                          const AppThemeSwitch(),
-                        ],
+                      const AppThemeToggle(
+                        key: ValueKey('gradient-header-theme-toggle'),
+                        foregroundColor: AppPalette.white,
                       ),
                     ],
                   ),
@@ -125,20 +146,35 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
 
                 // Draggable list
                 Expanded(
-                  child: ReorderableListView(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    onReorder: _onReorder,
-                    proxyDecorator: (child, index, animation) => Material(
-                      color: Colors.transparent,
-                      elevation: 12,
-                      shadowColor: Colors.black54,
-                      child: Transform.scale(scale: 1.03, child: child),
-                    ),
-                    children: [
-                      for (int i = 0; i < _myTeams.length; i++)
-                        _buildTeamCard(i, _myTeams[i]),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const verticalPadding = 20.0;
+                      const cardSpacing = 12.0;
+                      final teamCount = _myTeams.length;
+                      final calculatedHeight = teamCount == 0
+                          ? 72.0
+                          : (constraints.maxHeight -
+                                  verticalPadding -
+                                  cardSpacing * teamCount) /
+                              teamCount;
+                      final cardHeight = calculatedHeight.clamp(64.0, 72.0);
+
+                      return ReorderableListView(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        onReorder: _onReorder,
+                        proxyDecorator: (child, index, animation) => Material(
+                          color: Colors.transparent,
+                          elevation: 12,
+                          shadowColor: Colors.black54,
+                          child: Transform.scale(scale: 1.03, child: child),
+                        ),
+                        children: [
+                          for (int i = 0; i < _myTeams.length; i++)
+                            _buildTeamCard(i, _myTeams[i], cardHeight),
+                        ],
+                      );
+                    },
                   ),
                 ),
 
@@ -187,7 +223,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     );
   }
 
-  Widget _buildTeamCard(int index, Team team) {
+  Widget _buildTeamCard(int index, Team team, double cardHeight) {
     final colors = Theme.of(context).colorScheme;
     final onBrand = AppColors.of(context).onBrand;
     final isFirst = index == 0;
@@ -214,7 +250,8 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
           // Card
           Expanded(
             child: SizedBox(
-              height: 90,
+              key: ValueKey('rank-team-card-${team.teamId}'),
+              height: cardHeight,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -243,35 +280,45 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                       // Logo watermark — right side
                       if (team.imagePath != null)
                         Positioned(
-                          right: -10,
-                          top: 0,
-                          bottom: 0,
+                          right: -cardHeight * 0.2,
+                          top: -cardHeight * 0.65,
                           child: Opacity(
                             opacity: 0.35,
-                            child: Image.network(
-                              team.imagePath!,
-                              width: 130,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) =>
-                                  const SizedBox.shrink(),
+                            child: SizedBox(
+                              key: ValueKey('rank-team-logo-${team.teamId}'),
+                              width: cardHeight * 2.3,
+                              height: cardHeight * 2.3,
+                              child: Image.network(
+                                team.imagePath!,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) =>
+                                    const SizedBox.shrink(),
+                              ),
                             ),
                           ),
                         ),
                       // Team name + league — left side
                       Positioned(
                         left: 16,
+                        right: 64,
                         top: 0,
                         bottom: 0,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(team.name,
-                                style: Heading5.style.copyWith(color: onBrand)),
+                            Text(
+                              team.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Heading5.style.copyWith(color: onBrand),
+                            ),
                             if (subtitle.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
                                 subtitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: Body2.style.copyWith(
                                     fontSize: 12,
                                     color: onBrand.withValues(alpha: 0.7)),

@@ -62,7 +62,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     placeholderBuilder: (_) =>
                         Text("1TOUCH", style: Heading4.style),
                   ),
-                  const AppThemeIconButton(),
+                  AppThemeToggle(foregroundColor: colors.onSurface),
                 ],
               ),
             ),

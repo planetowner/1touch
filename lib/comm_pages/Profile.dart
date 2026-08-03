@@ -74,7 +74,7 @@ class _ProfileState extends State<Profile> {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final appBarForeground =
-        Color.lerp(appColors.onBrand, colors.onSurface, opacityFactor)!;
+        Color.lerp(AppPalette.white, colors.onSurface, opacityFactor)!;
 
     return Scaffold(
       extendBodyBehindAppBar: true,

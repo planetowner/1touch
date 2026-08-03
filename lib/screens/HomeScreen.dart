@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final appColors = AppColors.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final appBarForeground = Color.lerp(
-      appColors.onBrand,
+      AppPalette.white,
       colorScheme.onSurface,
       opacityFactor,
     )!;
@@ -251,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: appColors.onBrand.withValues(alpha: 0.2),
+                              color: AppPalette.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(

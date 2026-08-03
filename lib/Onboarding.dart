@@ -11,6 +11,14 @@ class OnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
+    final isLightMode = Theme.of(context).brightness == Brightness.light;
+    final socialButtonBackground =
+        isLightMode ? AppPalette.black : AppPalette.lightGrey;
+    const socialButtonForeground = AppPalette.white;
+    final emailButtonBackground =
+        isLightMode ? AppPalette.lightGreyBox : AppPalette.darkGrey;
+    final emailButtonForeground =
+        isLightMode ? AppPalette.black : AppPalette.white;
 
     Future<void> proceed() async {
       // TODO: 실제 로그인 처리 후 홈으로
@@ -19,40 +27,48 @@ class OnboardingScreen extends StatelessWidget {
 
     // 아이콘을 위젯으로 받아서 PNG/SVG 아무거나 쓸 수 있게
     Widget socialBtn({
-      required Widget icon,
+      Widget? icon,
       required String label,
       required VoidCallback onTap,
+      Color? backgroundColor,
+      Color? foregroundColor,
     }) {
+      final buttonForeground = foregroundColor ?? colors.onSurface;
+
       return SizedBox(
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
-            backgroundColor: appColors.cardBackground,
-            foregroundColor: colors.onSurface,
+            backgroundColor: backgroundColor ?? appColors.cardBackground,
+            foregroundColor: buttonForeground,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 16),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              // 아이콘
-              SizedBox(width: 24, height: 24, child: icon),
-              const SizedBox(width: 16),
-              // 라벨 (가운데 정렬 느낌 유지)
-              Expanded(
-                child: Text(
+          child: icon == null
+              ? Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: Body1.style,
+                  style: Body1.style.copyWith(color: buttonForeground),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 24, height: 24, child: icon),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: Body1.style.copyWith(color: buttonForeground),
+                      ),
+                    ),
+                    const SizedBox(width: 40),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 40),
-            ],
-          ),
         ),
       );
     }
@@ -85,36 +101,42 @@ class OnboardingScreen extends StatelessWidget {
                       socialBtn(
                         icon: SvgPicture.asset('assets/google.svg'),
                         label: 'Continue with Google',
+                        backgroundColor: socialButtonBackground,
+                        foregroundColor: socialButtonForeground,
                         onTap: proceed,
                       ),
                       const SizedBox(height: 16),
                       socialBtn(
                         icon: SvgPicture.asset(
                           'assets/apple.svg',
-                          colorFilter: ColorFilter.mode(
-                            colors.onSurface,
+                          colorFilter: const ColorFilter.mode(
+                            socialButtonForeground,
                             BlendMode.srcIn,
                           ),
                         ),
                         label: 'Continue with Apple',
+                        backgroundColor: socialButtonBackground,
+                        foregroundColor: socialButtonForeground,
                         onTap: proceed,
                       ),
                       const SizedBox(height: 16),
                       socialBtn(
                         icon: SvgPicture.asset('assets/facebook.svg'),
                         label: 'Continue with Facebook',
+                        backgroundColor: socialButtonBackground,
+                        foregroundColor: socialButtonForeground,
                         onTap: proceed,
                       ),
                       const SizedBox(height: 12),
-                      Divider(color: appColors.divider, thickness: 1),
+                      const Divider(
+                        color: AppPalette.lightGrey,
+                        thickness: 1,
+                      ),
                       const SizedBox(height: 12),
                       socialBtn(
-                        icon: Icon(
-                          Icons.mail_outline,
-                          size: 24,
-                          color: colors.onSurface,
-                        ),
                         label: 'Continue with email',
+                        backgroundColor: emailButtonBackground,
+                        foregroundColor: emailButtonForeground,
                         onTap: () => context.push('/auth/signup'),
                       ),
                       const SizedBox(height: 32),

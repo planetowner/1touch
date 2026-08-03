@@ -7,6 +7,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('theme page backgrounds are white in light mode and black in dark mode',
+      () {
+    expect(
+      app_style.whitetheme.extension<app_style.AppColors>()?.pageBackground,
+      app_style.AppPalette.white,
+    );
+    expect(
+      app_style.darktheme.extension<app_style.AppColors>()?.pageBackground,
+      app_style.AppPalette.black,
+    );
+    expect(
+      app_style.whitetheme.scaffoldBackgroundColor,
+      app_style.AppPalette.white,
+    );
+  });
+
   test('theme controller defaults to dark and persists light mode', () async {
     SharedPreferences.setMockInitialValues({});
     final controller = AppThemeController();
@@ -22,7 +38,8 @@ void main() {
     expect(restoredController.value, ThemeMode.light);
   });
 
-  testWidgets('theme switch updates the app theme', (tester) async {
+  testWidgets('theme toggle matches the design and updates the app theme',
+      (tester) async {
     SharedPreferences.setMockInitialValues({});
     await appThemeController.setMode(ThemeMode.dark);
     addTearDown(() => appThemeController.setMode(ThemeMode.dark));
@@ -34,7 +51,7 @@ void main() {
           theme: app_style.whitetheme,
           darkTheme: app_style.darktheme,
           themeMode: mode,
-          home: const Scaffold(body: AppThemeSwitch()),
+          home: const Scaffold(body: AppThemeToggle()),
         ),
       ),
     );
@@ -43,6 +60,12 @@ void main() {
       Theme.of(tester.element(find.byType(Scaffold))).brightness,
       Brightness.dark,
     );
+    expect(find.byIcon(Icons.brightness_4_outlined), findsOneWidget);
+
+    var themeSwitch = tester.widget<Switch>(find.byType(Switch));
+    expect(themeSwitch.value, isFalse);
+    expect(themeSwitch.inactiveThumbColor, app_style.AppPalette.white);
+    expect(themeSwitch.inactiveTrackColor, app_style.AppPalette.darkGrey);
 
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
@@ -51,5 +74,9 @@ void main() {
       Theme.of(tester.element(find.byType(Scaffold))).brightness,
       Brightness.light,
     );
+    themeSwitch = tester.widget<Switch>(find.byType(Switch));
+    expect(themeSwitch.value, isTrue);
+    expect(themeSwitch.activeThumbColor, app_style.AppPalette.white);
+    expect(themeSwitch.activeTrackColor, app_style.AppPalette.darkGrey);
   });
 }
