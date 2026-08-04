@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
@@ -11,19 +12,18 @@ import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/All.dart';
 
-
 bool _hasLiveFixture(int teamId) {
   return mockFixtures.any((f) =>
-  (f.homeTeamId == teamId || f.awayTeamId == teamId) &&
+      (f.homeTeamId == teamId || f.awayTeamId == teamId) &&
       f.status == FixtureStatus.live);
 }
 
 String _formatFollowers(int count) {
-  if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M Followers';
+  if (count >= 1000000)
+    return '${(count / 1000000).toStringAsFixed(1)}M Followers';
   if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K Followers';
   return '$count Followers';
 }
-
 
 class Community extends StatefulWidget {
   final int teamId;
@@ -75,9 +75,8 @@ class _CommunityState extends State<Community>
   void _loadTeam() {
     _team = mockTeamById(widget.teamId);
     _isLive = _hasLiveFixture(widget.teamId);
-    _followerCount = mockUserFollowingTeams
-        .where((f) => f.teamId == widget.teamId)
-        .length;
+    _followerCount =
+        mockUserFollowingTeams.where((f) => f.teamId == widget.teamId).length;
   }
 
   @override
@@ -90,9 +89,11 @@ class _CommunityState extends State<Community>
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+    final pageBackground = mainPageBackground(context);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      backgroundColor: pageBackground,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -121,7 +122,10 @@ class _CommunityState extends State<Community>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(_team.primaryColor), Color(_team.primaryColor).withAlpha(0)],
+                    colors: [
+                      Color(_team.primaryColor),
+                      Color(_team.primaryColor).withAlpha(0)
+                    ],
                     stops: const [0.0, 0.6],
                   ),
                 ),
@@ -133,8 +137,8 @@ class _CommunityState extends State<Community>
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               // AppBar: same as your current
               SliverAppBar(
-                backgroundColor:
-                    Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor: Color.lerp(
+                    Colors.transparent, pageBackground, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -146,7 +150,10 @@ class _CommunityState extends State<Community>
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(_team.primaryColor), Color(_team.primaryColor).withAlpha(0)],
+                      colors: [
+                        Color(_team.primaryColor),
+                        Color(_team.primaryColor).withAlpha(0)
+                      ],
                     ),
                   ),
                 ),
@@ -186,13 +193,14 @@ class _CommunityState extends State<Community>
                         onTap: () => context.push('/team/${_team.teamId}'),
                         child: _team.imagePath != null
                             ? Image.network(
-                          _team.imagePath!,
-                          height: 52,
-                          width: 52,
-                          errorBuilder: (_, __, ___) =>
-                              teamLogoFallback(_team.teamId, size: 52),
-                        )
-                            : const Icon(Icons.shield, color: Colors.white54, size: 52),
+                                _team.imagePath!,
+                                height: 52,
+                                width: 52,
+                                errorBuilder: (_, __, ___) =>
+                                    teamLogoFallback(_team.teamId, size: 52),
+                              )
+                            : const Icon(Icons.shield,
+                                color: Colors.white54, size: 52),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -201,7 +209,14 @@ class _CommunityState extends State<Community>
                           children: [
                             Row(
                               children: [
-                                Text(_team.name, style: Heading4.style),
+                                Flexible(
+                                  child: Text(
+                                    _team.name,
+                                    style: Heading4.style,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                                 if (_isLive) ...[
                                   const SizedBox(width: 8),
                                   Container(

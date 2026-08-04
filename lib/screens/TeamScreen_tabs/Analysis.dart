@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
@@ -42,6 +43,45 @@ class AnalysisTab extends StatelessWidget {
           CurrentFormSection(data: currentFormComparison, team: team),
         ],
       ),
+    );
+  }
+}
+
+class _AnalysisSectionHeader extends StatelessWidget {
+  final String title;
+  final Widget? trailing;
+
+  const _AnalysisSectionHeader({required this.title, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    final control = trailing;
+    if (control == null) return Text(title, style: Body2_b.style);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 360) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Body2_b.style),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                  child: control,
+                ),
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(title, style: Body2_b.style), control],
+        );
+      },
     );
   }
 }
@@ -90,9 +130,9 @@ class _AttributesSectionState extends State<AttributesSection> {
     // MY TEAM is always the current season — find it via the isCurrent flag,
     // never assume "newest seasonId". Falls back to newest if no current match.
     final currentSeasonIds =
-    mockSeasons.where((s) => s.isCurrent).map((s) => s.seasonId).toSet();
+        mockSeasons.where((s) => s.isCurrent).map((s) => s.seasonId).toSet();
     _myScores = all.firstWhere(
-          (a) => currentSeasonIds.contains(a.seasonId),
+      (a) => currentSeasonIds.contains(a.seasonId),
       orElse: () => all.first,
     );
 
@@ -100,16 +140,16 @@ class _AttributesSectionState extends State<AttributesSection> {
     _comparisonOptions =
         all.where((a) => a.seasonId != _myScores!.seasonId).toList();
     _comparisonScores =
-    _comparisonOptions.isNotEmpty ? _comparisonOptions.first : null;
+        _comparisonOptions.isNotEmpty ? _comparisonOptions.first : null;
   }
 
   @override
   Widget build(BuildContext context) {
     if (_myScores == null) {
-      return const Padding(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
         child: Text('No attribute data available',
-            style: TextStyle(color: Colors.white54)),
+            style: TextStyle(color: AppColors.of(context).mutedForeground)),
       );
     }
 
@@ -119,12 +159,10 @@ class _AttributesSectionState extends State<AttributesSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Header: title + comparison picker ────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('ATTRIBUTES', style: Body2_b.style),
-              if (_comparisonOptions.isNotEmpty) _buildComparisonPill(),
-            ],
+          _AnalysisSectionHeader(
+            title: 'ATTRIBUTES',
+            trailing:
+                _comparisonOptions.isNotEmpty ? _buildComparisonPill() : null,
           ),
           const SizedBox(height: 16),
 
@@ -132,7 +170,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF272828),
+              color: AppColors.of(context).subtleBackground,
               borderRadius: BorderRadius.circular(24),
             ),
             child: _buildRadarChart(),
@@ -140,18 +178,18 @@ class _AttributesSectionState extends State<AttributesSection> {
 
           // ── Legend ───────────────────────────────────────────────────
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 20,
+            runSpacing: 8,
             children: [
               _legendDot(const Color(0xFFE8434A), 'MY TEAM'),
-              if (_comparisonScores != null) ...[
-                const SizedBox(width: 20),
+              if (_comparisonScores != null)
                 _legendDot(
-                  Colors.white,
+                  Theme.of(context).colorScheme.onSurface,
                   '${_comparisonScores!.seasonLabel} '
-                      '${mockTeamById(_comparisonScores!.teamId).name.toUpperCase()}',
+                  '${mockTeamById(_comparisonScores!.teamId).name.toUpperCase()}',
                 ),
-              ],
             ],
           ),
         ],
@@ -166,20 +204,23 @@ class _AttributesSectionState extends State<AttributesSection> {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D3D3D),
+        color: AppColors.of(context).subtleBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: _comparisonScores?.seasonId,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          dropdownColor: const Color(0xFF3D3D3D),
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          dropdownColor: AppColors.of(context).cardBackground,
           style: Body2_b.style,
           onChanged: (seasonId) {
             if (seasonId == null) return;
             setState(() {
-              _comparisonScores = _comparisonOptions
-                  .firstWhere((s) => s.seasonId == seasonId);
+              _comparisonScores =
+                  _comparisonOptions.firstWhere((s) => s.seasonId == seasonId);
             });
           },
           selectedItemBuilder: (_) => _comparisonOptions
@@ -188,11 +229,12 @@ class _AttributesSectionState extends State<AttributesSection> {
           items: _comparisonOptions
               .map(
                 (s) => DropdownMenuItem(
-              value: s.seasonId,
-              child: Text('${s.seasonLabel}  ${team.shortCode ?? team.name}',
-                  style: Body2_b.style),
-            ),
-          )
+                  value: s.seasonId,
+                  child: Text(
+                      '${s.seasonLabel}  ${team.shortCode ?? team.name}',
+                      style: Body2_b.style),
+                ),
+              )
               .toList(),
         ),
       ),
@@ -205,14 +247,17 @@ class _AttributesSectionState extends State<AttributesSection> {
       children: [
         Text(seasonLabel, style: Body2_b.style),
         const SizedBox(width: 8),
-        Container(width: 1, height: 14, color: Colors.white24),
+        Container(width: 1, height: 14, color: AppColors.of(context).divider),
         const SizedBox(width: 8),
         Image.network(
           team.imagePath ?? '',
           width: 16,
           height: 16,
-          errorBuilder: (_, __, ___) =>
-          const Icon(Icons.shield, size: 16, color: Colors.white54),
+          errorBuilder: (_, __, ___) => Icon(
+            Icons.shield,
+            size: 16,
+            color: AppColors.of(context).mutedForeground,
+          ),
         ),
         const SizedBox(width: 6),
         Text(team.shortCode ?? team.name, style: Body2_b.style),
@@ -232,24 +277,25 @@ class _AttributesSectionState extends State<AttributesSection> {
   static const double _radarCeil = 100;
 
   Widget _buildRadarChart() {
+    final appColors = AppColors.of(context);
+    final comparisonColor = Theme.of(context).colorScheme.onSurface;
     return SizedBox(
       height: 260,
       child: RadarChart(
         RadarChartData(
           radarShape: RadarShape.polygon,
           tickCount: 4,
-          gridBorderData: BorderSide(color: Colors.white.withValues(alpha: 0.30), width: 1),
-          radarBorderData: BorderSide(color: Colors.white.withValues(alpha: 0.30), width: 1),
-          tickBorderData: BorderSide(color: Colors.white.withValues(alpha: 0.30), width: 1),
-          ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 0),
-
+          gridBorderData: BorderSide(color: appColors.divider, width: 1),
+          radarBorderData: BorderSide(color: appColors.divider, width: 1),
+          tickBorderData: BorderSide(color: appColors.divider, width: 1),
+          ticksTextStyle:
+              const TextStyle(color: Colors.transparent, fontSize: 0),
           getTitle: (index, _) => RadarChartTitle(
             text: teamAttributeLabels[index],
             angle: 0,
           ),
           titleTextStyle: Eyebrow.style,
           titlePositionPercentageOffset: 0.15,
-
           dataSets: [
             // MY TEAM — red
             RadarDataSet(
@@ -264,8 +310,8 @@ class _AttributesSectionState extends State<AttributesSection> {
             // Comparison — white outline
             if (_comparisonScores != null)
               RadarDataSet(
-                fillColor: Colors.white.withValues(alpha: 0.1),
-                borderColor: Colors.white.withValues(alpha: 0.85),
+                fillColor: comparisonColor.withValues(alpha: 0.1),
+                borderColor: comparisonColor.withValues(alpha: 0.85),
                 borderWidth: 2,
                 entryRadius: 3,
                 dataEntries: _comparisonScores!.radarValues
@@ -298,17 +344,29 @@ class _AttributesSectionState extends State<AttributesSection> {
   }
 
   Widget _legendDot(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Text(label, style: Body2_b.style),
-      ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.sizeOf(context).width - 48,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              style: Body2_b.style,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -368,7 +426,8 @@ class _BestElevenSectionState extends State<BestElevenSection> {
   }
 
   void _loadPlayers() {
-    _players = bestElevenByTeam(_teamId, formation: _formationKey(selectedFormation));
+    _players =
+        bestElevenByTeam(_teamId, formation: _formationKey(selectedFormation));
   }
 
   void _changeFormation(String formation) {
@@ -380,41 +439,42 @@ class _BestElevenSectionState extends State<BestElevenSection> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title & Dropdown
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("BEST ELEVEN", style: Body2_b.style),
-              Container(
-                padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3D3D3D),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedFormation,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-                    dropdownColor: const Color(0xFF3D3D3D),
-                    style: Body2_b.style,
-                    onChanged: (val) {
-                      if (val != null) _changeFormation(val);
-                    },
-                    items: formations.map((f) {
-                      return DropdownMenuItem(
-                        value: f,
-                        child: Text(f),
-                      );
-                    }).toList(),
+          _AnalysisSectionHeader(
+            title: 'BEST ELEVEN',
+            trailing: Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+              decoration: BoxDecoration(
+                color: appColors.subtleBackground,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedFormation,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
+                  dropdownColor: appColors.cardBackground,
+                  style: Body2_b.style,
+                  onChanged: (val) {
+                    if (val != null) _changeFormation(val);
+                  },
+                  items: formations.map((f) {
+                    return DropdownMenuItem(
+                      value: f,
+                      child: Text(f),
+                    );
+                  }).toList(),
                 ),
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -454,7 +514,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   TeamFormSeries? get _comparison {
     final comparisons = widget.data?.comparisons ?? const [];
     if (comparisons.isEmpty) return null;
-    return comparisons[_selectedComparisonIndex.clamp(0, comparisons.length - 1)];
+    return comparisons[
+        _selectedComparisonIndex.clamp(0, comparisons.length - 1)];
   }
 
   @override
@@ -472,12 +533,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("CURRENT FORM", style: Body2_b.style),
-              if (_comparison != null) _buildComparisonPicker(),
-            ],
+          _AnalysisSectionHeader(
+            title: 'CURRENT FORM',
+            trailing: _comparison != null ? _buildComparisonPicker() : null,
           ),
           const SizedBox(height: 16),
           if (widget.data == null || widget.data!.current.points.isEmpty)
@@ -497,14 +555,17 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 0, 8, 0),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D3D3D),
+        color: AppColors.of(context).subtleBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: _selectedComparisonIndex,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          dropdownColor: const Color(0xFF3D3D3D),
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          dropdownColor: AppColors.of(context).cardBackground,
           onChanged: (index) {
             if (index != null) {
               setState(() => _selectedComparisonIndex = index);
@@ -538,14 +599,17 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       children: [
         Text(series.seasonLabel, style: Body2_b.style),
         const SizedBox(width: 8),
-        Container(width: 1, height: 16, color: Colors.white24),
+        Container(width: 1, height: 16, color: AppColors.of(context).divider),
         const SizedBox(width: 8),
         Image.network(
           logo,
           width: 18,
           height: 18,
-          errorBuilder: (_, __, ___) =>
-              const Icon(Icons.shield, size: 18, color: Colors.white54),
+          errorBuilder: (_, __, ___) => Icon(
+            Icons.shield,
+            size: 18,
+            color: AppColors.of(context).mutedForeground,
+          ),
         ),
         const SizedBox(width: 6),
         Text(teamCode, style: Body2_b.style),
@@ -558,18 +622,22 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       width: double.infinity,
       height: 180,
       decoration: BoxDecoration(
-        color: const Color(0xFF272828),
+        color: AppColors.of(context).subtleBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       alignment: Alignment.center,
       child: Text(
         'Current form data is not available yet',
-        style: Body2.style.copyWith(color: Colors.white54),
+        style: Body2.style.copyWith(
+          color: AppColors.of(context).mutedForeground,
+        ),
       ),
     );
   }
 
   Widget _buildChart() {
+    final appColors = AppColors.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     final current = widget.data!.current;
     final comparison = _comparison;
     final allPoints = [
@@ -580,14 +648,15 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       2,
       allPoints.map((point) => point.round).reduce(math.max),
     );
-    final highestPoints = allPoints.map((point) => point.points).reduce(math.max);
+    final highestPoints =
+        allPoints.map((point) => point.points).reduce(math.max);
     final maxPoints = math.max(5, ((highestPoints + 4) ~/ 5) * 5).toDouble();
 
     return Container(
       height: 346,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF272828),
+        color: appColors.subtleBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -611,7 +680,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                         drawVerticalLine: false,
                         horizontalInterval: maxPoints / 8,
                         getDrawingHorizontalLine: (_) => FlLine(
-                          color: Colors.white24,
+                          color: appColors.divider,
                           strokeWidth: 1,
                         ),
                       ),
@@ -632,12 +701,14 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                       ),
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (_) => Colors.black,
+                          getTooltipColor: (_) => colorScheme.onSurface,
                           getTooltipItems: (spots) => spots
                               .map(
                                 (spot) => LineTooltipItem(
                                   'Round ${spot.x.toInt()}  ${spot.y.toInt()} Pts',
-                                  Body2_b.style,
+                                  Body2_b.style.copyWith(
+                                    color: colorScheme.onPrimary,
+                                  ),
                                 ),
                               )
                               .toList(),
@@ -646,7 +717,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                             .map(
                               (_) => TouchedSpotIndicatorData(
                                 FlLine(
-                                  color: Colors.white70,
+                                  color: appColors.mutedForeground,
                                   strokeWidth: 1,
                                   dashArray: [6, 6],
                                 ),
@@ -654,7 +725,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                                   getDotPainter: (_, __, ___, ____) =>
                                       FlDotCirclePainter(
                                     radius: 4,
-                                    color: bar.color ?? Colors.white,
+                                    color: bar.color ?? colorScheme.onSurface,
                                     strokeWidth: 0,
                                   ),
                                 ),
@@ -665,7 +736,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                       lineBarsData: [
                         _formLine(current, const Color(0xFFFF525D)),
                         if (comparison != null)
-                          _formLine(comparison, Colors.white),
+                          _formLine(comparison, colorScheme.onSurface),
                       ],
                     ),
                   ),
@@ -685,7 +756,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   LineChartBarData _formLine(TeamFormSeries series, Color color) {
     return LineChartBarData(
       spots: series.points
-          .map((point) => FlSpot(point.round.toDouble(), point.points.toDouble()))
+          .map((point) =>
+              FlSpot(point.round.toDouble(), point.points.toDouble()))
           .toList(),
       color: color,
       barWidth: 2,
@@ -698,35 +770,47 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final comparison = _comparison;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 20,
+        runSpacing: 8,
         children: [
           _legendItem(const Color(0xFFFF525D), 'CURRENT'),
-          if (comparison != null) ...[
-            const SizedBox(width: 20),
+          if (comparison != null)
             _legendItem(
-              Colors.white,
+              Theme.of(context).colorScheme.onSurface,
               '${comparison.seasonLabel} '
               '${(widget.team?['name'] as String? ?? '').toUpperCase()}',
             ),
-          ],
         ],
       ),
     );
   }
 
   Widget _legendItem(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Text(label, style: Body2_b.style),
-      ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.sizeOf(context).width - 48,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              style: Body2_b.style,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -747,6 +831,7 @@ class ProbabilitySection extends StatelessWidget {
             children: [
               Expanded(
                 child: _probabilityBox(
+                  context,
                   title: "Chances to win\nUCL Trophy",
                   value: 16,
                   delta: 3,
@@ -755,6 +840,7 @@ class ProbabilitySection extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: _probabilityBox(
+                  context,
                   title: "Chances to win\nLEAGUE Trophy",
                   value: 32,
                   delta: 2,
@@ -767,7 +853,8 @@ class ProbabilitySection extends StatelessWidget {
     );
   }
 
-  Widget _probabilityBox({
+  Widget _probabilityBox(
+    BuildContext context, {
     required String title,
     required int value,
     required int delta,
@@ -779,7 +866,7 @@ class ProbabilitySection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF272828),
+        color: AppColors.of(context).subtleBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -788,26 +875,33 @@ class ProbabilitySection extends StatelessWidget {
           Text(title, style: Body1.style),
           const SizedBox(height: 12),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                "$value",
-                style: Heading1.style,
-              ),
-              Text(
-                "%",
-                style: Heading4.style,
-              ),
-              Spacer(),
-              Row(
-                children: [
-                  Icon(arrow, color: arrowColor, size: 24),
-                  Text(
-                    "$delta",
-                    style: Heading5.style,
+              Expanded(
+                flex: 2,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text('$value', style: Heading1.style),
+                      Text('%', style: Heading4.style),
+                    ],
                   ),
-                ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    children: [
+                      Icon(arrow, color: arrowColor, size: 24),
+                      Text('$delta', style: Heading5.style),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

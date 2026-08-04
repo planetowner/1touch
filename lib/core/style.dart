@@ -6,6 +6,13 @@ abstract final class AppPalette {
   static const darkGrey = Color(0xFF282929);
   static const lightGrey = Color(0xFF3D3D3D);
   static const lightGreyBox = Color(0xFFF5F5F5);
+  static const lightModeDarkGrey = Color(0xFFEBEBEB);
+}
+
+Color mainPageBackground(BuildContext context) {
+  return Theme.of(context).brightness == Brightness.light
+      ? AppPalette.lightModeDarkGrey
+      : AppColors.of(context).pageBackground;
 }
 
 @immutable

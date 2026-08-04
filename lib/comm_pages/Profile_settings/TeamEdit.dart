@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
@@ -155,15 +156,19 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
       maxChildSize: 0.92,
       minChildSize: 0.3,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF272828),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          key: const ValueKey('profile-team-edit-sheet'),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(
@@ -173,10 +178,18 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(width: 32),
-                  const Text("Following Teams", style: Heading5.style),
+                  const SizedBox(width: 48),
+                  const Expanded(
+                    child: Text(
+                      "Following Teams",
+                      style: Heading5.style,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: Icon(Icons.close, color: colors.onSurface),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -187,7 +200,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3A3A3A),
+                  color: isDark
+                      ? const Color(0xFF3A3A3A)
+                      : appColors.subtleBackground,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: TextField(
@@ -197,16 +212,23 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                     contentPadding:
                         const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     hintText: "Search teams to add!",
-                    hintStyle: Body1.style.copyWith(color: Colors.white54),
+                    hintStyle:
+                        Body1.style.copyWith(color: appColors.mutedForeground),
                     border: InputBorder.none,
                     suffixIcon: _isSearching
                         ? IconButton(
-                            icon: const Icon(Icons.close,
-                                color: Colors.white, size: 20),
+                            icon: Icon(
+                              Icons.close,
+                              color: colors.onSurface,
+                              size: 20,
+                            ),
                             onPressed: _searchController.clear,
                           )
-                        : const Icon(Icons.search,
-                            color: Colors.white, size: 24),
+                        : Icon(
+                            Icons.search,
+                            color: colors.onSurface,
+                            size: 24,
+                          ),
                   ),
                 ),
               ),
@@ -228,13 +250,17 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.info_outline,
-                          color: Colors.white70, size: 18),
+                      Icon(
+                        Icons.info_outline,
+                        color: appColors.mutedForeground,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: RichText(
                           text: TextSpan(
-                            style: Body2.style.copyWith(color: Colors.white70),
+                            style: Body2.style
+                                .copyWith(color: appColors.mutedForeground),
                             children: [
                               const TextSpan(
                                 text:
@@ -243,8 +269,8 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                               ),
                               TextSpan(
                                 text: _conflictTeam!.name,
-                                style:
-                                    Body2_b.style.copyWith(color: Colors.white),
+                                style: Body2_b.style
+                                    .copyWith(color: colors.onSurface),
                               ),
                               const TextSpan(
                                   text: ". Are you sure you want to proceed?"),
@@ -266,13 +292,13 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.resolveWith<Color>(
                       (states) => states.contains(WidgetState.disabled)
-                          ? Colors.grey.shade700
-                          : Colors.white,
+                          ? appColors.subtleBackground
+                          : colors.onSurface,
                     ),
                     foregroundColor: WidgetStateProperty.resolveWith<Color>(
                       (states) => states.contains(WidgetState.disabled)
-                          ? Colors.grey.shade400
-                          : Colors.black,
+                          ? appColors.mutedForeground
+                          : colors.onPrimary,
                     ),
                     padding: WidgetStateProperty.all(
                       const EdgeInsets.symmetric(vertical: 16),
@@ -283,16 +309,19 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                     ),
                   ),
                   child: _isSaving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.black,
+                            color: colors.onPrimary,
                           ),
                         )
-                      : Text("UPDATE",
-                          style: Body2_b.style.copyWith(color: Colors.black)),
+                      : Text(
+                          "UPDATE",
+                          style:
+                              Body2_b.style.copyWith(color: colors.onPrimary),
+                        ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -340,10 +369,17 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                 child: entry.imagePath != null
                     ? Image.network(
                         entry.imagePath!,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.shield,
-                            color: Colors.white38, size: 40),
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.shield,
+                          color: AppColors.of(context).mutedForeground,
+                          size: 40,
+                        ),
                       )
-                    : const Icon(Icons.shield, color: Colors.white38, size: 40),
+                    : Icon(
+                        Icons.shield,
+                        color: AppColors.of(context).mutedForeground,
+                        size: 40,
+                      ),
               ),
               const SizedBox(width: 16),
               // Name + league label
@@ -353,12 +389,22 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   children: [
                     Row(
                       children: [
-                        Text(entry.name, style: Heading5.style),
+                        Flexible(
+                          child: Text(
+                            entry.name,
+                            style: Heading5.style,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         if (isPrimary)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 6),
-                            child:
-                                Icon(Icons.star, color: Colors.white, size: 20),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Icon(
+                              Icons.star,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              size: 20,
+                            ),
                           ),
                       ],
                     ),
@@ -372,8 +418,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               // Drag handle
               ReorderableDragStartListener(
                 index: index,
-                child: const Icon(Icons.drag_handle,
-                    color: Colors.white, size: 32),
+                child: Icon(
+                  Icons.drag_handle,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 32,
+                ),
               ),
             ],
           ),
@@ -387,15 +436,20 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       return Center(
         child: Text(
           "No teams found",
-          style: Body1.style.copyWith(color: Colors.white54),
+          style: Body1.style.copyWith(
+            color: AppColors.of(context).mutedForeground,
+          ),
         ),
       );
     }
     return ListView.separated(
       controller: controller,
       itemCount: _filteredTeams.length,
-      separatorBuilder: (_, __) =>
-          const Divider(color: Color(0xFF3D3D3D), thickness: 1, height: 1),
+      separatorBuilder: (_, __) => Divider(
+        color: AppColors.of(context).divider,
+        thickness: 1,
+        height: 1,
+      ),
       itemBuilder: (context, index) {
         final team = _filteredTeams[index];
         final isSelected = _selectedTeam?.teamId == team.teamId;
@@ -409,14 +463,31 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
             child: team.imagePath != null
                 ? Image.network(
                     team.imagePath!,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.shield,
-                        color: Colors.white38, size: 40),
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.shield,
+                      color: AppColors.of(context).mutedForeground,
+                      size: 40,
+                    ),
                   )
-                : const Icon(Icons.shield, color: Colors.white38, size: 40),
+                : Icon(
+                    Icons.shield,
+                    color: AppColors.of(context).mutedForeground,
+                    size: 40,
+                  ),
           ),
-          title: Text(team.name, style: Heading5.style),
+          title: Text(
+            team.name,
+            style: Heading5.style,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           subtitle: team.leagueLabel.isNotEmpty
-              ? Text(team.leagueLabel, style: Eyebrow.style)
+              ? Text(
+                  team.leagueLabel,
+                  style: Eyebrow.style,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
               : null,
           trailing: GestureDetector(
             onTap: alreadyFollowed ? null : () => _onSelectTeam(team),
@@ -424,7 +495,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               isSelected || alreadyFollowed
                   ? Icons.radio_button_checked
                   : Icons.radio_button_off,
-              color: alreadyFollowed ? Colors.white38 : Colors.white,
+              color: alreadyFollowed
+                  ? AppColors.of(context).mutedForeground
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
         );

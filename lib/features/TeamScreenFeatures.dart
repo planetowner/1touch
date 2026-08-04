@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import "package:onetouch/features/helper.dart";
-import "package:onetouch/core/stylesheet_dark.dart";
+import "package:onetouch/core/style.dart";
+import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
@@ -18,7 +19,6 @@ String _formatMatchDate(String startingAt) {
   return DateFormat('EEE, MMM d h:mm a').format(dt);
 }
 
-
 class Fixtures extends StatefulWidget {
   Fixtures({super.key, this.teams});
 
@@ -29,7 +29,6 @@ class Fixtures extends StatefulWidget {
 }
 
 class _FixturesState extends State<Fixtures> {
-
   @override
   Widget build(BuildContext context) {
     if (widget.teams == null) return const SizedBox.shrink();
@@ -38,25 +37,32 @@ class _FixturesState extends State<Fixtures> {
     final map = widget.teams as Map<String, dynamic>;
     final Fixture? match = map['next_match'] as Fixture?;
     final Fixture? lastMatch = map['last_match'] as Fixture?;
-    final leagueName = leagueNames[match?.leagueId ?? lastMatch?.leagueId] ?? "Unknown League";
+    final leagueName =
+        leagueNames[match?.leagueId ?? lastMatch?.leagueId] ?? "Unknown League";
 
     if (match == null && lastMatch == null) return const SizedBox.shrink();
-
+    final appColors = AppColors.of(context);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final nextMatchBackground =
+        isLight ? AppPalette.white : appColors.subtleBackground;
+    final lastMatchBackground =
+        isLight ? AppPalette.lightGreyBox : appColors.cardBackground;
 
     return SizedBox(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Material(
           elevation: 0,
-          color: const Color(0xFF272828),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)
-          ),
+          color: appColors.cardBackground,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           clipBehavior: Clip.antiAlias,
           child: Container(
-            padding: const EdgeInsets.only(bottom: 24),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20),
-                color: Color(0xFF272828)
+            key: const ValueKey('team-overview-fixtures-card'),
+            padding: EdgeInsets.only(bottom: isLight ? 0 : 24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: appColors.cardBackground,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,11 +73,13 @@ class _FixturesState extends State<Fixtures> {
                     child: MatchCard(
                       match: match,
                       leagueName: leagueName,
+                      backgroundColor: nextMatchBackground,
                     ),
                   ),
                 if (lastMatch != null)
                   GestureDetector(
-                    onTap: () => context.push('/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}'),
+                    onTap: () => context.push(
+                        '/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}'),
                     child: () {
                       final home = mockTeamById(lastMatch.homeTeamId);
                       final away = mockTeamById(lastMatch.awayTeamId);
@@ -86,6 +94,10 @@ class _FixturesState extends State<Fixtures> {
                         team2Id: away.teamId,
                         homeScore: lastMatch.homeScore ?? 0,
                         awayScore: lastMatch.awayScore ?? 0,
+                        backgroundColor: lastMatchBackground,
+                        contentPadding: isLight
+                            ? const EdgeInsets.fromLTRB(16, 16, 16, 24)
+                            : null,
                       );
                     }(),
                   ),
@@ -107,14 +119,9 @@ class Standing extends StatefulWidget {
 }
 
 class _StandingState extends State<Standing> {
-  // colors
-  static const Color _bodyColor    = Color(0xFF272828);
-  static const Color _headerColor  = Color(0xFF3D3D3D);
-  static const Color _dividerColor = Color(0xFF2B2B2B);
-
   // grid widths (tweak if needed)
   static const double _rankW = 32;
-  static const double _gapW  = 16;
+  static const double _gapW = 16;
   static const double _statW = 28;
 
   @override
@@ -162,15 +169,18 @@ class _StandingState extends State<Standing> {
 
   List<Map<String, dynamic>> _rowsForLeague(int leagueId, int? currentTeamId) {
     final standings = standingsByLeague(leagueId);
-    final allRows = standings.map((s) => {
-      'rank': s.position,
-      'team': mockTeamById(s.teamId).shortCode ?? mockTeamById(s.teamId).name,
-      'mp': s.matchesPlayed.toString(),
-      'w': s.won.toString(),
-      'd': s.draw.toString(),
-      'l': s.lost.toString(),
-      'hl': s.teamId == currentTeamId,
-    }).toList();
+    final allRows = standings
+        .map((s) => {
+              'rank': s.position,
+              'team': mockTeamById(s.teamId).shortCode ??
+                  mockTeamById(s.teamId).name,
+              'mp': s.matchesPlayed.toString(),
+              'w': s.won.toString(),
+              'd': s.draw.toString(),
+              'l': s.lost.toString(),
+              'hl': s.teamId == currentTeamId,
+            })
+        .toList();
 
     final currentIndex = allRows.indexWhere((r) => r['hl'] == true);
     if (currentIndex == -1) return allRows.take(3).toList();
@@ -195,8 +205,17 @@ class _StandingState extends State<Standing> {
     return allRows.sublist(start, end);
   }
 
-  Widget _buildStandingCard(int leagueId, {required List<Map<String, dynamic>> rows, required bool isFirst, required bool isLast}) {
+  Widget _buildStandingCard(int leagueId,
+      {required List<Map<String, dynamic>> rows,
+      required bool isFirst,
+      required bool isLast}) {
     final league = mockLeagueById(leagueId);
+    final appColors = AppColors.of(context);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final bodyBackground =
+        isLight ? AppPalette.lightGreyBox : appColors.cardBackground;
+    final headerBackground =
+        isLight ? AppPalette.white : appColors.subtleBackground;
     return Padding(
       padding: EdgeInsets.only(
         left: isFirst ? 24 : 0,
@@ -205,23 +224,29 @@ class _StandingState extends State<Standing> {
         bottom: 16,
       ),
       child: Material(
+        color: bodyBackground,
         elevation: 5,
         borderRadius: BorderRadius.circular(20),
         clipBehavior: Clip.antiAlias,
         child: Container(
+          key: ValueKey('overview-standing-card-$leagueId'),
           width: 345,
-          decoration: const BoxDecoration(color: _bodyColor),
+          decoration: BoxDecoration(color: bodyBackground),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // header block
               Container(
-                color: _headerColor,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+                key: ValueKey('overview-standing-header-$leagueId'),
+                color: headerBackground,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 24,),
+                    SizedBox(
+                      height: 24,
+                    ),
                     // league title line
                     Row(
                       children: [
@@ -246,16 +271,19 @@ class _StandingState extends State<Standing> {
                     const SizedBox(height: 16),
                     // columns header line (uses same table grid as body)
                     _columnsHeader(),
-                    SizedBox(height: 12,),
+                    SizedBox(
+                      height: 12,
+                    ),
                   ],
                 ),
               ),
               // divider
-              Container(height: 1, color: _dividerColor),
+              Container(height: 1, color: appColors.divider),
 
               // body rows table (aligned with header)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 child: _rowsTable(rows),
               ),
             ],
@@ -267,29 +295,50 @@ class _StandingState extends State<Standing> {
 
   // shared columnWidths for perfect alignment
   Map<int, TableColumnWidth> get _grid => const {
-    0: FixedColumnWidth(_rankW), // #
-    1: FlexColumnWidth(),        // Club
-    2: FixedColumnWidth(_gapW),  // gap
-    3: FixedColumnWidth(_statW), // MP
-    4: FixedColumnWidth(_statW), // W
-    5: FixedColumnWidth(_statW), // D
-    6: FixedColumnWidth(_statW), // L
-  };
+        0: FixedColumnWidth(_rankW), // #
+        1: FlexColumnWidth(), // Club
+        2: FixedColumnWidth(_gapW), // gap
+        3: FixedColumnWidth(_statW), // MP
+        4: FixedColumnWidth(_statW), // W
+        5: FixedColumnWidth(_statW), // D
+        6: FixedColumnWidth(_statW), // L
+      };
 
   Widget _columnsHeader() {
     return Table(
       columnWidths: _grid,
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      children: const [
+      children: [
         TableRow(
           children: [
-            Text("#", style: TextStyle(color: Colors.white)),
-            Text("Club", overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white)),
-            SizedBox.shrink(),
-            Align(alignment: Alignment.centerRight, child: Text("MP", style: TextStyle(color: Colors.white))),
-            Align(alignment: Alignment.centerRight, child: Text("W",  style: TextStyle(color: Colors.white))),
-            Align(alignment: Alignment.centerRight, child: Text("D",  style: TextStyle(color: Colors.white))),
-            Align(alignment: Alignment.centerRight, child: Text("L",  style: TextStyle(color: Colors.white))),
+            Text("#",
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            Text("Club",
+                overflow: TextOverflow.ellipsis,
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            const SizedBox.shrink(),
+            Align(
+                alignment: Alignment.centerRight,
+                child: Text("MP",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface))),
+            Align(
+                alignment: Alignment.centerRight,
+                child: Text("W",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface))),
+            Align(
+                alignment: Alignment.centerRight,
+                child: Text("D",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface))),
+            Align(
+                alignment: Alignment.centerRight,
+                child: Text("L",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface))),
           ],
         ),
       ],
@@ -297,19 +346,22 @@ class _StandingState extends State<Standing> {
   }
 
   Widget _rowsTable(List<Map<String, dynamic>> data) {
+    final colors = Theme.of(context).colorScheme;
+    final muted = AppColors.of(context).mutedForeground;
     return Table(
       columnWidths: _grid,
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: data.map((r) {
         final bool hl = r["hl"] == true;
-        final Color c = hl ? Colors.white : Colors.white54;
+        final Color c = hl ? colors.onSurface : muted;
         final FontWeight w = hl ? FontWeight.w700 : FontWeight.w400;
 
         return TableRow(
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8), // gap here
-              child: Text("${r["rank"]}", style: TextStyle(color: c, fontWeight: w)),
+              child: Text("${r["rank"]}",
+                  style: TextStyle(color: c, fontWeight: w)),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -323,23 +375,31 @@ class _StandingState extends State<Standing> {
             const SizedBox.shrink(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Align(alignment: Alignment.centerRight,
-                  child: Text(r["mp"], style: Heading5.style.copyWith(color: c))),
+              child: Align(
+                  alignment: Alignment.centerRight,
+                  child:
+                      Text(r["mp"], style: Heading5.style.copyWith(color: c))),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Align(alignment: Alignment.centerRight,
-                  child: Text(r["w"], style: Heading5.style.copyWith(color: c))),
+              child: Align(
+                  alignment: Alignment.centerRight,
+                  child:
+                      Text(r["w"], style: Heading5.style.copyWith(color: c))),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Align(alignment: Alignment.centerRight,
-                  child: Text(r["d"], style: Heading5.style.copyWith(color: c))),
+              child: Align(
+                  alignment: Alignment.centerRight,
+                  child:
+                      Text(r["d"], style: Heading5.style.copyWith(color: c))),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Align(alignment: Alignment.centerRight,
-                  child: Text(r["l"], style: Heading5.style.copyWith(color: c))),
+              child: Align(
+                  alignment: Alignment.centerRight,
+                  child:
+                      Text(r["l"], style: Heading5.style.copyWith(color: c))),
             ),
           ],
         );
@@ -361,12 +421,10 @@ class BestXI extends StatelessWidget {
       teamId = (teams as Map<String, dynamic>)['id'] as int?;
     }
 
-    final players = teamId != null
-        ? bestElevenByTeam(teamId)
-        : <BestElevenPlayer>[];
+    final players =
+        teamId != null ? bestElevenByTeam(teamId) : <BestElevenPlayer>[];
 
     if (players.isEmpty) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: BestElevenPitch(players: players),
@@ -384,6 +442,10 @@ class BestElevenPitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (players.isEmpty) return const SizedBox.shrink();
+    final appColors = AppColors.of(context);
+    final pitchBackground = Theme.of(context).brightness == Brightness.dark
+        ? AppPalette.lightGrey
+        : appColors.cardBackground;
 
     final Map<int, List<BestElevenPlayer>> byRow = {};
     for (final p in players) {
@@ -403,16 +465,22 @@ class BestElevenPitch extends StatelessWidget {
     final rowKeys = byRow.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Material(
+      color: pitchBackground,
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       clipBehavior: Clip.antiAlias,
       child: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(color: Color(0xFF3D3D3D)),
+        decoration: BoxDecoration(color: pitchBackground),
         child: Column(
           children: [
             CustomPaint(
-              painter: _HalfCirclePainter(),
+              painter: _HalfCirclePainter(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.15),
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
@@ -420,7 +488,8 @@ class BestElevenPitch extends StatelessWidget {
                     final rowPlayers = byRow[key]!;
                     return _BestXIRow(
                       players: rowPlayers,
-                      isDefRow: key == rowKeys.last, // DEF row gets side-back offset
+                      isDefRow:
+                          key == rowKeys.last, // DEF row gets side-back offset
                     );
                   }).toList(),
                 ),
@@ -436,10 +505,14 @@ class BestElevenPitch extends StatelessWidget {
 
 // Draws the faint half-circle arc at the top of the pitch area
 class _HalfCirclePainter extends CustomPainter {
+  const _HalfCirclePainter({required this.color});
+
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.15)
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -448,15 +521,15 @@ class _HalfCirclePainter extends CustomPainter {
     final radius = size.width * 0.28;
     canvas.drawArc(
       Rect.fromCircle(center: centre, radius: radius),
-      0,        // start angle (right side)
-      3.14159,  // sweep = π → bottom half of circle
+      0, // start angle (right side)
+      3.14159, // sweep = π → bottom half of circle
       false,
       paint,
     );
   }
 
   @override
-  bool shouldRepaint(_HalfCirclePainter old) => false;
+  bool shouldRepaint(_HalfCirclePainter old) => old.color != color;
 }
 
 class _BestXIRow extends StatelessWidget {
@@ -505,6 +578,7 @@ class _BestXIPlayerDot extends StatelessWidget {
   Widget build(BuildContext context) {
     // Last name only
     final label = player.playerName.split(' ').last;
+    final colors = Theme.of(context).colorScheme;
 
     return SizedBox(
       width: 62,
@@ -514,16 +588,14 @@ class _BestXIPlayerDot extends StatelessWidget {
           Container(
             width: 32,
             height: 32,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white,
+              color: colors.onSurface,
             ),
             alignment: Alignment.center,
-            child: Text(
-              '##',
+            child: Text('##',
                 // player.jerseyNumber.toString(),
-              style: Heading5.style.copyWith(color: Colors.black)
-            ),
+                style: Heading5.style.copyWith(color: colors.onPrimary)),
           ),
           const SizedBox(height: 6),
           Text(
@@ -538,7 +610,6 @@ class _BestXIPlayerDot extends StatelessWidget {
     );
   }
 }
-
 
 class InjuryStatus extends StatefulWidget {
   const InjuryStatus({super.key, this.teams});
@@ -574,14 +645,13 @@ class _InjuryStatusState extends State<InjuryStatus> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ...injuredPlayers
-                .map((player) => _buildInjuryTile(player))
-                ,
+            ...injuredPlayers.map((player) => _buildInjuryTile(player)),
           ],
         ));
   }
 
   Widget _buildInjuryTile(Map<String, String> player) {
+    final appColors = AppColors.of(context);
     return Container(
       padding: EdgeInsets.only(bottom: 12),
       child: Row(
@@ -595,7 +665,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
               CircleAvatar(
                 radius: 37,
                 backgroundImage: const AssetImage('assets/messi.png'),
-                backgroundColor: Color(0xFF272828),
+                backgroundColor: appColors.cardBackground,
               ),
 
               // Jersey number in top-left badge
@@ -604,7 +674,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
                 left: -10, // Slightly overlaps the left edge
                 child: CircleAvatar(
                   radius: 16,
-                  backgroundColor: Color(0xFF3D3D3D),
+                  backgroundColor: appColors.subtleBackground,
                   child: Text(player['number'] ?? '#', style: Body2_b.style),
                 ),
               ),
@@ -662,13 +732,16 @@ class _TransferState extends State<Transfer> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     int? teamId;
     if (widget.teams is Map<String, dynamic>) {
       teamId = (widget.teams as Map<String, dynamic>)['id'] as int?;
     }
 
-    final incoming = teamId != null ? incomingTransfers(teamId) : <TeamTransfer>[];
-    final outgoing = teamId != null ? outgoingTransfers(teamId) : <TeamTransfer>[];
+    final incoming =
+        teamId != null ? incomingTransfers(teamId) : <TeamTransfer>[];
+    final outgoing =
+        teamId != null ? outgoingTransfers(teamId) : <TeamTransfer>[];
     final list = showIn ? incoming : outgoing;
 
     return Column(
@@ -676,7 +749,8 @@ class _TransferState extends State<Transfer> {
       children: [
         // TRANSFER SWITCH BUTTON
         Padding(
-          padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
+          padding:
+              const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
           child: Row(
             children: [
               Expanded(
@@ -685,8 +759,10 @@ class _TransferState extends State<Transfer> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: showIn ? const Color(0xFF3D3D3D) : Colors.transparent,
-                      border: Border.all(color: const Color(0xFF3D3D3D)),
+                      color: showIn
+                          ? appColors.subtleBackground
+                          : Colors.transparent,
+                      border: Border.all(color: appColors.subtleBackground),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(8),
                         bottomLeft: Radius.circular(8),
@@ -703,8 +779,10 @@ class _TransferState extends State<Transfer> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: !showIn ? const Color(0xFF3D3D3D) : Colors.transparent,
-                      border: Border.all(color: const Color(0xFF3D3D3D)),
+                      color: !showIn
+                          ? appColors.subtleBackground
+                          : Colors.transparent,
+                      border: Border.all(color: appColors.subtleBackground),
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         bottomRight: Radius.circular(8),
@@ -727,11 +805,11 @@ class _TransferState extends State<Transfer> {
           )
         else
           ...list.map((t) => TransferTile(
-            transfer: t,
-            showIn: showIn,
-            feeLabel: _formatFee(t.amount),
-            dateLabel: _formatDate(t.transferDate),
-          )),
+                transfer: t,
+                showIn: showIn,
+                feeLabel: _formatFee(t.amount),
+                dateLabel: _formatDate(t.transferDate),
+              )),
 
         const SizedBox(height: 8),
       ],
@@ -758,6 +836,7 @@ class TransferTile extends StatelessWidget {
     final counterTeam = showIn ? transfer.fromTeamName : transfer.toTeamName;
     // Loan badge colour vs transfer
     final isLoan = transfer.typeName == TransferType.loan;
+    final appColors = AppColors.of(context);
 
     return Container(
       margin: const EdgeInsets.only(left: 24, right: 24, bottom: 16, top: 4),
@@ -767,20 +846,18 @@ class TransferTile extends StatelessWidget {
           // Player photo
           CircleAvatar(
             radius: 36,
-            backgroundColor: const Color(0xFF3D3D3D),
+            backgroundColor: appColors.subtleBackground,
             child: ClipOval(
-              child: Image.network(
-                transfer.playerImage,
-                width: 68,
-                height: 68,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Image.asset(
-                  'assets/messi.png',
+              child: Image.network(transfer.playerImage,
                   width: 68,
                   height: 68,
                   fit: BoxFit.cover,
-                )
-              ),
+                  errorBuilder: (_, __, ___) => Image.asset(
+                        'assets/messi.png',
+                        width: 68,
+                        height: 68,
+                        fit: BoxFit.cover,
+                      )),
             ),
           ),
           const SizedBox(width: 16),
@@ -840,8 +917,8 @@ class TransferTile extends StatelessWidget {
                         ),
                         child: Text(
                           'LOAN',
-                          style: Eyebrow.style.copyWith(
-                              color: const Color(0xFFD82457)),
+                          style: Eyebrow.style
+                              .copyWith(color: const Color(0xFFD82457)),
                         ),
                       ),
                     ],
@@ -862,10 +939,11 @@ class Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D3D3D),
+        color: appColors.subtleBackground,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(label, style: Eyebrow.style),

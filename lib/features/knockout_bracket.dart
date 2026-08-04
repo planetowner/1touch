@@ -2,7 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -14,8 +15,7 @@ KnockoutRound? knockoutRoundFromName(String raw) {
   final normalized = raw.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
   return switch (normalized) {
     'R16' || 'RO16' || 'ROUND16' || 'LAST16' => KnockoutRound.roundOf16,
-    'QF' || 'QUARTERFINAL' || 'QUARTERFINALS' =>
-      KnockoutRound.quarterFinal,
+    'QF' || 'QUARTERFINAL' || 'QUARTERFINALS' => KnockoutRound.quarterFinal,
     'SF' || 'SEMIFINAL' || 'SEMIFINALS' => KnockoutRound.semiFinal,
     'F' || 'FINAL' => KnockoutRound.finalRound,
     _ => null,
@@ -82,6 +82,7 @@ class KnockoutBracket extends StatelessWidget {
               children: [
                 for (var index = 0; index < rounds.length; index++)
                   _buildRoundSegment(
+                    context: context,
                     roundIndex: index,
                     data: rounds[index],
                     drawConnectors: index < rounds.length - 1,
@@ -102,8 +103,8 @@ class KnockoutBracket extends StatelessWidget {
     return matches;
   }
 
-  Widget _buildRoundSegment(
-    {
+  Widget _buildRoundSegment({
+    required BuildContext context,
     required int roundIndex,
     required _RoundColumnData data,
     required bool drawConnectors,
@@ -118,6 +119,7 @@ class KnockoutBracket extends StatelessWidget {
             Positioned.fill(
               child: CustomPaint(
                 painter: _BracketConnectorPainter(
+                  color: AppColors.of(context).mutedForeground,
                   roundIndex: roundIndex,
                   cardWidth: _cardWidth,
                   roundWidth: _roundWidth,
@@ -171,10 +173,12 @@ class _BracketMatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     final match = fixture;
     final isCurrentTeamMatch = match != null &&
         currentTeamId != null &&
-        (match.homeTeamId == currentTeamId || match.awayTeamId == currentTeamId);
+        (match.homeTeamId == currentTeamId ||
+            match.awayTeamId == currentTeamId);
 
     return GestureDetector(
       onTap: match == null
@@ -187,11 +191,10 @@ class _BracketMatchCard extends StatelessWidget {
         height: _height,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF272828),
+          color: appColors.subtleBackground,
           borderRadius: BorderRadius.circular(8),
-          border: isCurrentTeamMatch
-              ? Border.all(color: Colors.white38)
-              : null,
+          border:
+              isCurrentTeamMatch ? Border.all(color: appColors.divider) : null,
         ),
         child: match == null
             ? const Column(
@@ -248,15 +251,22 @@ class _BracketTeamRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final value = team;
+    final appColors = AppColors.of(context);
     final textStyle = Body2.style.copyWith(
-      color: value == null ? Colors.white38 : Colors.white,
+      color: value == null
+          ? appColors.mutedForeground
+          : Theme.of(context).colorScheme.onSurface,
       fontWeight: highlighted ? FontWeight.w700 : FontWeight.w400,
     );
 
     return Row(
       children: [
         if (value == null)
-          const Icon(Icons.shield_outlined, color: Colors.white38, size: 24)
+          Icon(
+            Icons.shield_outlined,
+            color: appColors.mutedForeground,
+            size: 24,
+          )
         else if (value.imagePath != null && value.imagePath!.isNotEmpty)
           Image.network(
             value.imagePath!,
@@ -285,12 +295,14 @@ class _BracketTeamRow extends StatelessWidget {
 }
 
 class _BracketConnectorPainter extends CustomPainter {
+  final Color color;
   final int roundIndex;
   final double cardWidth;
   final double roundWidth;
   final double baseStep;
 
   const _BracketConnectorPainter({
+    required this.color,
     required this.roundIndex,
     required this.cardWidth,
     required this.roundWidth,
@@ -300,7 +312,7 @@ class _BracketConnectorPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white54
+      ..color = color
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
     final pairCount = 4 >> roundIndex;
@@ -341,7 +353,8 @@ class _BracketConnectorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BracketConnectorPainter oldDelegate) {
-    return oldDelegate.roundIndex != roundIndex ||
+    return oldDelegate.color != color ||
+        oldDelegate.roundIndex != roundIndex ||
         oldDelegate.cardWidth != cardWidth ||
         oldDelegate.roundWidth != roundWidth ||
         oldDelegate.baseStep != baseStep;

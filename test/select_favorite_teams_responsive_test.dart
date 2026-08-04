@@ -42,6 +42,7 @@ void main() {
         const ColorFilter.mode(app_style.AppPalette.white, BlendMode.srcIn),
       );
       expect(toggleIcon.color, app_style.AppPalette.white);
+
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
@@ -201,6 +202,16 @@ void main() {
         const ColorFilter.mode(app_style.AppPalette.white, BlendMode.srcIn),
       );
       expect(toggleIcon.color, app_style.AppPalette.white);
+
+      final firstTeam = mockTeams.first;
+      final teamName = tester.widget<Text>(
+        find.byKey(ValueKey('rank-team-name-${firstTeam.teamId}')),
+      );
+      final teamPosition = tester.widget<Text>(
+        find.byKey(ValueKey('rank-team-position-${firstTeam.teamId}')),
+      );
+      expect(teamName.style?.color, app_style.AppPalette.white);
+      expect(teamPosition.style?.color, app_style.AppPalette.white);
       expect(tester.takeException(), isNull);
     });
   }

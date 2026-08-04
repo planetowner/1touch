@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
@@ -98,6 +99,7 @@ class _PlayersState extends State<Players> {
   @override
   Widget build(BuildContext context) {
     final opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+    final pageBackground = mainPageBackground(context);
     final position = PlayerPosition.values.firstWhere(
       (value) => value.label == selectedPosition,
       orElse: () => PlayerPosition.forward,
@@ -109,7 +111,7 @@ class _PlayersState extends State<Players> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
+      backgroundColor: pageBackground,
       body: Stack(
         children: [
           // Background gradient
@@ -139,8 +141,8 @@ class _PlayersState extends State<Players> {
             slivers: [
               // App bar
               SliverAppBar(
-                backgroundColor:
-                    Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor: Color.lerp(
+                    Colors.transparent, pageBackground, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
@@ -92,8 +93,8 @@ class _StandingTabState extends State<StandingTab> {
     final seasonId = mockSeasons
         .firstWhere(
           (s) => s.leagueId == leagueId && s.isCurrent,
-      orElse: () => mockSeasons.first,
-    )
+          orElse: () => mockSeasons.first,
+        )
         .seasonId;
 
     selectedLeagueId = leagueId;
@@ -175,13 +176,17 @@ class _StandingTabState extends State<StandingTab> {
             [
               const SizedBox(height: 24),
               Padding(
-                padding: const EdgeInsets.only(left: 24, bottom: 24),
-                child: Row(
-                  children: [
-                    _buildLeagueDropdown(),
-                    const SizedBox(width: 16),
-                    _buildSeasonDropdown(),
-                  ],
+                padding: const EdgeInsets.only(bottom: 24),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      _buildLeagueDropdown(),
+                      const SizedBox(width: 16),
+                      _buildSeasonDropdown(),
+                    ],
+                  ),
                 ),
               ),
               if (_showKnockoutBracket)
@@ -209,12 +214,7 @@ class _StandingTabState extends State<StandingTab> {
                           ),
                         ),
                         _buildSelectedTable(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            StandingsLegend(leagueId: selectedLeagueId),
-                          ],
-                        )
+                        StandingsLegend(leagueId: selectedLeagueId),
                       ],
                     ),
                     if (_isViewDropdownOpen)
@@ -247,9 +247,9 @@ class _StandingTabState extends State<StandingTab> {
   // Which views are usable for the currently selected league.
   // xG TABLE is hidden entirely for non-Big-5 leagues.
   List<StandingView> get _availableViews => [
-    StandingView.standing,
-    if (_xgAvailable) StandingView.xgTable,
-  ];
+        StandingView.standing,
+        if (_xgAvailable) StandingView.xgTable,
+      ];
 
   Widget _buildSelectedTable() {
     switch (_selectedView) {
@@ -273,26 +273,30 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   Widget _buildLeagueDropdown() {
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final availableLeagues = _validLeagueIds.isNotEmpty
-        ? mockLeagues.where((l) => _validLeagueIds.contains(l.leagueId)).toList()
+        ? mockLeagues
+            .where((l) => _validLeagueIds.contains(l.leagueId))
+            .toList()
         : mockLeagues;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: ShapeDecoration(
-        color: const Color(0xFF3D3D3D),
+        color: appColors.subtleBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: selectedLeagueId,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          dropdownColor: const Color(0xFF3D3D3D),
+          icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
+          dropdownColor: appColors.cardBackground,
           style: Body2_b.style,
           onChanged: (val) {
             if (val == null) return;
             final season = mockSeasons.firstWhere(
-                  (s) => s.leagueId == val && s.isCurrent,
+              (s) => s.leagueId == val && s.isCurrent,
               orElse: () => mockSeasons.firstWhere((s) => s.leagueId == val),
             );
             setState(() {
@@ -309,10 +313,10 @@ class _StandingTabState extends State<StandingTab> {
           items: availableLeagues
               .map(
                 (l) => DropdownMenuItem(
-              value: l.leagueId,
-              child: Text(l.name, style: Body2_b.style),
-            ),
-          )
+                  value: l.leagueId,
+                  child: Text(l.name, style: Body2_b.style),
+                ),
+              )
               .toList(),
         ),
       ),
@@ -320,21 +324,22 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   Widget _buildSeasonDropdown() {
-    final seasons = mockSeasons
-        .where((s) => s.leagueId == selectedLeagueId)
-        .toList();
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final seasons =
+        mockSeasons.where((s) => s.leagueId == selectedLeagueId).toList();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: ShapeDecoration(
-        color: const Color(0xFF3D3D3D),
+        color: appColors.subtleBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: selectedSeasonId,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          dropdownColor: const Color(0xFF3D3D3D),
+          icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
+          dropdownColor: appColors.cardBackground,
           style: Body2_b.style,
           onChanged: (val) {
             if (val == null) return;
@@ -347,10 +352,10 @@ class _StandingTabState extends State<StandingTab> {
           items: seasons
               .map(
                 (s) => DropdownMenuItem(
-              value: s.seasonId,
-              child: Text(s.name, style: Body2_b.style),
-            ),
-          )
+                  value: s.seasonId,
+                  child: Text(s.name, style: Body2_b.style),
+                ),
+              )
               .toList(),
         ),
       ),

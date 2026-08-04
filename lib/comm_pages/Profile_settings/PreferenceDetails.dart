@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 
 class PreferenceDetailScreen extends StatefulWidget {
   final String title;
@@ -29,12 +30,15 @@ class _PreferenceDetailScreenState extends State<PreferenceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.of(context).pageBackground,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.of(context).pageBackground,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.pop(context), // Go back without saving
         ),
         title: Text(
@@ -46,12 +50,16 @@ class _PreferenceDetailScreenState extends State<PreferenceDetailScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const Divider(color: Color(0xFF3A3A3A), height: 1, thickness: 1),
+            Divider(
+              color: AppColors.of(context).divider,
+              height: 1,
+              thickness: 1,
+            ),
             Expanded(
               child: ListView.separated(
                 itemCount: widget.options.length,
-                separatorBuilder: (context, index) => const Divider(
-                  color: Color(0xFF3A3A3A),
+                separatorBuilder: (context, index) => Divider(
+                  color: AppColors.of(context).divider,
                   height: 1,
                   thickness: 1,
                   indent: 24, // Optional indent for cleaner look
@@ -61,13 +69,19 @@ class _PreferenceDetailScreenState extends State<PreferenceDetailScreen> {
                   final isSelected = option == _currentSelection;
 
                   return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     title: Text(
                       option,
-                      style: Body1.style.copyWith(color: isSelected ? Colors.white : Colors.white70,)
+                      style: Body1.style.copyWith(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.onSurface
+                            : AppColors.of(context).mutedForeground,
+                      ),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check, color: Color(0xFFD82457)) // Your App Red
+                        ? const Icon(Icons.check,
+                            color: Color(0xFFD82457)) // Your App Red
                         : null,
                     onTap: () {
                       setState(() {

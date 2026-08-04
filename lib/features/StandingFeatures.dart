@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/helper.dart';
 
 enum StandingView { standing, xgTable }
@@ -14,19 +15,27 @@ enum QualificationTier { ucl, uel, conference, relegation }
 extension QualificationTierMeta on QualificationTier {
   String get label {
     switch (this) {
-      case QualificationTier.ucl:        return 'UCL';
-      case QualificationTier.uel:        return 'UEL';
-      case QualificationTier.conference: return 'CONF';
-      case QualificationTier.relegation: return 'REL';
+      case QualificationTier.ucl:
+        return 'UCL';
+      case QualificationTier.uel:
+        return 'UEL';
+      case QualificationTier.conference:
+        return 'CONF';
+      case QualificationTier.relegation:
+        return 'REL';
     }
   }
 
   Color get color {
     switch (this) {
-      case QualificationTier.ucl:        return const Color(0xFF2D8CFF); // blue
-      case QualificationTier.uel:        return const Color(0xFFFF7A3D); // orange
-      case QualificationTier.conference: return const Color(0xFF22C55E); // green
-      case QualificationTier.relegation: return const Color(0xFFEF4444); // red
+      case QualificationTier.ucl:
+        return const Color(0xFF2D8CFF); // blue
+      case QualificationTier.uel:
+        return const Color(0xFFFF7A3D); // orange
+      case QualificationTier.conference:
+        return const Color(0xFF22C55E); // green
+      case QualificationTier.relegation:
+        return const Color(0xFFEF4444); // red
     }
   }
 }
@@ -38,69 +47,72 @@ class LeagueQualificationRules {
   final Set<int> relegationPositions;
 
   const LeagueQualificationRules({
-    this.uclPositions        = const {},
-    this.uelPositions        = const {},
+    this.uclPositions = const {},
+    this.uelPositions = const {},
     this.conferencePositions = const {},
     this.relegationPositions = const {},
   });
 
   QualificationTier? tierFor(int position) {
-    if (uclPositions.contains(position))        return QualificationTier.ucl;
-    if (uelPositions.contains(position))        return QualificationTier.uel;
-    if (conferencePositions.contains(position)) return QualificationTier.conference;
-    if (relegationPositions.contains(position)) return QualificationTier.relegation;
+    if (uclPositions.contains(position)) return QualificationTier.ucl;
+    if (uelPositions.contains(position)) return QualificationTier.uel;
+    if (conferencePositions.contains(position))
+      return QualificationTier.conference;
+    if (relegationPositions.contains(position))
+      return QualificationTier.relegation;
     return null;
   }
 
   // Tiers that actually apply to this league (for legend filtering)
   List<QualificationTier> get availableTiers => [
-    if (uclPositions.isNotEmpty)        QualificationTier.ucl,
-    if (uelPositions.isNotEmpty)        QualificationTier.uel,
-    if (conferencePositions.isNotEmpty) QualificationTier.conference,
-    if (relegationPositions.isNotEmpty) QualificationTier.relegation,
-  ];
+        if (uclPositions.isNotEmpty) QualificationTier.ucl,
+        if (uelPositions.isNotEmpty) QualificationTier.uel,
+        if (conferencePositions.isNotEmpty) QualificationTier.conference,
+        if (relegationPositions.isNotEmpty) QualificationTier.relegation,
+      ];
 }
 
 // Per-league rules. Null = no coloring (e.g. UCL/Europa/cups).
 const Map<int, LeagueQualificationRules> _leagueRules = {
   // Premier League (20 teams, 2024/25 — 5 UCL via coefficient bonus)
   8: LeagueQualificationRules(
-    uclPositions:        {1, 2, 3, 4, 5},
-    uelPositions:        {6},
+    uclPositions: {1, 2, 3, 4, 5},
+    uelPositions: {6},
     conferencePositions: {7},
     relegationPositions: {18, 19, 20},
   ),
   // La Liga (20 teams)
   82: LeagueQualificationRules(
-    uclPositions:        {1, 2, 3, 4},
-    uelPositions:        {5},
+    uclPositions: {1, 2, 3, 4},
+    uelPositions: {5},
     conferencePositions: {6},
     relegationPositions: {18, 19, 20},
   ),
   // Serie A (20 teams, 2024/25 — 5 UCL via coefficient bonus)
   301: LeagueQualificationRules(
-    uclPositions:        {1, 2, 3, 4, 5},
-    uelPositions:        {6},
+    uclPositions: {1, 2, 3, 4, 5},
+    uelPositions: {6},
     conferencePositions: {7},
     relegationPositions: {18, 19, 20},
   ),
   // Bundesliga (18 teams, 2024/25 — 5 UCL via coefficient bonus)
   384: LeagueQualificationRules(
-    uclPositions:        {1, 2, 3, 4, 5},
-    uelPositions:        {6},
+    uclPositions: {1, 2, 3, 4, 5},
+    uelPositions: {6},
     conferencePositions: {7},
     relegationPositions: {17, 18},
   ),
   // Ligue 1 (18 teams)
   564: LeagueQualificationRules(
-    uclPositions:        {1, 2, 3},
-    uelPositions:        {4},
+    uclPositions: {1, 2, 3},
+    uelPositions: {4},
     conferencePositions: {5},
     relegationPositions: {17, 18},
   ),
 };
 
-LeagueQualificationRules? rulesForLeague(int leagueId) => _leagueRules[leagueId];
+LeagueQualificationRules? rulesForLeague(int leagueId) =>
+    _leagueRules[leagueId];
 
 extension StandingViewLabel on StandingView {
   String get label {
@@ -164,9 +176,13 @@ class _ViewSelectorButton extends StatelessWidget {
             child: AnimatedRotation(
               turns: isOpen ? 0.5 : 0,
               duration: const Duration(milliseconds: 180),
-              child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 24),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 24,
+                ),
               ),
             ),
           ),
@@ -190,12 +206,13 @@ class StandingViewOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return Material(
       color: Colors.transparent,
       child: Container(
         width: 132,
         decoration: BoxDecoration(
-          color: const Color(0xFF272828),
+          color: appColors.cardBackground,
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
@@ -210,14 +227,14 @@ class StandingViewOptions extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: availableViews
-              .map<Widget>((view) => _buildViewItem(view))
+              .map<Widget>((view) => _buildViewItem(context, view))
               .toList(),
         ),
       ),
     );
   }
 
-  Widget _buildViewItem(StandingView view) {
+  Widget _buildViewItem(BuildContext context, StandingView view) {
     final selected = selectedView == view;
 
     return GestureDetector(
@@ -234,7 +251,11 @@ class StandingViewOptions extends StatelessWidget {
               ),
             ),
             if (selected)
-              const Icon(Icons.check, color: Colors.white, size: 16)
+              Icon(
+                Icons.check,
+                color: Theme.of(context).colorScheme.onSurface,
+                size: 16,
+              )
             else
               const SizedBox(width: 24),
           ],
@@ -270,8 +291,8 @@ class StandingTable extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildClubColumn(context),
-            Container(width: 1, color: Colors.black),
-            Expanded(child: _buildStatsSide()),
+            Container(width: 1, color: AppColors.of(context).divider),
+            Expanded(child: _buildStatsSide(context)),
           ],
         ),
       ),
@@ -280,11 +301,11 @@ class StandingTable extends StatelessWidget {
 
   Widget _buildClubColumn(BuildContext context) {
     return Container(
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildClubHeader(),
+          _buildClubHeader(context),
           const SizedBox(height: 24),
           ...standings.map((team) => _buildClubRow(context, team)),
           const SizedBox(height: 24),
@@ -293,10 +314,10 @@ class StandingTable extends StatelessWidget {
     );
   }
 
-  Widget _buildClubHeader() {
+  Widget _buildClubHeader(BuildContext context) {
     return Container(
       width: 146,
-      color: const Color(0xFF3D3D3D),
+      color: AppColors.of(context).subtleBackground,
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 16),
       child: Text('Club', style: Body1.style),
@@ -306,7 +327,9 @@ class StandingTable extends StatelessWidget {
   Widget _buildClubRow(BuildContext context, Map<String, dynamic> team) {
     final isCurrentTeam = team['teamId'] == currentTeamId;
     final textStyle = Body2.style.copyWith(
-      color: isCurrentTeam ? Colors.white : Colors.white54,
+      color: isCurrentTeam
+          ? Theme.of(context).colorScheme.onSurface
+          : AppColors.of(context).mutedForeground,
       fontWeight: isCurrentTeam ? FontWeight.bold : FontWeight.normal,
     );
 
@@ -314,7 +337,7 @@ class StandingTable extends StatelessWidget {
 
     return Container(
       width: 146,
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       child: Row(
         children: [
           // ── Tier indicator bar (UCL/UEL/CONF/REL) ──────────────
@@ -364,9 +387,9 @@ class StandingTable extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSide() {
+  Widget _buildStatsSide(BuildContext context) {
     return Container(
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         controller: horizontalScrollController,
@@ -375,35 +398,38 @@ class StandingTable extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.only(
-                topRight: isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
+                topRight:
+                    isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
               ),
               child: Container(
-                color: const Color(0xFF3D3D3D),
-                padding: const EdgeInsets.only(left: 24, right: 16, top: 24, bottom: 16),
+                color: AppColors.of(context).subtleBackground,
+                padding: const EdgeInsets.only(
+                    left: 24, right: 16, top: 24, bottom: 16),
                 child: Row(
                   children: [
-                    _buildHeaderCell('MP'),
-                    _buildHeaderCell('W'),
-                    _buildHeaderCell('D'),
-                    _buildHeaderCell('L'),
-                    _buildHeaderCell('GF'),
-                    _buildHeaderCell('GA'),
-                    _buildHeaderCell('GD'),
-                    _buildHeaderCell('Pts'),
-                    _buildHeaderCell('Last 5', isWide: true),
+                    _buildHeaderCell(context, 'MP'),
+                    _buildHeaderCell(context, 'W'),
+                    _buildHeaderCell(context, 'D'),
+                    _buildHeaderCell(context, 'L'),
+                    _buildHeaderCell(context, 'GF'),
+                    _buildHeaderCell(context, 'GA'),
+                    _buildHeaderCell(context, 'GD'),
+                    _buildHeaderCell(context, 'Pts'),
+                    _buildHeaderCell(context, 'Last 5', isWide: true),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            ...standings.map(_buildStatRow),
+            ...standings.map((team) => _buildStatRow(context, team)),
             ClipRRect(
               borderRadius: BorderRadius.only(
-                bottomRight: isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
+                bottomRight:
+                    isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
               ),
               child: Container(
                 height: 24,
-                color: const Color(0xFF1E1E1E),
+                color: AppColors.of(context).cardBackground,
               ),
             ),
           ],
@@ -412,33 +438,39 @@ class StandingTable extends StatelessWidget {
     );
   }
 
-  Widget _buildStatRow(Map<String, dynamic> team) {
+  Widget _buildStatRow(BuildContext context, Map<String, dynamic> team) {
     final isCurrentTeam = team['teamId'] == currentTeamId;
     final cellStyle = Body2.style.copyWith(
-      color: isCurrentTeam ? Colors.white : Colors.white54,
+      color: isCurrentTeam
+          ? Theme.of(context).colorScheme.onSurface
+          : AppColors.of(context).mutedForeground,
       fontWeight: isCurrentTeam ? FontWeight.bold : FontWeight.normal,
     );
 
     return Container(
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       padding: const EdgeInsets.only(left: 24, right: 16),
       child: Row(
         children: [
-          _buildStatCell('${team['mp']}', style: cellStyle),
-          _buildStatCell('${team['w']}', style: cellStyle),
-          _buildStatCell('${team['d']}', style: cellStyle),
-          _buildStatCell('${team['l']}', style: cellStyle),
-          _buildStatCell('${team['gf']}', style: cellStyle),
-          _buildStatCell('${team['ga']}', style: cellStyle),
-          _buildStatCell('${(team['gf'] as int) - (team['ga'] as int)}', style: cellStyle),
-          _buildStatCell('${team['pts']}', style: cellStyle),
-          _buildLastFive(List<String>.from(team['last5'] as List)),
+          _buildStatCell(context, '${team['mp']}', style: cellStyle),
+          _buildStatCell(context, '${team['w']}', style: cellStyle),
+          _buildStatCell(context, '${team['d']}', style: cellStyle),
+          _buildStatCell(context, '${team['l']}', style: cellStyle),
+          _buildStatCell(context, '${team['gf']}', style: cellStyle),
+          _buildStatCell(context, '${team['ga']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${(team['gf'] as int) - (team['ga'] as int)}',
+            style: cellStyle,
+          ),
+          _buildStatCell(context, '${team['pts']}', style: cellStyle),
+          _buildLastFive(context, List<String>.from(team['last5'] as List)),
         ],
       ),
     );
   }
 
-  Widget _buildLastFive(List<String> results) {
+  Widget _buildLastFive(BuildContext context, List<String> results) {
     return SizedBox(
       width: 100,
       height: 44,
@@ -457,7 +489,7 @@ class StandingTable extends StatelessWidget {
               color = Colors.red;
               break;
             default:
-              color = Colors.white;
+              color = Theme.of(context).colorScheme.onSurface;
           }
           return Icon(Icons.check_circle, size: 19, color: color);
         }).toList(),
@@ -492,8 +524,8 @@ class XgTable extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildClubColumn(context),
-            Container(width: 1, color: Colors.black),
-            Expanded(child: _buildStatsSide()),
+            Container(width: 1, color: AppColors.of(context).divider),
+            Expanded(child: _buildStatsSide(context)),
           ],
         ),
       ),
@@ -502,11 +534,11 @@ class XgTable extends StatelessWidget {
 
   Widget _buildClubColumn(BuildContext context) {
     return Container(
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildClubHeader(),
+          _buildClubHeader(context),
           const SizedBox(height: 24),
           ...standings.map((team) => _buildClubRow(context, team)),
           const SizedBox(height: 24),
@@ -515,10 +547,10 @@ class XgTable extends StatelessWidget {
     );
   }
 
-  Widget _buildClubHeader() {
+  Widget _buildClubHeader(BuildContext context) {
     return Container(
       width: 146,
-      color: const Color(0xFF3D3D3D),
+      color: AppColors.of(context).subtleBackground,
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 16),
       child: Text('Club', style: Body1.style),
@@ -528,7 +560,9 @@ class XgTable extends StatelessWidget {
   Widget _buildClubRow(BuildContext context, Map<String, dynamic> team) {
     final isCurrentTeam = team['teamId'] == currentTeamId;
     final textStyle = Body2.style.copyWith(
-      color: isCurrentTeam ? Colors.white : Colors.white54,
+      color: isCurrentTeam
+          ? Theme.of(context).colorScheme.onSurface
+          : AppColors.of(context).mutedForeground,
       fontWeight: isCurrentTeam ? FontWeight.bold : FontWeight.normal,
     );
 
@@ -536,7 +570,7 @@ class XgTable extends StatelessWidget {
 
     return Container(
       width: 146,
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       child: Row(
         children: [
           // ── Tier indicator bar (UCL/UEL/CONF/REL) ──────────────
@@ -586,9 +620,9 @@ class XgTable extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSide() {
+  Widget _buildStatsSide(BuildContext context) {
     return Container(
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         controller: horizontalScrollController,
@@ -597,30 +631,33 @@ class XgTable extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.only(
-                topRight: isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
+                topRight:
+                    isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
               ),
               child: Container(
-                color: const Color(0xFF3D3D3D),
-                padding: const EdgeInsets.only(left: 24, right: 16, top: 24, bottom: 16),
+                color: AppColors.of(context).subtleBackground,
+                padding: const EdgeInsets.only(
+                    left: 24, right: 16, top: 24, bottom: 16),
                 child: Row(
                   children: [
-                    _buildHeaderCell('MP'),
-                    _buildHeaderCell('xG'),
-                    _buildHeaderCell('xGA'),
-                    _buildHeaderCell('xPts'),
+                    _buildHeaderCell(context, 'MP'),
+                    _buildHeaderCell(context, 'xG'),
+                    _buildHeaderCell(context, 'xGA'),
+                    _buildHeaderCell(context, 'xPts'),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            ...standings.map(_buildStatRow),
+            ...standings.map((team) => _buildStatRow(context, team)),
             ClipRRect(
               borderRadius: BorderRadius.only(
-                bottomRight: isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
+                bottomRight:
+                    isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
               ),
               child: Container(
                 height: 24,
-                color: const Color(0xFF1E1E1E),
+                color: AppColors.of(context).cardBackground,
               ),
             ),
           ],
@@ -629,22 +666,28 @@ class XgTable extends StatelessWidget {
     );
   }
 
-  Widget _buildStatRow(Map<String, dynamic> team) {
+  Widget _buildStatRow(BuildContext context, Map<String, dynamic> team) {
     final isCurrentTeam = team['teamId'] == currentTeamId;
     final cellStyle = Body2.style.copyWith(
-      color: isCurrentTeam ? Colors.white : Colors.white54,
+      color: isCurrentTeam
+          ? Theme.of(context).colorScheme.onSurface
+          : AppColors.of(context).mutedForeground,
       fontWeight: isCurrentTeam ? FontWeight.bold : FontWeight.normal,
     );
 
     return Container(
-      color: const Color(0xFF1E1E1E),
+      color: AppColors.of(context).cardBackground,
       padding: const EdgeInsets.only(left: 24, right: 16),
       child: Row(
         children: [
-          _buildStatCell('${team['mp']}', style: cellStyle),
-          _buildStatCell(_formatXg(team['xg']),   style: cellStyle),
-          _buildStatCell(_formatXg(team['xga']),  style: cellStyle),
-          _buildStatCell(_formatXpts(team['xpts']), style: cellStyle),
+          _buildStatCell(context, '${team['mp']}', style: cellStyle),
+          _buildStatCell(context, _formatXg(team['xg']), style: cellStyle),
+          _buildStatCell(context, _formatXg(team['xga']), style: cellStyle),
+          _buildStatCell(
+            context,
+            _formatXpts(team['xpts']),
+            style: cellStyle,
+          ),
         ],
       ),
     );
@@ -663,23 +706,25 @@ class XgTable extends StatelessWidget {
   }
 }
 
-Widget _buildHeaderCell(String title, {bool isWide = false}) {
+Widget _buildHeaderCell(BuildContext context, String title,
+    {bool isWide = false}) {
   return Container(
     width: isWide ? 100 : 44,
     padding: const EdgeInsets.only(right: 8),
     alignment: Alignment.center,
-    color: const Color(0xFF3D3D3D),
+    color: AppColors.of(context).subtleBackground,
     child: Text(title, style: Body2.style),
   );
 }
 
-Widget _buildStatCell(String text, {bool isWide = false, TextStyle? style}) {
+Widget _buildStatCell(BuildContext context, String text,
+    {bool isWide = false, TextStyle? style}) {
   return Container(
     width: isWide ? 100 : 44,
     height: 44,
     padding: const EdgeInsets.only(right: 8),
     alignment: Alignment.center,
-    color: const Color(0xFF1E1E1E),
+    color: AppColors.of(context).cardBackground,
     child: Text(text, style: style ?? Body2.style),
   );
 }
@@ -687,7 +732,6 @@ Widget _buildStatCell(String text, {bool isWide = false, TextStyle? style}) {
 // Legend showing what each color bar means for the current league.
 // Only shows tiers that actually apply (e.g. no relegation for cups).
 // Returns SizedBox.shrink() if league has no qualification rules.
-
 
 class StandingsLegend extends StatelessWidget {
   final int leagueId;

@@ -30,30 +30,33 @@ class _AllState extends State<All> {
     List<Post> base;
     switch (widget.selectedTabIndex) {
       case 1:
-        base = widget.posts.where((p) => p.category == PostCategory.general).toList();
+        base = widget.posts
+            .where((p) => p.category == PostCategory.general)
+            .toList();
         break;
       case 2:
-        base = widget.posts.where((p) => p.category == PostCategory.analysis).toList();
+        base = widget.posts
+            .where((p) => p.category == PostCategory.analysis)
+            .toList();
         break;
       case 3:
-        base = widget.posts.where((p) => p.category == PostCategory.news).toList();
+        base =
+            widget.posts.where((p) => p.category == PostCategory.news).toList();
         break;
       default:
         base = List.of(widget.posts);
-
     }
 
     switch (_selectedFilter) {
       case "Newest":
         base.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         break;
-    // Popular / Best: placeholder — wire up likes count when available
+      // Popular / Best: placeholder — wire up likes count when available
       default:
         break;
     }
     return base;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -97,9 +100,13 @@ class _AllState extends State<All> {
                   const Icon(Icons.push_pin_outlined,
                       color: Colors.white, size: 20),
                   const SizedBox(width: 4),
-                  Text(
-                    "Community Ground Rules",
-                    style: Heading5.style.copyWith(color: Colors.white),
+                  Expanded(
+                    child: Text(
+                      "Community Ground Rules",
+                      style: Heading5.style.copyWith(color: Colors.white),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -219,7 +226,7 @@ class _AllState extends State<All> {
                 builder: (context) {
                   final size = MediaQuery.of(context).size.width * 0.4;
                   return Container(
-                    width: size*0.8,
+                    width: size * 0.8,
                     height: size,
                     decoration: BoxDecoration(
                       color: const Color(0xFF2C2C2C),

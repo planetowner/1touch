@@ -309,19 +309,26 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                           children: [
                             Text(
                               team.name,
+                              key: ValueKey('rank-team-name-${team.teamId}'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: Heading5.style.copyWith(color: onBrand),
+                              style: Heading5.style.copyWith(
+                                color: AppPalette.white,
+                              ),
                             ),
                             if (subtitle.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
                                 subtitle,
+                                key: ValueKey(
+                                  'rank-team-position-${team.teamId}',
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: Body2.style.copyWith(
-                                    fontSize: 12,
-                                    color: onBrand.withValues(alpha: 0.7)),
+                                  fontSize: 12,
+                                  color: AppPalette.white,
+                                ),
                               ),
                             ],
                           ],

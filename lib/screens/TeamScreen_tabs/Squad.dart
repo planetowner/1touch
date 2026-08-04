@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 
 enum SortOption { position, jerseyNumber, age, contractLength }
 
@@ -355,6 +355,7 @@ class _SquadTabState extends State<SquadTab> {
     // }
 
     await Future.delayed(const Duration(milliseconds: 400)); // simulate network
+    if (!mounted) return;
     setState(() {
       _players = _mockSquad();
       _isLoading = false;
@@ -364,13 +365,18 @@ class _SquadTabState extends State<SquadTab> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
-          child: CircularProgressIndicator(color: Colors.white));
+      return Center(
+        child: CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      );
     }
     if (_players.isEmpty) {
-      return const Center(
-        child:
-            Text('No players found', style: TextStyle(color: Colors.white70)),
+      return Center(
+        child: Text(
+          'No players found',
+          style: TextStyle(color: AppColors.of(context).mutedForeground),
+        ),
       );
     }
 
@@ -413,6 +419,7 @@ class _SquadTabState extends State<SquadTab> {
   }
 
   Widget _sortDropdown() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -420,7 +427,7 @@ class _SquadTabState extends State<SquadTab> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -442,60 +449,62 @@ class _SquadTabState extends State<SquadTab> {
                       AnimatedRotation(
                         turns: _isDropdownOpen ? 0.5 : 0,
                         duration: const Duration(milliseconds: 200),
-                        child: const Icon(Icons.keyboard_arrow_down,
-                            color: Colors.white, size: 24),
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          size: 24,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-
               AnimatedSize(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeInOut,
                 child: _isDropdownOpen
                     ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Section 1: Ascending / Descending
-                    _dropdownItem(
-                      label: 'ASCENDING',
-                      selected: _isAscending,
-                      onTap: () => setState(() {
-                        _isAscending = true;
-                        _isDropdownOpen = false;
-                      }),
-                    ),
-                    _dropdownItem(
-                      label: 'DESCENDING',
-                      selected: !_isAscending,
-                      onTap: () => setState(() {
-                        _isAscending = false;
-                        _isDropdownOpen = false;
-                      }),
-                    ),
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Section 1: Ascending / Descending
+                          _dropdownItem(
+                            label: 'ASCENDING',
+                            selected: _isAscending,
+                            onTap: () => setState(() {
+                              _isAscending = true;
+                              _isDropdownOpen = false;
+                            }),
+                          ),
+                          _dropdownItem(
+                            label: 'DESCENDING',
+                            selected: !_isAscending,
+                            onTap: () => setState(() {
+                              _isAscending = false;
+                              _isDropdownOpen = false;
+                            }),
+                          ),
 
-                    // Divider
-                    Container(
-                      height: 1,
-                      color: const Color(0xFF888888),
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                    ),
+                          // Divider
+                          Container(
+                            height: 1,
+                            color: AppColors.of(context).divider,
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                          ),
 
-                    // Section 2: Sort fields
-                    ...SortOption.values.map((option) => _dropdownItem(
-                      label: option.label.toUpperCase(),
-                      selected: _sortOption == option,
-                      onTap: () => setState(() {
-                        _sortOption = option;
-                        _isDropdownOpen = false;
-                      }),
-                    )),
+                          // Section 2: Sort fields
+                          ...SortOption.values.map((option) => _dropdownItem(
+                                label: option.label.toUpperCase(),
+                                selected: _sortOption == option,
+                                onTap: () => setState(() {
+                                  _sortOption = option;
+                                  _isDropdownOpen = false;
+                                }),
+                              )),
 
-                    const SizedBox(height: 4),
-                  ],
-                )
+                          const SizedBox(height: 4),
+                        ],
+                      )
                     : const SizedBox.shrink(),
               ),
             ],
@@ -524,7 +533,11 @@ class _SquadTabState extends State<SquadTab> {
             ),
             const SizedBox(width: 8),
             if (selected)
-              const Icon(Icons.check, color: Colors.white, size: 16)
+              Icon(
+                Icons.check,
+                color: Theme.of(context).colorScheme.onSurface,
+                size: 16,
+              )
             else
               const SizedBox(width: 16), // reserve same space as checkmark
           ],
@@ -577,6 +590,7 @@ class _PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Column(
@@ -588,7 +602,7 @@ class _PlayerCard extends StatelessWidget {
                 // Background + image fills entire area
                 Container(
                   width: double.infinity,
-                  color: const Color(0xFF272828),
+                  color: appColors.subtleBackground,
                 ),
 
                 // Playerimage
@@ -624,7 +638,7 @@ class _PlayerCard extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            color: const Color(0xFF3D3D3D),
+            color: appColors.subtleBackground,
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

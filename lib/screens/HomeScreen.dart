@@ -129,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
-    final appColors = AppColors.of(context);
+    final pageBackground = mainPageBackground(context);
     final colorScheme = Theme.of(context).colorScheme;
     final appBarForeground = Color.lerp(
       AppPalette.white,
@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (isLoading) {
       return Scaffold(
-        backgroundColor: appColors.pageBackground,
+        backgroundColor: pageBackground,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      backgroundColor: appColors.pageBackground,
+      backgroundColor: pageBackground,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
@@ -176,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [_teamColor, appColors.pageBackground],
+                    colors: [_teamColor, pageBackground],
                     stops: const [0.0, 0.6],
                   ),
                 ),
@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverAppBar(
                 backgroundColor: Color.lerp(
                   Colors.transparent,
-                  appColors.pageBackground,
+                  pageBackground,
                   opacityFactor,
                 ),
                 foregroundColor: appBarForeground,

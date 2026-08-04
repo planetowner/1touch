@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 // import 'package:go_router/go_router.dart';
 
 class AboutPage extends StatefulWidget {
@@ -14,7 +15,7 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black, // Background is black
+      backgroundColor: AppColors.of(context).pageBackground,
       body: Stack(
         children: [
           // Gradient Removed
@@ -25,43 +26,48 @@ class _AboutPageState extends State<AboutPage> {
               children: [
                 // Custom AppBar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                        icon: Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       Text(
                         "About",
                         style: Body1.style,
                       ),
-                      const Icon(Icons.search, color: Colors.white),
+                      Icon(
+                        Icons.search,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 16),
 
-                Expanded(child: ListView(
+                Expanded(
+                    child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   children: [
                     _buildListItem(context, "Legal", () {
                       // TODO: Navigate or show dialog
                     }),
                     _buildDivider(),
-
                     _buildListItem(context, "Terms of Service", () {
                       // TODO: Navigate or show dialog
                     }),
                     _buildDivider(),
-
                     _buildListItem(context, "Privacy Policy", () {
                       // TODO: Navigate or show dialog
                     }),
                     _buildDivider(),
-
                     _buildListItem(context, "Visit Instagram", () {
                       // TODO: Open Instagram link
                     }),
@@ -76,17 +82,22 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 
-  Widget _buildListItem(BuildContext context, String title, VoidCallback onTap) {
+  Widget _buildListItem(
+      BuildContext context, String title, VoidCallback onTap) {
     return ListTile(
       title: Text(title, style: Body1.style),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        color: Theme.of(context).colorScheme.onSurface,
+        size: 16,
+      ),
       onTap: onTap,
     );
   }
 
   Widget _buildDivider() {
-    return const Divider(
-      color: Color(0xFF3A3A3A),
+    return Divider(
+      color: AppColors.of(context).divider,
       height: 1,
       thickness: 1,
       indent: 16,

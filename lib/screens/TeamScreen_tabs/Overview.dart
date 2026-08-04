@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 
 class OverviewTab extends StatelessWidget {
@@ -9,6 +10,7 @@ class OverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return CustomScrollView(
       slivers: [
         SliverList(
@@ -41,14 +43,17 @@ class OverviewTab extends StatelessWidget {
                   width: double.infinity,
                   height: 108,
                   decoration: ShapeDecoration(
-                    color: const Color(0xFF3D3D3D),
+                    color: isLight ? AppPalette.black : AppPalette.lightGrey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Center(
-                    child: Text("Ad",
-                        textAlign: TextAlign.center, style: Heading4.style),
+                  child: Center(
+                    child: Text(
+                      "Ad",
+                      textAlign: TextAlign.center,
+                      style: Heading4.style.copyWith(color: AppPalette.white),
+                    ),
                   ),
                 ),
               ),

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -40,18 +41,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.black, // Pure black background
+      backgroundColor: appColors.pageBackground,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: appColors.pageBackground,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new, color: colors.onSurface),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
+            icon: Icon(Icons.search, color: colors.onSurface),
             onPressed: () {},
           ),
         ],
@@ -69,10 +73,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 54,
-                      backgroundColor: Color(0xFF2B2B2B),
-                      backgroundImage: AssetImage('assets/profileAvatar.png'),
+                      backgroundColor: appColors.subtleBackground,
+                      backgroundImage:
+                          const AssetImage('assets/profileAvatar.png'),
                     ),
                     Positioned(
                       bottom: -4,
@@ -80,12 +85,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3D3D3D),
+                          color: isDark
+                              ? AppPalette.lightGrey
+                              : AppPalette.lightGreyBox,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.black, width: 2),
+                          border: Border.all(
+                            color: appColors.pageBackground,
+                            width: 2,
+                          ),
                         ),
-                        child: const Icon(Icons.camera_alt,
-                            color: Colors.white, size: 18),
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: colors.onSurface,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -163,8 +176,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Handle update logic
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
+                    backgroundColor: colors.onSurface,
+                    foregroundColor: colors.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -173,7 +186,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   child: Text(
                     "UPDATE INFO",
-                    style: Body2_b.style.copyWith(color: Colors.black),
+                    style: Body2_b.style.copyWith(color: colors.onPrimary),
                   ),
                 ),
               ),
@@ -190,7 +203,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     "DELETE ACCOUNT",
                     style: Body2_b.style.copyWith(
                       decoration: TextDecoration.underline,
-                      decorationColor: Colors.white,
+                      decorationColor: colors.onSurface,
                     ),
                   ),
                 ),
@@ -212,36 +225,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     VoidCallback? onSuffixTap,
     TextInputType? keyboardType,
   }) {
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return TextField(
       controller: controller,
       obscureText: isPassword && isObscure,
       keyboardType: keyboardType,
-      style: Body1.style.copyWith(color: Colors.white),
-      cursorColor: Colors.white,
+      style: Body1.style.copyWith(color: colors.onSurface),
+      cursorColor: colors.onSurface,
       decoration: InputDecoration(
+        filled: false,
         labelText: label,
         labelStyle: Body1.style,
-        floatingLabelStyle: Body1.style.copyWith(color: Colors.white70),
+        floatingLabelStyle:
+            Body1.style.copyWith(color: appColors.mutedForeground),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   isObscure
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: Colors.white,
+                  color: colors.onSurface,
                   size: 20,
                 ),
                 onPressed: onSuffixTap,
               )
             : IconButton(
-                icon: const Icon(Icons.cancel, color: Colors.white, size: 20),
+                icon: Icon(Icons.cancel, color: colors.onSurface, size: 20),
                 onPressed: () => controller.clear(),
               ),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white24),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: appColors.divider),
         ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: colors.onSurface),
         ),
         contentPadding: const EdgeInsets.only(bottom: 8),
       ),
@@ -280,13 +297,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+          Icon(
+            Icons.arrow_forward_ios,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: 16,
+          ),
         ],
       ),
     );
   }
 
   Widget _divider() {
-    return const Divider(color: Color(0xFF3A3A3A), height: 1, thickness: 1);
+    return Divider(
+      color: AppColors.of(context).divider,
+      height: 1,
+      thickness: 1,
+    );
   }
 }

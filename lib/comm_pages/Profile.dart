@@ -2,7 +2,7 @@ import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
@@ -73,12 +73,20 @@ class _ProfileState extends State<Profile> {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final profileBackground =
+        isLight ? AppPalette.lightGreyBox : appColors.pageBackground;
+    final gradientHeight = isLight
+        ? (MediaQuery.sizeOf(context).height * 0.62)
+            .clamp(420.0, 560.0)
+            .toDouble()
+        : 550.0;
     final appBarForeground =
         Color.lerp(AppPalette.white, colors.onSurface, opacityFactor)!;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: appColors.pageBackground,
+      backgroundColor: profileBackground,
       body: Stack(
         children: [
           // Background Gradient with AnimatedOpacity
@@ -86,21 +94,24 @@ class _ProfileState extends State<Profile> {
             top: 0,
             left: 0,
             right: 0,
-            height: 550,
+            height: gradientHeight,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor), // Fades out as you scroll down
               duration:
                   const Duration(milliseconds: 0), // Instant update with scroll
               child: Container(
+                key: const ValueKey('profile-background-gradient'),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      _teamColor,
-                      appColors.pageBackground.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 0.6],
+                    colors: isLight
+                        ? [_teamColor, profileBackground]
+                        : [
+                            _teamColor,
+                            appColors.pageBackground.withValues(alpha: 0),
+                          ],
+                    stops: isLight ? const [0.0, 0.9] : const [0.0, 0.6],
                   ),
                 ),
               ),
@@ -112,8 +123,8 @@ class _ProfileState extends State<Profile> {
               SliverAppBar(
                 automaticallyImplyLeading: false,
                 // App bar becomes dark as you scroll down
-                backgroundColor: Color.lerp(Colors.transparent,
-                    appColors.pageBackground, opacityFactor),
+                backgroundColor: Color.lerp(
+                    Colors.transparent, profileBackground, opacityFactor),
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -185,9 +196,13 @@ class _ProfileState extends State<Profile> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          "FOLLOWING TEAMS",
-                          style: Body2_b.style,
+                        Expanded(
+                          child: Text(
+                            "FOLLOWING TEAMS",
+                            style: Body2_b.style,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         IconButton(
                           icon: Icon(Icons.border_color,
@@ -216,9 +231,13 @@ class _ProfileState extends State<Profile> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          "FOLLOWING PLAYERS",
-                          style: Body2_b.style,
+                        Expanded(
+                          child: Text(
+                            "FOLLOWING PLAYERS",
+                            style: Body2_b.style,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         IconButton(
                           icon: Icon(Icons.border_color,
@@ -286,6 +305,7 @@ class _ProfileState extends State<Profile> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
+        key: const ValueKey('profile-stat-card'),
         height: 70,
         decoration: BoxDecoration(
           color: appColors.cardBackground,
@@ -410,9 +430,11 @@ class _ProfileState extends State<Profile> {
 
   Widget _buildPlayerList() {
     final appColors = AppColors.of(context);
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final players = playerRepository.favorites;
 
     return SizedBox(
+      key: const ValueKey('profile-following-player-list'),
       height: 120,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -435,11 +457,16 @@ class _ProfileState extends State<Profile> {
                     top: 0,
                     left: 0,
                     child: CircleAvatar(
+                      key: ValueKey('profile-player-jersey-${player.id}'),
                       radius: 16,
-                      backgroundColor: appColors.subtleBackground,
+                      backgroundColor: isLight
+                          ? AppPalette.white
+                          : appColors.subtleBackground,
                       child: Text(
                         player.jerseyNumber.toString(),
-                        style: Body2_b.style,
+                        style: Body2_b.style.copyWith(
+                          color: isLight ? AppPalette.black : null,
+                        ),
                       ),
                     ),
                   ),

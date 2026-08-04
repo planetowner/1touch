@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 
-const _divider = Divider(
-  color: Color(0xFF3D3D3D),
-  thickness: 2,
-  height: 1,
-);
+Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
+      color: AppColors.of(context).divider,
+      thickness: thickness,
+      height: 1,
+    );
 
 /// ============ Screen 1: Notification List ============
 class NotificationListPage extends StatefulWidget {
@@ -34,13 +35,13 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.of(context).pageBackground,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             centerTitle: true,
             automaticallyImplyLeading: false,
-            backgroundColor: Colors.black,
+            backgroundColor: AppColors.of(context).pageBackground,
             elevation: 0,
             floating: true,
             snap: true,
@@ -52,7 +53,10 @@ class _NotificationListPageState extends State<NotificationListPage> {
             leading: Padding(
               padding: const EdgeInsets.only(top: 30),
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -61,7 +65,10 @@ class _NotificationListPageState extends State<NotificationListPage> {
                 padding: const EdgeInsets.only(top: 30),
                 child: IconButton(
                   onPressed: () => context.push('/search'),
-                  icon: const Icon(Icons.search, color: Colors.white),
+                  icon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
@@ -87,8 +94,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                               '/profile/notification/team/${Uri.encodeComponent(teamName)}',
                             ),
                           ),
-                          if (i != teamIds.length - 1)
-                            const Divider(color: Colors.white24),
+                          if (i != teamIds.length - 1) _divider(context),
                         ],
                       );
                     }),
@@ -109,8 +115,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                               '/profile/notification/player/${Uri.encodeComponent(player.fullName)}',
                             ),
                           ),
-                          if (i != players.length - 1)
-                            const Divider(color: Colors.white24),
+                          if (i != players.length - 1) _divider(context),
                         ],
                       );
                     }),
@@ -121,18 +126,21 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     const Text("POSTS", style: Body2_b.style),
                     const SizedBox(height: 16),
                     _switchRow(
+                      context,
                       label: 'Reactions',
                       value: _postsReactions,
                       onChanged: (v) => setState(() => _postsReactions = v),
                     ),
-                    const Divider(color: Colors.white24),
+                    _divider(context),
                     _switchRow(
+                      context,
                       label: 'Comments',
                       value: _postsComments,
                       onChanged: (v) => setState(() => _postsComments = v),
                     ),
-                    const Divider(color: Colors.white24),
+                    _divider(context),
                     _switchRow(
+                      context,
                       label: 'Following',
                       value: _postsFollowing,
                       onChanged: (v) => setState(() => _postsFollowing = v),
@@ -144,12 +152,14 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     const Text("BETTING", style: Body2_b.style),
                     const SizedBox(height: 16),
                     _switchRow(
+                      context,
                       label: 'New bets',
                       value: _bettingNewBets,
                       onChanged: (v) => setState(() => _bettingNewBets = v),
                     ),
-                    const Divider(color: Colors.white24),
+                    _divider(context),
                     _switchRow(
+                      context,
                       label: 'Post-match results',
                       value: _bettingPostMatch,
                       onChanged: (v) => setState(() => _bettingPostMatch = v),
@@ -174,8 +184,16 @@ class _NotificationListPageState extends State<NotificationListPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: Body1.style),
-            const Icon(Icons.chevron_right, color: Colors.white),
+            Expanded(
+              child: Text(
+                label,
+                style: Body1.style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right),
           ],
         ),
       ),
@@ -216,7 +234,7 @@ class _TeamNotificationDetailPageState
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black, // Black Background
+      backgroundColor: AppColors.of(context).pageBackground,
       body: Stack(
         children: [
           CustomScrollView(
@@ -224,7 +242,7 @@ class _TeamNotificationDetailPageState
               SliverAppBar(
                 centerTitle: true,
                 automaticallyImplyLeading: false,
-                backgroundColor: Colors.black, // Black AppBar
+                backgroundColor: AppColors.of(context).pageBackground,
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -237,8 +255,10 @@ class _TeamNotificationDetailPageState
                 leading: Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
-                        color: Colors.white),
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
@@ -247,7 +267,10 @@ class _TeamNotificationDetailPageState
                     padding: const EdgeInsets.only(top: 30),
                     child: IconButton(
                       onPressed: () => context.push('/search'),
-                      icon: const Icon(Icons.search, color: Colors.white),
+                      icon: Icon(
+                        Icons.search,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ],
@@ -263,11 +286,12 @@ class _TeamNotificationDetailPageState
                             style: Body2_b.style),
                         const SizedBox(height: 24),
                         _switchRow(
+                          context,
                           label: "All Notifications",
                           value: _allOn,
                           onChanged: _toggleAll,
                         ),
-                        _divider,
+                        _divider(context, thickness: 2),
                         const SizedBox(height: 32),
                         ..._opts.entries.toList().asMap().entries.map((entry) {
                           final i = entry.key;
@@ -275,13 +299,13 @@ class _TeamNotificationDetailPageState
                           return Column(
                             children: [
                               _switchRow(
+                                context,
                                 label: e.key,
                                 value: e.value,
                                 onChanged: (v) =>
                                     setState(() => _opts[e.key] = v),
                               ),
-                              if (i != _opts.length - 1)
-                                const Divider(color: Colors.white24),
+                              if (i != _opts.length - 1) _divider(context),
                             ],
                           );
                         }),
@@ -313,8 +337,12 @@ class _TeamNotificationDetailPageState
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3D3D3D),
-                        foregroundColor: Colors.white,
+                        backgroundColor:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppPalette.lightGrey
+                                : AppColors.of(context).subtleBackground,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onSurface,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -330,15 +358,21 @@ class _TeamNotificationDetailPageState
                     child: ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.onSurface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text("UPDATE NOTIFICATIONS",
-                          style: Body2_b.style.copyWith(color: Colors.black)),
+                      child: Text(
+                        "UPDATE NOTIFICATIONS",
+                        style: Body2_b.style.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -385,7 +419,7 @@ class _PlayerNotificationDetailPageState
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black, // Black Background
+      backgroundColor: AppColors.of(context).pageBackground,
       body: Stack(
         children: [
           CustomScrollView(
@@ -393,7 +427,7 @@ class _PlayerNotificationDetailPageState
               SliverAppBar(
                 centerTitle: true,
                 automaticallyImplyLeading: false,
-                backgroundColor: Colors.black, // Black AppBar
+                backgroundColor: AppColors.of(context).pageBackground,
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -406,8 +440,10 @@ class _PlayerNotificationDetailPageState
                 leading: Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
-                        color: Colors.white),
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
@@ -416,7 +452,10 @@ class _PlayerNotificationDetailPageState
                     padding: const EdgeInsets.only(top: 30),
                     child: IconButton(
                       onPressed: () => context.push('/search'),
-                      icon: const Icon(Icons.search, color: Colors.white),
+                      icon: Icon(
+                        Icons.search,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ],
@@ -432,11 +471,12 @@ class _PlayerNotificationDetailPageState
                             style: Body2_b.style),
                         const SizedBox(height: 24),
                         _switchRow(
+                          context,
                           label: "All Notifications",
                           value: _allOn,
                           onChanged: _toggleAll,
                         ),
-                        _divider,
+                        _divider(context, thickness: 2),
                         const SizedBox(height: 24),
                         ..._opts.entries.toList().asMap().entries.map((entry) {
                           final i = entry.key;
@@ -444,13 +484,13 @@ class _PlayerNotificationDetailPageState
                           return Column(
                             children: [
                               _switchRow(
+                                context,
                                 label: e.key,
                                 value: e.value,
                                 onChanged: (v) =>
                                     setState(() => _opts[e.key] = v),
                               ),
-                              if (i != _opts.length - 1)
-                                const Divider(color: Colors.white24),
+                              if (i != _opts.length - 1) _divider(context),
                             ],
                           );
                         }),
@@ -481,8 +521,12 @@ class _PlayerNotificationDetailPageState
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3D3D3D),
-                        foregroundColor: Colors.white,
+                        backgroundColor:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppPalette.lightGrey
+                                : AppColors.of(context).subtleBackground,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onSurface,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -498,15 +542,21 @@ class _PlayerNotificationDetailPageState
                     child: ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.onSurface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text("UPDATE NOTIFICATIONS",
-                          style: Body2_b.style.copyWith(color: Colors.black)),
+                      child: Text(
+                        "UPDATE NOTIFICATIONS",
+                        style: Body2_b.style.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -521,7 +571,8 @@ class _PlayerNotificationDetailPageState
 
 /// ============ 공통 스위치 UI ============
 
-Widget _switchRow({
+Widget _switchRow(
+  BuildContext context, {
   required String label,
   required bool value,
   required ValueChanged<bool> onChanged,
@@ -529,14 +580,22 @@ Widget _switchRow({
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(label, style: Body1.style),
+      Expanded(
+        child: Text(
+          label,
+          style: Body1.style,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      const SizedBox(width: 8),
       Switch(
         value: value,
         onChanged: onChanged,
         activeThumbColor: Colors.white,
         activeTrackColor: Colors.green,
-        inactiveThumbColor: Colors.white24,
-        inactiveTrackColor: Colors.white10,
+        inactiveThumbColor: AppPalette.white,
+        inactiveTrackColor: AppPalette.lightGrey,
       ),
     ],
   );

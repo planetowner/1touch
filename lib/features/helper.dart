@@ -46,7 +46,13 @@ String? teamLogoAsset(int teamId) {
 Widget teamLogoFallback(int teamId, {double size = 32}) {
   final asset = teamLogoAsset(teamId);
   if (asset == null) {
-    return Icon(Icons.shield, color: Colors.white54, size: size);
+    return Builder(
+      builder: (context) => Icon(
+        Icons.shield,
+        color: AppColors.of(context).mutedForeground,
+        size: size,
+      ),
+    );
   }
   return Image.asset(asset, width: size, height: size, fit: BoxFit.contain);
 }
@@ -65,7 +71,13 @@ const _leagueLogoFiles = <int, String>{
 Widget leagueLogoFallback(int leagueId, {double size = 24}) {
   final asset = _leagueLogoFiles[leagueId];
   if (asset == null) {
-    return Icon(Icons.shield, color: Colors.white54, size: size);
+    return Builder(
+      builder: (context) => Icon(
+        Icons.shield,
+        color: AppColors.of(context).mutedForeground,
+        size: size,
+      ),
+    );
   }
   return Image.asset(asset, width: size, height: size, fit: BoxFit.contain);
 }
@@ -113,11 +125,13 @@ String determineMatchStatus(DateTime matchDateTime) {
 class MatchCard extends StatelessWidget {
   final Fixture? match;
   final String? leagueName;
+  final Color? backgroundColor;
 
   const MatchCard({
     super.key,
     required this.match,
     this.leagueName,
+    this.backgroundColor,
   });
 
   @override
@@ -130,7 +144,7 @@ class MatchCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.of(context).subtleBackground,
+        color: backgroundColor ?? AppColors.of(context).subtleBackground,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,6 +190,8 @@ class MatchCard2 extends StatelessWidget {
   final int team2Id;
   final int homeScore;
   final int awayScore;
+  final Color? backgroundColor;
+  final EdgeInsetsGeometry? contentPadding;
 
   const MatchCard2({
     super.key,
@@ -189,6 +205,8 @@ class MatchCard2 extends StatelessWidget {
     required this.team2Id,
     required this.homeScore,
     required this.awayScore,
+    this.backgroundColor,
+    this.contentPadding,
   });
 
   @override
@@ -196,9 +214,10 @@ class MatchCard2 extends StatelessWidget {
     // Example scores
 
     return Container(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+      padding:
+          contentPadding ?? const EdgeInsets.only(left: 16, right: 16, top: 16),
       decoration: BoxDecoration(
-        color: AppColors.of(context).cardBackground,
+        color: backgroundColor ?? AppColors.of(context).cardBackground,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
@@ -192,25 +193,31 @@ class _TeamScreenState extends State<TeamScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final pageBackground = mainPageBackground(context);
+
     if (isLoading) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: pageBackground,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (team == null) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: Text("Team Not Found")),
+      return Scaffold(
+        backgroundColor: pageBackground,
+        body: const Center(child: Text("Team Not Found")),
       );
     }
 
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
+    final appBarForeground =
+        Color.lerp(AppPalette.white, colors.onSurface, opacityFactor)!;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.black,
+      backgroundColor: pageBackground,
       body: Stack(
         children: [
           Positioned(
@@ -226,7 +233,7 @@ class _TeamScreenState extends State<TeamScreen>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [_teamColor, _teamColor.withAlpha(0)],
+                    colors: [_teamColor, pageBackground],
                     stops: const [0.0, 0.6],
                   ),
                 ),
@@ -238,8 +245,12 @@ class _TeamScreenState extends State<TeamScreen>
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverAppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor:
-                    Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor: Color.lerp(
+                  Colors.transparent,
+                  pageBackground,
+                  opacityFactor,
+                ),
+                foregroundColor: appBarForeground,
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -250,7 +261,10 @@ class _TeamScreenState extends State<TeamScreen>
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [_teamColor, _teamColor.withAlpha(0)],
+                      colors: [
+                        _teamColor.withValues(alpha: 1 - opacityFactor),
+                        _teamColor.withValues(alpha: 0),
+                      ],
                     ),
                   ),
                 ),
@@ -277,7 +291,8 @@ class _TeamScreenState extends State<TeamScreen>
                             Text(
                               // '1. Fußballclub Heidenheim 1846 e.V',
                               team?['name'],
-                              style: Heading4.style,
+                              style: Heading4.style
+                                  .copyWith(color: appBarForeground),
                               maxLines: 1, // Ensure it stays on one line
                               overflow: TextOverflow
                                   .ellipsis, // Now this will work correctly
@@ -285,15 +300,23 @@ class _TeamScreenState extends State<TeamScreen>
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(team!['position'] as String,
-                                    style: Body2.style),
+                                Flexible(
+                                  child: Text(
+                                    team!['position'] as String,
+                                    style: Body2.style
+                                        .copyWith(color: appBarForeground),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                                 const Icon(Icons.arrow_drop_up,
                                     size: 16, color: Colors.green),
                                 Text(
                                   team!['rankChange'] != 0
                                       ? ' ${team!['rankChange']}'
                                       : '',
-                                  style: Eyebrow.style,
+                                  style: Eyebrow.style
+                                      .copyWith(color: appBarForeground),
                                 ),
                               ],
                             ),
@@ -321,16 +344,26 @@ class _TeamScreenState extends State<TeamScreen>
                                 ? Icons.star
                                 : Icons.star_outline,
                             size: 32,
+                            color: AppPalette.white,
                           ),
                         ),
                         IconButton(
+                          key: const Key('team-profile-button'),
                           onPressed: () => context.push('/profile'),
-                          icon: const Icon(Icons.account_circle_outlined,
-                              size: 32),
+                          icon: const Icon(
+                            Icons.account_circle_outlined,
+                            size: 32,
+                            color: AppPalette.white,
+                          ),
                         ),
                         IconButton(
+                          key: const Key('team-search-button'),
                           onPressed: () => context.push('/search'),
-                          icon: const Icon(Icons.search, size: 32),
+                          icon: const Icon(
+                            Icons.search,
+                            size: 32,
+                            color: AppPalette.white,
+                          ),
                         ),
                       ],
                     ),
@@ -344,16 +377,17 @@ class _TeamScreenState extends State<TeamScreen>
                     controller: _tabController,
                     isScrollable: true,
                     tabAlignment: TabAlignment.start,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: Colors.white,
+                    labelColor: colors.onSurface,
+                    unselectedLabelColor: appColors.mutedForeground,
+                    indicatorColor: colors.onSurface,
                     labelStyle: Heading5.style,
                     unselectedLabelStyle: Heading5.style,
                     indicatorSize: TabBarIndicatorSize.label,
                     dividerColor: Colors.transparent,
                     padding: const EdgeInsets.only(left: 8, top: 24),
-                    indicator: const UnderlineTabIndicator(
-                      borderSide: BorderSide(color: Colors.white, width: 1.2),
+                    indicator: UnderlineTabIndicator(
+                      borderSide:
+                          BorderSide(color: colors.onSurface, width: 1.2),
                     ),
                     tabs: const [
                       Tab(text: "Overview"),
