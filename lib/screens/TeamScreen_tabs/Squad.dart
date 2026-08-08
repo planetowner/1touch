@@ -391,7 +391,7 @@ class _SquadTabState extends State<SquadTab> {
       }
 
       return ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         children: [
           _sortDropdown(),
           ..._positionOrder
@@ -407,7 +407,7 @@ class _SquadTabState extends State<SquadTab> {
     final sorted = [..._players]..sort(_compare);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       children: [
         IntrinsicWidth(
           child: _sortDropdown(),

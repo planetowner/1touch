@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
@@ -33,14 +34,24 @@ class _AnalysisTabState extends State<AnalysisTab> {
   // line edge of the diagram, y=1 is the goal line — matches FCB's 10
   // shots / GIR's 6 shots already shown in the stat rows below.
   static const List<Offset> _shotsFcb = [
-    Offset(0.50, 0.06), Offset(0.36, 0.18), Offset(0.64, 0.16),
-    Offset(0.28, 0.34), Offset(0.72, 0.32), Offset(0.46, 0.38),
-    Offset(0.58, 0.42), Offset(0.40, 0.55), Offset(0.60, 0.52),
+    Offset(0.50, 0.06),
+    Offset(0.36, 0.18),
+    Offset(0.64, 0.16),
+    Offset(0.28, 0.34),
+    Offset(0.72, 0.32),
+    Offset(0.46, 0.38),
+    Offset(0.58, 0.42),
+    Offset(0.40, 0.55),
+    Offset(0.60, 0.52),
     Offset(0.50, 0.62),
   ];
   static const List<Offset> _shotsGir = [
-    Offset(0.46, 0.14), Offset(0.32, 0.30), Offset(0.66, 0.26),
-    Offset(0.52, 0.42), Offset(0.40, 0.56), Offset(0.58, 0.50),
+    Offset(0.46, 0.14),
+    Offset(0.32, 0.30),
+    Offset(0.66, 0.26),
+    Offset(0.52, 0.42),
+    Offset(0.40, 0.56),
+    Offset(0.58, 0.50),
   ];
 
   // ── Progression: % of progressive actions through each lane (top/middle/
@@ -54,12 +65,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
   // press-trigger bands for both, just where the action actually happens.
   static const List<double> _pressureBands = [0.32, 0.68];
   static const List<Offset> _pressureFcb = [
-    Offset(0.30, 0.20), Offset(0.68, 0.24), Offset(0.50, 0.32),
-    Offset(0.22, 0.45), Offset(0.78, 0.48), Offset(0.50, 0.55),
+    Offset(0.30, 0.20),
+    Offset(0.68, 0.24),
+    Offset(0.50, 0.32),
+    Offset(0.22, 0.45),
+    Offset(0.78, 0.48),
+    Offset(0.50, 0.55),
   ];
   static const List<Offset> _pressureGir = [
-    Offset(0.32, 0.78), Offset(0.70, 0.74), Offset(0.50, 0.68),
-    Offset(0.24, 0.55), Offset(0.76, 0.52), Offset(0.50, 0.45),
+    Offset(0.32, 0.78),
+    Offset(0.70, 0.74),
+    Offset(0.50, 0.68),
+    Offset(0.24, 0.55),
+    Offset(0.76, 0.52),
+    Offset(0.50, 0.45),
   ];
 
   @override
@@ -132,7 +151,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 children: [
                   Text(
                     '2.7',
-                    style: Body2_b.style,
+                    style: Body2_b.style.copyWith(color: AppPalette.white),
                   ),
                 ],
               ),
@@ -165,6 +184,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildAttackBlock() {
     final selectedTeam = showFCB ? 'FCB' : 'GIR';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -174,9 +195,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
           const Text("ATTACK", style: Body2_b.style),
           const SizedBox(height: 16),
           Container(
+            key: const ValueKey('match-analysis-attack-card'),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFF272828),
+              color: isDark ? const Color(0xFF272828) : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
             ),
             padding: const EdgeInsets.all(24),
@@ -188,7 +210,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 // Shot map
                 ShotMapDiagram(
                   shots: showFCB ? _shotsFcb : _shotsGir,
-                  color: showFCB ? _fcbColor : Colors.white,
+                  color: showFCB ? _fcbColor : foreground,
+                  lineColor: foreground.withValues(alpha: 0.30),
                 ),
 
                 const SizedBox(height: 24),
@@ -209,6 +232,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildPossessionBlock() {
     final selectedTeam = showFCB ? 'FCB' : 'GIR';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
@@ -219,7 +243,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF272828),
+              color: isDark ? const Color(0xFF272828) : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -239,6 +263,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildProgressionBlock() {
     final selectedTeam = showFCB ? 'FCB' : 'GIR';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -247,7 +273,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFF272828),
+            color: isDark ? const Color(0xFF272828) : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -256,11 +282,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
               const SizedBox(height: 24),
               ProgressionDiagram(
                 lanePercents: showFCB ? _progressionFcb : _progressionGir,
-                color: showFCB ? _fcbColor : Colors.white,
+                color: showFCB ? _fcbColor : foreground,
+                lineColor: foreground.withValues(alpha: 0.30),
+                labelColor: foreground,
               ),
               const SizedBox(height: 24),
               _buildStatRow("Progressive Passes", "51", "27", selectedTeam),
-              _buildStatRow("Carries into Final Third", "13", "5", selectedTeam),
+              _buildStatRow(
+                  "Carries into Final Third", "13", "5", selectedTeam),
               _buildStatRow("Crosses", "22", "9", selectedTeam),
             ],
           ),
@@ -271,6 +300,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildPressureBlock() {
     final selectedTeam = showFCB ? 'FCB' : 'GIR';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -279,7 +310,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFF272828),
+            color: isDark ? const Color(0xFF272828) : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -289,6 +320,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
               PressureDiagram(
                 events: showFCB ? _pressureFcb : _pressureGir,
                 bands: _pressureBands,
+                lineColor: foreground.withValues(alpha: 0.30),
+                dotColor: foreground,
               ),
               const SizedBox(height: 24),
               _buildStatRow("Pressures", "123", "98", selectedTeam),
@@ -303,6 +336,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildTeamToggle() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final selectedSurface = isDark ? AppPalette.lightGrey : AppPalette.black;
+    final unselectedSurface = isDark ? Colors.black : AppPalette.white;
+    const selectedForeground = AppPalette.white;
+
     return Row(
       children: [
         Expanded(
@@ -311,15 +350,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: showFCB ? const Color(0xFF3D3D3D) : Colors.black,
-                border: Border.all(color: const Color(0xFF3D3D3D)),
+                color: showFCB ? selectedSurface : unselectedSurface,
+                border: Border.all(color: AppColors.of(context).divider),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   bottomLeft: Radius.circular(8),
                 ),
               ),
               alignment: Alignment.center,
-              child: Text("FCB", style: Body2_b.style),
+              child: Text(
+                "FCB",
+                style: Body2_b.style.copyWith(
+                  color: showFCB ? selectedForeground : foreground,
+                ),
+              ),
             ),
           ),
         ),
@@ -329,15 +373,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: !showFCB ? const Color(0xFF3D3D3D) : Colors.black,
-                border: Border.all(color: const Color(0xFF3D3D3D)),
+                color: !showFCB ? selectedSurface : unselectedSurface,
+                border: Border.all(color: AppColors.of(context).divider),
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(8),
                   bottomRight: Radius.circular(8),
                 ),
               ),
               alignment: Alignment.center,
-              child: Text("GIR", style: Body2_b.style),
+              child: Text(
+                "GIR",
+                style: Body2_b.style.copyWith(
+                  color: !showFCB ? selectedForeground : foreground,
+                ),
+              ),
             ),
           ),
         ),
@@ -347,22 +396,37 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildStatRow(
       String label, String fcb, String grn, String selectedTeam) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final mutedForeground = AppColors.of(context).mutedForeground;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            fcb,
-            style: Heading5.style.copyWith(
-              color: selectedTeam == 'FCB' ? Colors.white : Colors.grey,
+          SizedBox(
+            width: 40,
+            child: Text(
+              fcb,
+              style: Heading5.style.copyWith(
+                color: selectedTeam == 'FCB' ? foreground : mutedForeground,
+              ),
             ),
           ),
-          Text(label, style: Body1.style),
-          Text(
-            grn,
-            style: Heading5.style.copyWith(
-              color: selectedTeam == 'GIR' ? Colors.white : Colors.grey,
+          Expanded(
+            child: Text(
+              label,
+              style: Body1.style,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Text(
+              grn,
+              style: Heading5.style.copyWith(
+                color: selectedTeam == 'GIR' ? foreground : mutedForeground,
+              ),
+              textAlign: TextAlign.right,
             ),
           ),
         ],
@@ -371,6 +435,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildDefenseBlock() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mutedForeground = AppColors.of(context).mutedForeground;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
@@ -381,7 +447,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF272828),
+              color: isDark ? const Color(0xFF272828) : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -405,11 +471,26 @@ class _AnalysisTabState extends State<AnalysisTab> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(row[0], style: Heading5.style),
-                          Text(row[2], style: Body1.style),
-                          Text(row[1],
-                              style:
-                                  Heading5.style.copyWith(color: Colors.grey)),
+                          SizedBox(
+                            width: 40,
+                            child: Text(row[0], style: Heading5.style),
+                          ),
+                          Expanded(
+                            child: Text(
+                              row[2],
+                              style: Body1.style,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 40,
+                            child: Text(
+                              row[1],
+                              style: Heading5.style
+                                  .copyWith(color: mutedForeground),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
                         ],
                       ),
                     )),
@@ -426,6 +507,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     required String label,
     required String rightValue,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -459,7 +541,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           alignment: Alignment.topRight,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? Colors.white : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -477,8 +559,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
 // painter's actual size, so they scale cleanly with whatever box they're
 // given (an AspectRatio at the call site).
 
-Paint _pitchLinePaint() => Paint()
-  ..color = Colors.white.withValues(alpha: 0.30)
+Paint _pitchLinePaint(Color color) => Paint()
+  ..color = color
   ..style = PaintingStyle.stroke
   ..strokeWidth = 1;
 
@@ -506,13 +588,19 @@ void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
 class ShotMapDiagram extends StatelessWidget {
   final List<Offset> shots;
   final Color color;
-  const ShotMapDiagram({super.key, required this.shots, required this.color});
+  final Color lineColor;
+  const ShotMapDiagram({
+    super.key,
+    required this.shots,
+    required this.color,
+    required this.lineColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.2,
-      child: CustomPaint(painter: _ShotMapPainter(shots, color)),
+      child: CustomPaint(painter: _ShotMapPainter(shots, color, lineColor)),
     );
   }
 }
@@ -520,11 +608,12 @@ class ShotMapDiagram extends StatelessWidget {
 class _ShotMapPainter extends CustomPainter {
   final List<Offset> shots;
   final Color color;
-  const _ShotMapPainter(this.shots, this.color);
+  final Color lineColor;
+  const _ShotMapPainter(this.shots, this.color, this.lineColor);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final line = _pitchLinePaint();
+    final line = _pitchLinePaint(lineColor);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), line);
 
     // Penalty box + 6-yard box, open at the goal line (bottom edge).
@@ -555,7 +644,8 @@ class _ShotMapPainter extends CustomPainter {
     );
     // Center-circle arc poking in from the halfway line at the top.
     canvas.drawArc(
-      Rect.fromCircle(center: Offset(size.width / 2, 0), radius: size.width * 0.3),
+      Rect.fromCircle(
+          center: Offset(size.width / 2, 0), radius: size.width * 0.3),
       0,
       math.pi,
       false,
@@ -577,7 +667,9 @@ class _ShotMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ShotMapPainter oldDelegate) =>
-      oldDelegate.shots != shots || oldDelegate.color != color;
+      oldDelegate.shots != shots ||
+      oldDelegate.color != color ||
+      oldDelegate.lineColor != lineColor;
 }
 
 // Full-pitch progression diagram: 3 horizontal lanes, each an arrow sized
@@ -585,14 +677,28 @@ class _ShotMapPainter extends CustomPainter {
 class ProgressionDiagram extends StatelessWidget {
   final List<double> lanePercents; // [top, middle, bottom], 0..100
   final Color color;
-  const ProgressionDiagram(
-      {super.key, required this.lanePercents, required this.color});
+  final Color lineColor;
+  final Color labelColor;
+  const ProgressionDiagram({
+    super.key,
+    required this.lanePercents,
+    required this.color,
+    required this.lineColor,
+    required this.labelColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.6,
-      child: CustomPaint(painter: _ProgressionPainter(lanePercents, color)),
+      child: CustomPaint(
+        painter: _ProgressionPainter(
+          lanePercents,
+          color,
+          lineColor,
+          labelColor,
+        ),
+      ),
     );
   }
 }
@@ -600,11 +706,18 @@ class ProgressionDiagram extends StatelessWidget {
 class _ProgressionPainter extends CustomPainter {
   final List<double> lanePercents;
   final Color color;
-  const _ProgressionPainter(this.lanePercents, this.color);
+  final Color lineColor;
+  final Color labelColor;
+  const _ProgressionPainter(
+    this.lanePercents,
+    this.color,
+    this.lineColor,
+    this.labelColor,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
-    final line = _pitchLinePaint();
+    final line = _pitchLinePaint(lineColor);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), line);
     canvas.drawLine(
         Offset(size.width / 3, 0), Offset(size.width / 3, size.height), line);
@@ -618,8 +731,8 @@ class _ProgressionPainter extends CustomPainter {
     canvas.drawRect(
         Rect.fromLTWH(0, (size.height - goalH) / 2, goalW, goalH), line);
     canvas.drawRect(
-        Rect.fromLTWH(size.width - goalW, (size.height - goalH) / 2, goalW,
-            goalH),
+        Rect.fromLTWH(
+            size.width - goalW, (size.height - goalH) / 2, goalW, goalH),
         line);
 
     final laneHeight = size.height / 3;
@@ -634,8 +747,11 @@ class _ProgressionPainter extends CustomPainter {
         thickness: 10 + 14 * pct,
         color: color.withValues(alpha: 0.35 + 0.5 * pct),
       );
-      _drawLabel(canvas, '${lanePercents[i].round()}%',
-          Offset(size.width * 0.08 + arrowLen / 2, midY));
+      _drawLabel(
+        canvas,
+        '${lanePercents[i].round()}%',
+        Offset(size.width * 0.08 + arrowLen / 2, midY),
+      );
     }
   }
 
@@ -663,8 +779,11 @@ class _ProgressionPainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: const TextStyle(
-            color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+        style: TextStyle(
+          color: labelColor,
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -674,7 +793,10 @@ class _ProgressionPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ProgressionPainter oldDelegate) =>
-      oldDelegate.lanePercents != lanePercents || oldDelegate.color != color;
+      oldDelegate.lanePercents != lanePercents ||
+      oldDelegate.color != color ||
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.labelColor != labelColor;
 }
 
 // Full-pitch pressure diagram: two vertical press-trigger bands plus dots
@@ -682,14 +804,23 @@ class _ProgressionPainter extends CustomPainter {
 class PressureDiagram extends StatelessWidget {
   final List<Offset> events;
   final List<double> bands;
-  const PressureDiagram(
-      {super.key, required this.events, required this.bands});
+  final Color lineColor;
+  final Color dotColor;
+  const PressureDiagram({
+    super.key,
+    required this.events,
+    required this.bands,
+    required this.lineColor,
+    required this.dotColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.6,
-      child: CustomPaint(painter: _PressurePainter(events, bands)),
+      child: CustomPaint(
+        painter: _PressurePainter(events, bands, lineColor, dotColor),
+      ),
     );
   }
 }
@@ -697,20 +828,29 @@ class PressureDiagram extends StatelessWidget {
 class _PressurePainter extends CustomPainter {
   final List<Offset> events;
   final List<double> bands;
-  const _PressurePainter(this.events, this.bands);
+  final Color lineColor;
+  final Color dotColor;
+  const _PressurePainter(
+    this.events,
+    this.bands,
+    this.lineColor,
+    this.dotColor,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bandPaint = Paint()..color = const Color(0xFFB23A3A).withValues(alpha: 0.45);
+    final bandPaint = Paint()
+      ..color = const Color(0xFFB23A3A).withValues(alpha: 0.45);
     final bandWidth = size.width * 0.1;
     for (final bx in bands) {
       canvas.drawRect(
-        Rect.fromLTWH(bx * size.width - bandWidth / 2, 0, bandWidth, size.height),
+        Rect.fromLTWH(
+            bx * size.width - bandWidth / 2, 0, bandWidth, size.height),
         bandPaint,
       );
     }
 
-    final line = _pitchLinePaint();
+    final line = _pitchLinePaint(lineColor);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), line);
     canvas.drawLine(
         Offset(size.width / 2, 0), Offset(size.width / 2, size.height), line);
@@ -722,11 +862,11 @@ class _PressurePainter extends CustomPainter {
     canvas.drawRect(
         Rect.fromLTWH(0, (size.height - goalH) / 2, goalW, goalH), line);
     canvas.drawRect(
-        Rect.fromLTWH(size.width - goalW, (size.height - goalH) / 2, goalW,
-            goalH),
+        Rect.fromLTWH(
+            size.width - goalW, (size.height - goalH) / 2, goalW, goalH),
         line);
 
-    final dotPaint = Paint()..color = Colors.white;
+    final dotPaint = Paint()..color = dotColor;
     for (final e in events) {
       canvas.drawCircle(
           Offset(e.dx * size.width, e.dy * size.height), 4, dotPaint);
@@ -735,5 +875,8 @@ class _PressurePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _PressurePainter oldDelegate) =>
-      oldDelegate.events != events || oldDelegate.bands != bands;
+      oldDelegate.events != events ||
+      oldDelegate.bands != bands ||
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.dotColor != dotColor;
 }

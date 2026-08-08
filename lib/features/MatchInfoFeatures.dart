@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/home/home_content_service.dart';
 import 'package:onetouch/models/match_data.dart';
@@ -69,39 +70,60 @@ class MatchScoreHeader extends StatelessWidget {
     final homeDimmed = home != null && away != null && home < away;
     final awayDimmed = home != null && away != null && away < home;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-            child: _TeamBlock(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 340;
+        final gap = compact ? 8.0 : 20.0;
+        final logoSize = compact ? 52.0 : 72.0;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _TeamBlock(
                 teamId: homeTeamId,
                 logoAsset: homeLogoAsset,
-                name: homeTeamName)),
-        const SizedBox(width: 20),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(roundLabel, style: Body2.style),
-            const SizedBox(height: 8),
-            Row(
+                name: homeTeamName,
+                logoSize: logoSize,
+              ),
+            ),
+            SizedBox(width: gap),
+            Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _ScoreBox(score: homeScore, isDimmed: homeDimmed),
-                const SizedBox(width: 8),
-                _ScoreBox(score: awayScore, isDimmed: awayDimmed),
+                Text(roundLabel, style: Body2.style),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _ScoreBox(
+                      score: homeScore,
+                      isDimmed: homeDimmed,
+                      compact: compact,
+                    ),
+                    const SizedBox(width: 8),
+                    _ScoreBox(
+                      score: awayScore,
+                      isDimmed: awayDimmed,
+                      compact: compact,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(statusLabel, style: Body2_b.style),
               ],
             ),
-            const SizedBox(height: 16),
-            Text(statusLabel, style: Body2_b.style),
-          ],
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-            child: _TeamBlock(
+            SizedBox(width: gap),
+            Expanded(
+              child: _TeamBlock(
                 teamId: awayTeamId,
                 logoAsset: awayLogoAsset,
-                name: awayTeamName)),
-      ],
+                name: awayTeamName,
+                logoSize: logoSize,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -110,8 +132,12 @@ class _TeamBlock extends StatelessWidget {
   final int teamId;
   final String logoAsset;
   final String name;
+  final double logoSize;
   const _TeamBlock(
-      {required this.teamId, required this.logoAsset, required this.name});
+      {required this.teamId,
+      required this.logoAsset,
+      required this.name,
+      required this.logoSize});
 
   @override
   Widget build(BuildContext context) {
@@ -126,9 +152,10 @@ class _TeamBlock extends StatelessWidget {
           onTap: () => context.go('/team/$teamId'),
           child: Image.network(
             logoAsset,
-            width: 72,
-            height: 72,
-            errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 72),
+            width: logoSize,
+            height: logoSize,
+            errorBuilder: (_, __, ___) =>
+                teamLogoFallback(teamId, size: logoSize),
           ),
         ),
         const SizedBox(height: 8),
@@ -147,20 +174,31 @@ class _TeamBlock extends StatelessWidget {
 class _ScoreBox extends StatelessWidget {
   final String score;
   final bool isDimmed;
-  const _ScoreBox({required this.score, this.isDimmed = false});
+  final bool compact;
+  const _ScoreBox({
+    required this.score,
+    this.isDimmed = false,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 10 : 16,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
-        color: const Color(0xFF272828),
+        color: isDark ? const Color(0xFF272828) : AppPalette.lightGreyBox,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         score,
-        style: Heading1.style
-            .copyWith(color: isDimmed ? Colors.grey : Colors.white),
+        style: Heading1.style.copyWith(
+          color: isDimmed ? AppColors.of(context).mutedForeground : foreground,
+        ),
       ),
     );
   }
@@ -281,8 +319,17 @@ class _EventRowContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final minuteText = Text(row.minutes.join(','), style: Eyebrow.style);
+    final minuteText = Flexible(
+      flex: 2,
+      child: Text(
+        row.minutes.join(','),
+        style: Eyebrow.style,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
     final nameText = Flexible(
+      flex: 3,
       child: Text(row.player,
           style: Eyebrow.style, overflow: TextOverflow.ellipsis),
     );
@@ -376,8 +423,8 @@ class _MatchHighlightsState extends State<MatchHighlights> {
 
   @override
   Widget build(BuildContext context) {
-    final canOpen = _highlight?.destinationUrl?.isNotEmpty == true &&
-        !_networkImageFailed;
+    final canOpen =
+        _highlight?.destinationUrl?.isNotEmpty == true && !_networkImageFailed;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -436,24 +483,27 @@ class PlayerOfTheMatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("PLAYER OF THE MATCH", style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('match-player-of-the-match-card'),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: const Color(0xCC272929),
+            color: isDark ? const Color(0xCC272929) : AppPalette.white,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.emoji_events_outlined,
-                      color: Colors.white, size: 40),
+                  Icon(Icons.emoji_events_outlined,
+                      color: foreground, size: 40),
                   const SizedBox(width: 16),
                   Text(rating, style: Heading2.style),
                 ],
@@ -507,15 +557,18 @@ class MomentumChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("MOMENTUM", style: Body2_b.style),
         const SizedBox(height: 12),
         Container(
+          key: const ValueKey('match-momentum-card'),
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF272828),
+            color: isDark ? const Color(0xFF272828) : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -523,25 +576,27 @@ class MomentumChart extends StatelessWidget {
               SizedBox(
                 height: 140,
                 width: double.infinity,
-                child: CustomPaint(painter: _MomentumPainter(values)),
+                child: CustomPaint(
+                  painter: _MomentumPainter(values, foreground),
+                ),
               ),
               const SizedBox(height: 8),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("0’",
                       style: TextStyle(
-                          color: Colors.white,
+                          color: foreground,
                           fontWeight: FontWeight.w700,
                           fontSize: 13)),
                   Text("45’",
                       style: TextStyle(
-                          color: Colors.white,
+                          color: foreground,
                           fontWeight: FontWeight.w700,
                           fontSize: 13)),
                   Text("90’",
                       style: TextStyle(
-                          color: Colors.white,
+                          color: foreground,
                           fontWeight: FontWeight.w700,
                           fontSize: 13)),
                 ],
@@ -556,7 +611,8 @@ class MomentumChart extends StatelessWidget {
 
 class _MomentumPainter extends CustomPainter {
   final List<double> values;
-  const _MomentumPainter(this.values);
+  final Color neutralColor;
+  const _MomentumPainter(this.values, this.neutralColor);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -575,10 +631,10 @@ class _MomentumPainter extends CustomPainter {
     final points = List.generate(values.length, pointAt);
 
     _drawDashedLine(canvas, Offset(0, centerY), Offset(size.width, centerY),
-        Colors.white.withValues(alpha: 0.3));
+        neutralColor.withValues(alpha: 0.3));
     final midX = size.width / 2;
     _drawDashedLine(canvas, Offset(midX, 0), Offset(midX, size.height),
-        Colors.white.withValues(alpha: 0.3));
+        neutralColor.withValues(alpha: 0.3));
 
     final abovePaint = Paint()
       ..shader = const LinearGradient(
@@ -591,8 +647,8 @@ class _MomentumPainter extends CustomPainter {
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
         colors: [
-          Colors.white.withValues(alpha: 0.35),
-          Colors.white.withValues(alpha: 0.05)
+          neutralColor.withValues(alpha: 0.35),
+          neutralColor.withValues(alpha: 0.05)
         ],
       ).createShader(
           Rect.fromLTWH(0, centerY, size.width, size.height - centerY));
@@ -603,7 +659,7 @@ class _MomentumPainter extends CustomPainter {
     }
 
     final linePaint = Paint()
-      ..color = Colors.white
+      ..color = neutralColor
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke
       ..strokeJoin = StrokeJoin.round
@@ -678,7 +734,7 @@ class _MomentumPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MomentumPainter oldDelegate) =>
-      oldDelegate.values != values;
+      oldDelegate.values != values || oldDelegate.neutralColor != neutralColor;
 }
 
 class StatBarsSection extends StatelessWidget {
@@ -724,9 +780,9 @@ class StatComparisonBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final total = data.homePercent + data.awayPercent;
-    final homeFlex =
-        total == 0 ? 50 : (data.homePercent / total * 100).round();
+    final homeFlex = total == 0 ? 50 : (data.homePercent / total * 100).round();
     final awayFlex = 100 - homeFlex;
 
     return Padding(
@@ -756,7 +812,10 @@ class StatComparisonBar extends StatelessWidget {
                           child: Container(height: 8, color: Colors.redAccent)),
                       Expanded(
                           flex: awayFlex,
-                          child: Container(height: 8, color: Colors.white)),
+                          child: Container(
+                            height: 8,
+                            color: isDark ? Colors.white : AppPalette.black,
+                          )),
                     ],
                   ),
                 ),
@@ -802,22 +861,30 @@ class LineupPitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("LINEUP", style: Body2_b.style),
         const SizedBox(height: 12),
         Container(
+          key: const ValueKey('match-lineup-card'),
           height: _pitchHeight,
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
+            color: isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
             borderRadius: BorderRadius.circular(20),
           ),
           clipBehavior: Clip.hardEdge,
           child: Stack(
             children: [
               Positioned.fill(
-                  child: CustomPaint(painter: _PitchMarkingsPainter())),
+                child: CustomPaint(
+                  painter: _PitchMarkingsPainter(
+                    foreground.withValues(alpha: 0.18),
+                  ),
+                ),
+              ),
               Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
@@ -1110,10 +1177,14 @@ class _EventBadges extends StatelessWidget {
 // ── Pitch markings (halfway line + center circle) ──
 
 class _PitchMarkingsPainter extends CustomPainter {
+  const _PitchMarkingsPainter(this.color);
+
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.18)
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -1127,7 +1198,8 @@ class _PitchMarkingsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _PitchMarkingsPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 class SubstitutesAndCoach extends StatelessWidget {
@@ -1181,6 +1253,7 @@ class _SubList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment:
           alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -1193,7 +1266,7 @@ class _SubList extends StatelessWidget {
             ),
           if (sub.subIn) ...[
             const SizedBox(width: 4),
-            const Icon(Icons.arrow_circle_left, size: 20, color: Colors.white),
+            Icon(Icons.arrow_circle_left, size: 20, color: foreground),
           ],
           if (sub.minute != null) ...[
             const SizedBox(width: 4),
@@ -1201,7 +1274,7 @@ class _SubList extends StatelessWidget {
           ],
           if (sub.goal) ...[
             const SizedBox(width: 4),
-            const Icon(Icons.sports_soccer, size: 20, color: Colors.white),
+            Icon(Icons.sports_soccer, size: 20, color: foreground),
           ],
           if (alignEnd)
             Flexible(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
@@ -108,6 +109,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   }
 
   Widget _buildHeader() {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     final home = mockTeamById(widget.fixture.homeTeamId);
     final away = mockTeamById(widget.fixture.awayTeamId);
     final dt = DateTime.parse(widget.fixture.startingAt).toLocal();
@@ -115,32 +117,44 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final time = DateFormat('h:mm a').format(dt);
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildTeamBlock(
-            home.shortCode ?? home.name, home.imagePath ?? '', home.teamId),
-        Column(
-          children: [
-            Text(date, style: Body2.style),
-            Text(time, style: Body2.style),
-            const SizedBox(height: 8),
-            Opacity(
-              opacity: 0.30,
-              child: Container(
-                width: 24,
-                decoration: const ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(width: 1, color: Colors.white),
+        Expanded(
+          child: _buildTeamBlock(
+            home.shortCode ?? home.name,
+            home.imagePath ?? '',
+            home.teamId,
+          ),
+        ),
+        SizedBox(
+          width: 104,
+          child: Column(
+            children: [
+              Text(date, style: Body2.style, textAlign: TextAlign.center),
+              Text(time, style: Body2.style),
+              const SizedBox(height: 8),
+              Opacity(
+                opacity: 0.30,
+                child: Container(
+                  width: 24,
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(width: 1, color: foreground),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text('Venue Name', style: Body2.style),
-          ],
+              const SizedBox(height: 8),
+              Text('Venue Name', style: Body2.style),
+            ],
+          ),
         ),
-        _buildTeamBlock(
-            away.shortCode ?? away.name, away.imagePath ?? '', away.teamId),
+        Expanded(
+          child: _buildTeamBlock(
+            away.shortCode ?? away.name,
+            away.imagePath ?? '',
+            away.teamId,
+          ),
+        ),
       ],
     );
   }
@@ -162,12 +176,20 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(name, style: Body1.style),
+        Text(
+          name,
+          style: Body1.style,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }
 
   Widget _buildRadarChart() {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+
     return Column(
       children: [
         SizedBox(
@@ -179,17 +201,17 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
               // Grid rings
               gridBorderData: BorderSide(
-                color: Colors.white.withValues(alpha: 0.30), // white 12%
+                color: foreground.withValues(alpha: 0.30),
                 width: 1,
               ),
               // Outermost ring
               radarBorderData: BorderSide(
-                color: Colors.white.withValues(alpha: 0.30),
+                color: foreground.withValues(alpha: 0.30),
                 width: 1,
               ),
               // Tick rings (same as grid)
               tickBorderData: BorderSide(
-                color: Colors.white.withValues(alpha: 0.30),
+                color: foreground.withValues(alpha: 0.30),
                 width: 1,
               ),
 
@@ -214,7 +236,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                   angle: 0, // keep all labels upright
                 );
               },
-              titleTextStyle: Eyebrow.style,
+              titleTextStyle: Eyebrow.style.copyWith(color: foreground),
               titlePositionPercentageOffset: 0.15,
 
               dataSets: [
@@ -235,8 +257,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 ),
                 // Away team
                 RadarDataSet(
-                  fillColor: Colors.white.withValues(alpha: 0.1),
-                  borderColor: Colors.white.withValues(alpha: 0.85),
+                  fillColor: foreground.withValues(alpha: 0.1),
+                  borderColor: foreground.withValues(alpha: 0.85),
                   borderWidth: 2,
                   entryRadius: 3,
                   dataEntries: const [
@@ -257,11 +279,19 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildLegendDot(const Color(0xFFE8434A),
-                mockTeamById(widget.fixture.homeTeamId).name.toUpperCase()),
-            const SizedBox(width: 16),
-            _buildLegendDot(Colors.white,
-                mockTeamById(widget.fixture.awayTeamId).name.toUpperCase()),
+            Expanded(
+              child: _buildLegendDot(
+                const Color(0xFFE8434A),
+                mockTeamById(widget.fixture.homeTeamId).name.toUpperCase(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildLegendDot(
+                foreground,
+                mockTeamById(widget.fixture.awayTeamId).name.toUpperCase(),
+              ),
+            ),
           ],
         ),
       ],
@@ -278,12 +308,20 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(label, style: Body2_b.style),
+        Flexible(
+          child: Text(
+            label,
+            style: Body2_b.style,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildLatestH2H() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final homeId = widget.fixture.homeTeamId;
     final awayId = widget.fixture.awayTeamId;
 
@@ -309,9 +347,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         const Text("LATEST H2H", style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('match-preview-h2h-card'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: isDark ? AppPalette.lightGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Row(
@@ -365,15 +404,23 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   }
 
   Widget _buildScoreBox(String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-          color: Colors.black, borderRadius: BorderRadius.circular(4)),
-      child: Text(text, style: Heading3.style),
+          color: isDark ? Colors.black : AppPalette.lightGreyBox,
+          borderRadius: BorderRadius.circular(4)),
+      child: Text(text, style: Heading3.style.copyWith(color: foreground)),
     );
   }
 
   Widget _buildStandingTable() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final appColors = AppColors.of(context);
+    final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final league = mockLeagueById(widget.fixture.leagueId);
     final standings = standingsByLeague(widget.fixture.leagueId);
     if (standings.isEmpty) return const SizedBox.shrink();
@@ -413,9 +460,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         const SizedBox(height: 16),
         // ── HEADER BOX: rounded top corners only ──
         Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF3D3D3D),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          key: const ValueKey('match-preview-standing-header'),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: Column(
@@ -434,8 +482,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                   const SizedBox(width: 10),
                   Text(
                     league.name,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: foreground,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -446,14 +494,16 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
               // Column labels
               Row(
                 children: [
-                  const SizedBox(
+                  SizedBox(
                     width: 32,
                     child: Text('#',
-                        style: TextStyle(color: Colors.grey, fontSize: 13)),
+                        style: TextStyle(
+                            color: appColors.mutedForeground, fontSize: 13)),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text('Club',
-                        style: TextStyle(color: Colors.grey, fontSize: 13)),
+                        style: TextStyle(
+                            color: appColors.mutedForeground, fontSize: 13)),
                   ),
                   ..._colLabel('MP'),
                   ..._colLabel('W'),
@@ -462,15 +512,16 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 ],
               ),
               const SizedBox(height: 14),
-              Container(height: 1, color: Colors.black.withValues(alpha: 0.40)),
+              Container(height: 1, color: appColors.divider),
             ],
           ),
         ),
         // ── BODY BOX: rounded bottom corners only ──
         Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF3D3D3D),
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
           child: Column(
@@ -508,19 +559,24 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(
+              color: AppColors.of(context).mutedForeground,
+              fontSize: 12,
+            ),
           ),
         ),
       ];
 
   Widget _buildStandingRowWidget(_StandingRow row) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final mutedForeground = AppColors.of(context).mutedForeground;
     final textStyle = TextStyle(
-      color: Colors.white,
+      color: foreground,
       fontSize: 13,
       fontWeight: row.highlight ? FontWeight.bold : FontWeight.normal,
     );
     final mutedStyle = TextStyle(
-      color: row.highlight ? Colors.white : Colors.grey,
+      color: row.highlight ? foreground : mutedForeground,
       fontSize: 13,
       fontWeight: row.highlight ? FontWeight.bold : FontWeight.normal,
     );

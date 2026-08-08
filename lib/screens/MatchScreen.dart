@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -11,7 +11,8 @@ class MatchScreen extends StatefulWidget {
   final String matchId;
   final String matchStatus;
 
-  const MatchScreen({super.key, required this.matchId, required this.matchStatus});
+  const MatchScreen(
+      {super.key, required this.matchId, required this.matchStatus});
 
   @override
   State<MatchScreen> createState() => _MatchScreenState();
@@ -41,14 +42,27 @@ class _MatchScreenState extends State<MatchScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final scaffoldBackground =
+        isDark ? Colors.black : AppPalette.lightModeDarkGrey;
+    final appBarBackground = isDark
+        ? AppColors.of(context).pageBackground
+        : AppPalette.lightModeDarkGrey;
+    final selectedSurface = isDark ? AppPalette.white : AppPalette.black;
+    final selectedForeground = isDark ? AppPalette.black : AppPalette.white;
+    final unselectedSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      key: const ValueKey('match-screen-scaffold'),
+      backgroundColor: scaffoldBackground,
       body: NestedScrollView(
+        key: const ValueKey('match-nested-scroll'),
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
+            backgroundColor: appBarBackground,
             elevation: 0,
             floating: true,
             snap: true,
@@ -56,7 +70,7 @@ class _MatchScreenState extends State<MatchScreen> {
             leading: Padding(
               padding: const EdgeInsets.only(left: 12), // or more if needed
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                icon: Icon(Icons.arrow_back_ios_new, color: foreground),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -66,7 +80,7 @@ class _MatchScreenState extends State<MatchScreen> {
                 onPressed: () {
                   context.push('/search');
                 },
-                icon: const Icon(Icons.search, size: 28, color: Colors.white),
+                icon: Icon(Icons.search, size: 28, color: foreground),
               ),
               SizedBox(
                 width: 8,
@@ -76,8 +90,8 @@ class _MatchScreenState extends State<MatchScreen> {
                 onPressed: () {
                   context.push('/profile');
                 },
-                icon: const Icon(Icons.account_circle_outlined,
-                    size: 28, color: Colors.white),
+                icon: Icon(Icons.account_circle_outlined,
+                    size: 28, color: foreground),
               ),
             ],
           ),
@@ -85,6 +99,7 @@ class _MatchScreenState extends State<MatchScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: SingleChildScrollView(
+                key: const ValueKey('match-tab-scroll'),
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -104,15 +119,17 @@ class _MatchScreenState extends State<MatchScreen> {
                             horizontal: 16,
                           ),
                           decoration: BoxDecoration(
-                            color:
-                                isSelected ? Colors.white : Color(0xFF3D3D3D),
+                            color: isSelected
+                                ? selectedSurface
+                                : unselectedSurface,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             tabs[index],
-                            style: isSelected
-                                ? Body2_b.style.copyWith(color: Colors.black)
-                                : Body2_b.style,
+                            style: Body2_b.style.copyWith(
+                              color:
+                                  isSelected ? selectedForeground : foreground,
+                            ),
                           ),
                         ),
                       ),
@@ -132,11 +149,13 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget _buildTabContent() {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+
     if (fixture == null) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(48),
-          child: Text('Match not found', style: TextStyle(color: Colors.white)),
+          padding: const EdgeInsets.all(48),
+          child: Text('Match not found', style: TextStyle(color: foreground)),
         ),
       );
     }
@@ -152,7 +171,9 @@ class _MatchScreenState extends State<MatchScreen> {
       case 'ANALYSIS':
         return AnalysisTab(fixture: fixture!);
       case 'LIVE CHAT':
-        return LiveChatTab(matchId: fixture!.fixtureId,);
+        return LiveChatTab(
+          matchId: fixture!.fixtureId,
+        );
       default:
         return const SizedBox.shrink();
     }

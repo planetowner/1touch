@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/WelcomeLoadingScreen.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -123,18 +122,17 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                 // Header
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SvgPicture.asset(
-                        'assets/app_logo.svg',
-                        key: const ValueKey('gradient-header-logo'),
-                        height: 23,
-                        width: 120,
-                        colorFilter: const ColorFilter.mode(
-                          AppPalette.white,
-                          BlendMode.srcIn,
+                      IconButton(
+                        key: const ValueKey('rank-favorites-back-button'),
+                        tooltip: 'Back to team selection',
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: AppPalette.white,
                         ),
                       ),
                       const AppThemeToggle(
@@ -162,8 +160,8 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
 
                       return ReorderableListView(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        onReorder: _onReorder,
+                            horizontal: 24, vertical: 10),
+                        onReorderItem: _onReorder,
                         proxyDecorator: (child, index, animation) => Material(
                           color: Colors.transparent,
                           elevation: 12,

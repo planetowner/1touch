@@ -72,14 +72,17 @@ class _MatchesTabState extends State<MatchesTab> {
             color: foreground,
             size: 24,
           ),
-          style: Body2_b.style,
+          style: Body2_b.style.copyWith(color: foreground),
           onChanged: (value) {
             if (value != null) setState(() => _selectedSeason = value);
           },
           items: _seasons.map((season) {
             return DropdownMenuItem(
               value: season,
-              child: Text(season, style: Body2_b.style),
+              child: Text(
+                season,
+                style: Body2_b.style.copyWith(color: foreground),
+              ),
             );
           }).toList(),
         ),

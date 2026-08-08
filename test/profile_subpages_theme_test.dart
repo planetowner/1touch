@@ -78,6 +78,55 @@ void main() {
     });
   }
 
+  for (final testCase in <({String title, Widget page})>[
+    (title: 'About', page: const AboutPage()),
+    (title: 'Contact', page: const ContactPage()),
+  ]) {
+    testWidgets('${testCase.title} header is centered with 24px icon gutters',
+        (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(theme: app_style.whitetheme, home: testCase.page),
+      );
+      await tester.pump();
+
+      expect(
+          tester.getCenter(find.text(testCase.title)).dx, closeTo(196.5, 0.1));
+      expect(tester.getCenter(find.byIcon(Icons.arrow_back_ios_new)).dx,
+          closeTo(36, 0.1));
+      expect(tester.getCenter(find.byIcon(Icons.search)).dx, closeTo(357, 0.1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('about rows and dividers use one 24px page gutter',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(theme: app_style.whitetheme, home: const AboutPage()),
+    );
+    await tester.pump();
+
+    expect(tester.getTopLeft(find.text('Legal')).dx, closeTo(24, 0.1));
+    expect(
+      tester.getTopRight(find.byIcon(Icons.arrow_forward_ios).first).dx,
+      closeTo(369, 0.1),
+    );
+    expect(tester.getTopLeft(find.byType(Divider).first).dx, closeTo(24, 0.1));
+    expect(
+        tester.getTopRight(find.byType(Divider).first).dx, closeTo(369, 0.1));
+    expect(find.text('Visit Instagram'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final testCase in <({String name, ThemeData theme})>[
     (name: 'light', theme: app_style.whitetheme),
     (name: 'dark', theme: app_style.darktheme),

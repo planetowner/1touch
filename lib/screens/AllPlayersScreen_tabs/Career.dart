@@ -620,7 +620,10 @@ class _FilterButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: Body2_b.style),
+              Text(
+                label,
+                style: Body2_b.style.copyWith(color: foreground),
+              ),
               const SizedBox(width: 2),
               Icon(
                 Icons.keyboard_arrow_down,

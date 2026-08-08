@@ -29,14 +29,22 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final appColors = AppColors.of(context);
+    final sheetSurface = isDark ? const Color(0xFF1C1C1E) : AppPalette.white;
+    final fieldSurface =
+        isDark ? const Color(0xFF2C2C2E) : AppPalette.lightGreyBox;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.68,
       minChildSize: 0.45,
       maxChildSize: 0.92,
       builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF1C1C1E),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        key: const ValueKey('comparison-player-picker-sheet'),
+        decoration: BoxDecoration(
+          color: sheetSurface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
@@ -48,8 +56,8 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
                   const Spacer(),
                   Text(
                     'Select Player ${widget.slot}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: foreground,
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
@@ -64,12 +72,12 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
               child: TextField(
                 autofocus: true,
                 onChanged: (value) => setState(() => _query = value),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: foreground),
                 decoration: InputDecoration(
                   hintText: 'Search players...',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  hintStyle: TextStyle(color: appColors.mutedForeground),
                   filled: true,
-                  fillColor: const Color(0xFF2C2C2E),
+                  fillColor: fieldSurface,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 12,
@@ -81,9 +89,9 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
                   suffixIcon: _query.isNotEmpty
                       ? GestureDetector(
                           onTap: () => setState(() => _query = ''),
-                          child: const Icon(
+                          child: Icon(
                             Icons.close,
-                            color: Colors.white54,
+                            color: appColors.mutedForeground,
                             size: 18,
                           ),
                         )
@@ -97,7 +105,7 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: _filtered.length,
                 separatorBuilder: (_, __) =>
-                    const Divider(color: Color(0xFF2C2C2E), height: 1),
+                    Divider(color: appColors.divider, height: 1),
                 itemBuilder: (_, index) =>
                     _buildPlayerPickerTile(player: _filtered[index]),
               ),
@@ -109,32 +117,38 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
   }
 
   Widget _buildPlayerPickerTile({required ComparisonPlayer player}) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-      leading: CircleAvatar(
-        backgroundColor: player.teamColor.withValues(alpha: 0.18),
-        child: Text(
-          player.fullName.split(' ').map((part) => part[0]).take(2).join(),
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final mutedForeground = AppColors.of(context).mutedForeground;
+
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+        leading: CircleAvatar(
+          backgroundColor: player.teamColor.withValues(alpha: 0.18),
+          child: Text(
+            player.fullName.split(' ').map((part) => part[0]).take(2).join(),
+            style: TextStyle(
+              color: player.teamColor,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        title: Text(
+          player.fullName,
           style: TextStyle(
-            color: player.teamColor,
-            fontSize: 12,
+            color: foreground,
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-      title: Text(
-        player.fullName,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+        subtitle: Text(
+          '${player.team} • #${player.number}',
+          style: TextStyle(color: mutedForeground, fontSize: 12),
         ),
+        trailing: Icon(Icons.chevron_right, color: mutedForeground),
+        onTap: () => widget.onPick(player),
       ),
-      subtitle: Text(
-        '${player.team} • #${player.number}',
-        style: const TextStyle(color: Colors.white54, fontSize: 12),
-      ),
-      trailing: const Icon(Icons.chevron_right, color: Colors.white54),
-      onTap: () => widget.onPick(player),
     );
   }
 }
@@ -147,14 +161,19 @@ class _SeasonPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final sheetSurface = isDark ? const Color(0xFF1C1C1E) : AppPalette.white;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.65,
       minChildSize: 0.4,
       maxChildSize: 0.9,
       builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF1C1C1E),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        key: const ValueKey('comparison-season-picker-sheet'),
+        decoration: BoxDecoration(
+          color: sheetSurface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
@@ -166,8 +185,8 @@ class _SeasonPickerSheet extends StatelessWidget {
                   const Spacer(),
                   Text(
                     player.fullName,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: foreground,
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
@@ -182,7 +201,7 @@ class _SeasonPickerSheet extends StatelessWidget {
                 controller: controller,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: player.clubSeasons.entries
-                    .map((entry) => _buildClubSeasons(entry))
+                    .map((entry) => _buildClubSeasons(context, entry))
                     .toList(),
               ),
             ),
@@ -192,7 +211,14 @@ class _SeasonPickerSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildClubSeasons(MapEntry<String, List<String>> entry) {
+  Widget _buildClubSeasons(
+    BuildContext context,
+    MapEntry<String, List<String>> entry,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final appColors = AppColors.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 22),
       child: Column(
@@ -221,8 +247,8 @@ class _SeasonPickerSheet extends StatelessWidget {
               ),
               Text(
                 entry.key.toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: foreground,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                   letterSpacing: 0.5,
@@ -243,13 +269,13 @@ class _SeasonPickerSheet extends StatelessWidget {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: isDark ? Colors.black : AppPalette.lightGreyBox,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     season,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: foreground,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -259,7 +285,7 @@ class _SeasonPickerSheet extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: 16),
-          const Divider(color: Color(0xFF2C2C2E), height: 1),
+          Divider(color: appColors.divider, height: 1),
         ],
       ),
     );
@@ -271,12 +297,16 @@ class _SheetHandle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(top: 10, bottom: 4),
       width: 36,
       height: 4,
       decoration: BoxDecoration(
-        color: Colors.white24,
+        color: isDark
+            ? Colors.white24
+            : AppColors.of(context).mutedForeground.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(2),
       ),
     );
@@ -292,7 +322,11 @@ class _SheetCloseButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: const Icon(Icons.close, color: Colors.white, size: 22),
+      child: Icon(
+        Icons.close,
+        color: Theme.of(context).colorScheme.onSurface,
+        size: 22,
+      ),
     );
   }
 }

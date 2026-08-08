@@ -16,6 +16,7 @@ void main() {
 
     expect(find.text('PLAYER 1'), findsOneWidget);
     expect(find.text('PLAYER 2'), findsOneWidget);
+    expect(find.text('Posts'), findsNothing);
 
     for (final slot in [1, 2]) {
       final image = tester.widget<Image>(

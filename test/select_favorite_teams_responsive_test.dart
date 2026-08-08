@@ -128,6 +128,50 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('rank favorites returns to team selection at compact width',
+      (tester) async {
+    const size = Size(320, 568);
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: const SelectFavoriteTeamsScreen(),
+      ),
+    );
+    await tester.pump();
+
+    final selectContext =
+        tester.element(find.byType(SelectFavoriteTeamsScreen));
+    Navigator.of(selectContext).push(
+      MaterialPageRoute<void>(
+        builder: (_) => RankFavoriteTeamsScreen(
+          selectedTeams: mockTeams.take(3).toList(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final backButton = find.byKey(const ValueKey('rank-favorites-back-button'));
+    final backIcon = tester.widget<Icon>(
+      find.descendant(of: backButton, matching: find.byType(Icon)),
+    );
+    expect(backButton, findsOneWidget);
+    expect(backIcon.color, app_style.AppPalette.white);
+    expect(find.byKey(const ValueKey('gradient-header-logo')), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(backButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RankFavoriteTeamsScreen), findsNothing);
+    expect(find.byType(SelectFavoriteTeamsScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in [const Size(320, 568), const Size(393, 852)]) {
     testWidgets('rank cards scale and crop crests at ${size.height}px tall',
         (tester) async {
@@ -183,9 +227,6 @@ void main() {
       );
       final gradient =
           (topGradient.decoration as BoxDecoration).gradient as LinearGradient;
-      final headerLogo = tester.widget<SvgPicture>(
-        find.byKey(const ValueKey('gradient-header-logo')),
-      );
       final toggleIcon = tester.widget<Icon>(
         find.descendant(
           of: find.byKey(const ValueKey('gradient-header-theme-toggle')),
@@ -205,10 +246,7 @@ void main() {
             .height,
         550,
       );
-      expect(
-        headerLogo.colorFilter,
-        const ColorFilter.mode(app_style.AppPalette.white, BlendMode.srcIn),
-      );
+      expect(find.byKey(const ValueKey('gradient-header-logo')), findsNothing);
       expect(toggleIcon.color, app_style.AppPalette.white);
 
       final firstTeam = mockTeams.first;

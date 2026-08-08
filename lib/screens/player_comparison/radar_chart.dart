@@ -4,6 +4,7 @@ class RadarChart extends StatelessWidget {
   final List<double> values1, values2;
   final List<String> labels;
   final Color color1, color2;
+  final Color gridColor, labelColor;
 
   const RadarChart({
     super.key,
@@ -12,6 +13,8 @@ class RadarChart extends StatelessWidget {
     required this.labels,
     required this.color1,
     required this.color2,
+    this.gridColor = const Color(0x4DFFFFFF),
+    this.labelColor = Colors.white,
   })  : assert(values1.length == _RadarPainter.axisCount),
         assert(values2.length == _RadarPainter.axisCount),
         assert(labels.length == _RadarPainter.axisCount);
@@ -25,6 +28,8 @@ class RadarChart extends StatelessWidget {
         labels: labels,
         color1: color1,
         color2: color2,
+        gridColor: gridColor,
+        labelColor: labelColor,
       ),
     );
   }
@@ -34,6 +39,7 @@ class _RadarPainter extends CustomPainter {
   final List<double> values1, values2;
   final List<String> labels;
   final Color color1, color2;
+  final Color gridColor, labelColor;
 
   static const int axisCount = 5;
 
@@ -60,6 +66,8 @@ class _RadarPainter extends CustomPainter {
     required this.labels,
     required this.color1,
     required this.color2,
+    required this.gridColor,
+    required this.labelColor,
   });
 
   Offset _scaledPoint(Offset point, Size size) {
@@ -104,7 +112,7 @@ class _RadarPainter extends CustomPainter {
         .toList(growable: false);
 
     final gridPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.30)
+      ..color = gridColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -153,8 +161,8 @@ class _RadarPainter extends CustomPainter {
       final anchor = _scaledPoint(_labelAnchors[index], size);
       painter.text = TextSpan(
         text: labels[index],
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: labelColor,
           fontFamily: 'Archivo',
           fontSize: 11,
           fontWeight: FontWeight.w400,
@@ -175,5 +183,7 @@ class _RadarPainter extends CustomPainter {
       old.values2 != values2 ||
       old.labels != labels ||
       old.color1 != color1 ||
-      old.color2 != color2;
+      old.color2 != color2 ||
+      old.gridColor != gridColor ||
+      old.labelColor != labelColor;
 }

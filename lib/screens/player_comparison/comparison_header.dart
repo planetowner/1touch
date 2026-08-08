@@ -19,18 +19,24 @@ class _HeaderArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+
     return SizedBox(
       height: 295,
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
+              key: const ValueKey('comparison-header-gradient'),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF000000), Color(0xFF282929)],
+                  colors: isDark
+                      ? const [Color(0xFF000000), AppPalette.darkGrey]
+                      : const [AppPalette.white, AppPalette.lightModeDarkGrey],
                 ),
               ),
             ),
@@ -101,9 +107,9 @@ class _HeaderArea extends StatelessWidget {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: onBack,
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_ios_new,
-                color: Colors.white,
+                color: foreground,
                 size: 24,
               ),
             ),
@@ -116,7 +122,7 @@ class _HeaderArea extends StatelessWidget {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: onSearch,
-              child: const Icon(Icons.search, color: Colors.white, size: 32),
+              child: Icon(Icons.search, color: foreground, size: 32),
             ),
           ),
           Positioned(
@@ -160,7 +166,7 @@ class _HeaderArea extends StatelessWidget {
             height: 128,
             child: _PlayerPhoto(player: p2, slot: 2),
           ),
-          const Positioned(
+          Positioned(
             left: 0,
             right: 0,
             top: 239,
@@ -168,7 +174,7 @@ class _HeaderArea extends StatelessWidget {
               child: Text(
                 'VS',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: foreground,
                   fontFamily: 'Archivo',
                   fontSize: 16,
                   fontWeight: FontWeight.w700,

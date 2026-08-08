@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 class PlayerMatchStatRow {
@@ -39,8 +40,8 @@ class PlayerMatchStatData {
   });
 }
 
-
-void showPlayerMatchStatSheet(BuildContext context, PlayerMatchStatData player) {
+void showPlayerMatchStatSheet(
+    BuildContext context, PlayerMatchStatData player) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -55,14 +56,11 @@ class PlayerMatchStatSheet extends StatelessWidget {
 
   const PlayerMatchStatSheet({super.key, required this.player});
 
-  static const _accentColor = Color(0xFFD82457);
-  static const _headerDark  = Color(0xFF260011); // deep maroon end of gradient
-  static const _sheetBg     = Color(0xFF1C1C1E);
-  static const _cardBg      = Color(0xFF2C2C2E);
-  static const _dividerColor = Color(0xFF3A3A3C);
+  static const _sheetBg = Color(0xFF1C1C1E);
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DraggableScrollableSheet(
       initialChildSize: 0.78,
       minChildSize: 0.45,
@@ -77,7 +75,7 @@ class PlayerMatchStatSheet extends StatelessWidget {
               _Header(player: player),
               Expanded(
                 child: ColoredBox(
-                  color: _sheetBg,
+                  color: isDark ? _sheetBg : AppPalette.white,
                   child: ListView(
                     controller: scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
@@ -98,7 +96,6 @@ class PlayerMatchStatSheet extends StatelessWidget {
     );
   }
 }
-
 
 class _Header extends StatelessWidget {
   final PlayerMatchStatData player;
@@ -259,7 +256,6 @@ class _HeaderIconBtn extends StatelessWidget {
   }
 }
 
-
 class _StatSection extends StatelessWidget {
   final PlayerMatchStatSection section;
 
@@ -267,6 +263,8 @@ class _StatSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -279,8 +277,9 @@ class _StatSection extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Container(
+          key: const ValueKey('match-player-stat-card'),
           decoration: BoxDecoration(
-            color: const Color(0xFF2C2C2E),
+            color: isDark ? const Color(0xFF2C2C2E) : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
@@ -300,12 +299,12 @@ class _StatSection extends StatelessWidget {
                   ),
                 ),
                 if (i < section.rows.length - 1)
-                  const Divider(
+                  Divider(
                     height: 1,
                     thickness: 1,
                     indent: 16,
                     endIndent: 16,
-                    color: Color(0xFF3A3A3C),
+                    color: isDark ? const Color(0xFF3A3A3C) : appColors.divider,
                   ),
               ],
             ],
@@ -315,8 +314,6 @@ class _StatSection extends StatelessWidget {
     );
   }
 }
-
-
 
 final mockRashfordStats = PlayerMatchStatData(
   name: 'M. Rashford',

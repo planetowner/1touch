@@ -32,8 +32,11 @@ class _ComparisonContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final mutedForeground = AppColors.of(context).mutedForeground;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -49,6 +52,8 @@ class _ComparisonContent extends StatelessWidget {
                 labels: _kRadarLabels,
                 color1: _blue,
                 color2: _orange,
+                gridColor: foreground.withValues(alpha: 0.30),
+                labelColor: foreground,
               ),
             ),
           ),
@@ -56,9 +61,17 @@ class _ComparisonContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _LegendDot(color: _blue, label: _abbrev(p1.fullName)),
+              _LegendDot(
+                color: _blue,
+                label: _abbrev(p1.fullName),
+                textColor: mutedForeground,
+              ),
               const SizedBox(width: 20),
-              _LegendDot(color: _orange, label: _abbrev(p2.fullName)),
+              _LegendDot(
+                color: _orange,
+                label: _abbrev(p2.fullName),
+                textColor: mutedForeground,
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -84,8 +97,13 @@ class _MergedCategory {
 class _LegendDot extends StatelessWidget {
   final Color color;
   final String label;
+  final Color textColor;
 
-  const _LegendDot({required this.color, required this.label});
+  const _LegendDot({
+    required this.color,
+    required this.label,
+    required this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +118,7 @@ class _LegendDot extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 12),
+          style: TextStyle(color: textColor, fontSize: 12),
         ),
       ],
     );
@@ -117,6 +135,9 @@ class _StatCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final appColors = AppColors.of(context);
     final names = <String>{...cat.rows1.map((row) => row.name)};
     names.addAll(cat.rows2.map((row) => row.name));
 
@@ -127,8 +148,8 @@ class _StatCategoryCard extends StatelessWidget {
         children: [
           Text(
             cat.label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: foreground,
               fontSize: 13,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.1,
@@ -136,13 +157,15 @@ class _StatCategoryCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
+            key: ValueKey('comparison-stat-card-${cat.label}'),
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 2),
             decoration: BoxDecoration(
-              color: const Color(0xFF1C1C1E),
+              color: isDark ? const Color(0xFF1C1C1E) : AppPalette.white,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
-              children: names.map(_buildStatRow).toList(),
+              children:
+                  names.map((name) => _buildStatRow(name, appColors)).toList(),
             ),
           ),
         ],
@@ -150,7 +173,7 @@ class _StatCategoryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatRow(String name) {
+  Widget _buildStatRow(String name, AppColors appColors) {
     final r1 = _findRow(cat.rows1, name);
     final r2 = _findRow(cat.rows2, name);
     final total = r1.value + r2.value;
@@ -164,7 +187,10 @@ class _StatCategoryCard extends StatelessWidget {
         children: [
           Text(
             name,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
+            style: TextStyle(
+              color: appColors.mutedForeground,
+              fontSize: 12,
+            ),
           ),
           const SizedBox(height: 5),
           ClipRRect(

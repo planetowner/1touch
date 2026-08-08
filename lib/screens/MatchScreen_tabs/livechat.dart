@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/models/chat_message.dart';
-
 
 class LiveChatTab extends StatefulWidget {
   final int matchId;
@@ -51,13 +51,12 @@ class _LiveChatTabState extends State<LiveChatTab> {
       _myUsername = await _fetchUsername();
 
       // Setup RTDB listener
-      _messagesRef = FirebaseDatabase.instance
-          .ref('chats/${widget.matchId}/messages');
+      _messagesRef =
+          FirebaseDatabase.instance.ref('chats/${widget.matchId}/messages');
 
       // Only replay the most recent messages, and keep the subscription
       // handle so it can be cancelled when this tab is disposed.
-      _messagesSub =
-          _messagesRef.limitToLast(50).onChildAdded.listen((event) {
+      _messagesSub = _messagesRef.limitToLast(50).onChildAdded.listen((event) {
         final data = event.snapshot.value as Map<dynamic, dynamic>?;
         if (data == null) return;
         final msg = ChatMessage.fromSnapshot(event.snapshot.key ?? '', data);
@@ -123,20 +122,23 @@ class _LiveChatTabState extends State<LiveChatTab> {
     });
   }
 
-  void _showContextMenu(BuildContext context, Offset position, ChatMessage msg) {
+  void _showContextMenu(
+      BuildContext context, Offset position, ChatMessage msg) {
     final isMe = msg.userId == _firebaseUser?.uid;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     showMenu(
       context: context,
       position: RelativeRect.fromLTRB(
           position.dx, position.dy, position.dx + 1, position.dy + 1),
-      color: const Color(0xFF3D3D3D),
+      color: isDark ? AppPalette.lightGrey : AppPalette.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       items: [
         if (!isMe)
           PopupMenuItem(
             child: Row(
               children: [
-                const Icon(Icons.outlined_flag, color: Colors.white, size: 18),
+                Icon(Icons.outlined_flag, color: foreground, size: 18),
                 const SizedBox(width: 10),
                 Text('Report', style: Body1.style),
               ],
@@ -146,7 +148,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
         PopupMenuItem(
           child: Row(
             children: [
-              const Icon(Icons.copy_outlined, color: Colors.white, size: 18),
+              Icon(Icons.copy_outlined, color: foreground, size: 18),
               const SizedBox(width: 10),
               Text('Copy Text', style: Body1.style),
             ],
@@ -181,6 +183,9 @@ class _LiveChatTabState extends State<LiveChatTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final appColors = AppColors.of(context);
     if (_initError != null) {
       return Center(
         child: Padding(
@@ -188,7 +193,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.wifi_off, color: Colors.white54, size: 40),
+              Icon(Icons.wifi_off, color: appColors.mutedForeground, size: 40),
               const SizedBox(height: 16),
               Text('Couldn\'t connect to chat',
                   style: Body1.style, textAlign: TextAlign.center),
@@ -202,9 +207,10 @@ class _LiveChatTabState extends State<LiveChatTab> {
               TextButton(
                 onPressed: _retryInit,
                 style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF3D3D3D),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 10),
+                  backgroundColor:
+                      isDark ? AppPalette.lightGrey : AppPalette.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
@@ -227,62 +233,64 @@ class _LiveChatTabState extends State<LiveChatTab> {
           Expanded(
             child: _messages.isEmpty
                 ? Center(
-              child: Opacity(
-                opacity: 0.4,
-                child: Text('Be the first to chat!', style: Body1.style),
-              ),
-            )
+                    child: Opacity(
+                      opacity: 0.4,
+                      child: Text('Be the first to chat!', style: Body1.style),
+                    ),
+                  )
                 : ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 24),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                final isMe = msg.userId == _firebaseUser?.uid;
-                final prevMsg = index > 0 ? _messages[index - 1] : null;
-                final showHeader =
-                    prevMsg == null || prevMsg.username != msg.username;
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 24),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      final isMe = msg.userId == _firebaseUser?.uid;
+                      final prevMsg = index > 0 ? _messages[index - 1] : null;
+                      final showHeader =
+                          prevMsg == null || prevMsg.username != msg.username;
 
-                return GestureDetector(
-                  onLongPressStart: (details) => _showContextMenu(
-                    context,
-                    details.globalPosition,
-                    msg,
+                      return GestureDetector(
+                        onLongPressStart: (details) => _showContextMenu(
+                          context,
+                          details.globalPosition,
+                          msg,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: isMe
+                              ? _buildMyMessage(msg, showHeader)
+                              : _buildOtherMessage(msg, showHeader),
+                        ),
+                      );
+                    },
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: isMe
-                        ? _buildMyMessage(msg, showHeader)
-                        : _buildOtherMessage(msg, showHeader),
-                  ),
-                );
-              },
-            ),
           ),
           SafeArea(
             child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              color: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              color: isDark ? Colors.black : AppPalette.white,
               child: Row(
                 children: [
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF3D3D3D),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppPalette.lightGrey
+                          : AppPalette.lightGreyBox,
                       shape: BoxShape.circle,
                     ),
-                    child:
-                    const Icon(Icons.add, color: Colors.white, size: 22),
+                    child: Icon(Icons.add, color: foreground, size: 22),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
+                        color: isDark
+                            ? const Color(0xFF1E1E1E)
+                            : AppPalette.lightGreyBox,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: TextField(
@@ -290,8 +298,9 @@ class _LiveChatTabState extends State<LiveChatTab> {
                         style: Body1.style,
                         decoration: InputDecoration(
                           hintText: 'Type a message',
-                          hintStyle:
-                          Body1.style.copyWith(color: Colors.grey),
+                          hintStyle: Body1.style.copyWith(
+                            color: appColors.mutedForeground,
+                          ),
                           border: InputBorder.none,
                         ),
                         onSubmitted: (_) => _sendMessage(),
@@ -322,6 +331,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   }
 
   Widget _buildOtherMessage(ChatMessage msg, bool showHeader) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -339,10 +349,9 @@ class _LiveChatTabState extends State<LiveChatTab> {
           const SizedBox(height: 6),
         ],
         Container(
-          padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: isDark ? AppPalette.lightGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(msg.text, style: Body1.style),
@@ -352,6 +361,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
   }
 
   Widget _buildMyMessage(ChatMessage msg, bool showHeader) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -370,10 +380,9 @@ class _LiveChatTabState extends State<LiveChatTab> {
           const SizedBox(height: 6),
         ],
         Container(
-          padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: isDark ? AppPalette.lightGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(msg.text, style: Body1.style),

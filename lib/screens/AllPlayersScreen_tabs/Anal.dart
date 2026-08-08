@@ -95,7 +95,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             color: foreground,
             size: 24,
           ),
-          style: Body2_b.style,
+          style: Body2_b.style.copyWith(color: foreground),
           onChanged: (value) {
             if (value != null) setState(() => _selectedSeason = value);
           },
@@ -104,7 +104,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
               value: season,
               child: Text(
                 "$season SEASON",
-                style: Body2_b.style,
+                style: Body2_b.style.copyWith(color: foreground),
               ),
             );
           }).toList(),

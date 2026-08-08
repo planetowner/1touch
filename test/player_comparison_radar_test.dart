@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 
 void main() {
-  testWidgets('comparison radar fills the 345 by 238 reference frame',
+  testWidgets('comparison radar respects the 24px page gutter',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -18,7 +18,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(RadarChart), findsOneWidget);
-    expect(tester.getSize(find.byType(RadarChart)), const Size(345, 238));
+    expect(tester.getSize(find.byType(RadarChart)), const Size(329, 238));
     expect(tester.takeException(), isNull);
   });
 }

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/models/player.dart';
 
@@ -132,44 +133,36 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _HeaderArea(
-                        p1: _p1,
-                        p2: _p2,
-                        s1: _s1,
-                        s2: _s2,
-                        onBack: _handleBack,
-                        onSearch: () => context.push('/search'),
-                        onTap1: () => _openPlayerPicker(1),
-                        onTap2: () => _openPlayerPicker(2),
-                      ),
-                      if (_bothReady)
-                        _ComparisonContent(p1: _p1!, p2: _p2!)
-                      else
-                        _MostComparedSection(onTapPair: _selectPair),
-                      const SizedBox(height: 106),
-                    ],
-                  ),
+      key: const ValueKey('player-comparison-scaffold'),
+      backgroundColor:
+          isDark ? const Color(0xFF0A0A0A) : AppPalette.lightModeDarkGrey,
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HeaderArea(
+                  p1: _p1,
+                  p2: _p2,
+                  s1: _s1,
+                  s2: _s2,
+                  onBack: _handleBack,
+                  onSearch: () => context.push('/search'),
+                  onTap1: () => _openPlayerPicker(1),
+                  onTap2: () => _openPlayerPicker(2),
                 ),
+                if (_bothReady)
+                  _ComparisonContent(p1: _p1!, p2: _p2!)
+                else
+                  _MostComparedSection(onTapPair: _selectPair),
+                const SizedBox(height: 24),
               ],
             ),
-          ),
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _ComparisonBottomBar(),
           ),
         ],
       ),

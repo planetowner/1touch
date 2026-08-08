@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/team.dart';
@@ -20,10 +21,12 @@ class MatchBettingSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
+      key: const ValueKey('match-betting-card'),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF272828),
+        color: isDark ? const Color(0xFF272828) : AppPalette.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -47,17 +50,17 @@ class MatchBettingSection extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onPlaceBet,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                backgroundColor: isDark ? Colors.white : AppPalette.black,
+                foregroundColor: isDark ? Colors.black : Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 "PLACE A BET",
                 style: TextStyle(
-                  color: Color(0xFF090A0A),
+                  color: isDark ? AppPalette.black : AppPalette.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
@@ -106,82 +109,94 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF272828),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      key: const ValueKey('match-betting-modal'),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF272828) : AppPalette.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Modal Header (Title + Close Button)
-          if (_currentStep != BetStep.success)
-            Stack(
-              children: [
-                const Center(child: Text("Bets", style: Heading3.style)),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close, color: Colors.white),
-                  ),
-                )
-              ],
-            ),
-
-          if (_currentStep != BetStep.success)
-            const SizedBox(height: 24),
-
-          // If Success, show success view.
-          // Otherwise, show the Full Stats Header + The current form step.
-          if (_currentStep == BetStep.success)
-            _buildSuccessView()
-          else
-            Column(
-              children: [
-                // PERSISTENT HEADER: This stays for both Selection and Amount steps
-                MatchStatsHeader(
-                  homeTeam: widget.homeTeam,
-                  awayTeam: widget.awayTeam,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Modal Header (Title + Close Button)
+              if (_currentStep != BetStep.success)
+                Stack(
+                  children: [
+                    const Center(child: Text("Bets", style: Heading3.style)),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(Icons.close, color: foreground),
+                      ),
+                    )
+                  ],
                 ),
 
-                const SizedBox(height: 24),
+              if (_currentStep != BetStep.success) const SizedBox(height: 24),
 
-                // Form Content
-                if (_currentStep == BetStep.selection) _buildSelectionStep(),
-                if (_currentStep == BetStep.amount) _buildAmountStep(),
-
-                const SizedBox(height: 24),
-
-                // Main Action Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: (_currentStep == BetStep.selection && _selectedOptionIndex == null)
-                        ? null
-                        : _nextStep,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.white24,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              // If Success, show success view.
+              // Otherwise, show the Full Stats Header + The current form step.
+              if (_currentStep == BetStep.success)
+                _buildSuccessView()
+              else
+                Column(
+                  children: [
+                    // PERSISTENT HEADER: This stays for both Selection and Amount steps
+                    MatchStatsHeader(
+                      homeTeam: widget.homeTeam,
+                      awayTeam: widget.awayTeam,
                     ),
-                    child: Text(
-                      _currentStep == BetStep.success ? "DONE" : "CONTINUE",
-                      style: const TextStyle(
-                        color: Color(0xFF090A0A),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+
+                    const SizedBox(height: 24),
+
+                    // Form Content
+                    if (_currentStep == BetStep.selection)
+                      _buildSelectionStep(),
+                    if (_currentStep == BetStep.amount) _buildAmountStep(),
+
+                    const SizedBox(height: 24),
+
+                    // Main Action Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (_currentStep == BetStep.selection &&
+                                _selectedOptionIndex == null)
+                            ? null
+                            : _nextStep,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isDark ? Colors.white : AppPalette.black,
+                          disabledBackgroundColor:
+                              isDark ? Colors.white24 : Colors.black26,
+                          foregroundColor: isDark ? Colors.black : Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          _currentStep == BetStep.success ? "DONE" : "CONTINUE",
+                          style: TextStyle(
+                            color: isDark ? AppPalette.black : AppPalette.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-        ],
+                    )
+                  ],
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -218,32 +233,38 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
     Team? team,
     bool isDraw = false,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final muted = AppColors.of(context).mutedForeground;
     bool isSelected = _selectedOptionIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _selectedOptionIndex = index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF3D3D3D),
+          color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
           borderRadius: BorderRadius.circular(12),
-          border: isSelected ? Border.all(color: Colors.white, width: 1) : null,
+          border: isSelected ? Border.all(color: foreground, width: 1) : null,
         ),
         child: Row(
           children: [
             if (isDraw)
-            // Stacked icons for Draw
-              SizedBox(width: 40, height: 40, child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: _buildTeamImage(widget.homeTeam, 28),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: _buildTeamImage(widget.awayTeam, 28),
-                  ),
-                ],
-              ))
+              // Stacked icons for Draw
+              SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: _buildTeamImage(widget.homeTeam, 28),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: _buildTeamImage(widget.awayTeam, 28),
+                      ),
+                    ],
+                  ))
             else
               _buildTeamImage(team!, 40),
 
@@ -252,21 +273,33 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(title,
+                      style: TextStyle(
+                          color: foreground,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16)),
+                  Text(subtitle, style: TextStyle(color: muted, fontSize: 12)),
                 ],
               ),
             ),
 
             // Radio Circle
             Container(
-              width: 24, height: 24,
+              width: 24,
+              height: 24,
               decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: isSelected ? Colors.white : Colors.grey, width: 2),
-                  color: Colors.transparent
-              ),
-              child: isSelected ? Center(child: Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))) : null,
+                  border: Border.all(
+                      color: isSelected ? foreground : muted, width: 2),
+                  color: Colors.transparent),
+              child: isSelected
+                  ? Center(
+                      child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                              color: foreground, shape: BoxShape.circle)))
+                  : null,
             )
           ],
         ),
@@ -289,13 +322,15 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
   }
 
   Widget _buildAmountStep() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       children: [
         // The Point Box Container
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -304,19 +339,33 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text("$_wagerAmount", style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+                  Text("$_wagerAmount",
+                      style: TextStyle(
+                          color: foreground,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(width: 8),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(bottom: 6.0),
-                    child: Text("pts", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: Text("pts",
+                        style: TextStyle(
+                            color: foreground,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
               Row(
                 children: [
-                  _buildCircleButton(Icons.remove, () => setState(() => _wagerAmount = (_wagerAmount - 10).clamp(10, widget.userBalance))),
+                  _buildCircleButton(
+                      Icons.remove,
+                      () => setState(() => _wagerAmount =
+                          (_wagerAmount - 10).clamp(10, widget.userBalance))),
                   const SizedBox(width: 16),
-                  _buildCircleButton(Icons.add, () => setState(() => _wagerAmount = (_wagerAmount + 10).clamp(10, widget.userBalance))),
+                  _buildCircleButton(
+                      Icons.add,
+                      () => setState(() => _wagerAmount =
+                          (_wagerAmount + 10).clamp(10, widget.userBalance))),
                 ],
               )
             ],
@@ -326,27 +375,32 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
         const SizedBox(height: 16),
 
         // Text is now OUTSIDE the box
-        Text("You’ve got ${widget.userBalance} pts!", style: const TextStyle(color: Colors.grey)),
+        Text("You’ve got ${widget.userBalance} pts!",
+            style: const TextStyle(color: Colors.grey)),
       ],
     );
   }
 
   Widget _buildCircleButton(IconData icon, VoidCallback onTap) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 32, height: 32,
+        width: 32,
+        height: 32,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white),
+          border: Border.all(color: foreground),
         ),
-        child: Icon(icon, color: Colors.white, size: 20),
+        child: Icon(icon, color: foreground, size: 20),
       ),
     );
   }
 
   // --- Success View ---
   Widget _buildSuccessView() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -354,41 +408,36 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
           alignment: Alignment.centerRight,
           child: GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: const Icon(Icons.close, color: Colors.white),
+            child: Icon(Icons.close, color: foreground),
           ),
         ),
         const SizedBox(height: 16),
-
-        const Icon(Icons.check_circle_outline, color: Colors.white, size: 80),
+        Icon(Icons.check_circle_outline, color: foreground, size: 80),
         const SizedBox(height: 24),
-
         const Text("Bet Submitted!", style: Heading3.style),
-
         const SizedBox(height: 16),
         const Text(
           "Check back after the final whistle for the result.",
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.grey),
         ),
-
         const SizedBox(height: 48),
-
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: isDark ? Colors.white : AppPalette.black,
+              foregroundColor: isDark ? Colors.black : Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
+            child: Text(
               "DONE",
               style: TextStyle(
-                color: Color(0xFF090A0A),
+                color: isDark ? AppPalette.black : AppPalette.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
@@ -417,23 +466,26 @@ class MatchStatsHeader extends StatelessWidget {
       children: [
         // 1. Logos and W/D/L Boxes
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTeamLogo(homeTeam),
+            Expanded(child: _buildTeamLogo(homeTeam)),
+            const SizedBox(width: 8),
 
             // Odds Stats
-            Row(
-              children: [
-                _buildOddsColumn("###", "W"),
-                const SizedBox(width: 8),
-                _buildOddsColumn("###", "D"),
-                const SizedBox(width: 8),
-                _buildOddsColumn("###", "L"),
-              ],
+            Expanded(
+              flex: 3,
+              child: Row(
+                children: [
+                  Expanded(child: _buildOddsColumn("###", "W")),
+                  const SizedBox(width: 4),
+                  Expanded(child: _buildOddsColumn("###", "D")),
+                  const SizedBox(width: 4),
+                  Expanded(child: _buildOddsColumn("###", "L")),
+                ],
+              ),
             ),
-
-            _buildTeamLogo(awayTeam),
+            const SizedBox(width: 8),
+            Expanded(child: _buildTeamLogo(awayTeam)),
           ],
         ),
 
@@ -452,7 +504,11 @@ class MatchStatsHeader extends StatelessWidget {
                     color: const Color(0xFFFF5757), // Red
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.only(left: 12),
-                    child: const Text("60%", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: const Text("60%",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16)),
                   ),
                 ),
                 Expanded(
@@ -465,7 +521,11 @@ class MatchStatsHeader extends StatelessWidget {
                     color: Colors.white,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 12),
-                    child: const Text("30%", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: const Text("30%",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16)),
                   ),
                 ),
               ],
@@ -477,21 +537,30 @@ class MatchStatsHeader extends StatelessWidget {
 
         // 3. Text Descriptions under bar
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "${homeTeam.shortCode ?? homeTeam.name} Win\n(+120)",
-              style: Body2.style,
+            Expanded(
+              child: Text(
+                "${homeTeam.shortCode ?? homeTeam.name} Win\n(+120)",
+                style: Body2.style,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const Text(
-              "Draw\n(+80)",
-              style: Body2.style,
-              textAlign: TextAlign.center,
+            Expanded(
+              child: Text(
+                "Draw\n(+80)",
+                style: Body2.style,
+                textAlign: TextAlign.center,
+              ),
             ),
-            Text(
-              "${awayTeam.shortCode ?? awayTeam.name} Win\n(+320)",
-              style: Body2.style,
-              textAlign: TextAlign.right,
+            Expanded(
+              child: Text(
+                "${awayTeam.shortCode ?? awayTeam.name} Win\n(+320)",
+                style: Body2.style,
+                textAlign: TextAlign.right,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -531,14 +600,16 @@ class MatchStatsHeader extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 48,
+          width: double.infinity,
           height: 32,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: Colors.black,
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: Text(value,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold)),
         ),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),

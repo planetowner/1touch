@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/mock/league_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:intl/intl.dart';
 import 'package:onetouch/features/helper.dart';
 
 class H2HTab extends StatefulWidget {
@@ -35,6 +35,7 @@ class _H2HTabState extends State<H2HTab> {
     return awayId;
   }
 
+  @override
   Widget build(BuildContext context) {
     final homeId = widget.fixture.homeTeamId;
     final awayId = widget.fixture.awayTeamId;
@@ -102,28 +103,33 @@ class _H2HTabState extends State<H2HTab> {
   }
 
   Widget _buildDropdownRow() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Functional dropdown
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF3D3D3D),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: IntrinsicWidth(
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: surface,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<int>(
+                  isExpanded: true,
                   value: _selectedMatches,
-                  dropdownColor: const Color(0xFF3D3D3D),
+                  dropdownColor: surface,
                   borderRadius: BorderRadius.circular(16),
-                  icon: const Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                  icon: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Icon(Icons.keyboard_arrow_down, color: foreground),
                   ),
-                  style: Body2_b.style,
+                  style: Body2_b.style.copyWith(color: foreground),
                   onChanged: (val) {
                     if (val != null) setState(() => _selectedMatches = val);
                   },
@@ -132,7 +138,10 @@ class _H2HTabState extends State<H2HTab> {
                       value: n,
                       child: Padding(
                         padding: const EdgeInsets.only(left: 16),
-                        child: Text('LAST $n MATCHES', style: Body2_b.style),
+                        child: Text(
+                          'LAST $n MATCHES',
+                          style: Body2_b.style.copyWith(color: foreground),
+                        ),
                       ),
                     );
                   }).toList(),
@@ -143,7 +152,7 @@ class _H2HTabState extends State<H2HTab> {
                         padding: const EdgeInsets.only(left: 16),
                         child: Text(
                           'LAST $_selectedMatches MATCHES',
-                          style: Body2_b.style,
+                          style: Body2_b.style.copyWith(color: foreground),
                         ),
                       ),
                     );
@@ -152,7 +161,9 @@ class _H2HTabState extends State<H2HTab> {
               ),
             ),
           ),
+          const SizedBox(width: 8),
           const Text('AGAINST', style: Body2_b.style),
+          const SizedBox(width: 8),
           Container(
             width: 40,
             height: 40,
@@ -178,10 +189,12 @@ class _H2HTabState extends State<H2HTab> {
   }
 
   Widget _buildWDLBox(int wins, int draws, int losses) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
+      key: const ValueKey('match-h2h-wdl-card'),
       padding: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
-        color: Color(0xFF3D3D3D),
+        color: isDark ? AppPalette.lightGrey : AppPalette.white,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
@@ -196,15 +209,17 @@ class _H2HTabState extends State<H2HTab> {
   }
 
   Widget _buildWDLStat(String value, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Color(0xFF272828),
+            color: isDark ? const Color(0xFF272828) : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(value, style: Heading2.style),
+          child: Text(value, style: Heading2.style.copyWith(color: foreground)),
         ),
         const SizedBox(height: 4),
         Text(label, style: Body1.style),
@@ -213,6 +228,8 @@ class _H2HTabState extends State<H2HTab> {
   }
 
   Widget _buildBetsCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -222,9 +239,10 @@ class _H2HTabState extends State<H2HTab> {
         ),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('match-h2h-bets-card'),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: isDark ? AppPalette.lightGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
@@ -232,10 +250,10 @@ class _H2HTabState extends State<H2HTab> {
             children: [
               // EXPERT row
               Row(
-                children: const [
-                  Text('EXPERT', style: Body2_b.style),
-                  SizedBox(width: 6),
-                  Icon(Icons.help_outline, color: Colors.white, size: 16),
+                children: [
+                  const Text('EXPERT', style: Body2_b.style),
+                  const SizedBox(width: 6),
+                  Icon(Icons.help_outline, color: foreground, size: 16),
                 ],
               ),
               const SizedBox(height: 12),
@@ -260,6 +278,7 @@ class _H2HTabState extends State<H2HTab> {
 
   Widget _buildBar(
       {required List<int> values, required bool showCheckOnFirst}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final segments = [
       (values[0], false),
       (values[1], false),
@@ -277,10 +296,10 @@ class _H2HTabState extends State<H2HTab> {
               height: 36,
               decoration: BoxDecoration(
                 color: isWhite
-                    ? Colors.white
+                    ? (isDark ? Colors.white : AppPalette.lightGreyBox)
                     : i == 0
                         ? const Color(0xFFFF5B5B)
-                        : const Color(0xFF272828),
+                        : (isDark ? const Color(0xFF272828) : AppPalette.black),
               ),
               alignment: Alignment.center,
               child: FittedBox(
@@ -291,7 +310,7 @@ class _H2HTabState extends State<H2HTab> {
                     Text(
                       '$value%',
                       style: Body2_b.style.copyWith(
-                        color: isWhite ? Colors.black : null,
+                        color: isWhite ? AppPalette.black : AppPalette.white,
                       ),
                     ),
                     if (i == 0 && showCheckOnFirst) ...[
@@ -322,11 +341,12 @@ class _H2HTabState extends State<H2HTab> {
       String homeScore,
       String awayScore,
       String league) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFF3D3D3D),
+        color: isDark ? AppPalette.lightGrey : AppPalette.white,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -378,13 +398,15 @@ class _H2HTabState extends State<H2HTab> {
   }
 
   Widget _scoreBox(String score) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Color(0xFF272828),
+        color: isDark ? const Color(0xFF272828) : AppPalette.lightGreyBox,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(score, style: Heading2.style),
+      child: Text(score, style: Heading2.style.copyWith(color: foreground)),
     );
   }
 }

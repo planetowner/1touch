@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 // ─────────────────────────────────────────────
@@ -136,18 +137,27 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final appColors = AppColors.of(context);
+    final pageBackground = isDark ? Colors.black : AppPalette.lightModeDarkGrey;
+    final selectedSurface = isDark ? AppPalette.white : AppPalette.black;
+    final selectedForeground = isDark ? AppPalette.black : AppPalette.white;
+    final unselectedSurface =
+        isDark ? const Color(0xFF2B2B2B) : AppPalette.white;
     final visible =
         _mockNotifications.where((n) => n.matchesFilter(_selected)).toList();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      key: const ValueKey('notification-inbox-scaffold'),
+      backgroundColor: pageBackground,
       body: CustomScrollView(
         slivers: [
           // ── AppBar ────────────────────────────────────────
           SliverAppBar(
             centerTitle: true,
             automaticallyImplyLeading: false,
-            backgroundColor: Colors.black,
+            backgroundColor: pageBackground,
             elevation: 0,
             floating: true,
             snap: true,
@@ -159,7 +169,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
             leading: Padding(
               padding: const EdgeInsets.only(top: 30),
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                icon: Icon(Icons.arrow_back_ios_new, color: foreground),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -168,7 +178,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
                 padding: const EdgeInsets.only(top: 30),
                 child: IconButton(
                   onPressed: () => context.push('/search'),
-                  icon: const Icon(Icons.search, color: Colors.white),
+                  icon: Icon(Icons.search, color: foreground),
                 ),
               ),
             ],
@@ -179,6 +189,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
               child: SingleChildScrollView(
+                key: const ValueKey('notification-filter-scroll'),
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: _filters.entries.map((e) {
@@ -188,19 +199,23 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
                       child: GestureDetector(
                         onTap: () => setState(() => _selected = e.key),
                         child: AnimatedContainer(
+                          key: ValueKey(
+                            'notification-filter-${e.value.toLowerCase()}',
+                          ),
                           duration: const Duration(milliseconds: 150),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 18, vertical: 10),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF2B2B2B),
+                                ? selectedSurface
+                                : unselectedSurface,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             e.value,
                             style: Body2_b.style.copyWith(
-                              color: isSelected ? Colors.black : Colors.white,
+                              color:
+                                  isSelected ? selectedForeground : foreground,
                             ),
                           ),
                         ),
@@ -220,8 +235,9 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
                 return Column(
                   children: [
                     _NotifTile(notif: notif),
-                    const Divider(
-                      color: Color(0xFF2B2B2B),
+                    Divider(
+                      color:
+                          isDark ? const Color(0xFF2B2B2B) : appColors.divider,
                       height: 1,
                       thickness: 1,
                     ),
@@ -249,6 +265,7 @@ class _NotifTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -266,7 +283,9 @@ class _NotifTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   notif.timeAgo,
-                  style: Eyebrow.style.copyWith(color: Colors.white38),
+                  style: Eyebrow.style.copyWith(
+                    color: appColors.mutedForeground,
+                  ),
                 ),
               ],
             ),
@@ -287,34 +306,49 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         // Main circle
         CircleAvatar(
           radius: 28,
-          backgroundColor: const Color(0xFF2B2B2B),
+          backgroundColor: isDark ? const Color(0xFF2B2B2B) : AppPalette.white,
           backgroundImage: notif.imageUrl != null
               ? NetworkImage(notif.imageUrl!) as ImageProvider
               : const AssetImage('assets/profileAvatar.png'),
+          onBackgroundImageError: notif.imageUrl != null ? (_, __) {} : null,
         ),
 
         // Badge for reaction
         if (notif.category == _NotifCategory.reaction)
-          _badge(Icons.thumb_up_rounded, const Color(0xFF1565C0)),
+          _badge(
+            context,
+            Icons.thumb_up_rounded,
+            const Color(0xFF1565C0),
+          ),
 
         // Badge for comment
         if (notif.category == _NotifCategory.comment)
-          _badge(Icons.chat_bubble_rounded, const Color(0xFF424242)),
+          _badge(
+            context,
+            Icons.chat_bubble_rounded,
+            const Color(0xFF424242),
+          ),
 
         // Badge for betting
         if (notif.category == _NotifCategory.betting)
-          _badge(Icons.monetization_on_rounded, const Color(0xFF2E7D32)),
+          _badge(
+            context,
+            Icons.monetization_on_rounded,
+            const Color(0xFF2E7D32),
+          ),
       ],
     );
   }
 
-  Widget _badge(IconData icon, Color color) {
+  Widget _badge(BuildContext context, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Positioned(
       bottom: -2,
       right: -4,
@@ -323,7 +357,10 @@ class _Avatar extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.black, width: 1.5),
+          border: Border.all(
+            color: isDark ? Colors.black : AppPalette.lightModeDarkGrey,
+            width: 1.5,
+          ),
         ),
         child: Icon(icon, color: Colors.white, size: 11),
       ),
@@ -341,20 +378,22 @@ class _BodyText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final mutedForeground = AppColors.of(context).mutedForeground;
     if (notif.bodyBold == null) {
       return Text(
         notif.bodyPrefix,
-        style: Body2.style.copyWith(color: Colors.white70),
+        style: Body2.style.copyWith(color: mutedForeground),
       );
     }
     return RichText(
       text: TextSpan(
-        style: Body2.style.copyWith(color: Colors.white70),
+        style: Body2.style.copyWith(color: mutedForeground),
         children: [
           TextSpan(text: notif.bodyPrefix),
           TextSpan(
             text: notif.bodyBold,
-            style: Body2_b.style.copyWith(color: Colors.white),
+            style: Body2_b.style.copyWith(color: foreground),
           ),
         ],
       ),

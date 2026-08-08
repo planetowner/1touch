@@ -39,9 +39,12 @@ class _ContactPageState extends State<ContactPage> {
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       Text("Contact", style: Body1.style),
-                      Icon(
-                        Icons.search,
-                        color: Theme.of(context).colorScheme.onSurface,
+                      SizedBox(
+                        width: 48,
+                        child: Icon(
+                          Icons.search,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                     ],
                   ),

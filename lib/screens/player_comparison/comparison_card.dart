@@ -7,15 +7,17 @@ class _MostComparedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 31, 24, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'MOST COMPARED',
             style: TextStyle(
-              color: Colors.white,
+              color: foreground,
               fontFamily: 'Archivo',
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -53,6 +55,11 @@ class _ComparisonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final imageSurface = isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox;
+    final detailsSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
+
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -61,15 +68,20 @@ class _ComparisonCard extends StatelessWidget {
           height: 159,
           child: Stack(
             children: [
-              const Positioned.fill(
-                child: ColoredBox(color: Color(0xFF3D3D3D)),
+              Positioned.fill(
+                child: ColoredBox(color: detailsSurface),
               ),
-              const Positioned(
+              Positioned(
                 left: 0,
                 right: 0,
                 top: 0,
                 height: 96,
-                child: ColoredBox(color: Color(0xFF282929)),
+                child: ColoredBox(
+                  key: ValueKey(
+                    'comparison-card-image-${p1.id}-${p2.id}',
+                  ),
+                  color: imageSurface,
+                ),
               ),
               if (p1.teamLogoAsset != null)
                 Positioned(
@@ -113,14 +125,19 @@ class _ComparisonCard extends StatelessWidget {
                 height: 80,
                 child: _CardPlayerImage(player: p2),
               ),
-              const Positioned(
+              Positioned(
                 left: 0,
                 right: 0,
                 top: 96,
                 bottom: 0,
-                child: ColoredBox(color: Color(0xFF3D3D3D)),
+                child: ColoredBox(
+                  key: ValueKey(
+                    'comparison-card-details-${p1.id}-${p2.id}',
+                  ),
+                  color: detailsSurface,
+                ),
               ),
-              const Positioned(
+              Positioned(
                 left: 0,
                 right: 0,
                 top: 41,
@@ -128,7 +145,7 @@ class _ComparisonCard extends StatelessWidget {
                   child: Text(
                     'VS',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: foreground,
                       fontFamily: 'Archivo',
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -172,14 +189,16 @@ class _CardPlayerDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+
     return Column(
       crossAxisAlignment:
           alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Text(
           player.fullName,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: foreground,
             fontFamily: 'Archivo',
             fontSize: 16,
             fontWeight: FontWeight.w400,
@@ -191,8 +210,8 @@ class _CardPlayerDetails extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           '${player.team} • #${player.number}',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: foreground,
             fontFamily: 'Archivo',
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -218,82 +237,6 @@ class _CardPlayerImage extends StatelessWidget {
           'assets/player_comparison/player_placeholder.png',
       fit: BoxFit.cover,
       alignment: Alignment.topCenter,
-    );
-  }
-}
-
-class _ComparisonBottomBar extends StatelessWidget {
-  const _ComparisonBottomBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 106,
-      color: const Color(0xFF282929),
-      child: Row(
-        children: [
-          _BottomDestination(
-            icon: Icons.home_outlined,
-            label: 'Home',
-            onTap: () => context.go('/home'),
-          ),
-          _BottomDestination(
-            icon: Icons.person,
-            label: 'Players',
-            onTap: () => context.go('/players'),
-          ),
-          _BottomDestination(
-            icon: Icons.local_police_outlined,
-            label: 'Team',
-            onTap: () => context.go('/team/1'),
-          ),
-          _BottomDestination(
-            icon: Icons.people_alt_outlined,
-            label: 'Posts',
-            onTap: () => context.go('/community'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BottomDestination extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _BottomDestination({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: Column(
-            children: [
-              Icon(icon, color: Colors.white, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Archivo',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

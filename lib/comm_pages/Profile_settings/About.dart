@@ -42,9 +42,12 @@ class _AboutPageState extends State<AboutPage> {
                         "About",
                         style: Body1.style,
                       ),
-                      Icon(
-                        Icons.search,
-                        color: Theme.of(context).colorScheme.onSurface,
+                      SizedBox(
+                        width: 48,
+                        child: Icon(
+                          Icons.search,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                     ],
                   ),
@@ -54,7 +57,7 @@ class _AboutPageState extends State<AboutPage> {
 
                 Expanded(
                     child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   children: [
                     _buildListItem(context, "Legal", () {
                       // TODO: Navigate or show dialog
@@ -66,10 +69,6 @@ class _AboutPageState extends State<AboutPage> {
                     _buildDivider(),
                     _buildListItem(context, "Privacy Policy", () {
                       // TODO: Navigate or show dialog
-                    }),
-                    _buildDivider(),
-                    _buildListItem(context, "Visit Instagram", () {
-                      // TODO: Open Instagram link
                     }),
                     _buildDivider(),
                   ],
@@ -85,6 +84,7 @@ class _AboutPageState extends State<AboutPage> {
   Widget _buildListItem(
       BuildContext context, String title, VoidCallback onTap) {
     return ListTile(
+      contentPadding: EdgeInsets.zero,
       title: Text(title, style: Body1.style),
       trailing: Icon(
         Icons.arrow_forward_ios,
@@ -100,8 +100,6 @@ class _AboutPageState extends State<AboutPage> {
       color: AppColors.of(context).divider,
       height: 1,
       thickness: 1,
-      indent: 16,
-      endIndent: 16,
     );
   }
 }

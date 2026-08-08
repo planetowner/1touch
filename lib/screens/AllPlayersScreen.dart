@@ -142,17 +142,10 @@ class _PlayerCardState extends State<PlayerCard>
                   snap: true,
                   pinned: false,
                   toolbarHeight: 100,
-                  flexibleSpace: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final horizontalPadding =
-                          (constraints.maxWidth * 0.05).clamp(16.0, 24.0);
-
-                      return PlayerScreenHeader(
-                        player: widget.player,
-                        horizontalPadding: horizontalPadding,
-                        foregroundColor: foreground,
-                      );
-                    },
+                  flexibleSpace: PlayerScreenHeader(
+                    player: widget.player,
+                    horizontalPadding: 24,
+                    foregroundColor: foreground,
                   ),
                 ),
                 SliverPersistentHeader(

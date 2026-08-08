@@ -164,4 +164,79 @@ void main() {
     );
     expect(tester.takeException(), isNull, reason: 'Career must not overflow');
   });
+
+  for (final testCase in <({
+    String name,
+    ThemeData theme,
+    Color foreground,
+  })>[
+    (
+      name: 'light',
+      theme: app_style.whitetheme,
+      foreground: app_style.AppPalette.black,
+    ),
+    (
+      name: 'dark',
+      theme: app_style.darktheme,
+      foreground: app_style.AppPalette.white,
+    ),
+  ]) {
+    testWidgets('player filters use ${testCase.name} foreground colors',
+        (tester) async {
+      await tester.binding.setSurfaceSize(const Size(393, 852));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: testCase.theme,
+          home: PlayerCard(player: salah),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Analysis'));
+      await tester.pumpAndSettle();
+      final analysisFilter = tester.widget<DropdownButton<String>>(
+        find.descendant(
+          of: find.byKey(const ValueKey('player-analysis-season-filter')),
+          matching: find.byType(DropdownButton<String>),
+        ),
+      );
+      expect(analysisFilter.style?.color, testCase.foreground);
+      for (final item in analysisFilter.items!) {
+        expect((item.child as Text).style?.color, testCase.foreground);
+      }
+
+      await tester.tap(find.text('Matches'));
+      await tester.pumpAndSettle();
+      final matchFilter = tester.widget<DropdownButton<String>>(
+        find.descendant(
+          of: find.byKey(const ValueKey('player-matches-season-filter')),
+          matching: find.byType(DropdownButton<String>),
+        ),
+      );
+      expect(matchFilter.style?.color, testCase.foreground);
+      for (final item in matchFilter.items!) {
+        expect((item.child as Text).style?.color, testCase.foreground);
+      }
+
+      await tester.tap(find.text('Career'));
+      await tester.pumpAndSettle();
+      final trophyFilterText = tester.widget<Text>(
+        find.descendant(
+          of: find.byKey(const Key('career-trophy-filter')),
+          matching: find.text('TEAM'),
+        ),
+      );
+      final competitionFilterText = tester.widget<Text>(
+        find.descendant(
+          of: find.byKey(const Key('career-competition-filter')),
+          matching: find.text('ALL LEAGUES'),
+        ),
+      );
+      expect(trophyFilterText.style?.color, testCase.foreground);
+      expect(competitionFilterText.style?.color, testCase.foreground);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
