@@ -51,7 +51,7 @@ void main() {
         ),
       );
       final expectedGradientHeight =
-          (size.height * 0.62).clamp(420.0, 560.0).toDouble();
+          (size.height * 0.70).clamp(550.0, 650.0).toDouble();
 
       expect(scaffold.backgroundColor, app_style.AppPalette.lightGreyBox);
       expect(tester.getSize(gradientFinder).height, expectedGradientHeight);
@@ -67,7 +67,7 @@ void main() {
     });
   }
 
-  testWidgets('Profile dark mode retains its existing background geometry',
+  testWidgets('Profile dark mode uses the responsive background geometry',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -90,7 +90,7 @@ void main() {
         as LinearGradient;
 
     expect(scaffold.backgroundColor, app_style.AppPalette.black);
-    expect(tester.getSize(gradientFinder).height, 550);
+    expect(tester.getSize(gradientFinder).height, closeTo(596.4, 0.01));
     expect(gradient.stops, const [0.0, 0.6]);
     expect(tester.takeException(), isNull);
   });

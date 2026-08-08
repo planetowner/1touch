@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/models/player.dart';
@@ -65,6 +66,10 @@ class _PlayerCardState extends State<PlayerCard>
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     double gradientOpacity = 1.0 - opacityFactor;
+    final pageBackground = mainPageBackground(context);
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final foreground = colors.onSurface;
 
     // The gradient should fade out exactly where the header content ends. Those
     // anchor points are fixed in logical pixels *below the status bar*, so we add
@@ -83,6 +88,7 @@ class _PlayerCardState extends State<PlayerCard>
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      backgroundColor: pageBackground,
       body: Stack(
         children: [
           // Global gradient behind everything including tab bar.
@@ -122,11 +128,15 @@ class _PlayerCardState extends State<PlayerCard>
             length: 4,
             child: NestedScrollView(
               controller: _scrollController,
+              physics: const ClampingScrollPhysics(),
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 SliverAppBar(
                   automaticallyImplyLeading: false,
                   backgroundColor: Color.lerp(
-                      Colors.transparent, Colors.black, opacityFactor),
+                    Colors.transparent,
+                    pageBackground,
+                    opacityFactor,
+                  ),
                   elevation: 0,
                   floating: true,
                   snap: true,
@@ -140,6 +150,7 @@ class _PlayerCardState extends State<PlayerCard>
                       return PlayerScreenHeader(
                         player: widget.player,
                         horizontalPadding: horizontalPadding,
+                        foregroundColor: foreground,
                       );
                     },
                   ),
@@ -151,15 +162,15 @@ class _PlayerCardState extends State<PlayerCard>
                     TabBar(
                       controller: _tabController,
                       isScrollable: true,
-                      labelColor: Colors.white,
-                      unselectedLabelColor: Colors.grey,
+                      labelColor: foreground,
+                      unselectedLabelColor: appColors.mutedForeground,
                       labelStyle: Heading5.style,
                       unselectedLabelStyle: Heading5.style,
                       indicatorSize: TabBarIndicatorSize.label,
                       dividerColor: Colors.transparent,
                       padding: const EdgeInsets.only(left: 8),
-                      indicator: const UnderlineTabIndicator(
-                        borderSide: BorderSide(color: Colors.white, width: 2),
+                      indicator: UnderlineTabIndicator(
+                        borderSide: BorderSide(color: foreground, width: 2),
                       ),
                       tabs: const [
                         Tab(text: "Overview"),
@@ -170,6 +181,7 @@ class _PlayerCardState extends State<PlayerCard>
                       tabAlignment: TabAlignment.start,
                     ),
                     opacityFactor: opacityFactor, // ADD THIS
+                    backgroundColor: pageBackground,
                   ),
                 ),
               ],
@@ -193,11 +205,13 @@ class _PlayerCardState extends State<PlayerCard>
 class PlayerScreenHeader extends StatelessWidget {
   final Player player;
   final double horizontalPadding;
+  final Color foregroundColor;
 
   const PlayerScreenHeader({
     super.key,
     required this.player,
     required this.horizontalPadding,
+    required this.foregroundColor,
   });
 
   @override
@@ -216,7 +230,7 @@ class PlayerScreenHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 player.fullName,
-                style: Heading3.style,
+                style: Heading3.style.copyWith(color: foregroundColor),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -232,22 +246,24 @@ class PlayerScreenHeader extends StatelessWidget {
                     ? Icons.star
                     : Icons.star_outline,
                 size: 32,
-                color: Colors.white,
+                color: foregroundColor,
               ),
             ),
             IconButton(
+              key: const ValueKey('player-search-button'),
               onPressed: () => context.push('/search'),
-              icon: const Icon(Icons.search, size: 32, color: Colors.white),
+              icon: Icon(Icons.search, size: 32, color: foregroundColor),
             ),
             IconButton(
+              key: const ValueKey('player-compare-button'),
               onPressed: () => context.push(
                 '/compare',
                 extra: player.id,
               ),
-              icon: const Icon(
+              icon: Icon(
                 Icons.safety_divider,
                 size: 32,
-                color: Colors.white,
+                color: foregroundColor,
               ),
             ),
           ],
@@ -260,8 +276,13 @@ class PlayerScreenHeader extends StatelessWidget {
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
   final double opacityFactor;
+  final Color backgroundColor;
 
-  _TabBarDelegate(this._tabBar, {required this.opacityFactor});
+  _TabBarDelegate(
+    this._tabBar, {
+    required this.opacityFactor,
+    required this.backgroundColor,
+  });
 
   @override
   double get minExtent => _tabBar.preferredSize.height;
@@ -273,13 +294,14 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+      color: Color.lerp(Colors.transparent, backgroundColor, opacityFactor),
       child: _tabBar,
     );
   }
 
   @override
   bool shouldRebuild(_TabBarDelegate oldDelegate) {
-    return oldDelegate.opacityFactor != opacityFactor;
+    return oldDelegate.opacityFactor != opacityFactor ||
+        oldDelegate.backgroundColor != backgroundColor;
   }
 }

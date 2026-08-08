@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/features/player_image.dart';
@@ -16,6 +17,8 @@ class PlayerOverviewTab extends StatelessWidget {
       children: [
         // Content on top of background
         SingleChildScrollView(
+          key: const ValueKey('player-overview-scroll'),
+          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,11 +27,11 @@ class PlayerOverviewTab extends StatelessWidget {
               const SizedBox(height: 48),
               _buildBioStatsBlock(context),
               const SizedBox(height: 48),
-              _buildCompetitionsBlock(),
+              _buildCompetitionsBlock(context),
               const SizedBox(height: 48),
-              _buildMatchSummaryBlock(),
+              _buildMatchSummaryBlock(context),
               const SizedBox(height: 48),
-              _buildClubHistoryBlock(),
+              _buildClubHistoryBlock(context),
               const SizedBox(height: 144),
             ],
           ),
@@ -39,6 +42,7 @@ class PlayerOverviewTab extends StatelessWidget {
 
   Widget _buildTopBlock(Player player) {
     return Row(
+      key: const ValueKey('player-overview-top-block'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
@@ -73,7 +77,12 @@ class PlayerOverviewTab extends StatelessWidget {
     return PlayerBioStatsBlock(player: player);
   }
 
-  Widget _buildCompetitionsBlock() {
+  Widget _buildCompetitionsBlock(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF2A2A2A) : AppPalette.white;
+    final badgeColor =
+        isDark ? const Color(0xFF3D3D3D) : appColors.subtleBackground;
     final season = player.seasonStats;
     final winRate = (52 + player.rankingScore % 30).round();
     final competitions = [
@@ -97,8 +106,9 @@ class PlayerOverviewTab extends StatelessWidget {
         Text("COMPETITION STATS", style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('player-competition-stats-card'),
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
+            color: cardColor,
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -111,31 +121,37 @@ class PlayerOverviewTab extends StatelessWidget {
                   children: [
                     Expanded(
                       flex: 3,
-                      child: Text("League",
-                          style: Body2.style.copyWith(color: Colors.white54)),
+                      child: Text(
+                        "League",
+                        style: Body2.style
+                            .copyWith(color: appColors.mutedForeground),
+                      ),
                     ),
                     Expanded(
                       flex: 2,
                       child: Text("MP",
                           textAlign: TextAlign.center,
-                          style: Body2.style.copyWith(color: Colors.white54)),
+                          style: Body2.style
+                              .copyWith(color: appColors.mutedForeground)),
                     ),
                     Expanded(
                       flex: 2,
                       child: Text("WR",
                           textAlign: TextAlign.center,
-                          style: Body2.style.copyWith(color: Colors.white54)),
+                          style: Body2.style
+                              .copyWith(color: appColors.mutedForeground)),
                     ),
                     Expanded(
                       flex: 2,
                       child: Text("Rating",
                           textAlign: TextAlign.right,
-                          style: Body2.style.copyWith(color: Colors.white54)),
+                          style: Body2.style
+                              .copyWith(color: appColors.mutedForeground)),
                     ),
                   ],
                 ),
               ),
-              const Divider(color: Colors.white12, height: 1),
+              Divider(color: appColors.divider, height: 1),
               // Stat rows
               ...competitions.asMap().entries.map((entry) {
                 final comp = entry.value;
@@ -171,7 +187,7 @@ class PlayerOverviewTab extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF3D3D3D),
+                                  color: badgeColor,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(comp["rating"]!,
@@ -182,8 +198,7 @@ class PlayerOverviewTab extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (!isLast)
-                      const Divider(color: Colors.white12, height: 1),
+                    if (!isLast) Divider(color: appColors.divider, height: 1),
                   ],
                 );
               }),
@@ -194,7 +209,8 @@ class PlayerOverviewTab extends StatelessWidget {
     );
   }
 
-  Widget _buildMatchSummaryBlock() {
+  Widget _buildMatchSummaryBlock(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     final matches = playerRepository.recentMatchesFor(player.id);
 
     return Column(
@@ -205,7 +221,7 @@ class PlayerOverviewTab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("MATCHES", style: Body2_b.style),
-            const Icon(Icons.chevron_right, color: Colors.white, size: 20),
+            Icon(Icons.chevron_right, color: foreground, size: 20),
           ],
         ),
         const SizedBox(height: 16),
@@ -231,8 +247,11 @@ class PlayerOverviewTab extends StatelessWidget {
     );
   }
 
-  Widget _buildClubHistoryBlock() {
+  Widget _buildClubHistoryBlock(BuildContext context) {
     final history = player.clubHistory;
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF2A2A2A) : AppPalette.white;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,8 +259,9 @@ class PlayerOverviewTab extends StatelessWidget {
         Text("CLUB HISTORY", style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('player-club-history-card'),
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
+            color: cardColor,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -259,9 +279,9 @@ class PlayerOverviewTab extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: club.logoAsset == null
-                                ? const Icon(
+                                ? Icon(
                                     Icons.shield_outlined,
-                                    color: Colors.white54,
+                                    color: appColors.mutedForeground,
                                   )
                                 : Image.asset(
                                     club.logoAsset!,
@@ -301,6 +321,9 @@ class PlayerBioStatsBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF2A2A2A) : AppPalette.white;
     final birthDate = DateTime.parse(player.dateOfBirth);
     final now = DateTime.now();
     final age = now.year -
@@ -326,8 +349,9 @@ class PlayerBioStatsBlock extends StatelessWidget {
     ];
 
     return Container(
+      key: const ValueKey('player-bio-stats-card'),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
+        color: cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.all(16),
@@ -352,7 +376,7 @@ class PlayerBioStatsBlock extends StatelessWidget {
               return Column(
                 children: [
                   if (rowIndex != 0)
-                    const Divider(color: Colors.white12, height: 24),
+                    Divider(color: appColors.divider, height: 24),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: row.asMap().entries.map((cellEntry) {
@@ -379,15 +403,20 @@ class PlayerBioStatsBlock extends StatelessWidget {
                                       Expanded(
                                         child: Text(
                                           stat["label"] as String,
-                                          style: Body2.style
-                                              .copyWith(color: Colors.white54),
+                                          style: Body2.style.copyWith(
+                                            color: appColors.mutedForeground,
+                                          ),
                                         ),
                                       ),
                                       if (stat["infoOnLabel"] == true)
-                                        const Padding(
-                                          padding: EdgeInsets.only(left: 4),
-                                          child: Icon(Icons.info_outline,
-                                              size: 14, color: Colors.white54),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 4),
+                                          child: Icon(
+                                            Icons.info_outline,
+                                            size: 14,
+                                            color: appColors.mutedForeground,
+                                          ),
                                         ),
                                     ],
                                   ),
@@ -403,10 +432,14 @@ class PlayerBioStatsBlock extends StatelessWidget {
                                         ),
                                       ),
                                       if (stat["icon"] == "refresh")
-                                        const Padding(
-                                          padding: EdgeInsets.only(left: 6),
-                                          child: Icon(Icons.refresh,
-                                              size: 16, color: Colors.white70),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 6),
+                                          child: Icon(
+                                            Icons.refresh,
+                                            size: 16,
+                                            color: appColors.mutedForeground,
+                                          ),
                                         ),
                                     ],
                                   ),
@@ -417,7 +450,7 @@ class PlayerBioStatsBlock extends StatelessWidget {
                               Container(
                                 width: 1,
                                 height: 40,
-                                color: Colors.white12,
+                                color: appColors.divider,
                                 margin: const EdgeInsets.only(right: 12),
                               ),
                           ],

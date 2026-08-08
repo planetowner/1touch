@@ -3,7 +3,10 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 
@@ -58,23 +61,29 @@ class _AddPostState extends State<AddPost> {
 
   String _categoryLabel(Category cat) {
     switch (cat) {
-      case Category.general:         return 'General';
-      case Category.analysis:        return 'Analysis';
-      case Category.newsAndInsights: return 'News & Insights';
+      case Category.general:
+        return 'General';
+      case Category.analysis:
+        return 'Analysis';
+      case Category.newsAndInsights:
+        return 'News & Insights';
     }
   }
 
   PostCategory _mapCategory() {
     switch (_selectedCategory) {
-      case Category.analysis:         return PostCategory.analysis;
-      case Category.newsAndInsights:  return PostCategory.news;
-      default:                        return PostCategory.general;
+      case Category.analysis:
+        return PostCategory.analysis;
+      case Category.newsAndInsights:
+        return PostCategory.news;
+      default:
+        return PostCategory.general;
     }
   }
 
   void _submitPost() {
     final title = _titleController.text.trim();
-    final body  = _bodyController.text.trim();
+    final body = _bodyController.text.trim();
 
     if (title.isEmpty || body.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -85,12 +94,12 @@ class _AddPostState extends State<AddPost> {
 
     final now = DateTime.now().toIso8601String();
     final newPost = Post(
-      postId:    DateTime.now().millisecondsSinceEpoch, // temp local ID
-      userId:    1001,                                  // replace with auth user
-      category:  _mapCategory(),
-      title:     title,
-      body:      body,
-      mediaUrl:  _mediaFiles.isNotEmpty ? _mediaFiles.first.path : null,
+      postId: DateTime.now().millisecondsSinceEpoch, // temp local ID
+      userId: 1001, // replace with auth user
+      category: _mapCategory(),
+      title: title,
+      body: body,
+      mediaUrl: _mediaFiles.isNotEmpty ? _mediaFiles.first.path : null,
       createdAt: now,
       updatedAt: now,
     );
@@ -106,24 +115,44 @@ class _AddPostState extends State<AddPost> {
   Widget build(BuildContext context) {
     // 2. Calculate Opacity Factor (0.0 to 1.0)
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
+    final pageBackground = mainPageBackground(context);
+    final gradientHeight = responsiveBrandGradientHeight(context);
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final favoriteTeamColor =
+        Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    final selectedCategoryLabel =
+        _categoryLabel(_selectedCategory).toUpperCase();
+    final categoryLabelPainter = TextPainter(
+      text: TextSpan(
+        text: selectedCategoryLabel,
+        style: Body1_b.style.copyWith(color: Colors.black),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final categoryFilterWidth = categoryLabelPainter.width + 64;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: pageBackground,
       extendBodyBehindAppBar: true, // 3. Allow content/gradient behind AppBar
       appBar: AppBar(
         // 4. Fade AppBar to Black on scroll (starts transparent)
-        backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+        backgroundColor: Color.lerp(
+          Colors.transparent,
+          pageBackground,
+          opacityFactor,
+        ),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: colors.onSurface,
+          ),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Icon(Icons.star_border, color: Colors.white),
-          ),
-        ],
         toolbarHeight: 80,
         // Removed the static flexibleSpace gradient so it doesn't block the fading logic
       ),
@@ -134,18 +163,21 @@ class _AddPostState extends State<AddPost> {
             top: 0,
             left: 0,
             right: 0,
-            height: 400,
+            height: gradientHeight,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor), // Fades to 0
               duration: const Duration(milliseconds: 200),
               child: Container(
-                decoration: const BoxDecoration(
+                key: const ValueKey('community-add-brand-gradient'),
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    // Using HomeScreen colors for consistency
-                    colors: [Color(0xFFD82457), Color(0x00D82457)],
-                    stops: [0.0, 0.6],
+                    colors: [
+                      favoriteTeamColor,
+                      favoriteTeamColor.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 0.6],
                   ),
                 ),
               ),
@@ -155,39 +187,88 @@ class _AddPostState extends State<AddPost> {
           // 6. Scrollable Content
           SingleChildScrollView(
             controller: _scrollController,
-            // Add top padding since we are behind the AppBar now
-            padding: const EdgeInsets.fromLTRB(24, 100, 24, 0),
+            // Keep interactive content below the transparent AppBar while the
+            // team gradient continues behind it.
+            padding: EdgeInsets.fromLTRB(
+              24,
+              MediaQuery.paddingOf(context).top + 80,
+              24,
+              0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text("POST TO", style: Body2_b.style),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3D3D3D),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: DropdownButton<Category>(
-                        value: _selectedCategory,
-                        onChanged: (value) =>
-                            setState(() => _selectedCategory = value!),
-                        items: Category.values.map((cat) {
-                          return DropdownMenuItem(
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
+                      width: categoryFilterWidth,
+                      height: 48,
+                      child: PopupMenuButton<Category>(
+                        initialValue: _selectedCategory,
+                        position: PopupMenuPosition.under,
+                        offset: const Offset(0, 4),
+                        color: AppPalette.white,
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 160,
+                          maxWidth: 220,
+                        ),
+                        onSelected: (value) =>
+                            setState(() => _selectedCategory = value),
+                        itemBuilder: (context) => Category.values.map((cat) {
+                          return PopupMenuItem<Category>(
                             value: cat,
                             child: Text(
                               _categoryLabel(cat).toUpperCase(),
-                              style: Body1_b.style,
+                              style:
+                                  Body1_b.style.copyWith(color: Colors.black),
                             ),
                           );
                         }).toList(),
-                        dropdownColor: const Color(0xFF3D3D3D),
-                        underline: Container(),
-                        icon: const Icon(Icons.keyboard_arrow_down,
-                            color: Colors.white, size: 24),
+                        child: Container(
+                          key: const ValueKey('community-category-filter'),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: AppPalette.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x40000000),
+                                blurRadius: 12,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  selectedCategoryLabel,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Body1_b.style
+                                      .copyWith(color: Colors.black),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Colors.black,
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -197,12 +278,15 @@ class _AddPostState extends State<AddPost> {
                 // Title field
                 TextField(
                   controller: _titleController,
-                  style: Heading4.style,
+                  style: Heading4.style.copyWith(color: colors.onSurface),
+                  cursorColor: colors.onSurface,
                   maxLines: null,
                   decoration: InputDecoration(
                     hintText: "Title...",
-                    hintStyle: Heading4.style.copyWith(color: Colors.white38),
+                    hintStyle: Heading4.style
+                        .copyWith(color: appColors.mutedForeground),
                     border: InputBorder.none,
+                    filled: false,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -212,13 +296,16 @@ class _AddPostState extends State<AddPost> {
                 // Body field
                 TextField(
                   controller: _bodyController,
-                  style: Body2.style,
+                  style: Body2.style.copyWith(color: colors.onSurface),
+                  cursorColor: colors.onSurface,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     hintText: "Write something...",
-                    hintStyle: Body2.style.copyWith(color: Colors.white38),
+                    hintStyle:
+                        Body2.style.copyWith(color: appColors.mutedForeground),
                     border: InputBorder.none,
+                    filled: false,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -246,9 +333,12 @@ class _AddPostState extends State<AddPost> {
                               ),
                             ),
                             Positioned(
-                              top: 4, right: 4,
+                              top: 4,
+                              right: 4,
                               child: GestureDetector(
-                                onTap: () => setState(() => _mediaFiles.removeAt(index)),
+                                onTap: () => setState(
+                                  () => _mediaFiles.removeAt(index),
+                                ),
                                 child: Container(
                                   decoration: const BoxDecoration(
                                     color: Colors.black54,
@@ -270,7 +360,7 @@ class _AddPostState extends State<AddPost> {
 
                 // Media picker button
                 DottedBorder(
-                  color: Colors.white54,
+                  color: isDark ? Colors.white54 : appColors.mutedForeground,
                   strokeWidth: 1,
                   dashPattern: const [6, 6],
                   borderType: BorderType.RRect,
@@ -278,19 +368,30 @@ class _AddPostState extends State<AddPost> {
                   child: GestureDetector(
                     onTap: _pickMedia,
                     child: Container(
+                      key: const ValueKey('community-media-picker'),
                       width: double.infinity,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF272828),
+                        color: isDark
+                            ? const Color(0xFF272828)
+                            : const Color(0xFFC8C8C8),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.add, color: Colors.white, size: 28),
+                            Icon(
+                              Icons.add,
+                              color: colors.onSurface,
+                              size: 28,
+                            ),
                             const SizedBox(height: 8),
-                            Text("Add photo or video", style: Body2.style),
+                            Text(
+                              "Add photo or video",
+                              style:
+                                  Body2.style.copyWith(color: colors.onSurface),
+                            ),
                           ],
                         ),
                       ),
@@ -312,14 +413,17 @@ class _AddPostState extends State<AddPost> {
           child: ElevatedButton(
             onPressed: _submitPost,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: colors.onSurface,
+              foregroundColor: colors.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: Text("POST",
-                style: Body1_b.style.copyWith(color: Colors.black)),
+            child: Text(
+              "POST",
+              style: Body1_b.style.copyWith(color: colors.onPrimary),
+            ),
           ),
         ),
       ),

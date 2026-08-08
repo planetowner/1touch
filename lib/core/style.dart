@@ -15,6 +15,12 @@ Color mainPageBackground(BuildContext context) {
       : AppColors.of(context).pageBackground;
 }
 
+double responsiveBrandGradientHeight(BuildContext context) {
+  return (MediaQuery.sizeOf(context).height * 0.70)
+      .clamp(550.0, 650.0)
+      .toDouble();
+}
+
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
@@ -34,7 +40,9 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color onBrand;
 
   static AppColors of(BuildContext context) {
-    return Theme.of(context).extension<AppColors>()!;
+    final theme = Theme.of(context);
+    return theme.extension<AppColors>() ??
+        (theme.brightness == Brightness.dark ? _darkColors : _lightColors);
   }
 
   @override

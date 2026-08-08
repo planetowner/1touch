@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/models/player.dart'; // assuming Player model lives here
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'dart:math' show cos, sin;
@@ -52,6 +53,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      key: const ValueKey('player-analysis-scroll'),
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,18 +75,26 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildSeasonDropdown() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
+      key: const ValueKey('player-analysis-season-filter'),
       padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D3D3D),
+        color: surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedSeason,
           isExpanded: true,
-          dropdownColor: const Color(0xFF3D3D3D),
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 24),
+          dropdownColor: surface,
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            color: foreground,
+            size: 24,
+          ),
           style: Body2_b.style,
           onChanged: (value) {
             if (value != null) setState(() => _selectedSeason = value);
@@ -104,14 +115,17 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildTopStatsBlock() {
     final stats = widget.player.seasonStats;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("TOP STATS", style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('player-top-stats-card'),
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: cardColor,
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.all(24),
@@ -153,6 +167,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
     required String label,
     required String rank,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -160,7 +176,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: const Color(0xFF272828),
+            color:
+                isDark ? const Color(0xFF272828) : appColors.subtleBackground,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -190,10 +207,13 @@ class _AnalysisTabState extends State<AnalysisTab> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: AppPalette.black,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Text(rank, style: Body1.style),
+            child: Text(
+              rank,
+              style: Body1.style.copyWith(color: AppPalette.white),
+            ),
           ),
         ),
       ],
@@ -243,9 +263,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _influenceCard(String label, String value, String suffix) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF272828),
+        color: isDark ? const Color(0xFF272828) : AppPalette.white,
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.all(16),
@@ -255,16 +276,24 @@ class _AnalysisTabState extends State<AnalysisTab> {
         children: [
           Text(label, style: Body1.style),
           const Spacer(),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(value, style: Heading1.style),
-              const SizedBox(width: 4),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(suffix, style: Heading4.style),
+          SizedBox(
+            width: double.infinity,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.bottomLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(value, style: Heading1.style),
+                  const SizedBox(width: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(suffix, style: Heading4.style),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -272,6 +301,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildAttributesBlockPlaceholder() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = AppColors.of(context);
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -279,14 +311,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("ATTRIBUTES", style: Body2_b.style),
-            const Icon(Icons.chevron_right, color: Colors.white),
+            Icon(Icons.chevron_right, color: foreground),
           ],
         ),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('player-attributes-card'),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
+            color: isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.all(24),
@@ -295,6 +328,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
             child: CustomPaint(
               painter: RadarChartPainter(
                 values: widget.player.radarValues,
+                gridColor: appColors.divider,
+                labelColor: appColors.mutedForeground,
                 labels: const [
                   "Pace",
                   "Shooting",
@@ -311,6 +346,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildPerformanceChart() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = AppColors.of(context);
     final spots = [
       for (int i = 0; i < _performanceRatings.length; i++)
         FlSpot((i + 1).toDouble(), _performanceRatings[i]),
@@ -333,11 +370,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Text("PERFORMANCE", style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('player-performance-card'),
           width: double.infinity,
           height: 345,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
+            color: isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -361,7 +399,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                             drawVerticalLine: false,
                             horizontalInterval: 10 / 8,
                             getDrawingHorizontalLine: (_) => FlLine(
-                              color: Colors.white.withValues(alpha: 0.08),
+                              color: appColors.divider,
                               strokeWidth: 1,
                             ),
                           ),
@@ -385,7 +423,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                             verticalLines: [
                               VerticalLine(
                                 x: (_selectedRoundIndex + 1).toDouble(),
-                                color: Colors.white.withValues(alpha: 0.4),
+                                color: appColors.mutedForeground,
                                 strokeWidth: 1,
                                 dashArray: const [4, 4],
                               ),
@@ -431,7 +469,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                                         radius: 4,
                                         color: const Color(0xFF5C92FF),
                                         strokeWidth: 2,
-                                        strokeColor: Colors.white,
+                                        strokeColor: AppPalette.white,
                                       ),
                                     ),
                                   ),
@@ -476,8 +514,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
 class RadarChartPainter extends CustomPainter {
   final List<double> values; // 0.0 to 1.0
   final List<String> labels;
+  final Color gridColor;
+  final Color labelColor;
 
-  RadarChartPainter({required this.values, required this.labels});
+  RadarChartPainter({
+    required this.values,
+    required this.labels,
+    required this.gridColor,
+    required this.labelColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -491,7 +536,7 @@ class RadarChartPainter extends CustomPainter {
 
     // --- Grid rings ---
     final gridPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.1)
+      ..color = gridColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -515,7 +560,7 @@ class RadarChartPainter extends CustomPainter {
 
     // --- Axis lines ---
     final axisPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.1)
+      ..color = gridColor
       ..strokeWidth = 1;
 
     for (int i = 0; i < count; i++) {
@@ -561,8 +606,8 @@ class RadarChartPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: labels[i],
-          style: const TextStyle(
-            color: Colors.white54,
+          style: TextStyle(
+            color: labelColor,
             fontSize: 11,
           ),
         ),
@@ -579,5 +624,7 @@ class RadarChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(RadarChartPainter oldDelegate) =>
-      oldDelegate.values != values;
+      oldDelegate.values != values ||
+      oldDelegate.gridColor != gridColor ||
+      oldDelegate.labelColor != labelColor;
 }

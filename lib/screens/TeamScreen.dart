@@ -196,6 +196,7 @@ class _TeamScreenState extends State<TeamScreen>
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final pageBackground = mainPageBackground(context);
+    final gradientHeight = responsiveBrandGradientHeight(context);
 
     if (isLoading) {
       return Scaffold(
@@ -224,11 +225,12 @@ class _TeamScreenState extends State<TeamScreen>
             top: 0,
             left: 0,
             right: 0,
-            height: 550,
+            height: gradientHeight,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
+                key: const ValueKey('team-brand-gradient'),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,

@@ -198,6 +198,14 @@ void main() {
       expect(gradient.colors.first, app_style.AppPalette.lightGrey);
       expect(gradient.colors.last, Colors.transparent);
       expect(
+        tester
+            .getSize(
+              find.byKey(const ValueKey('rank-favorites-top-gradient')),
+            )
+            .height,
+        550,
+      );
+      expect(
         headerLogo.colorFilter,
         const ColorFilter.mode(app_style.AppPalette.white, BlendMode.srcIn),
       );

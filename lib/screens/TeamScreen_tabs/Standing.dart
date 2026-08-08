@@ -289,10 +289,11 @@ class _StandingTabState extends State<StandingTab> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
+          key: const ValueKey('standing-league-filter'),
           value: selectedLeagueId,
           icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
           dropdownColor: appColors.cardBackground,
-          style: Body2_b.style,
+          style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (val) {
             if (val == null) return;
             final season = mockSeasons.firstWhere(
@@ -314,7 +315,10 @@ class _StandingTabState extends State<StandingTab> {
               .map(
                 (l) => DropdownMenuItem(
                   value: l.leagueId,
-                  child: Text(l.name, style: Body2_b.style),
+                  child: Text(
+                    l.name,
+                    style: Body2_b.style.copyWith(color: colors.onSurface),
+                  ),
                 ),
               )
               .toList(),
@@ -337,10 +341,11 @@ class _StandingTabState extends State<StandingTab> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
+          key: const ValueKey('standing-season-filter'),
           value: selectedSeasonId,
           icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
           dropdownColor: appColors.cardBackground,
-          style: Body2_b.style,
+          style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (val) {
             if (val == null) return;
             setState(() {
@@ -353,7 +358,10 @@ class _StandingTabState extends State<StandingTab> {
               .map(
                 (s) => DropdownMenuItem(
                   value: s.seasonId,
-                  child: Text(s.name, style: Body2_b.style),
+                  child: Text(
+                    s.name,
+                    style: Body2_b.style.copyWith(color: colors.onSurface),
+                  ),
                 ),
               )
               .toList(),

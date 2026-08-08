@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -68,10 +70,11 @@ class _PlayersState extends State<Players> {
   }
 
   void _openFilterSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF3D3D3D),
+      backgroundColor: isDark ? AppPalette.lightGrey : AppPalette.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -100,6 +103,8 @@ class _PlayersState extends State<Players> {
   Widget build(BuildContext context) {
     final opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
+    final colors = Theme.of(context).colorScheme;
+    final gradientHeight = responsiveBrandGradientHeight(context);
     final position = PlayerPosition.values.firstWhere(
       (value) => value.label == selectedPosition,
       orElse: () => PlayerPosition.forward,
@@ -119,17 +124,18 @@ class _PlayersState extends State<Players> {
             top: 0,
             left: 0,
             right: 0,
-            height: 550,
+            height: gradientHeight,
             child: AnimatedOpacity(
               opacity: 1 - opacityFactor,
               duration: const Duration(milliseconds: 200),
               child: Container(
+                key: const ValueKey('players-brand-gradient'),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [_teamColor, _teamColor.withAlpha(0)],
-                    stops: const [0.0, 0.6],
+                    stops: const [0.0, 0.65],
                   ),
                 ),
               ),
@@ -161,8 +167,15 @@ class _PlayersState extends State<Players> {
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
                   padding: const EdgeInsets.only(left: 24, top: 30),
-                  child: SvgPicture.asset('assets/app_logo.svg',
-                      height: 23, width: 120),
+                  child: SvgPicture.asset(
+                    'assets/app_logo.svg',
+                    height: 23,
+                    width: 120,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
                 actions: [
                   Padding(
@@ -171,7 +184,11 @@ class _PlayersState extends State<Players> {
                       children: [
                         IconButton(
                           onPressed: () => context.push('/search'),
-                          icon: const Icon(Icons.search, size: 32),
+                          icon: const Icon(
+                            Icons.search,
+                            size: 32,
+                            color: Colors.white,
+                          ),
                         ),
                         IconButton(
                           onPressed: () => context.push('/compare'),
@@ -180,8 +197,11 @@ class _PlayersState extends State<Players> {
                         ),
                         IconButton(
                           onPressed: () => context.push('/profile'),
-                          icon: const Icon(Icons.account_circle_outlined,
-                              size: 32),
+                          icon: const Icon(
+                            Icons.account_circle_outlined,
+                            size: 32,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
@@ -202,19 +222,34 @@ class _PlayersState extends State<Players> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: const [
-                                Text("1TOUCH RANKING", style: Body2_b.style),
-                                SizedBox(width: 8),
-                                Icon(Icons.help_outline,
-                                    size: 20, color: Colors.white),
-                                SizedBox(width: 8),
-                                Icon(Icons.keyboard_arrow_down,
-                                    size: 24, color: Colors.white),
-                              ],
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Flexible(
+                                    child: Text(
+                                      "1TOUCH RANKING",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Body2_b.style,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.help_outline,
+                                    size: 20,
+                                    color: colors.onSurface,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 24,
+                                    color: colors.onSurface,
+                                  ),
+                                ],
+                              ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.tune, color: Colors.white),
+                              icon: Icon(Icons.tune, color: colors.onSurface),
                               onPressed: _openFilterSheet,
                             ),
                           ],
@@ -244,11 +279,14 @@ class _PlayersState extends State<Players> {
                         ),
                         const SizedBox(height: 48),
                         Row(
-                          children: const [
-                            Text("ONES TO WATCH", style: Body2_b.style),
-                            SizedBox(width: 8),
+                          children: [
+                            const Text(
+                              "ONES TO WATCH",
+                              style: Body2_b.style,
+                            ),
+                            const SizedBox(width: 8),
                             Icon(Icons.help_outline,
-                                size: 16, color: Colors.white),
+                                size: 16, color: colors.onSurface),
                           ],
                         ),
                         const SizedBox(height: 16),

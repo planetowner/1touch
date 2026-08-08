@@ -76,11 +76,7 @@ class _ProfileState extends State<Profile> {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final profileBackground =
         isLight ? AppPalette.lightGreyBox : appColors.pageBackground;
-    final gradientHeight = isLight
-        ? (MediaQuery.sizeOf(context).height * 0.62)
-            .clamp(420.0, 560.0)
-            .toDouble()
-        : 550.0;
+    final gradientHeight = responsiveBrandGradientHeight(context);
     final appBarForeground =
         Color.lerp(AppPalette.white, colors.onSurface, opacityFactor)!;
 

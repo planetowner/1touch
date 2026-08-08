@@ -84,6 +84,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final pageBackground = AppColors.of(context).pageBackground;
+    final gradientHeight = responsiveBrandGradientHeight(context);
 
     return Stack(
       children: [
@@ -97,7 +98,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
           top: 0,
           left: 0,
           right: 0,
-          height: MediaQuery.sizeOf(context).height * 0.62,
+          height: gradientHeight,
           child: DecoratedBox(
             key: const ValueKey('rank-favorites-top-gradient'),
             decoration: BoxDecoration(

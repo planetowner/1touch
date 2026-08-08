@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 /// A single player match box, shared by the Overview "MATCHES" preview and the
@@ -36,6 +37,12 @@ class PlayerMatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final topColor = isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
+    final bottomColor =
+        isDark ? const Color(0xFF1E1E1E) : appColors.subtleBackground;
+    final statColor = isDark ? const Color(0x66090A0A) : AppPalette.white;
     // Two separate boxes stacked flush so they read as one connected card:
     // a lighter top box (only the top corners rounded) and a darker bottom box
     // (only the bottom corners rounded). The colour change is the divider.
@@ -44,10 +51,11 @@ class PlayerMatchCard extends StatelessWidget {
       children: [
         // Top box: opponent crest + result/score + competition.
         Container(
+          key: const ValueKey('player-match-card-top'),
           width: double.infinity,
-          decoration: const BoxDecoration(
-            color: Color(0xFF3D3D3D),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          decoration: BoxDecoration(
+            color: topColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -55,8 +63,8 @@ class PlayerMatchCard extends StatelessWidget {
               Container(
                 width: 32,
                 height: 32,
-                decoration: const BoxDecoration(
-                  color: Colors.black,
+                decoration: BoxDecoration(
+                  color: isDark ? AppPalette.black : appColors.subtleBackground,
                   shape: BoxShape.circle,
                 ),
                 clipBehavior: Clip.antiAlias,
@@ -72,54 +80,71 @@ class PlayerMatchCard extends StatelessWidget {
               Text(result, style: Heading5.style),
               const SizedBox(width: 16),
               Text("( $score )", style: Heading5.style),
-              const Spacer(),
-              Text(competition, style: Eyebrow.style),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  competition,
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Eyebrow.style,
+                ),
+              ),
             ],
           ),
         ),
         // Bottom box: stat label + value pills, then the rating badge.
         Container(
+          key: const ValueKey('player-match-card-bottom'),
           width: double.infinity,
-          decoration: const BoxDecoration(
-            color: Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+          decoration: BoxDecoration(
+            color: bottomColor,
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(16)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               ...stats.map((stat) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        stat["label"]!,
-                        style: Eyebrow.style,
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0x66090A0A),
-                          borderRadius: BorderRadius.circular(4),
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          stat["label"]!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Eyebrow.style,
                         ),
-                        child: Text(stat["value"]!, style: Body2_b.style),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: statColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(stat["value"]!, style: Body2_b.style),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }),
-              const Spacer(),
               // Rating badge sits on the app's near-black chip, distinct from
               // the grey stat pills.
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF090A0A),
+                  color: AppPalette.black,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(rating, style: Body2_b.style),
+                child: Text(
+                  rating,
+                  style: Body2_b.style.copyWith(color: AppPalette.white),
+                ),
               ),
             ],
           ),

@@ -201,6 +201,7 @@ class _AttributesSectionState extends State<AttributesSection> {
 
   Widget _buildComparisonPill() {
     final team = mockTeamById(_teamId);
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),
       decoration: BoxDecoration(
@@ -209,13 +210,14 @@ class _AttributesSectionState extends State<AttributesSection> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
+          key: const ValueKey('analysis-attributes-filter'),
           value: _comparisonScores?.seasonId,
           icon: Icon(
             Icons.keyboard_arrow_down,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           dropdownColor: AppColors.of(context).cardBackground,
-          style: Body2_b.style,
+          style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (seasonId) {
             if (seasonId == null) return;
             setState(() {
@@ -231,8 +233,9 @@ class _AttributesSectionState extends State<AttributesSection> {
                 (s) => DropdownMenuItem(
                   value: s.seasonId,
                   child: Text(
-                      '${s.seasonLabel}  ${team.shortCode ?? team.name}',
-                      style: Body2_b.style),
+                    '${s.seasonLabel}  ${team.shortCode ?? team.name}',
+                    style: Body2_b.style.copyWith(color: colors.onSurface),
+                  ),
                 ),
               )
               .toList(),
@@ -245,7 +248,12 @@ class _AttributesSectionState extends State<AttributesSection> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(seasonLabel, style: Body2_b.style),
+        Text(
+          seasonLabel,
+          style: Body2_b.style.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(width: 8),
         Container(width: 1, height: 14, color: AppColors.of(context).divider),
         const SizedBox(width: 8),
@@ -260,7 +268,12 @@ class _AttributesSectionState extends State<AttributesSection> {
           ),
         ),
         const SizedBox(width: 6),
-        Text(team.shortCode ?? team.name, style: Body2_b.style),
+        Text(
+          team.shortCode ?? team.name,
+          style: Body2_b.style.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ],
     );
   }
@@ -440,6 +453,7 @@ class _BestElevenSectionState extends State<BestElevenSection> {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Column(
@@ -456,20 +470,24 @@ class _BestElevenSectionState extends State<BestElevenSection> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
+                  key: const ValueKey('analysis-formation-filter'),
                   value: selectedFormation,
                   icon: Icon(
                     Icons.keyboard_arrow_down,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   dropdownColor: appColors.cardBackground,
-                  style: Body2_b.style,
+                  style: Body2_b.style.copyWith(color: colors.onSurface),
                   onChanged: (val) {
                     if (val != null) _changeFormation(val);
                   },
                   items: formations.map((f) {
                     return DropdownMenuItem(
                       value: f,
-                      child: Text(f),
+                      child: Text(
+                        f,
+                        style: Body2_b.style.copyWith(color: colors.onSurface),
+                      ),
                     );
                   }).toList(),
                 ),
@@ -551,6 +569,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
 
   Widget _buildComparisonPicker() {
     final comparisons = widget.data!.comparisons;
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 0, 8, 0),
@@ -560,12 +579,14 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
+          key: const ValueKey('analysis-form-filter'),
           value: _selectedComparisonIndex,
           icon: Icon(
             Icons.keyboard_arrow_down,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           dropdownColor: AppColors.of(context).cardBackground,
+          style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (index) {
             if (index != null) {
               setState(() => _selectedComparisonIndex = index);
@@ -597,7 +618,12 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(series.seasonLabel, style: Body2_b.style),
+        Text(
+          series.seasonLabel,
+          style: Body2_b.style.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(width: 8),
         Container(width: 1, height: 16, color: AppColors.of(context).divider),
         const SizedBox(width: 8),
@@ -612,7 +638,12 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           ),
         ),
         const SizedBox(width: 6),
-        Text(teamCode, style: Body2_b.style),
+        Text(
+          teamCode,
+          style: Body2_b.style.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ],
     );
   }

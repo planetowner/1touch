@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
@@ -12,7 +15,6 @@ String _timeAgo(String createdAt) {
   if (diff.inHours >= 1) return '${diff.inHours}h ago';
   return '${diff.inMinutes}m ago';
 }
-
 
 class PostDetailScreen extends StatefulWidget {
   final Post post;
@@ -45,6 +47,34 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     super.dispose();
   }
 
+  Widget _buildPostAction({
+    required IconData icon,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: color),
+                const SizedBox(width: 4),
+                Text(label, style: Body2.style),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // 2. Calculate opacity (0.0 at top, 1.0 when scrolled down 150px)
@@ -52,8 +82,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final post = widget.post;
     final hasMedia = post.mediaUrl != null;
 
+    final pageBackground = mainPageBackground(context);
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final favoriteTeamColor =
+        Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    final gradientHeight = responsiveBrandGradientHeight(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: pageBackground,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
@@ -62,17 +100,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             top: 0,
             left: 0,
             right: 0,
-            height: 400,
+            height: gradientHeight,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor), // Fades out as you scroll down
               duration: const Duration(milliseconds: 200),
               child: Container(
-                decoration: const BoxDecoration(
+                key: const ValueKey('community-detail-brand-gradient'),
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFFD82457), Color(0x00D82457)],
-                    stops: [0.0, 0.6],
+                    colors: [
+                      favoriteTeamColor,
+                      favoriteTeamColor.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 0.6],
                   ),
                 ),
               ),
@@ -83,26 +125,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             slivers: [
               SliverAppBar(
                 // 4. Fade AppBar background to black as you scroll
-                backgroundColor: Color.lerp(Colors.transparent, Colors.black, opacityFactor),
+                backgroundColor: Color.lerp(
+                  Colors.transparent,
+                  pageBackground,
+                  opacityFactor,
+                ),
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                  icon: Icon(
+                    Icons.arrow_back_ios_new,
+                    color: colors.onSurface,
+                  ),
                   onPressed: () => context.pop(),
-                ),
-                title: Row(
-                  children: [
-                    const Spacer(),
-                    const Icon(Icons.star_border, color: Colors.white),
-                  ],
                 ),
                 toolbarHeight: 80,
                 flexibleSpace: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFFD82457), Color(0x00D82457)],
-                      stops: [0.0, 0.9],
+                      colors: [
+                        favoriteTeamColor,
+                        favoriteTeamColor.withValues(alpha: 0),
+                      ],
+                      stops: const [0.0, 0.9],
                     ),
                   ),
                 ),
@@ -119,18 +165,33 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           showGroundRulesModal(context);
                         },
                         child: Container(
+                          key: const ValueKey(
+                              'community-detail-ground-rules-card'),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3D3D3D),
+                            color: isDark
+                                ? AppPalette.lightGrey
+                                : AppPalette.white,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.push_pin_outlined,
-                                  color: Colors.white, size: 20),
+                              Icon(
+                                Icons.push_pin_outlined,
+                                color: colors.onSurface,
+                                size: 20,
+                              ),
                               const SizedBox(width: 6),
-                              Text("Community Ground Rules", style: Heading5.style),
+                              Expanded(
+                                child: Text(
+                                  "Community Ground Rules",
+                                  style: Heading5.style
+                                      .copyWith(color: colors.onSurface),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -147,16 +208,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           // User info
                           Row(
                             children: [
-                              const CircleAvatar(
-                                  radius: 12, backgroundColor: Colors.white24),
+                              CircleAvatar(
+                                radius: 12,
+                                backgroundColor: isDark
+                                    ? Colors.white24
+                                    : AppPalette.lightGrey,
+                              ),
                               const SizedBox(width: 8),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("User ${post.userId}", style: Body1.style),
+                                  Text("User ${post.userId}",
+                                      style: Body1.style),
                                   Text(
                                     _timeAgo(post.createdAt),
-                                    style: Body2.style.copyWith(color: Colors.white54),
+                                    style: Body2.style.copyWith(
+                                      color: appColors.mutedForeground,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -177,47 +245,28 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
                           // Actions row
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.thumb_up_alt_outlined,
-                                      size: 18, color: Colors.white),
-                                  const SizedBox(width: 4),
-                                  Text("1,290", style: Body2.style),
-                                ],
+                              _buildPostAction(
+                                icon: Icons.thumb_up_alt_outlined,
+                                label: "1,290",
+                                color: colors.onSurface,
                               ),
-                              const SizedBox(width: 16),
-                              Row(
-                                children: [
-                                  const Icon(Icons.mode_comment_outlined,
-                                      size: 18, color: Colors.white),
-                                  const SizedBox(width: 4),
-                                  Text("12", style: Body2.style),
-                                ],
+                              _buildPostAction(
+                                icon: Icons.mode_comment_outlined,
+                                label: "12",
+                                color: colors.onSurface,
                               ),
-                              const SizedBox(width: 16),
-                              Row(
-                                children: [
-                                  const Icon(Icons.share,
-                                      size: 18, color: Colors.white),
-                                  const SizedBox(width: 4),
-                                  Text("share", style: Body2.style),
-                                ],
+                              _buildPostAction(
+                                icon: Icons.share,
+                                label: "share",
+                                color: colors.onSurface,
                               ),
-                              const SizedBox(width: 16),
-                              GestureDetector(
-                                onTap: () {
-                                  showReportDialog(context);
-                                },
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.report_gmailerrorred_outlined,
-                                        size: 18, color: Colors.white),
-                                    const SizedBox(width: 4),
-                                    Text("report", style: Body2.style),
-                                  ],
-                                ),
+                              _buildPostAction(
+                                icon: Icons.report_gmailerrorred_outlined,
+                                label: "report",
+                                color: colors.onSurface,
+                                onTap: () => showReportDialog(context),
                               ),
                             ],
                           ),
@@ -233,17 +282,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: List.generate(
                           3,
-                              (index) => Padding(
+                          (index) => Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const CircleAvatar(
-                                    radius: 12, backgroundColor: Colors.white24),
+                                CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: isDark
+                                      ? Colors.white24
+                                      : AppPalette.lightGrey,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text("Username", style: Body2_b.style),
                                       Text(
@@ -253,8 +307,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.reply,
-                                    size: 18, color: Colors.white),
+                                Icon(
+                                  Icons.reply,
+                                  size: 18,
+                                  color: colors.onSurface,
+                                ),
                               ],
                             ),
                           ),
@@ -273,7 +330,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
       // 📝 Reply bar
       bottomNavigationBar: Container(
-        color: const Color(0xFF1C1C1E),
+        color: isDark ? const Color(0xFF1C1C1E) : AppPalette.white,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         child: Row(
           children: [
@@ -281,16 +338,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2C2C),
+                  color: isDark
+                      ? const Color(0xFF2C2C2C)
+                      : appColors.subtleBackground,
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const TextField(
+                child: TextField(
                   decoration: InputDecoration(
                     hintText: "Write a reply...",
-                    hintStyle: TextStyle(color: Colors.white54),
+                    hintStyle: TextStyle(color: appColors.mutedForeground),
                     border: InputBorder.none,
+                    filled: false,
                   ),
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: colors.onSurface),
+                  cursorColor: colors.onSurface,
                 ),
               ),
             ),
@@ -312,8 +373,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Container(
             color: const Color(0xFF3A3A3A),
-            child: const Icon(Icons.image_not_supported_outlined,
-                color: Colors.white24, size: 48),
+            child: Icon(
+              Icons.image_not_supported_outlined,
+              color: AppColors.of(context).mutedForeground,
+              size: 48,
+            ),
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/models/player.dart';
@@ -27,6 +28,8 @@ class _MatchesTabState extends State<MatchesTab> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      key: const ValueKey('player-matches-scroll'),
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +40,7 @@ class _MatchesTabState extends State<MatchesTab> {
           const SizedBox(height: 16),
           if (_matches.isNotEmpty) _matchCard(_matches.first),
           const SizedBox(height: 20),
-          const Divider(color: Colors.white12, height: 1),
+          Divider(color: AppColors.of(context).divider, height: 1),
           const SizedBox(height: 24),
           Text("RECENT MATCHES", style: Body2_b.style),
           const SizedBox(height: 16),
@@ -49,19 +52,26 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   Widget _buildSeasonDropdown() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
+      key: const ValueKey('player-matches-season-filter'),
       padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D3D3D),
+        color: surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedSeason,
           isExpanded: true,
-          dropdownColor: const Color(0xFF3D3D3D),
-          icon: const Icon(Icons.keyboard_arrow_down,
-              color: Colors.white, size: 24),
+          dropdownColor: surface,
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            color: foreground,
+            size: 24,
+          ),
           style: Body2_b.style,
           onChanged: (value) {
             if (value != null) setState(() => _selectedSeason = value);
@@ -78,13 +88,14 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   Widget _buildLiveHeader() {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Row(
       children: [
         Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: foreground,
             shape: BoxShape.circle,
           ),
         ),

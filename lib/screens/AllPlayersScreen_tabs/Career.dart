@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
@@ -22,6 +23,12 @@ class _CareerTabState extends State<CareerTab> {
   String _trophyFilter = 'TEAM';
   String _competitionFilter = _allCompetitions;
   final Set<String> _expandedSeasons = {};
+
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+  AppColors get _appColors => AppColors.of(context);
+  Color get _foreground => Theme.of(context).colorScheme.onSurface;
+  Color get _sectionSurface =>
+      _isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
 
   @override
   void initState() {
@@ -109,6 +116,8 @@ class _CareerTabState extends State<CareerTab> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      key: const ValueKey('player-career-scroll'),
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 144),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,9 +153,10 @@ class _CareerTabState extends State<CareerTab> {
         ),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('player-career-trophies-card'),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: _sectionSurface,
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
@@ -169,9 +179,9 @@ class _CareerTabState extends State<CareerTab> {
         for (var index = 0; index < groups.length; index++) ...[
           _buildTeamTrophyGroup(groups[index]),
           if (index != groups.length - 1)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 18),
-              child: Divider(color: Colors.white24, height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              child: Divider(color: _appColors.divider, height: 1),
             ),
         ],
       ],
@@ -237,7 +247,7 @@ class _CareerTabState extends State<CareerTab> {
 
   Widget _emptyMessage(String message) => Text(
         message,
-        style: Body1.style.copyWith(color: Colors.white54),
+        style: Body1.style.copyWith(color: _appColors.mutedForeground),
       );
 
   Widget _buildClubHeader({
@@ -252,9 +262,9 @@ class _CareerTabState extends State<CareerTab> {
           width: 28,
           height: 28,
           child: logo == null
-              ? const Icon(
+              ? Icon(
                   Icons.shield_outlined,
-                  color: Colors.white54,
+                  color: _appColors.mutedForeground,
                   size: 24,
                 )
               : Image.asset(logo, fit: BoxFit.contain),
@@ -272,9 +282,9 @@ class _CareerTabState extends State<CareerTab> {
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.emoji_events_outlined,
-              color: Colors.white,
+              color: _foreground,
               size: 18,
             ),
             const SizedBox(width: 6),
@@ -291,10 +301,13 @@ class _CareerTabState extends State<CareerTab> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: AppPalette.black,
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(season, style: Body2.style),
+                  child: Text(
+                    season,
+                    style: Body2.style.copyWith(color: AppPalette.white),
+                  ),
                 ),
               )
               .toList(growable: false),
@@ -327,9 +340,10 @@ class _CareerTabState extends State<CareerTab> {
         ),
         const SizedBox(height: 16),
         Container(
+          key: const ValueKey('player-career-history-card'),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: _sectionSurface,
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -354,7 +368,7 @@ class _CareerTabState extends State<CareerTab> {
   }
 
   Widget _buildTableHeader() {
-    final style = Body2.style.copyWith(color: Colors.white70);
+    final style = Body2.style.copyWith(color: _appColors.mutedForeground);
     return Row(
       children: [
         Expanded(flex: 2, child: Text('Season', style: style)),
@@ -447,7 +461,7 @@ class _CareerTabState extends State<CareerTab> {
                     isExpanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: Colors.white,
+                    color: _foreground,
                     size: 20,
                   ),
                 ),
@@ -459,7 +473,7 @@ class _CareerTabState extends State<CareerTab> {
           for (final competition in competitions)
             _buildCompetitionRow(season, competition),
         if (changesClub)
-          const Divider(color: Colors.white24, height: 1)
+          Divider(color: _appColors.divider, height: 1)
         else
           const SizedBox(height: 2),
       ],
@@ -482,16 +496,16 @@ class _CareerTabState extends State<CareerTab> {
             child: Text(
               competition.competitionName,
               overflow: TextOverflow.ellipsis,
-              style: Body2_b.style.copyWith(color: Colors.white54),
+              style: Body2_b.style.copyWith(color: _appColors.mutedForeground),
             ),
           ),
           _tableValue(
             '${competition.appearances}',
-            color: Colors.white54,
+            color: _appColors.mutedForeground,
           ),
           _tableValue(
             '${competition.winRatePercent}%',
-            color: Colors.white54,
+            color: _appColors.mutedForeground,
           ),
           Expanded(
             flex: 2,
@@ -503,13 +517,13 @@ class _CareerTabState extends State<CareerTab> {
     );
   }
 
-  Widget _tableValue(String value, {Color color = Colors.white}) {
+  Widget _tableValue(String value, {Color? color}) {
     return Expanded(
       flex: 2,
       child: Text(
         value,
         textAlign: TextAlign.center,
-        style: Body2_b.style.copyWith(color: color),
+        style: Body2_b.style.copyWith(color: color ?? _foreground),
       ),
     );
   }
@@ -518,10 +532,13 @@ class _CareerTabState extends State<CareerTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: AppPalette.black,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(rating.toStringAsFixed(1), style: Body2_b.style),
+      child: Text(
+        rating.toStringAsFixed(1),
+        style: Body2_b.style.copyWith(color: AppPalette.white),
+      ),
     );
   }
 
@@ -531,9 +548,9 @@ class _CareerTabState extends State<CareerTab> {
       width: 22,
       height: 22,
       child: logo == null
-          ? const Icon(
+          ? Icon(
               Icons.shield_outlined,
-              color: Colors.white54,
+              color: _appColors.mutedForeground,
               size: 18,
             )
           : Image.asset(logo, fit: BoxFit.contain),
@@ -547,7 +564,7 @@ class _CareerTabState extends State<CareerTab> {
   }) {
     return showModalBottomSheet<void>(
       context: context,
-      backgroundColor: const Color(0xFF2A2A2A),
+      backgroundColor: _isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -561,11 +578,13 @@ class _CareerTabState extends State<CareerTab> {
                   title: Text(
                     option,
                     style: Body2_b.style.copyWith(
-                      color: selected == option ? Colors.white : Colors.white54,
+                      color: selected == option
+                          ? _foreground
+                          : _appColors.mutedForeground,
                     ),
                   ),
                   trailing: selected == option
-                      ? const Icon(Icons.check, color: Colors.white)
+                      ? Icon(Icons.check, color: _foreground)
                       : null,
                   onTap: () {
                     onSelected(option);
@@ -588,8 +607,10 @@ class _FilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Material(
-      color: const Color(0xFF3D3D3D),
+      color: isDark ? const Color(0xFF3D3D3D) : AppPalette.white,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
@@ -601,9 +622,9 @@ class _FilterButton extends StatelessWidget {
             children: [
               Text(label, style: Body2_b.style),
               const SizedBox(width: 2),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down,
-                color: Colors.white,
+                color: foreground,
                 size: 18,
               ),
             ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
@@ -24,7 +25,6 @@ class All extends StatefulWidget {
 
 class _AllState extends State<All> {
   String _selectedFilter = "Newest";
-  late int _selectedTabIndex;
 
   List<Post> _filteredPosts() {
     List<Post> base;
@@ -61,6 +61,9 @@ class _AllState extends State<All> {
   @override
   Widget build(BuildContext context) {
     final posts = _filteredPosts();
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,20 +93,24 @@ class _AllState extends State<All> {
               showGroundRulesModal(context); // We'll define this next
             },
             child: Container(
+              key: const ValueKey('community-ground-rules-card'),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFF3D3D3D),
+                color: isDark ? AppPalette.lightGrey : AppPalette.white,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.push_pin_outlined,
-                      color: Colors.white, size: 20),
+                  Icon(
+                    Icons.push_pin_outlined,
+                    color: colors.onSurface,
+                    size: 20,
+                  ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       "Community Ground Rules",
-                      style: Heading5.style.copyWith(color: Colors.white),
+                      style: Heading5.style.copyWith(color: colors.onSurface),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -124,7 +131,7 @@ class _AllState extends State<All> {
             itemBuilder: (context, index) => _buildPostCard(posts[index]),
             separatorBuilder: (context, index) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Container(height: 1, color: const Color(0xFF3A3A3A)),
+              child: Container(height: 1, color: appColors.divider),
             ),
           ),
         ),
@@ -134,19 +141,35 @@ class _AllState extends State<All> {
 
   Widget _buildFilterChip(String label) {
     final isSelected = _selectedFilter == label;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = label),
       child: Container(
+        key: ValueKey('community-filter-${label.toLowerCase()}'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : const Color(0xFF272828),
+          color: isDark
+              ? (isSelected ? AppPalette.white : const Color(0xFF272828))
+              : AppPalette.white,
           borderRadius: BorderRadius.circular(16),
+          boxShadow: isDark
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x26090A0A),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
         ),
         child: Text(
           label.toUpperCase(),
           style: Body2_b.style.copyWith(
-            color: isSelected ? Colors.black : Colors.white,
+            color: isDark
+                ? (isSelected ? AppPalette.black : AppPalette.white)
+                : colors.onSurface,
           ),
         ),
       ),
@@ -155,6 +178,9 @@ class _AllState extends State<All> {
 
   Widget _buildPostCard(Post post) {
     final hasMedia = post.mediaUrl != null;
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return GestureDetector(
       onTap: () {
@@ -176,9 +202,10 @@ class _AllState extends State<All> {
                   // User info
                   Row(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 12,
-                        backgroundColor: Colors.white24,
+                        backgroundColor:
+                            isLight ? AppPalette.lightGrey : Colors.white24,
                       ),
                       const SizedBox(width: 8),
                       Column(
@@ -187,7 +214,8 @@ class _AllState extends State<All> {
                           Text("User ${post.userId}", style: Body1.style),
                           Text(
                             _timeAgo(post.createdAt),
-                            style: Body2.style.copyWith(color: Colors.white54),
+                            style: Body2.style
+                                .copyWith(color: appColors.mutedForeground),
                           ),
                         ],
                       ),
@@ -209,8 +237,11 @@ class _AllState extends State<All> {
                   // Like count (placeholder until likes are wired)
                   Row(
                     children: [
-                      const Icon(Icons.thumb_up_alt_outlined,
-                          color: Colors.white, size: 16),
+                      Icon(
+                        Icons.thumb_up_alt_outlined,
+                        color: colors.onSurface,
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       Text("—", style: Body2.style),
                     ],

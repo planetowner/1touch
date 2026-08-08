@@ -37,6 +37,8 @@ void main() {
           final appColors = app_style.AppColors.of(context);
           final tabBar = tester.widget<TabBar>(find.byType(TabBar));
           final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+          final expectedGradientHeight =
+              (size.height * 0.70).clamp(550.0, 650.0).toDouble();
 
           expect(
             tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
@@ -45,6 +47,12 @@ void main() {
           expect(tabBar.labelColor, colorScheme.onSurface);
           expect(tabBar.indicatorColor, colorScheme.onSurface);
           expect(appBar.foregroundColor, app_style.AppPalette.white);
+          expect(
+            tester
+                .getSize(find.byKey(const ValueKey('team-brand-gradient')))
+                .height,
+            expectedGradientHeight,
+          );
           expect(tester.takeException(), isNull);
 
           final tabView = find.byType(TabBarView);
@@ -135,6 +143,61 @@ void main() {
     );
     expect(standingHeader.color, app_style.AppPalette.white);
     expect(tabBar.unselectedLabelColor, appColors.mutedForeground);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Standing and Analysis filters use black text in light mode',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: TeamScreen(teamId: 9),
+      ),
+    );
+    await tester.pump();
+
+    final tabView = find.byType(TabBarView);
+    await tester.drag(tabView, const Offset(-393, 0));
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.drag(tabView, const Offset(-393, 0));
+    await tester.pump(const Duration(milliseconds: 350));
+
+    final leagueFilter = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('standing-league-filter')),
+    );
+    final seasonFilter = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('standing-season-filter')),
+    );
+    final standingView = tester.widget<Text>(find.text('STANDING').first);
+
+    expect(leagueFilter.style?.color, app_style.AppPalette.black);
+    expect(seasonFilter.style?.color, app_style.AppPalette.black);
+    expect(standingView.style?.color, app_style.AppPalette.black);
+
+    await tester.drag(tabView, const Offset(-393, 0));
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.drag(tabView, const Offset(-393, 0));
+    await tester.pump(const Duration(milliseconds: 350));
+
+    final attributesFilter = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('analysis-attributes-filter')),
+    );
+    final formationFilter = tester.widget<DropdownButton<String>>(
+      find.byKey(const ValueKey('analysis-formation-filter')),
+    );
+    final formFilter = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('analysis-form-filter')),
+    );
+
+    expect(attributesFilter.style?.color, app_style.AppPalette.black);
+    expect(formationFilter.style?.color, app_style.AppPalette.black);
+    expect(formFilter.style?.color, app_style.AppPalette.black);
+    await tester.pump(const Duration(milliseconds: 450));
     expect(tester.takeException(), isNull);
   });
 }

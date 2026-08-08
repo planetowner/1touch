@@ -1,5 +1,8 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/features/player_image.dart';
@@ -12,6 +15,8 @@ class FavoritePlayersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnimatedBuilder(
       animation: playerRepository.followedPlayerIds,
       builder: (context, _) {
@@ -22,8 +27,14 @@ class FavoritePlayersSection extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Text("FAVORITE PLAYERS", style: Body2_b.style),
-                const Spacer(),
+                const Expanded(
+                  child: Text(
+                    "FAVORITE PLAYERS",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Body2_b.style,
+                  ),
+                ),
                 IconButton(
                   onPressed: () {
                     showModalBottomSheet(
@@ -33,8 +44,11 @@ class FavoritePlayersSection extends StatelessWidget {
                       builder: (_) => const EditFollowingPlayersSheet(),
                     );
                   },
-                  icon: const Icon(Icons.border_color,
-                      size: 24, color: Colors.white),
+                  icon: Icon(
+                    Icons.border_color,
+                    size: 24,
+                    color: colors.onSurface,
+                  ),
                 ),
               ],
             ),
@@ -66,14 +80,21 @@ class FavoritePlayersSection extends StatelessWidget {
                                   left: 0,
                                   top: 0,
                                   child: Container(
+                                    key: const ValueKey(
+                                      'favorite-player-number-badge',
+                                    ),
                                     padding: const EdgeInsets.all(8),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF3D3D3D),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? AppPalette.lightGrey
+                                          : AppPalette.white,
                                       shape: BoxShape.circle,
                                     ),
                                     child: Text(
                                       '${player.jerseyNumber}',
-                                      style: Body2_b.style,
+                                      style: Body2_b.style.copyWith(
+                                        color: colors.onSurface,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -117,11 +138,22 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
   @override
   Widget build(BuildContext context) {
     final visibleCount = widget.players.length < 5 ? widget.players.length : 5;
+    final appColors = AppColors.of(context);
 
     return Container(
+      key: const ValueKey('players-ranking-card'),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
+        color: appColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? const [
+                BoxShadow(
+                  color: Color(0x1F000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -166,10 +198,12 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                backgroundColor: const Color(0xFF1E1E1E),
+                backgroundColor:
+                    isDark ? const Color(0xFF1E1E1E) : AppPalette.white,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
@@ -193,8 +227,11 @@ class FullRankingPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final players = playerRepository.ranking;
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF272828),
+      key: const ValueKey('full-ranking-sheet'),
+      backgroundColor: appColors.cardBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -203,11 +240,19 @@ class FullRankingPopup extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(width: 32),
-                  const Text("1Touch Ranking", style: Heading5.style),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.close, color: Colors.white),
+                  const SizedBox(width: 48),
+                  Expanded(
+                    child: Text(
+                      "1Touch Ranking",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: Heading5.style.copyWith(color: colors.onSurface),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(Icons.close, color: colors.onSurface),
                   ),
                 ],
               ),
@@ -218,7 +263,7 @@ class FullRankingPopup extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.20),
+                  color: appColors.subtleBackground,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -228,13 +273,14 @@ class FullRankingPopup extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: "Look for players",
                           hintStyle: Body1.style.copyWith(
-                              color: Colors.white.withValues(alpha: 0.5)),
+                            color: appColors.mutedForeground,
+                          ),
                           border: InputBorder.none,
                         ),
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: colors.onSurface),
                       ),
                     ),
-                    const Icon(Icons.search, color: Colors.white),
+                    Icon(Icons.search, color: colors.onSurface),
                   ],
                 ),
               ),
@@ -280,8 +326,7 @@ class FullRankingPopup extends StatelessWidget {
                             ],
                           ),
                         ),
-                        if (showStar)
-                          const Icon(Icons.star, color: Colors.white),
+                        if (showStar) Icon(Icons.star, color: colors.onSurface),
                         Text(
                           player.rankingScore.toStringAsFixed(1),
                           style: Heading5.style,
@@ -311,6 +356,9 @@ class OnesToWatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 150,
       height: 200,
@@ -324,7 +372,12 @@ class OnesToWatchCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Container(
-                      width: double.infinity, color: const Color(0xFF272828)),
+                    key: const ValueKey('ones-to-watch-image-surface'),
+                    width: double.infinity,
+                    color: isDark
+                        ? const Color(0xFF272828)
+                        : appColors.subtleBackground,
+                  ),
                   Positioned(
                     right: 0,
                     top: 0,
@@ -355,7 +408,9 @@ class OnesToWatchCard extends StatelessWidget {
                             ),
                             Text(
                               '${player.rankingChange.abs()}',
-                              style: Body2_b.style,
+                              style: Body2_b.style.copyWith(
+                                color: colors.onSurface,
+                              ),
                             ),
                           ],
                         ),
@@ -366,8 +421,9 @@ class OnesToWatchCard extends StatelessWidget {
               ),
             ),
             Container(
+              key: const ValueKey('ones-to-watch-info-surface'),
               width: double.infinity,
-              color: const Color(0xFF3D3D3D),
+              color: isDark ? AppPalette.lightGrey : AppPalette.white,
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,13 +432,13 @@ class OnesToWatchCard extends StatelessWidget {
                     player.fullName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Body1_b.style,
+                    style: Body1_b.style.copyWith(color: colors.onSurface),
                     textAlign: TextAlign.start,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${player.teamName} • ${player.jerseyNumber}',
-                    style: Eyebrow.style,
+                    style: Eyebrow.style.copyWith(color: colors.onSurface),
                   ),
                 ],
               ),
@@ -435,6 +491,11 @@ class _FilterSheetState extends State<FilterSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dividerColor = isDark ? AppPalette.lightGrey : appColors.divider;
+
     return Stack(
       children: [
         Padding(
@@ -448,11 +509,19 @@ class _FilterSheetState extends State<FilterSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(width: 32),
-                    Text("Filter", style: Heading5.style),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const Icon(Icons.close, color: Colors.white),
+                    const SizedBox(width: 48),
+                    Expanded(
+                      child: Text(
+                        "Filter",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: Heading5.style,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: Icon(Icons.close, color: colors.onSurface),
                     ),
                   ],
                 ),
@@ -470,12 +539,12 @@ class _FilterSheetState extends State<FilterSheet> {
                         contentPadding: EdgeInsets.zero,
                         title: Text(league, style: Body1.style),
                         trailing: isSelected
-                            ? const Icon(Icons.check, color: Colors.white)
+                            ? Icon(Icons.check, color: colors.onSurface)
                             : null,
                         onTap: () => setState(() => _tempLeague = league),
                       ),
                       if (index != widget.leagues.length - 1)
-                        Container(height: 1, color: const Color(0xFF3D3D3D)),
+                        Container(height: 1, color: dividerColor),
                     ],
                   );
                 }),
@@ -494,15 +563,15 @@ class _FilterSheetState extends State<FilterSheet> {
                         children: [
                           Text(_tempSeason, style: Body1.style),
                           const SizedBox(width: 8),
-                          const Icon(Icons.expand_more, color: Colors.white),
+                          Icon(Icons.expand_more, color: colors.onSurface),
                         ],
                       ),
-                      const Icon(Icons.check, color: Colors.white),
+                      Icon(Icons.check, color: colors.onSurface),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Divider(color: Color(0xFF3D3D3D)),
+                Divider(color: dividerColor),
 
                 // POSITION
                 const SizedBox(height: 48),
@@ -517,12 +586,12 @@ class _FilterSheetState extends State<FilterSheet> {
                         contentPadding: EdgeInsets.zero,
                         title: Text(position, style: Body1.style),
                         trailing: isSelected
-                            ? const Icon(Icons.check, color: Colors.white)
+                            ? Icon(Icons.check, color: colors.onSurface)
                             : null,
                         onTap: () => setState(() => _tempPosition = position),
                       ),
                       if (index != widget.positions.length - 1)
-                        Container(height: 1, color: const Color(0xFF3D3D3D)),
+                        Container(height: 1, color: dividerColor),
                     ],
                   );
                 }),
@@ -546,14 +615,14 @@ class _FilterSheetState extends State<FilterSheet> {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                backgroundColor: colors.onSurface,
+                foregroundColor: colors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
               ),
               child: Text("UPDATE FILTER",
-                  style: Body2_b.style.copyWith(color: Colors.black)),
+                  style: Body2_b.style.copyWith(color: colors.onPrimary)),
             ),
           ),
         ),
@@ -570,21 +639,30 @@ class FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        key: ValueKey('players-filter-pill-$label'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF3D3D3D),
+          color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(label, style: Body2_b.style),
+            Text(
+              label,
+              style: Body2_b.style.copyWith(color: colors.onSurface),
+            ),
             const SizedBox(width: 6),
-            const Icon(Icons.keyboard_arrow_down,
-                size: 24, color: Colors.white),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 24,
+              color: colors.onSurface,
+            ),
           ],
         ),
       ),
@@ -661,15 +739,22 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
       maxChildSize: 0.92,
       minChildSize: 0.3,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF272828),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          key: const ValueKey('following-players-sheet'),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(28),
+            ),
           ),
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(
@@ -678,38 +763,57 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(width: 32),
-                  const Text("Following Players", style: Heading5.style),
+                  const SizedBox(width: 48),
+                  Expanded(
+                    child: Text(
+                      "Following Players",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: Heading5.style.copyWith(color: colors.onSurface),
+                    ),
+                  ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: Icon(Icons.close, color: colors.onSurface),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               Container(
+                key: const ValueKey('following-players-search'),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3A3A3A),
+                  color: isDark
+                      ? const Color(0xFF3A3A3A)
+                      : AppPalette.lightGreyBox,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: TextField(
                   controller: _searchController,
-                  style: Body1.style,
+                  style: Body1.style.copyWith(color: colors.onSurface),
                   decoration: InputDecoration(
                     contentPadding:
                         const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     hintText: "Search players to add!",
-                    hintStyle: Body1.style.copyWith(color: Colors.white54),
+                    hintStyle: Body1.style.copyWith(
+                      color: appColors.mutedForeground,
+                    ),
                     border: InputBorder.none,
                     suffixIcon: _isSearching
                         ? IconButton(
-                            icon: const Icon(Icons.close,
-                                color: Colors.white, size: 20),
+                            icon: Icon(
+                              Icons.close,
+                              color: colors.onSurface,
+                              size: 20,
+                            ),
                             onPressed: () => _searchController.clear(),
                           )
-                        : const Icon(Icons.search,
-                            color: Colors.white, size: 24),
+                        : Icon(
+                            Icons.search,
+                            color: colors.onSurface,
+                            size: 24,
+                          ),
                   ),
                 ),
               ),
@@ -729,12 +833,16 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                     style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.resolveWith<Color>(
                           (states) => states.contains(WidgetState.disabled)
-                              ? Colors.grey.shade700
-                              : Colors.white),
+                              ? (isDark
+                                  ? Colors.grey.shade700
+                                  : const Color(0xFFC8C8C8))
+                              : colors.onSurface),
                       foregroundColor: WidgetStateProperty.resolveWith<Color>(
                           (states) => states.contains(WidgetState.disabled)
-                              ? Colors.grey.shade400
-                              : Colors.black),
+                              ? (isDark
+                                  ? Colors.grey.shade400
+                                  : AppPalette.white)
+                              : colors.onPrimary),
                       padding: WidgetStateProperty.all(
                           const EdgeInsets.symmetric(vertical: 16)),
                       shape: WidgetStateProperty.all(
@@ -743,16 +851,22 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                       ),
                     ),
                     child: _isSaving
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 18,
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.black,
+                              color: colors.onPrimary,
                             ),
                           )
                         : Text("UPDATE",
-                            style: Body2_b.style.copyWith(color: Colors.black)),
+                            style: Body2_b.style.copyWith(
+                              color: _updateEnabled
+                                  ? colors.onPrimary
+                                  : (isDark
+                                      ? Colors.grey.shade400
+                                      : AppPalette.white),
+                            )),
                   ),
                 ),
               ),
@@ -764,11 +878,16 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
   }
 
   Widget _buildFollowedPlayerList(ScrollController controller) {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView.separated(
       controller: controller,
       itemCount: _followedPlayers.length,
-      separatorBuilder: (_, __) =>
-          const Divider(color: Color(0xFF3D3D3D), height: 1),
+      separatorBuilder: (_, __) => Divider(
+        color: isDark ? AppPalette.lightGrey : appColors.divider,
+        height: 1,
+      ),
       itemBuilder: (context, index) {
         final player = _followedPlayers[index];
         final isPrimary = index == 0;
@@ -803,12 +922,24 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                   children: [
                     Row(
                       children: [
-                        Text(player.fullName, style: Heading5.style),
+                        Flexible(
+                          child: Text(
+                            player.fullName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Heading5.style.copyWith(
+                              color: colors.onSurface,
+                            ),
+                          ),
+                        ),
                         if (isPrimary)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 6),
-                            child:
-                                Icon(Icons.star, color: Colors.white, size: 18),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Icon(
+                              Icons.star,
+                              color: colors.onSurface,
+                              size: 18,
+                            ),
                           ),
                       ],
                     ),
@@ -820,7 +951,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                   ],
                 ),
               ),
-              const Icon(Icons.drag_handle, color: Colors.white, size: 28),
+              Icon(Icons.drag_handle, color: colors.onSurface, size: 28),
             ],
           ),
         );
@@ -829,11 +960,16 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
   }
 
   Widget _buildSearchResultList(ScrollController controller) {
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView.separated(
       controller: controller,
       itemCount: _filteredPlayers.length,
-      separatorBuilder: (_, __) =>
-          const Divider(color: Color(0xFF3D3D3D), height: 1),
+      separatorBuilder: (_, __) => Divider(
+        color: isDark ? AppPalette.lightGrey : appColors.divider,
+        height: 1,
+      ),
       itemBuilder: (context, index) {
         final player = _filteredPlayers[index];
         final isSelected = _selectedPlayerId == player.id;
@@ -868,7 +1004,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                   isSelected
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
-                  color: Colors.white,
+                  color: colors.onSurface,
                 ),
               ),
             ),

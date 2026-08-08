@@ -31,6 +31,7 @@ void main() {
                   child: PlayerScreenHeader(
                     player: salah,
                     horizontalPadding: horizontalPadding,
+                    foregroundColor: app_style.AppPalette.white,
                   ),
                 ),
                 Padding(
@@ -49,4 +50,118 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('player detail uses light surfaces and anchored scrolling',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: PlayerCard(player: salah),
+      ),
+    );
+    await tester.pump();
+
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+    final tabIndicator = tabBar.indicator! as UnderlineTabIndicator;
+    final nestedScroll =
+        tester.widget<NestedScrollView>(find.byType(NestedScrollView));
+    final overviewScroll = tester.widget<SingleChildScrollView>(
+      find.byKey(const ValueKey('player-overview-scroll')),
+    );
+    final bioCard = tester.widget<Container>(
+      find.byKey(const ValueKey('player-bio-stats-card')),
+    );
+    final followIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const Key('player-follow-button')),
+        matching: find.byType(Icon),
+      ),
+    );
+    final searchIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const ValueKey('player-search-button')),
+        matching: find.byType(Icon),
+      ),
+    );
+    final compareIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const ValueKey('player-compare-button')),
+        matching: find.byType(Icon),
+      ),
+    );
+
+    expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
+    expect(tabBar.labelColor, app_style.AppPalette.black);
+    expect(tabIndicator.borderSide.color, app_style.AppPalette.black);
+    expect(followIcon.color, app_style.AppPalette.black);
+    expect(searchIcon.color, app_style.AppPalette.black);
+    expect(compareIcon.color, app_style.AppPalette.black);
+    expect(
+      (bioCard.decoration as BoxDecoration).color,
+      app_style.AppPalette.white,
+    );
+    expect(nestedScroll.physics, isA<ClampingScrollPhysics>());
+    expect(overviewScroll.physics, isA<ClampingScrollPhysics>());
+
+    final topBlock = find.byKey(const ValueKey('player-overview-top-block'));
+    final topBeforeDrag = tester.getTopLeft(topBlock).dy;
+    await tester.drag(
+      find.byKey(const ValueKey('player-overview-scroll')),
+      const Offset(0, 300),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(topBlock).dy, closeTo(topBeforeDrag, 0.01));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('all player detail tabs use light cards', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: PlayerCard(player: salah),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Analysis'));
+    await tester.pumpAndSettle();
+    final analysisCard = tester.widget<Container>(
+      find.byKey(const ValueKey('player-top-stats-card')),
+    );
+    expect(
+      (analysisCard.decoration as BoxDecoration).color,
+      app_style.AppPalette.white,
+    );
+    expect(tester.takeException(), isNull,
+        reason: 'Analysis must not overflow');
+
+    await tester.tap(find.text('Matches'));
+    await tester.pumpAndSettle();
+    final matchFilter = tester.widget<Container>(
+      find.byKey(const ValueKey('player-matches-season-filter')),
+    );
+    expect(
+      (matchFilter.decoration as BoxDecoration).color,
+      app_style.AppPalette.white,
+    );
+    expect(tester.takeException(), isNull, reason: 'Matches must not overflow');
+
+    await tester.tap(find.text('Career'));
+    await tester.pumpAndSettle();
+    final careerCard = tester.widget<Container>(
+      find.byKey(const ValueKey('player-career-trophies-card')),
+    );
+    expect(
+      (careerCard.decoration as BoxDecoration).color,
+      app_style.AppPalette.white,
+    );
+    expect(tester.takeException(), isNull, reason: 'Career must not overflow');
+  });
 }

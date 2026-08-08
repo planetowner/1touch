@@ -19,8 +19,9 @@ bool _hasLiveFixture(int teamId) {
 }
 
 String _formatFollowers(int count) {
-  if (count >= 1000000)
+  if (count >= 1000000) {
     return '${(count / 1000000).toStringAsFixed(1)}M Followers';
+  }
   if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K Followers';
   return '$count Followers';
 }
@@ -90,6 +91,11 @@ class _CommunityState extends State<Community>
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
+    final gradientHeight = responsiveBrandGradientHeight(context);
+    final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final headerForeground = isLight ? AppPalette.black : AppPalette.white;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -113,11 +119,12 @@ class _CommunityState extends State<Community>
             top: 0,
             left: 0,
             right: 0,
-            height: 550,
+            height: gradientHeight,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
+                key: const ValueKey('community-brand-gradient'),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -159,8 +166,15 @@ class _CommunityState extends State<Community>
                 ),
                 title: Padding(
                   padding: const EdgeInsets.only(left: 24, top: 30),
-                  child: SvgPicture.asset('assets/app_logo.svg',
-                      height: 23, width: 120),
+                  child: SvgPicture.asset(
+                    'assets/app_logo.svg',
+                    height: 23,
+                    width: 120,
+                    colorFilter: const ColorFilter.mode(
+                      AppPalette.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
                 actions: [
                   Padding(
@@ -168,13 +182,19 @@ class _CommunityState extends State<Community>
                     child: Row(
                       children: [
                         IconButton(
+                          key: const ValueKey('community-search-button'),
                           onPressed: () => context.push('/search'),
-                          icon: const Icon(Icons.search, size: 32),
+                          icon: const Icon(
+                            Icons.search,
+                            size: 32,
+                            color: AppPalette.white,
+                          ),
                         ),
                         IconButton(
+                          key: const ValueKey('community-profile-button'),
                           onPressed: () => context.push('/profile'),
                           icon: const Icon(Icons.account_circle_outlined,
-                              size: 32),
+                              size: 32, color: AppPalette.white),
                         ),
                       ],
                     ),
@@ -212,7 +232,9 @@ class _CommunityState extends State<Community>
                                 Flexible(
                                   child: Text(
                                     _team.name,
-                                    style: Heading4.style,
+                                    key: const ValueKey('community-team-name'),
+                                    style: Heading4.style
+                                        .copyWith(color: headerForeground),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -227,19 +249,27 @@ class _CommunityState extends State<Community>
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text("LIVE",
-                                        style: Body2_b.style
-                                            .copyWith(color: Colors.white)),
+                                        style: Body2_b.style.copyWith(
+                                          color: isLight
+                                              ? AppPalette.black
+                                              : AppPalette.white,
+                                        )),
                                   ),
                                 ],
                               ],
                             ),
                             const SizedBox(height: 4),
                             Text(_formatFollowers(_followerCount),
-                                style: Body2.style),
+                                style: Body2.style
+                                    .copyWith(color: headerForeground)),
                           ],
                         ),
                       ),
-                      const Icon(Icons.star_border, color: Colors.white),
+                      Icon(
+                        Icons.star_border,
+                        key: const ValueKey('community-favorite-icon'),
+                        color: headerForeground,
+                      ),
                     ],
                   ),
                 ),
@@ -254,16 +284,17 @@ class _CommunityState extends State<Community>
                     controller: _tabController,
                     onTap: (index) => setState(() => _selectedTabIndex = index),
                     isScrollable: true,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: Colors.white,
+                    labelColor: colors.onSurface,
+                    unselectedLabelColor: appColors.mutedForeground,
+                    indicatorColor: colors.onSurface,
                     labelStyle: Heading5.style,
                     unselectedLabelStyle: Heading5.style,
                     indicatorSize: TabBarIndicatorSize.label,
                     dividerColor: Colors.transparent,
                     padding: const EdgeInsets.only(left: 8, top: 24),
-                    indicator: const UnderlineTabIndicator(
-                      borderSide: BorderSide(color: Colors.white, width: 1.2),
+                    indicator: UnderlineTabIndicator(
+                      borderSide:
+                          BorderSide(color: colors.onSurface, width: 1.2),
                     ),
                     tabs: const [
                       Tab(text: "All"),

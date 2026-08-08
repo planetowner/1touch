@@ -168,7 +168,12 @@ class _ViewSelectorButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(selectedView.label, style: Body2_b.style),
+          Text(
+            selectedView.label,
+            style: Body2_b.style.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: onToggle,
@@ -247,7 +252,9 @@ class StandingViewOptions extends StatelessWidget {
             Expanded(
               child: Text(
                 view.label,
-                style: selected ? Body2_b.style : Body2.style,
+                style: (selected ? Body2_b.style : Body2.style).copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
             if (selected)

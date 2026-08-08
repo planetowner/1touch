@@ -130,6 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
+    final gradientHeight = responsiveBrandGradientHeight(context);
     final colorScheme = Theme.of(context).colorScheme;
     final appBarForeground = Color.lerp(
       AppPalette.white,
@@ -167,11 +168,12 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 0,
             left: 0,
             right: 0,
-            height: 550,
+            height: gradientHeight,
             child: AnimatedOpacity(
               opacity: (1 - opacityFactor),
               duration: const Duration(milliseconds: 200),
               child: Container(
+                key: const ValueKey('home-brand-gradient'),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,

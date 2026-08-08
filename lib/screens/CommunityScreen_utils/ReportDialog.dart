@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 void showReportDialog(BuildContext context) {
@@ -11,98 +12,114 @@ void showReportDialog(BuildContext context) {
   ];
 
   int? selectedIndex;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
 
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: const Color(0xFF2C2C2C),
+    backgroundColor: isDark ? const Color(0xFF2C2C2C) : AppPalette.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title and close
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          final colors = Theme.of(context).colorScheme;
+          final appColors = AppColors.of(context);
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Report", style: Heading4.style),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.white70),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        "Tell us why you would like to report this post!",
-                        style: Body2.style.copyWith(color: Colors.white70),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Radio list
-                ...List.generate(reasons.length, (index) {
-                  return Column(
-                    children: [
-                      RadioListTile<int>(
-                        value: index,
-                        groupValue: selectedIndex,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedIndex = value!;
-                          });
-                        },
-                        title: Text(
-                          reasons[index],
-                          style: Body1.style,
+                    // Title and close
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Report",
+                          style:
+                              Heading4.style.copyWith(color: colors.onSurface),
                         ),
-                        activeColor: Colors.white,
-                        controlAffinity: ListTileControlAffinity.trailing,
-                        contentPadding: EdgeInsets.zero,
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Icon(Icons.close, color: colors.onSurface),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: appColors.mutedForeground,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            "Tell us why you would like to report this post!",
+                            style: Body2.style
+                                .copyWith(color: appColors.mutedForeground),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Radio list
+                    ...List.generate(reasons.length, (index) {
+                      return Column(
+                        children: [
+                          RadioListTile<int>(
+                            value: index,
+                            groupValue: selectedIndex,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedIndex = value!;
+                              });
+                            },
+                            title: Text(
+                              reasons[index],
+                              style: Body1.style,
+                            ),
+                            activeColor: colors.onSurface,
+                            controlAffinity: ListTileControlAffinity.trailing,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          Divider(color: appColors.divider),
+                        ],
+                      );
+                    }),
+
+                    const SizedBox(height: 24),
+
+                    // Submit button
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        showThanksDialog(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: colors.onSurface,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "SUBMIT",
+                          style:
+                              Body2_b.style.copyWith(color: colors.onPrimary),
+                        ),
                       ),
-                      const Divider(color: Colors.white12),
-                    ],
-                  );
-                }),
-
-                const SizedBox(height: 24),
-
-                // Submit button
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    showThanksDialog(context);
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "SUBMIT",
-                      style: Body2_b.style.copyWith(color: Colors.black),
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -112,13 +129,15 @@ void showReportDialog(BuildContext context) {
 }
 
 void showThanksDialog(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   showModalBottomSheet(
     context: context,
-    backgroundColor: const Color(0xFF2C2C2C),
+    backgroundColor: isDark ? const Color(0xFF2C2C2C) : AppPalette.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
     builder: (context) {
+      final colors = Theme.of(context).colorScheme;
       return Padding(
         padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
         child: Column(
@@ -128,17 +147,23 @@ void showThanksDialog(BuildContext context) {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Report", style: Heading4.style),
+                Text(
+                  "Report",
+                  style: Heading4.style.copyWith(color: colors.onSurface),
+                ),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
-                  child: const Icon(Icons.close, color: Colors.white),
+                  child: Icon(Icons.close, color: colors.onSurface),
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
-            const Icon(Icons.check_circle_outline,
-                size: 48, color: Colors.white),
+            Icon(
+              Icons.check_circle_outline,
+              size: 48,
+              color: colors.onSurface,
+            ),
             const SizedBox(height: 16),
             Text(
               "Thanks for your report!",
@@ -157,13 +182,13 @@ void showThanksDialog(BuildContext context) {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colors.onSurface,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   "DONE",
-                  style: Body2_b.style.copyWith(color: Colors.black),
+                  style: Body2_b.style.copyWith(color: colors.onPrimary),
                 ),
               ),
             )
