@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
 
@@ -136,8 +137,8 @@ class _MatchesTabState extends State<MatchesTab> {
         ? AppPalette.lightGrey
         : AppPalette.lightGreyBox;
     final isUpcoming = fixture.status == FixtureStatus.upcoming;
-    final home = mockTeamById(fixture.homeTeamId);
-    final away = mockTeamById(fixture.awayTeamId);
+    final home = teamRepository.findByIdOrUnknown(fixture.homeTeamId);
+    final away = teamRepository.findByIdOrUnknown(fixture.awayTeamId);
     final league = mockCompetitionById(fixture.competitionId);
     final dt = DateTime.parse(fixture.startingAt).toLocal();
 

@@ -10,8 +10,8 @@ import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/user.dart';
@@ -46,7 +46,9 @@ class _ProfileState extends State<Profile> {
     _user = mockUserById(_currentUserId);
     _userProfile = mockUserProfileById(_currentUserId);
 
-    _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    _teamColor = Color(
+      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
+    );
     currentUserPreferences.favoriteTeamId.addListener(_onPreferencesChanged);
     currentUserPreferences.followedTeamIds.addListener(_onPreferencesChanged);
     playerRepository.followedPlayerIds.addListener(_onPreferencesChanged);
@@ -55,7 +57,9 @@ class _ProfileState extends State<Profile> {
   void _onPreferencesChanged() {
     if (!mounted) return;
     setState(() {
-      _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+      _teamColor = Color(
+        teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
+      );
     });
   }
 
@@ -367,7 +371,7 @@ class _ProfileState extends State<Profile> {
         itemCount: teamIds.length,
         separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
-          final team = mockTeamById(teamIds[index]);
+          final team = teamRepository.requireById(teamIds[index]);
           final isFavorite = team.teamId == favoriteId;
           final label = teamCompetitionContextResolver.labelFor(team.teamId);
 

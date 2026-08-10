@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
 import 'package:onetouch/features/KaneRest.dart';
@@ -110,8 +111,8 @@ class MatchInfoTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final homeTeam = mockTeamById(fixture.homeTeamId);
-    final awayTeam = mockTeamById(fixture.awayTeamId);
+    final homeTeam = teamRepository.findByIdOrUnknown(fixture.homeTeamId);
+    final awayTeam = teamRepository.findByIdOrUnknown(fixture.awayTeamId);
     final homeScore = fixture.homeScore?.toString() ?? '#';
     final awayScore = fixture.awayScore?.toString() ?? '#';
 

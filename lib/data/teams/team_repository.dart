@@ -14,3 +14,20 @@ abstract interface class TeamRepository {
 
   Future<void> initialize();
 }
+
+extension TeamRepositoryFallback on TeamRepository {
+  Team requireById(int teamId) {
+    final team = findById(teamId);
+    if (team == null) {
+      throw StateError(
+        'Team $teamId must exist after repository initialization and '
+        'preference validation.',
+      );
+    }
+    return team;
+  }
+
+  Team findByIdOrUnknown(int teamId) {
+    return findById(teamId) ?? Team(teamId: teamId, name: 'Unknown Team');
+  }
+}

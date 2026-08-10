@@ -5,7 +5,8 @@ import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
 import '../models/home_content_item.dart';
@@ -125,7 +126,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   void initState() {
     super.initState();
     _followingTeams = currentUserPreferences.followedTeamIds.value.map((id) {
-      final t = mockTeamById(id);
+      final t = teamRepository.requireById(id);
       final leagueId = fixturesByTeam(id).firstOrNull?.competitionId;
       final position =
           leagueId != null ? standingByTeam(leagueId, id)?.position : null;
@@ -341,8 +342,10 @@ class MyTeams extends StatelessWidget {
                   },
                   child: () {
                     final last = team.lastMatch!;
-                    final home = mockTeamById(last.homeTeamId);
-                    final away = mockTeamById(last.awayTeamId);
+                    final home =
+                        teamRepository.findByIdOrUnknown(last.homeTeamId);
+                    final away =
+                        teamRepository.findByIdOrUnknown(last.awayTeamId);
                     return MatchCard2(
                       date: DateFormat('EEE, MMM d h:mm a')
                           .format(DateTime.parse(last.startingAt).toLocal()),
@@ -417,7 +420,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 
       final opponentTeamId =
           favoriteIsHome ? fixture.awayTeamId : fixture.homeTeamId;
-      final opponent = mockTeamById(opponentTeamId);
+      final opponent = teamRepository.findByIdOrUnknown(opponentTeamId);
       final color = switch (fixture.competitionType) {
         CompetitionType.league => Colors.red,
         CompetitionType.europe => Colors.blue,

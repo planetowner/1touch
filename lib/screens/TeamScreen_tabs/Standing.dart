@@ -5,7 +5,8 @@ import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/knockout_bracket.dart';
@@ -122,7 +123,7 @@ class _StandingTabState extends State<StandingTab> {
     // ── Standings (always) ───────────────────────────────────────────
     final standingRows = standingsByCompetition(selectedLeagueId);
     final newStandings = standingRows.map((s) {
-      final team = mockTeamById(s.teamId);
+      final team = teamRepository.findByIdOrUnknown(s.teamId);
       return {
         'rank': s.position,
         'teamId': s.teamId,
@@ -144,7 +145,7 @@ class _StandingTabState extends State<StandingTab> {
     if (_xgAvailable) {
       final xgRows = xgStandingsByLeague(selectedLeagueId);
       newXg = xgRows.map((x) {
-        final team = mockTeamById(x.teamId);
+        final team = teamRepository.findByIdOrUnknown(x.teamId);
         return {
           'rank': x.position,
           'teamId': x.teamId,

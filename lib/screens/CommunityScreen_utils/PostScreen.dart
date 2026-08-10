@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
@@ -86,8 +87,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final favoriteTeamColor =
-        Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    final favoriteTeamColor = Color(
+      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
+    );
     final gradientHeight = responsiveBrandGradientHeight(context);
 
     return Scaffold(

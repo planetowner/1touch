@@ -6,7 +6,8 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/helper.dart';
@@ -49,8 +50,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   final int userBalance = 1200;
 
   void _openBettingModal() {
-    final homeTeam = mockTeamById(widget.fixture.homeTeamId);
-    final awayTeam = mockTeamById(widget.fixture.awayTeamId);
+    final homeTeam =
+        teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
+    final awayTeam =
+        teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
 
     showModalBottomSheet(
       context: context,
@@ -69,8 +72,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
   @override
   Widget build(BuildContext context) {
-    final homeTeam = mockTeamById(widget.fixture.homeTeamId);
-    final awayTeam = mockTeamById(widget.fixture.awayTeamId);
+    final homeTeam =
+        teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
+    final awayTeam =
+        teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
 
     return SingleChildScrollView(
       child: Column(
@@ -110,8 +115,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
   Widget _buildHeader() {
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final home = mockTeamById(widget.fixture.homeTeamId);
-    final away = mockTeamById(widget.fixture.awayTeamId);
+    final home = teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
+    final away = teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
     final dt = DateTime.parse(widget.fixture.startingAt).toLocal();
     final date = DateFormat('EEE, MMM d').format(dt);
     final time = DateFormat('h:mm a').format(dt);
@@ -282,14 +287,20 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             Expanded(
               child: _buildLegendDot(
                 const Color(0xFFE8434A),
-                mockTeamById(widget.fixture.homeTeamId).name.toUpperCase(),
+                teamRepository
+                    .findByIdOrUnknown(widget.fixture.homeTeamId)
+                    .name
+                    .toUpperCase(),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildLegendDot(
                 foreground,
-                mockTeamById(widget.fixture.awayTeamId).name.toUpperCase(),
+                teamRepository
+                    .findByIdOrUnknown(widget.fixture.awayTeamId)
+                    .name
+                    .toUpperCase(),
               ),
             ),
           ],
@@ -335,8 +346,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
     if (h2h == null) return const SizedBox.shrink();
 
-    final home = mockTeamById(h2h.homeTeamId);
-    final away = mockTeamById(h2h.awayTeamId);
+    final home = teamRepository.findByIdOrUnknown(h2h.homeTeamId);
+    final away = teamRepository.findByIdOrUnknown(h2h.awayTeamId);
     final dt = DateTime.parse(h2h.startingAt).toLocal();
     final date = DateFormat('EEE, MMM d').format(dt);
     final time = DateFormat('h:mm a').format(dt);
@@ -439,7 +450,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final visibleStandings = [...leaders, ...featured];
     final dividerIndex = featured.isEmpty ? -1 : leaders.length;
     final rows = visibleStandings.map((standing) {
-      final team = mockTeamById(standing.teamId);
+      final team = teamRepository.findByIdOrUnknown(standing.teamId);
       return _StandingRow(
         pos: standing.position,
         name: team.shortCode ?? team.name,

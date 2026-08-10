@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/PlayerScreenFeatures.dart';
 import 'package:onetouch/models/player.dart';
 
@@ -49,7 +50,9 @@ class _PlayersState extends State<Players> {
         });
       });
 
-    _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    _teamColor = Color(
+      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
+    );
     // This tab stays alive in the bottom-nav shell, so listen for favorite
     // team switches made elsewhere (e.g. HomeScreen) instead of only
     // resolving the color once.
@@ -58,7 +61,9 @@ class _PlayersState extends State<Players> {
 
   void _handleFavoriteTeamChanged() {
     setState(() {
-      _teamColor = Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+      _teamColor = Color(
+        teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
+      );
     });
   }
 

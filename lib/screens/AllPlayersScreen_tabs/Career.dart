@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/team.dart';
@@ -56,8 +56,7 @@ class _CareerTabState extends State<CareerTab> {
   String _seasonKey(PlayerCareerSeason season) =>
       '${season.teamId}-${season.seasonLabel}';
 
-  Team? _teamFor(int teamId) =>
-      mockTeams.where((team) => team.teamId == teamId).firstOrNull;
+  Team? _teamFor(int teamId) => teamRepository.findById(teamId);
 
   List<String> get _competitionOptions {
     final codes = widget.player.careerSeasons

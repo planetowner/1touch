@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 
 // Maps a team's id to its local crest file in TeamLogos/, used as the
@@ -138,8 +139,8 @@ class MatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (match == null) return const SizedBox.shrink();
 
-    final homeTeam = mockTeamById(match!.homeTeamId);
-    final awayTeam = mockTeamById(match!.awayTeamId);
+    final homeTeam = teamRepository.findByIdOrUnknown(match!.homeTeamId);
+    final awayTeam = teamRepository.findByIdOrUnknown(match!.awayTeamId);
 
     return Container(
       key: const ValueKey('match-card-surface'),

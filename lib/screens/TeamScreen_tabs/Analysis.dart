@@ -4,7 +4,8 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import 'package:onetouch/models/team.dart';
@@ -188,7 +189,7 @@ class _AttributesSectionState extends State<AttributesSection> {
                 _legendDot(
                   Theme.of(context).colorScheme.onSurface,
                   '${_comparisonScores!.seasonLabel} '
-                  '${mockTeamById(_comparisonScores!.teamId).name.toUpperCase()}',
+                  '${teamRepository.findByIdOrUnknown(_comparisonScores!.teamId).name.toUpperCase()}',
                 ),
             ],
           ),
@@ -200,7 +201,7 @@ class _AttributesSectionState extends State<AttributesSection> {
   // ── Comparison picker pill (season-only for now) ────────────────────────
 
   Widget _buildComparisonPill() {
-    final team = mockTeamById(_teamId);
+    final team = teamRepository.findByIdOrUnknown(_teamId);
     final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 
@@ -56,10 +56,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     _favoriteTeamId = currentUserPreferences.favoriteTeamId.value;
 
     _followedTeams = currentUserPreferences.followedTeamIds.value
-        .map((id) => _toEntry(mockTeamById(id)))
+        .map((teamId) => teamRepository.requireById(teamId))
+        .map(_toEntry)
         .toList();
 
-    _allTeams = mockTeams.map(_toEntry).toList();
+    _allTeams = teamRepository.allTeams.map(_toEntry).toList();
 
     _searchController.addListener(_onSearch);
   }

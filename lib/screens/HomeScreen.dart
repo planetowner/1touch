@@ -3,7 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
@@ -56,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _reloadWithFavorite(int newFavoriteId) {
+    final favoriteTeam = teamRepository.requireById(newFavoriteId);
     _activeFavoriteTeamId = newFavoriteId;
 
     final followingIds = currentUserPreferences.followedTeamIds.value;
@@ -64,10 +66,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ...followingIds.where((id) => id != newFavoriteId),
     ];
 
-    final teams = ordered.map((id) {
-      final team = mockTeamById(id);
+    final teams = <TeamOverview>[];
+    for (final id in ordered) {
+      final team = teamRepository.requireById(id);
       final fixtures = fixturesByTeam(id);
-      return TeamOverview(
+      teams.add(TeamOverview(
         id: team.teamId,
         name: team.name,
         shortName: team.shortCode ?? '',
@@ -77,11 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
             .firstOrNull,
         lastMatch:
             fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull,
-      );
-    }).toList();
+      ));
+    }
 
     setState(() {
-      _teamColor = Color(mockTeamById(newFavoriteId).primaryColor);
+      _teamColor = Color(favoriteTeam.primaryColor);
       myTeam = teams;
       isLoading = false;
     });
@@ -245,8 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         GestureDetector(
                           onTap: () => TeamSelectionSheet.show(
                             context,
-                            initialFavoriteTeamId:
-                                _activeFavoriteTeamId ?? myTeam.first.id,
+                            initialFavoriteTeamId: favoriteTeamId,
                             onSwitch: _switchFavoriteTeam,
                           ),
                           child: Container(

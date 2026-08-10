@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
@@ -208,12 +209,12 @@ class _BracketMatchCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _BracketTeamRow(
-                    team: mockTeamById(match.homeTeamId),
+                    team: teamRepository.findByIdOrUnknown(match.homeTeamId),
                     score: _scoreFor(match, isHome: true),
                     highlighted: match.homeTeamId == currentTeamId,
                   ),
                   _BracketTeamRow(
-                    team: mockTeamById(match.awayTeamId),
+                    team: teamRepository.findByIdOrUnknown(match.awayTeamId),
                     score: _scoreFor(match, isHome: false),
                     highlighted: match.awayTeamId == currentTeamId,
                   ),

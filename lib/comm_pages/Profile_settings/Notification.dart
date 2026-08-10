@@ -4,7 +4,8 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 
 Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
       color: AppColors.of(context).divider,
@@ -85,7 +86,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     const SizedBox(height: 16),
                     ...teamIds.asMap().entries.map((entry) {
                       final i = entry.key;
-                      final teamName = mockTeamById(entry.value).name;
+                      final teamName =
+                          teamRepository.requireById(entry.value).name;
                       return Column(
                         children: [
                           _listRow(

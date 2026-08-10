@@ -5,7 +5,8 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
 
@@ -81,8 +82,8 @@ class _H2HTabState extends State<H2HTab> {
             child: Text('PAST MATCHES', style: Body2_b.style),
           ),
           ...h2hMatches.map((f) {
-            final home = mockTeamById(f.homeTeamId);
-            final away = mockTeamById(f.awayTeamId);
+            final home = teamRepository.findByIdOrUnknown(f.homeTeamId);
+            final away = teamRepository.findByIdOrUnknown(f.awayTeamId);
             final league = mockCompetitionById(f.competitionId);
             return _buildPastMatchCard(
               home.shortCode ?? home.name,
@@ -176,7 +177,8 @@ class _H2HTabState extends State<H2HTab> {
               // shell's navigator. go() (not push()) so it actually surfaces.
               onTap: () => context.go('/team/$_againstTeamId'),
               child: Image.network(
-                mockTeamById(_againstTeamId).imagePath ?? '',
+                teamRepository.findByIdOrUnknown(_againstTeamId).imagePath ??
+                    '',
                 fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) =>
                     teamLogoFallback(_againstTeamId, size: 40),

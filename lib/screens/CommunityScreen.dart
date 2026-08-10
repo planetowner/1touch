@@ -5,7 +5,8 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/helper.dart';
@@ -29,7 +30,10 @@ String _formatFollowers(int count) {
 class Community extends StatefulWidget {
   final int teamId;
 
-  const Community({super.key, required this.teamId});
+  const Community({
+    super.key,
+    required this.teamId,
+  });
 
   @override
   State<Community> createState() => _CommunityState();
@@ -74,7 +78,7 @@ class _CommunityState extends State<Community>
   }
 
   void _loadTeam() {
-    _team = mockTeamById(widget.teamId);
+    _team = teamRepository.requireById(widget.teamId);
     _isLive = _hasLiveFixture(widget.teamId);
     _followerCount =
         mockUserFollowingTeams.where((f) => f.teamId == widget.teamId).length;
@@ -96,6 +100,7 @@ class _CommunityState extends State<Community>
     final appColors = AppColors.of(context);
     final isLight = Theme.of(context).brightness == Brightness.light;
     final headerForeground = isLight ? AppPalette.black : AppPalette.white;
+    final team = _team;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -130,8 +135,8 @@ class _CommunityState extends State<Community>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(_team.primaryColor),
-                      Color(_team.primaryColor).withAlpha(0)
+                      Color(team.primaryColor),
+                      Color(team.primaryColor).withAlpha(0)
                     ],
                     stops: const [0.0, 0.6],
                   ),
@@ -158,8 +163,8 @@ class _CommunityState extends State<Community>
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(_team.primaryColor),
-                        Color(_team.primaryColor).withAlpha(0)
+                        Color(team.primaryColor),
+                        Color(team.primaryColor).withAlpha(0)
                       ],
                     ),
                   ),
@@ -210,14 +215,14 @@ class _CommunityState extends State<Community>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       GestureDetector(
-                        onTap: () => context.push('/team/${_team.teamId}'),
-                        child: _team.imagePath != null
+                        onTap: () => context.push('/team/${team.teamId}'),
+                        child: team.imagePath != null
                             ? Image.network(
-                                _team.imagePath!,
+                                team.imagePath!,
                                 height: 52,
                                 width: 52,
                                 errorBuilder: (_, __, ___) =>
-                                    teamLogoFallback(_team.teamId, size: 52),
+                                    teamLogoFallback(team.teamId, size: 52),
                               )
                             : const Icon(Icons.shield,
                                 color: Colors.white54, size: 52),
@@ -231,7 +236,7 @@ class _CommunityState extends State<Community>
                               children: [
                                 Flexible(
                                   child: Text(
-                                    _team.name,
+                                    team.name,
                                     key: const ValueKey('community-team-name'),
                                     style: Heading4.style
                                         .copyWith(color: headerForeground),

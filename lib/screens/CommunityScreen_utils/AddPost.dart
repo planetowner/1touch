@@ -6,7 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 
@@ -120,8 +121,9 @@ class _AddPostState extends State<AddPost> {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final favoriteTeamColor =
-        Color(mockTeamById(FavoriteTeam.id.value).primaryColor);
+    final favoriteTeamColor = Color(
+      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
+    );
     final selectedCategoryLabel =
         _categoryLabel(_selectedCategory).toUpperCase();
     final categoryLabelPainter = TextPainter(

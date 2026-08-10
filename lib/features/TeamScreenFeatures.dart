@@ -7,7 +7,8 @@ import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/transfers/mock/transfer_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/best_eleven.dart';
@@ -82,8 +83,10 @@ class _FixturesState extends State<Fixtures> {
                     onTap: () => context.push(
                         '/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}'),
                     child: () {
-                      final home = mockTeamById(lastMatch.homeTeamId);
-                      final away = mockTeamById(lastMatch.awayTeamId);
+                      final home = teamRepository
+                          .findByIdOrUnknown(lastMatch.homeTeamId);
+                      final away = teamRepository
+                          .findByIdOrUnknown(lastMatch.awayTeamId);
                       return MatchCard2(
                         date: _formatMatchDate(lastMatch.startingAt),
                         venue: '',
@@ -170,18 +173,18 @@ class _StandingState extends State<Standing> {
 
   List<Map<String, dynamic>> _rowsForLeague(int leagueId, int? currentTeamId) {
     final standings = standingsByCompetition(leagueId);
-    final allRows = standings
-        .map((s) => {
-              'rank': s.position,
-              'team': mockTeamById(s.teamId).shortCode ??
-                  mockTeamById(s.teamId).name,
-              'mp': s.matchesPlayed.toString(),
-              'w': s.won.toString(),
-              'd': s.draw.toString(),
-              'l': s.lost.toString(),
-              'hl': s.teamId == currentTeamId,
-            })
-        .toList();
+    final allRows = standings.map((s) {
+      final team = teamRepository.findByIdOrUnknown(s.teamId);
+      return {
+        'rank': s.position,
+        'team': team.shortCode ?? team.name,
+        'mp': s.matchesPlayed.toString(),
+        'w': s.won.toString(),
+        'd': s.draw.toString(),
+        'l': s.lost.toString(),
+        'hl': s.teamId == currentTeamId,
+      };
+    }).toList();
 
     final currentIndex = allRows.indexWhere((r) => r['hl'] == true);
     if (currentIndex == -1) return allRows.take(3).toList();

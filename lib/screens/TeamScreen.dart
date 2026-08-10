@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart'
+    as team_providers;
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'TeamScreen_tabs/index.dart';
@@ -14,8 +16,13 @@ import '../models/team_overview.dart';
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
+  final TeamRepository? teamRepository;
 
-  TeamScreen({super.key, required this.teamId});
+  TeamScreen({
+    super.key,
+    required this.teamId,
+    this.teamRepository,
+  });
 
   @override
   _TeamScreenState createState() => _TeamScreenState();
@@ -30,6 +37,9 @@ class _TeamScreenState extends State<TeamScreen>
   Map<String, dynamic>? team;
   bool isLoading = true;
   Color _teamColor = const Color(0xFFD82457);
+
+  TeamRepository get _teamRepository =>
+      widget.teamRepository ?? team_providers.teamRepository;
 
   // Future<void> fetchTeamData() async {
   //   final url =
@@ -116,14 +126,15 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void loadMockData() {
-    // Look up team from mock data
-    final mockTeam =
-        mockTeams.where((t) => t.teamId == widget.teamId).firstOrNull;
-    if (mockTeam == null) {
-      setState(() => isLoading = false);
+    final resolvedTeam = _teamRepository.findById(widget.teamId);
+    if (resolvedTeam == null) {
+      setState(() {
+        team = null;
+        isLoading = false;
+      });
       return;
     }
-    _teamColor = Color(mockTeam.primaryColor);
+    _teamColor = Color(resolvedTeam.primaryColor);
 
     final fixtures = fixturesByTeam(widget.teamId);
     final nextMatch =
@@ -143,10 +154,10 @@ class _TeamScreenState extends State<TeamScreen>
 
     // Build team view model
     final teamObj = TeamOverview(
-      id: mockTeam.teamId,
-      name: mockTeam.name,
-      shortName: mockTeam.shortCode ?? '',
-      imagePath: mockTeam.imagePath ?? '',
+      id: resolvedTeam.teamId,
+      name: resolvedTeam.name,
+      shortName: resolvedTeam.shortCode ?? '',
+      imagePath: resolvedTeam.imagePath ?? '',
       standing: standing != null
           ? {
               'position': standing.position,
@@ -207,8 +218,9 @@ class _TeamScreenState extends State<TeamScreen>
 
     if (team == null) {
       return Scaffold(
+        key: const ValueKey('team-not-found'),
         backgroundColor: pageBackground,
-        body: const Center(child: Text("Team Not Found")),
+        body: const Center(child: Text('Team Not Found')),
       );
     }
 

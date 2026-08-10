@@ -28,6 +28,26 @@ void teamRepositoryContract({
     expect(repository.findById(-1), isNull);
   });
 
+  test('makes required-team invariants explicit', () {
+    expect(
+      repository.requireById(knownTeamId),
+      same(repository.findById(knownTeamId)),
+    );
+    expect(() => repository.requireById(-1), throwsStateError);
+  });
+
+  test('provides an explicit fallback for embedded team references', () {
+    expect(
+      repository.findByIdOrUnknown(knownTeamId),
+      same(repository.findById(knownTeamId)),
+    );
+
+    final unknown = repository.findByIdOrUnknown(-1);
+    expect(unknown.teamId, -1);
+    expect(unknown.name, 'Unknown Team');
+    expect(unknown.imagePath, isNull);
+  });
+
   test('distinguishes present and absent team IDs', () {
     expect(repository.contains(knownTeamId), isTrue);
     expect(repository.contains(-1), isFalse);
