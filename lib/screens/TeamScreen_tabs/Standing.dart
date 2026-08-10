@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
@@ -43,7 +43,7 @@ class _StandingTabState extends State<StandingTab> {
 
   List<Fixture> get _selectedKnockoutFixtures => mockFixtures
       .where((fixture) =>
-          fixture.leagueId == selectedLeagueId &&
+          fixture.competitionId == selectedLeagueId &&
           fixture.seasonId == selectedSeasonId &&
           fixture.competitionType == CompetitionType.europe &&
           knockoutRoundFromName(fixture.roundName) != null)
@@ -81,18 +81,18 @@ class _StandingTabState extends State<StandingTab> {
         : const <Fixture>[];
 
     _validLeagueIds = fixtures
-        .map((f) => f.leagueId)
+        .map((f) => f.competitionId)
         .toSet()
-        .where((id) => standingsByLeague(id).isNotEmpty)
+        .where((id) => standingsByCompetition(id).isNotEmpty)
         .toList();
 
     final leagueId = _validLeagueIds.isNotEmpty
         ? _validLeagueIds.first
-        : mockLeagues.first.leagueId;
+        : mockCompetitions.first.competitionId;
 
     final seasonId = mockSeasons
         .firstWhere(
-          (s) => s.leagueId == leagueId && s.isCurrent,
+          (s) => s.competitionId == leagueId && s.isCurrent,
           orElse: () => mockSeasons.first,
         )
         .seasonId;
@@ -120,7 +120,7 @@ class _StandingTabState extends State<StandingTab> {
 
   void _loadData() {
     // ── Standings (always) ───────────────────────────────────────────
-    final standingRows = standingsByLeague(selectedLeagueId);
+    final standingRows = standingsByCompetition(selectedLeagueId);
     final newStandings = standingRows.map((s) {
       final team = mockTeamById(s.teamId);
       return {
@@ -276,10 +276,10 @@ class _StandingTabState extends State<StandingTab> {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     final availableLeagues = _validLeagueIds.isNotEmpty
-        ? mockLeagues
-            .where((l) => _validLeagueIds.contains(l.leagueId))
+        ? mockCompetitions
+            .where((l) => _validLeagueIds.contains(l.competitionId))
             .toList()
-        : mockLeagues;
+        : mockCompetitions;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -297,8 +297,9 @@ class _StandingTabState extends State<StandingTab> {
           onChanged: (val) {
             if (val == null) return;
             final season = mockSeasons.firstWhere(
-              (s) => s.leagueId == val && s.isCurrent,
-              orElse: () => mockSeasons.firstWhere((s) => s.leagueId == val),
+              (s) => s.competitionId == val && s.isCurrent,
+              orElse: () =>
+                  mockSeasons.firstWhere((s) => s.competitionId == val),
             );
             setState(() {
               selectedLeagueId = val;
@@ -314,7 +315,7 @@ class _StandingTabState extends State<StandingTab> {
           items: availableLeagues
               .map(
                 (l) => DropdownMenuItem(
-                  value: l.leagueId,
+                  value: l.competitionId,
                   child: Text(
                     l.name,
                     style: Body2_b.style.copyWith(color: colors.onSurface),
@@ -331,7 +332,7 @@ class _StandingTabState extends State<StandingTab> {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     final seasons =
-        mockSeasons.where((s) => s.leagueId == selectedLeagueId).toList();
+        mockSeasons.where((s) => s.competitionId == selectedLeagueId).toList();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),

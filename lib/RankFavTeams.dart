@@ -4,7 +4,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/models/team.dart';
 
@@ -33,11 +33,13 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
   String _leagueSubtitle(Team team) {
     final standing = mockStandings
         .where((s) =>
-            s.teamId == team.teamId && _domesticLeagueIds.contains(s.leagueId))
+            s.teamId == team.teamId &&
+            _domesticLeagueIds.contains(s.competitionId))
         .firstOrNull;
     if (standing == null) return '';
-    final league =
-        mockLeagues.where((l) => l.leagueId == standing.leagueId).firstOrNull;
+    final league = mockCompetitions
+        .where((l) => l.competitionId == standing.competitionId)
+        .firstOrNull;
     return '${league?.name ?? ''} ${_ordinal(standing.position)}';
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -7,6 +8,9 @@ void main() {
     favoriteTeamId: 83,
     followedTeamIds: [83, 503],
   );
+  late _TrackingTeamRepository teamRepository;
+
+  setUp(() => teamRepository = _TrackingTeamRepository());
 
   test('loads and normalizes stored team preferences', () async {
     final repository = _FakeUserPreferencesRepository(
@@ -14,9 +18,11 @@ void main() {
         favoriteTeamId: 8,
         followedTeamIds: [19, 8, 19, -1],
       ),
+      onLoad: () => expect(teamRepository.isInitialized, isTrue),
     );
     final preferences = CurrentUserPreferences(
       repository: repository,
+      teamRepository: teamRepository,
       fallback: fallback,
     );
 
@@ -24,12 +30,14 @@ void main() {
 
     expect(preferences.favoriteTeamId.value, 8);
     expect(preferences.followedTeamIds.value, [8, 19]);
+    expect(teamRepository.isInitialized, isTrue);
   });
 
   test('uses onboarding rank order and persists it', () async {
     final repository = _FakeUserPreferencesRepository();
     final preferences = CurrentUserPreferences(
       repository: repository,
+      teamRepository: teamRepository,
       fallback: fallback,
     );
 
@@ -45,6 +53,7 @@ void main() {
     final repository = _FakeUserPreferencesRepository();
     final preferences = CurrentUserPreferences(
       repository: repository,
+      teamRepository: teamRepository,
       fallback: fallback,
     );
 
@@ -59,6 +68,7 @@ void main() {
     final repository = _FakeUserPreferencesRepository();
     final preferences = CurrentUserPreferences(
       repository: repository,
+      teamRepository: teamRepository,
       fallback: fallback,
     );
 
@@ -90,16 +100,30 @@ void main() {
 }
 
 class _FakeUserPreferencesRepository implements UserPreferencesRepository {
-  _FakeUserPreferencesRepository({this.stored});
+  _FakeUserPreferencesRepository({this.stored, this.onLoad});
 
   UserTeamPreferences? stored;
   UserTeamPreferences? saved;
+  final void Function()? onLoad;
 
   @override
-  Future<UserTeamPreferences?> load() async => stored;
+  Future<UserTeamPreferences?> load() async {
+    onLoad?.call();
+    return stored;
+  }
 
   @override
   Future<void> save(UserTeamPreferences preferences) async {
     saved = preferences;
+  }
+}
+
+class _TrackingTeamRepository extends MockTeamRepository {
+  bool isInitialized = false;
+
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+    isInitialized = true;
   }
 }

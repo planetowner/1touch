@@ -17,7 +17,7 @@ void showReportDialog(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: isDark ? const Color(0xFF2C2C2C) : AppPalette.white,
+    backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
@@ -132,7 +132,7 @@ void showThanksDialog(BuildContext context) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   showModalBottomSheet(
     context: context,
-    backgroundColor: isDark ? const Color(0xFF2C2C2C) : AppPalette.white,
+    backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),

@@ -7,7 +7,7 @@ import 'package:onetouch/models/standing.dart';
 const mockStandings = <Standing>[
   // ── Premier League (league 8, season 25583) ──
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -23,7 +23,7 @@ const mockStandings = <Standing>[
       points: 92,
       last5Form: ['W', 'W', 'W', 'W', 'D']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -39,7 +39,7 @@ const mockStandings = <Standing>[
       points: 89,
       last5Form: ['W', 'W', 'D', 'W', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -55,7 +55,7 @@ const mockStandings = <Standing>[
       points: 69,
       last5Form: ['W', 'L', 'W', 'W', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -71,7 +71,7 @@ const mockStandings = <Standing>[
       points: 67,
       last5Form: ['W', 'W', 'L', 'D', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -87,7 +87,7 @@ const mockStandings = <Standing>[
       points: 66,
       last5Form: ['W', 'W', 'D', 'D', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -103,7 +103,7 @@ const mockStandings = <Standing>[
       points: 65,
       last5Form: ['D', 'W', 'D', 'W', 'L']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -119,7 +119,7 @@ const mockStandings = <Standing>[
       points: 64,
       last5Form: ['W', 'W', 'W', 'L', 'L']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -135,7 +135,7 @@ const mockStandings = <Standing>[
       points: 59,
       last5Form: ['L', 'W', 'W', 'D', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -151,7 +151,7 @@ const mockStandings = <Standing>[
       points: 58,
       last5Form: ['L', 'L', 'D', 'L', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -167,7 +167,7 @@ const mockStandings = <Standing>[
       points: 58,
       last5Form: ['W', 'W', 'L', 'L', 'L']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -183,7 +183,7 @@ const mockStandings = <Standing>[
       points: 54,
       last5Form: ['L', 'D', 'D', 'W', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -199,7 +199,7 @@ const mockStandings = <Standing>[
       points: 54,
       last5Form: ['L', 'W', 'L', 'L', 'L']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -215,7 +215,7 @@ const mockStandings = <Standing>[
       points: 49,
       last5Form: ['D', 'W', 'W', 'D', 'L']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -231,7 +231,7 @@ const mockStandings = <Standing>[
       points: 45,
       last5Form: ['D', 'D', 'L', 'D', 'L']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -247,7 +247,7 @@ const mockStandings = <Standing>[
       points: 42,
       last5Form: ['D', 'D', 'W', 'L', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -263,7 +263,7 @@ const mockStandings = <Standing>[
       points: 40,
       last5Form: ['L', 'D', 'L', 'W', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -279,7 +279,7 @@ const mockStandings = <Standing>[
       points: 37,
       last5Form: ['D', 'W', 'D', 'W', 'L']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -295,7 +295,7 @@ const mockStandings = <Standing>[
       points: 30,
       last5Form: ['L', 'D', 'W', 'W', 'W']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -311,7 +311,7 @@ const mockStandings = <Standing>[
       points: 25,
       last5Form: ['W', 'L', 'L', 'L', 'D']),
   Standing(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       phase: StandingPhase.league,
       groupName: '',
@@ -328,7 +328,7 @@ const mockStandings = <Standing>[
       last5Form: ['D', 'L', 'D', 'D', 'D']),
   // ── La Liga (league 564, season 25659) ──
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -344,7 +344,7 @@ const mockStandings = <Standing>[
       points: 90,
       last5Form: ['D', 'L', 'D', 'W', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -360,7 +360,7 @@ const mockStandings = <Standing>[
       points: 84,
       last5Form: ['W', 'D', 'W', 'D', 'L']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -376,7 +376,7 @@ const mockStandings = <Standing>[
       points: 80,
       last5Form: ['L', 'W', 'D', 'W', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -392,7 +392,7 @@ const mockStandings = <Standing>[
       points: 69,
       last5Form: ['W', 'W', 'L', 'D', 'D']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -408,7 +408,7 @@ const mockStandings = <Standing>[
       points: 68,
       last5Form: ['W', 'D', 'D', 'D', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -424,7 +424,7 @@ const mockStandings = <Standing>[
       points: 63,
       last5Form: ['L', 'W', 'W', 'W', 'L']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -440,7 +440,7 @@ const mockStandings = <Standing>[
       points: 60,
       last5Form: ['L', 'L', 'D', 'W', 'L']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -456,7 +456,7 @@ const mockStandings = <Standing>[
       points: 58,
       last5Form: ['L', 'L', 'D', 'W', 'D']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -472,7 +472,7 @@ const mockStandings = <Standing>[
       points: 55,
       last5Form: ['D', 'W', 'L', 'L', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -488,7 +488,7 @@ const mockStandings = <Standing>[
       points: 55,
       last5Form: ['W', 'L', 'D', 'D', 'D']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -504,7 +504,7 @@ const mockStandings = <Standing>[
       points: 54,
       last5Form: ['W', 'D', 'D', 'D', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -520,7 +520,7 @@ const mockStandings = <Standing>[
       points: 45,
       last5Form: ['D', 'L', 'L', 'L', 'D']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -536,7 +536,7 @@ const mockStandings = <Standing>[
       points: 42,
       last5Form: ['L', 'L', 'W', 'L', 'L']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -552,7 +552,7 @@ const mockStandings = <Standing>[
       points: 40,
       last5Form: ['W', 'L', 'L', 'W', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -568,7 +568,7 @@ const mockStandings = <Standing>[
       points: 39,
       last5Form: ['L', 'L', 'W', 'L', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -584,7 +584,7 @@ const mockStandings = <Standing>[
       points: 37,
       last5Form: ['D', 'D', 'L', 'L', 'L']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -600,7 +600,7 @@ const mockStandings = <Standing>[
       points: 34,
       last5Form: ['W', 'D', 'L', 'L', 'D']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -616,7 +616,7 @@ const mockStandings = <Standing>[
       points: 33,
       last5Form: ['L', 'W', 'D', 'W', 'L']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -632,7 +632,7 @@ const mockStandings = <Standing>[
       points: 30,
       last5Form: ['D', 'L', 'D', 'L', 'W']),
   Standing(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       phase: StandingPhase.league,
       groupName: '',
@@ -649,7 +649,7 @@ const mockStandings = <Standing>[
       last5Form: ['L', 'L', 'W', 'L', 'L']),
   // ── Serie A (league 384, season 25533) ──
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -665,7 +665,7 @@ const mockStandings = <Standing>[
       points: 97,
       last5Form: ['W', 'D', 'D', 'W', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -681,7 +681,7 @@ const mockStandings = <Standing>[
       points: 77,
       last5Form: ['D', 'W', 'D', 'W', 'W']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -697,7 +697,7 @@ const mockStandings = <Standing>[
       points: 77,
       last5Form: ['W', 'W', 'W', 'W', 'W']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -713,7 +713,7 @@ const mockStandings = <Standing>[
       points: 74,
       last5Form: ['W', 'W', 'W', 'D', 'W']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -729,7 +729,7 @@ const mockStandings = <Standing>[
       points: 73,
       last5Form: ['D', 'D', 'W', 'D', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -745,7 +745,7 @@ const mockStandings = <Standing>[
       points: 73,
       last5Form: ['L', 'W', 'D', 'L', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -761,7 +761,7 @@ const mockStandings = <Standing>[
       points: 65,
       last5Form: ['W', 'D', 'W', 'W', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -777,7 +777,7 @@ const mockStandings = <Standing>[
       points: 53,
       last5Form: ['W', 'W', 'D', 'L', 'W']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -793,7 +793,7 @@ const mockStandings = <Standing>[
       points: 52,
       last5Form: ['D', 'L', 'W', 'W', 'W']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -809,7 +809,7 @@ const mockStandings = <Standing>[
       points: 49,
       last5Form: ['W', 'W', 'W', 'D', 'W']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -825,7 +825,7 @@ const mockStandings = <Standing>[
       points: 46,
       last5Form: ['D', 'D', 'W', 'D', 'L']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -841,7 +841,7 @@ const mockStandings = <Standing>[
       points: 45,
       last5Form: ['W', 'L', 'W', 'W', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -857,7 +857,7 @@ const mockStandings = <Standing>[
       points: 45,
       last5Form: ['L', 'W', 'L', 'L', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -873,7 +873,7 @@ const mockStandings = <Standing>[
       points: 43,
       last5Form: ['W', 'L', 'L', 'W', 'L']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -889,7 +889,7 @@ const mockStandings = <Standing>[
       points: 43,
       last5Form: ['L', 'W', 'D', 'L', 'L']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -905,7 +905,7 @@ const mockStandings = <Standing>[
       points: 39,
       last5Form: ['L', 'L', 'D', 'L', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -921,7 +921,7 @@ const mockStandings = <Standing>[
       points: 38,
       last5Form: ['L', 'W', 'L', 'W', 'L']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -937,7 +937,7 @@ const mockStandings = <Standing>[
       points: 31,
       last5Form: ['L', 'L', 'L', 'L', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -953,7 +953,7 @@ const mockStandings = <Standing>[
       points: 31,
       last5Form: ['W', 'L', 'L', 'L', 'D']),
   Standing(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       phase: StandingPhase.league,
       groupName: '',
@@ -970,7 +970,7 @@ const mockStandings = <Standing>[
       last5Form: ['L', 'L', 'L', 'W', 'D']),
   // ── Bundesliga (league 82, season 25646) ──
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -986,7 +986,7 @@ const mockStandings = <Standing>[
       points: 87,
       last5Form: ['W', 'W', 'L', 'L', 'W']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1002,7 +1002,7 @@ const mockStandings = <Standing>[
       points: 74,
       last5Form: ['W', 'D', 'W', 'D', 'D']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1018,7 +1018,7 @@ const mockStandings = <Standing>[
       points: 70,
       last5Form: ['W', 'W', 'W', 'D', 'W']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1034,7 +1034,7 @@ const mockStandings = <Standing>[
       points: 66,
       last5Form: ['W', 'L', 'W', 'W', 'W']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1050,7 +1050,7 @@ const mockStandings = <Standing>[
       points: 64,
       last5Form: ['W', 'D', 'D', 'W', 'D']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1066,7 +1066,7 @@ const mockStandings = <Standing>[
       points: 63,
       last5Form: ['W', 'W', 'L', 'W', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1082,7 +1082,7 @@ const mockStandings = <Standing>[
       points: 49,
       last5Form: ['L', 'D', 'D', 'D', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1098,7 +1098,7 @@ const mockStandings = <Standing>[
       points: 48,
       last5Form: ['W', 'D', 'L', 'W', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1114,7 +1114,7 @@ const mockStandings = <Standing>[
       points: 45,
       last5Form: ['W', 'W', 'D', 'W', 'W']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1130,7 +1130,7 @@ const mockStandings = <Standing>[
       points: 45,
       last5Form: ['D', 'L', 'L', 'D', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1146,7 +1146,7 @@ const mockStandings = <Standing>[
       points: 44,
       last5Form: ['W', 'W', 'D', 'L', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1162,7 +1162,7 @@ const mockStandings = <Standing>[
       points: 42,
       last5Form: ['L', 'W', 'L', 'L', 'W']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1178,7 +1178,7 @@ const mockStandings = <Standing>[
       points: 41,
       last5Form: ['L', 'W', 'L', 'L', 'W']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1194,7 +1194,7 @@ const mockStandings = <Standing>[
       points: 40,
       last5Form: ['L', 'D', 'W', 'L', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1210,7 +1210,7 @@ const mockStandings = <Standing>[
       points: 40,
       last5Form: ['L', 'D', 'D', 'D', 'D']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1226,7 +1226,7 @@ const mockStandings = <Standing>[
       points: 38,
       last5Form: ['L', 'L', 'L', 'D', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1242,7 +1242,7 @@ const mockStandings = <Standing>[
       points: 24,
       last5Form: ['L', 'L', 'W', 'W', 'L']),
   Standing(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       phase: StandingPhase.league,
       groupName: '',
@@ -1259,7 +1259,7 @@ const mockStandings = <Standing>[
       last5Form: ['D', 'L', 'L', 'W', 'D']),
   // ── Ligue 1 (league 301, season 25651) ──
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1275,7 +1275,7 @@ const mockStandings = <Standing>[
       points: 84,
       last5Form: ['L', 'W', 'W', 'W', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1291,7 +1291,7 @@ const mockStandings = <Standing>[
       points: 71,
       last5Form: ['W', 'W', 'W', 'D', 'D']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1307,7 +1307,7 @@ const mockStandings = <Standing>[
       points: 71,
       last5Form: ['W', 'W', 'D', 'D', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1323,7 +1323,7 @@ const mockStandings = <Standing>[
       points: 64,
       last5Form: ['W', 'W', 'W', 'W', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1339,7 +1339,7 @@ const mockStandings = <Standing>[
       points: 63,
       last5Form: ['L', 'L', 'D', 'L', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1355,7 +1355,7 @@ const mockStandings = <Standing>[
       points: 59,
       last5Form: ['L', 'L', 'D', 'D', 'D']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1371,7 +1371,7 @@ const mockStandings = <Standing>[
       points: 54,
       last5Form: ['W', 'L', 'W', 'D', 'D']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1387,7 +1387,7 @@ const mockStandings = <Standing>[
       points: 54,
       last5Form: ['W', 'L', 'D', 'W', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1403,7 +1403,7 @@ const mockStandings = <Standing>[
       points: 50,
       last5Form: ['W', 'W', 'D', 'W', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1419,7 +1419,7 @@ const mockStandings = <Standing>[
       points: 48,
       last5Form: ['W', 'W', 'D', 'D', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1435,7 +1435,7 @@ const mockStandings = <Standing>[
       points: 42,
       last5Form: ['L', 'L', 'D', 'W', 'L']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1451,7 +1451,7 @@ const mockStandings = <Standing>[
       points: 41,
       last5Form: ['L', 'W', 'D', 'W', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1467,7 +1467,7 @@ const mockStandings = <Standing>[
       points: 36,
       last5Form: ['L', 'L', 'D', 'W', 'D']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1483,7 +1483,7 @@ const mockStandings = <Standing>[
       points: 35,
       last5Form: ['L', 'L', 'W', 'D', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1499,7 +1499,7 @@ const mockStandings = <Standing>[
       points: 33,
       last5Form: ['L', 'W', 'L', 'W', 'L']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1515,7 +1515,7 @@ const mockStandings = <Standing>[
       points: 33,
       last5Form: ['W', 'D', 'D', 'L', 'D']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1531,7 +1531,7 @@ const mockStandings = <Standing>[
       points: 27,
       last5Form: ['L', 'L', 'W', 'L', 'W']),
   Standing(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       phase: StandingPhase.league,
       groupName: '',
@@ -1548,7 +1548,7 @@ const mockStandings = <Standing>[
       last5Form: ['L', 'D', 'L', 'W', 'L']),
   // ── UCL league phase (league 2, season 23804) ──
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1564,7 +1564,7 @@ const mockStandings = <Standing>[
       points: 21,
       last5Form: ['W', 'W', 'L', 'W', 'W']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1580,7 +1580,7 @@ const mockStandings = <Standing>[
       points: 19,
       last5Form: ['W', 'W', 'W', 'D', 'W']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1596,7 +1596,7 @@ const mockStandings = <Standing>[
       points: 19,
       last5Form: ['W', 'D', 'W', 'W', 'W']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1612,7 +1612,7 @@ const mockStandings = <Standing>[
       points: 17,
       last5Form: ['W', 'W', 'D', 'W', 'L']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1628,7 +1628,7 @@ const mockStandings = <Standing>[
       points: 17,
       last5Form: ['W', 'D', 'W', 'W', 'L']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1644,7 +1644,7 @@ const mockStandings = <Standing>[
       points: 16,
       last5Form: ['L', 'W', 'W', 'W', 'W']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1660,7 +1660,7 @@ const mockStandings = <Standing>[
       points: 15,
       last5Form: ['W', 'L', 'W', 'L', 'W']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1676,7 +1676,7 @@ const mockStandings = <Standing>[
       points: 15,
       last5Form: ['W', 'L', 'W', 'W', 'L']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1692,7 +1692,7 @@ const mockStandings = <Standing>[
       points: 13,
       last5Form: ['W', 'W', 'L', 'D', 'L']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1708,7 +1708,7 @@ const mockStandings = <Standing>[
       points: 13,
       last5Form: ['W', 'L', 'D', 'W', 'L']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1724,7 +1724,7 @@ const mockStandings = <Standing>[
       points: 12,
       last5Form: ['D', 'W', 'D', 'L', 'W']),
   Standing(
-      leagueId: 2,
+      competitionId: 2,
       seasonId: 23804,
       phase: StandingPhase.league,
       groupName: '',
@@ -1741,7 +1741,7 @@ const mockStandings = <Standing>[
       last5Form: ['L', 'W', 'D', 'L', 'W']),
   // ── Europa League phase (league 5, season 23805) ──
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1757,7 +1757,7 @@ const mockStandings = <Standing>[
       points: 19,
       last5Form: ['W', 'W', 'D', 'W', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1773,7 +1773,7 @@ const mockStandings = <Standing>[
       points: 18,
       last5Form: ['W', 'L', 'W', 'W', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1789,7 +1789,7 @@ const mockStandings = <Standing>[
       points: 17,
       last5Form: ['W', 'D', 'W', 'W', 'D']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1805,7 +1805,7 @@ const mockStandings = <Standing>[
       points: 16,
       last5Form: ['W', 'L', 'W', 'D', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1821,7 +1821,7 @@ const mockStandings = <Standing>[
       points: 15,
       last5Form: ['D', 'W', 'W', 'D', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1837,7 +1837,7 @@ const mockStandings = <Standing>[
       points: 14,
       last5Form: ['W', 'W', 'L', 'D', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1853,7 +1853,7 @@ const mockStandings = <Standing>[
       points: 13,
       last5Form: ['L', 'W', 'D', 'W', 'L']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1869,7 +1869,7 @@ const mockStandings = <Standing>[
       points: 13,
       last5Form: ['W', 'L', 'W', 'L', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1885,7 +1885,7 @@ const mockStandings = <Standing>[
       points: 12,
       last5Form: ['D', 'W', 'D', 'W', 'L']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1901,7 +1901,7 @@ const mockStandings = <Standing>[
       points: 11,
       last5Form: ['W', 'L', 'D', 'D', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1917,7 +1917,7 @@ const mockStandings = <Standing>[
       points: 10,
       last5Form: ['L', 'W', 'L', 'D', 'W']),
   Standing(
-      leagueId: 5,
+      competitionId: 5,
       seasonId: 23805,
       phase: StandingPhase.league,
       groupName: '',
@@ -1934,12 +1934,12 @@ const mockStandings = <Standing>[
       last5Form: ['D', 'L', 'W', 'D', 'L']),
 ];
 
-List<Standing> standingsByLeague(int leagueId) =>
-    mockStandings.where((s) => s.leagueId == leagueId).toList()
+List<Standing> standingsByCompetition(int competitionId) =>
+    mockStandings.where((s) => s.competitionId == competitionId).toList()
       ..sort((a, b) => a.position.compareTo(b.position));
 
-Standing? standingByTeam(int leagueId, int teamId) => mockStandings
-    .where((s) => s.leagueId == leagueId && s.teamId == teamId)
+Standing? standingByTeam(int competitionId, int teamId) => mockStandings
+    .where((s) => s.competitionId == competitionId && s.teamId == teamId)
     .firstOrNull;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1956,7 +1956,7 @@ Standing? standingByTeam(int leagueId, int teamId) => mockStandings
 const mockXgStandings = <XgStanding>[
   // ── Premier League (league 8, season 25583) ──
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 9,
       position: 1,
@@ -1968,7 +1968,7 @@ const mockXgStandings = <XgStanding>[
       xga: 42.339,
       xpts: 93.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 19,
       position: 2,
@@ -1980,7 +1980,7 @@ const mockXgStandings = <XgStanding>[
       xga: 31.936,
       xpts: 87.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 8,
       position: 3,
@@ -1992,7 +1992,7 @@ const mockXgStandings = <XgStanding>[
       xga: 49.882,
       xpts: 69.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 52,
       position: 4,
@@ -2004,7 +2004,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.442,
       xpts: 66.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 71,
       position: 5,
@@ -2016,7 +2016,7 @@ const mockXgStandings = <XgStanding>[
       xga: 51.364,
       xpts: 66.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 20,
       position: 6,
@@ -2028,7 +2028,7 @@ const mockXgStandings = <XgStanding>[
       xga: 54.624,
       xpts: 66.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 236,
       position: 7,
@@ -2040,7 +2040,7 @@ const mockXgStandings = <XgStanding>[
       xga: 54.292,
       xpts: 63.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 51,
       position: 8,
@@ -2052,7 +2052,7 @@ const mockXgStandings = <XgStanding>[
       xga: 54.594,
       xpts: 60.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 78,
       position: 9,
@@ -2064,7 +2064,7 @@ const mockXgStandings = <XgStanding>[
       xga: 50.673,
       xpts: 60.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 14,
       position: 10,
@@ -2076,7 +2076,7 @@ const mockXgStandings = <XgStanding>[
       xga: 47.734,
       xpts: 57.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 18,
       position: 11,
@@ -2088,7 +2088,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.634,
       xpts: 57.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 15,
       position: 12,
@@ -2100,7 +2100,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.753,
       xpts: 51.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 6,
       position: 13,
@@ -2112,7 +2112,7 @@ const mockXgStandings = <XgStanding>[
       xga: 54.233,
       xpts: 51.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 13,
       position: 14,
@@ -2124,7 +2124,7 @@ const mockXgStandings = <XgStanding>[
       xga: 57.303,
       xpts: 42.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 3,
       position: 15,
@@ -2136,7 +2136,7 @@ const mockXgStandings = <XgStanding>[
       xga: 58.091,
       xpts: 42.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 11,
       position: 16,
@@ -2148,7 +2148,7 @@ const mockXgStandings = <XgStanding>[
       xga: 59.105,
       xpts: 39.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 1,
       position: 17,
@@ -2160,7 +2160,7 @@ const mockXgStandings = <XgStanding>[
       xga: 64.033,
       xpts: 39.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 63,
       position: 18,
@@ -2172,7 +2172,7 @@ const mockXgStandings = <XgStanding>[
       xga: 59.118,
       xpts: 33.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 29,
       position: 19,
@@ -2184,7 +2184,7 @@ const mockXgStandings = <XgStanding>[
       xga: 65.535,
       xpts: 27.0),
   XgStanding(
-      leagueId: 8,
+      competitionId: 8,
       seasonId: 25583,
       teamId: 27,
       position: 20,
@@ -2197,7 +2197,7 @@ const mockXgStandings = <XgStanding>[
       xpts: 12.0),
   // ── La Liga (league 564, season 25659) ──
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 83,
       position: 1,
@@ -2209,7 +2209,7 @@ const mockXgStandings = <XgStanding>[
       xga: 46.937,
       xpts: 87.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 3468,
       position: 2,
@@ -2221,7 +2221,7 @@ const mockXgStandings = <XgStanding>[
       xga: 41.66,
       xpts: 84.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 3477,
       position: 3,
@@ -2233,7 +2233,7 @@ const mockXgStandings = <XgStanding>[
       xga: 50.158,
       xpts: 78.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 485,
       position: 4,
@@ -2245,7 +2245,7 @@ const mockXgStandings = <XgStanding>[
       xga: 46.354,
       xpts: 69.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 7980,
       position: 5,
@@ -2257,7 +2257,7 @@ const mockXgStandings = <XgStanding>[
       xga: 48.331,
       xpts: 66.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 594,
       position: 6,
@@ -2269,7 +2269,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.714,
       xpts: 66.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 13258,
       position: 7,
@@ -2281,7 +2281,7 @@ const mockXgStandings = <XgStanding>[
       xga: 44.863,
       xpts: 57.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 377,
       position: 8,
@@ -2293,7 +2293,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.028,
       xpts: 57.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 459,
       position: 9,
@@ -2305,7 +2305,7 @@ const mockXgStandings = <XgStanding>[
       xga: 50.432,
       xpts: 57.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 36,
       position: 10,
@@ -2317,7 +2317,7 @@ const mockXgStandings = <XgStanding>[
       xga: 52.688,
       xpts: 57.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 214,
       position: 11,
@@ -2329,7 +2329,7 @@ const mockXgStandings = <XgStanding>[
       xga: 51.401,
       xpts: 54.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 2975,
       position: 12,
@@ -2341,7 +2341,7 @@ const mockXgStandings = <XgStanding>[
       xga: 50.34,
       xpts: 48.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 106,
       position: 13,
@@ -2353,7 +2353,7 @@ const mockXgStandings = <XgStanding>[
       xga: 46.41,
       xpts: 42.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 231,
       position: 14,
@@ -2365,7 +2365,7 @@ const mockXgStandings = <XgStanding>[
       xga: 62.068,
       xpts: 42.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 3457,
       position: 15,
@@ -2377,7 +2377,7 @@ const mockXgStandings = <XgStanding>[
       xga: 64.347,
       xpts: 39.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 645,
       position: 16,
@@ -2389,7 +2389,7 @@ const mockXgStandings = <XgStanding>[
       xga: 61.345,
       xpts: 36.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 676,
       position: 17,
@@ -2401,7 +2401,7 @@ const mockXgStandings = <XgStanding>[
       xga: 58.23,
       xpts: 36.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 528,
       position: 18,
@@ -2413,7 +2413,7 @@ const mockXgStandings = <XgStanding>[
       xga: 59.629,
       xpts: 33.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 1099,
       position: 19,
@@ -2425,7 +2425,7 @@ const mockXgStandings = <XgStanding>[
       xga: 68.164,
       xpts: 33.0),
   XgStanding(
-      leagueId: 564,
+      competitionId: 564,
       seasonId: 25659,
       teamId: 93,
       position: 20,
@@ -2438,7 +2438,7 @@ const mockXgStandings = <XgStanding>[
       xpts: 24.0),
   // ── Serie A (league 384, season 25533) ──
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 2930,
       position: 1,
@@ -2450,7 +2450,7 @@ const mockXgStandings = <XgStanding>[
       xga: 33.338,
       xpts: 96.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 625,
       position: 2,
@@ -2462,7 +2462,7 @@ const mockXgStandings = <XgStanding>[
       xga: 34.656,
       xpts: 78.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 37,
       position: 3,
@@ -2474,7 +2474,7 @@ const mockXgStandings = <XgStanding>[
       xga: 41.224,
       xpts: 78.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 268,
       position: 4,
@@ -2486,7 +2486,7 @@ const mockXgStandings = <XgStanding>[
       xga: 38.082,
       xpts: 75.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 113,
       position: 5,
@@ -2498,7 +2498,7 @@ const mockXgStandings = <XgStanding>[
       xga: 41.014,
       xpts: 75.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 708,
       position: 6,
@@ -2510,7 +2510,7 @@ const mockXgStandings = <XgStanding>[
       xga: 49.484,
       xpts: 75.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 597,
       position: 7,
@@ -2522,7 +2522,7 @@ const mockXgStandings = <XgStanding>[
       xga: 40.392,
       xpts: 66.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 109,
       position: 8,
@@ -2534,7 +2534,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.919,
       xpts: 51.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 2714,
       position: 9,
@@ -2546,7 +2546,7 @@ const mockXgStandings = <XgStanding>[
       xga: 58.262,
       xpts: 51.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 102,
       position: 10,
@@ -2558,7 +2558,7 @@ const mockXgStandings = <XgStanding>[
       xga: 51.937,
       xpts: 48.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 8513,
       position: 11,
@@ -2570,7 +2570,7 @@ const mockXgStandings = <XgStanding>[
       xga: 48.849,
       xpts: 45.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 43,
       position: 12,
@@ -2582,7 +2582,7 @@ const mockXgStandings = <XgStanding>[
       xga: 46.513,
       xpts: 45.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 613,
       position: 13,
@@ -2594,7 +2594,7 @@ const mockXgStandings = <XgStanding>[
       xga: 56.067,
       xpts: 45.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 346,
       position: 14,
@@ -2606,7 +2606,7 @@ const mockXgStandings = <XgStanding>[
       xga: 54.789,
       xpts: 45.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 398,
       position: 15,
@@ -2618,7 +2618,7 @@ const mockXgStandings = <XgStanding>[
       xga: 58.017,
       xpts: 42.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 1123,
       position: 16,
@@ -2630,7 +2630,7 @@ const mockXgStandings = <XgStanding>[
       xga: 49.179,
       xpts: 39.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 10722,
       position: 17,
@@ -2642,7 +2642,7 @@ const mockXgStandings = <XgStanding>[
       xga: 63.547,
       xpts: 36.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 1072,
       position: 18,
@@ -2654,7 +2654,7 @@ const mockXgStandings = <XgStanding>[
       xga: 64.016,
       xpts: 33.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 585,
       position: 19,
@@ -2666,7 +2666,7 @@ const mockXgStandings = <XgStanding>[
       xga: 57.27,
       xpts: 30.0),
   XgStanding(
-      leagueId: 384,
+      competitionId: 384,
       seasonId: 25533,
       teamId: 7790,
       position: 20,
@@ -2679,7 +2679,7 @@ const mockXgStandings = <XgStanding>[
       xpts: 27.0),
   // ── Bundesliga (league 82, season 25646) ──
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 503,
       position: 1,
@@ -2691,7 +2691,7 @@ const mockXgStandings = <XgStanding>[
       xga: 43.774,
       xpts: 84.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 68,
       position: 2,
@@ -2703,7 +2703,7 @@ const mockXgStandings = <XgStanding>[
       xga: 42.245,
       xpts: 72.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 277,
       position: 3,
@@ -2715,7 +2715,7 @@ const mockXgStandings = <XgStanding>[
       xga: 50.941,
       xpts: 69.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 3319,
       position: 4,
@@ -2727,7 +2727,7 @@ const mockXgStandings = <XgStanding>[
       xga: 50.456,
       xpts: 66.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 2726,
       position: 5,
@@ -2739,7 +2739,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.245,
       xpts: 66.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 3321,
       position: 6,
@@ -2751,7 +2751,7 @@ const mockXgStandings = <XgStanding>[
       xga: 49.331,
       xpts: 63.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 3543,
       position: 7,
@@ -2763,7 +2763,7 @@ const mockXgStandings = <XgStanding>[
       xga: 52.054,
       xpts: 51.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 794,
       position: 8,
@@ -2775,7 +2775,7 @@ const mockXgStandings = <XgStanding>[
       xga: 58.835,
       xpts: 48.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 366,
       position: 9,
@@ -2787,7 +2787,7 @@ const mockXgStandings = <XgStanding>[
       xga: 53.742,
       xpts: 42.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 1079,
       position: 10,
@@ -2799,7 +2799,7 @@ const mockXgStandings = <XgStanding>[
       xga: 55.556,
       xpts: 42.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 90,
       position: 11,
@@ -2811,7 +2811,7 @@ const mockXgStandings = <XgStanding>[
       xga: 63.079,
       xpts: 42.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 510,
       position: 12,
@@ -2823,7 +2823,7 @@ const mockXgStandings = <XgStanding>[
       xga: 63.136,
       xpts: 42.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 82,
       position: 13,
@@ -2835,7 +2835,7 @@ const mockXgStandings = <XgStanding>[
       xga: 58.486,
       xpts: 42.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 3320,
       position: 14,
@@ -2847,7 +2847,7 @@ const mockXgStandings = <XgStanding>[
       xga: 59.031,
       xpts: 39.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 683,
       position: 15,
@@ -2859,7 +2859,7 @@ const mockXgStandings = <XgStanding>[
       xga: 54.834,
       xpts: 39.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 2708,
       position: 16,
@@ -2871,7 +2871,7 @@ const mockXgStandings = <XgStanding>[
       xga: 62.981,
       xpts: 39.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 2831,
       position: 17,
@@ -2883,7 +2883,7 @@ const mockXgStandings = <XgStanding>[
       xga: 67.683,
       xpts: 24.0),
   XgStanding(
-      leagueId: 82,
+      competitionId: 82,
       seasonId: 25646,
       teamId: 353,
       position: 18,
@@ -2896,7 +2896,7 @@ const mockXgStandings = <XgStanding>[
       xpts: 21.0),
   // ── Ligue 1 (league 301, season 25651) ──
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 591,
       position: 1,
@@ -2908,7 +2908,7 @@ const mockXgStandings = <XgStanding>[
       xga: 31.276,
       xpts: 84.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 44,
       position: 2,
@@ -2920,7 +2920,7 @@ const mockXgStandings = <XgStanding>[
       xga: 47.457,
       xpts: 72.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 271,
       position: 3,
@@ -2932,7 +2932,7 @@ const mockXgStandings = <XgStanding>[
       xga: 41.832,
       xpts: 69.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 690,
       position: 4,
@@ -2944,7 +2944,7 @@ const mockXgStandings = <XgStanding>[
       xga: 37.996,
       xpts: 63.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 6789,
       position: 5,
@@ -2956,7 +2956,7 @@ const mockXgStandings = <XgStanding>[
       xga: 49.093,
       xpts: 60.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 79,
       position: 6,
@@ -2968,7 +2968,7 @@ const mockXgStandings = <XgStanding>[
       xga: 45.964,
       xpts: 60.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 686,
       position: 7,
@@ -2980,7 +2980,7 @@ const mockXgStandings = <XgStanding>[
       xga: 46.295,
       xpts: 57.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 598,
       position: 8,
@@ -2992,7 +2992,7 @@ const mockXgStandings = <XgStanding>[
       xga: 56.318,
       xpts: 54.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 289,
       position: 9,
@@ -3004,7 +3004,7 @@ const mockXgStandings = <XgStanding>[
       xga: 44.32,
       xpts: 51.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 4508,
       position: 10,
@@ -3016,7 +3016,7 @@ const mockXgStandings = <XgStanding>[
       xga: 55.731,
       xpts: 51.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 9257,
       position: 11,
@@ -3028,7 +3028,7 @@ const mockXgStandings = <XgStanding>[
       xga: 51.588,
       xpts: 42.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 3682,
       position: 12,
@@ -3040,7 +3040,7 @@ const mockXgStandings = <XgStanding>[
       xga: 48.824,
       xpts: 39.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 1055,
       position: 13,
@@ -3052,7 +3052,7 @@ const mockXgStandings = <XgStanding>[
       xga: 54.46,
       xpts: 39.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 266,
       position: 14,
@@ -3064,7 +3064,7 @@ const mockXgStandings = <XgStanding>[
       xga: 55.179,
       xpts: 36.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 450,
       position: 15,
@@ -3076,7 +3076,7 @@ const mockXgStandings = <XgStanding>[
       xga: 59.909,
       xpts: 36.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 59,
       position: 16,
@@ -3088,7 +3088,7 @@ const mockXgStandings = <XgStanding>[
       xga: 52.753,
       xpts: 33.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 776,
       position: 17,
@@ -3100,7 +3100,7 @@ const mockXgStandings = <XgStanding>[
       xga: 57.885,
       xpts: 24.0),
   XgStanding(
-      leagueId: 301,
+      competitionId: 301,
       seasonId: 25651,
       teamId: 3513,
       position: 18,
@@ -3114,11 +3114,11 @@ const mockXgStandings = <XgStanding>[
 ];
 
 List<XgStanding> xgStandingsByLeague(int leagueId) =>
-    mockXgStandings.where((x) => x.leagueId == leagueId).toList()
+    mockXgStandings.where((x) => x.competitionId == leagueId).toList()
       ..sort((a, b) => a.position.compareTo(b.position));
 
 XgStanding? xgStandingByTeam(int leagueId, int teamId) => mockXgStandings
-    .where((x) => x.leagueId == leagueId && x.teamId == teamId)
+    .where((x) => x.competitionId == leagueId && x.teamId == teamId)
     .firstOrNull;
 
 // ═══════════════════════════════════════════════════════════════════════════

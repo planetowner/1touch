@@ -1,31 +1,56 @@
 // ignore_for_file: file_names
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart'
+    as team_providers;
 import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/team.dart';
 
 class Search extends StatelessWidget {
-  const Search({super.key});
+  const Search({
+    super.key,
+    this.teamRepository,
+    this.competitionContextResolver,
+  });
+
+  final TeamRepository? teamRepository;
+  final TeamCompetitionContextResolver? competitionContextResolver;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: const ValueKey('search-scaffold'),
       backgroundColor: mainPageBackground(context),
-      body: const SafeArea(child: SearchContent()),
+      body: SafeArea(
+        child: SearchContent(
+          teamRepository: teamRepository ?? team_providers.teamRepository,
+          competitionContextResolver: competitionContextResolver ??
+              team_providers.teamCompetitionContextResolver,
+        ),
+      ),
     );
   }
 }
 
 class SearchContent extends StatefulWidget {
-  const SearchContent({super.key});
+  const SearchContent({
+    super.key,
+    required this.teamRepository,
+    required this.competitionContextResolver,
+  });
+
+  final TeamRepository teamRepository;
+  final TeamCompetitionContextResolver competitionContextResolver;
 
   @override
   State<SearchContent> createState() => _SearchContentState();
@@ -62,8 +87,29 @@ class _SearchContentState extends State<SearchContent> {
   @override
   void initState() {
     super.initState();
+    widget.teamRepository.teams.addListener(_onTeamsChanged);
+    unawaited(_initializeTeams());
     currentUserPreferences.followedTeamIds.addListener(_onFollowingChanged);
     playerRepository.followedPlayerIds.addListener(_onFollowingChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.teamRepository == widget.teamRepository) return;
+
+    oldWidget.teamRepository.teams.removeListener(_onTeamsChanged);
+    widget.teamRepository.teams.addListener(_onTeamsChanged);
+    unawaited(_initializeTeams());
+  }
+
+  Future<void> _initializeTeams() async {
+    await widget.teamRepository.initialize();
+    if (mounted) setState(() {});
+  }
+
+  void _onTeamsChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onFollowingChanged() {
@@ -72,6 +118,7 @@ class _SearchContentState extends State<SearchContent> {
 
   @override
   void dispose() {
+    widget.teamRepository.teams.removeListener(_onTeamsChanged);
     currentUserPreferences.followedTeamIds.removeListener(_onFollowingChanged);
     playerRepository.followedPlayerIds.removeListener(_onFollowingChanged);
     _searchController.dispose();
@@ -164,6 +211,8 @@ class _SearchContentState extends State<SearchContent> {
   Widget _buildRecents() {
     final recentPlayer = playerRepository.findById('lee-kang-in') ??
         playerRepository.allPlayers.first;
+    final recentTeam = widget.teamRepository.findById(83);
+    final recentEvent = _hasEventTeams(_events.first) ? _events.first : null;
 
     return ListView(
       key: const ValueKey('search-recents'),
@@ -172,16 +221,20 @@ class _SearchContentState extends State<SearchContent> {
       children: [
         Text(
           'RECENTS',
-          style: Heading4.style.copyWith(
+          style: Body2_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 20),
         _buildPlayerCard(recentPlayer),
-        const SizedBox(height: 16),
-        _buildTeamCard(mockTeamById(83)),
-        const SizedBox(height: 16),
-        _buildEventCard(_events.first),
+        if (recentTeam != null) ...[
+          const SizedBox(height: 16),
+          _buildTeamCard(recentTeam),
+        ],
+        if (recentEvent != null) ...[
+          const SizedBox(height: 16),
+          _buildEventCard(recentEvent),
+        ],
       ],
     );
   }
@@ -245,20 +298,22 @@ class _SearchContentState extends State<SearchContent> {
   Widget _buildSelectedResults() {
     final query = _searchController.text.trim().toLowerCase();
     final players = playerRepository.search(query).take(12).toList();
-    final teams = mockTeams
+    final directTeamIds =
+        widget.teamRepository.search(query).map((team) => team.teamId).toSet();
+    final teams = widget.teamRepository.allTeams
         .where((team) {
-          final searchable = [
-            team.name,
-            team.shortCode ?? '',
-            teamLeagueLabel(team.teamId),
-          ].join(' ').toLowerCase();
-          return searchable.contains(query);
+          final contextLabel = widget.competitionContextResolver
+              .labelFor(team.teamId)
+              .toLowerCase();
+          return directTeamIds.contains(team.teamId) ||
+              contextLabel.contains(query);
         })
         .take(12)
         .toList();
     final events = _events.where((event) {
-      final home = mockTeamById(event.homeTeamId);
-      final away = mockTeamById(event.awayTeamId);
+      final home = widget.teamRepository.findById(event.homeTeamId);
+      final away = widget.teamRepository.findById(event.awayTeamId);
+      if (home == null || away == null) return false;
       return '${home.name} ${home.shortCode} ${away.name} ${away.shortCode}'
           .toLowerCase()
           .contains(query);
@@ -386,7 +441,7 @@ class _SearchContentState extends State<SearchContent> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    teamLeagueLabel(team.teamId),
+                    widget.competitionContextResolver.labelFor(team.teamId),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Body1.style.copyWith(color: colors.onSurface),
@@ -411,8 +466,9 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   Widget _buildEventCard(_SearchEvent event) {
-    final home = mockTeamById(event.homeTeamId);
-    final away = mockTeamById(event.awayTeamId);
+    final home = widget.teamRepository.findById(event.homeTeamId);
+    final away = widget.teamRepository.findById(event.awayTeamId);
+    if (home == null || away == null) return const SizedBox.shrink();
     final colors = Theme.of(context).colorScheme;
 
     return Container(
@@ -455,6 +511,11 @@ class _SearchContentState extends State<SearchContent> {
         ],
       ),
     );
+  }
+
+  bool _hasEventTeams(_SearchEvent event) {
+    return widget.teamRepository.contains(event.homeTeamId) &&
+        widget.teamRepository.contains(event.awayTeamId);
   }
 
   Widget _buildTeamLogo(Team team, {required double size}) {

@@ -1,4 +1,4 @@
-import 'package:onetouch/models/league.dart';
+import 'package:onetouch/models/competition.dart';
 
 const Map<int, String> leagueNames = {
   8: 'Premier League',
@@ -8,77 +8,77 @@ const Map<int, String> leagueNames = {
   301: 'Ligue 1',
 };
 
-// LEAGUES  (leagues table)
+// COMPETITIONS  (competitions table)
 // ═══════════════════════════════════════════════════════════
 
-const mockLeagues = <League>[
+const mockCompetitions = <Competition>[
   // Big 5 domestic leagues
-  League(
-      leagueId: 8,
+  Competition(
+      competitionId: 8,
       name: 'Premier League',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/8/8.png'),
-  League(
-      leagueId: 564,
+  Competition(
+      competitionId: 564,
       name: 'La Liga',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/564/564.png'),
-  League(
-      leagueId: 82,
+  Competition(
+      competitionId: 82,
       name: 'Bundesliga',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/82/82.png'),
-  League(
-      leagueId: 384,
+  Competition(
+      competitionId: 384,
       name: 'Serie A',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/384/384.png'),
-  League(
-      leagueId: 301,
+  Competition(
+      competitionId: 301,
       name: 'Ligue 1',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/301/301.png'),
   // ── European competitions ─────────────────────────────────
-  League(
-      leagueId: 2,
+  Competition(
+      competitionId: 2,
       name: 'UCL',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/2/2.png'),
-  League(
-      leagueId: 5,
+  Competition(
+      competitionId: 5,
       name: 'Europa League',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/5/5.png'),
   // ── Domestic cups ─────────────────────────────────────────
-  League(
-      leagueId: 24,
+  Competition(
+      competitionId: 24,
       name: 'FA Cup',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/24/24.png'),
-  League(
-      leagueId: 27,
+  Competition(
+      competitionId: 27,
       name: 'EFL Cup',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/27/27.png'),
-  League(
-      leagueId: 570,
+  Competition(
+      competitionId: 570,
       name: 'Copa del Rey',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/570/570.png'),
-  League(
-      leagueId: 390,
+  Competition(
+      competitionId: 390,
       name: 'Coppa Italia',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/390/390.png'),
-  League(
-      leagueId: 392,
+  Competition(
+      competitionId: 392,
       name: 'DFB Pokal',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/392/392.png'),
-  League(
-      leagueId: 569,
+  Competition(
+      competitionId: 569,
       name: 'Coupe de France',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/569/569.png'),
 ];
 
-League mockLeagueById(int id) => mockLeagues.firstWhere(
-      (l) => l.leagueId == id,
-      orElse: () => League(leagueId: id, name: 'Unknown'),
+Competition mockCompetitionById(int id) => mockCompetitions.firstWhere(
+      (competition) => competition.competitionId == id,
+      orElse: () => Competition(competitionId: id, name: 'Unknown'),
     );
 
 // ═══════════════════════════════════════════════════════════

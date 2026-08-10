@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 @immutable
@@ -59,8 +60,10 @@ class LocalUserPreferencesRepository implements UserPreferencesRepository {
 class CurrentUserPreferences {
   CurrentUserPreferences({
     required UserPreferencesRepository repository,
+    required TeamRepository teamRepository,
     required UserTeamPreferences fallback,
   })  : _repository = repository,
+        _teamRepository = teamRepository,
         _fallback = fallback,
         favoriteTeamId = ValueNotifier(fallback.favoriteTeamId),
         followedTeamIds = ValueNotifier(
@@ -68,6 +71,7 @@ class CurrentUserPreferences {
         );
 
   final UserPreferencesRepository _repository;
+  final TeamRepository _teamRepository;
   final UserTeamPreferences _fallback;
 
   final ValueNotifier<int> favoriteTeamId;
@@ -75,6 +79,7 @@ class CurrentUserPreferences {
 
   Future<void> initialize() async {
     try {
+      await _teamRepository.initialize();
       final stored = await _repository.load();
       _apply(stored ?? _fallback);
     } on Object catch (error) {
@@ -181,13 +186,12 @@ class CurrentUserPreferences {
     return teamIds.where(_isValidTeamId).toSet().toList();
   }
 
-  bool _isValidTeamId(int teamId) {
-    return mockTeams.any((team) => team.teamId == teamId);
-  }
+  bool _isValidTeamId(int teamId) => _teamRepository.contains(teamId);
 }
 
 final currentUserPreferences = CurrentUserPreferences(
   repository: LocalUserPreferencesRepository(),
+  teamRepository: teamRepository,
   fallback: UserTeamPreferences(
     favoriteTeamId: mockUserProfileById(1001).favoriteTeamId ??
         followingTeamIds(1001).first,

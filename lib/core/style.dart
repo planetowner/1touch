@@ -81,8 +81,8 @@ class AppColors extends ThemeExtension<AppColors> {
 
 const _darkColors = AppColors(
   pageBackground: AppPalette.black,
-  cardBackground: Color(0xFF2A2A2A),
-  subtleBackground: AppPalette.darkGrey,
+  cardBackground: AppPalette.darkGrey,
+  subtleBackground: AppPalette.lightGrey,
   mutedForeground: Color(0x99FFFFFF),
   divider: Color(0x1FFFFFFF),
   onBrand: AppPalette.white,

@@ -11,7 +11,7 @@ void showGroundRulesModal(BuildContext context) {
       final colors = Theme.of(context).colorScheme;
       return Dialog(
         key: const ValueKey('community-ground-rules-dialog'),
-        backgroundColor: isDark ? const Color(0xFF2C2C2C) : AppPalette.white,
+        backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),

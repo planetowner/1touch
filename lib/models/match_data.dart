@@ -2,7 +2,7 @@ import 'package:onetouch/models/mini_team.dart';
 
 class MatchData {
   final int id;
-  final int leagueId;
+  final int competitionId;
   final int seasonId;
 
   // Kept from original — nullable since API uses roundName instead
@@ -34,7 +34,7 @@ class MatchData {
 
   MatchData({
     required this.id,
-    required this.leagueId,
+    required this.competitionId,
     required this.seasonId,
     this.roundId,
     this.venueId,
@@ -84,7 +84,7 @@ class MatchData {
 
     return MatchData(
       id: json['fixture_id'] ?? json['id'],
-      leagueId: json['league_id'],
+      competitionId: json['competition_id'],
       seasonId: json['season_id'],
       roundId: json['round_id'] as int?,
       venueId: json['venue_id'] as int?,

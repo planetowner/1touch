@@ -80,7 +80,7 @@ class PlayerOverviewTab extends StatelessWidget {
   Widget _buildCompetitionsBlock(BuildContext context) {
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF2A2A2A) : AppPalette.white;
+    final cardColor = isDark ? AppPalette.darkGrey : AppPalette.white;
     final badgeColor =
         isDark ? const Color(0xFF3D3D3D) : appColors.subtleBackground;
     final season = player.seasonStats;
@@ -251,7 +251,7 @@ class PlayerOverviewTab extends StatelessWidget {
     final history = player.clubHistory;
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF2A2A2A) : AppPalette.white;
+    final cardColor = isDark ? AppPalette.darkGrey : AppPalette.white;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,7 +323,7 @@ class PlayerBioStatsBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF2A2A2A) : AppPalette.white;
+    final cardColor = isDark ? AppPalette.darkGrey : AppPalette.white;
     final birthDate = DateTime.parse(player.dateOfBirth);
     final now = DateTime.now();
     final age = now.year -

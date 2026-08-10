@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
@@ -126,7 +126,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
     super.initState();
     _followingTeams = currentUserPreferences.followedTeamIds.value.map((id) {
       final t = mockTeamById(id);
-      final leagueId = fixturesByTeam(id).firstOrNull?.leagueId;
+      final leagueId = fixturesByTeam(id).firstOrNull?.competitionId;
       final position =
           leagueId != null ? standingByTeam(leagueId, id)?.position : null;
       final leagueName = leagueId != null ? (leagueNames[leagueId] ?? '') : '';
@@ -243,7 +243,7 @@ class MyTeams extends StatelessWidget {
     final appColors = AppColors.of(context);
     final team = teams[0];
     final match = team.nextMatch;
-    final leagueId = match?.leagueId ?? team.lastMatch?.leagueId;
+    final leagueId = match?.competitionId ?? team.lastMatch?.competitionId;
     final leagueName = leagueNames[leagueId] ?? '';
     final rank =
         leagueId != null ? standingByTeam(leagueId, team.id)?.position : null;
@@ -255,6 +255,7 @@ class MyTeams extends StatelessWidget {
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
+          key: const ValueKey('home-favorite-team-surface'),
           width: 375,
           padding: const EdgeInsets.symmetric(vertical: 24),
           decoration: BoxDecoration(
@@ -296,9 +297,13 @@ class MyTeams extends StatelessWidget {
                           ),
                           Row(
                             children: [
-                              Text(
-                                "$leagueName ${rank != null ? ordinal(rank) : '-'}",
-                                style: Body2.style,
+                              Flexible(
+                                child: Text(
+                                  "$leagueName ${rank != null ? ordinal(rank) : '-'}",
+                                  style: Body2.style,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               const Icon(Icons.arrow_drop_up,
                                   color: Colors.green),
@@ -323,10 +328,8 @@ class MyTeams extends StatelessWidget {
                     },
                     child: MatchCard(
                       match: match,
-                      leagueName: leagueNames[match.leagueId],
+                      leagueName: leagueNames[match.competitionId],
                     )),
-
-              const SizedBox(height: 12),
 
               // LAST MATCH
               if (team.lastMatch != null)

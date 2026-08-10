@@ -39,9 +39,9 @@ void main() {
       headerEnd: AppPalette.darkGrey,
       imageSurface: AppPalette.darkGrey,
       detailsSurface: AppPalette.lightGrey,
-      statSurface: const Color(0xFF1C1C1E),
-      sheetSurface: const Color(0xFF1C1C1E),
-      fieldSurface: const Color(0xFF2C2C2E),
+      statSurface: AppPalette.darkGrey,
+      sheetSurface: AppPalette.darkGrey,
+      fieldSurface: AppPalette.lightGrey,
     ),
   ]) {
     testWidgets(

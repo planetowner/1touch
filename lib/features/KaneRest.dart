@@ -56,7 +56,7 @@ class PlayerMatchStatSheet extends StatelessWidget {
 
   const PlayerMatchStatSheet({super.key, required this.player});
 
-  static const _sheetBg = Color(0xFF1C1C1E);
+  static const _sheetBg = AppPalette.darkGrey;
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +279,7 @@ class _StatSection extends StatelessWidget {
         Container(
           key: const ValueKey('match-player-stat-card'),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : AppPalette.lightGreyBox,
+            color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
@@ -304,7 +304,7 @@ class _StatSection extends StatelessWidget {
                     thickness: 1,
                     indent: 16,
                     endIndent: 16,
-                    color: isDark ? const Color(0xFF3A3A3C) : appColors.divider,
+                    color: isDark ? AppPalette.lightGrey : appColors.divider,
                   ),
               ],
             ],

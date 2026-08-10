@@ -2,6 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/Search.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
+import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/models/team.dart';
+
+class _TestCompetitionContextResolver
+    implements TeamCompetitionContextResolver {
+  const _TestCompetitionContextResolver(this.contexts);
+
+  final Map<int, TeamCompetitionContext> contexts;
+
+  @override
+  TeamCompetitionContext? resolve(int teamId) => contexts[teamId];
+}
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
   final element = tester.element(finder);
@@ -17,6 +30,32 @@ void _useCompactPhone(WidgetTester tester) {
 }
 
 void main() {
+  testWidgets('dark search uses the approved card palette', (tester) async {
+    _useCompactPhone(tester);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: const Search(),
+      ),
+    );
+    await tester.pump();
+
+    final scaffold = tester.widget<Scaffold>(
+      find.byKey(const ValueKey('search-scaffold')),
+    );
+    final playerCard = tester.widget<Container>(
+      find.byKey(const ValueKey('search-player-lee-kang-in')),
+    );
+
+    expect(scaffold.backgroundColor, app_style.AppPalette.black);
+    expect(
+      (playerCard.decoration as BoxDecoration).color,
+      app_style.AppPalette.darkGrey,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('empty search shows mixed recents with black light-mode text',
       (tester) async {
     _useCompactPhone(tester);
@@ -128,6 +167,47 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('search-event-83-231')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('team results come from the injected repository and context',
+      (tester) async {
+    _useCompactPhone(tester);
+    final repository = MockTeamRepository(
+      teams: const [
+        Team(teamId: 900, name: 'Codex Athletic', shortCode: 'CDX'),
+      ],
+    );
+    const contextResolver = _TestCompetitionContextResolver({
+      900: TeamCompetitionContext(
+        teamId: 900,
+        competitionName: 'Test League',
+        currentPosition: 1,
+      ),
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Search(
+          teamRepository: repository,
+          competitionContextResolver: contextResolver,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('search-team-83')), findsNothing);
+    expect(find.byKey(const ValueKey('search-event-83-231')), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('global-search-field')),
+      'test league',
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('search-team-900')), findsOneWidget);
+    expect(find.text('Test League 1st'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

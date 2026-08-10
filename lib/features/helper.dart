@@ -60,7 +60,7 @@ Widget teamLogoFallback(int teamId, {double size = 32}) {
 // Local crests for the Big 5 domestic leagues, used as the errorBuilder
 // fallback when a league's network logo fails to load. No local asset
 // exists for UCL/Europa/cups, so those fall back to a generic icon.
-const _leagueLogoFiles = <int, String>{
+const _competitionLogoFiles = <int, String>{
   8: 'assets/epl.png',
   564: 'assets/laliga.png',
   82: 'assets/bundesliga.png',
@@ -68,8 +68,8 @@ const _leagueLogoFiles = <int, String>{
   301: 'assets/league1.png',
 };
 
-Widget leagueLogoFallback(int leagueId, {double size = 24}) {
-  final asset = _leagueLogoFiles[leagueId];
+Widget competitionLogoFallback(int competitionId, {double size = 24}) {
+  final asset = _competitionLogoFiles[competitionId];
   if (asset == null) {
     return Builder(
       builder: (context) => Icon(
@@ -142,6 +142,7 @@ class MatchCard extends StatelessWidget {
     final awayTeam = mockTeamById(match!.awayTeamId);
 
     return Container(
+      key: const ValueKey('match-card-surface'),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.of(context).subtleBackground,
@@ -151,27 +152,39 @@ class MatchCard extends StatelessWidget {
         children: [
           const Text('NEXT MATCH', style: Body1_b.style),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: _TeamDisplay(
-                  teamId: homeTeam.teamId,
-                  teamName: homeTeam.name,
-                  teamLogo: homeTeam.imagePath ?? '',
-                ),
-              ),
-              const SizedBox(width: 24),
-              _MatchInfo(match: match, leagueName: leagueName),
-              const SizedBox(width: 24),
-              Expanded(
-                child: _TeamDisplay(
-                  teamId: awayTeam.teamId,
-                  teamName: awayTeam.name,
-                  teamLogo: awayTeam.imagePath ?? '',
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 300;
+              final gap = compact ? 12.0 : 24.0;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _TeamDisplay(
+                      teamId: homeTeam.teamId,
+                      teamName: homeTeam.name,
+                      teamLogo: homeTeam.imagePath ?? '',
+                      logoSize: compact ? 56 : 72,
+                    ),
+                  ),
+                  SizedBox(width: gap),
+                  _MatchInfo(
+                    match: match,
+                    leagueName: leagueName,
+                    width: compact ? 80 : 96,
+                  ),
+                  SizedBox(width: gap),
+                  Expanded(
+                    child: _TeamDisplay(
+                      teamId: awayTeam.teamId,
+                      teamName: awayTeam.name,
+                      teamLogo: awayTeam.imagePath ?? '',
+                      logoSize: compact ? 56 : 72,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -214,6 +227,7 @@ class MatchCard2 extends StatelessWidget {
     // Example scores
 
     return Container(
+      key: const ValueKey('last-match-card-surface'),
       padding:
           contentPadding ?? const EdgeInsets.only(left: 16, right: 16, top: 16),
       decoration: BoxDecoration(
@@ -229,30 +243,75 @@ class MatchCard2 extends StatelessWidget {
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
+              final compact = constraints.maxWidth < 340;
+              final smallGap = compact ? 4.0 : 8.0;
+              final largeGap = compact ? 8.0 : 16.0;
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
+                    flex: 2,
                     child: _TeamDisplay2(
                       teamId: team1Id,
                       teamName: team1shortname,
                       teamLogo: team1Logo,
+                      logoSize: compact ? 36 : 48,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  _ScoreBoard(
-                      score: homeScore, isDimmed: homeScore < awayScore),
-                  const SizedBox(width: 16),
-                  _MatchInfo2(date: date, venue: venue),
-                  const SizedBox(width: 16),
-                  _ScoreBoard(
-                      score: awayScore, isDimmed: awayScore < homeScore),
-                  const SizedBox(width: 8),
+                  SizedBox(width: smallGap),
+                  if (compact)
+                    Expanded(
+                      child: _ScoreBoard(
+                        score: homeScore,
+                        isDimmed: homeScore < awayScore,
+                        compact: true,
+                      ),
+                    )
+                  else
+                    _ScoreBoard(
+                      score: homeScore,
+                      isDimmed: homeScore < awayScore,
+                      compact: false,
+                    ),
+                  SizedBox(width: largeGap),
+                  if (compact)
+                    Expanded(
+                      flex: 2,
+                      child: _MatchInfo2(
+                        date: date,
+                        venue: venue,
+                        width: double.infinity,
+                      ),
+                    )
+                  else
+                    _MatchInfo2(
+                      date: date,
+                      venue: venue,
+                      width: 80,
+                    ),
+                  SizedBox(width: largeGap),
+                  if (compact)
+                    Expanded(
+                      child: _ScoreBoard(
+                        score: awayScore,
+                        isDimmed: awayScore < homeScore,
+                        compact: true,
+                      ),
+                    )
+                  else
+                    _ScoreBoard(
+                      score: awayScore,
+                      isDimmed: awayScore < homeScore,
+                      compact: false,
+                    ),
+                  SizedBox(width: smallGap),
                   Expanded(
+                    flex: 2,
                     child: _TeamDisplay2(
                       teamId: team2Id,
                       teamName: team2shortname,
                       teamLogo: team2Logo,
+                      logoSize: compact ? 36 : 48,
                     ),
                   ),
                 ],
@@ -291,7 +350,7 @@ class SearchMatchCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E), // Dark card bg
+        color: AppColors.of(context).cardBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -327,7 +386,11 @@ class SearchMatchCard extends StatelessWidget {
           Row(
             children: [
               // Reusing the internal _ScoreBoard with "#"
-              const _ScoreBoard(score: score1, isDimmed: false),
+              const _ScoreBoard(
+                score: score1,
+                isDimmed: false,
+                compact: false,
+              ),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -353,7 +416,11 @@ class SearchMatchCard extends StatelessWidget {
                 ),
               ),
 
-              const _ScoreBoard(score: score2, isDimmed: true),
+              const _ScoreBoard(
+                score: score2,
+                isDimmed: true,
+                compact: false,
+              ),
             ],
           ),
 
@@ -395,8 +462,14 @@ class SearchMatchCard extends StatelessWidget {
 class _TeamDisplay extends StatelessWidget {
   final int teamId;
   final String teamName, teamLogo;
-  const _TeamDisplay(
-      {required this.teamId, required this.teamName, required this.teamLogo});
+  final double logoSize;
+
+  const _TeamDisplay({
+    required this.teamId,
+    required this.teamName,
+    required this.teamLogo,
+    required this.logoSize,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -405,15 +478,15 @@ class _TeamDisplay extends StatelessWidget {
       children: [
         if (teamLogo.isNotEmpty)
           SizedBox(
-            width: 72,
-            height: 72,
+            width: logoSize,
+            height: logoSize,
             child: Padding(
               padding: const EdgeInsets.all(6),
               child: Image.network(
                 teamLogo,
                 fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) =>
-                    teamLogoFallback(teamId, size: 72),
+                    teamLogoFallback(teamId, size: logoSize),
               ),
             ),
           ),
@@ -427,8 +500,14 @@ class _TeamDisplay extends StatelessWidget {
 class _TeamDisplay2 extends StatelessWidget {
   final int teamId;
   final String teamName, teamLogo;
-  const _TeamDisplay2(
-      {required this.teamId, required this.teamName, required this.teamLogo});
+  final double logoSize;
+
+  const _TeamDisplay2({
+    required this.teamId,
+    required this.teamName,
+    required this.teamLogo,
+    required this.logoSize,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -437,9 +516,10 @@ class _TeamDisplay2 extends StatelessWidget {
       children: [
         Image.network(
           teamLogo,
-          width: 48,
-          height: 48,
-          errorBuilder: (_, __, ___) => teamLogoFallback(teamId, size: 48),
+          width: logoSize,
+          height: logoSize,
+          errorBuilder: (_, __, ___) =>
+              teamLogoFallback(teamId, size: logoSize),
         ),
         const SizedBox(height: 8),
         Text(
@@ -457,14 +537,20 @@ class _TeamDisplay2 extends StatelessWidget {
 class _MatchInfo extends StatelessWidget {
   final Fixture? match;
   final String? leagueName;
-  const _MatchInfo({required this.match, this.leagueName});
+  final double width;
+
+  const _MatchInfo({
+    required this.match,
+    this.leagueName,
+    required this.width,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(
-          width: 96,
+          width: width,
           child: Text(
             _formatDate(match!.startingAt),
             textAlign: TextAlign.center,
@@ -479,7 +565,7 @@ class _MatchInfo extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          width: 96,
+          width: width,
           child: Text(
             '${leagueName ?? 'League'}  ${match?.roundName ?? ''}',
             maxLines: 2,
@@ -497,14 +583,20 @@ class _MatchInfo extends StatelessWidget {
 
 class _MatchInfo2 extends StatelessWidget {
   final String date, venue;
-  const _MatchInfo2({required this.date, required this.venue});
+  final double width;
+
+  const _MatchInfo2({
+    required this.date,
+    required this.venue,
+    required this.width,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(
-          width: 80,
+          width: width,
           child: Text(date, textAlign: TextAlign.center, style: Body2.style),
         ),
       ],
@@ -515,10 +607,12 @@ class _MatchInfo2 extends StatelessWidget {
 class _ScoreBoard extends StatelessWidget {
   final int score;
   final bool isDimmed;
+  final bool compact;
 
   const _ScoreBoard({
     required this.score,
     required this.isDimmed,
+    required this.compact,
   });
 
   @override
@@ -532,7 +626,10 @@ class _ScoreBoard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 4 : 12,
+            vertical: 8,
+          ),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: colorScheme.onPrimary,
@@ -541,7 +638,8 @@ class _ScoreBoard extends StatelessWidget {
           child: Text(
             score.toString(),
             textAlign: TextAlign.center,
-            style: Heading3.style.copyWith(color: colorScheme.primary),
+            style: (compact ? Heading4.style : Heading3.style)
+                .copyWith(color: colorScheme.primary),
           ),
         ),
       ),

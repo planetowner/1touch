@@ -176,8 +176,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color:
-                isDark ? const Color(0xFF272828) : appColors.subtleBackground,
+            color: isDark ? AppPalette.darkGrey : appColors.subtleBackground,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -266,7 +265,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF272828) : AppPalette.white,
+        color: isDark ? AppPalette.darkGrey : AppPalette.white,
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.all(16),
@@ -319,7 +318,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           key: const ValueKey('player-attributes-card'),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.all(24),
@@ -375,7 +374,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           height: 345,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(

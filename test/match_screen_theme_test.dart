@@ -139,7 +139,7 @@ void main() {
     expect(scaffold.backgroundColor, Colors.black);
     expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
-      const Color(0xFF272828),
+      app_style.AppPalette.darkGrey,
     );
     expect(tester.takeException(), isNull);
   });

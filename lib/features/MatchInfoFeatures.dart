@@ -191,7 +191,7 @@ class _ScoreBox extends StatelessWidget {
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF272828) : AppPalette.lightGreyBox,
+        color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -495,7 +495,7 @@ class PlayerOfTheMatch extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: isDark ? const Color(0xCC272929) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,7 +568,7 @@ class MomentumChart extends StatelessWidget {
           key: const ValueKey('match-momentum-card'),
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -872,7 +872,7 @@ class LineupPitch extends StatelessWidget {
           key: const ValueKey('match-lineup-card'),
           height: _pitchHeight,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(20),
           ),
           clipBehavior: Clip.hardEdge,

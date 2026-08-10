@@ -330,7 +330,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
       // 📝 Reply bar
       bottomNavigationBar: Container(
-        color: isDark ? const Color(0xFF1C1C1E) : AppPalette.white,
+        color: isDark ? AppPalette.darkGrey : AppPalette.white,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         child: Row(
           children: [
@@ -339,7 +339,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF2C2C2C)
+                      ? AppPalette.lightGrey
                       : appColors.subtleBackground,
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -372,7 +372,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           mediaUrl,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Container(
-            color: const Color(0xFF3A3A3A),
+            color: AppPalette.lightGrey,
             child: Icon(
               Icons.image_not_supported_outlined,
               color: AppColors.of(context).mutedForeground,

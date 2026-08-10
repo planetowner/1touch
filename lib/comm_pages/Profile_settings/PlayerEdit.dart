@@ -83,7 +83,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
         return Container(
           key: const ValueKey('profile-player-edit-sheet'),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
@@ -114,10 +114,11 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
 
               // Search bar
               Container(
+                key: const ValueKey('profile-player-edit-search'),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF3A3A3A)
+                      ? AppPalette.lightGrey
                       : appColors.subtleBackground,
                   borderRadius: BorderRadius.circular(8),
                 ),

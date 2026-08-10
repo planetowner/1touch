@@ -18,6 +18,14 @@ void main() {
       app_style.AppPalette.black,
     );
     expect(
+      app_style.darktheme.extension<app_style.AppColors>()?.cardBackground,
+      app_style.AppPalette.darkGrey,
+    );
+    expect(
+      app_style.darktheme.extension<app_style.AppColors>()?.subtleBackground,
+      app_style.AppPalette.lightGrey,
+    );
+    expect(
       app_style.whitetheme.scaffoldBackgroundColor,
       app_style.AppPalette.white,
     );

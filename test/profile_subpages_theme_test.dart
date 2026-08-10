@@ -171,27 +171,49 @@ void main() {
       sheet: const EditFollowingPlayersSheet(),
     ),
   ]) {
-    testWidgets('${testCase.name} sheet uses a white light surface',
-        (tester) async {
-      tester.view.physicalSize = const Size(320, 568);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+    for (final themeCase in <({
+      String name,
+      ThemeData theme,
+      Color sheet,
+      Color search,
+    })>[
+      (
+        name: 'light',
+        theme: app_style.whitetheme,
+        sheet: app_style.AppPalette.white,
+        search: app_style.AppPalette.lightGreyBox,
+      ),
+      (
+        name: 'dark',
+        theme: app_style.darktheme,
+        sheet: app_style.AppPalette.darkGrey,
+        search: app_style.AppPalette.lightGrey,
+      ),
+    ]) {
+      testWidgets('${testCase.name} sheet uses ${themeCase.name} surfaces',
+          (tester) async {
+        tester.view.physicalSize = const Size(320, 568);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: app_style.whitetheme,
-          home: Scaffold(body: testCase.sheet),
-        ),
-      );
-      await tester.pump();
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: themeCase.theme,
+            home: Scaffold(body: testCase.sheet),
+          ),
+        );
+        await tester.pump();
 
-      final sheet = tester.widget<Container>(find.byKey(testCase.key));
-      expect(
-        (sheet.decoration as BoxDecoration).color,
-        app_style.AppPalette.white,
-      );
-      expect(tester.takeException(), isNull);
-    });
+        final sheet = tester.widget<Container>(find.byKey(testCase.key));
+        final searchKey = testCase.name == 'following teams'
+            ? const ValueKey('profile-team-edit-search')
+            : const ValueKey('profile-player-edit-search');
+        final search = tester.widget<Container>(find.byKey(searchKey));
+        expect((sheet.decoration as BoxDecoration).color, themeCase.sheet);
+        expect((search.decoration as BoxDecoration).color, themeCase.search);
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 }

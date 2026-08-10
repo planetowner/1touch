@@ -17,7 +17,7 @@ String _liveKickoff(int minutesAgo) {
 final _liveManCity = Fixture(
     fixtureId: 19200003,
     seasonId: 25583,
-    leagueId: 8,
+    competitionId: 8,
     homeTeamId: 9,
     awayTeamId: 19,
     competitionType: CompetitionType.league,
@@ -29,7 +29,7 @@ final _liveManCity = Fixture(
 final _liveManUnited = Fixture(
     fixtureId: 19200007,
     seasonId: 25583,
-    leagueId: 8,
+    competitionId: 8,
     homeTeamId: 14,
     awayTeamId: 20,
     competitionType: CompetitionType.league,
@@ -41,7 +41,7 @@ final _liveManUnited = Fixture(
 final _liveBarca = Fixture(
     fixtureId: 19300003,
     seasonId: 25659,
-    leagueId: 564,
+    competitionId: 564,
     homeTeamId: 83,
     awayTeamId: 676,
     competitionType: CompetitionType.league,
@@ -53,7 +53,7 @@ final _liveBarca = Fixture(
 final _liveAtletico = Fixture(
     fixtureId: 19300007,
     seasonId: 25659,
-    leagueId: 564,
+    competitionId: 564,
     homeTeamId: 3468,
     awayTeamId: 7980,
     competitionType: CompetitionType.league,
@@ -65,7 +65,7 @@ final _liveAtletico = Fixture(
 final _liveInter = Fixture(
     fixtureId: 19400003,
     seasonId: 25533,
-    leagueId: 384,
+    competitionId: 384,
     homeTeamId: 2930,
     awayTeamId: 597,
     competitionType: CompetitionType.league,
@@ -77,7 +77,7 @@ final _liveInter = Fixture(
 final _liveACMilan = Fixture(
     fixtureId: 19400007,
     seasonId: 25533,
-    leagueId: 384,
+    competitionId: 384,
     homeTeamId: 113,
     awayTeamId: 625,
     competitionType: CompetitionType.league,
@@ -89,7 +89,7 @@ final _liveACMilan = Fixture(
 final _liveBayern = Fixture(
     fixtureId: 19500003,
     seasonId: 25646,
-    leagueId: 82,
+    competitionId: 82,
     homeTeamId: 503,
     awayTeamId: 277,
     competitionType: CompetitionType.league,
@@ -101,7 +101,7 @@ final _liveBayern = Fixture(
 final _liveDortmund = Fixture(
     fixtureId: 19500007,
     seasonId: 25646,
-    leagueId: 82,
+    competitionId: 82,
     // Leverkusen (182), not Leipzig (185) — Leipzig is already the away team
     // in `_liveBayern` above, and a team can't play two matches at once.
     homeTeamId: 3321,
@@ -115,7 +115,7 @@ final _liveDortmund = Fixture(
 final _livePSG = Fixture(
     fixtureId: 19600003,
     seasonId: 25651,
-    leagueId: 301,
+    competitionId: 301,
     homeTeamId: 591,
     awayTeamId: 6789,
     competitionType: CompetitionType.league,
@@ -127,7 +127,7 @@ final _livePSG = Fixture(
 final _liveLyon = Fixture(
     fixtureId: 19600007,
     seasonId: 25651,
-    leagueId: 301,
+    competitionId: 301,
     homeTeamId: 44,
     awayTeamId: 79,
     competitionType: CompetitionType.league,
@@ -143,7 +143,7 @@ final _liveLyon = Fixture(
 const _barcaUCLHomeLeg = Fixture(
     fixtureId: 20100001,
     seasonId: 23804,
-    leagueId: 2,
+    competitionId: 2,
     homeTeamId: 83,
     awayTeamId: 503,
     competitionType: CompetitionType.europe,
@@ -156,7 +156,7 @@ const _barcaUCLHomeLeg = Fixture(
 const _arsenalUCLHomeLeg = Fixture(
     fixtureId: 20100005,
     seasonId: 23804,
-    leagueId: 2,
+    competitionId: 2,
     homeTeamId: 19,
     awayTeamId: 3468,
     competitionType: CompetitionType.europe,
@@ -173,7 +173,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19200001,
       seasonId: 25583,
-      leagueId: 8,
+      competitionId: 8,
       homeTeamId: 9,
       awayTeamId: 14,
       competitionType: CompetitionType.league,
@@ -185,7 +185,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19200002,
       seasonId: 25583,
-      leagueId: 8,
+      competitionId: 8,
       homeTeamId: 8,
       awayTeamId: 9,
       competitionType: CompetitionType.league,
@@ -197,7 +197,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19200004,
       seasonId: 25583,
-      leagueId: 8,
+      competitionId: 8,
       homeTeamId: 9,
       awayTeamId: 18,
       competitionType: CompetitionType.league,
@@ -207,7 +207,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19200005,
       seasonId: 25583,
-      leagueId: 8,
+      competitionId: 8,
       homeTeamId: 6,
       awayTeamId: 9,
       competitionType: CompetitionType.league,
@@ -219,7 +219,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19200006,
       seasonId: 25583,
-      leagueId: 8,
+      competitionId: 8,
       homeTeamId: 14,
       awayTeamId: 18,
       competitionType: CompetitionType.league,
@@ -231,7 +231,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19200008,
       seasonId: 25583,
-      leagueId: 8,
+      competitionId: 8,
       homeTeamId: 19,
       awayTeamId: 14,
       competitionType: CompetitionType.league,
@@ -241,7 +241,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19200009,
       seasonId: 25583,
-      leagueId: 8,
+      competitionId: 8,
       homeTeamId: 14,
       awayTeamId: 15,
       competitionType: CompetitionType.league,
@@ -255,7 +255,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300010,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 36,
       competitionType: CompetitionType.league,
@@ -267,7 +267,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300011,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 528,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -279,7 +279,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300012,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 106,
       competitionType: CompetitionType.league,
@@ -291,7 +291,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300013,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 3457,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -303,7 +303,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300001,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 7980,
       competitionType: CompetitionType.league,
@@ -315,7 +315,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300014,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 231,
       competitionType: CompetitionType.league,
@@ -327,7 +327,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300015,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 645,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -339,7 +339,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300016,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 485,
       competitionType: CompetitionType.league,
@@ -351,7 +351,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300002,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 3468,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -363,7 +363,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300017,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 377,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -375,7 +375,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300018,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 459,
       competitionType: CompetitionType.league,
@@ -387,7 +387,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300019,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 13258,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -399,7 +399,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300020,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 214,
       competitionType: CompetitionType.league,
@@ -413,7 +413,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300004,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 3477,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -423,7 +423,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300005,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 3468,
       competitionType: CompetitionType.league,
@@ -433,7 +433,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300021,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 83,
       awayTeamId: 594,
       competitionType: CompetitionType.league,
@@ -443,7 +443,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300022,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 2975,
       awayTeamId: 83,
       competitionType: CompetitionType.league,
@@ -455,7 +455,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300006,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 7980,
       awayTeamId: 676,
       competitionType: CompetitionType.league,
@@ -467,7 +467,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300008,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 7980,
       awayTeamId: 3477,
       competitionType: CompetitionType.league,
@@ -477,7 +477,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19300009,
       seasonId: 25659,
-      leagueId: 564,
+      competitionId: 564,
       homeTeamId: 214,
       awayTeamId: 7980,
       competitionType: CompetitionType.league,
@@ -491,7 +491,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19400001,
       seasonId: 25533,
-      leagueId: 384,
+      competitionId: 384,
       homeTeamId: 2930,
       awayTeamId: 113,
       competitionType: CompetitionType.league,
@@ -503,7 +503,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19400002,
       seasonId: 25533,
-      leagueId: 384,
+      competitionId: 384,
       homeTeamId: 625,
       awayTeamId: 2930,
       competitionType: CompetitionType.league,
@@ -515,7 +515,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19400004,
       seasonId: 25533,
-      leagueId: 384,
+      competitionId: 384,
       homeTeamId: 43,
       awayTeamId: 2930,
       competitionType: CompetitionType.league,
@@ -525,7 +525,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19400005,
       seasonId: 25533,
-      leagueId: 384,
+      competitionId: 384,
       homeTeamId: 2930,
       awayTeamId: 37,
       competitionType: CompetitionType.league,
@@ -537,7 +537,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19400006,
       seasonId: 25533,
-      leagueId: 384,
+      competitionId: 384,
       homeTeamId: 113,
       awayTeamId: 37,
       competitionType: CompetitionType.league,
@@ -549,7 +549,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19400008,
       seasonId: 25533,
-      leagueId: 384,
+      competitionId: 384,
       homeTeamId: 597,
       awayTeamId: 113,
       competitionType: CompetitionType.league,
@@ -559,7 +559,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19400009,
       seasonId: 25533,
-      leagueId: 384,
+      competitionId: 384,
       homeTeamId: 113,
       awayTeamId: 43,
       competitionType: CompetitionType.league,
@@ -573,7 +573,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19500001,
       seasonId: 25646,
-      leagueId: 82,
+      competitionId: 82,
       homeTeamId: 503,
       awayTeamId: 68,
       competitionType: CompetitionType.league,
@@ -585,7 +585,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19500002,
       seasonId: 25646,
-      leagueId: 82,
+      competitionId: 82,
       homeTeamId: 3321,
       awayTeamId: 503,
       competitionType: CompetitionType.league,
@@ -597,7 +597,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19500004,
       seasonId: 25646,
-      leagueId: 82,
+      competitionId: 82,
       homeTeamId: 510,
       awayTeamId: 503,
       competitionType: CompetitionType.league,
@@ -607,7 +607,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19500005,
       seasonId: 25646,
-      leagueId: 82,
+      competitionId: 82,
       homeTeamId: 503,
       awayTeamId: 3319,
       competitionType: CompetitionType.league,
@@ -619,7 +619,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19500006,
       seasonId: 25646,
-      leagueId: 82,
+      competitionId: 82,
       homeTeamId: 68,
       awayTeamId: 3321,
       competitionType: CompetitionType.league,
@@ -631,7 +631,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19500008,
       seasonId: 25646,
-      leagueId: 82,
+      competitionId: 82,
       homeTeamId: 68,
       awayTeamId: 510,
       competitionType: CompetitionType.league,
@@ -641,7 +641,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19500009,
       seasonId: 25646,
-      leagueId: 82,
+      competitionId: 82,
       homeTeamId: 3319,
       awayTeamId: 68,
       competitionType: CompetitionType.league,
@@ -655,7 +655,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19600001,
       seasonId: 25651,
-      leagueId: 301,
+      competitionId: 301,
       homeTeamId: 591,
       awayTeamId: 79,
       competitionType: CompetitionType.league,
@@ -667,7 +667,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19600002,
       seasonId: 25651,
-      leagueId: 301,
+      competitionId: 301,
       homeTeamId: 44,
       awayTeamId: 591,
       competitionType: CompetitionType.league,
@@ -679,7 +679,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19600004,
       seasonId: 25651,
-      leagueId: 301,
+      competitionId: 301,
       homeTeamId: 450,
       awayTeamId: 591,
       competitionType: CompetitionType.league,
@@ -689,7 +689,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19600005,
       seasonId: 25651,
-      leagueId: 301,
+      competitionId: 301,
       homeTeamId: 591,
       awayTeamId: 690,
       competitionType: CompetitionType.league,
@@ -701,7 +701,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19600006,
       seasonId: 25651,
-      leagueId: 301,
+      competitionId: 301,
       homeTeamId: 79,
       awayTeamId: 450,
       competitionType: CompetitionType.league,
@@ -713,7 +713,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19600008,
       seasonId: 25651,
-      leagueId: 301,
+      competitionId: 301,
       homeTeamId: 79,
       awayTeamId: 6789,
       competitionType: CompetitionType.league,
@@ -723,7 +723,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 19600009,
       seasonId: 25651,
-      leagueId: 301,
+      competitionId: 301,
       homeTeamId: 690,
       awayTeamId: 79,
       competitionType: CompetitionType.league,
@@ -735,7 +735,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20100002,
       seasonId: 23804,
-      leagueId: 2,
+      competitionId: 2,
       homeTeamId: 591,
       awayTeamId: 83,
       competitionType: CompetitionType.europe,
@@ -747,7 +747,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20100003,
       seasonId: 23804,
-      leagueId: 2,
+      competitionId: 2,
       homeTeamId: 83,
       awayTeamId: 2930,
       competitionType: CompetitionType.europe,
@@ -759,7 +759,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20100004,
       seasonId: 23804,
-      leagueId: 2,
+      competitionId: 2,
       homeTeamId: 503,
       awayTeamId: 83,
       competitionType: CompetitionType.europe,
@@ -771,7 +771,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20100006,
       seasonId: 23804,
-      leagueId: 2,
+      competitionId: 2,
       homeTeamId: 8,
       awayTeamId: 3468,
       competitionType: CompetitionType.europe,
@@ -783,7 +783,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20100007,
       seasonId: 23804,
-      leagueId: 2,
+      competitionId: 2,
       homeTeamId: 9,
       awayTeamId: 19,
       competitionType: CompetitionType.europe,
@@ -793,7 +793,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20100008,
       seasonId: 23804,
-      leagueId: 2,
+      competitionId: 2,
       homeTeamId: 2930,
       awayTeamId: 591,
       competitionType: CompetitionType.europe,
@@ -805,7 +805,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20200001,
       seasonId: 23805,
-      leagueId: 5,
+      competitionId: 5,
       homeTeamId: 14,
       awayTeamId: 37,
       competitionType: CompetitionType.europe,
@@ -817,7 +817,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20200002,
       seasonId: 23805,
-      leagueId: 5,
+      competitionId: 5,
       homeTeamId: 6,
       awayTeamId: 79,
       competitionType: CompetitionType.europe,
@@ -827,7 +827,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20200003,
       seasonId: 23805,
-      leagueId: 5,
+      competitionId: 5,
       homeTeamId: 277,
       awayTeamId: 597,
       competitionType: CompetitionType.europe,
@@ -841,7 +841,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20300001,
       seasonId: 23900,
-      leagueId: 24,
+      competitionId: 24,
       homeTeamId: 9,
       awayTeamId: 6,
       competitionType: CompetitionType.cup,
@@ -853,7 +853,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20300002,
       seasonId: 23900,
-      leagueId: 24,
+      competitionId: 24,
       homeTeamId: 8,
       awayTeamId: 20,
       competitionType: CompetitionType.cup,
@@ -865,7 +865,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20400001,
       seasonId: 23901,
-      leagueId: 27,
+      competitionId: 27,
       homeTeamId: 8,
       awayTeamId: 19,
       competitionType: CompetitionType.cup,
@@ -879,7 +879,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20500001,
       seasonId: 23902,
-      leagueId: 570,
+      competitionId: 570,
       homeTeamId: 3468,
       awayTeamId: 7980,
       competitionType: CompetitionType.cup,
@@ -891,7 +891,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20500002,
       seasonId: 23902,
-      leagueId: 570,
+      competitionId: 570,
       homeTeamId: 83,
       awayTeamId: 3468,
       competitionType: CompetitionType.cup,
@@ -903,7 +903,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20600001,
       seasonId: 23903,
-      leagueId: 390,
+      competitionId: 390,
       homeTeamId: 2930,
       awayTeamId: 113,
       competitionType: CompetitionType.cup,
@@ -915,7 +915,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20600002,
       seasonId: 23903,
-      leagueId: 390,
+      competitionId: 390,
       homeTeamId: 625,
       awayTeamId: 43,
       competitionType: CompetitionType.cup,
@@ -927,7 +927,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20700001,
       seasonId: 23904,
-      leagueId: 392,
+      competitionId: 392,
       homeTeamId: 503,
       awayTeamId: 68,
       competitionType: CompetitionType.cup,
@@ -939,7 +939,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20700002,
       seasonId: 23904,
-      leagueId: 392,
+      competitionId: 392,
       homeTeamId: 277,
       awayTeamId: 3321,
       competitionType: CompetitionType.cup,
@@ -953,7 +953,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20800001,
       seasonId: 23905,
-      leagueId: 569,
+      competitionId: 569,
       homeTeamId: 591,
       awayTeamId: 44,
       competitionType: CompetitionType.cup,
@@ -965,7 +965,7 @@ const _pastUpcomingFixtures = <Fixture>[
   Fixture(
       fixtureId: 20800002,
       seasonId: 23905,
-      leagueId: 569,
+      competitionId: 569,
       homeTeamId: 6789,
       awayTeamId: 591,
       competitionType: CompetitionType.cup,

@@ -4,11 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/features/helper.dart';
-import 'package:onetouch/models/league.dart';
+import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team.dart';
 import 'RankFavTeams.dart';
 
@@ -23,12 +23,13 @@ class SelectFavoriteTeamsScreen extends StatefulWidget {
 }
 
 class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
-  late List<League> _leagues;
-  late Map<int, List<Team>> _leagueTeams; // leagueId → teams sorted by standing
+  late List<Competition> _leagues;
+  late Map<int, List<Team>>
+      _leagueTeams; // competitionId → teams sorted by standing
 
   late String selectedLeague;
   int get _selectedLeagueId =>
-      _leagues.firstWhere((l) => l.name == selectedLeague).leagueId;
+      _leagues.firstWhere((l) => l.name == selectedLeague).competitionId;
 
   final Map<int, Team> _selectedTeams = {};
 
@@ -44,17 +45,17 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
   void initState() {
     super.initState();
 
-    _leagues = mockLeagues
-        .where((l) => _domesticLeagueIds.contains(l.leagueId))
+    _leagues = mockCompetitions
+        .where((l) => _domesticLeagueIds.contains(l.competitionId))
         .toList();
 
     _leagueTeams = {};
     for (final league in _leagues) {
       final standingsForLeague = mockStandings
-          .where((s) => s.leagueId == league.leagueId)
+          .where((s) => s.competitionId == league.competitionId)
           .toList()
         ..sort((a, b) => a.position.compareTo(b.position));
-      _leagueTeams[league.leagueId] =
+      _leagueTeams[league.competitionId] =
           standingsForLeague.map((s) => mockTeamById(s.teamId)).toList();
     }
 
@@ -139,7 +140,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                   selectedLeague = league.name;
                                   _focusedIndex = 0;
                                   _focusedTeam =
-                                      _leagueTeams[league.leagueId]?.first;
+                                      _leagueTeams[league.competitionId]?.first;
                                 });
                                 if (_pageController.hasClients) {
                                   _pageController.jumpToPage(0);
@@ -156,7 +157,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                       width: 24,
                                       height: 24,
                                       errorBuilder: (_, __, ___) =>
-                                          leagueLogoFallback(league.leagueId,
+                                          competitionLogoFallback(
+                                              league.competitionId,
                                               size: 24),
                                     ),
                                     const SizedBox(width: 12),
@@ -547,8 +549,9 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                       league.imagePath ?? '',
                       width: 24,
                       height: 24,
-                      errorBuilder: (_, __, ___) =>
-                          leagueLogoFallback(league.leagueId, size: 24),
+                      errorBuilder: (_, __, ___) => competitionLogoFallback(
+                          league.competitionId,
+                          size: 24),
                     ),
                     const SizedBox(width: 8),
                     Expanded(

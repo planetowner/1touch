@@ -32,9 +32,9 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     final appColors = AppColors.of(context);
-    final sheetSurface = isDark ? const Color(0xFF1C1C1E) : AppPalette.white;
+    final sheetSurface = isDark ? AppPalette.darkGrey : AppPalette.white;
     final fieldSurface =
-        isDark ? const Color(0xFF2C2C2E) : AppPalette.lightGreyBox;
+        isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.68,
@@ -163,7 +163,7 @@ class _SeasonPickerSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final sheetSurface = isDark ? const Color(0xFF1C1C1E) : AppPalette.white;
+    final sheetSurface = isDark ? AppPalette.darkGrey : AppPalette.white;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.65,

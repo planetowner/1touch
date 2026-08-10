@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
-
-const _domesticLeagueIds = {8, 82, 301, 384, 564};
-
-int? _leagueIdForTeam(int teamId) => mockStandings
-    .where((s) => s.teamId == teamId && _domesticLeagueIds.contains(s.leagueId))
-    .firstOrNull
-    ?.leagueId;
 
 class _TeamEntry {
   final int teamId;
@@ -30,7 +24,7 @@ class _TeamEntry {
 _TeamEntry _toEntry(Team t) => _TeamEntry(
       teamId: t.teamId,
       name: t.name,
-      leagueLabel: teamLeagueLabel(t.teamId),
+      leagueLabel: teamCompetitionContextResolver.labelFor(t.teamId),
       imagePath: t.imagePath,
     );
 
@@ -97,11 +91,13 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   }
 
   void _onSelectTeam(_TeamEntry team) {
-    final newLeagueId = _leagueIdForTeam(team.teamId);
+    final newCompetitionId =
+        teamCompetitionContextResolver.resolve(team.teamId)?.competitionId;
     _TeamEntry? conflict;
-    if (newLeagueId != null) {
+    if (newCompetitionId != null) {
       for (final t in _followedTeams) {
-        if (_leagueIdForTeam(t.teamId) == newLeagueId &&
+        if (teamCompetitionContextResolver.resolve(t.teamId)?.competitionId ==
+                newCompetitionId &&
             t.teamId != team.teamId) {
           conflict = t;
           break;
@@ -167,7 +163,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
         return Container(
           key: const ValueKey('profile-team-edit-sheet'),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
@@ -198,10 +194,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
 
               // Search bar
               Container(
+                key: const ValueKey('profile-team-edit-search'),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF3A3A3A)
+                      ? AppPalette.lightGrey
                       : appColors.subtleBackground,
                   borderRadius: BorderRadius.circular(8),
                 ),

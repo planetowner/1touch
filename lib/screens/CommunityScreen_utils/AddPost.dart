@@ -373,7 +373,7 @@ class _AddPostState extends State<AddPost> {
                       height: 120,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF272828)
+                            ? AppPalette.lightGrey
                             : const Color(0xFFC8C8C8),
                         borderRadius: BorderRadius.circular(12),
                       ),

@@ -1,5 +1,3 @@
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/models/team.dart';
 
 // ═══════════════════════════════════════════════════════════
@@ -598,26 +596,3 @@ const mockTeams = <Team>[
 ];
 
 Team mockTeamById(int id) => mockTeams.firstWhere((t) => t.teamId == id);
-
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
-
-// Returns "LEAGUE · Nth" for a team's primary domestic league standing.
-String teamLeagueLabel(int teamId) {
-  const domesticIds = {8, 82, 301, 384, 564};
-  final s = mockStandings
-      .where((s) => s.teamId == teamId && domesticIds.contains(s.leagueId))
-      .firstOrNull;
-  if (s == null) return '';
-  final league = mockLeagueById(s.leagueId);
-  final pos = s.position;
-  final suffix = pos == 1
-      ? '1st'
-      : pos == 2
-          ? '2nd'
-          : pos == 3
-              ? '3rd'
-              : '${pos}th';
-  return '${league.name} $suffix';
-}

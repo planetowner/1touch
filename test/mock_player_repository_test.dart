@@ -102,7 +102,10 @@ void main() {
       teamTrophiesForTeamSeason(597, '22/23').single.name,
       'Serie A',
     );
-    expect(kim.personalAwards.single.name, 'Serie A Best Defender');
+    expect(
+      kim.personalAwards.single.name,
+      'Serie A Defender of the Year',
+    );
     expect(
       mockTeamTrophies.map((trophy) => trophy.id).toSet(),
       hasLength(mockTeamTrophies.length),

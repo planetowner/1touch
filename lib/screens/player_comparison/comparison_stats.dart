@@ -160,7 +160,7 @@ class _StatCategoryCard extends StatelessWidget {
             key: ValueKey('comparison-stat-card-${cat.label}'),
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 2),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : AppPalette.white,
+              color: isDark ? AppPalette.darkGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(

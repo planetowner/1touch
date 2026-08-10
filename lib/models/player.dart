@@ -137,14 +137,47 @@ class PlayerCareerSeason {
   }
 }
 
+enum PlayerAwardType {
+  topScorer('Top Scorer', requiresCompetition: true),
+  topAssists('Top Assists', requiresCompetition: true),
+  goalkeeperOfTheYear('Goalkeeper of the Year', requiresCompetition: true),
+  defenderOfTheYear('Defender of the Year', requiresCompetition: true),
+  midfielderOfTheYear('Midfielder of the Year', requiresCompetition: true),
+  forwardOfTheYear('Forward of the Year', requiresCompetition: true),
+  playerOfTheYear('Player of the Year', requiresCompetition: true),
+  europeanGoldenShoe('European Golden Shoe'),
+  goldenBoy('Golden Boy'),
+  ballonDor("Ballon d'Or");
+
+  final String label;
+  final bool requiresCompetition;
+
+  const PlayerAwardType(this.label, {this.requiresCompetition = false});
+}
+
 class PlayerAward {
-  final String name;
+  final PlayerAwardType type;
+  final String? competitionName;
   final List<String> seasons;
 
   const PlayerAward({
-    required this.name,
+    required this.type,
+    this.competitionName,
     required this.seasons,
-  });
+  }) : assert(
+          (competitionName != null) ==
+              (type == PlayerAwardType.topScorer ||
+                  type == PlayerAwardType.topAssists ||
+                  type == PlayerAwardType.goalkeeperOfTheYear ||
+                  type == PlayerAwardType.defenderOfTheYear ||
+                  type == PlayerAwardType.midfielderOfTheYear ||
+                  type == PlayerAwardType.forwardOfTheYear ||
+                  type == PlayerAwardType.playerOfTheYear),
+          'Competition awards require a competition name; global awards do not.',
+        );
+
+  String get name =>
+      competitionName == null ? type.label : '$competitionName ${type.label}';
 }
 
 class Player {

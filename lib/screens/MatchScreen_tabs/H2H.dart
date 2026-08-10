@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -83,7 +83,7 @@ class _H2HTabState extends State<H2HTab> {
           ...h2hMatches.map((f) {
             final home = mockTeamById(f.homeTeamId);
             final away = mockTeamById(f.awayTeamId);
-            final league = mockLeagueById(f.leagueId);
+            final league = mockCompetitionById(f.competitionId);
             return _buildPastMatchCard(
               home.shortCode ?? home.name,
               away.shortCode ?? away.name,
@@ -216,7 +216,7 @@ class _H2HTabState extends State<H2HTab> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF272828) : AppPalette.lightGreyBox,
+            color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(value, style: Heading2.style.copyWith(color: foreground)),
@@ -299,7 +299,7 @@ class _H2HTabState extends State<H2HTab> {
                     ? (isDark ? Colors.white : AppPalette.lightGreyBox)
                     : i == 0
                         ? const Color(0xFFFF5B5B)
-                        : (isDark ? const Color(0xFF272828) : AppPalette.black),
+                        : (isDark ? AppPalette.darkGrey : AppPalette.black),
               ),
               alignment: Alignment.center,
               child: FittedBox(
@@ -403,7 +403,7 @@ class _H2HTabState extends State<H2HTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF272828) : AppPalette.lightGreyBox,
+        color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(score, style: Heading2.style.copyWith(color: foreground)),

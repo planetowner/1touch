@@ -289,7 +289,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF1E1E1E)
+                            ? AppPalette.darkGrey
                             : AppPalette.lightGreyBox,
                         borderRadius: BorderRadius.circular(24),
                       ),

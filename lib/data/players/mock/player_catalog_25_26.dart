@@ -338,7 +338,8 @@ final List<Player> mockPlayerCatalog2526 = [
     ],
     personalAwards: const [
       PlayerAward(
-        name: 'Premier League Golden Boot',
+        type: PlayerAwardType.topScorer,
+        competitionName: 'Premier League',
         seasons: ['17/18', '18/19', '21/22', '24/25'],
       ),
     ],
@@ -503,7 +504,8 @@ final List<Player> mockPlayerCatalog2526 = [
     radar: const [0.95, 0.91, 0.96, 0.49, 0.71],
     personalAwards: const [
       PlayerAward(
-        name: 'La Liga Player of the Season',
+        type: PlayerAwardType.playerOfTheYear,
+        competitionName: 'La Liga',
         seasons: ['25/26'],
       ),
     ],
@@ -665,7 +667,8 @@ final List<Player> mockPlayerCatalog2526 = [
     ],
     personalAwards: const [
       PlayerAward(
-        name: 'Serie A Best Defender',
+        type: PlayerAwardType.defenderOfTheYear,
+        competitionName: 'Serie A',
         seasons: ['22/23'],
       ),
     ],
@@ -797,7 +800,8 @@ final List<Player> mockPlayerCatalog2526 = [
     ],
     personalAwards: const [
       PlayerAward(
-        name: 'Bundesliga Top Scorer',
+        type: PlayerAwardType.topScorer,
+        competitionName: 'Bundesliga',
         seasons: ['23/24', '24/25', '25/26'],
       ),
     ],

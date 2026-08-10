@@ -97,19 +97,34 @@ void main() {
       expect(tabBar.indicatorColor, testCase.tabColor);
 
       if (testCase.name == 'light') {
-        final newest = tester.widget<Container>(
-          find.byKey(const ValueKey('community-filter-newest')),
+        final popular = tester.widget<Container>(
+          find.byKey(const ValueKey('community-filter-popular')),
         );
         final groundRules = tester.widget<Container>(
           find.byKey(const ValueKey('community-ground-rules-card')),
         );
         expect(
-          (newest.decoration as BoxDecoration).color,
+          (popular.decoration as BoxDecoration).color,
           app_style.AppPalette.white,
         );
         expect(
           (groundRules.decoration as BoxDecoration).color,
           app_style.AppPalette.white,
+        );
+      } else {
+        final popular = tester.widget<Container>(
+          find.byKey(const ValueKey('community-filter-popular')),
+        );
+        final groundRules = tester.widget<Container>(
+          find.byKey(const ValueKey('community-ground-rules-card')),
+        );
+        expect(
+          (popular.decoration as BoxDecoration).color,
+          app_style.AppPalette.lightGrey,
+        );
+        expect(
+          (groundRules.decoration as BoxDecoration).color,
+          app_style.AppPalette.lightGrey,
         );
       }
       expect(tester.takeException(), isNull);
@@ -170,6 +185,46 @@ void main() {
     await tester.pumpAndSettle();
     final bottomSheet = tester.widget<BottomSheet>(find.byType(BottomSheet));
     expect(bottomSheet.backgroundColor, app_style.AppPalette.white);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Community dialogs use dark grey dark surfaces', (tester) async {
+    _useCompactPhone(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Column(
+              children: [
+                TextButton(
+                  onPressed: () => showGroundRulesModal(context),
+                  child: const Text('Ground rules'),
+                ),
+                TextButton(
+                  onPressed: () => showReportDialog(context),
+                  child: const Text('Report post'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Ground rules'));
+    await tester.pumpAndSettle();
+    final dialog = tester.widget<Dialog>(
+      find.byKey(const ValueKey('community-ground-rules-dialog')),
+    );
+    expect(dialog.backgroundColor, app_style.AppPalette.darkGrey);
+    await tester.tap(find.text('I UNDERSTAND!'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Report post'));
+    await tester.pumpAndSettle();
+    final bottomSheet = tester.widget<BottomSheet>(find.byType(BottomSheet));
+    expect(bottomSheet.backgroundColor, app_style.AppPalette.darkGrey);
     expect(tester.takeException(), isNull);
   });
 

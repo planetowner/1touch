@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
@@ -38,7 +38,8 @@ class _FixturesState extends State<Fixtures> {
     final Fixture? match = map['next_match'] as Fixture?;
     final Fixture? lastMatch = map['last_match'] as Fixture?;
     final leagueName =
-        leagueNames[match?.leagueId ?? lastMatch?.leagueId] ?? "Unknown League";
+        leagueNames[match?.competitionId ?? lastMatch?.competitionId] ??
+            "Unknown League";
 
     if (match == null && lastMatch == null) return const SizedBox.shrink();
     final appColors = AppColors.of(context);
@@ -136,9 +137,9 @@ class _StandingState extends State<Standing> {
     // league first, then UCL/Europa if they've qualified for one. Each gets
     // its own card; swipe sideways to see the next, same as team picking.
     final leagueIds = fixturesByTeam(currentTeamId)
-        .map((f) => f.leagueId)
+        .map((f) => f.competitionId)
         .toSet()
-        .where((id) => standingsByLeague(id).isNotEmpty)
+        .where((id) => standingsByCompetition(id).isNotEmpty)
         .toList()
       ..sort((a, b) {
         final aIsDomestic = leagueNames.containsKey(a);
@@ -168,7 +169,7 @@ class _StandingState extends State<Standing> {
   }
 
   List<Map<String, dynamic>> _rowsForLeague(int leagueId, int? currentTeamId) {
-    final standings = standingsByLeague(leagueId);
+    final standings = standingsByCompetition(leagueId);
     final allRows = standings
         .map((s) => {
               'rank': s.position,
@@ -209,7 +210,7 @@ class _StandingState extends State<Standing> {
       {required List<Map<String, dynamic>> rows,
       required bool isFirst,
       required bool isLast}) {
-    final league = mockLeagueById(leagueId);
+    final league = mockCompetitionById(leagueId);
     final appColors = AppColors.of(context);
     final isLight = Theme.of(context).brightness == Brightness.light;
     final bodyBackground =
@@ -255,7 +256,7 @@ class _StandingState extends State<Standing> {
                           width: 24,
                           height: 24,
                           errorBuilder: (_, __, ___) =>
-                              leagueLogoFallback(leagueId, size: 24),
+                              competitionLogoFallback(leagueId, size: 24),
                         ),
                         const SizedBox(width: 10),
                         Expanded(

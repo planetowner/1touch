@@ -4,18 +4,33 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/HomeScreenFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/team_overview.dart';
 
 void main() {
   const match = Fixture(
     fixtureId: 1,
     seasonId: 1,
-    leagueId: 8,
+    competitionId: 8,
     homeTeamId: 8,
     awayTeamId: 19,
     competitionType: CompetitionType.league,
     roundName: 'Round 1',
     status: FixtureStatus.upcoming,
     startingAt: '2026-08-10 12:00:00',
+  );
+
+  const lastMatch = Fixture(
+    fixtureId: 2,
+    seasonId: 1,
+    competitionId: 8,
+    homeTeamId: 8,
+    awayTeamId: 6,
+    competitionType: CompetitionType.league,
+    roundName: 'Round 2',
+    status: FixtureStatus.past,
+    startingAt: '2026-08-03 12:00:00',
+    homeScore: 3,
+    awayScore: 0,
   );
 
   for (final testCase in <({String name, ThemeData theme})>[
@@ -84,6 +99,79 @@ void main() {
 
       final todayText = tester.widget<Text>(find.text('${DateTime.now().day}'));
       expect(todayText.style?.color, colorScheme.onPrimary);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final testCase in <({
+    String name,
+    ThemeData theme,
+    Color outer,
+    Color next,
+    Color last,
+  })>[
+    (
+      name: 'dark',
+      theme: app_style.darktheme,
+      outer: app_style.AppPalette.darkGrey,
+      next: app_style.AppPalette.lightGrey,
+      last: app_style.AppPalette.darkGrey,
+    ),
+    (
+      name: 'light',
+      theme: app_style.whitetheme,
+      outer: app_style.AppPalette.white,
+      next: app_style.AppPalette.lightGreyBox,
+      last: app_style.AppPalette.white,
+    ),
+  ]) {
+    testWidgets('Favorite team match sections use ${testCase.name} surfaces',
+        (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: testCase.theme,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MyTeams(
+                teams: [
+                  TeamOverview(
+                    id: 8,
+                    name: 'Liverpool',
+                    shortName: 'LIV',
+                    imagePath: 'https://example.com/liverpool.png',
+                    nextMatch: match,
+                    lastMatch: lastMatch,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      Color surfaceColor(String key) {
+        final container = tester.widget<Container>(
+          find.byKey(ValueKey(key)),
+        );
+        return (container.decoration as BoxDecoration).color!;
+      }
+
+      final nextFinder = find.byKey(const ValueKey('match-card-surface'));
+      final lastFinder = find.byKey(const ValueKey('last-match-card-surface'));
+
+      expect(surfaceColor('home-favorite-team-surface'), testCase.outer);
+      expect(surfaceColor('match-card-surface'), testCase.next);
+      expect(surfaceColor('last-match-card-surface'), testCase.last);
+      expect(
+        tester.getBottomLeft(nextFinder).dy,
+        closeTo(tester.getTopLeft(lastFinder).dy, 0.1),
+      );
       expect(tester.takeException(), isNull);
     });
   }

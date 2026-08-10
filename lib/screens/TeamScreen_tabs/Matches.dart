@@ -3,7 +3,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -138,7 +138,7 @@ class _MatchesTabState extends State<MatchesTab> {
     final isUpcoming = fixture.status == FixtureStatus.upcoming;
     final home = mockTeamById(fixture.homeTeamId);
     final away = mockTeamById(fixture.awayTeamId);
-    final league = mockLeagueById(fixture.leagueId);
+    final league = mockCompetitionById(fixture.competitionId);
     final dt = DateTime.parse(fixture.startingAt).toLocal();
 
     return GestureDetector(

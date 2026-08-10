@@ -564,7 +564,7 @@ class _CareerTabState extends State<CareerTab> {
   }) {
     return showModalBottomSheet<void>(
       context: context,
-      backgroundColor: _isDark ? const Color(0xFF2A2A2A) : AppPalette.white,
+      backgroundColor: _isDark ? AppPalette.darkGrey : AppPalette.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

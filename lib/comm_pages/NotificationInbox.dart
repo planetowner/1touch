@@ -143,8 +143,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
     final pageBackground = isDark ? Colors.black : AppPalette.lightModeDarkGrey;
     final selectedSurface = isDark ? AppPalette.white : AppPalette.black;
     final selectedForeground = isDark ? AppPalette.black : AppPalette.white;
-    final unselectedSurface =
-        isDark ? const Color(0xFF2B2B2B) : AppPalette.white;
+    final unselectedSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final visible =
         _mockNotifications.where((n) => n.matchesFilter(_selected)).toList();
 
@@ -236,8 +235,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
                   children: [
                     _NotifTile(notif: notif),
                     Divider(
-                      color:
-                          isDark ? const Color(0xFF2B2B2B) : appColors.divider,
+                      color: isDark ? AppPalette.darkGrey : appColors.divider,
                       height: 1,
                       thickness: 1,
                     ),
@@ -313,7 +311,7 @@ class _Avatar extends StatelessWidget {
         // Main circle
         CircleAvatar(
           radius: 28,
-          backgroundColor: isDark ? const Color(0xFF2B2B2B) : AppPalette.white,
+          backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
           backgroundImage: notif.imageUrl != null
               ? NetworkImage(notif.imageUrl!) as ImageProvider
               : const AssetImage('assets/profileAvatar.png'),

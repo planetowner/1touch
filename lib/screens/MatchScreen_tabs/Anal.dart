@@ -198,7 +198,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             key: const ValueKey('match-analysis-attack-card'),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF272828) : AppPalette.white,
+              color: isDark ? AppPalette.darkGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
             ),
             padding: const EdgeInsets.all(24),
@@ -243,7 +243,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF272828) : AppPalette.white,
+              color: isDark ? AppPalette.darkGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -273,7 +273,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -310,7 +310,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -351,7 +351,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: showFCB ? selectedSurface : unselectedSurface,
-                border: Border.all(color: AppColors.of(context).divider),
+                border: Border.all(
+                  color: isDark
+                      ? AppPalette.lightGrey
+                      : AppColors.of(context).divider,
+                ),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   bottomLeft: Radius.circular(8),
@@ -374,7 +378,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: !showFCB ? selectedSurface : unselectedSurface,
-                border: Border.all(color: AppColors.of(context).divider),
+                border: Border.all(
+                  color: isDark
+                      ? AppPalette.lightGrey
+                      : AppColors.of(context).divider,
+                ),
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(8),
                   bottomRight: Radius.circular(8),
@@ -447,7 +455,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF272828) : AppPalette.white,
+              color: isDark ? AppPalette.darkGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(

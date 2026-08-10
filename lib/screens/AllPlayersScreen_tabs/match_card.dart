@@ -41,7 +41,7 @@ class PlayerMatchCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final topColor = isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
     final bottomColor =
-        isDark ? const Color(0xFF1E1E1E) : appColors.subtleBackground;
+        isDark ? AppPalette.darkGrey : appColors.subtleBackground;
     final statColor = isDark ? const Color(0x66090A0A) : AppPalette.white;
     // Two separate boxes stacked flush so they read as one connected card:
     // a lighter top box (only the top corners rounded) and a darker bottom box

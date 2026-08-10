@@ -26,7 +26,7 @@ class MatchBettingSection extends StatelessWidget {
       key: const ValueKey('match-betting-card'),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF272828) : AppPalette.white,
+        color: isDark ? AppPalette.darkGrey : AppPalette.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -114,7 +114,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
     return Container(
       key: const ValueKey('match-betting-modal'),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF272828) : AppPalette.white,
+        color: isDark ? AppPalette.darkGrey : AppPalette.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.all(24),

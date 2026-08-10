@@ -3,7 +3,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/data/competitions/mock/league_catalog.dart';
+import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
@@ -39,7 +39,7 @@ class _TeamScreenState extends State<TeamScreen>
   //     if (response.statusCode == 200) {
   //       final jsonMap = json.decode(response.body) as Map<String, dynamic>;
   //       final parsed = Team.fromJson(jsonMap); // ✅ parse API object
-  //       final int leagueId = parsed.leagueId;
+  //       final int leagueId = parsed.competitionId;
   //       final int? rank = parsed.standing?['rank'] as int?;
   //       final String leagueName = {
   //         8: "Premier League",
@@ -132,7 +132,7 @@ class _TeamScreenState extends State<TeamScreen>
         fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull;
 
     // Get league from fixtures
-    final leagueId = nextMatch?.leagueId ?? lastMatch?.leagueId;
+    final leagueId = nextMatch?.competitionId ?? lastMatch?.competitionId;
     final standing =
         leagueId != null ? standingByTeam(leagueId, widget.teamId) : null;
     final leagueName =

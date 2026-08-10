@@ -203,7 +203,7 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
                 context: context,
                 isScrollControlled: true,
                 backgroundColor:
-                    isDark ? const Color(0xFF1E1E1E) : AppPalette.white,
+                    isDark ? AppPalette.darkGrey : AppPalette.white,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
@@ -375,7 +375,7 @@ class OnesToWatchCard extends StatelessWidget {
                     key: const ValueKey('ones-to-watch-image-surface'),
                     width: double.infinity,
                     color: isDark
-                        ? const Color(0xFF272828)
+                        ? AppPalette.darkGrey
                         : appColors.subtleBackground,
                   ),
                   Positioned(
@@ -751,7 +751,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
         return Container(
           key: const ValueKey('following-players-sheet'),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF272828) : AppPalette.white,
+            color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(28),
             ),
@@ -784,9 +784,8 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                 key: const ValueKey('following-players-search'),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF3A3A3A)
-                      : AppPalette.lightGreyBox,
+                  color:
+                      isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: TextField(

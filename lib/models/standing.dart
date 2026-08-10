@@ -1,12 +1,12 @@
 // SQL table: standings
-// league_id | season_id | phase (enum: league / group / league_phase)
+// competition_id | season_id | phase (enum: league / group / league_phase)
 // group_name | team_id | position | matches_played | won | draw | lost
 // goals_for | goals_against | goal_diff | points | last5_form (json array)
 
 enum StandingPhase { league, group, leaguePhase }
 
 class Standing {
-  final int leagueId;
+  final int competitionId;
   final int seasonId;
   final StandingPhase phase;
   final String groupName; // empty string when phase == league
@@ -23,7 +23,7 @@ class Standing {
   final List<String> last5Form; // e.g. ['W','W','D','L','W']
 
   const Standing({
-    required this.leagueId,
+    required this.competitionId,
     required this.seasonId,
     required this.phase,
     required this.groupName,
@@ -42,35 +42,38 @@ class Standing {
 
   factory Standing.fromJson(Map<String, dynamic> json) {
     return Standing(
-      leagueId:      json['league_id'] as int,
-      seasonId:      json['season_id'] as int,
-      phase:         _parsePhase(json['phase'] as String),
-      groupName:     json['group_name'] as String? ?? '',
-      teamId:        json['team_id'] as int,
-      position:      json['position'] as int,
+      competitionId: json['competition_id'] as int,
+      seasonId: json['season_id'] as int,
+      phase: _parsePhase(json['phase'] as String),
+      groupName: json['group_name'] as String? ?? '',
+      teamId: json['team_id'] as int,
+      position: json['position'] as int,
       matchesPlayed: json['matches_played'] as int,
-      won:           json['won'] as int,
-      draw:          json['draw'] as int,
-      lost:          json['lost'] as int,
-      goalsFor:      json['goals_for'] as int,
-      goalsAgainst:  json['goals_against'] as int,
-      goalDiff:      json['goal_diff'] as int,
-      points:        json['points'] as int,
-      last5Form:     (json['last5_form'] as List<dynamic>).cast<String>(),
+      won: json['won'] as int,
+      draw: json['draw'] as int,
+      lost: json['lost'] as int,
+      goalsFor: json['goals_for'] as int,
+      goalsAgainst: json['goals_against'] as int,
+      goalDiff: json['goal_diff'] as int,
+      points: json['points'] as int,
+      last5Form: (json['last5_form'] as List<dynamic>).cast<String>(),
     );
   }
 
   static StandingPhase _parsePhase(String raw) {
     switch (raw) {
-      case 'group':        return StandingPhase.group;
-      case 'league_phase': return StandingPhase.leaguePhase;
-      default:             return StandingPhase.league;
+      case 'group':
+        return StandingPhase.group;
+      case 'league_phase':
+        return StandingPhase.leaguePhase;
+      default:
+        return StandingPhase.league;
     }
   }
 }
 
 // SQL table: xg_standings (Big 5 leagues only)
-// league_id | season_id | team_id | position
+// competition_id | season_id | team_id | position
 // matches_played | won | draw | lost
 // xg (Decimal 3dp) | xga (Decimal 3dp) | xpts (Decimal 2dp)
 //
@@ -81,7 +84,7 @@ class Standing {
 //   - Sort order: xpts DESC, (xg - xga) DESC, xg DESC, team_id ASC
 
 class XgStanding {
-  final int leagueId;
+  final int competitionId;
   final int seasonId;
   final int teamId;
   final int position;
@@ -94,7 +97,7 @@ class XgStanding {
   final double xpts;
 
   const XgStanding({
-    required this.leagueId,
+    required this.competitionId,
     required this.seasonId,
     required this.teamId,
     required this.position,
@@ -109,17 +112,17 @@ class XgStanding {
 
   factory XgStanding.fromJson(Map<String, dynamic> json) {
     return XgStanding(
-      leagueId:      json['league_id'] as int,
-      seasonId:      json['season_id'] as int,
-      teamId:        json['team_id'] as int,
-      position:      json['position'] as int,
+      competitionId: json['competition_id'] as int,
+      seasonId: json['season_id'] as int,
+      teamId: json['team_id'] as int,
+      position: json['position'] as int,
       matchesPlayed: json['matches_played'] as int,
-      won:           json['won'] as int,
-      draw:          json['draw'] as int,
-      lost:          json['lost'] as int,
-      xg:            (json['xg']   as num).toDouble(),
-      xga:           (json['xga']  as num).toDouble(),
-      xpts:          (json['xpts'] as num).toDouble(),
+      won: json['won'] as int,
+      draw: json['draw'] as int,
+      lost: json['lost'] as int,
+      xg: (json['xg'] as num).toDouble(),
+      xga: (json['xga'] as num).toDouble(),
+      xpts: (json['xpts'] as num).toDouble(),
     );
   }
 }

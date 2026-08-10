@@ -34,7 +34,6 @@ void main() {
 
           final context = tester.element(find.byType(Scaffold));
           final colorScheme = Theme.of(context).colorScheme;
-          final appColors = app_style.AppColors.of(context);
           final tabBar = tester.widget<TabBar>(find.byType(TabBar));
           final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
           final expectedGradientHeight =
@@ -143,6 +142,31 @@ void main() {
     );
     expect(standingHeader.color, app_style.AppPalette.white);
     expect(tabBar.unselectedLabelColor, appColors.mutedForeground);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Team fixture sections use the approved dark surfaces',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamScreen(teamId: 9),
+      ),
+    );
+    await tester.pump();
+
+    final nextMatch = tester.widget<MatchCard>(find.byType(MatchCard));
+    final lastMatch = tester.widget<MatchCard2>(find.byType(MatchCard2));
+    final fixturesCard = tester.widget<Container>(
+      find.byKey(const ValueKey('team-overview-fixtures-card')),
+    );
+
+    expect(nextMatch.backgroundColor, app_style.AppPalette.lightGrey);
+    expect(lastMatch.backgroundColor, app_style.AppPalette.darkGrey);
+    expect(
+      (fixturesCard.decoration as BoxDecoration).color,
+      app_style.AppPalette.darkGrey,
+    );
     expect(tester.takeException(), isNull);
   });
 

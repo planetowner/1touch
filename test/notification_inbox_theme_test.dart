@@ -69,7 +69,7 @@ void main() {
     );
     expect(scaffold.backgroundColor, Colors.black);
     expect(filterColor(tester, 'all'), app_style.AppPalette.white);
-    expect(filterColor(tester, 'team'), const Color(0xFF2B2B2B));
+    expect(filterColor(tester, 'team'), app_style.AppPalette.lightGrey);
     expect(tester.takeException(), isNull);
   });
 }

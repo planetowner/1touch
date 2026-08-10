@@ -24,6 +24,7 @@ import 'package:onetouch/WelcomeScreen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await appThemeController.initialize();
+  // Initializes the team catalog before loading and validating stored IDs.
   await currentUserPreferences.initialize();
   await playerRepository.initializeFollowing();
   try {

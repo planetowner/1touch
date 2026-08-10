@@ -11,6 +11,8 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
+import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/user.dart';
 import 'package:onetouch/models/user_profile.dart';
@@ -367,7 +369,7 @@ class _ProfileState extends State<Profile> {
         itemBuilder: (context, index) {
           final team = mockTeamById(teamIds[index]);
           final isFavorite = team.teamId == favoriteId;
-          final label = teamLeagueLabel(team.teamId);
+          final label = teamCompetitionContextResolver.labelFor(team.teamId);
 
           return Stack(
             children: [

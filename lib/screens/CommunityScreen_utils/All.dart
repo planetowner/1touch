@@ -151,7 +151,7 @@ class _AllState extends State<All> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isDark
-              ? (isSelected ? AppPalette.white : const Color(0xFF272828))
+              ? (isSelected ? AppPalette.white : AppPalette.lightGrey)
               : AppPalette.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isDark
@@ -260,7 +260,7 @@ class _AllState extends State<All> {
                     width: size * 0.8,
                     height: size,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2C2C2C),
+                      color: AppPalette.lightGrey,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ClipRRect(
