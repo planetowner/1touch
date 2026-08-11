@@ -586,7 +586,92 @@ const mockTeams = <Team>[
       shortCode: 'MTZ',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/25/3513.png',
       primaryColor: 0xFF7E1F3D),
-  // Referenced by transfers (outside the Big 5 tables)
+  // Additional 2024/25 Big Five identities
+  Team(
+      teamId: 116,
+      name: 'Ipswich Town',
+      shortCode: 'IPS',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/20/116.png',
+      primaryColor: 0xFF3A64A3),
+  Team(
+      teamId: 42,
+      name: 'Leicester City',
+      shortCode: 'LEI',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/10/42.png',
+      primaryColor: 0xFF003090),
+  Team(
+      teamId: 65,
+      name: 'Southampton',
+      shortCode: 'SOU',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/1/65.png',
+      primaryColor: 0xFFD71920),
+  Team(
+      teamId: 999,
+      name: 'VfL Bochum 1848',
+      shortCode: 'BOC',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/7/999.png',
+      primaryColor: 0xFF005CA9),
+  Team(
+      teamId: 3611,
+      name: 'Holstein Kiel',
+      shortCode: 'HKI',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/27/3611.png',
+      primaryColor: 0xFF005AAA),
+  Team(
+      teamId: 1028,
+      name: 'Reims',
+      shortCode: 'SdR',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/4/1028.png',
+      primaryColor: 0xFFE30613),
+  Team(
+      teamId: 581,
+      name: 'Montpellier',
+      shortCode: 'MPL',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/5/581.png',
+      primaryColor: 0xFFF58220),
+  Team(
+      teamId: 108,
+      name: 'Saint-Étienne',
+      shortCode: 'STE',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/12/108.png',
+      primaryColor: 0xFF009F4D),
+  Team(
+      teamId: 844,
+      name: 'Leganés',
+      shortCode: 'LEG',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/12/844.png',
+      primaryColor: 0xFF0055A4),
+  Team(
+      teamId: 361,
+      name: 'Real Valladolid',
+      shortCode: 'REV',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/9/361.png',
+      primaryColor: 0xFF5B2C83),
+  Team(
+      teamId: 2921,
+      name: 'Las Palmas',
+      shortCode: 'LPA',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/9/2921.png',
+      primaryColor: 0xFFFFE500),
+  Team(
+      teamId: 397,
+      name: 'Empoli',
+      shortCode: 'EMP',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/13/397.png',
+      primaryColor: 0xFF0057B8),
+  Team(
+      teamId: 267,
+      name: 'Venezia',
+      shortCode: 'VEN',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/11/267.png',
+      primaryColor: 0xFFFF6B00),
+  Team(
+      teamId: 1628,
+      name: 'Monza',
+      shortCode: 'MON',
+      imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/28/1628.png',
+      primaryColor: 0xFFE4032E),
+  // Referenced by transfers (outside the Big Five season memberships)
   Team(
       teamId: 21,
       name: 'Sheffield United',

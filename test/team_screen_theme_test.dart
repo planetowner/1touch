@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
@@ -60,6 +61,31 @@ void main() {
             await tester.pump(const Duration(milliseconds: 350));
             if (index == 3) {
               await tester.pump(const Duration(milliseconds: 450));
+            }
+            if (index == 2) {
+              final toggle = find.byKey(
+                const ValueKey('standing-view-toggle'),
+              );
+              expect(toggle, findsOneWidget);
+              expect(
+                tester.getSize(toggle).width,
+                closeTo(size.width - 48, 0.1),
+              );
+              expect(
+                find.descendant(
+                  of: toggle,
+                  matching: find.byIcon(Icons.keyboard_arrow_down),
+                ),
+                findsNothing,
+              );
+
+              await tester.ensureVisible(toggle);
+              await tester.pump();
+              await tester.tap(
+                find.byKey(const ValueKey('standing-view-xg-table')),
+              );
+              await tester.pump();
+              expect(find.byType(XgTable), findsOneWidget);
             }
             final tabException = tester.takeException();
             expect(
@@ -145,6 +171,29 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('xG table segment is disabled when the league has no xG data',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: StandingViewToggle(
+            selectedView: StandingView.standing,
+            availableViews: const [StandingView.standing],
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    final xgSegment = tester.widget<InkWell>(
+      find.byKey(const ValueKey('standing-view-xg-table')),
+    );
+
+    expect(xgSegment.onTap, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Team fixture sections use the approved dark surfaces',
       (tester) async {
     await tester.pumpWidget(
@@ -198,10 +247,12 @@ void main() {
       find.byKey(const ValueKey('standing-season-filter')),
     );
     final standingView = tester.widget<Text>(find.text('STANDING').first);
+    final xgView = tester.widget<Text>(find.text('XG TABLE'));
 
     expect(leagueFilter.style?.color, app_style.AppPalette.black);
     expect(seasonFilter.style?.color, app_style.AppPalette.black);
-    expect(standingView.style?.color, app_style.AppPalette.black);
+    expect(standingView.style?.color, app_style.AppPalette.white);
+    expect(xgView.style?.color, app_style.AppPalette.black);
 
     await tester.drag(tabView, const Offset(-393, 0));
     await tester.pump(const Duration(milliseconds: 350));

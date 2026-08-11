@@ -125,84 +125,12 @@ extension StandingViewLabel on StandingView {
   }
 }
 
-class StandingViewSelector extends StatelessWidget {
-  final StandingView selectedView;
-  final bool isOpen;
-  final VoidCallback onToggle;
-
-  const StandingViewSelector({
-    super.key,
-    required this.selectedView,
-    required this.isOpen,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _ViewSelectorButton(
-      selectedView: selectedView,
-      isOpen: isOpen,
-      onToggle: onToggle,
-    );
-  }
-}
-
-class _ViewSelectorButton extends StatelessWidget {
-  final StandingView selectedView;
-  final bool isOpen;
-  final VoidCallback onToggle;
-
-  const _ViewSelectorButton({
-    required this.selectedView,
-    required this.isOpen,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.only(left: 16, right: 8, top: 8, bottom: 8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            selectedView.label,
-            style: Body2_b.style.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onToggle,
-            behavior: HitTestBehavior.opaque,
-            child: AnimatedRotation(
-              turns: isOpen ? 0.5 : 0,
-              duration: const Duration(milliseconds: 180),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class StandingViewOptions extends StatelessWidget {
+class StandingViewToggle extends StatelessWidget {
   final StandingView selectedView;
   final List<StandingView> availableViews;
   final ValueChanged<StandingView> onChanged;
 
-  const StandingViewOptions({
+  const StandingViewToggle({
     super.key,
     required this.selectedView,
     required this.availableViews,
@@ -211,61 +139,82 @@ class StandingViewOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final appColors = AppColors.of(context);
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        width: 132,
-        decoration: BoxDecoration(
-          color: appColors.cardBackground,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.28),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
+
+    return Container(
+      key: const ValueKey('standing-view-toggle'),
+      height: 42,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: isDark ? AppPalette.lightGrey : appColors.divider,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: availableViews
-              .map<Widget>((view) => _buildViewItem(context, view))
-              .toList(),
-        ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        children: StandingView.values
+            .map(
+              (view) => Expanded(
+                child: _StandingViewSegment(
+                  view: view,
+                  isSelected: selectedView == view,
+                  isEnabled: availableViews.contains(view),
+                  onTap: () => onChanged(view),
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }
+}
 
-  Widget _buildViewItem(BuildContext context, StandingView view) {
-    final selected = selectedView == view;
+class _StandingViewSegment extends StatelessWidget {
+  const _StandingViewSegment({
+    required this.view,
+    required this.isSelected,
+    required this.isEnabled,
+    required this.onTap,
+  });
 
-    return GestureDetector(
-      onTap: () => onChanged(view),
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                view.label,
-                style: (selected ? Body2_b.style : Body2.style).copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
+  final StandingView view;
+  final bool isSelected;
+  final bool isEnabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = AppColors.of(context);
+    final foreground = isSelected
+        ? AppPalette.white
+        : isEnabled
+            ? Theme.of(context).colorScheme.onSurface
+            : appColors.mutedForeground;
+    final background = isSelected
+        ? AppPalette.black
+        : isDark
+            ? AppPalette.lightGrey
+            : AppPalette.white;
+
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      enabled: isEnabled,
+      child: Material(
+        color: background,
+        child: InkWell(
+          key: ValueKey(
+            'standing-view-${view == StandingView.standing ? 'standing' : 'xg-table'}',
+          ),
+          onTap: isEnabled ? onTap : null,
+          child: Center(
+            child: Text(
+              view.label,
+              style: Body2_b.style.copyWith(color: foreground),
             ),
-            if (selected)
-              Icon(
-                Icons.check,
-                color: Theme.of(context).colorScheme.onSurface,
-                size: 16,
-              )
-            else
-              const SizedBox(width: 24),
-          ],
+          ),
         ),
       ),
     );

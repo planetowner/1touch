@@ -9,6 +9,7 @@ void main() {
     final context = resolver.resolve(19);
 
     expect(context?.teamId, 19);
+    expect(context?.seasonId, 25583);
     expect(context?.competitionId, 8);
     expect(context?.competitionName, 'Premier League');
     expect(context?.currentPosition, 2);
@@ -18,5 +19,23 @@ void main() {
   test('returns null and an empty label for an unknown team', () {
     expect(resolver.resolve(-1), isNull);
     expect(resolver.labelFor(-1), isEmpty);
+  });
+
+  test('resolves current membership even when standing data is missing', () {
+    final resolverWithoutStandings = MockTeamCompetitionContextResolver(
+      standings: const [],
+    );
+
+    final context = resolverWithoutStandings.resolve(19);
+    expect(context?.seasonId, 25583);
+    expect(context?.competitionId, 8);
+    expect(context?.competitionName, 'Premier League');
+    expect(context?.currentPosition, isNull);
+    expect(context?.label, 'Premier League');
+  });
+
+  test('does not present a previous-season-only team as current', () {
+    expect(resolver.resolve(116), isNull);
+    expect(resolver.labelFor(116), isEmpty);
   });
 }

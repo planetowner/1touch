@@ -38,7 +38,6 @@ class _StandingTabState extends State<StandingTab> {
   List<int> _validLeagueIds = [];
 
   StandingView _selectedView = StandingView.standing;
-  bool _isViewDropdownOpen = false;
 
   bool get _xgAvailable => _big5LeagueIds.contains(selectedLeagueId);
 
@@ -177,7 +176,7 @@ class _StandingTabState extends State<StandingTab> {
             [
               const SizedBox(height: 24),
               Padding(
-                padding: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.only(bottom: 16),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -196,38 +195,19 @@ class _StandingTabState extends State<StandingTab> {
                   currentTeamId: currentTeamId,
                 )
               else
-                Stack(
-                  clipBehavior: Clip.none,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 24, bottom: 16),
-                          child: StandingViewSelector(
-                            selectedView: _selectedView,
-                            isOpen: _isViewDropdownOpen,
-                            onToggle: () {
-                              setState(() {
-                                _isViewDropdownOpen = !_isViewDropdownOpen;
-                              });
-                            },
-                          ),
-                        ),
-                        _buildSelectedTable(),
-                        StandingsLegend(leagueId: selectedLeagueId),
-                      ],
-                    ),
-                    if (_isViewDropdownOpen)
-                      Positioned(
-                        top: 42,
-                        left: 24,
-                        child: StandingViewOptions(
-                          selectedView: _selectedView,
-                          availableViews: _availableViews,
-                          onChanged: _changeStandingView,
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                      child: StandingViewToggle(
+                        selectedView: _selectedView,
+                        availableViews: _availableViews,
+                        onChanged: _changeStandingView,
                       ),
+                    ),
+                    _buildSelectedTable(),
+                    StandingsLegend(leagueId: selectedLeagueId),
                   ],
                 ),
               const SizedBox(height: 144),
@@ -239,10 +219,8 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   void _changeStandingView(StandingView view) {
-    setState(() {
-      _selectedView = view;
-      _isViewDropdownOpen = false;
-    });
+    if (!_availableViews.contains(view) || _selectedView == view) return;
+    setState(() => _selectedView = view);
   }
 
   // Which views are usable for the currently selected league.
@@ -305,7 +283,6 @@ class _StandingTabState extends State<StandingTab> {
             setState(() {
               selectedLeagueId = val;
               selectedSeasonId = season.seasonId;
-              _isViewDropdownOpen = false;
               // If user was viewing xG and new league isn't Big 5, fall back
               if (!_xgAvailable && _selectedView == StandingView.xgTable) {
                 _selectedView = StandingView.standing;
@@ -352,7 +329,6 @@ class _StandingTabState extends State<StandingTab> {
             if (val == null) return;
             setState(() {
               selectedSeasonId = val;
-              _isViewDropdownOpen = false;
             });
             _loadData();
           },
