@@ -5,6 +5,12 @@ import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
+Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
+  final element = tester.element(finder);
+  final text = tester.widget<Text>(finder);
+  return DefaultTextStyle.of(element).style.merge(text.style).color;
+}
+
 void main() {
   const phoneSizes = [
     Size(320, 568),
@@ -194,6 +200,103 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('standing toggle rounds both segment surfaces', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: StandingViewToggle(
+            selectedView: StandingView.xgTable,
+            availableViews: StandingView.values,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    final standingSurface = tester.widget<Material>(
+      find.byKey(const ValueKey('standing-view-standing-surface')),
+    );
+    final xgSurface = tester.widget<Material>(
+      find.byKey(const ValueKey('standing-view-xg-table-surface')),
+    );
+    final toggle = tester.widget<Container>(
+      find.byKey(const ValueKey('standing-view-toggle')),
+    );
+    final indicator = tester.widget<AnimatedAlign>(
+      find.byKey(const ValueKey('standing-view-indicator')),
+    );
+    final indicatorSurface = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('standing-view-indicator-surface')),
+    );
+
+    expect(toggle.padding, const EdgeInsets.all(2));
+    expect(
+      (toggle.decoration as BoxDecoration).color,
+      app_style.AppPalette.lightGrey,
+    );
+    expect(standingSurface.color, Colors.transparent);
+    expect(xgSurface.color, Colors.transparent);
+    expect(indicator.alignment, Alignment.centerRight);
+    expect(indicator.duration, const Duration(milliseconds: 180));
+    expect(indicator.curve, Curves.easeOutCubic);
+    expect(
+      indicatorSurface.decoration,
+      const BoxDecoration(
+        color: app_style.AppPalette.black,
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+      ),
+    );
+    expect(
+      standingSurface.borderRadius,
+      const BorderRadius.all(Radius.circular(6)),
+    );
+    expect(
+      xgSurface.borderRadius,
+      const BorderRadius.all(Radius.circular(6)),
+    );
+    expect(standingSurface.clipBehavior, Clip.antiAlias);
+    expect(xgSurface.clipBehavior, Clip.antiAlias);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('standing indicator slides smoothly between table types',
+      (tester) async {
+    var selectedView = StandingView.xgTable;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) => StandingViewToggle(
+              selectedView: selectedView,
+              availableViews: StandingView.values,
+              onChanged: (view) => setState(() => selectedView = view),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final indicator =
+        find.byKey(const ValueKey('standing-view-indicator-surface'));
+    final startX = tester.getTopLeft(indicator).dx;
+
+    await tester.tap(
+      find.byKey(const ValueKey('standing-view-standing')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 90));
+    final middleX = tester.getTopLeft(indicator).dx;
+    await tester.pump(const Duration(milliseconds: 100));
+    final endX = tester.getTopLeft(indicator).dx;
+
+    expect(middleX, lessThan(startX));
+    expect(middleX, greaterThan(endX));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Team fixture sections use the approved dark surfaces',
       (tester) async {
     await tester.pumpWidget(
@@ -246,13 +349,16 @@ void main() {
     final seasonFilter = tester.widget<DropdownButton<int>>(
       find.byKey(const ValueKey('standing-season-filter')),
     );
-    final standingView = tester.widget<Text>(find.text('STANDING').first);
-    final xgView = tester.widget<Text>(find.text('XG TABLE'));
-
     expect(leagueFilter.style?.color, app_style.AppPalette.black);
     expect(seasonFilter.style?.color, app_style.AppPalette.black);
-    expect(standingView.style?.color, app_style.AppPalette.white);
-    expect(xgView.style?.color, app_style.AppPalette.black);
+    expect(
+      _effectiveTextColor(tester, find.text('STANDING').first),
+      app_style.AppPalette.white,
+    );
+    expect(
+      _effectiveTextColor(tester, find.text('XG TABLE')),
+      app_style.AppPalette.black,
+    );
 
     await tester.drag(tabView, const Offset(-393, 0));
     await tester.pump(const Duration(milliseconds: 350));
