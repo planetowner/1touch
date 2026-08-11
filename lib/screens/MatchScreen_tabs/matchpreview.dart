@@ -491,12 +491,16 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                         competitionLogoFallback(league.competitionId, size: 24),
                   ),
                   const SizedBox(width: 10),
-                  Text(
-                    league.name,
-                    style: TextStyle(
-                      color: foreground,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      league.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: foreground,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

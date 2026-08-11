@@ -150,7 +150,7 @@ class StandingViewToggle extends StatelessWidget {
         border: Border.all(
           color: isDark ? AppPalette.lightGrey : appColors.divider,
         ),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: StandingView.values
