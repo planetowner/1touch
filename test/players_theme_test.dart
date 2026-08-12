@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/features/PlayerScreenFeatures.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
@@ -36,6 +37,22 @@ Future<void> _pumpPlayers(
 }
 
 void main() {
+  testWidgets('player filter pills uppercase mixed-case labels',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: FilterPill(label: 'Premier League', onTap: () {}),
+        ),
+      ),
+    );
+
+    expect(find.text('PREMIER LEAGUE'), findsOneWidget);
+    expect(find.text('Premier League'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final width in [320.0, 375.0, 393.0]) {
     testWidgets('Players light mode fits ${width}px', (tester) async {
       await _pumpPlayers(
@@ -158,8 +175,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<BottomSheet>(find.byType(BottomSheet)).backgroundColor,
         app_style.AppPalette.white);
-    expect(_effectiveTextColor(tester, find.text('Filter')),
+    expect(_effectiveTextColor(tester, find.text('FILTER')),
         app_style.AppPalette.black);
+    expect(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('PREMIER LEAGUE'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('Premier League'),
+      ),
+      findsNothing,
+    );
     expect(tester.widget<Icon>(find.byIcon(Icons.check).first).color,
         app_style.AppPalette.black);
     final filterButton = tester.widget<ElevatedButton>(

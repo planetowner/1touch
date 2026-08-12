@@ -103,7 +103,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             return DropdownMenuItem(
               value: season,
               child: Text(
-                "$season SEASON",
+                "$season SEASON".toUpperCase(),
                 style: Body2_b.style.copyWith(color: foreground),
               ),
             );

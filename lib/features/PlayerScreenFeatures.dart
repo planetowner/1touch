@@ -512,7 +512,7 @@ class _FilterSheetState extends State<FilterSheet> {
                     const SizedBox(width: 48),
                     Expanded(
                       child: Text(
-                        "Filter",
+                        "FILTER",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -537,7 +537,10 @@ class _FilterSheetState extends State<FilterSheet> {
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(league, style: Body1.style),
+                        title: Text(
+                          league.toUpperCase(),
+                          style: Body1.style,
+                        ),
                         trailing: isSelected
                             ? Icon(Icons.check, color: colors.onSurface)
                             : null,
@@ -561,7 +564,10 @@ class _FilterSheetState extends State<FilterSheet> {
                     children: [
                       Row(
                         children: [
-                          Text(_tempSeason, style: Body1.style),
+                          Text(
+                            _tempSeason.toUpperCase(),
+                            style: Body1.style,
+                          ),
                           const SizedBox(width: 8),
                           Icon(Icons.expand_more, color: colors.onSurface),
                         ],
@@ -584,7 +590,10 @@ class _FilterSheetState extends State<FilterSheet> {
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(position, style: Body1.style),
+                        title: Text(
+                          position.toUpperCase(),
+                          style: Body1.style,
+                        ),
                         trailing: isSelected
                             ? Icon(Icons.check, color: colors.onSurface)
                             : null,
@@ -654,7 +663,7 @@ class FilterPill extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              label,
+              label.toUpperCase(),
               style: Body2_b.style.copyWith(color: colors.onSurface),
             ),
             const SizedBox(width: 6),

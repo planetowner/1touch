@@ -80,7 +80,7 @@ class _MatchesTabState extends State<MatchesTab> {
             return DropdownMenuItem(
               value: season,
               child: Text(
-                season,
+                season.toUpperCase(),
                 style: Body2_b.style.copyWith(color: foreground),
               ),
             );

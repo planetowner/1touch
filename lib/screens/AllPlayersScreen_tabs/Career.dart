@@ -575,7 +575,7 @@ class _CareerTabState extends State<CareerTab> {
               .map(
                 (option) => ListTile(
                   title: Text(
-                    option,
+                    option.toUpperCase(),
                     style: Body2_b.style.copyWith(
                       color: selected == option
                           ? _foreground
@@ -620,7 +620,7 @@ class _FilterButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                label,
+                label.toUpperCase(),
                 style: Body2_b.style.copyWith(color: foreground),
               ),
               const SizedBox(width: 2),

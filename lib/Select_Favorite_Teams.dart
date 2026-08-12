@@ -166,7 +166,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
-                                        league.name,
+                                        league.name.toUpperCase(),
                                         style: isSelected
                                             ? Heading5.style.copyWith(
                                                 fontWeight: FontWeight.bold)
@@ -558,7 +558,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        selectedLeague,
+                        selectedLeague.toUpperCase(),
                         style: Heading5.style.copyWith(color: onBrand),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

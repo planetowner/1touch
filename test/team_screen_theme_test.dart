@@ -68,9 +68,95 @@ void main() {
             if (index == 3) {
               await tester.pump(const Duration(milliseconds: 450));
             }
+            if (index == 1) {
+              final headerStack = find.byKey(
+                const ValueKey('matches-header-stack'),
+              );
+              final upcomingHeader = find.byKey(
+                const ValueKey('matches-upcoming-header'),
+              );
+              final matchesScroll = find.byKey(
+                const ValueKey('matches-scroll'),
+              );
+
+              expect(headerStack, findsOneWidget);
+              expect(upcomingHeader, findsOneWidget);
+              expect(matchesScroll, findsOneWidget);
+              expect(
+                find.descendant(
+                  of: upcomingHeader,
+                  matching: find.byWidgetPredicate(
+                    (widget) =>
+                        widget is Container &&
+                        widget.color == Colors.transparent,
+                  ),
+                ),
+                findsOneWidget,
+              );
+              expect(
+                find.descendant(
+                  of: matchesScroll,
+                  matching: upcomingHeader,
+                ),
+                findsNothing,
+              );
+              expect(
+                tester.getBottomLeft(headerStack).dy,
+                closeTo(tester.getTopLeft(matchesScroll).dy, 0.1),
+              );
+            }
             if (index == 2) {
+              final filterRow = find.byKey(
+                const ValueKey('standing-filter-row'),
+              );
+              final leagueShell = find.byKey(
+                const ValueKey('standing-league-filter-shell'),
+              );
+              final seasonShell = find.byKey(
+                const ValueKey('standing-season-filter-shell'),
+              );
               final toggle = find.byKey(
                 const ValueKey('standing-view-toggle'),
+              );
+              final leagueFilter = tester.widget<DropdownButton<int>>(
+                find.byKey(const ValueKey('standing-league-filter')),
+              );
+              final seasonFilter = tester.widget<DropdownButton<int>>(
+                find.byKey(const ValueKey('standing-season-filter')),
+              );
+              final filterLabels = [
+                ...leagueFilter.items!.map(
+                  (item) => (item.child as Text).data!,
+                ),
+                ...seasonFilter.items!.map(
+                  (item) => (item.child as Text).data!,
+                ),
+              ];
+
+              expect(
+                filterLabels,
+                everyElement(
+                  predicate<String>((label) => label == label.toUpperCase()),
+                ),
+              );
+              expect(
+                tester.getSize(filterRow).width,
+                closeTo(size.width - 48, 0.1),
+              );
+              expect(
+                tester.getSize(leagueShell).width,
+                closeTo((size.width - 64) / 2, 0.1),
+              );
+              expect(
+                tester.getSize(seasonShell).width,
+                closeTo((size.width - 64) / 2, 0.1),
+              );
+              expect(
+                find.descendant(
+                  of: filterRow,
+                  matching: find.byType(SingleChildScrollView),
+                ),
+                findsNothing,
               );
               expect(toggle, findsOneWidget);
               expect(
@@ -322,6 +408,136 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('match section headers accumulate in fixture order',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamScreen(teamId: 9),
+      ),
+    );
+    await tester.pump();
+
+    await tester.drag(find.byType(TabBarView), const Offset(-393, 0));
+    await tester.pump(const Duration(milliseconds: 350));
+
+    final matchesScrollFinder = find.byKey(
+      const ValueKey('matches-scroll'),
+    );
+    final matchesScroll = tester.widget<CustomScrollView>(
+      matchesScrollFinder,
+    );
+    final controller = matchesScroll.controller!;
+
+    controller.jumpTo(0);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(
+      find.byKey(const ValueKey('matches-upcoming-header')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-live-header')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-past-header')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-inline-live-header')),
+      findsOneWidget,
+    );
+
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(
+      find.byKey(const ValueKey('matches-upcoming-header')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-live-header')),
+      findsOneWidget,
+    );
+    expect(
+      find
+              .byKey(const ValueKey('matches-inline-past-header'))
+              .evaluate()
+              .length +
+          find.byKey(const ValueKey('matches-past-header')).evaluate().length,
+      1,
+    );
+
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    final upcomingHeader = find.byKey(
+      const ValueKey('matches-upcoming-header'),
+    );
+    final liveHeader = find.byKey(
+      const ValueKey('matches-live-header'),
+    );
+    final pastHeader = find.byKey(
+      const ValueKey('matches-past-header'),
+    );
+
+    expect(upcomingHeader, findsOneWidget);
+    expect(liveHeader, findsOneWidget);
+    expect(pastHeader, findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('matches-header-stack')),
+        matching: find.byType(AnimatedSize),
+      ),
+      findsNothing,
+    );
+    final headerSlides = tester.widgetList<AnimatedSlide>(
+      find.descendant(
+        of: find.byKey(const ValueKey('matches-header-stack')),
+        matching: find.byType(AnimatedSlide),
+      ),
+    );
+    expect(
+      headerSlides.map((animation) => animation.duration),
+      everyElement(const Duration(milliseconds: 140)),
+    );
+    expect(
+      tester.getTopLeft(upcomingHeader).dy,
+      lessThan(tester.getTopLeft(liveHeader).dy),
+    );
+    expect(
+      tester.getTopLeft(liveHeader).dy,
+      lessThan(tester.getTopLeft(pastHeader).dy),
+    );
+
+    controller.jumpTo(0);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(
+      find.byKey(const ValueKey('matches-upcoming-header')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-live-header')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-past-header')),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Standing and Analysis filters use black text in light mode',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
@@ -378,6 +594,20 @@ void main() {
     expect(attributesFilter.style?.color, app_style.AppPalette.black);
     expect(formationFilter.style?.color, app_style.AppPalette.black);
     expect(formFilter.style?.color, app_style.AppPalette.black);
+    for (final item in attributesFilter.items!) {
+      final label = (item.child as Text).data!;
+      expect(label, label.toUpperCase());
+    }
+    for (final item in formationFilter.items!) {
+      final label = (item.child as Text).data!;
+      expect(label, label.toUpperCase());
+    }
+    for (final item in formFilter.items!) {
+      final labels = (item.child as Row).children.whereType<Text>();
+      for (final text in labels) {
+        expect(text.data, text.data!.toUpperCase());
+      }
+    }
     await tester.pump(const Duration(milliseconds: 450));
     expect(tester.takeException(), isNull);
   });

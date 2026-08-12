@@ -176,17 +176,14 @@ class _StandingTabState extends State<StandingTab> {
             [
               const SizedBox(height: 24),
               Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      _buildLeagueDropdown(),
-                      const SizedBox(width: 16),
-                      _buildSeasonDropdown(),
-                    ],
-                  ),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                child: Row(
+                  key: const ValueKey('standing-filter-row'),
+                  children: [
+                    Expanded(child: _buildLeagueDropdown()),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildSeasonDropdown()),
+                  ],
                 ),
               ),
               if (_showKnockoutBracket)
@@ -261,6 +258,7 @@ class _StandingTabState extends State<StandingTab> {
         : mockCompetitions;
 
     return Container(
+      key: const ValueKey('standing-league-filter-shell'),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: ShapeDecoration(
         color: appColors.subtleBackground,
@@ -270,6 +268,7 @@ class _StandingTabState extends State<StandingTab> {
         child: DropdownButton<int>(
           key: const ValueKey('standing-league-filter'),
           value: selectedLeagueId,
+          isExpanded: true,
           icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
           dropdownColor: appColors.cardBackground,
           style: Body2_b.style.copyWith(color: colors.onSurface),
@@ -295,7 +294,9 @@ class _StandingTabState extends State<StandingTab> {
                 (l) => DropdownMenuItem(
                   value: l.competitionId,
                   child: Text(
-                    l.name,
+                    l.name.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: Body2_b.style.copyWith(color: colors.onSurface),
                   ),
                 ),
@@ -313,6 +314,7 @@ class _StandingTabState extends State<StandingTab> {
         mockSeasons.where((s) => s.competitionId == selectedLeagueId).toList();
 
     return Container(
+      key: const ValueKey('standing-season-filter-shell'),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: ShapeDecoration(
         color: appColors.subtleBackground,
@@ -322,6 +324,7 @@ class _StandingTabState extends State<StandingTab> {
         child: DropdownButton<int>(
           key: const ValueKey('standing-season-filter'),
           value: selectedSeasonId,
+          isExpanded: true,
           icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
           dropdownColor: appColors.cardBackground,
           style: Body2_b.style.copyWith(color: colors.onSurface),
@@ -337,7 +340,9 @@ class _StandingTabState extends State<StandingTab> {
                 (s) => DropdownMenuItem(
                   value: s.seasonId,
                   child: Text(
-                    s.name,
+                    s.name.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: Body2_b.style.copyWith(color: colors.onSurface),
                   ),
                 ),

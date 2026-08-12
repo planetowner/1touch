@@ -234,7 +234,7 @@ class _AttributesSectionState extends State<AttributesSection> {
                 (s) => DropdownMenuItem(
                   value: s.seasonId,
                   child: Text(
-                    '${s.seasonLabel}  ${team.shortCode ?? team.name}',
+                    '${s.seasonLabel.toUpperCase()}  ${team.shortCode ?? team.name}',
                     style: Body2_b.style.copyWith(color: colors.onSurface),
                   ),
                 ),
@@ -250,7 +250,7 @@ class _AttributesSectionState extends State<AttributesSection> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          seasonLabel,
+          seasonLabel.toUpperCase(),
           style: Body2_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
@@ -486,7 +486,7 @@ class _BestElevenSectionState extends State<BestElevenSection> {
                     return DropdownMenuItem(
                       value: f,
                       child: Text(
-                        f,
+                        f.toUpperCase(),
                         style: Body2_b.style.copyWith(color: colors.onSurface),
                       ),
                     );
@@ -620,7 +620,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          series.seasonLabel,
+          series.seasonLabel.toUpperCase(),
           style: Body2_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),

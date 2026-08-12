@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +22,15 @@ class MatchesTab extends StatefulWidget {
 
 class _MatchesTabState extends State<MatchesTab> {
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey _upcomingSectionKey = GlobalKey();
   final GlobalKey _liveSectionKey = GlobalKey();
+  final GlobalKey _pastSectionKey = GlobalKey();
+  final Map<_MatchSection, double> _sectionOffsets = {};
+
+  int _visibleHeaderCount = 1;
+  bool _headerSyncScheduled = false;
+  bool _applyingHeaderCorrection = false;
+  double _trailingScrollExtent = 24;
 
   List<Fixture> pastMatches = [];
   List<Fixture> liveMatches = [];
@@ -31,10 +40,20 @@ class _MatchesTabState extends State<MatchesTab> {
   void initState() {
     super.initState();
     _loadFixtures();
+    _scrollController.addListener(_scheduleHeaderSync);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToLiveSection();
+      _scheduleHeaderSync();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_scheduleHeaderSync)
+      ..dispose();
+    super.dispose();
   }
 
   @override
@@ -44,7 +63,16 @@ class _MatchesTabState extends State<MatchesTab> {
     // stays alive in the bottom-nav shell), so reload instead of only
     // loading once in initState.
     if (widget.team?['id'] != oldWidget.team?['id']) {
-      setState(_loadFixtures);
+      setState(() {
+        _loadFixtures();
+        _sectionOffsets.clear();
+        _visibleHeaderCount = 1;
+        _trailingScrollExtent = 24;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToLiveSection();
+        _scheduleHeaderSync();
+      });
     }
   }
 
@@ -60,6 +88,8 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   void scrollToLiveSection() {
+    if (liveMatches.isEmpty) return;
+
     final box =
         _liveSectionKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return;
@@ -74,59 +104,158 @@ class _MatchesTabState extends State<MatchesTab> {
     );
   }
 
+  void _scheduleHeaderSync() {
+    if (_headerSyncScheduled || _applyingHeaderCorrection || !mounted) return;
+    _headerSyncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _headerSyncScheduled = false;
+      _syncHeaderStack();
+    });
+  }
+
+  void _syncHeaderStack() {
+    if (!mounted || !_scrollController.hasClients) return;
+
+    final sections = _sections;
+    for (final section in sections) {
+      final renderObject = section.key.currentContext?.findRenderObject();
+      if (renderObject == null || !renderObject.attached) continue;
+      final viewport = RenderAbstractViewport.of(renderObject);
+      _sectionOffsets[section.type] =
+          viewport.getOffsetToReveal(renderObject, 0).offset;
+    }
+
+    var nextHeaderCount = sections.isEmpty ? 0 : 1;
+    for (var index = sections.length - 1; index > 0; index--) {
+      final offset = _sectionOffsets[sections[index].type];
+      if (offset != null && _scrollController.offset >= offset - 0.5) {
+        nextHeaderCount = index + 1;
+        break;
+      }
+    }
+
+    var nextTrailingScrollExtent = _trailingScrollExtent;
+    if (sections.isNotEmpty) {
+      final lastOffset = _sectionOffsets[sections.last.type];
+      final missingExtent = lastOffset == null
+          ? 0.0
+          : lastOffset - _scrollController.position.maxScrollExtent;
+      if (missingExtent > 0.5) {
+        nextTrailingScrollExtent += missingExtent + 1;
+      }
+    }
+
+    final headerCountDelta = nextHeaderCount - _visibleHeaderCount;
+    final trailingExtentChanged =
+        nextTrailingScrollExtent != _trailingScrollExtent;
+    if (headerCountDelta != 0 || trailingExtentChanged) {
+      final scrollOffsetBeforeLayout = _scrollController.offset;
+      setState(() {
+        _visibleHeaderCount = nextHeaderCount;
+        _trailingScrollExtent = nextTrailingScrollExtent;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+
+        if (headerCountDelta != 0) {
+          final correction =
+              headerCountDelta * _MatchSectionHeader.sectionHeight;
+          final correctedOffset = (scrollOffsetBeforeLayout + correction)
+              .clamp(0.0, _scrollController.position.maxScrollExtent);
+          _applyingHeaderCorrection = true;
+          _scrollController.jumpTo(correctedOffset);
+          _applyingHeaderCorrection = false;
+        }
+        _scheduleHeaderSync();
+      });
+    }
+  }
+
+  List<_MatchSectionData> get _sections => [
+        if (upcomingMatches.isNotEmpty)
+          _MatchSectionData(
+            type: _MatchSection.upcoming,
+            title: 'UPCOMING',
+            matches: upcomingMatches,
+            key: _upcomingSectionKey,
+          ),
+        if (liveMatches.isNotEmpty)
+          _MatchSectionData(
+            type: _MatchSection.live,
+            title: '• LIVE',
+            matches: liveMatches,
+            key: _liveSectionKey,
+          ),
+        if (pastMatches.isNotEmpty)
+          _MatchSectionData(
+            type: _MatchSection.past,
+            title: 'PAST',
+            matches: pastMatches,
+            key: _pastSectionKey,
+          ),
+      ];
+
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        // ── UPCOMING section ──────────────────────────────────────────
-        if (upcomingMatches.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyHeaderDelegate(title: 'UPCOMING'),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (_, i) => buildMatchCard(upcomingMatches[i]),
-              childCount: upcomingMatches.length,
-            ),
-          ),
-        ],
+    final sections = _sections;
+    final visibleHeaderCount = _visibleHeaderCount.clamp(0, sections.length);
 
-        // Invisible marker for scrollToLiveSection() measurement
-        SliverToBoxAdapter(
-          child: SizedBox(key: _liveSectionKey, height: 0),
+    return Column(
+      key: const ValueKey('matches-tab-layout'),
+      children: [
+        Column(
+          key: const ValueKey('matches-header-stack'),
+          children: [
+            for (final section in sections.take(visibleHeaderCount))
+              SizedBox(
+                key: ValueKey('matches-${section.type.name}-header'),
+                height: _MatchSectionHeader.sectionHeight,
+                child: _StackedMatchSectionHeader(
+                  title: section.title,
+                  animate: section.type != _MatchSection.upcoming,
+                ),
+              ),
+          ],
         ),
-
-        // ── LIVE section ──────────────────────────────────────────────
-        if (liveMatches.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyHeaderDelegate(title: '• LIVE'),
+        Expanded(
+          child: CustomScrollView(
+            key: const ValueKey('matches-scroll'),
+            controller: _scrollController,
+            slivers: [
+              for (var index = 0; index < sections.length; index++) ...[
+                if (index > 0)
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      key: sections[index].key,
+                      height: _MatchSectionHeader.sectionHeight,
+                      child: index < visibleHeaderCount
+                          ? const SizedBox.expand()
+                          : _MatchSectionHeader(
+                              key: ValueKey(
+                                'matches-inline-${sections[index].type.name}-header',
+                              ),
+                              title: sections[index].title,
+                            ),
+                    ),
+                  )
+                else
+                  SliverToBoxAdapter(
+                    child: SizedBox(key: sections[index].key, height: 0),
+                  ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (_, matchIndex) =>
+                        buildMatchCard(sections[index].matches[matchIndex]),
+                    childCount: sections[index].matches.length,
+                  ),
+                ),
+              ],
+              SliverPadding(
+                padding: EdgeInsets.only(bottom: _trailingScrollExtent),
+              ),
+            ],
           ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (_, i) => buildMatchCard(liveMatches[i]),
-              childCount: liveMatches.length,
-            ),
-          ),
-        ],
-
-        // ── PAST section ──────────────────────────────────────────────
-        if (pastMatches.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyHeaderDelegate(title: 'PAST'),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (_, i) => buildMatchCard(pastMatches[i]),
-              childCount: pastMatches.length,
-            ),
-          ),
-        ],
-
-        const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+        ),
       ],
     );
   }
@@ -285,23 +414,17 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 }
 
-class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+class _MatchSectionHeader extends StatelessWidget {
   final String title;
 
-  _StickyHeaderDelegate({required this.title});
+  const _MatchSectionHeader({super.key, required this.title});
 
-  static const double _kHeight = 50; // 16 top + text + ~16 gap + divider
+  static const double sectionHeight = 50;
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final appColors = AppColors.of(context);
+  Widget build(BuildContext context) {
     return Container(
-      color: mainPageBackground(context),
-      // Solid background so list items hide cleanly behind the pinned header.
-      // The AppBar's own gradient background bleeds down behind/over this
-      // as needed — no gradient added inside the header itself.
-      // color: Colors.black,
+      color: Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -311,20 +434,71 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
             alignment: Alignment.centerLeft,
             child: Text(title, style: Body2_b.style),
           ),
-          const Spacer(), // ~16px gap between text and divider
-          Container(height: 0.7, color: appColors.divider),
+          const Spacer(),
+          Container(height: 0.7, color: AppColors.of(context).divider),
         ],
       ),
     );
   }
+}
+
+class _StackedMatchSectionHeader extends StatefulWidget {
+  final String title;
+  final bool animate;
+
+  const _StackedMatchSectionHeader({
+    required this.title,
+    required this.animate,
+  });
 
   @override
-  double get maxExtent => _kHeight;
+  State<_StackedMatchSectionHeader> createState() =>
+      _StackedMatchSectionHeaderState();
+}
+
+class _StackedMatchSectionHeaderState
+    extends State<_StackedMatchSectionHeader> {
+  bool _visible = false;
 
   @override
-  double get minExtent => _kHeight;
+  void initState() {
+    super.initState();
+    _visible = !widget.animate;
+    if (widget.animate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _visible = true);
+      });
+    }
+  }
 
   @override
-  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>
-      oldDelegate.title != title;
+  Widget build(BuildContext context) {
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
+      offset: _visible ? Offset.zero : const Offset(0, -0.12),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        opacity: _visible ? 1 : 0,
+        child: _MatchSectionHeader(title: widget.title),
+      ),
+    );
+  }
+}
+
+enum _MatchSection { upcoming, live, past }
+
+class _MatchSectionData {
+  final _MatchSection type;
+  final String title;
+  final List<Fixture> matches;
+  final GlobalKey key;
+
+  const _MatchSectionData({
+    required this.type,
+    required this.title,
+    required this.matches,
+    required this.key,
+  });
 }

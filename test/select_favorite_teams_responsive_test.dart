@@ -42,6 +42,8 @@ void main() {
         const ColorFilter.mode(app_style.AppPalette.white, BlendMode.srcIn),
       );
       expect(toggleIcon.color, app_style.AppPalette.white);
+      expect(find.text('PREMIER LEAGUE'), findsOneWidget);
+      expect(find.text('Premier League'), findsNothing);
 
       expect(tester.takeException(), isNull);
 
@@ -49,6 +51,8 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.keyboard_arrow_up), findsWidgets);
+      expect(find.text('LALIGA'), findsOneWidget);
+      expect(find.text('LaLiga'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }

@@ -204,7 +204,9 @@ void main() {
       );
       expect(analysisFilter.style?.color, testCase.foreground);
       for (final item in analysisFilter.items!) {
-        expect((item.child as Text).style?.color, testCase.foreground);
+        final text = item.child as Text;
+        expect(text.style?.color, testCase.foreground);
+        expect(text.data, text.data!.toUpperCase());
       }
 
       await tester.tap(find.text('Matches'));
@@ -217,7 +219,9 @@ void main() {
       );
       expect(matchFilter.style?.color, testCase.foreground);
       for (final item in matchFilter.items!) {
-        expect((item.child as Text).style?.color, testCase.foreground);
+        final text = item.child as Text;
+        expect(text.style?.color, testCase.foreground);
+        expect(text.data, text.data!.toUpperCase());
       }
 
       await tester.tap(find.text('Career'));
