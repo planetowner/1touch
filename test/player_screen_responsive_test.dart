@@ -13,6 +13,11 @@ void main() {
   ];
   final salah = playerRepository.findById('mohamed-salah')!;
 
+  test('player gradient ends below the full overview top block', () {
+    expect(playerDetailOverviewGradientHeight(20), 329);
+    expect(playerDetailOverviewGradientHeight(59), 368);
+  });
+
   for (final size in phoneSizes) {
     testWidgets('player screen fits a ${size.width}x${size.height} viewport',
         (tester) async {
@@ -53,13 +58,21 @@ void main() {
 
   testWidgets('player detail uses light surfaces and anchored scrolling',
       (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: PlayerCard(player: salah),
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(393, 852),
+            padding: EdgeInsets.only(top: 59),
+          ),
+          child: PlayerCard(player: salah),
+        ),
       ),
     );
     await tester.pump();
@@ -93,21 +106,48 @@ void main() {
         matching: find.byType(Icon),
       ),
     );
+    final gradientBox = tester.widget<Container>(
+      find.byKey(const ValueKey('player-detail-gradient')),
+    );
+    final gradient =
+        (gradientBox.decoration! as BoxDecoration).gradient! as LinearGradient;
+    final topBlock = find.byKey(const ValueKey('player-overview-top-block'));
 
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
-    expect(tabBar.labelColor, app_style.AppPalette.black);
-    expect(tabIndicator.borderSide.color, app_style.AppPalette.black);
-    expect(followIcon.color, app_style.AppPalette.black);
-    expect(searchIcon.color, app_style.AppPalette.black);
-    expect(compareIcon.color, app_style.AppPalette.black);
+    expect(tabBar.labelColor, app_style.AppPalette.white);
+    expect(tabBar.unselectedLabelColor, app_style.AppPalette.white);
+    expect(tabIndicator.borderSide.color, app_style.AppPalette.white);
+    expect(followIcon.color, app_style.AppPalette.white);
+    expect(searchIcon.color, app_style.AppPalette.white);
+    expect(compareIcon.color, app_style.AppPalette.white);
+    for (final text in tester.widgetList<Text>(
+      find.descendant(of: topBlock, matching: find.byType(Text)),
+    )) {
+      expect(text.style?.color, app_style.AppPalette.white);
+    }
     expect(
       (bioCard.decoration as BoxDecoration).color,
       app_style.AppPalette.white,
     );
     expect(nestedScroll.physics, isA<ClampingScrollPhysics>());
     expect(overviewScroll.physics, isA<ClampingScrollPhysics>());
+    expect(gradient.begin, Alignment.bottomCenter);
+    expect(gradient.end, Alignment.topCenter);
+    final lightGradientColor =
+        Color.lerp(salah.teamColor.first, Colors.white, 0.30)!;
+    expect(gradient.colors, [
+      lightGradientColor,
+      lightGradientColor.withValues(alpha: 0),
+    ]);
+    expect(gradient.stops, isNull);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('player-detail-gradient')))
+          .height,
+      closeTo(368, 0.01),
+    );
 
-    final topBlock = find.byKey(const ValueKey('player-overview-top-block'));
     final topBeforeDrag = tester.getTopLeft(topBlock).dy;
     await tester.drag(
       find.byKey(const ValueKey('player-overview-scroll')),
@@ -163,6 +203,32 @@ void main() {
       app_style.AppPalette.white,
     );
     expect(tester.takeException(), isNull, reason: 'Career must not overflow');
+  });
+
+  testWidgets('player gradient uses the Figma fade in dark mode',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: PlayerCard(player: salah),
+      ),
+    );
+    await tester.pump();
+
+    final gradientBox = tester.widget<Container>(
+      find.byKey(const ValueKey('player-detail-gradient')),
+    );
+    final gradient =
+        (gradientBox.decoration! as BoxDecoration).gradient! as LinearGradient;
+    expect(gradient.colors, [
+      salah.teamColor.first,
+      salah.teamColor.first.withValues(alpha: 0),
+    ]);
+    expect(gradient.stops, isNull);
+    expect(tester.takeException(), isNull);
   });
 
   for (final testCase in <({

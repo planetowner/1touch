@@ -48,15 +48,24 @@ class PlayerOverviewTab extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${player.jerseyNumber}', style: Heading1.style),
+            Text(
+              '${player.jerseyNumber}',
+              style: Heading1.style.copyWith(color: AppPalette.white),
+            ),
             const SizedBox(height: 4),
-            Text(player.positionLabel, style: Body1.style),
+            Text(
+              player.positionLabel,
+              style: Body1.style.copyWith(color: AppPalette.white),
+            ),
             const SizedBox(height: 8),
-            Text(player.teamName, style: Body1.style),
+            Text(
+              player.teamName,
+              style: Body1.style.copyWith(color: AppPalette.white),
+            ),
             const SizedBox(height: 4),
             Text(
               '${player.nationality} ${player.nationalityFlag}',
-              style: Body1.style,
+              style: Body1.style.copyWith(color: AppPalette.white),
             ),
           ],
         ),

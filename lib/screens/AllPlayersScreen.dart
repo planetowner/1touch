@@ -6,6 +6,18 @@ import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/index.dart';
 
+const double _playerDetailAppBarHeight = 100;
+const double _playerDetailTabBarHeight = 48;
+const double _playerDetailOverviewPadding = 16;
+const double _playerDetailTopBlockHeight = 145;
+
+double playerDetailOverviewGradientHeight(double topInset) =>
+    topInset +
+    _playerDetailAppBarHeight +
+    _playerDetailTabBarHeight +
+    _playerDetailOverviewPadding +
+    _playerDetailTopBlockHeight;
+
 class PlayerCard extends StatefulWidget {
   final Player player;
 
@@ -54,37 +66,24 @@ class _PlayerCardState extends State<PlayerCard>
     super.dispose();
   }
 
-  // Fixed pixel heights of the chrome the gradient sits behind.
-  static const double _appBarHeight = 100; // SliverAppBar.toolbarHeight below
-  static const double _tabBarHeight =
-      48; // text TabBar (46) + indicatorWeight (2)
-  static const double _overviewPadding =
-      16; // PlayerOverviewTab vertical padding
-  static const double _headerPhotoHeight = 145; // player photo in the top block
-
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     double gradientOpacity = 1.0 - opacityFactor;
     final pageBackground = mainPageBackground(context);
-    final colors = Theme.of(context).colorScheme;
-    final appColors = AppColors.of(context);
-    final foreground = colors.onSurface;
+    const gradientForeground = AppPalette.white;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gradientColor = isDark
+        ? widget.player.teamColor[0]
+        : Color.lerp(widget.player.teamColor[0], Colors.white, 0.30)!;
 
-    // The gradient should fade out exactly where the header content ends. Those
-    // anchor points are fixed in logical pixels *below the status bar*, so we add
-    // the device's top inset to keep the gradient aligned across notch / Dynamic
-    // Island / Android status-bar sizes instead of hardcoding a single-device value.
     final double topInset = MediaQuery.of(context).padding.top;
+    final double overviewGradientHeight =
+        playerDetailOverviewGradientHeight(topInset);
     final double gradientHeight = isOverviewTab
-        // Overview: fade ends at the bottom of the number/photo header block.
-        ? topInset +
-            _appBarHeight +
-            _tabBarHeight +
-            _overviewPadding +
-            _headerPhotoHeight
+        ? overviewGradientHeight
         // Other tabs: fade ends just past the tab bar.
-        : topInset + _appBarHeight + _tabBarHeight;
+        : topInset + _playerDetailAppBarHeight + _playerDetailTabBarHeight;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -96,6 +95,7 @@ class _PlayerCardState extends State<PlayerCard>
           // Overview gradient and the compact one on the other tabs, so the
           // fade point glides into place instead of snapping on tab change.
           AnimatedPositioned(
+            key: const ValueKey('player-detail-gradient-position'),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             top: 0,
@@ -107,14 +107,14 @@ class _PlayerCardState extends State<PlayerCard>
                 opacity: gradientOpacity,
                 duration: const Duration(milliseconds: 50),
                 child: Container(
+                  key: const ValueKey('player-detail-gradient'),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        widget.player.teamColor[0].withValues(alpha: 0.4),
-                        widget.player.teamColor[0].withValues(alpha: 0.2),
-                        Colors.transparent,
+                        gradientColor,
+                        gradientColor.withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -141,11 +141,11 @@ class _PlayerCardState extends State<PlayerCard>
                   floating: true,
                   snap: true,
                   pinned: false,
-                  toolbarHeight: 100,
+                  toolbarHeight: _playerDetailAppBarHeight,
                   flexibleSpace: PlayerScreenHeader(
                     player: widget.player,
                     horizontalPadding: 24,
-                    foregroundColor: foreground,
+                    foregroundColor: gradientForeground,
                   ),
                 ),
                 SliverPersistentHeader(
@@ -155,15 +155,18 @@ class _PlayerCardState extends State<PlayerCard>
                     TabBar(
                       controller: _tabController,
                       isScrollable: true,
-                      labelColor: foreground,
-                      unselectedLabelColor: appColors.mutedForeground,
+                      labelColor: gradientForeground,
+                      unselectedLabelColor: gradientForeground,
                       labelStyle: Heading5.style,
                       unselectedLabelStyle: Heading5.style,
                       indicatorSize: TabBarIndicatorSize.label,
                       dividerColor: Colors.transparent,
                       padding: const EdgeInsets.only(left: 8),
                       indicator: UnderlineTabIndicator(
-                        borderSide: BorderSide(color: foreground, width: 2),
+                        borderSide: BorderSide(
+                          color: gradientForeground,
+                          width: 2,
+                        ),
                       ),
                       tabs: const [
                         Tab(text: "Overview"),
