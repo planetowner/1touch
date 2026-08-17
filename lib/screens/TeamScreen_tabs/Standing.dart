@@ -4,7 +4,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -41,12 +41,13 @@ class _StandingTabState extends State<StandingTab> {
 
   bool get _xgAvailable => _big5LeagueIds.contains(selectedLeagueId);
 
-  List<Fixture> get _selectedKnockoutFixtures => mockFixtures
-      .where((fixture) =>
-          fixture.competitionId == selectedLeagueId &&
-          fixture.seasonId == selectedSeasonId &&
-          fixture.competitionType == CompetitionType.europe &&
-          knockoutRoundFromName(fixture.roundName) != null)
+  List<Fixture> get _selectedKnockoutFixtures => fixtureRepository
+      .forCompetition(
+        selectedLeagueId,
+        seasonId: selectedSeasonId,
+        competitionType: CompetitionType.europe,
+      )
+      .where((fixture) => knockoutRoundFromName(fixture.roundName) != null)
       .toList();
 
   bool get _showKnockoutBracket =>
@@ -77,7 +78,7 @@ class _StandingTabState extends State<StandingTab> {
   void _setDefaultLeagueAndSeason() {
     currentTeamId = widget.team?['id'] as int?;
     final fixtures = currentTeamId != null
-        ? fixturesByTeam(currentTeamId!)
+        ? fixtureRepository.forTeam(currentTeamId!)
         : const <Fixture>[];
 
     _validLeagueIds = fixtures

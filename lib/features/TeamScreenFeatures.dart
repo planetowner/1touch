@@ -5,7 +5,7 @@ import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
@@ -139,7 +139,8 @@ class _StandingState extends State<Standing> {
     // Every competition this team currently has fixtures in — domestic
     // league first, then UCL/Europa if they've qualified for one. Each gets
     // its own card; swipe sideways to see the next, same as team picking.
-    final leagueIds = fixturesByTeam(currentTeamId)
+    final leagueIds = fixtureRepository
+        .forTeam(currentTeamId)
         .map((f) => f.competitionId)
         .toSet()
         .where((id) => standingsByCompetition(id).isNotEmpty)
