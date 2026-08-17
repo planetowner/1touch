@@ -143,8 +143,7 @@ class MockFixtureRepository implements FixtureRepository {
     return (seasonId == null || fixture.seasonId == seasonId) &&
         (competitionId == null || fixture.competitionId == competitionId) &&
         (status == null || fixture.status == status) &&
-        (competitionType == null ||
-            fixture.competitionType == competitionType);
+        (competitionType == null || fixture.competitionType == competitionType);
   }
 
   static int _compareChronologically(Fixture a, Fixture b) {
