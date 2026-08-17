@@ -59,6 +59,27 @@ class MockFixtureRepository implements FixtureRepository {
   }
 
   @override
+  List<Fixture> forCompetition(
+    int competitionId, {
+    int? seasonId,
+    FixtureStatus? status,
+    CompetitionType? competitionType,
+  }) {
+    return List.unmodifiable(
+      _allFixtures.where(
+        (fixture) =>
+            fixture.competitionId == competitionId &&
+            _matchesFilters(
+              fixture,
+              seasonId: seasonId,
+              status: status,
+              competitionType: competitionType,
+            ),
+      ),
+    );
+  }
+
+  @override
   Fixture? nextForTeam(
     int teamId, {
     int? seasonId,
@@ -117,10 +138,13 @@ class MockFixtureRepository implements FixtureRepository {
     int? seasonId,
     int? competitionId,
     FixtureStatus? status,
+    CompetitionType? competitionType,
   }) {
     return (seasonId == null || fixture.seasonId == seasonId) &&
         (competitionId == null || fixture.competitionId == competitionId) &&
-        (status == null || fixture.status == status);
+        (status == null || fixture.status == status) &&
+        (competitionType == null ||
+            fixture.competitionType == competitionType);
   }
 
   static int _compareChronologically(Fixture a, Fixture b) {

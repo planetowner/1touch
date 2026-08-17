@@ -14,6 +14,13 @@ abstract interface class FixtureRepository {
     FixtureStatus? status,
   });
 
+  List<Fixture> forCompetition(
+    int competitionId, {
+    int? seasonId,
+    FixtureStatus? status,
+    CompetitionType? competitionType,
+  });
+
   Fixture? nextForTeam(
     int teamId, {
     int? seasonId,

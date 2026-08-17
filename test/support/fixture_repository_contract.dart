@@ -94,6 +94,26 @@ void fixtureRepositoryContract({
     expect(repository.forTeam(-1), isEmpty);
   });
 
+  test('filters competition fixtures by season, status, and type', () {
+    expect(
+      repository
+          .forCompetition(8, seasonId: 100)
+          .map((fixture) => fixture.fixtureId),
+      [1, 5],
+    );
+    expect(
+      repository
+          .forCompetition(
+            24,
+            status: FixtureStatus.past,
+            competitionType: CompetitionType.cup,
+          )
+          .map((fixture) => fixture.fixtureId),
+      [2],
+    );
+    expect(repository.forCompetition(-1), isEmpty);
+  });
+
   test('selects deterministic next and last fixtures', () {
     expect(repository.nextForTeam(1)?.fixtureId, 3);
     expect(repository.nextForTeam(1, seasonId: 100), isNull);
@@ -122,6 +142,10 @@ void fixtureRepositoryContract({
     );
     expect(
       () => repository.forTeam(1).clear(),
+      throwsUnsupportedError,
+    );
+    expect(
+      () => repository.forCompetition(8).clear(),
       throwsUnsupportedError,
     );
     expect(
