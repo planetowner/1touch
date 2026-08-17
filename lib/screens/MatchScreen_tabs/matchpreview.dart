@@ -5,7 +5,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -336,13 +336,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final homeId = widget.fixture.homeTeamId;
     final awayId = widget.fixture.awayTeamId;
 
-    // Most recent past fixture between the two teams
-    final h2h = mockFixtures
-        .where((f) =>
-            f.status == FixtureStatus.past &&
-            ((f.homeTeamId == homeId && f.awayTeamId == awayId) ||
-                (f.homeTeamId == awayId && f.awayTeamId == homeId)))
-        .lastOrNull;
+    final h2h = fixtureRepository.headToHead(homeId, awayId).firstOrNull;
 
     if (h2h == null) return const SizedBox.shrink();
 

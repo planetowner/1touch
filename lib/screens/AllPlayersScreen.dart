@@ -72,10 +72,11 @@ class _PlayerCardState extends State<PlayerCard>
     double gradientOpacity = 1.0 - opacityFactor;
     final pageBackground = mainPageBackground(context);
     const gradientForeground = AppPalette.white;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final gradientColor = isDark
-        ? widget.player.teamColor[0]
-        : Color.lerp(widget.player.teamColor[0], Colors.white, 0.30)!;
+    final blendColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.black
+        : Colors.white;
+    final gradientColor =
+        Color.lerp(widget.player.teamColor[0], blendColor, 0.30)!;
 
     final double topInset = MediaQuery.of(context).padding.top;
     final double overviewGradientHeight =

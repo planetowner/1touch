@@ -205,7 +205,7 @@ void main() {
     expect(tester.takeException(), isNull, reason: 'Career must not overflow');
   });
 
-  testWidgets('player gradient uses the Figma fade in dark mode',
+  testWidgets('player gradient uses the softened fade in dark mode',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -223,9 +223,11 @@ void main() {
     );
     final gradient =
         (gradientBox.decoration! as BoxDecoration).gradient! as LinearGradient;
+    final darkGradientColor =
+        Color.lerp(salah.teamColor.first, Colors.black, 0.30)!;
     expect(gradient.colors, [
-      salah.teamColor.first,
-      salah.teamColor.first.withValues(alpha: 0),
+      darkGradientColor,
+      darkGradientColor.withValues(alpha: 0),
     ]);
     expect(gradient.stops, isNull);
     expect(tester.takeException(), isNull);

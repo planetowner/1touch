@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 import 'package:onetouch/models/fixture.dart';
 
@@ -27,11 +27,8 @@ class _MatchScreenState extends State<MatchScreen> {
   void initState() {
     super.initState();
 
-    // Look up fixture from mock data
     final id = int.tryParse(widget.matchId);
-    fixture = id != null
-        ? mockFixtures.where((f) => f.fixtureId == id).firstOrNull
-        : null;
+    fixture = id != null ? fixtureRepository.findById(id) : null;
 
     if (widget.matchStatus == 'past') {
       tabs = ['MATCH INFO', 'HEAD TO HEAD', 'ANALYSIS'];
