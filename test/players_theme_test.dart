@@ -126,6 +126,16 @@ void main() {
       );
       expect(_decorationFor(tester, 'players-ranking-card').color,
           testCase.ranking);
+      expect(
+        _decorationFor(tester, 'players-ranking-card').boxShadow,
+        const [
+          BoxShadow(
+            color: Color(0x1F000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      );
       expect(_decorationFor(tester, 'favorite-player-number-badge').color,
           testCase.badge);
       expect(

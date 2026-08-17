@@ -49,7 +49,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
             toolbarHeight: 80,
             title: const Padding(
               padding: EdgeInsets.only(top: 30),
-              child: Text("Notifications", style: Heading4.style),
+              child: Text("Notifications", style: Body1.style),
             ),
             leading: Padding(
               padding: const EdgeInsets.only(top: 30),
@@ -252,7 +252,7 @@ class _TeamNotificationDetailPageState
                 // FlexibleSpace Removed
                 title: Padding(
                   padding: const EdgeInsets.only(top: 30),
-                  child: Text("Notifications", style: Heading4.style),
+                  child: Text("Notifications", style: Body1.style),
                 ),
                 leading: Padding(
                   padding: const EdgeInsets.only(top: 30),
@@ -437,7 +437,7 @@ class _PlayerNotificationDetailPageState
                 // FlexibleSpace Removed
                 title: Padding(
                   padding: const EdgeInsets.only(top: 30),
-                  child: Text("Notifications", style: Heading4.style),
+                  child: Text("Notifications", style: Body1.style),
                 ),
                 leading: Padding(
                   padding: const EdgeInsets.only(top: 30),

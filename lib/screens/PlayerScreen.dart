@@ -154,6 +154,7 @@ class _PlayersState extends State<Players> {
               SliverAppBar(
                 backgroundColor: Color.lerp(
                     Colors.transparent, pageBackground, opacityFactor),
+                foregroundColor: AppPalette.white,
                 elevation: 0,
                 floating: true,
                 snap: true,

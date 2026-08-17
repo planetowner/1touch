@@ -99,7 +99,7 @@ class _CommunityState extends State<Community>
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final headerForeground = isLight ? AppPalette.black : AppPalette.white;
+    const headerForeground = AppPalette.white;
     final team = _team;
 
     return Scaffold(
@@ -151,6 +151,7 @@ class _CommunityState extends State<Community>
               SliverAppBar(
                 backgroundColor: Color.lerp(
                     Colors.transparent, pageBackground, opacityFactor),
+                foregroundColor: AppPalette.white,
                 elevation: 0,
                 floating: true,
                 snap: true,
@@ -296,10 +297,9 @@ class _CommunityState extends State<Community>
                     unselectedLabelStyle: Heading5.style,
                     indicatorSize: TabBarIndicatorSize.label,
                     dividerColor: Colors.transparent,
-                    padding: const EdgeInsets.only(left: 8, top: 24),
+                    padding: const EdgeInsets.only(left: 8),
                     indicator: UnderlineTabIndicator(
-                      borderSide:
-                          BorderSide(color: colors.onSurface, width: 1.2),
+                      borderSide: BorderSide(color: colors.onSurface, width: 2),
                     ),
                     tabs: const [
                       Tab(text: "All"),

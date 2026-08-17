@@ -51,7 +51,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.keyboard_arrow_up), findsWidgets);
-      expect(find.text('LALIGA'), findsOneWidget);
+      expect(find.text('LA LIGA'), findsOneWidget);
       expect(find.text('LaLiga'), findsNothing);
       expect(tester.takeException(), isNull);
     });

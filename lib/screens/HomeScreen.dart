@@ -135,11 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final pageBackground = mainPageBackground(context);
     final gradientHeight = responsiveBrandGradientHeight(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final appBarForeground = Color.lerp(
-      AppPalette.white,
-      colorScheme.onSurface,
-      opacityFactor,
-    )!;
+    const appBarForeground = AppPalette.white;
 
     if (isLoading) {
       return Scaffold(
@@ -210,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        _teamColor.withValues(alpha: 1 - opacityFactor),
+                        _teamColor,
                         _teamColor.withValues(alpha: 0),
                       ],
                     ),

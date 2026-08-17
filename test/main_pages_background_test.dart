@@ -44,7 +44,10 @@ void main() {
       await tester.pump();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+      final appBar =
+          tester.widget<SliverAppBar>(find.byType(SliverAppBar).first);
       expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
+      expect(appBar.foregroundColor, app_style.AppPalette.white);
       expect(
         tester.getSize(find.byKey(ValueKey(page.gradientKey))).height,
         closeTo(596.4, 0.01),

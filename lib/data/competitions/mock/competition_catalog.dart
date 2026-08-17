@@ -36,7 +36,7 @@ const mockCompetitions = <Competition>[
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/8/8.png'),
   Competition(
       competitionId: 564,
-      name: 'LaLiga',
+      name: 'La Liga',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/564/564.png'),
   Competition(

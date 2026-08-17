@@ -34,7 +34,7 @@ void main() {
     (
       name: 'light',
       theme: app_style.whitetheme,
-      headerColor: app_style.AppPalette.black,
+      headerColor: app_style.AppPalette.white,
       tabColor: app_style.AppPalette.black,
     ),
     (
@@ -95,6 +95,11 @@ void main() {
       expect(tester.getSize(brandGradient).height, 550);
       expect(tabBar.labelColor, testCase.tabColor);
       expect(tabBar.indicatorColor, testCase.tabColor);
+      expect(
+        (tabBar.indicator! as UnderlineTabIndicator).borderSide.width,
+        2,
+      );
+      expect(tabBar.padding, const EdgeInsets.only(left: 8));
 
       if (testCase.name == 'light') {
         final popular = tester.widget<Container>(

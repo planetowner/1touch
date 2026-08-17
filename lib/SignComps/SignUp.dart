@@ -236,7 +236,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             backgroundColor: colors.onSurface,
                             foregroundColor: colors.surface,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24)),
+                                borderRadius: BorderRadius.circular(16)),
                           ),
                           child: _submitting
                               ? const SizedBox(

@@ -25,7 +25,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
       fillColor: appColors.subtleBackground,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
     );
   }
 
@@ -133,7 +133,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                           backgroundColor: colors.onSurface,
                           foregroundColor: colors.surface,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                         child: _submitting

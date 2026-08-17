@@ -7,7 +7,7 @@ void main() {
     82: 'Bundesliga',
     301: 'Ligue 1',
     384: 'Serie A',
-    564: 'LaLiga',
+    564: 'La Liga',
     2: 'UEFA Champions League',
     5: 'UEFA Europa League',
     2286: 'UEFA Conference League',
@@ -34,7 +34,7 @@ void main() {
       82: 'Bundesliga',
       301: 'Ligue 1',
       384: 'Serie A',
-      564: 'LaLiga',
+      564: 'La Liga',
     });
   });
 

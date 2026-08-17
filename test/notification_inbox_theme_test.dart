@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/NotificationInbox.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/stylesheet.dart';
 
 void main() {
   Future<void> pumpInbox(
@@ -40,10 +41,12 @@ void main() {
     );
     final backIcon = tester.widget<Icon>(find.byIcon(Icons.arrow_back_ios_new));
     final searchIcon = tester.widget<Icon>(find.byIcon(Icons.search));
+    final title = tester.widget<Text>(find.text('Notifications'));
 
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
     expect(backIcon.color, app_style.AppPalette.black);
     expect(searchIcon.color, app_style.AppPalette.black);
+    expect(title.style, Body1.style);
     expect(filterColor(tester, 'all'), app_style.AppPalette.black);
     expect(filterColor(tester, 'team'), app_style.AppPalette.white);
 

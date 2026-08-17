@@ -9,6 +9,7 @@ import 'package:onetouch/comm_pages/Profile_settings/Preference.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PreferenceDetails.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/stylesheet.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
   final element = tester.element(finder);
@@ -77,6 +78,20 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('notification settings header uses body typography',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: const NotificationListPage(),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.widget<Text>(find.text('Notifications')).style, Body1.style);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final testCase in <({String title, Widget page})>[
     (title: 'About', page: const AboutPage()),

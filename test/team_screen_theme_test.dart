@@ -210,12 +210,6 @@ void main() {
         matching: find.byType(Icon),
       ),
     );
-    final profileIcon = tester.widget<Icon>(
-      find.descendant(
-        of: find.byKey(const Key('team-profile-button')),
-        matching: find.byType(Icon),
-      ),
-    );
     final searchIcon = tester.widget<Icon>(
       find.descendant(
         of: find.byKey(const Key('team-search-button')),
@@ -244,8 +238,10 @@ void main() {
     expect(tabBar.labelColor, app_style.AppPalette.black);
     expect(tabBar.indicatorColor, app_style.AppPalette.black);
     expect(indicator.borderSide.color, app_style.AppPalette.black);
+    expect(indicator.borderSide.width, 2);
+    expect(tabBar.padding, const EdgeInsets.only(left: 8));
     expect(followIcon.color, app_style.AppPalette.white);
-    expect(profileIcon.color, app_style.AppPalette.white);
+    expect(find.byKey(const Key('team-profile-button')), findsNothing);
     expect(searchIcon.color, app_style.AppPalette.white);
     expect(nextMatch.backgroundColor, app_style.AppPalette.white);
     expect(lastMatch.backgroundColor, app_style.AppPalette.lightGreyBox);

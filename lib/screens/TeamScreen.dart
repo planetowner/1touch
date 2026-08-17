@@ -225,8 +225,7 @@ class _TeamScreenState extends State<TeamScreen>
     }
 
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
-    final appBarForeground =
-        Color.lerp(AppPalette.white, colors.onSurface, opacityFactor)!;
+    const appBarForeground = AppPalette.white;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -276,7 +275,7 @@ class _TeamScreenState extends State<TeamScreen>
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        _teamColor.withValues(alpha: 1 - opacityFactor),
+                        _teamColor,
                         _teamColor.withValues(alpha: 0),
                       ],
                     ),
@@ -362,15 +361,6 @@ class _TeamScreenState extends State<TeamScreen>
                           ),
                         ),
                         IconButton(
-                          key: const Key('team-profile-button'),
-                          onPressed: () => context.push('/profile'),
-                          icon: const Icon(
-                            Icons.account_circle_outlined,
-                            size: 32,
-                            color: AppPalette.white,
-                          ),
-                        ),
-                        IconButton(
                           key: const Key('team-search-button'),
                           onPressed: () => context.push('/search'),
                           icon: const Icon(
@@ -398,10 +388,9 @@ class _TeamScreenState extends State<TeamScreen>
                     unselectedLabelStyle: Heading5.style,
                     indicatorSize: TabBarIndicatorSize.label,
                     dividerColor: Colors.transparent,
-                    padding: const EdgeInsets.only(left: 8, top: 24),
+                    padding: const EdgeInsets.only(left: 8),
                     indicator: UnderlineTabIndicator(
-                      borderSide:
-                          BorderSide(color: colors.onSurface, width: 1.2),
+                      borderSide: BorderSide(color: colors.onSurface, width: 2),
                     ),
                     tabs: const [
                       Tab(text: "Overview"),
