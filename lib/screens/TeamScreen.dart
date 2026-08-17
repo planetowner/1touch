@@ -5,12 +5,11 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
 import 'package:onetouch/features/helper.dart';
-import 'package:onetouch/models/fixture.dart';
 import 'TeamScreen_tabs/index.dart';
 import '../models/team_overview.dart';
 
@@ -136,11 +135,8 @@ class _TeamScreenState extends State<TeamScreen>
     }
     _teamColor = Color(resolvedTeam.primaryColor);
 
-    final fixtures = fixturesByTeam(widget.teamId);
-    final nextMatch =
-        fixtures.where((f) => f.status == FixtureStatus.upcoming).firstOrNull;
-    final lastMatch =
-        fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull;
+    final nextMatch = fixtureRepository.nextForTeam(widget.teamId);
+    final lastMatch = fixtureRepository.lastForTeam(widget.teamId);
 
     // Get league from fixtures
     final leagueId = nextMatch?.competitionId ?? lastMatch?.competitionId;

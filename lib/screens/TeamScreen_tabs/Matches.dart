@@ -5,7 +5,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -80,11 +80,18 @@ class _MatchesTabState extends State<MatchesTab> {
     final teamId = widget.team?['id'] as int?;
     if (teamId == null) return;
 
-    final all = fixturesByTeam(teamId);
-    pastMatches = all.where((f) => f.status == FixtureStatus.past).toList();
-    liveMatches = all.where((f) => f.status == FixtureStatus.live).toList();
-    upcomingMatches =
-        all.where((f) => f.status == FixtureStatus.upcoming).toList();
+    pastMatches = fixtureRepository.forTeam(
+      teamId,
+      status: FixtureStatus.past,
+    );
+    liveMatches = fixtureRepository.forTeam(
+      teamId,
+      status: FixtureStatus.live,
+    );
+    upcomingMatches = fixtureRepository.forTeam(
+      teamId,
+      status: FixtureStatus.upcoming,
+    );
   }
 
   void scrollToLiveSection() {
