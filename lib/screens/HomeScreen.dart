@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../core/style.dart';
@@ -69,17 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final teams = <TeamOverview>[];
     for (final id in ordered) {
       final team = teamRepository.requireById(id);
-      final fixtures = fixturesByTeam(id);
       teams.add(TeamOverview(
         id: team.teamId,
         name: team.name,
         shortName: team.shortCode ?? '',
         imagePath: team.imagePath ?? '',
-        nextMatch: fixtures
-            .where((f) => f.status == FixtureStatus.upcoming)
-            .firstOrNull,
-        lastMatch:
-            fixtures.where((f) => f.status == FixtureStatus.past).lastOrNull,
+        nextMatch: fixtureRepository.nextForTeam(id),
+        lastMatch: fixtureRepository.lastForTeam(id),
       ));
     }
 
@@ -145,8 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final favoriteTeamId = _activeFavoriteTeamId ?? myTeam.first.id;
-    final favoriteMatches = fixturesByTeam(favoriteTeamId)
-      ..sort((a, b) => a.startingAt.compareTo(b.startingAt));
+    final favoriteMatches = fixtureRepository.forTeam(favoriteTeamId);
 
     Fixture? liveMatch;
     if (myTeam.isNotEmpty && myTeam[0].nextMatch != null) {
