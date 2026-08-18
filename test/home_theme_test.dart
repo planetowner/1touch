@@ -33,6 +33,20 @@ void main() {
     awayScore: 0,
   );
 
+  const liveMatch = Fixture(
+    fixtureId: 3,
+    seasonId: 1,
+    competitionId: 8,
+    homeTeamId: 8,
+    awayTeamId: 19,
+    competitionType: CompetitionType.league,
+    roundName: 'Round 3',
+    status: FixtureStatus.live,
+    startingAt: '2026-08-18 12:00:00',
+    homeScore: 1,
+    awayScore: 1,
+  );
+
   for (final testCase in <({String name, ThemeData theme})>[
     (name: 'dark', theme: app_style.darktheme),
     (name: 'light', theme: app_style.whitetheme),
@@ -168,6 +182,8 @@ void main() {
       expect(surfaceColor('home-favorite-team-surface'), testCase.outer);
       expect(surfaceColor('match-card-surface'), testCase.next);
       expect(surfaceColor('last-match-card-surface'), testCase.last);
+      expect(find.text('NEXT MATCH'), findsOneWidget);
+      expect(find.text('LIVE MATCH'), findsNothing);
       expect(
         tester.getBottomLeft(nextFinder).dy,
         closeTo(tester.getTopLeft(lastFinder).dy, 0.1),
@@ -175,4 +191,42 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('Favorite team prioritizes a live match over the next match',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: MyTeams(
+              teams: [
+                TeamOverview(
+                  id: 8,
+                  name: 'Liverpool',
+                  shortName: 'LIV',
+                  imagePath: 'https://example.com/liverpool.png',
+                  liveMatch: liveMatch,
+                  nextMatch: match,
+                  lastMatch: lastMatch,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final displayedMatch = tester.widget<MatchCard>(find.byType(MatchCard));
+    expect(displayedMatch.match?.fixtureId, liveMatch.fixtureId);
+    expect(find.text('LIVE MATCH'), findsOneWidget);
+    expect(find.text('NEXT MATCH'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -1,8 +1,7 @@
 import 'package:onetouch/models/fixture.dart';
 
-
 /// UI aggregate for the Home/Team screens: a team plus its derived
-/// standing and next/last fixtures. Distinct from the schema-aligned
+/// standing and live/next/last fixtures. Distinct from the schema-aligned
 /// [Team] in models/team.dart.
 class TeamOverview {
   final int id;
@@ -13,6 +12,7 @@ class TeamOverview {
   // Derived fields — populated from API responses (standings, fixtures)
   // not stored in the teams table itself
   final Map<String, dynamic>? standing;
+  final Fixture? liveMatch;
   final Fixture? nextMatch;
   final Fixture? lastMatch;
 
@@ -22,6 +22,7 @@ class TeamOverview {
     required this.shortName,
     required this.imagePath,
     this.standing,
+    this.liveMatch,
     this.nextMatch,
     this.lastMatch,
   });

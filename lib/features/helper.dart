@@ -151,7 +151,10 @@ class MatchCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('NEXT MATCH', style: Body1_b.style),
+          Text(
+            match!.status == FixtureStatus.live ? 'LIVE MATCH' : 'NEXT MATCH',
+            style: Body1_b.style,
+          ),
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {

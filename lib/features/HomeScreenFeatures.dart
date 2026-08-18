@@ -243,7 +243,7 @@ class MyTeams extends StatelessWidget {
     if (teams.isEmpty) return SizedBox.shrink();
     final appColors = AppColors.of(context);
     final team = teams[0];
-    final match = team.nextMatch;
+    final match = team.liveMatch ?? team.nextMatch;
     final leagueId = match?.competitionId ?? team.lastMatch?.competitionId;
     final leagueName = leagueNames[leagueId] ?? '';
     final rank =
