@@ -74,6 +74,9 @@ class _HomeScreenState extends State<HomeScreen> {
         name: team.name,
         shortName: team.shortCode ?? '',
         imagePath: team.imagePath ?? '',
+        liveMatch: fixtureRepository
+            .forTeam(id, status: FixtureStatus.live)
+            .firstOrNull,
         nextMatch: fixtureRepository.nextForTeam(id),
         lastMatch: fixtureRepository.lastForTeam(id),
       ));
@@ -142,16 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final favoriteTeamId = _activeFavoriteTeamId ?? myTeam.first.id;
     final favoriteMatches = fixtureRepository.forTeam(favoriteTeamId);
-
-    Fixture? liveMatch;
-    if (myTeam.isNotEmpty && myTeam[0].nextMatch != null) {
-      final match = myTeam[0].nextMatch!;
-      final status = determineMatchStatus(DateTime.parse(match.startingAt));
-
-      if (status == 'LIVE') {
-        liveMatch = match;
-      }
-    }
 
     return Scaffold(
       backgroundColor: pageBackground,
