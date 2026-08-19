@@ -3,7 +3,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
@@ -142,8 +142,9 @@ class _TeamScreenState extends State<TeamScreen>
     final leagueId = nextMatch?.competitionId ?? lastMatch?.competitionId;
     final standing =
         leagueId != null ? standingByTeam(leagueId, widget.teamId) : null;
-    final leagueName =
-        leagueId != null ? (leagueNames[leagueId] ?? 'League') : 'League';
+    final leagueName = leagueId != null
+        ? (competitionRepository.findById(leagueId)?.name ?? 'League')
+        : 'League';
     final position = standing != null
         ? '$leagueName ${ordinal(standing.position)}'
         : leagueName;
