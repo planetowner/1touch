@@ -136,6 +136,38 @@ void main() {
     });
   }
 
+  testWidgets('Community live badge follows repository fixture status',
+      (tester) async {
+    _useCompactPhone(tester);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: const Community(teamId: 9),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('community-live-badge')),
+      findsOneWidget,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: const Community(teamId: 8),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('community-live-badge')),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Community dialogs use white light surfaces', (tester) async {
     _useCompactPhone(tester);
     await tester.pumpWidget(

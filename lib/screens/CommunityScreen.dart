@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -12,12 +12,6 @@ import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/All.dart';
-
-bool _hasLiveFixture(int teamId) {
-  return mockFixtures.any((f) =>
-      (f.homeTeamId == teamId || f.awayTeamId == teamId) &&
-      f.status == FixtureStatus.live);
-}
 
 String _formatFollowers(int count) {
   if (count >= 1000000) {
@@ -79,7 +73,9 @@ class _CommunityState extends State<Community>
 
   void _loadTeam() {
     _team = teamRepository.requireById(widget.teamId);
-    _isLive = _hasLiveFixture(widget.teamId);
+    _isLive = fixtureRepository
+        .forTeam(widget.teamId, status: FixtureStatus.live)
+        .isNotEmpty;
     _followerCount =
         mockUserFollowingTeams.where((f) => f.teamId == widget.teamId).length;
   }
@@ -248,6 +244,9 @@ class _CommunityState extends State<Community>
                                 if (_isLive) ...[
                                   const SizedBox(width: 8),
                                   Container(
+                                    key: const ValueKey(
+                                      'community-live-badge',
+                                    ),
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(

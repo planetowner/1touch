@@ -991,8 +991,4 @@ final mockFixtures = <Fixture>[
   _arsenalUCLHomeLeg,
 ];
 
-List<Fixture> fixturesByTeam(int teamId) => mockFixtures
-    .where((f) => f.homeTeamId == teamId || f.awayTeamId == teamId)
-    .toList();
-
 // ═══════════════════════════════════════════════════════════
