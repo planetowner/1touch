@@ -4,15 +4,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team.dart';
 import 'RankFavTeams.dart';
-
-const _domesticLeagueIds = {8, 82, 301, 384, 564};
 
 class SelectFavoriteTeamsScreen extends StatefulWidget {
   const SelectFavoriteTeamsScreen({super.key});
@@ -45,9 +43,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
   void initState() {
     super.initState();
 
-    _leagues = mockCompetitions
-        .where((l) => _domesticLeagueIds.contains(l.competitionId))
-        .toList();
+    _leagues = competitionRepository.domesticCompetitions;
 
     _leagueTeams = {};
     for (final league in _leagues) {
