@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/player.dart';
 

@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/models/chat_message.dart';
 
 class LiveChatTab extends StatefulWidget {

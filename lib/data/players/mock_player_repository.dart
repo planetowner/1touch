@@ -169,5 +169,3 @@ class MockPlayerRepository implements PlayerRepository {
     ];
   }
 }
-
-final PlayerRepository playerRepository = MockPlayerRepository();

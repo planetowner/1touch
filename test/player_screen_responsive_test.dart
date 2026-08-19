@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
-import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/Overview.dart';
 

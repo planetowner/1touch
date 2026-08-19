@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 

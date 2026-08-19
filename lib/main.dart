@@ -8,7 +8,7 @@ import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/players/player_repository_provider.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens
