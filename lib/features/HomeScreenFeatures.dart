@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
@@ -246,7 +246,9 @@ class FavoriteTeamCard extends StatelessWidget {
     final appColors = AppColors.of(context);
     final match = team.liveMatch ?? team.nextMatch;
     final leagueId = match?.competitionId ?? team.lastMatch?.competitionId;
-    final leagueName = leagueNames[leagueId] ?? '';
+    final leagueName = leagueId == null
+        ? ''
+        : competitionRepository.findById(leagueId)?.name ?? '';
     final rank =
         leagueId != null ? standingByTeam(leagueId, team.id)?.position : null;
 
@@ -330,7 +332,9 @@ class FavoriteTeamCard extends StatelessWidget {
                     },
                     child: MatchCard(
                       match: match,
-                      leagueName: leagueNames[match.competitionId],
+                      leagueName: competitionRepository
+                          .findById(match.competitionId)
+                          ?.name,
                     )),
 
               // LAST MATCH
