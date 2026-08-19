@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
@@ -38,9 +38,11 @@ class _FixturesState extends State<Fixtures> {
     final map = widget.teams as Map<String, dynamic>;
     final Fixture? match = map['next_match'] as Fixture?;
     final Fixture? lastMatch = map['last_match'] as Fixture?;
-    final leagueName =
-        leagueNames[match?.competitionId ?? lastMatch?.competitionId] ??
-            "Unknown League";
+    final competitionId = match?.competitionId ?? lastMatch?.competitionId;
+    final leagueName = competitionId == null
+        ? 'Unknown League'
+        : competitionRepository.findById(competitionId)?.name ??
+            'Unknown League';
 
     if (match == null && lastMatch == null) return const SizedBox.shrink();
     final appColors = AppColors.of(context);
@@ -139,6 +141,9 @@ class _StandingState extends State<Standing> {
     // Every competition this team currently has fixtures in — domestic
     // league first, then UCL/Europa if they've qualified for one. Each gets
     // its own card; swipe sideways to see the next, same as team picking.
+    final domesticCompetitionIds = competitionRepository.domesticCompetitions
+        .map((competition) => competition.competitionId)
+        .toSet();
     final leagueIds = fixtureRepository
         .forTeam(currentTeamId)
         .map((f) => f.competitionId)
@@ -146,8 +151,8 @@ class _StandingState extends State<Standing> {
         .where((id) => standingsByCompetition(id).isNotEmpty)
         .toList()
       ..sort((a, b) {
-        final aIsDomestic = leagueNames.containsKey(a);
-        final bIsDomestic = leagueNames.containsKey(b);
+        final aIsDomestic = domesticCompetitionIds.contains(a);
+        final bIsDomestic = domesticCompetitionIds.contains(b);
         if (aIsDomestic != bIsDomestic) return aIsDomestic ? -1 : 1;
         return a.compareTo(b);
       });
@@ -214,7 +219,7 @@ class _StandingState extends State<Standing> {
       {required List<Map<String, dynamic>> rows,
       required bool isFirst,
       required bool isLast}) {
-    final league = mockCompetitionById(leagueId);
+    final league = competitionRepository.findById(leagueId);
     final appColors = AppColors.of(context);
     final isLight = Theme.of(context).brightness == Brightness.light;
     final bodyBackground =
@@ -256,7 +261,7 @@ class _StandingState extends State<Standing> {
                     Row(
                       children: [
                         Image.network(
-                          league.imagePath ?? '',
+                          league?.imagePath ?? '',
                           width: 24,
                           height: 24,
                           errorBuilder: (_, __, ___) =>
@@ -265,7 +270,7 @@ class _StandingState extends State<Standing> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            league.name,
+                            league?.name ?? 'Unknown',
                             style: Heading4.style,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
