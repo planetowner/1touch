@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
@@ -77,7 +77,9 @@ class _H2HTabState extends State<H2HTab> {
           ...h2hMatches.map((f) {
             final home = teamRepository.findByIdOrUnknown(f.homeTeamId);
             final away = teamRepository.findByIdOrUnknown(f.awayTeamId);
-            final league = mockCompetitionById(f.competitionId);
+            final leagueName =
+                competitionRepository.findById(f.competitionId)?.name ??
+                    'Unknown';
             return _buildPastMatchCard(
               home.shortCode ?? home.name,
               away.shortCode ?? away.name,
@@ -87,7 +89,7 @@ class _H2HTabState extends State<H2HTab> {
               away.teamId,
               f.homeScore?.toString() ?? '-',
               f.awayScore?.toString() ?? '-',
-              '${league.name} · ${f.roundName}',
+              '$leagueName · ${f.roundName}',
             );
           }),
           const SizedBox(height: 140),

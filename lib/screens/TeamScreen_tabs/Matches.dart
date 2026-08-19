@@ -4,7 +4,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
@@ -275,7 +275,9 @@ class _MatchesTabState extends State<MatchesTab> {
     final isUpcoming = fixture.status == FixtureStatus.upcoming;
     final home = teamRepository.findByIdOrUnknown(fixture.homeTeamId);
     final away = teamRepository.findByIdOrUnknown(fixture.awayTeamId);
-    final league = mockCompetitionById(fixture.competitionId);
+    final leagueName =
+        competitionRepository.findById(fixture.competitionId)?.name ??
+            'Unknown';
     final dt = DateTime.parse(fixture.startingAt).toLocal();
 
     return GestureDetector(
@@ -384,7 +386,7 @@ class _MatchesTabState extends State<MatchesTab> {
             ] else
               const SizedBox(height: 8),
             Text(
-              '${league.name} • ${fixture.roundName}',
+              '$leagueName • ${fixture.roundName}',
               style: Body2.style,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

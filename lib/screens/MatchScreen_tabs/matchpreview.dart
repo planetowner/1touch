@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
@@ -426,7 +426,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final foreground = Theme.of(context).colorScheme.onSurface;
     final appColors = AppColors.of(context);
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
-    final league = mockCompetitionById(widget.fixture.competitionId);
+    final league = competitionRepository.findById(widget.fixture.competitionId);
     final standings = standingsByCompetition(widget.fixture.competitionId);
     if (standings.isEmpty) return const SizedBox.shrink();
 
@@ -478,16 +478,18 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
               Row(
                 children: [
                   Image.network(
-                    league.imagePath ?? '',
+                    league?.imagePath ?? '',
                     width: 24,
                     height: 24,
-                    errorBuilder: (_, __, ___) =>
-                        competitionLogoFallback(league.competitionId, size: 24),
+                    errorBuilder: (_, __, ___) => competitionLogoFallback(
+                      widget.fixture.competitionId,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      league.name,
+                      league?.name ?? 'Unknown',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
