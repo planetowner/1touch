@@ -6,9 +6,9 @@ import 'package:onetouch/features/helper.dart';
 
 enum StandingView { standing, xgTable }
 
-// Qualification tiers — color-coded row indicators for European spots / relegation
-// Reflects 2024/25 UEFA coefficient bonus (5 UCL spots for top-2 ranked leagues
-// that year: England, Italy, Germany). Adjust per season as needed.
+// Qualification tiers — color-coded row indicators for European spots and
+// relegation. Qualifying and play-off routes keep the same labels but use a
+// lighter shade than direct qualification or automatic relegation.
 
 enum QualificationTier { ucl, uel, conference, relegation }
 
@@ -38,76 +38,132 @@ extension QualificationTierMeta on QualificationTier {
         return const Color(0xFFEF4444); // red
     }
   }
+
+  Color get lightColor {
+    switch (this) {
+      case QualificationTier.ucl:
+        return const Color(0xFF8EC5FF); // light blue
+      case QualificationTier.relegation:
+        return const Color(0xFFFCA5A5); // light red
+      case QualificationTier.uel:
+      case QualificationTier.conference:
+        return color;
+    }
+  }
+}
+
+class QualificationMarker {
+  final QualificationTier tier;
+  final bool usesLightColor;
+
+  const QualificationMarker(
+    this.tier, {
+    this.usesLightColor = false,
+  });
+
+  Color get color => usesLightColor ? tier.lightColor : tier.color;
 }
 
 class LeagueQualificationRules {
   final Set<int> uclPositions;
+  final Set<int> uclQualifyingPositions;
   final Set<int> uelPositions;
   final Set<int> conferencePositions;
+  final Set<int> relegationPlayoffPositions;
   final Set<int> relegationPositions;
 
   const LeagueQualificationRules({
     this.uclPositions = const {},
+    this.uclQualifyingPositions = const {},
     this.uelPositions = const {},
     this.conferencePositions = const {},
+    this.relegationPlayoffPositions = const {},
     this.relegationPositions = const {},
   });
 
-  QualificationTier? tierFor(int position) {
-    if (uclPositions.contains(position)) return QualificationTier.ucl;
-    if (uelPositions.contains(position)) return QualificationTier.uel;
-    if (conferencePositions.contains(position))
-      return QualificationTier.conference;
-    if (relegationPositions.contains(position))
-      return QualificationTier.relegation;
+  QualificationMarker? markerFor(int position) {
+    if (uclPositions.contains(position)) {
+      return const QualificationMarker(QualificationTier.ucl);
+    }
+    if (uclQualifyingPositions.contains(position)) {
+      return const QualificationMarker(
+        QualificationTier.ucl,
+        usesLightColor: true,
+      );
+    }
+    if (uelPositions.contains(position)) {
+      return const QualificationMarker(QualificationTier.uel);
+    }
+    if (conferencePositions.contains(position)) {
+      return const QualificationMarker(QualificationTier.conference);
+    }
+    if (relegationPlayoffPositions.contains(position)) {
+      return const QualificationMarker(
+        QualificationTier.relegation,
+        usesLightColor: true,
+      );
+    }
+    if (relegationPositions.contains(position)) {
+      return const QualificationMarker(QualificationTier.relegation);
+    }
     return null;
   }
 
+  QualificationTier? tierFor(int position) => markerFor(position)?.tier;
+
   // Tiers that actually apply to this league (for legend filtering)
   List<QualificationTier> get availableTiers => [
-        if (uclPositions.isNotEmpty) QualificationTier.ucl,
+        if (uclPositions.isNotEmpty || uclQualifyingPositions.isNotEmpty)
+          QualificationTier.ucl,
         if (uelPositions.isNotEmpty) QualificationTier.uel,
         if (conferencePositions.isNotEmpty) QualificationTier.conference,
-        if (relegationPositions.isNotEmpty) QualificationTier.relegation,
+        if (relegationPositions.isNotEmpty ||
+            relegationPlayoffPositions.isNotEmpty)
+          QualificationTier.relegation,
       ];
 }
 
-// Per-league rules. Null = no coloring (e.g. UCL/Europa/cups).
+// 2025/26 league finishes and their 2026/27 destinations. Null means no
+// domestic-league coloring (e.g. UCL, Europa League, and cups).
 const Map<int, LeagueQualificationRules> _leagueRules = {
-  // Premier League (20 teams, 2024/25 — 5 UCL via coefficient bonus)
+  // Premier League (20 teams; fifth UCL place via performance spot)
   8: LeagueQualificationRules(
     uclPositions: {1, 2, 3, 4, 5},
-    uelPositions: {6},
-    conferencePositions: {7},
+    uelPositions: {6, 7},
+    conferencePositions: {8},
     relegationPositions: {18, 19, 20},
   ),
-  // La Liga (20 teams)
+  // Bundesliga (18 teams)
   82: LeagueQualificationRules(
     uclPositions: {1, 2, 3, 4},
-    uelPositions: {5},
-    conferencePositions: {6},
-    relegationPositions: {18, 19, 20},
+    uelPositions: {5, 6},
+    conferencePositions: {7},
+    relegationPlayoffPositions: {16},
+    relegationPositions: {17, 18},
   ),
-  // Serie A (20 teams, 2024/25 — 5 UCL via coefficient bonus)
+  // Ligue 1 (18 teams; fourth enters UCL qualifying)
   301: LeagueQualificationRules(
+    uclPositions: {1, 2, 3},
+    uclQualifyingPositions: {4},
+    uelPositions: {5, 6},
+    conferencePositions: {7},
+    relegationPlayoffPositions: {16},
+    relegationPositions: {17, 18},
+  ),
+  // Serie A (20 teams). A 17th/18th points tie triggers a survival play-off;
+  // that conditional case cannot be inferred from position alone.
+  384: LeagueQualificationRules(
+    uclPositions: {1, 2, 3, 4},
+    uelPositions: {5, 6},
+    conferencePositions: {7},
+    relegationPositions: {18, 19, 20},
+  ),
+  // La Liga (20 teams; fifth UCL place via performance spot)
+  564: LeagueQualificationRules(
     uclPositions: {1, 2, 3, 4, 5},
     uelPositions: {6},
     conferencePositions: {7},
     relegationPositions: {18, 19, 20},
-  ),
-  // Bundesliga (18 teams, 2024/25 — 5 UCL via coefficient bonus)
-  384: LeagueQualificationRules(
-    uclPositions: {1, 2, 3, 4, 5},
-    uelPositions: {6},
-    conferencePositions: {7},
-    relegationPositions: {17, 18},
-  ),
-  // Ligue 1 (18 teams)
-  564: LeagueQualificationRules(
-    uclPositions: {1, 2, 3},
-    uelPositions: {4},
-    conferencePositions: {5},
-    relegationPositions: {17, 18},
   ),
 };
 
@@ -318,7 +374,7 @@ class StandingTable extends StatelessWidget {
       fontWeight: isCurrentTeam ? FontWeight.bold : FontWeight.normal,
     );
 
-    final tier = rulesForLeague(leagueId)?.tierFor(team['rank'] as int);
+    final marker = rulesForLeague(leagueId)?.markerFor(team['rank'] as int);
 
     return Container(
       width: 146,
@@ -329,7 +385,7 @@ class StandingTable extends StatelessWidget {
           Container(
             width: 4,
             height: 44,
-            color: tier?.color ?? Colors.transparent,
+            color: marker?.color ?? Colors.transparent,
           ),
           Expanded(
             child: Padding(
@@ -551,7 +607,7 @@ class XgTable extends StatelessWidget {
       fontWeight: isCurrentTeam ? FontWeight.bold : FontWeight.normal,
     );
 
-    final tier = rulesForLeague(leagueId)?.tierFor(team['rank'] as int);
+    final marker = rulesForLeague(leagueId)?.markerFor(team['rank'] as int);
 
     return Container(
       width: 146,
@@ -562,7 +618,7 @@ class XgTable extends StatelessWidget {
           Container(
             width: 4,
             height: 44,
-            color: tier?.color ?? Colors.transparent,
+            color: marker?.color ?? Colors.transparent,
           ),
           Expanded(
             child: Padding(
