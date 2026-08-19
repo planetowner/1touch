@@ -25,10 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
 
-  List<TeamOverview> myTeam = [];
+  TeamOverview? _favoriteTeam;
   bool isLoading = true;
   Color _teamColor = const Color(0xFFD82457);
-  int? _activeFavoriteTeamId;
   final HomeContentService _contentService = HomeContentService();
   List<HomeContentItem> _highlights = List.of(homeContentFallbackItems);
   List<HomeContentItem> _news = List.of(homeContentFallbackItems);
@@ -45,46 +44,31 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
     _reloadWithFavorite(currentUserPreferences.favoriteTeamId.value);
-    currentUserPreferences.favoriteTeamId
-        .addListener(_onUserTeamPreferencesChanged);
-    currentUserPreferences.followedTeamIds
-        .addListener(_onUserTeamPreferencesChanged);
+    currentUserPreferences.favoriteTeamId.addListener(_onFavoriteTeamChanged);
   }
 
-  void _onUserTeamPreferencesChanged() {
+  void _onFavoriteTeamChanged() {
     if (!mounted) return;
     _reloadWithFavorite(currentUserPreferences.favoriteTeamId.value);
   }
 
   void _reloadWithFavorite(int newFavoriteId) {
-    final favoriteTeam = teamRepository.requireById(newFavoriteId);
-    _activeFavoriteTeamId = newFavoriteId;
-
-    final followingIds = currentUserPreferences.followedTeamIds.value;
-    final ordered = [
-      newFavoriteId,
-      ...followingIds.where((id) => id != newFavoriteId),
-    ];
-
-    final teams = <TeamOverview>[];
-    for (final id in ordered) {
-      final team = teamRepository.requireById(id);
-      teams.add(TeamOverview(
-        id: team.teamId,
-        name: team.name,
-        shortName: team.shortCode ?? '',
-        imagePath: team.imagePath ?? '',
-        liveMatch: fixtureRepository
-            .forTeam(id, status: FixtureStatus.live)
-            .firstOrNull,
-        nextMatch: fixtureRepository.nextForTeam(id),
-        lastMatch: fixtureRepository.lastForTeam(id),
-      ));
-    }
+    final team = teamRepository.requireById(newFavoriteId);
+    final favoriteTeam = TeamOverview(
+      id: team.teamId,
+      name: team.name,
+      shortName: team.shortCode ?? '',
+      imagePath: team.imagePath ?? '',
+      liveMatch: fixtureRepository
+          .forTeam(newFavoriteId, status: FixtureStatus.live)
+          .firstOrNull,
+      nextMatch: fixtureRepository.nextForTeam(newFavoriteId),
+      lastMatch: fixtureRepository.lastForTeam(newFavoriteId),
+    );
 
     setState(() {
-      _teamColor = Color(favoriteTeam.primaryColor);
-      myTeam = teams;
+      _teamColor = Color(team.primaryColor);
+      _favoriteTeam = favoriteTeam;
       isLoading = false;
     });
 
@@ -120,9 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     currentUserPreferences.favoriteTeamId
-        .removeListener(_onUserTeamPreferencesChanged);
-    currentUserPreferences.followedTeamIds
-        .removeListener(_onUserTeamPreferencesChanged);
+        .removeListener(_onFavoriteTeamChanged);
     _scrollController.dispose();
     _contentService.dispose();
     super.dispose();
@@ -136,14 +118,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     const appBarForeground = AppPalette.white;
 
-    if (isLoading) {
+    final favoriteTeam = _favoriteTeam;
+    if (isLoading || favoriteTeam == null) {
       return Scaffold(
         backgroundColor: pageBackground,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    final favoriteTeamId = _activeFavoriteTeamId ?? myTeam.first.id;
+    final favoriteTeamId = favoriteTeam.id;
     final favoriteMatches = fixtureRepository.forTeam(favoriteTeamId);
 
     return Scaffold(
@@ -245,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Row(
                               children: [
                                 Image.network(
-                                  myTeam.isNotEmpty ? myTeam[0].imagePath : '',
+                                  favoriteTeam.imagePath,
                                   height: 24,
                                   width: 24,
                                   errorBuilder: (_, __, ___) => Image.asset(
@@ -281,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 48),
                   const SectionHeader(title: "FAVORITE TEAM"),
-                  MyTeams(teams: myTeam),
+                  FavoriteTeamCard(team: favoriteTeam),
                   const SizedBox(height: 32),
                   Row(
                     children: [

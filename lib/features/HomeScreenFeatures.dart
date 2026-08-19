@@ -233,16 +233,14 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   }
 }
 
-class MyTeams extends StatelessWidget {
-  final List<TeamOverview> teams;
+class FavoriteTeamCard extends StatelessWidget {
+  final TeamOverview team;
 
-  const MyTeams({super.key, required this.teams});
+  const FavoriteTeamCard({super.key, required this.team});
 
   @override
   Widget build(BuildContext context) {
-    if (teams.isEmpty) return SizedBox.shrink();
     final appColors = AppColors.of(context);
-    final team = teams[0];
     final match = team.liveMatch ?? team.nextMatch;
     final leagueId = match?.competitionId ?? team.lastMatch?.competitionId;
     final leagueName = leagueNames[leagueId] ?? '';

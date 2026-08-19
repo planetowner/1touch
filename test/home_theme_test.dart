@@ -151,17 +151,15 @@ void main() {
           theme: testCase.theme,
           home: Scaffold(
             body: SingleChildScrollView(
-              child: MyTeams(
-                teams: [
-                  TeamOverview(
-                    id: 8,
-                    name: 'Liverpool',
-                    shortName: 'LIV',
-                    imagePath: 'https://example.com/liverpool.png',
-                    nextMatch: match,
-                    lastMatch: lastMatch,
-                  ),
-                ],
+              child: FavoriteTeamCard(
+                team: TeamOverview(
+                  id: 8,
+                  name: 'Liverpool',
+                  shortName: 'LIV',
+                  imagePath: 'https://example.com/liverpool.png',
+                  nextMatch: match,
+                  lastMatch: lastMatch,
+                ),
               ),
             ),
           ),
@@ -204,18 +202,16 @@ void main() {
         theme: app_style.whitetheme,
         home: Scaffold(
           body: SingleChildScrollView(
-            child: MyTeams(
-              teams: [
-                TeamOverview(
-                  id: 8,
-                  name: 'Liverpool',
-                  shortName: 'LIV',
-                  imagePath: 'https://example.com/liverpool.png',
-                  liveMatch: liveMatch,
-                  nextMatch: match,
-                  lastMatch: lastMatch,
-                ),
-              ],
+            child: FavoriteTeamCard(
+              team: TeamOverview(
+                id: 8,
+                name: 'Liverpool',
+                shortName: 'LIV',
+                imagePath: 'https://example.com/liverpool.png',
+                liveMatch: liveMatch,
+                nextMatch: match,
+                lastMatch: lastMatch,
+              ),
             ),
           ),
         ),
