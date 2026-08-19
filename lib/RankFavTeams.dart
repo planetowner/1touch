@@ -4,11 +4,9 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/models/team.dart';
-
-const _domesticLeagueIds = {8, 82, 301, 384, 564};
 
 class RankFavoriteTeamsScreen extends StatefulWidget {
   final List<Team> selectedTeams;
@@ -31,15 +29,16 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
   }
 
   String _leagueSubtitle(Team team) {
+    final domesticCompetitionIds = competitionRepository.domesticCompetitions
+        .map((competition) => competition.competitionId)
+        .toSet();
     final standing = mockStandings
         .where((s) =>
             s.teamId == team.teamId &&
-            _domesticLeagueIds.contains(s.competitionId))
+            domesticCompetitionIds.contains(s.competitionId))
         .firstOrNull;
     if (standing == null) return '';
-    final league = mockCompetitions
-        .where((l) => l.competitionId == standing.competitionId)
-        .firstOrNull;
+    final league = competitionRepository.findById(standing.competitionId);
     return '${league?.name ?? ''} ${_ordinal(standing.position)}';
   }
 
