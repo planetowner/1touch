@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
 import 'package:onetouch/models/player.dart';
