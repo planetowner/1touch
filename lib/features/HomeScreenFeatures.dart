@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
-import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
@@ -127,15 +127,10 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
     super.initState();
     _followingTeams = currentUserPreferences.followedTeamIds.value.map((id) {
       final t = teamRepository.requireById(id);
-      final leagueId = fixturesByTeam(id).firstOrNull?.competitionId;
-      final position =
-          leagueId != null ? standingByTeam(leagueId, id)?.position : null;
-      final leagueName = leagueId != null ? (leagueNames[leagueId] ?? '') : '';
       return <String, dynamic>{
         'id': id,
         'name': t.name,
-        'league':
-            position != null ? '$leagueName ${ordinal(position)}' : leagueName,
+        'league': teamCompetitionContextResolver.labelFor(id),
         'logo': t.imagePath ?? '',
         'isSelected': id == widget.initialFavoriteTeamId,
       };
@@ -154,8 +149,16 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SizedBox(width: 24), // Spacing for centering
-              Text("Following Teams", style: Heading5.style),
+              const SizedBox(width: 48),
+              Expanded(
+                child: Text(
+                  "Following Teams",
+                  style: Heading5.style,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               IconButton(
                 icon: Icon(Icons.close, color: colorScheme.onSurface),
                 onPressed: () => Navigator.of(context).pop(),

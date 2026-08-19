@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/HomeScreenFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -223,6 +226,36 @@ void main() {
     expect(displayedMatch.match?.fixtureId, liveMatch.fixtureId);
     expect(find.text('LIVE MATCH'), findsOneWidget);
     expect(find.text('NEXT MATCH'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Team selection uses the current competition context label',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final favoriteTeamId = currentUserPreferences.favoriteTeamId.value;
+    final expectedLabel = teamCompetitionContextResolver.labelFor(
+      favoriteTeamId,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: TeamSelectionSheet(
+            initialFavoriteTeamId: favoriteTeamId,
+            onSwitch: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(expectedLabel, isNotEmpty);
+    expect(find.text(expectedLabel), findsAtLeastNWidgets(1));
     expect(tester.takeException(), isNull);
   });
 }
