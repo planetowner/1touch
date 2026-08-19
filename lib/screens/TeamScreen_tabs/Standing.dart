@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/competitions/mock/competition_catalog.dart';
+import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
@@ -89,7 +89,7 @@ class _StandingTabState extends State<StandingTab> {
 
     final leagueId = _validLeagueIds.isNotEmpty
         ? _validLeagueIds.first
-        : mockCompetitions.first.competitionId;
+        : competitionRepository.allCompetitions.first.competitionId;
 
     final seasonId = mockSeasons
         .firstWhere(
@@ -253,10 +253,10 @@ class _StandingTabState extends State<StandingTab> {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     final availableLeagues = _validLeagueIds.isNotEmpty
-        ? mockCompetitions
+        ? competitionRepository.allCompetitions
             .where((l) => _validLeagueIds.contains(l.competitionId))
             .toList()
-        : mockCompetitions;
+        : competitionRepository.allCompetitions;
 
     return Container(
       key: const ValueKey('standing-league-filter-shell'),
