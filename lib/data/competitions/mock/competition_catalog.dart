@@ -105,9 +105,4 @@ const mockCompetitions = <Competition>[
           'https://cdn.sportmonks.com/images/soccer/leagues/569/569.png'),
 ];
 
-Competition mockCompetitionById(int id) => mockCompetitions.firstWhere(
-      (competition) => competition.competitionId == id,
-      orElse: () => Competition(competitionId: id, name: 'Unknown'),
-    );
-
 // ═══════════════════════════════════════════════════════════

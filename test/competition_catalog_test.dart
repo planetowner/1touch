@@ -17,14 +17,18 @@ void main() {
     390: 'Coppa Italia',
     570: 'Copa del Rey',
   };
+  final competitionsById = {
+    for (final competition in mockCompetitions)
+      competition.competitionId: competition,
+  };
 
   test('matches the supported competition label contract', () {
     expect(competitionLabels, expectedLabels);
 
     for (final entry in expectedLabels.entries) {
-      final competition = mockCompetitionById(entry.key);
-      expect(competition.name, entry.value);
-      expect(competition.imagePath, isNotEmpty);
+      final competition = competitionsById[entry.key];
+      expect(competition?.name, entry.value);
+      expect(competition?.imagePath, isNotEmpty);
     }
   });
 
@@ -44,17 +48,9 @@ void main() {
         .toSet();
 
     expect(ids, hasLength(mockCompetitions.length));
-    expect(mockCompetitionById(392).name, 'DFB Pokal');
-    expect(mockCompetitionById(569).name, 'Coupe de France');
+    expect(competitionsById[392]?.name, 'DFB Pokal');
+    expect(competitionsById[569]?.name, 'Coupe de France');
     expect(competitionLabels, isNot(contains(392)));
     expect(competitionLabels, isNot(contains(569)));
-  });
-
-  test('returns an explicit unknown competition fallback', () {
-    final competition = mockCompetitionById(-1);
-
-    expect(competition.competitionId, -1);
-    expect(competition.name, 'Unknown');
-    expect(competition.imagePath, isNull);
   });
 }
