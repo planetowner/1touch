@@ -135,8 +135,4 @@ const mockSeasons = <Season>[
       endingAt: '2026-05-23 00:00:00'),
 ];
 
-Season mockCurrentSeason(int competitionId) => mockSeasons.firstWhere(
-      (season) => season.competitionId == competitionId && season.isCurrent,
-    );
-
 //
