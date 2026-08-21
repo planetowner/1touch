@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/competitions/mock/season_catalog.dart';
+import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
@@ -130,8 +130,10 @@ class _AttributesSectionState extends State<AttributesSection> {
 
     // MY TEAM is always the current season — find it via the isCurrent flag,
     // never assume "newest seasonId". Falls back to newest if no current match.
-    final currentSeasonIds =
-        mockSeasons.where((s) => s.isCurrent).map((s) => s.seasonId).toSet();
+    final currentSeasonIds = seasonRepository.allSeasons
+        .where((season) => season.isCurrent)
+        .map((season) => season.seasonId)
+        .toSet();
     _myScores = all.firstWhere(
       (a) => currentSeasonIds.contains(a.seasonId),
       orElse: () => all.first,
