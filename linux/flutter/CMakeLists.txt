@@ -19,7 +19,7 @@ function(list_prepend LIST_NAME PREFIX)
     set(${LIST_NAME} "${NEW_LIST}" PARENT_SCOPE)
 endfunction()
 
-# === Flutter Library ===
+#  Flutter Library 
 # System-level dependencies.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
@@ -69,7 +69,7 @@ target_link_libraries(flutter INTERFACE
 )
 add_dependencies(flutter flutter_assemble)
 
-# === Flutter tool backend ===
+#  Flutter tool backend 
 # _phony_ is a non-existent file to force this command to run every time,
 # since currently there's no way to get a full input/output list from the
 # flutter tool.

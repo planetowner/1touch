@@ -2,7 +2,7 @@ import 'package:onetouch/models/fixture.dart';
 
 // FIXTURES  (fixtures table)
 // past 2 + live 1 + upcoming 2 per main team
-// ═══════════════════════════════════════════════════════════
+//
 
 // Returns a datetime string for a live match that kicked off [minutesAgo] ago.
 // Format matches SQL datetime: 'YYYY-MM-DD HH:MM:SS'
@@ -167,7 +167,7 @@ const _arsenalUCLHomeLeg = Fixture(
 
 // Past & upcoming fixtures remain const.
 const _pastUpcomingFixtures = <Fixture>[
-  // ── Premier League (season 23614, league 8) ──────────────
+  //   Premier League (season 23614, league 8)
 
   // Man City
   Fixture(
@@ -249,7 +249,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-20 16:30:00'),
 
-  // ── La Liga (season 23686, league 82) ────────────────────
+  //   La Liga (season 23686, league 82)
 
   // Barcelona — past
   Fixture(
@@ -485,7 +485,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-19 19:00:00'),
 
-  // ── Serie A (season 23720, league 301) ───────────────────
+  //   Serie A (season 23720, league 301)
 
   // Inter Milan
   Fixture(
@@ -567,7 +567,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-19 20:45:00'),
 
-  // ── Bundesliga (season 23538, league 384) ────────────────
+  //   Bundesliga (season 23538, league 384)
 
   // Bayern Munich
   Fixture(
@@ -649,7 +649,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-20 15:30:00'),
 
-  // ── Ligue 1 (season 23760, league 564) ───────────────────
+  //   Ligue 1 (season 23760, league 564)
 
   // PSG
   Fixture(
@@ -731,7 +731,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-19 19:00:00'),
 
-  // ── UCL fixtures (Barcelona) ─────────────────────────────────
+  //   UCL fixtures (Barcelona)
   Fixture(
       fixtureId: 20100002,
       seasonId: 23804,
@@ -767,7 +767,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-22 20:00:00'),
 
-  // ── More UCL (other teams) ───────────────────────────────────
+  //   More UCL (other teams)
   Fixture(
       fixtureId: 20100006,
       seasonId: 23804,
@@ -801,7 +801,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-30 20:00:00'),
 
-  // ── Europa League ────────────────────────────────────────────
+  //   Europa League
   Fixture(
       fixtureId: 20200001,
       seasonId: 23805,
@@ -837,7 +837,7 @@ const _pastUpcomingFixtures = <Fixture>[
       homeScore: 1,
       awayScore: 1),
 
-  // ── FA Cup (Premier League) ──────────────────────────────────
+  //   FA Cup (Premier League)
   Fixture(
       fixtureId: 20300001,
       seasonId: 23900,
@@ -861,7 +861,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-27 16:30:00'),
 
-  // ── EFL Cup (Carabao Cup) ────────────────────────────────────
+  //   EFL Cup (Carabao Cup)
   Fixture(
       fixtureId: 20400001,
       seasonId: 23901,
@@ -875,7 +875,7 @@ const _pastUpcomingFixtures = <Fixture>[
       homeScore: 2,
       awayScore: 1),
 
-  // ── Copa del Rey (La Liga) ───────────────────────────────────
+  //   Copa del Rey (La Liga)
   Fixture(
       fixtureId: 20500001,
       seasonId: 23902,
@@ -899,7 +899,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-04-26 22:00:00'),
 
-  // ── Coppa Italia (Serie A) ───────────────────────────────────
+  //   Coppa Italia (Serie A)
   Fixture(
       fixtureId: 20600001,
       seasonId: 23903,
@@ -923,7 +923,7 @@ const _pastUpcomingFixtures = <Fixture>[
       status: FixtureStatus.upcoming,
       startingAt: '2026-05-14 21:00:00'),
 
-  // ── DFB Pokal (Bundesliga) ───────────────────────────────────
+  //   DFB Pokal (Bundesliga)
   Fixture(
       fixtureId: 20700001,
       seasonId: 23904,
@@ -949,7 +949,7 @@ const _pastUpcomingFixtures = <Fixture>[
       homeScore: 1,
       awayScore: 2),
 
-  // ── Coupe de France (Ligue 1) ────────────────────────────────
+  //   Coupe de France (Ligue 1)
   Fixture(
       fixtureId: 20800001,
       seasonId: 23905,
@@ -991,4 +991,4 @@ final mockFixtures = <Fixture>[
   _arsenalUCLHomeLeg,
 ];
 
-// ═══════════════════════════════════════════════════════════
+//

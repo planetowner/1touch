@@ -26,7 +26,6 @@ const Map<int, String> leagueNames = {
 };
 
 // COMPETITIONS  (competitions table)
-// ═══════════════════════════════════════════════════════════
 
 const mockCompetitions = <Competition>[
   // Big 5 domestic leagues
@@ -53,7 +52,7 @@ const mockCompetitions = <Competition>[
       name: 'Ligue 1',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/301/301.png'),
-  // ── European competitions ─────────────────────────────────
+  // European competitions
   Competition(
       competitionId: 2,
       name: 'UEFA Champions League',
@@ -72,7 +71,7 @@ const mockCompetitions = <Competition>[
       name: 'UEFA Europa League Play-offs',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/1371/1371.png'),
-  // ── Domestic cups ─────────────────────────────────────────
+  //   Domestic cups                      
   Competition(
       competitionId: 24,
       name: 'FA Cup',
@@ -105,4 +104,4 @@ const mockCompetitions = <Competition>[
           'https://cdn.sportmonks.com/images/soccer/leagues/569/569.png'),
 ];
 
-// ═══════════════════════════════════════════════════════════
+// 

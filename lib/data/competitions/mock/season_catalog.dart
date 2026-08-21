@@ -1,7 +1,7 @@
 import 'package:onetouch/models/season.dart';
 
 // SEASONS  (seasons table)  — 2025/26 current season per competition
-// ═══════════════════════════════════════════════════════════
+//
 
 const mockSeasons = <Season>[
   Season(
@@ -39,7 +39,7 @@ const mockSeasons = <Season>[
       isCurrent: true,
       startingAt: '2025-08-15 00:00:00',
       endingAt: '2026-05-23 00:00:00'),
-  // ── Big 5 domestic leagues — 2024/25 ──────────────────────
+  //   Big 5 domestic leagues — 2024/25
   Season(
       seasonId: 23614,
       competitionId: 8,
@@ -75,7 +75,7 @@ const mockSeasons = <Season>[
       isCurrent: false,
       startingAt: '2024-08-17 00:00:00',
       endingAt: '2025-05-25 00:00:00'),
-  // ── UCL / Europa ──────────────────────────────────────────
+  //   UCL / Europa
   Season(
       seasonId: 23804,
       competitionId: 2,
@@ -90,7 +90,7 @@ const mockSeasons = <Season>[
       isCurrent: true,
       startingAt: '2025-09-24 00:00:00',
       endingAt: '2026-05-20 00:00:00'),
-  // ── Domestic cups ─────────────────────────────────────────
+  //   Domestic cups
   Season(
       seasonId: 23900,
       competitionId: 24,
@@ -139,4 +139,4 @@ Season mockCurrentSeason(int competitionId) => mockSeasons.firstWhere(
       (season) => season.competitionId == competitionId && season.isCurrent,
     );
 
-// ═══════════════════════════════════════════════════════════
+//

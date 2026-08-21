@@ -1,7 +1,7 @@
 import 'package:onetouch/models/team_attribute_scores.dart';
 
 // TEAM ATTRIBUTE SCORES — for the radar chart on Analysis tab
-// ═══════════════════════════════════════════════════════════════════════════
+//
 //
 // Backend mapping (from team_attribute_group_scores table, Big 5 only):
 //   attack       ← finishing.display_score_0_100
@@ -32,7 +32,7 @@ const teamAttributeLabels = <String>[
 ];
 
 const mockTeamAttributes = <TeamAttributeScores>[
-  // ── FC Barcelona ─────────────────────────────────────────────────
+  //   FC Barcelona
   TeamAttributeScores(
       teamId: 83,
       seasonId: 25659,
@@ -74,7 +74,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 75,
       possession: 88),
 
-  // ── Real Madrid ──────────────────────────────────────────────────
+  //   Real Madrid
   TeamAttributeScores(
       teamId: 3468,
       seasonId: 25659,
@@ -106,7 +106,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 80,
       possession: 75),
 
-  // ── Liverpool ────────────────────────────────────────────────────
+  //   Liverpool
   TeamAttributeScores(
       teamId: 8,
       seasonId: 25583,
@@ -128,7 +128,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 75,
       possession: 76),
 
-  // ── Arsenal ──────────────────────────────────────────────────────
+  //   Arsenal
   TeamAttributeScores(
       teamId: 19,
       seasonId: 25583,
@@ -150,7 +150,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 80,
       possession: 76),
 
-  // ── Manchester City ──────────────────────────────────────────────
+  //   Manchester City
   TeamAttributeScores(
       teamId: 9,
       seasonId: 25583,
@@ -172,7 +172,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 84,
       possession: 94),
 
-  // ── Bayern Munich ────────────────────────────────────────────────
+  //   Bayern Munich
   TeamAttributeScores(
       teamId: 503,
       seasonId: 25646,
@@ -184,7 +184,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 78,
       possession: 86),
 
-  // ── PSG ──────────────────────────────────────────────────────────
+  //   PSG
   TeamAttributeScores(
       teamId: 591,
       seasonId: 25651,
@@ -196,7 +196,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 76,
       possession: 84),
 
-  // ── Inter Milan ──────────────────────────────────────────────────
+  //   Inter Milan
   TeamAttributeScores(
       teamId: 2930,
       seasonId: 25533,
@@ -221,4 +221,4 @@ List<TeamAttributeScores> teamAttributesByTeam(int teamId) {
   return list;
 }
 
-// ═══════════════════════════════════════════════════════════
+//

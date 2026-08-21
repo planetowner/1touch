@@ -13,7 +13,7 @@ Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
       height: 1,
     );
 
-/// ============ Screen 1: Notification List ============
+///  Screen 1: Notification List
 class NotificationListPage extends StatefulWidget {
   const NotificationListPage({super.key});
 
@@ -203,7 +203,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
   }
 }
 
-// ===================== TEAM DETAIL =====================
+//  TEAM DETAIL
 class TeamNotificationDetailPage extends StatefulWidget {
   final String teamName;
   const TeamNotificationDetailPage({super.key, required this.teamName});
@@ -387,7 +387,7 @@ class _TeamNotificationDetailPageState
   }
 }
 
-// ===================== PLAYER DETAIL =====================
+//  PLAYER DETAIL
 class PlayerNotificationDetailPage extends StatefulWidget {
   final String playerName;
   const PlayerNotificationDetailPage({super.key, required this.playerName});
@@ -571,7 +571,7 @@ class _PlayerNotificationDetailPageState
   }
 }
 
-/// ============ 공통 스위치 UI ============
+///  공통 스위치 UI
 
 Widget _switchRow(
   BuildContext context, {

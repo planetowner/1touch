@@ -381,7 +381,7 @@ class StandingTable extends StatelessWidget {
       color: AppColors.of(context).cardBackground,
       child: Row(
         children: [
-          // ── Tier indicator bar (UCL/UEL/CONF/REL) ──────────────
+          //   Tier indicator bar (UCL/UEL/CONF/REL)
           Container(
             width: 4,
             height: 44,
@@ -614,7 +614,7 @@ class XgTable extends StatelessWidget {
       color: AppColors.of(context).cardBackground,
       child: Row(
         children: [
-          // ── Tier indicator bar (UCL/UEL/CONF/REL) ──────────────
+          //   Tier indicator bar (UCL/UEL/CONF/REL)
           Container(
             width: 4,
             height: 44,

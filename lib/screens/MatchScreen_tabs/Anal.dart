@@ -20,7 +20,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
   bool showFCB = true; // default view
   bool get isLive => false;
 
-  // ── Mock data — replace with real API models ──
+  //   Mock data — replace with real API models
   final List<Map<String, dynamic>> _goalEvents = const [
     {'player': 'Lewandowski', 'minute': "23'", 'team': 'home'},
     {'player': 'Lewandowski', 'minute': "67'", 'team': 'home'},
@@ -31,7 +31,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     {'player': 'Gutiérrez', 'minute': "78'", 'team': 'away', 'type': 'redCard'},
   ];
 
-  // ── Shot map: normalized (0..1) origin of each shot. y=0 is the halfway
+  //   Shot map: normalized (0..1) origin of each shot. y=0 is the halfway
   // line edge of the diagram, y=1 is the goal line — matches FCB's 10
   // shots / GIR's 6 shots already shown in the stat rows below.
   static const List<Offset> _shotsFcb = [
@@ -55,12 +55,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
     Offset(0.58, 0.50),
   ];
 
-  // ── Progression: % of progressive actions through each lane (top/middle/
+  //   Progression: % of progressive actions through each lane (top/middle/
   // bottom thirds of the pitch, attacking left → right).
   static const List<double> _progressionFcb = [22, 33, 45];
   static const List<double> _progressionGir = [40, 35, 25];
 
-  // ── Pressure: normalized (0..1) location of each pressure/duel event.
+  //   Pressure: normalized (0..1) location of each pressure/duel event.
   // FCB presses high up the pitch (small x = near GIR's goal); GIR sits in
   // a deeper block (large x = near their own goal) — same two vertical
   // press-trigger bands for both, just where the action actually happens.
@@ -563,7 +563,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 }
 
-// ── Tactical diagram painters ────────────────────────────────────────────
+//   Tactical diagram painters
 // All three draw onto a normalized 0..1 coordinate space mapped to the
 // painter's actual size, so they scale cleanly with whatever box they're
 // given (an AspectRatio at the call site).

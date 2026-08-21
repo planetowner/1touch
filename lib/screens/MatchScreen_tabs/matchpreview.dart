@@ -463,7 +463,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       children: [
         const Text("STANDING", style: Body2_b.style),
         const SizedBox(height: 16),
-        // ── HEADER BOX: rounded top corners only ──
+        //   HEADER BOX: rounded top corners only
         Container(
           key: const ValueKey('match-preview-standing-header'),
           decoration: BoxDecoration(
@@ -527,7 +527,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             ],
           ),
         ),
-        // ── BODY BOX: rounded bottom corners only ──
+        //   BODY BOX: rounded bottom corners only
         Container(
           decoration: BoxDecoration(
             color: surface,

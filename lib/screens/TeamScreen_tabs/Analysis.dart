@@ -87,10 +87,10 @@ class _AnalysisSectionHeader extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+//
 // ATTRIBUTES — radar chart comparing the current team to a chosen reference
 // (same team, different season).
-// ─────────────────────────────────────────────────────────────────────────────
+//
 
 class AttributesSection extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -159,7 +159,7 @@ class _AttributesSectionState extends State<AttributesSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header: title + comparison picker ────────────────────────
+          //   Header: title + comparison picker
           _AnalysisSectionHeader(
             title: 'ATTRIBUTES',
             trailing:
@@ -167,7 +167,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           ),
           const SizedBox(height: 16),
 
-          // ── Radar chart container ────────────────────────────────────
+          //   Radar chart container
           Container(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             decoration: BoxDecoration(
@@ -177,7 +177,7 @@ class _AttributesSectionState extends State<AttributesSection> {
             child: _buildRadarChart(),
           ),
 
-          // ── Legend ───────────────────────────────────────────────────
+          //   Legend
           const SizedBox(height: 16),
           Wrap(
             alignment: WrapAlignment.end,
@@ -198,7 +198,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     );
   }
 
-  // ── Comparison picker pill (season-only for now) ────────────────────────
+  //   Comparison picker pill (season-only for now)
 
   Widget _buildComparisonPill() {
     final team = teamRepository.findByIdOrUnknown(_teamId);
@@ -279,7 +279,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     );
   }
 
-  // ── Radar chart ─────────────────────────────────────────────────────────
+  //   Radar chart
 
   // Fixed frame for the radar's scale. fl_chart derives the chart's center and
   // radius from the min/max value across ALL datasets, so without a pinned

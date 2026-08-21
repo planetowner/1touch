@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -91,11 +91,8 @@ class _StandingTabState extends State<StandingTab> {
         ? _validLeagueIds.first
         : competitionRepository.allCompetitions.first.competitionId;
 
-    final seasonId = mockSeasons
-        .firstWhere(
-          (s) => s.competitionId == leagueId && s.isCurrent,
-          orElse: () => mockSeasons.first,
-        )
+    final seasonId = (seasonRepository.currentForCompetition(leagueId) ??
+            seasonRepository.allSeasons.first)
         .seasonId;
 
     selectedLeagueId = leagueId;
@@ -120,7 +117,7 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   void _loadData() {
-    // ── Standings (always) ───────────────────────────────────────────
+    //   Standings (always)
     final standingRows = standingsByCompetition(selectedLeagueId);
     final newStandings = standingRows.map((s) {
       final team = teamRepository.findByIdOrUnknown(s.teamId);
@@ -140,7 +137,7 @@ class _StandingTabState extends State<StandingTab> {
       };
     }).toList();
 
-    // ── xG standings (Big 5 only — different source/endpoint) ───────
+    //   xG standings (Big 5 only — different source/endpoint)
     List<Map<String, dynamic>> newXg = [];
     if (_xgAvailable) {
       final xgRows = xgStandingsByLeague(selectedLeagueId);
@@ -275,11 +272,8 @@ class _StandingTabState extends State<StandingTab> {
           style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (val) {
             if (val == null) return;
-            final season = mockSeasons.firstWhere(
-              (s) => s.competitionId == val && s.isCurrent,
-              orElse: () =>
-                  mockSeasons.firstWhere((s) => s.competitionId == val),
-            );
+            final season = seasonRepository.currentForCompetition(val) ??
+                seasonRepository.forCompetition(val).first;
             setState(() {
               selectedLeagueId = val;
               selectedSeasonId = season.seasonId;
@@ -311,8 +305,7 @@ class _StandingTabState extends State<StandingTab> {
   Widget _buildSeasonDropdown() {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
-    final seasons =
-        mockSeasons.where((s) => s.competitionId == selectedLeagueId).toList();
+    final seasons = seasonRepository.forCompetition(selectedLeagueId);
 
     return Container(
       key: const ValueKey('standing-season-filter-shell'),

@@ -83,9 +83,9 @@ Widget competitionLogoFallback(int competitionId, {double size = 24}) {
   return Image.asset(asset, width: size, height: size, fit: BoxFit.contain);
 }
 
-// =============================================================================
+//
 // UTILITIES & HELPERS
-// =============================================================================
+//
 
 String ordinal(int number) {
   if (number >= 11 && number <= 13) return '${number}th';
@@ -119,9 +119,9 @@ String determineMatchStatus(DateTime matchDateTime) {
   }
 }
 
-// =============================================================================
+//
 // MAIN WIDGETS (MatchCards)
-// =============================================================================
+//
 
 class MatchCard extends StatelessWidget {
   final Fixture? match;
@@ -459,9 +459,9 @@ class SearchMatchCard extends StatelessWidget {
   }
 }
 
-// =============================================================================
+//
 // INTERNAL WIDGET COMPONENTS
-// =============================================================================
+//
 
 class _TeamDisplay extends StatelessWidget {
   final int teamId;

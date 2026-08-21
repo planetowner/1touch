@@ -1,8 +1,8 @@
 import 'package:onetouch/models/team.dart';
 
-// ═══════════════════════════════════════════════════════════
+//
 // TEAMS  (teams table)
-// ═══════════════════════════════════════════════════════════
+//
 
 const mockTeams = <Team>[
   // Premier League

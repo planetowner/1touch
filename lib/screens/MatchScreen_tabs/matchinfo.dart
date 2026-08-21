@@ -19,7 +19,7 @@ class MatchInfoTab extends StatelessWidget {
 
   bool get isLive => matchStatus == 'live';
 
-  // ── Mock data — replace with real API models ──
+  //   Mock data — replace with real API models
 
   final List<Substitute> _subsA = [
     Substitute(name: "Ferran Torres", minute: 82, goal: true, subIn: true),
@@ -36,24 +36,41 @@ class MatchInfoTab extends StatelessWidget {
   final List<Map<String, dynamic>> _goalEvents = const [
     {'player': 'Lewandowski', 'minute': "23'", 'team': 'home'},
     {'player': 'Lewandowski', 'minute': "67'", 'team': 'home'},
-    {'player': 'Yamal',       'minute': "45'", 'team': 'home'},
-    {'player': 'Yamal',       'minute': "45'+7'", 'team': 'home'},
-    {'player': 'Yamal',       'minute': "90'+9'", 'team': 'home'},
-    {'player': 'Dovbyk',      'minute': "45'", 'team': 'away'},
-    {'player': 'Gutiérrez',   'minute': "78'", 'team': 'away', 'type': 'redCard'},
+    {'player': 'Yamal', 'minute': "45'", 'team': 'home'},
+    {'player': 'Yamal', 'minute': "45'+7'", 'team': 'home'},
+    {'player': 'Yamal', 'minute': "90'+9'", 'team': 'home'},
+    {'player': 'Dovbyk', 'minute': "45'", 'team': 'away'},
+    {'player': 'Gutiérrez', 'minute': "78'", 'team': 'away', 'type': 'redCard'},
   ];
 
   final List<StatBarData> _statBars = const [
-    StatBarData(category: "Possession",      homePercent: 64,  awayPercent: 36),
-    StatBarData(category: "Expected Goals",  homePercent: 2.7, awayPercent: 0.6, isPercent: false),
-    StatBarData(category: "Shots",           homePercent: 10,  awayPercent: 6,   isPercent: false),
-    StatBarData(category: "Shots on Target", homePercent: 6,   awayPercent: 2,   isPercent: false),
-    StatBarData(category: "Pass Accuracy",   homePercent: 82,  awayPercent: 78),
-    StatBarData(category: "Fouls",           homePercent: 9,   awayPercent: 14,  isPercent: false),
-    StatBarData(category: "Corners",         homePercent: 7,   awayPercent: 3,   isPercent: false),
-    StatBarData(category: "Offsides",        homePercent: 1,   awayPercent: 2,   isPercent: false),
-    StatBarData(category: "Yellow Cards",    homePercent: 2,   awayPercent: 3,   isPercent: false),
-    StatBarData(category: "Saves",           homePercent: 1,   awayPercent: 3,   isPercent: false),
+    StatBarData(category: "Possession", homePercent: 64, awayPercent: 36),
+    StatBarData(
+        category: "Expected Goals",
+        homePercent: 2.7,
+        awayPercent: 0.6,
+        isPercent: false),
+    StatBarData(
+        category: "Shots", homePercent: 10, awayPercent: 6, isPercent: false),
+    StatBarData(
+        category: "Shots on Target",
+        homePercent: 6,
+        awayPercent: 2,
+        isPercent: false),
+    StatBarData(category: "Pass Accuracy", homePercent: 82, awayPercent: 78),
+    StatBarData(
+        category: "Fouls", homePercent: 9, awayPercent: 14, isPercent: false),
+    StatBarData(
+        category: "Corners", homePercent: 7, awayPercent: 3, isPercent: false),
+    StatBarData(
+        category: "Offsides", homePercent: 1, awayPercent: 2, isPercent: false),
+    StatBarData(
+        category: "Yellow Cards",
+        homePercent: 2,
+        awayPercent: 3,
+        isPercent: false),
+    StatBarData(
+        category: "Saves", homePercent: 1, awayPercent: 3, isPercent: false),
   ];
 
   // Away: rows ordered GK → attackers (shown top → bottom on pitch)
@@ -63,19 +80,25 @@ class MatchInfoTab extends StatelessWidget {
       LineupPlayer(number: 16, name: 'Francés'),
       LineupPlayer(number: 17, name: 'Blind'),
       LineupPlayer(number: 18, name: 'Krejci'),
-      LineupPlayer(number: 3,  name: 'Gutiérrez',
+      LineupPlayer(
+          number: 3,
+          name: 'Gutiérrez',
           events: [LineupEvent(type: LineupEventType.yellowCard)]),
     ],
     [
-      LineupPlayer(number: 8,  name: 'Tsigankov'),
-      LineupPlayer(number: 4,  name: 'Martinez',
+      LineupPlayer(number: 8, name: 'Tsigankov'),
+      LineupPlayer(
+          number: 4,
+          name: 'Martinez',
           events: [LineupEvent(type: LineupEventType.yellowCard)]),
       LineupPlayer(number: 12, name: 'Arthur'),
       LineupPlayer(number: 21, name: 'Herrera'),
     ],
     [
       LineupPlayer(number: 11, name: 'Danjuma'),
-      LineupPlayer(number: 10, name: 'Asprilla',
+      LineupPlayer(
+          number: 10,
+          name: 'Asprilla',
           events: [LineupEvent(type: LineupEventType.redCard)]),
     ],
   ];
@@ -83,27 +106,39 @@ class MatchInfoTab extends StatelessWidget {
   // Home: rows ordered attackers → GK (shown top → bottom in home half)
   final List<List<LineupPlayer>> _homeRows = const [
     [
-      LineupPlayer(number: 9, name: 'Lewandowski',
+      LineupPlayer(
+          number: 9,
+          name: 'Lewandowski',
           events: [LineupEvent(type: LineupEventType.subIn, minute: 82)]),
     ],
     [
-      LineupPlayer(number: 6,  name: 'Gavi',
+      LineupPlayer(
+          number: 6,
+          name: 'Gavi',
           events: [LineupEvent(type: LineupEventType.subOut, minute: 82)]),
       LineupPlayer(number: 16, name: 'Lopez'),
-      LineupPlayer(number: 11, name: 'Lamine Yamal',
+      LineupPlayer(
+          number: 11,
+          name: 'Lamine Yamal',
           events: [LineupEvent(type: LineupEventType.goal)]),
     ],
     [
-      LineupPlayer(number: 8,  name: 'Pedri',
+      LineupPlayer(
+          number: 8,
+          name: 'Pedri',
           events: [LineupEvent(type: LineupEventType.goal)]),
-      LineupPlayer(number: 24, name: 'Eric Garcia',
+      LineupPlayer(
+          number: 24,
+          name: 'Eric Garcia',
           events: [LineupEvent(type: LineupEventType.yellowCard)]),
     ],
     [
       LineupPlayer(number: 35, name: 'Martin'),
-      LineupPlayer(number: 5,  name: 'Martinez',
+      LineupPlayer(
+          number: 5,
+          name: 'Martinez',
           events: [LineupEvent(type: LineupEventType.yellowCard)]),
-      LineupPlayer(number: 4,  name: 'Araujo'),
+      LineupPlayer(number: 4, name: 'Araujo'),
       LineupPlayer(number: 23, name: 'Koundé'),
     ],
     [LineupPlayer(number: 25, name: 'Szczesny')],

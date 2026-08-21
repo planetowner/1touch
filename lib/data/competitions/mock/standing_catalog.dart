@@ -2,10 +2,10 @@ import 'package:onetouch/models/standing.dart';
 
 // STANDINGS  (standings table)
 // phase: league, group_name: '' for all (standard league phase)
-// ═══════════════════════════════════════════════════════════
+//
 
 const mockStandings = <Standing>[
-  // ── Premier League (league 8, season 25583) ──
+  //   Premier League (league 8, season 25583)
   Standing(
       competitionId: 8,
       seasonId: 25583,
@@ -326,7 +326,7 @@ const mockStandings = <Standing>[
       goalDiff: -46,
       points: 15,
       last5Form: ['D', 'L', 'D', 'D', 'D']),
-  // ── La Liga (league 564, season 25659) ──
+  //   La Liga (league 564, season 25659)
   Standing(
       competitionId: 564,
       seasonId: 25659,
@@ -647,7 +647,7 @@ const mockStandings = <Standing>[
       goalDiff: -21,
       points: 23,
       last5Form: ['L', 'L', 'W', 'L', 'L']),
-  // ── Serie A (league 384, season 25533) ──
+  //   Serie A (league 384, season 25533)
   Standing(
       competitionId: 384,
       seasonId: 25533,
@@ -968,7 +968,7 @@ const mockStandings = <Standing>[
       goalDiff: -30,
       points: 30,
       last5Form: ['L', 'L', 'L', 'W', 'D']),
-  // ── Bundesliga (league 82, season 25646) ──
+  //   Bundesliga (league 82, season 25646)
   Standing(
       competitionId: 82,
       seasonId: 25646,
@@ -1257,7 +1257,7 @@ const mockStandings = <Standing>[
       goalDiff: -30,
       points: 21,
       last5Form: ['D', 'L', 'L', 'W', 'D']),
-  // ── Ligue 1 (league 301, season 25651) ──
+  //   Ligue 1 (league 301, season 25651)
   Standing(
       competitionId: 301,
       seasonId: 25651,
@@ -1546,7 +1546,7 @@ const mockStandings = <Standing>[
       goalDiff: -30,
       points: 24,
       last5Form: ['L', 'D', 'L', 'W', 'L']),
-  // ── UCL league phase (league 2, season 23804) ──
+  //   UCL league phase (league 2, season 23804)
   Standing(
       competitionId: 2,
       seasonId: 23804,
@@ -1739,7 +1739,7 @@ const mockStandings = <Standing>[
       goalDiff: 1,
       points: 11,
       last5Form: ['L', 'W', 'D', 'L', 'W']),
-  // ── Europa League phase (league 5, season 23805) ──
+  //   Europa League phase (league 5, season 23805)
   Standing(
       competitionId: 5,
       seasonId: 23805,
@@ -1942,9 +1942,9 @@ Standing? standingByTeam(int competitionId, int teamId) => mockStandings
     .where((s) => s.competitionId == competitionId && s.teamId == teamId)
     .firstOrNull;
 
-// ═══════════════════════════════════════════════════════════════════════════
+//
 // xG STANDINGS — Big 5 leagues only (8, 82, 301, 384, 564)
-// ═══════════════════════════════════════════════════════════════════════════
+//
 //
 // Orderings are intentionally DIFFERENT from regular standings so the two
 // views are visibly different in the UI. Real-world example: Real Madrid is
@@ -1954,7 +1954,7 @@ Standing? standingByTeam(int competitionId, int teamId) => mockStandings
 // xPts is 1Touch rule (xG > opp ? 3 : == ? 1 : 0).
 
 const mockXgStandings = <XgStanding>[
-  // ── Premier League (league 8, season 25583) ──
+  //   Premier League (league 8, season 25583)
   XgStanding(
       competitionId: 8,
       seasonId: 25583,
@@ -2195,7 +2195,7 @@ const mockXgStandings = <XgStanding>[
       xg: 35.463,
       xga: 78.513,
       xpts: 12.0),
-  // ── La Liga (league 564, season 25659) ──
+  //   La Liga (league 564, season 25659)
   XgStanding(
       competitionId: 564,
       seasonId: 25659,
@@ -2436,7 +2436,7 @@ const mockXgStandings = <XgStanding>[
       xg: 39.439,
       xga: 61.213,
       xpts: 24.0),
-  // ── Serie A (league 384, season 25533) ──
+  //   Serie A (league 384, season 25533)
   XgStanding(
       competitionId: 384,
       seasonId: 25533,
@@ -2677,7 +2677,7 @@ const mockXgStandings = <XgStanding>[
       xg: 33.721,
       xga: 60.972,
       xpts: 27.0),
-  // ── Bundesliga (league 82, season 25646) ──
+  //   Bundesliga (league 82, season 25646)
   XgStanding(
       competitionId: 82,
       seasonId: 25646,
@@ -2894,7 +2894,7 @@ const mockXgStandings = <XgStanding>[
       xg: 32.047,
       xga: 62.741,
       xpts: 21.0),
-  // ── Ligue 1 (league 301, season 25651) ──
+  //   Ligue 1 (league 301, season 25651)
   XgStanding(
       competitionId: 301,
       seasonId: 25651,
@@ -3121,4 +3121,4 @@ XgStanding? xgStandingByTeam(int leagueId, int teamId) => mockXgStandings
     .where((x) => x.competitionId == leagueId && x.teamId == teamId)
     .firstOrNull;
 
-// ═══════════════════════════════════════════════════════════════════════════
+//

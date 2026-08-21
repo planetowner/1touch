@@ -14,20 +14,20 @@ class MatchData {
   final String date;
   final String status;
 
-  // ── Competition metadata (from FixtureOut) ──
+  //   Competition metadata (from FixtureOut)
   final String? competitionType;
   final String? roundName;
   final int? stageId;
   final int? groupId;
   final int? legNumber;
 
-  // ── Scores (from FixtureOut) ──
+  //   Scores (from FixtureOut)
   final int? homeScore;
   final int? awayScore;
   final int? homePenaltyScore;
   final int? awayPenaltyScore;
 
-  // ── Team objects ──
+  //   Team objects
   // Built from nested JSON object OR flat name/logo fields from FixtureOut
   final MiniTeam? homeTeam;
   final MiniTeam? awayTeam;

@@ -123,7 +123,7 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Top row: name + action icons ──
+              //   Top row: name + action icons
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -168,7 +168,7 @@ class _Header extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // ── Jersey number + info + photo ──
+              //   Jersey number + info + photo
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [

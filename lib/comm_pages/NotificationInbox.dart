@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
-// ─────────────────────────────────────────────
+//
 // Data model
-// ─────────────────────────────────────────────
+//
 
 enum _Filter { all, team, player, posts, betting }
 
@@ -113,9 +113,9 @@ const _mockNotifications = <_MockNotif>[
   ),
 ];
 
-// ─────────────────────────────────────────────
+//
 // Page
-// ─────────────────────────────────────────────
+//
 
 class NotificationInboxPage extends StatefulWidget {
   const NotificationInboxPage({super.key});
@@ -152,7 +152,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
       backgroundColor: pageBackground,
       body: CustomScrollView(
         slivers: [
-          // ── AppBar ────────────────────────────────────────
+          //   AppBar
           SliverAppBar(
             centerTitle: true,
             automaticallyImplyLeading: false,
@@ -183,7 +183,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
             ],
           ),
 
-          // ── Filter pills ──────────────────────────────────
+          //   Filter pills
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
@@ -226,7 +226,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
             ),
           ),
 
-          // ── Notification list ─────────────────────────────
+          //   Notification list
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -253,9 +253,9 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
   }
 }
 
-// ─────────────────────────────────────────────
+//
 // Single notification tile
-// ─────────────────────────────────────────────
+//
 
 class _NotifTile extends StatelessWidget {
   final _MockNotif notif;
@@ -294,9 +294,9 @@ class _NotifTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
+//
 // Avatar with optional badge
-// ─────────────────────────────────────────────
+//
 
 class _Avatar extends StatelessWidget {
   final _MockNotif notif;
@@ -366,9 +366,9 @@ class _Avatar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
+//
 // Body text — supports optional bold segment
-// ─────────────────────────────────────────────
+//
 
 class _BodyText extends StatelessWidget {
   final _MockNotif notif;

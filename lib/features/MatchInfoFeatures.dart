@@ -934,7 +934,7 @@ class LineupPitch extends StatelessWidget {
   }
 }
 
-// ── One formation row ──
+//   One formation row
 
 class _PlayerRow extends StatelessWidget {
   final List<LineupPlayer> players;
@@ -960,7 +960,7 @@ class _PlayerRow extends StatelessWidget {
   }
 }
 
-// ── Single player dot: circle + badges + name ──
+//   Single player dot: circle + badges + name
 
 class _PlayerDot extends StatelessWidget {
   final LineupPlayer player;
@@ -1025,7 +1025,7 @@ class _PlayerDot extends StatelessWidget {
   }
 }
 
-// ── Player circle ──
+//   Player circle
 
 class _PlayerCircle extends StatelessWidget {
   final int number;
@@ -1061,7 +1061,7 @@ class _PlayerCircle extends StatelessWidget {
   }
 }
 
-// ── Event badges (to the right of the circle) ──
+//   Event badges (to the right of the circle)
 
 class _EventBadges extends StatelessWidget {
   final List<LineupEvent> events;
@@ -1174,7 +1174,7 @@ class _EventBadges extends StatelessWidget {
   }
 }
 
-// ── Pitch markings (halfway line + center circle) ──
+//   Pitch markings (halfway line + center circle)
 
 class _PitchMarkingsPainter extends CustomPainter {
   const _PitchMarkingsPainter(this.color);

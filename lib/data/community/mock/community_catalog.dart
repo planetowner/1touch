@@ -4,7 +4,7 @@ import 'package:onetouch/models/user_following_team.dart';
 import 'package:onetouch/models/user_profile.dart';
 
 // POSTS  (posts table)
-// ═══════════════════════════════════════════════════════════
+//
 
 const mockPosts = <Post>[
   Post(
@@ -55,9 +55,9 @@ const mockPosts = <Post>[
       updatedAt: '2025-04-04 09:00:00'),
 ];
 
-// ═══════════════════════════════════════════════════════════
+//
 // USERS  (users table)
-// ═══════════════════════════════════════════════════════════
+//
 
 const mockUsers = <User>[
   User(
@@ -100,9 +100,9 @@ const mockUsers = <User>[
 User mockUserById(int id) =>
     mockUsers.firstWhere((u) => u.userId == id, orElse: () => mockUsers.first);
 
-// ═══════════════════════════════════════════════════════════
+//
 // USER PROFILES  (user_profiles table)
-// ═══════════════════════════════════════════════════════════
+//
 
 const mockUserProfiles = <UserProfile>[
   UserProfile(
@@ -150,9 +150,9 @@ const mockUserProfiles = <UserProfile>[
 UserProfile mockUserProfileById(int id) => mockUserProfiles
     .firstWhere((p) => p.userId == id, orElse: () => mockUserProfiles.first);
 
-// ═══════════════════════════════════════════════════════════
+//
 // USER FOLLOWING TEAMS  (user_following_teams table)
-// ═══════════════════════════════════════════════════════════
+//
 
 const mockUserFollowingTeams = <UserFollowingTeam>[
   // 1001 Alex Kim: Barcelona + Bayern
@@ -181,4 +181,4 @@ List<int> followingTeamIds(int userId) => mockUserFollowingTeams
     .map((f) => f.teamId)
     .toList();
 
-// ═══════════════════════════════════════════════════════════
+//
