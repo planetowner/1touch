@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository_provider.dart';
+import 'package:onetouch/data/standings/xg_standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -84,7 +85,7 @@ class _StandingTabState extends State<StandingTab> {
     _validLeagueIds = fixtures
         .map((f) => f.competitionId)
         .toSet()
-        .where((id) => standingsByCompetition(id).isNotEmpty)
+        .where((id) => standingRepository.forCompetition(id).isNotEmpty)
         .toList();
 
     final leagueId = _validLeagueIds.isNotEmpty
@@ -118,7 +119,7 @@ class _StandingTabState extends State<StandingTab> {
 
   void _loadData() {
     //   Standings (always)
-    final standingRows = standingsByCompetition(selectedLeagueId);
+    final standingRows = standingRepository.forCompetition(selectedLeagueId);
     final newStandings = standingRows.map((s) {
       final team = teamRepository.findByIdOrUnknown(s.teamId);
       return {
@@ -140,7 +141,7 @@ class _StandingTabState extends State<StandingTab> {
     //   xG standings (Big 5 only — different source/endpoint)
     List<Map<String, dynamic>> newXg = [];
     if (_xgAvailable) {
-      final xgRows = xgStandingsByLeague(selectedLeagueId);
+      final xgRows = xgStandingRepository.forCompetition(selectedLeagueId);
       newXg = xgRows.map((x) {
         final team = teamRepository.findByIdOrUnknown(x.teamId);
         return {
