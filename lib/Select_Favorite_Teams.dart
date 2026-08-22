@@ -5,7 +5,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
+import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/competition.dart';
@@ -47,10 +47,8 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
     _leagueTeams = {};
     for (final league in _leagues) {
-      final standingsForLeague = mockStandings
-          .where((s) => s.competitionId == league.competitionId)
-          .toList()
-        ..sort((a, b) => a.position.compareTo(b.position));
+      final standingsForLeague =
+          standingRepository.forCompetition(league.competitionId);
       _leagueTeams[league.competitionId] = standingsForLeague
           .map((standing) => teamRepository.findById(standing.teamId))
           .whereType<Team>()
