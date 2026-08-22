@@ -508,7 +508,7 @@ class _BestElevenSectionState extends State<BestElevenSection> {
               ),
             )
           else
-            BestElevenPitch(players: _players),
+            BestElevenPitch.legacy(players: _players),
         ],
       ),
     );

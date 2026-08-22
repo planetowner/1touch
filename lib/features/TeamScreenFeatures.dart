@@ -5,16 +5,18 @@ import 'package:go_router/go_router.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
+import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
+import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
-import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/best_eleven.dart';
+import 'package:onetouch/models/team_best_eleven.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 import 'package:intl/intl.dart';
 
@@ -421,23 +423,126 @@ class _StandingState extends State<Standing> {
   }
 }
 
-class BestXI extends StatelessWidget {
-  const BestXI({super.key, this.teams});
+class BestXI extends StatefulWidget {
+  const BestXI({
+    super.key,
+    this.teams,
+    this.repository,
+  });
 
   final teams;
+  final BestElevenRepository? repository;
+
+  @override
+  State<BestXI> createState() => _BestXIState();
+}
+
+class _BestXIState extends State<BestXI> {
+  TeamBestEleven? _lineup;
+  bool _isLoading = false;
+  bool _loadFailed = false;
+  int _loadRequestId = 0;
+
+  BestElevenRepository get _repository =>
+      widget.repository ?? bestElevenRepository;
+
+  int? get _teamId {
+    if (widget.teams is Map<String, dynamic>) {
+      return (widget.teams as Map<String, dynamic>)['id'] as int?;
+    }
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startLoad();
+  }
+
+  @override
+  void didUpdateWidget(BestXI oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldTeamId = oldWidget.teams is Map<String, dynamic>
+        ? (oldWidget.teams as Map<String, dynamic>)['id'] as int?
+        : null;
+    if (_teamId != oldTeamId || widget.repository != oldWidget.repository) {
+      _startLoad();
+    }
+  }
+
+  void _startLoad() {
+    final teamId = _teamId;
+    final requestId = ++_loadRequestId;
+    final cached = teamId == null ? null : _repository.cachedForTeam(teamId);
+
+    _lineup = cached;
+    _isLoading = teamId != null && cached == null;
+    _loadFailed = false;
+
+    if (_isLoading) {
+      unawaited(_loadLineup(teamId!, requestId));
+    }
+  }
+
+  Future<void> _loadLineup(int teamId, int requestId) async {
+    try {
+      final lineup = await _repository.loadForTeam(teamId);
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _lineup = lineup;
+        _isLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+    }
+  }
+
+  void _retryLoad() => setState(_startLoad);
 
   @override
   Widget build(BuildContext context) {
-    // Resolve team_id from the map
-    int? teamId;
-    if (teams is Map<String, dynamic>) {
-      teamId = (teams as Map<String, dynamic>)['id'] as int?;
+    if (_teamId == null) return const SizedBox.shrink();
+
+    if (_isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: SizedBox.square(
+            key: ValueKey('best-eleven-loading'),
+            dimension: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
     }
 
-    final players =
-        teamId != null ? bestElevenByTeam(teamId) : <BestElevenPlayer>[];
+    if (_loadFailed) {
+      return Padding(
+        key: const ValueKey('best-eleven-error'),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text('Unable to load best eleven', style: Body2.style),
+            ),
+            TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+          ],
+        ),
+      );
+    }
 
-    if (players.isEmpty) return const SizedBox.shrink();
+    final players = _lineup?.players ?? const <BestElevenEntry>[];
+    if (players.isEmpty) {
+      return Padding(
+        key: const ValueKey('best-eleven-empty'),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Text('No best eleven available', style: Body2.style),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: BestElevenPitch(players: players),
@@ -449,19 +554,44 @@ class BestXI extends StatelessWidget {
 // Overview tab (BestXI, above) and the Analysis tab's formation picker so
 // both render from the exact same widget rather than near-duplicate UIs.
 class BestElevenPitch extends StatelessWidget {
-  final List<BestElevenPlayer> players;
-  const BestElevenPitch({super.key, required this.players});
+  BestElevenPitch({
+    super.key,
+    required List<BestElevenEntry> players,
+  }) : _players = List.unmodifiable(
+          players.map(
+            (player) => _BestElevenPitchPlayer(
+              slotKey: player.slotKey,
+              playerName: player.playerName,
+            ),
+          ),
+        );
+
+  // Temporary compatibility boundary for Analysis. Remove this constructor
+  // after Analysis loads BestElevenEntry values through BestElevenRepository.
+  BestElevenPitch.legacy({
+    super.key,
+    required List<BestElevenPlayer> players,
+  }) : _players = List.unmodifiable(
+          players.map(
+            (player) => _BestElevenPitchPlayer(
+              slotKey: player.slotKey,
+              playerName: player.playerName,
+            ),
+          ),
+        );
+
+  final List<_BestElevenPitchPlayer> _players;
 
   @override
   Widget build(BuildContext context) {
-    if (players.isEmpty) return const SizedBox.shrink();
+    if (_players.isEmpty) return const SizedBox.shrink();
     final appColors = AppColors.of(context);
     final pitchBackground = Theme.of(context).brightness == Brightness.dark
         ? AppPalette.lightGrey
         : appColors.cardBackground;
 
-    final Map<int, List<BestElevenPlayer>> byRow = {};
-    for (final p in players) {
+    final Map<int, List<_BestElevenPitchPlayer>> byRow = {};
+    for (final p in _players) {
       final parts = p.slotKey.split(':');
       final row = int.parse(parts[0]);
       byRow.putIfAbsent(row, () => []).add(p);
@@ -546,7 +676,7 @@ class _HalfCirclePainter extends CustomPainter {
 }
 
 class _BestXIRow extends StatelessWidget {
-  final List<BestElevenPlayer> players;
+  final List<_BestElevenPitchPlayer> players;
   // When true, first and last player (SBs) sit slightly higher than CBs
   final bool isDefRow;
 
@@ -584,13 +714,16 @@ class _BestXIRow extends StatelessWidget {
 }
 
 class _BestXIPlayerDot extends StatelessWidget {
-  final BestElevenPlayer player;
+  final _BestElevenPitchPlayer player;
   const _BestXIPlayerDot({required this.player});
 
   @override
   Widget build(BuildContext context) {
     // Last name only
-    final label = player.playerName.split(' ').last;
+    final playerName = player.playerName?.trim();
+    final label = playerName == null || playerName.isEmpty
+        ? 'Unknown'
+        : playerName.split(' ').last;
     final colors = Theme.of(context).colorScheme;
 
     return SizedBox(
@@ -622,6 +755,16 @@ class _BestXIPlayerDot extends StatelessWidget {
       ),
     );
   }
+}
+
+class _BestElevenPitchPlayer {
+  const _BestElevenPitchPlayer({
+    required this.slotKey,
+    required this.playerName,
+  });
+
+  final String slotKey;
+  final String? playerName;
 }
 
 class InjuryStatus extends StatefulWidget {
