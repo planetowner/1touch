@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import "package:onetouch/features/helper.dart";
@@ -9,11 +11,12 @@ import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
-import 'package:onetouch/data/transfers/mock/transfer_catalog.dart';
+import 'package:onetouch/data/transfers/transfer_repository.dart';
+import 'package:onetouch/data/transfers/transfer_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/best_eleven.dart';
+import 'package:onetouch/models/team_transfer_window.dart';
 import 'package:intl/intl.dart';
-import '../models/transfer.dart';
 
 String _formatMatchDate(String startingAt) {
   final dt = DateTime.parse(startingAt).toLocal();
@@ -710,9 +713,14 @@ class _InjuryStatusState extends State<InjuryStatus> {
 }
 
 class Transfer extends StatefulWidget {
-  const Transfer({super.key, this.teams});
+  const Transfer({
+    super.key,
+    this.teams,
+    this.repository,
+  });
 
   final teams;
+  final TransferRepository? repository;
 
   @override
   State<Transfer> createState() => _TransferState();
@@ -720,22 +728,75 @@ class Transfer extends StatefulWidget {
 
 class _TransferState extends State<Transfer> {
   bool showIn = true; // true = IN, false = OUT
+  TeamTransferWindow? _window;
+  bool _isLoading = false;
+  bool _loadFailed = false;
+  int _loadRequestId = 0;
 
-  String _formatFee(int? amount) {
-    if (amount == null) return 'On Loan';
-    if (amount == 0) return 'Free Agent';
-    if (amount >= 1000000) {
-      final m = amount / 1000000;
-      return '€${m % 1 == 0 ? m.toInt() : m.toStringAsFixed(1)}m';
+  TransferRepository get _repository => widget.repository ?? transferRepository;
+
+  int? get _teamId {
+    if (widget.teams is Map<String, dynamic>) {
+      return (widget.teams as Map<String, dynamic>)['id'] as int?;
     }
-    return '€${(amount / 1000).toStringAsFixed(0)}k';
+    return null;
   }
 
-  String _formatDate(String date) {
+  @override
+  void initState() {
+    super.initState();
+    _startLoad();
+  }
+
+  @override
+  void didUpdateWidget(Transfer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldTeamId = oldWidget.teams is Map<String, dynamic>
+        ? (oldWidget.teams as Map<String, dynamic>)['id'] as int?
+        : null;
+    if (_teamId != oldTeamId || widget.repository != oldWidget.repository) {
+      _startLoad();
+    }
+  }
+
+  void _startLoad() {
+    final teamId = _teamId;
+    final requestId = ++_loadRequestId;
+    final cached = teamId == null ? null : _repository.cachedForTeam(teamId);
+
+    _window = cached;
+    _isLoading = teamId != null && cached == null;
+    _loadFailed = false;
+
+    if (_isLoading) {
+      unawaited(_loadTransfers(teamId!, requestId));
+    }
+  }
+
+  Future<void> _loadTransfers(int teamId, int requestId) async {
     try {
-      final dt = DateTime.parse(date);
-      return DateFormat('MMM d, yyyy').format(dt);
-    } catch (_) {
+      final window = await _repository.loadForTeam(teamId);
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _window = window;
+        _isLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+    }
+  }
+
+  void _retryLoad() => setState(_startLoad);
+
+  String _formatDate(String? date) {
+    if (date == null || date.isEmpty) return '-';
+    try {
+      return DateFormat('MMM d, yyyy').format(DateTime.parse(date));
+    } on FormatException {
       return date;
     }
   }
@@ -743,15 +804,8 @@ class _TransferState extends State<Transfer> {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
-    int? teamId;
-    if (widget.teams is Map<String, dynamic>) {
-      teamId = (widget.teams as Map<String, dynamic>)['id'] as int?;
-    }
-
-    final incoming =
-        teamId != null ? incomingTransfers(teamId) : <TeamTransfer>[];
-    final outgoing =
-        teamId != null ? outgoingTransfers(teamId) : <TeamTransfer>[];
+    final incoming = _window?.incoming ?? const <TransferEntry>[];
+    final outgoing = _window?.outgoing ?? const <TransferEntry>[];
     final list = showIn ? incoming : outgoing;
 
     return Column(
@@ -765,6 +819,7 @@ class _TransferState extends State<Transfer> {
             children: [
               Expanded(
                 child: GestureDetector(
+                  key: const ValueKey('transfer-in-toggle'),
                   onTap: () => setState(() => showIn = true),
                   child: Container(
                     padding: const EdgeInsets.all(8),
@@ -785,6 +840,7 @@ class _TransferState extends State<Transfer> {
               ),
               Expanded(
                 child: GestureDetector(
+                  key: const ValueKey('transfer-out-toggle'),
                   onTap: () => setState(() => showIn = false),
                   child: Container(
                     padding: const EdgeInsets.all(8),
@@ -808,16 +864,39 @@ class _TransferState extends State<Transfer> {
         ),
 
         // PLAYER LIST
-        if (list.isEmpty)
+        if (_isLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: SizedBox.square(
+                key: ValueKey('transfer-loading'),
+                dimension: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          )
+        else if (_loadFailed)
           Padding(
+            key: const ValueKey('transfer-error'),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text('Unable to load transfers', style: Body2.style),
+                ),
+                TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+              ],
+            ),
+          )
+        else if (list.isEmpty)
+          Padding(
+            key: const ValueKey('transfer-empty'),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text('No transfers', style: Body2.style),
           )
         else
           ...list.map((t) => TransferTile(
                 transfer: t,
-                showIn: showIn,
-                feeLabel: _formatFee(t.amount),
                 dateLabel: _formatDate(t.transferDate),
               )),
 
@@ -828,27 +907,24 @@ class _TransferState extends State<Transfer> {
 }
 
 class TransferTile extends StatelessWidget {
-  final TeamTransfer transfer;
-  final bool showIn;
-  final String feeLabel;
+  final TransferEntry transfer;
   final String dateLabel;
 
   const TransferTile({
     super.key,
     required this.transfer,
-    required this.showIn,
-    required this.feeLabel,
     required this.dateLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    final counterTeam = showIn ? transfer.fromTeamName : transfer.toTeamName;
-    // Loan badge colour vs transfer
-    final isLoan = transfer.typeName == TransferType.loan;
+    final playerImage = transfer.playerImage;
+    final displayType = transfer.displayType ?? '-';
+    final isLoan = displayType.contains('Loan');
     final appColors = AppColors.of(context);
 
     return Container(
+      key: ValueKey('transfer-${transfer.transferId}'),
       margin: const EdgeInsets.only(left: 24, right: 24, bottom: 16, top: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -858,16 +934,25 @@ class TransferTile extends StatelessWidget {
             radius: 36,
             backgroundColor: appColors.subtleBackground,
             child: ClipOval(
-              child: Image.network(transfer.playerImage,
-                  width: 68,
-                  height: 68,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Image.asset(
+              child: playerImage == null || playerImage.isEmpty
+                  ? Image.asset(
+                      'assets/messi.png',
+                      width: 68,
+                      height: 68,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.network(
+                      playerImage,
+                      width: 68,
+                      height: 68,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
                         'assets/messi.png',
                         width: 68,
                         height: 68,
                         fit: BoxFit.cover,
-                      )),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 16),
@@ -883,13 +968,21 @@ class TransferTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        transfer.playerName,
+                        transfer.playerName ?? 'Unknown Player',
                         style: Heading5.style,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(feeLabel, style: Heading5.style),
+                    Flexible(
+                      child: Text(
+                        displayType,
+                        style: Heading5.style,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -897,11 +990,15 @@ class TransferTile extends StatelessWidget {
                 // FROM / TO badge + team name
                 Row(
                   children: [
-                    Badge(label: showIn ? 'FROM' : 'TO'),
+                    Badge(
+                      label: transfer.direction == TransferDirection.incoming
+                          ? 'FROM'
+                          : 'TO',
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        counterTeam,
+                        transfer.otherTeamName ?? 'Unknown Team',
                         style: Body1.style,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -911,13 +1008,14 @@ class TransferTile extends StatelessWidget {
                 const SizedBox(height: 6),
 
                 // DATE badge + formatted date, LOAN chip if applicable
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
                     Badge(label: 'DATE'),
-                    const SizedBox(width: 8),
                     Text(dateLabel, style: Body1.style),
                     if (isLoan) ...[
-                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
