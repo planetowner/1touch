@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -427,7 +427,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final appColors = AppColors.of(context);
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final league = competitionRepository.findById(widget.fixture.competitionId);
-    final standings = standingsByCompetition(widget.fixture.competitionId);
+    final standings =
+        standingRepository.forCompetition(widget.fixture.competitionId);
     if (standings.isEmpty) return const SizedBox.shrink();
 
     final matchTeamIds = {
