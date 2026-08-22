@@ -5,7 +5,7 @@ class CurrentFormOptionsQuery {
   CurrentFormOptionsQuery({
     required this.teamId,
     String search = '',
-    this.limit = 100,
+    this.limit = 200,
   }) : search = search.trim().toLowerCase();
 
   final int teamId;

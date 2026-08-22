@@ -33,6 +33,7 @@ void currentFormRepositoryContract({
     expect(options.single.seasonId, 100);
     expect(options.single.seasonName, '2025/26');
     expect(options.single.roundsAvailable, greaterThan(0));
+    expect(repository.cachedOptions.value.keys.single.limit, 200);
   });
 
   test('normalizes option queries and keeps limits separate', () async {
@@ -49,9 +50,10 @@ void currentFormRepositoryContract({
     expect(repository.cachedOptions.value, hasLength(2));
   });
 
-  test('rejects option limits outside the backend contract', () async {
+  test('accepts the backend maximum and rejects out-of-range limits', () async {
+    expect(await repository.loadOptions(1, limit: 1000), hasLength(3));
     expect(() => repository.loadOptions(1, limit: 0), throwsRangeError);
-    expect(() => repository.loadOptions(1, limit: 101), throwsRangeError);
+    expect(() => repository.loadOptions(1, limit: 1001), throwsRangeError);
   });
 
   test('loads one current series against one selected comparison', () async {

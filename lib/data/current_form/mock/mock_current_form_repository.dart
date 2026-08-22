@@ -45,7 +45,7 @@ class MockCurrentFormRepository implements CurrentFormRepository {
   List<CurrentFormOption>? cachedOptionsFor(
     int teamId, {
     String search = '',
-    int limit = 100,
+    int limit = 200,
   }) {
     return _cachedOptions.value[CurrentFormOptionsQuery(
       teamId: teamId,
@@ -73,10 +73,10 @@ class MockCurrentFormRepository implements CurrentFormRepository {
   Future<List<CurrentFormOption>> loadOptions(
     int teamId, {
     String search = '',
-    int limit = 100,
+    int limit = 200,
   }) async {
-    if (limit < 1 || limit > 100) {
-      throw RangeError.range(limit, 1, 100, 'limit');
+    if (limit < 1 || limit > 1000) {
+      throw RangeError.range(limit, 1, 1000, 'limit');
     }
 
     final query = CurrentFormOptionsQuery(
