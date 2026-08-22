@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
@@ -583,7 +584,7 @@ void main() {
     final formationFilter = tester.widget<DropdownButton<String>>(
       find.byKey(const ValueKey('analysis-formation-filter')),
     );
-    final formFilter = tester.widget<DropdownButton<int>>(
+    final formFilter = tester.widget<DropdownButton<CurrentFormOption>>(
       find.byKey(const ValueKey('analysis-form-filter')),
     );
 

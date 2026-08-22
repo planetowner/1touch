@@ -7,16 +7,17 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
+import 'package:onetouch/data/current_form/current_form_repository.dart';
+import 'package:onetouch/data/current_form/current_form_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
-import 'package:onetouch/data/teams/mock/team_form_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
-import 'package:onetouch/models/team_form_comparison.dart';
 
 class AnalysisTab extends StatelessWidget {
   final Map<String, dynamic>? team;
@@ -25,17 +26,6 @@ class AnalysisTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawTeam = team?['raw'];
-    final rawFormData = rawTeam is Map<String, dynamic>
-        ? rawTeam['current_form_comparison']
-        : null;
-    final serverFormComparison = TeamFormComparison.tryFromJson(
-      team?['current_form_comparison'] ?? rawFormData,
-    );
-    final teamId = team?['id'] as int? ?? 83;
-    final currentFormComparison =
-        serverFormComparison ?? mockTeamFormComparison(teamId);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -44,7 +34,7 @@ class AnalysisTab extends StatelessWidget {
           AttributesSection(team: team),
           ProbabilitySection(),
           BestElevenSection(team: team),
-          CurrentFormSection(data: currentFormComparison, team: team),
+          CurrentFormSection(team: team),
         ],
       ),
     );
@@ -613,13 +603,13 @@ class _BestElevenSectionState extends State<BestElevenSection> {
 }
 
 class CurrentFormSection extends StatefulWidget {
-  final TeamFormComparison? data;
   final Map<String, dynamic>? team;
+  final CurrentFormRepository? repository;
 
   const CurrentFormSection({
     super.key,
-    required this.data,
     required this.team,
+    this.repository,
   });
 
   @override
@@ -627,21 +617,175 @@ class CurrentFormSection extends StatefulWidget {
 }
 
 class _CurrentFormSectionState extends State<CurrentFormSection> {
-  int _selectedComparisonIndex = 0;
+  List<CurrentFormOption> _options = const [];
+  CurrentFormOption? _selectedOption;
+  CurrentFormComparison? _comparison;
+  bool _isLoading = false;
+  bool _loadFailed = false;
+  int _loadRequestId = 0;
 
-  TeamFormSeries? get _comparison {
-    final comparisons = widget.data?.comparisons ?? const [];
-    if (comparisons.isEmpty) return null;
-    return comparisons[
-        _selectedComparisonIndex.clamp(0, comparisons.length - 1)];
+  CurrentFormRepository get _repository =>
+      widget.repository ?? currentFormRepository;
+
+  int? get _teamId => widget.team?['id'] as int?;
+
+  @override
+  void initState() {
+    super.initState();
+    _startDefaultLoad();
   }
 
   @override
   void didUpdateWidget(CurrentFormSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.data != oldWidget.data) {
-      _selectedComparisonIndex = 0;
+    if (_teamId != oldWidget.team?['id'] ||
+        widget.repository != oldWidget.repository) {
+      _startDefaultLoad();
     }
+  }
+
+  void _startDefaultLoad() {
+    final teamId = _teamId;
+    final requestId = ++_loadRequestId;
+    final cachedOptions =
+        teamId == null ? null : _repository.cachedOptionsFor(teamId);
+    final selectedOption = teamId == null || cachedOptions == null
+        ? null
+        : _defaultOption(cachedOptions, teamId);
+    final cachedComparison = selectedOption == null
+        ? null
+        : _repository.cachedComparisonFor(
+            teamId!,
+            compareTeamId: selectedOption.teamId,
+            compareSeasonId: selectedOption.seasonId,
+          );
+
+    _options = cachedOptions ?? const [];
+    _selectedOption = selectedOption;
+    _comparison = cachedComparison;
+    _loadFailed = false;
+    _isLoading = teamId != null &&
+        (cachedOptions == null ||
+            (selectedOption != null && cachedComparison == null));
+
+    if (teamId == null) return;
+    if (cachedOptions == null) {
+      unawaited(_loadOptions(teamId, requestId));
+    } else if (selectedOption != null && cachedComparison == null) {
+      unawaited(_loadComparison(teamId, selectedOption, requestId));
+    }
+  }
+
+  Future<void> _loadOptions(int teamId, int requestId) async {
+    try {
+      final options = await _repository.loadOptions(teamId);
+      if (!mounted || requestId != _loadRequestId) return;
+
+      final selectedOption = _defaultOption(options, teamId);
+      final cachedComparison = selectedOption == null
+          ? null
+          : _repository.cachedComparisonFor(
+              teamId,
+              compareTeamId: selectedOption.teamId,
+              compareSeasonId: selectedOption.seasonId,
+            );
+      setState(() {
+        _options = options;
+        _selectedOption = selectedOption;
+        _comparison = cachedComparison;
+        _isLoading = selectedOption != null && cachedComparison == null;
+      });
+
+      if (selectedOption != null && cachedComparison == null) {
+        unawaited(_loadComparison(teamId, selectedOption, requestId));
+      }
+    } on Object {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+    }
+  }
+
+  Future<void> _loadComparison(
+    int teamId,
+    CurrentFormOption option,
+    int requestId,
+  ) async {
+    try {
+      final comparison = await _repository.loadComparison(
+        teamId,
+        compareTeamId: option.teamId,
+        compareSeasonId: option.seasonId,
+      );
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _comparison = comparison;
+        _isLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+    }
+  }
+
+  CurrentFormOption? _defaultOption(
+    List<CurrentFormOption> options,
+    int teamId,
+  ) {
+    if (options.isEmpty) return null;
+
+    final sameTeam =
+        options.where((option) => option.teamId == teamId).toList();
+    // Backend options are newest-first, so the second same-team row is the
+    // previous season while the full list remains available for comparison.
+    if (sameTeam.length > 1) return sameTeam[1];
+    if (sameTeam.isNotEmpty) return sameTeam.first;
+    return options.first;
+  }
+
+  void _changeComparison(CurrentFormOption option) {
+    final teamId = _teamId;
+    if (teamId == null || identical(option, _selectedOption)) return;
+
+    final requestId = ++_loadRequestId;
+    final cached = _repository.cachedComparisonFor(
+      teamId,
+      compareTeamId: option.teamId,
+      compareSeasonId: option.seasonId,
+    );
+    setState(() {
+      _selectedOption = option;
+      _comparison = cached;
+      _isLoading = cached == null;
+      _loadFailed = false;
+    });
+
+    if (cached == null) {
+      unawaited(_loadComparison(teamId, option, requestId));
+    }
+  }
+
+  void _retryLoad() {
+    final teamId = _teamId;
+    if (teamId == null) return;
+
+    final option = _selectedOption;
+    if (option == null) {
+      setState(_startDefaultLoad);
+      return;
+    }
+
+    final requestId = ++_loadRequestId;
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
+    unawaited(_loadComparison(teamId, option, requestId));
   }
 
   @override
@@ -653,14 +797,41 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         children: [
           _AnalysisSectionHeader(
             title: 'CURRENT FORM',
-            trailing: _comparison != null ? _buildComparisonPicker() : null,
+            trailing: _options.isNotEmpty ? _buildComparisonPicker() : null,
           ),
           const SizedBox(height: 16),
-          if (widget.data == null || widget.data!.current.points.isEmpty)
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: SizedBox.square(
+                  key: ValueKey('analysis-current-form-loading'),
+                  dimension: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          else if (_loadFailed)
+            Row(
+              key: const ValueKey('analysis-current-form-error'),
+              children: [
+                Expanded(
+                  child: Text(
+                    'Unable to load current form',
+                    style: Body2.style,
+                  ),
+                ),
+                TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+              ],
+            )
+          else if (_comparison == null || _comparison!.current.points.isEmpty)
             _buildEmptyState()
           else
             _buildChart(),
-          if (widget.data != null && widget.data!.current.points.isNotEmpty)
+          if (!_isLoading &&
+              !_loadFailed &&
+              _comparison != null &&
+              _comparison!.current.points.isNotEmpty)
             _buildLegend(),
         ],
       ),
@@ -668,7 +839,6 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   }
 
   Widget _buildComparisonPicker() {
-    final comparisons = widget.data!.comparisons;
     final colors = Theme.of(context).colorScheme;
 
     return Container(
@@ -678,48 +848,45 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
+        child: DropdownButton<CurrentFormOption>(
           key: const ValueKey('analysis-form-filter'),
-          value: _selectedComparisonIndex,
+          value: _selectedOption,
           icon: Icon(
             Icons.keyboard_arrow_down,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           dropdownColor: AppColors.of(context).cardBackground,
           style: Body2_b.style.copyWith(color: colors.onSurface),
-          onChanged: (index) {
-            if (index != null) {
-              setState(() => _selectedComparisonIndex = index);
-            }
-          },
-          selectedItemBuilder: (_) => comparisons.map((series) {
-            return _comparisonLabel(series);
+          onChanged: _isLoading
+              ? null
+              : (option) {
+                  if (option != null) _changeComparison(option);
+                },
+          selectedItemBuilder: (_) => _options.map((option) {
+            return _comparisonLabel(option);
           }).toList(),
-          items: List.generate(
-            comparisons.length,
-            (index) => DropdownMenuItem(
-              value: index,
-              child: _comparisonLabel(comparisons[index]),
-            ),
-          ),
+          items: _options
+              .map(
+                (option) => DropdownMenuItem(
+                  value: option,
+                  child: _comparisonLabel(option),
+                ),
+              )
+              .toList(),
         ),
       ),
     );
   }
 
-  Widget _comparisonLabel(TeamFormSeries series) {
-    final logo = widget.team?['logo'] as String? ??
-        widget.team?['image_path'] as String? ??
-        '';
-    final teamCode = widget.team?['short_code'] as String? ??
-        widget.team?['name'] as String? ??
-        '';
+  Widget _comparisonLabel(CurrentFormOption option) {
+    final teamCode =
+        (option.teamShortCode ?? option.teamName ?? '').toUpperCase();
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          series.seasonLabel.toUpperCase(),
+          option.seasonName.toUpperCase(),
           style: Body2_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
@@ -727,29 +894,44 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         const SizedBox(width: 8),
         Container(width: 1, height: 16, color: AppColors.of(context).divider),
         const SizedBox(width: 8),
-        Image.network(
-          logo,
-          width: 18,
-          height: 18,
-          errorBuilder: (_, __, ___) => Icon(
-            Icons.shield,
-            size: 18,
-            color: AppColors.of(context).mutedForeground,
-          ),
-        ),
+        _teamLogo(option.teamLogo),
         const SizedBox(width: 6),
         Text(
           teamCode,
           style: Body2_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
   }
 
+  Widget _teamLogo(String? logo) {
+    if (logo == null || logo.isEmpty) {
+      return Icon(
+        Icons.shield,
+        size: 18,
+        color: AppColors.of(context).mutedForeground,
+      );
+    }
+
+    return Image.network(
+      logo,
+      width: 18,
+      height: 18,
+      errorBuilder: (_, __, ___) => Icon(
+        Icons.shield,
+        size: 18,
+        color: AppColors.of(context).mutedForeground,
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
     return Container(
+      key: const ValueKey('analysis-current-form-empty'),
       width: double.infinity,
       height: 180,
       decoration: BoxDecoration(
@@ -769,19 +951,11 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   Widget _buildChart() {
     final appColors = AppColors.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final current = widget.data!.current;
-    final comparison = _comparison;
-    final allPoints = [
-      ...current.points,
-      ...?comparison?.points,
-    ];
-    final maxRound = math.max(
-      2,
-      allPoints.map((point) => point.round).reduce(math.max),
-    );
-    final highestPoints =
-        allPoints.map((point) => point.points).reduce(math.max);
-    final maxPoints = math.max(5, ((highestPoints + 4) ~/ 5) * 5).toDouble();
+    final data = _comparison!;
+    final current = data.current;
+    final comparison = data.comparison;
+    final maxRound = math.max(2, data.maxRound);
+    final maxPoints = math.max(5, ((data.maxPoints + 4) ~/ 5) * 5).toDouble();
 
     return Container(
       height: 346,
@@ -803,7 +977,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                 Expanded(
                   child: LineChart(
                     LineChartData(
-                      minX: 1,
+                      minX: 0,
                       maxX: maxRound.toDouble(),
                       minY: 0,
                       maxY: maxPoints,
@@ -866,8 +1040,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                       ),
                       lineBarsData: [
                         _formLine(current, const Color(0xFFFF525D)),
-                        if (comparison != null)
-                          _formLine(comparison, colorScheme.onSurface),
+                        _formLine(comparison, colorScheme.onSurface),
                       ],
                     ),
                   ),
@@ -884,11 +1057,15 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     );
   }
 
-  LineChartBarData _formLine(TeamFormSeries series, Color color) {
+  LineChartBarData _formLine(CurrentFormSeries series, Color color) {
     return LineChartBarData(
       spots: series.points
-          .map((point) =>
-              FlSpot(point.round.toDouble(), point.points.toDouble()))
+          .map(
+            (point) => FlSpot(
+              point.roundNo.toDouble(),
+              point.cumulativePoints.toDouble(),
+            ),
+          )
           .toList(),
       color: color,
       barWidth: 2,
@@ -898,7 +1075,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   }
 
   Widget _buildLegend() {
-    final comparison = _comparison;
+    final comparison = _comparison!.comparison;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Wrap(
@@ -907,12 +1084,11 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         runSpacing: 8,
         children: [
           _legendItem(const Color(0xFFFF525D), 'CURRENT'),
-          if (comparison != null)
-            _legendItem(
-              Theme.of(context).colorScheme.onSurface,
-              '${comparison.seasonLabel} '
-              '${(widget.team?['name'] as String? ?? '').toUpperCase()}',
-            ),
+          _legendItem(
+            Theme.of(context).colorScheme.onSurface,
+            '${comparison.seasonName} '
+            '${(comparison.teamShortCode ?? comparison.teamName ?? '').toUpperCase()}',
+          ),
         ],
       ),
     );
