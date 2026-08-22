@@ -1934,14 +1934,6 @@ const mockStandings = <Standing>[
       last5Form: ['D', 'L', 'W', 'D', 'L']),
 ];
 
-List<Standing> standingsByCompetition(int competitionId) =>
-    mockStandings.where((s) => s.competitionId == competitionId).toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
-
-Standing? standingByTeam(int competitionId, int teamId) => mockStandings
-    .where((s) => s.competitionId == competitionId && s.teamId == teamId)
-    .firstOrNull;
-
 //
 // xG STANDINGS — Big 5 leagues only (8, 82, 301, 384, 564)
 //
@@ -3112,13 +3104,5 @@ const mockXgStandings = <XgStanding>[
       xga: 63.823,
       xpts: 21.0),
 ];
-
-List<XgStanding> xgStandingsByLeague(int leagueId) =>
-    mockXgStandings.where((x) => x.competitionId == leagueId).toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
-
-XgStanding? xgStandingByTeam(int leagueId, int teamId) => mockXgStandings
-    .where((x) => x.competitionId == leagueId && x.teamId == teamId)
-    .firstOrNull;
 
 //
