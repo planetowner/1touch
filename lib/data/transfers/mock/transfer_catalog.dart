@@ -205,14 +205,3 @@ const mockTransfers = <TeamTransfer>[
     updatedAt: '2026-04-09 03:49:26',
   ),
 ];
-
-List<TeamTransfer> transfersByTeam(int teamId) => mockTransfers
-    .where((transfer) =>
-        transfer.fromTeamId == teamId || transfer.toTeamId == teamId)
-    .toList();
-
-List<TeamTransfer> incomingTransfers(int teamId) =>
-    mockTransfers.where((transfer) => transfer.toTeamId == teamId).toList();
-
-List<TeamTransfer> outgoingTransfers(int teamId) =>
-    mockTransfers.where((transfer) => transfer.fromTeamId == teamId).toList();
