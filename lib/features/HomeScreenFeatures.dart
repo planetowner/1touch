@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
+import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
@@ -249,8 +249,9 @@ class FavoriteTeamCard extends StatelessWidget {
     final leagueName = leagueId == null
         ? ''
         : competitionRepository.findById(leagueId)?.name ?? '';
-    final rank =
-        leagueId != null ? standingByTeam(leagueId, team.id)?.position : null;
+    final rank = leagueId != null
+        ? standingRepository.findForTeam(leagueId, team.id)?.position
+        : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
