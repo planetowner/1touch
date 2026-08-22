@@ -3,13 +3,13 @@ import 'package:onetouch/models/team_attribute_scores.dart';
 // TEAM ATTRIBUTE SCORES — for the radar chart on Analysis tab
 //
 //
-// Backend mapping (from team_attribute_group_scores table, Big 5 only):
+// Proposed six-axis product mapping (Big 5 only):
 //   attack       ← finishing.display_score_0_100
 //   progression  ← attacking_threat.display_score_0_100
 //   dominance    ← chance_creation.display_score_0_100
 //   defense      ← defending.display_score_0_100
 //   possession   ← possession_build_up.display_score_0_100
-//   pressure     ← composite from raw feature:
+//   pressure     ← proposed composite from raw feature:
 //                  clamp(50 + 15 * z(-dangerous_attacks_against_per_match), 5, 95)
 //                  i.e. lower dangerous_attacks_against = higher pressure score.
 //                  This is conceptually distinct from `defending`, which is
@@ -20,6 +20,11 @@ import 'package:onetouch/models/team_attribute_scores.dart';
 // Display range: 5-95 (per loader's clamp).
 // seasonLabel is denormalized here for picker convenience; real API would
 // join with the seasons table.
+//
+// These scores are illustrative. The backend currently exposes five attribute
+// groups and includes dangerous_attacks_against_per_match under defending; it
+// does not yet expose an independent pressure score. Replace this catalog only
+// after the backend defines and tests the required six-axis API contract.
 
 // Axis labels in the same order as TeamAttributeScores.radarValues.
 const teamAttributeLabels = <String>[
@@ -35,7 +40,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   FC Barcelona
   TeamAttributeScores(
       teamId: 83,
-      seasonId: 25659,
+      seasonId: 23621,
       seasonLabel: '24/25',
       attack: 92,
       progression: 85,
@@ -45,7 +50,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 94),
   TeamAttributeScores(
       teamId: 83,
-      seasonId: 21795,
+      seasonId: 19799,
       seasonLabel: '22/23',
       attack: 82,
       progression: 78,
@@ -55,7 +60,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 89),
   TeamAttributeScores(
       teamId: 83,
-      seasonId: 19744,
+      seasonId: 18462,
       seasonLabel: '21/22',
       attack: 75,
       progression: 72,
@@ -65,7 +70,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 86),
   TeamAttributeScores(
       teamId: 83,
-      seasonId: 18444,
+      seasonId: 17480,
       seasonLabel: '20/21',
       attack: 72,
       progression: 70,
@@ -77,7 +82,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Real Madrid
   TeamAttributeScores(
       teamId: 3468,
-      seasonId: 25659,
+      seasonId: 23621,
       seasonLabel: '24/25',
       attack: 88,
       progression: 82,
@@ -87,7 +92,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 80),
   TeamAttributeScores(
       teamId: 3468,
-      seasonId: 21795,
+      seasonId: 19799,
       seasonLabel: '22/23',
       attack: 85,
       progression: 80,
@@ -97,7 +102,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 78),
   TeamAttributeScores(
       teamId: 3468,
-      seasonId: 19744,
+      seasonId: 18462,
       seasonLabel: '21/22',
       attack: 90,
       progression: 78,
@@ -109,7 +114,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Liverpool
   TeamAttributeScores(
       teamId: 8,
-      seasonId: 25583,
+      seasonId: 23614,
       seasonLabel: '24/25',
       attack: 90,
       progression: 84,
@@ -119,7 +124,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 78),
   TeamAttributeScores(
       teamId: 8,
-      seasonId: 21646,
+      seasonId: 19734,
       seasonLabel: '22/23',
       attack: 84,
       progression: 80,
@@ -131,7 +136,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Arsenal
   TeamAttributeScores(
       teamId: 19,
-      seasonId: 25583,
+      seasonId: 23614,
       seasonLabel: '24/25',
       attack: 87,
       progression: 85,
@@ -141,7 +146,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 81),
   TeamAttributeScores(
       teamId: 19,
-      seasonId: 21646,
+      seasonId: 19734,
       seasonLabel: '22/23',
       attack: 80,
       progression: 78,
@@ -153,7 +158,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Manchester City
   TeamAttributeScores(
       teamId: 9,
-      seasonId: 25583,
+      seasonId: 23614,
       seasonLabel: '24/25',
       attack: 88,
       progression: 86,
@@ -163,7 +168,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 92),
   TeamAttributeScores(
       teamId: 9,
-      seasonId: 21646,
+      seasonId: 19734,
       seasonLabel: '22/23',
       attack: 92,
       progression: 88,
@@ -175,7 +180,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Bayern Munich
   TeamAttributeScores(
       teamId: 503,
-      seasonId: 25646,
+      seasonId: 23744,
       seasonLabel: '24/25',
       attack: 90,
       progression: 84,
@@ -187,7 +192,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   PSG
   TeamAttributeScores(
       teamId: 591,
-      seasonId: 25651,
+      seasonId: 23643,
       seasonLabel: '24/25',
       attack: 88,
       progression: 82,
@@ -199,7 +204,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Inter Milan
   TeamAttributeScores(
       teamId: 2930,
-      seasonId: 25533,
+      seasonId: 23746,
       seasonLabel: '24/25',
       attack: 86,
       progression: 80,
