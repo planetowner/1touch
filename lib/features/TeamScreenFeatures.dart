@@ -15,7 +15,6 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:onetouch/models/best_eleven.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 import 'package:intl/intl.dart';
@@ -557,20 +556,6 @@ class BestElevenPitch extends StatelessWidget {
   BestElevenPitch({
     super.key,
     required List<BestElevenEntry> players,
-  }) : _players = List.unmodifiable(
-          players.map(
-            (player) => _BestElevenPitchPlayer(
-              slotKey: player.slotKey,
-              playerName: player.playerName,
-            ),
-          ),
-        );
-
-  // Temporary compatibility boundary for Analysis. Remove this constructor
-  // after Analysis loads BestElevenEntry values through BestElevenRepository.
-  BestElevenPitch.legacy({
-    super.key,
-    required List<BestElevenPlayer> players,
   }) : _players = List.unmodifiable(
           players.map(
             (player) => _BestElevenPitchPlayer(

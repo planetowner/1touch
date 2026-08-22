@@ -16993,11 +16993,3 @@ const mockBestEleven = <BestElevenPlayer>[
       totalMinutes: 113,
       updatedAt: '2026-04-08 23:37:13'),
 ];
-
-/// Filter helper — pass [formation] to narrow once the backend returns more
-/// than one lineup per team; omitted, returns whatever's mocked for the team.
-List<BestElevenPlayer> bestElevenByTeam(int teamId, {String? formation}) {
-  final players = mockBestEleven.where((p) => p.teamId == teamId);
-  if (formation == null) return players.toList();
-  return players.where((p) => p.formation == formation).toList();
-}

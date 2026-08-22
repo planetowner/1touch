@@ -1,19 +1,22 @@
+import 'dart:async';
+import 'dart:math' as math;
+
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
+import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
-import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
+import 'package:onetouch/data/teams/mock/team_form_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'dart:math' as math;
+import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
+import 'package:onetouch/models/team_best_eleven.dart';
 import 'package:onetouch/models/team_form_comparison.dart';
-import 'package:onetouch/data/teams/mock/team_form_catalog.dart';
-import 'package:onetouch/models/best_eleven.dart';
-import 'package:onetouch/features/TeamScreenFeatures.dart';
 
 class AnalysisTab extends StatelessWidget {
   final Map<String, dynamic>? team;
@@ -389,68 +392,129 @@ class _AttributesSectionState extends State<AttributesSection> {
 
 class BestElevenSection extends StatefulWidget {
   final Map<String, dynamic>? team;
-  const BestElevenSection({super.key, required this.team});
+  final BestElevenRepository? repository;
+
+  const BestElevenSection({
+    super.key,
+    required this.team,
+    this.repository,
+  });
 
   @override
   State<BestElevenSection> createState() => _BestElevenSectionState();
 }
 
 class _BestElevenSectionState extends State<BestElevenSection> {
-  // Recommended-formation options with confidence %, eventually populated by
-  // a backend model. The lineup shown below is re-fetched per selection —
-  // mock data currently only has one real formation per team, so picking an
-  // option with no matching data shows the empty state.
-  static const List<String> formations = [
-    "4-2-3-1 (90%)",
-    "4-3-3 (88%)",
-    "3-5-2 (82%)",
-  ];
+  TeamBestEleven? _lineup;
+  List<BestElevenFormationOption> _formations = const [];
+  String? _selectedFormation;
+  bool _isLoading = false;
+  bool _loadFailed = false;
+  int _loadRequestId = 0;
 
-  late String selectedFormation;
-  List<BestElevenPlayer> _players = [];
+  BestElevenRepository get _repository =>
+      widget.repository ?? bestElevenRepository;
 
-  int get _teamId => widget.team?['id'] as int? ?? 83; // default Barcelona
-
-  String _formationKey(String option) => option.split(' ').first;
+  int? get _teamId => widget.team?['id'] as int?;
 
   @override
   void initState() {
     super.initState();
-    _resetForTeam();
+    _startDefaultLoad();
   }
 
   @override
   void didUpdateWidget(BestElevenSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // This section's State is reused across team switches (the Team-tab
-    // branch stays alive in the bottom-nav shell), so reload instead of
-    // only loading once in initState.
-    if (widget.team?['id'] != oldWidget.team?['id']) {
-      setState(_resetForTeam);
+    if (_teamId != oldWidget.team?['id'] ||
+        widget.repository != oldWidget.repository) {
+      _startDefaultLoad();
     }
   }
 
-  // Defaults the dropdown to whichever option matches the team's actual
-  // mocked formation, so it doesn't open on an empty state.
-  void _resetForTeam() {
-    final actualFormation = bestElevenByTeam(_teamId).firstOrNull?.formation;
-    selectedFormation = formations.firstWhere(
-      (f) => _formationKey(f) == actualFormation,
-      orElse: () => formations.first,
-    );
-    _loadPlayers();
+  void _startDefaultLoad() {
+    final teamId = _teamId;
+    final requestId = ++_loadRequestId;
+    final cached = teamId == null ? null : _repository.cachedForTeam(teamId);
+
+    _lineup = cached;
+    _formations = cached?.formations ?? const [];
+    _selectedFormation = cached?.formation;
+    _isLoading = teamId != null && cached == null;
+    _loadFailed = false;
+
+    if (_isLoading) {
+      unawaited(_loadLineup(teamId!, requestId));
+    }
   }
 
-  void _loadPlayers() {
-    _players =
-        bestElevenByTeam(_teamId, formation: _formationKey(selectedFormation));
+  Future<void> _loadLineup(
+    int teamId,
+    int requestId, {
+    String? formation,
+  }) async {
+    try {
+      final lineup = await _repository.loadForTeam(
+        teamId,
+        formation: formation,
+      );
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _lineup = lineup;
+        if (lineup != null) {
+          _formations = lineup.formations;
+          _selectedFormation = lineup.formation;
+        }
+        _isLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+    }
   }
 
   void _changeFormation(String formation) {
+    final teamId = _teamId;
+    if (teamId == null || formation == _selectedFormation) return;
+
+    final requestId = ++_loadRequestId;
+    final cached = _repository.cachedForTeam(teamId, formation: formation);
     setState(() {
-      selectedFormation = formation;
-      _loadPlayers();
+      _selectedFormation = formation;
+      _lineup = cached;
+      if (cached != null) _formations = cached.formations;
+      _isLoading = cached == null;
+      _loadFailed = false;
     });
+
+    if (cached == null) {
+      unawaited(_loadLineup(teamId, requestId, formation: formation));
+    }
+  }
+
+  void _retryLoad() {
+    final teamId = _teamId;
+    if (teamId == null) return;
+
+    final requestId = ++_loadRequestId;
+    final formation = _selectedFormation;
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
+    unawaited(_loadLineup(teamId, requestId, formation: formation));
+  }
+
+  String _formationLabel(BestElevenFormationOption option) {
+    final percentage = option.usagePercentage;
+    if (percentage == null) return option.formation;
+    final formatted = percentage == percentage.roundToDouble()
+        ? percentage.toInt().toString()
+        : percentage.toStringAsFixed(1);
+    return '${option.formation} ($formatted%)';
   }
 
   @override
@@ -465,50 +529,83 @@ class _BestElevenSectionState extends State<BestElevenSection> {
           // Title & Dropdown
           _AnalysisSectionHeader(
             title: 'BEST ELEVEN',
-            trailing: Container(
-              padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
-              decoration: BoxDecoration(
-                color: appColors.subtleBackground,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  key: const ValueKey('analysis-formation-filter'),
-                  value: selectedFormation,
-                  icon: Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  dropdownColor: appColors.cardBackground,
-                  style: Body2_b.style.copyWith(color: colors.onSurface),
-                  onChanged: (val) {
-                    if (val != null) _changeFormation(val);
-                  },
-                  items: formations.map((f) {
-                    return DropdownMenuItem(
-                      value: f,
-                      child: Text(
-                        f.toUpperCase(),
+            trailing: _formations.isEmpty
+                ? null
+                : Container(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+                    decoration: BoxDecoration(
+                      color: appColors.subtleBackground,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        key: const ValueKey('analysis-formation-filter'),
+                        value: _selectedFormation,
+                        icon: Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        dropdownColor: appColors.cardBackground,
                         style: Body2_b.style.copyWith(color: colors.onSurface),
+                        onChanged: _isLoading
+                            ? null
+                            : (formation) {
+                                if (formation != null) {
+                                  _changeFormation(formation);
+                                }
+                              },
+                        items: _formations.map((option) {
+                          final label = _formationLabel(option).toUpperCase();
+                          return DropdownMenuItem(
+                            value: option.formation,
+                            child: Text(
+                              label,
+                              style: Body2_b.style
+                                  .copyWith(color: colors.onSurface),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
+                    ),
+                  ),
           ),
           const SizedBox(height: 16),
 
-          if (_players.isEmpty)
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: SizedBox.square(
+                  key: ValueKey('analysis-best-eleven-loading'),
+                  dimension: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          else if (_loadFailed)
+            Row(
+              key: const ValueKey('analysis-best-eleven-error'),
+              children: [
+                Expanded(
+                  child: Text(
+                    'Unable to load best eleven',
+                    style: Body2.style,
+                  ),
+                ),
+                TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+              ],
+            )
+          else if (_lineup == null || _lineup!.players.isEmpty)
             Padding(
+              key: const ValueKey('analysis-best-eleven-empty'),
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(
-                'No lineup data for this formation yet',
+                'No best eleven available',
                 style: Body2.style,
               ),
             )
           else
-            BestElevenPitch.legacy(players: _players),
+            BestElevenPitch(players: _lineup!.players),
         ],
       ),
     );
