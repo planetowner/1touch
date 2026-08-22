@@ -4,8 +4,8 @@ import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/best_eleven_catalog.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
@@ -148,7 +148,7 @@ class _StandingState extends State<Standing> {
         .forTeam(currentTeamId)
         .map((f) => f.competitionId)
         .toSet()
-        .where((id) => standingsByCompetition(id).isNotEmpty)
+        .where((id) => standingRepository.forCompetition(id).isNotEmpty)
         .toList()
       ..sort((a, b) {
         final aIsDomestic = domesticCompetitionIds.contains(a);
@@ -178,7 +178,7 @@ class _StandingState extends State<Standing> {
   }
 
   List<Map<String, dynamic>> _rowsForLeague(int leagueId, int? currentTeamId) {
-    final standings = standingsByCompetition(leagueId);
+    final standings = standingRepository.forCompetition(leagueId);
     final allRows = standings.map((s) {
       final team = teamRepository.findByIdOrUnknown(s.teamId);
       return {
