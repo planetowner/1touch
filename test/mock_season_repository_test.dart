@@ -20,6 +20,9 @@ void main() {
       mockSeasons.map((season) => season.seasonId).toSet(),
     );
     expect(repository.currentForCompetition(8)?.seasonId, 25583);
+    expect(repository.currentForCompetition(2)?.seasonId, 25580);
+    expect(repository.currentForCompetition(5)?.seasonId, 25582);
+    expect(repository.currentForCompetition(2286)?.seasonId, 25581);
     expect(
       repository.forCompetition(8).map((season) => season.seasonId),
       [25583, 23614],

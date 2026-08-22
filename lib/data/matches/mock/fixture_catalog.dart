@@ -142,7 +142,7 @@ final _liveLyon = Fixture(
 // upcoming rather than live to avoid colliding with `_liveBarca` (league).
 const _barcaUCLHomeLeg = Fixture(
     fixtureId: 20100001,
-    seasonId: 23804,
+    seasonId: 25580,
     competitionId: 2,
     homeTeamId: 83,
     awayTeamId: 503,
@@ -155,7 +155,7 @@ const _barcaUCLHomeLeg = Fixture(
 // and Real Madrid (86) is already home in `_liveAtletico`.
 const _arsenalUCLHomeLeg = Fixture(
     fixtureId: 20100005,
-    seasonId: 23804,
+    seasonId: 25580,
     competitionId: 2,
     homeTeamId: 19,
     awayTeamId: 3468,
@@ -734,7 +734,7 @@ const _pastUpcomingFixtures = <Fixture>[
   //   UCL fixtures (Barcelona)
   Fixture(
       fixtureId: 20100002,
-      seasonId: 23804,
+      seasonId: 25580,
       competitionId: 2,
       homeTeamId: 591,
       awayTeamId: 83,
@@ -746,7 +746,7 @@ const _pastUpcomingFixtures = <Fixture>[
       awayScore: 3),
   Fixture(
       fixtureId: 20100003,
-      seasonId: 23804,
+      seasonId: 25580,
       competitionId: 2,
       homeTeamId: 83,
       awayTeamId: 2930,
@@ -758,7 +758,7 @@ const _pastUpcomingFixtures = <Fixture>[
       awayScore: 0),
   Fixture(
       fixtureId: 20100004,
-      seasonId: 23804,
+      seasonId: 25580,
       competitionId: 2,
       homeTeamId: 503,
       awayTeamId: 83,
@@ -770,7 +770,7 @@ const _pastUpcomingFixtures = <Fixture>[
   //   More UCL (other teams)
   Fixture(
       fixtureId: 20100006,
-      seasonId: 23804,
+      seasonId: 25580,
       competitionId: 2,
       homeTeamId: 8,
       awayTeamId: 3468,
@@ -782,7 +782,7 @@ const _pastUpcomingFixtures = <Fixture>[
       awayScore: 0),
   Fixture(
       fixtureId: 20100007,
-      seasonId: 23804,
+      seasonId: 25580,
       competitionId: 2,
       homeTeamId: 9,
       awayTeamId: 19,
@@ -792,7 +792,7 @@ const _pastUpcomingFixtures = <Fixture>[
       startingAt: '2026-04-29 20:00:00'),
   Fixture(
       fixtureId: 20100008,
-      seasonId: 23804,
+      seasonId: 25580,
       competitionId: 2,
       homeTeamId: 2930,
       awayTeamId: 591,
@@ -804,7 +804,7 @@ const _pastUpcomingFixtures = <Fixture>[
   //   Europa League
   Fixture(
       fixtureId: 20200001,
-      seasonId: 23805,
+      seasonId: 25582,
       competitionId: 5,
       homeTeamId: 14,
       awayTeamId: 37,
@@ -816,7 +816,7 @@ const _pastUpcomingFixtures = <Fixture>[
       awayScore: 1),
   Fixture(
       fixtureId: 20200002,
-      seasonId: 23805,
+      seasonId: 25582,
       competitionId: 5,
       homeTeamId: 6,
       awayTeamId: 79,
@@ -826,7 +826,7 @@ const _pastUpcomingFixtures = <Fixture>[
       startingAt: '2026-05-01 20:00:00'),
   Fixture(
       fixtureId: 20200003,
-      seasonId: 23805,
+      seasonId: 25582,
       competitionId: 5,
       homeTeamId: 277,
       awayTeamId: 597,

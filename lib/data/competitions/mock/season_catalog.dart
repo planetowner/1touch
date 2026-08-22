@@ -75,21 +75,28 @@ const mockSeasons = <Season>[
       isCurrent: false,
       startingAt: '2024-08-17 00:00:00',
       endingAt: '2025-05-25 00:00:00'),
-  //   UCL / Europa
+  //   UEFA club competitions
   Season(
-      seasonId: 23804,
+      seasonId: 25580,
       competitionId: 2,
       name: '2025/26',
       isCurrent: true,
       startingAt: '2025-09-16 00:00:00',
       endingAt: '2026-05-30 00:00:00'),
   Season(
-      seasonId: 23805,
+      seasonId: 25582,
       competitionId: 5,
       name: '2025/26',
       isCurrent: true,
       startingAt: '2025-09-24 00:00:00',
       endingAt: '2026-05-20 00:00:00'),
+  Season(
+      seasonId: 25581,
+      competitionId: 2286,
+      name: '2025/26',
+      isCurrent: true,
+      startingAt: '2025-10-02 00:00:00',
+      endingAt: '2026-05-27 00:00:00'),
   //   Domestic cups
   Season(
       seasonId: 23900,
