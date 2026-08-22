@@ -4,8 +4,8 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
@@ -140,8 +140,9 @@ class _TeamScreenState extends State<TeamScreen>
 
     // Get league from fixtures
     final leagueId = nextMatch?.competitionId ?? lastMatch?.competitionId;
-    final standing =
-        leagueId != null ? standingByTeam(leagueId, widget.teamId) : null;
+    final standing = leagueId != null
+        ? standingRepository.findForTeam(leagueId, widget.teamId)
+        : null;
     final leagueName = leagueId != null
         ? (competitionRepository.findById(leagueId)?.name ?? 'League')
         : 'League';
