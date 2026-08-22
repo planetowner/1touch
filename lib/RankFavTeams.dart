@@ -4,8 +4,8 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/competitions/mock/standing_catalog.dart';
+import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 
 class RankFavoriteTeamsScreen extends StatefulWidget {
@@ -28,33 +28,8 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     _myTeams = List.from(widget.selectedTeams);
   }
 
-  String _leagueSubtitle(Team team) {
-    final domesticCompetitionIds = competitionRepository.domesticCompetitions
-        .map((competition) => competition.competitionId)
-        .toSet();
-    final standing = mockStandings
-        .where((s) =>
-            s.teamId == team.teamId &&
-            domesticCompetitionIds.contains(s.competitionId))
-        .firstOrNull;
-    if (standing == null) return '';
-    final league = competitionRepository.findById(standing.competitionId);
-    return '${league?.name ?? ''} ${_ordinal(standing.position)}';
-  }
-
-  String _ordinal(int n) {
-    if (n >= 11 && n <= 13) return '${n}th';
-    switch (n % 10) {
-      case 1:
-        return '${n}st';
-      case 2:
-        return '${n}nd';
-      case 3:
-        return '${n}rd';
-      default:
-        return '${n}th';
-    }
-  }
+  String _leagueSubtitle(Team team) =>
+      teamCompetitionContextResolver.labelFor(team.teamId);
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
