@@ -7,7 +7,7 @@ import 'package:onetouch/models/fixture.dart';
 // Returns a datetime string for a live match that kicked off [minutesAgo] ago.
 // Format matches SQL datetime: 'YYYY-MM-DD HH:MM:SS'
 String _liveKickoff(int minutesAgo) {
-  final dt = DateTime.now().toUtc().subtract(Duration(minutes: minutesAgo));
+  final dt = DateTime.now().subtract(Duration(minutes: minutesAgo));
   return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:00';
 }
@@ -102,7 +102,7 @@ final _liveDortmund = Fixture(
     fixtureId: 19500007,
     seasonId: 25646,
     competitionId: 82,
-    // Leverkusen (182), not Leipzig (185) — Leipzig is already the away team
+    // Leverkusen (68), not Leipzig (277) — Leipzig is already the away team
     // in `_liveBayern` above, and a team can't play two matches at once.
     homeTeamId: 3321,
     awayTeamId: 68,

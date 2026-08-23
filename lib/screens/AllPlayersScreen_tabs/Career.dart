@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
+import 'package:onetouch/data/team_trophies/team_trophy_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/player.dart';
@@ -82,15 +82,17 @@ class _CareerTabState extends State<CareerTab> {
   }
 
   List<_TeamTrophyGroup> get _teamTrophyGroups {
-    final careerKeys = widget.player.careerSeasons
-        .map((season) => '${season.teamId}-${season.seasonLabel}')
-        .toSet();
-    final relevant = mockTeamTrophies
-        .where(
-          (trophy) =>
-              careerKeys.contains('${trophy.teamId}-${trophy.seasonLabel}'),
-        )
-        .toList(growable: false);
+    final queriedTeamSeasons = <String>{};
+    final relevant = <TeamTrophy>[];
+    final careerSeasons = [...widget.player.careerSeasons]
+      ..sort((a, b) => a.seasonLabel.compareTo(b.seasonLabel));
+    for (final season in careerSeasons) {
+      final key = '${season.teamId}-${season.seasonLabel}';
+      if (!queriedTeamSeasons.add(key)) continue;
+      relevant.addAll(
+        teamTrophyRepository.forTeamSeason(season.teamId, season.seasonLabel),
+      );
+    }
     final byTeam = <int, List<TeamTrophy>>{};
     for (final trophy in relevant) {
       byTeam.putIfAbsent(trophy.teamId, () => []).add(trophy);

@@ -111,21 +111,21 @@ const mockSeasons = <Season>[
       name: '2025/26',
       isCurrent: true,
       startingAt: '2025-08-12 00:00:00',
-      endingAt: '2026-03-15 00:00:00'),
+      endingAt: '2026-03-16 00:00:00'),
   Season(
       seasonId: 23902,
       competitionId: 570,
       name: '2025/26',
       isCurrent: true,
       startingAt: '2025-10-28 00:00:00',
-      endingAt: '2026-04-25 00:00:00'),
+      endingAt: '2026-04-26 00:00:00'),
   Season(
       seasonId: 23903,
       competitionId: 390,
       name: '2025/26',
       isCurrent: true,
       startingAt: '2025-09-23 00:00:00',
-      endingAt: '2026-05-13 00:00:00'),
+      endingAt: '2026-05-14 00:00:00'),
   Season(
       seasonId: 23904,
       competitionId: 392,
@@ -139,7 +139,7 @@ const mockSeasons = <Season>[
       name: '2025/26',
       isCurrent: true,
       startingAt: '2025-10-18 00:00:00',
-      endingAt: '2026-05-23 00:00:00'),
+      endingAt: '2026-05-24 00:00:00'),
 ];
 
 //
