@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/team_trophies/mock/mock_team_trophy_repository.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
 import 'package:onetouch/models/player.dart';
@@ -100,7 +101,7 @@ void main() {
     );
     expect(napoliSeason.competitions, hasLength(3));
     expect(
-      teamTrophiesForTeamSeason(597, '22/23').single.name,
+      MockTeamTrophyRepository().forTeamSeason(597, '22/23').single.name,
       'Serie A',
     );
     expect(

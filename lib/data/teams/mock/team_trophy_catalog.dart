@@ -162,14 +162,3 @@ const mockTeamTrophies = <TeamTrophy>[
     type: TeamTrophyType.continental,
   ),
 ];
-
-List<TeamTrophy> teamTrophiesForTeamSeason(
-  int teamId,
-  String seasonLabel,
-) =>
-    mockTeamTrophies
-        .where(
-          (trophy) =>
-              trophy.teamId == teamId && trophy.seasonLabel == seasonLabel,
-        )
-        .toList(growable: false);
