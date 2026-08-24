@@ -102,7 +102,6 @@ class _AddPostState extends State<AddPost> {
       body: body,
       mediaUrl: _mediaFiles.isNotEmpty ? _mediaFiles.first.path : null,
       createdAt: now,
-      updatedAt: now,
     );
 
     // Navigate to PostDetailScreen, replacing this screen in the stack

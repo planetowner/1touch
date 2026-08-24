@@ -15,8 +15,7 @@ const mockPosts = <Post>[
       body:
           'FC Barcelona secured their 28th La Liga title on Tuesday night after a commanding 4-1 victory over Sevilla at the Estadio Olimpic. Lewandowski scored a hat-trick as the Catalans ran riot in the second half.',
       mediaUrl: 'https://picsum.photos/200',
-      createdAt: '2025-04-07 21:30:00',
-      updatedAt: '2025-04-07 21:30:00'),
+      createdAt: '2025-04-07 21:30:00'),
   Post(
       postId: 2,
       userId: 1002,
@@ -24,8 +23,7 @@ const mockPosts = <Post>[
       title: 'Why Bayern\'s pressing system is breaking records this season',
       body:
           'Harry Kane has been the fulcrum of Bayern Munich\'s record-breaking Bundesliga campaign. In this analysis we break down the numbers behind their 78-goal tally through 29 matchdays and how Kompany\'s high press has revolutionised their build-up play.',
-      createdAt: '2025-04-06 14:00:00',
-      updatedAt: '2025-04-06 14:00:00'),
+      createdAt: '2025-04-06 14:00:00'),
   Post(
       postId: 3,
       userId: 1001,
@@ -33,8 +31,7 @@ const mockPosts = <Post>[
       title: 'Best XI of the week — RO 32',
       body:
           'Our community picks the standout performers from across all five major European leagues this weekend. Inter Milan\'s goalkeeper makes the cut after his stunning save denied Napoli a late equaliser.',
-      createdAt: '2025-04-05 10:00:00',
-      updatedAt: '2025-04-05 10:00:00'),
+      createdAt: '2025-04-05 10:00:00'),
   Post(
       postId: 4,
       userId: 1003,
@@ -42,8 +39,7 @@ const mockPosts = <Post>[
       title: 'Man City confirm Haaland fit for Arsenal clash',
       body:
           'Pep Guardiola confirmed in his pre-match press conference that Erling Haaland has fully recovered from the hamstring issue that kept him out of last weekend\'s draw at Villa Park. The Norwegian is expected to lead the line tonight.',
-      createdAt: '2025-04-08 11:00:00',
-      updatedAt: '2025-04-08 11:00:00'),
+      createdAt: '2025-04-08 11:00:00'),
   Post(
       postId: 5,
       userId: 1002,
@@ -51,8 +47,7 @@ const mockPosts = <Post>[
       title: 'Atletico\'s defensive structure under the microscope',
       body:
           'Simeone\'s side have conceded just 35 goals in 31 league games — only Barcelona and Real Madrid have better records. We examine the 4-4-2 mid-block that has frustrated Europe\'s top attacks all season.',
-      createdAt: '2025-04-04 09:00:00',
-      updatedAt: '2025-04-04 09:00:00'),
+      createdAt: '2025-04-04 09:00:00'),
 ];
 
 //
