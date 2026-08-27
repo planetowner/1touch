@@ -5,9 +5,13 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/data/posts/post_repository_provider.dart'
+    as post_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
@@ -23,10 +27,12 @@ String _formatFollowers(int count) {
 
 class Community extends StatefulWidget {
   final int teamId;
+  final PostRepository? postRepository;
 
   const Community({
     super.key,
     required this.teamId,
+    this.postRepository,
   });
 
   @override
@@ -43,12 +49,20 @@ class _CommunityState extends State<Community>
   late Team _team;
   late bool _isLive;
   late int _followerCount;
+  List<Post> _posts = const [];
+  bool _isLoadingPosts = true;
+  Object? _postLoadError;
+  int _postRequestId = 0;
+
+  PostRepository get _postRepository =>
+      widget.postRepository ?? post_providers.postRepository;
 
   @override
   void initState() {
     super.initState();
 
     _loadTeam();
+    _loadPosts();
 
     _scrollController = ScrollController()
       ..addListener(() {
@@ -69,6 +83,9 @@ class _CommunityState extends State<Community>
     if (widget.teamId != oldWidget.teamId) {
       setState(_loadTeam);
     }
+    if (widget.postRepository != oldWidget.postRepository) {
+      _loadPosts();
+    }
   }
 
   void _loadTeam() {
@@ -78,6 +95,66 @@ class _CommunityState extends State<Community>
         .isNotEmpty;
     _followerCount =
         mockUserFollowingTeams.where((f) => f.teamId == widget.teamId).length;
+  }
+
+  Future<void> _loadPosts() async {
+    final requestId = ++_postRequestId;
+    setState(() {
+      _isLoadingPosts = true;
+      _postLoadError = null;
+    });
+
+    try {
+      final posts = await _postRepository.loadPosts();
+      if (!mounted || requestId != _postRequestId) return;
+      setState(() {
+        _posts = posts;
+        _isLoadingPosts = false;
+      });
+    } catch (error) {
+      if (!mounted || requestId != _postRequestId) return;
+      setState(() {
+        _postLoadError = error;
+        _isLoadingPosts = false;
+      });
+    }
+  }
+
+  Widget _buildPostBody() {
+    if (_isLoadingPosts) {
+      return const Center(
+        child: CircularProgressIndicator(
+          key: ValueKey('community-posts-loading'),
+        ),
+      );
+    }
+    if (_postLoadError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Unable to load community posts.',
+                style: Body1.style,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                key: const ValueKey('community-posts-retry'),
+                onPressed: _loadPosts,
+                child: const Text('RETRY'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return All(
+      selectedTabIndex: _selectedTabIndex,
+      posts: _posts,
+    );
   }
 
   @override
@@ -311,10 +388,7 @@ class _CommunityState extends State<Community>
                 ),
               ),
             ],
-            body: All(
-              selectedTabIndex: _selectedTabIndex,
-              posts: mockPosts,
-            ),
+            body: _buildPostBody(),
           )
         ],
       ),
