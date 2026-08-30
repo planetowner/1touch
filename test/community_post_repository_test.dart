@@ -183,6 +183,86 @@ void main() {
     expect(find.text(_stalePost.title), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('creates a post and reloads the repository on a tall screen',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    final repository = _ScriptedPostRepository(
+      [
+        () => Future.value(const [_loadedPost]),
+        () => Future.value(const [_createdPost, _loadedPost]),
+      ],
+      onCreate: (_) => Future.value(_createdPost.postId),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(teamId: 9, postRepository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Title...'), 'Created post');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Write something...'),
+      'Created body',
+    );
+    await tester.tap(find.byKey(const ValueKey('community-post-submit')));
+    await tester.pumpAndSettle();
+
+    expect(repository.createCalls, 1);
+    expect(repository.createdInput?.category, PostCategory.general);
+    expect(repository.createdInput?.title, 'Created post');
+    expect(repository.createdInput?.body, 'Created body');
+    expect(repository.calls, 2);
+    expect(find.text(_createdPost.title), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps the composer open when creation fails on a compact screen',
+      (tester) async {
+    _setScreenSize(tester, const Size(320, 568));
+    final repository = _ScriptedPostRepository(
+      [
+        () => Future.value(const [_loadedPost])
+      ],
+      onCreate: (_) => Future.error(StateError('Unavailable')),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(teamId: 9, postRepository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Title...'), 'Failed post');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Write something...'),
+      'Keep this draft',
+    );
+    await tester.tap(find.byKey(const ValueKey('community-post-submit')));
+    await tester.pumpAndSettle();
+
+    expect(repository.createCalls, 1);
+    expect(repository.calls, 1);
+    expect(
+        find.text('Unable to publish post. Please try again.'), findsOneWidget);
+    expect(find.text('Failed post'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-post-submit')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 void _setScreenSize(WidgetTester tester, Size size) {
@@ -193,10 +273,16 @@ void _setScreenSize(WidgetTester tester, Size size) {
 }
 
 class _ScriptedPostRepository implements PostRepository {
-  _ScriptedPostRepository(this._responses);
+  _ScriptedPostRepository(
+    this._responses, {
+    Future<int> Function(CreatePostInput input)? onCreate,
+  }) : _onCreate = onCreate;
 
   final List<Future<List<Post>> Function()> _responses;
+  final Future<int> Function(CreatePostInput input)? _onCreate;
   int calls = 0;
+  int createCalls = 0;
+  CreatePostInput? createdInput;
   PostCategory? lastCategory;
   PostSort? lastSort;
   int? lastLimit;
@@ -206,7 +292,13 @@ class _ScriptedPostRepository implements PostRepository {
 
   @override
   Future<int> createPost(CreatePostInput input) {
-    throw UnsupportedError('This test double only scripts post loading.');
+    createCalls++;
+    createdInput = input;
+    final onCreate = _onCreate;
+    if (onCreate == null) {
+      throw UnsupportedError('This test double only scripts post loading.');
+    }
+    return onCreate(input);
   }
 
   @override
@@ -242,4 +334,13 @@ const _stalePost = Post(
   title: 'Stale repository post',
   body: 'This result should be ignored.',
   createdAt: '2026-08-26 10:00:00',
+);
+
+const _createdPost = Post(
+  postId: 92,
+  userId: 1001,
+  category: PostCategory.general,
+  title: 'Created post',
+  body: 'Created body',
+  createdAt: '2026-08-30 10:00:00',
 );

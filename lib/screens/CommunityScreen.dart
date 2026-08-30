@@ -142,6 +142,18 @@ class _CommunityState extends State<Community>
     _loadPosts();
   }
 
+  Future<void> _openPostComposer() async {
+    final created = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddPost(postRepository: _postRepository),
+      ),
+    );
+    if (!mounted || created != true) return;
+
+    await _loadPosts();
+  }
+
   Widget _buildPostBody() {
     if (_isLoadingPosts) {
       return const Center(
@@ -204,10 +216,7 @@ class _CommunityState extends State<Community>
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
         elevation: 0,
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddPost()),
-        ),
+        onPressed: _openPostComposer,
         child: SvgPicture.asset(
           'assets/addpost_icon.svg',
           height: 40,

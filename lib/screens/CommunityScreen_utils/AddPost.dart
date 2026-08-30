@@ -6,15 +6,19 @@ import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/data/posts/post_repository_provider.dart'
+    as post_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/post.dart';
-import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 
 enum Category { general, analysis, newsAndInsights }
 
 class AddPost extends StatefulWidget {
-  const AddPost({super.key});
+  final PostRepository? postRepository;
+
+  const AddPost({super.key, this.postRepository});
 
   @override
   State<AddPost> createState() => _AddPostState();
@@ -22,6 +26,7 @@ class AddPost extends StatefulWidget {
 
 class _AddPostState extends State<AddPost> {
   Category _selectedCategory = Category.general;
+  bool _isSubmitting = false;
 
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
@@ -31,6 +36,9 @@ class _AddPostState extends State<AddPost> {
 
   final List<XFile> _mediaFiles = [];
   final ImagePicker _picker = ImagePicker();
+
+  PostRepository get _postRepository =>
+      widget.postRepository ?? post_providers.postRepository;
 
   @override
   void initState() {
@@ -82,7 +90,9 @@ class _AddPostState extends State<AddPost> {
     }
   }
 
-  void _submitPost() {
+  Future<void> _submitPost() async {
+    if (_isSubmitting) return;
+
     final title = _titleController.text.trim();
     final body = _bodyController.text.trim();
 
@@ -93,22 +103,37 @@ class _AddPostState extends State<AddPost> {
       return;
     }
 
-    final now = DateTime.now().toIso8601String();
-    final newPost = Post(
-      postId: DateTime.now().millisecondsSinceEpoch, // temp local ID
-      userId: 1001, // replace with auth user
-      category: _mapCategory(),
-      title: title,
-      body: body,
-      mediaUrl: _mediaFiles.isNotEmpty ? _mediaFiles.first.path : null,
-      createdAt: now,
-    );
+    // ImagePicker returns a device-local path, while POST /v1/posts expects a
+    // remotely accessible media_url. Keep the draft intact until an upload
+    // endpoint can provide that URL.
+    if (_mediaFiles.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Media upload is not available yet.')),
+      );
+      return;
+    }
 
-    // Navigate to PostDetailScreen, replacing this screen in the stack
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => PostDetailScreen(post: newPost)),
-    );
+    setState(() => _isSubmitting = true);
+
+    try {
+      await _postRepository.createPost(
+        CreatePostInput(
+          category: _mapCategory(),
+          title: title,
+          body: body,
+        ),
+      );
+      if (!mounted) return;
+
+      Navigator.pop(context, true);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Unable to publish post. Please try again.')),
+      );
+    }
   }
 
   @override
@@ -412,7 +437,8 @@ class _AddPostState extends State<AddPost> {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _submitPost,
+            key: const ValueKey('community-post-submit'),
+            onPressed: _isSubmitting ? null : _submitPost,
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.onSurface,
               foregroundColor: colors.onPrimary,
@@ -421,10 +447,20 @@ class _AddPostState extends State<AddPost> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: Text(
-              "POST",
-              style: Body1_b.style.copyWith(color: colors.onPrimary),
-            ),
+            child: _isSubmitting
+                ? SizedBox(
+                    key: const ValueKey('community-post-submitting'),
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colors.onPrimary,
+                    ),
+                  )
+                : Text(
+                    "POST",
+                    style: Body1_b.style.copyWith(color: colors.onPrimary),
+                  ),
           ),
         ),
       ),
