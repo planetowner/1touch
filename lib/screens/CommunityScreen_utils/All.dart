@@ -14,7 +14,7 @@ String _timeAgo(String createdAt) {
   return '${diff.inMinutes}m ago';
 }
 
-class All extends StatefulWidget {
+class All extends StatelessWidget {
   final List<Post> posts;
   final PostSort selectedSort;
   final ValueChanged<PostSort> onSortChanged;
@@ -27,13 +27,7 @@ class All extends StatefulWidget {
   });
 
   @override
-  State<All> createState() => _AllState();
-}
-
-class _AllState extends State<All> {
-  @override
   Widget build(BuildContext context) {
-    final posts = widget.posts;
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -49,9 +43,9 @@ class _AllState extends State<All> {
           child: Wrap(
             spacing: 12,
             children: [
-              _buildFilterChip('Newest', PostSort.newest),
-              _buildFilterChip('Popular', PostSort.popular),
-              _buildFilterChip('Best', PostSort.best),
+              _buildFilterChip(context, 'Newest', PostSort.newest),
+              _buildFilterChip(context, 'Popular', PostSort.popular),
+              _buildFilterChip(context, 'Best', PostSort.best),
             ],
           ),
         ),
@@ -101,7 +95,8 @@ class _AllState extends State<All> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             itemCount: posts.length,
-            itemBuilder: (context, index) => _buildPostCard(posts[index]),
+            itemBuilder: (context, index) =>
+                _buildPostCard(context, posts[index]),
             separatorBuilder: (context, index) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Container(height: 1, color: appColors.divider),
@@ -112,13 +107,17 @@ class _AllState extends State<All> {
     );
   }
 
-  Widget _buildFilterChip(String label, PostSort sort) {
-    final isSelected = widget.selectedSort == sort;
+  Widget _buildFilterChip(
+    BuildContext context,
+    String label,
+    PostSort sort,
+  ) {
+    final isSelected = selectedSort == sort;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: () => widget.onSortChanged(sort),
+      onTap: () => onSortChanged(sort),
       child: Container(
         key: ValueKey('community-filter-${label.toLowerCase()}'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -149,7 +148,7 @@ class _AllState extends State<All> {
     );
   }
 
-  Widget _buildPostCard(Post post) {
+  Widget _buildPostCard(BuildContext context, Post post) {
     final hasMedia = post.mediaUrl != null;
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
