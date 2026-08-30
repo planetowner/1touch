@@ -15,14 +15,12 @@ String _timeAgo(String createdAt) {
 }
 
 class All extends StatefulWidget {
-  final int selectedTabIndex;
   final List<Post> posts;
   final PostSort selectedSort;
   final ValueChanged<PostSort> onSortChanged;
 
   const All({
     super.key,
-    required this.selectedTabIndex,
     required this.posts,
     required this.selectedSort,
     required this.onSortChanged,
@@ -33,33 +31,9 @@ class All extends StatefulWidget {
 }
 
 class _AllState extends State<All> {
-  List<Post> _filteredPosts() {
-    List<Post> base;
-    switch (widget.selectedTabIndex) {
-      case 1:
-        base = widget.posts
-            .where((p) => p.category == PostCategory.general)
-            .toList();
-        break;
-      case 2:
-        base = widget.posts
-            .where((p) => p.category == PostCategory.analysis)
-            .toList();
-        break;
-      case 3:
-        base =
-            widget.posts.where((p) => p.category == PostCategory.news).toList();
-        break;
-      default:
-        base = List.of(widget.posts);
-    }
-
-    return base;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final posts = _filteredPosts();
+    final posts = widget.posts;
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;

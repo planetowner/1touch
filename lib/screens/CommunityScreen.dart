@@ -174,7 +174,6 @@ class _CommunityState extends State<Community>
       );
     }
     return All(
-      selectedTabIndex: _selectedTabIndex,
       posts: _posts,
       selectedSort: _selectedPostSort,
       onSortChanged: _selectPostSort,
