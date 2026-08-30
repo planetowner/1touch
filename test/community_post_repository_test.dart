@@ -205,6 +205,11 @@ class _ScriptedPostRepository implements PostRepository {
   final List<PostSort> sorts = [];
 
   @override
+  Future<int> createPost(CreatePostInput input) {
+    throw UnsupportedError('This test double only scripts post loading.');
+  }
+
+  @override
   Future<List<Post>> loadPosts({
     PostCategory? category,
     PostSort sort = PostSort.newest,

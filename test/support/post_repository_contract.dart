@@ -95,4 +95,49 @@ void postRepositoryContract({
 
     expect(() => result.clear(), throwsUnsupportedError);
   });
+
+  test('creates a post that appears in subsequent loads', () async {
+    final repository = createRepository(posts);
+    const input = CreatePostInput(
+      category: PostCategory.analysis,
+      title: 'Created through repository',
+      body: 'Repository creation body',
+      mediaUrl: 'https://example.com/post.jpg',
+    );
+
+    final postId = await repository.createPost(input);
+    final created = (await repository.loadPosts())
+        .singleWhere((post) => post.postId == postId);
+
+    expect(created.category, input.category);
+    expect(created.title, input.title);
+    expect(created.body, input.body);
+    expect(created.mediaUrl, input.mediaUrl);
+    expect(DateTime.tryParse(created.createdAt), isNotNull);
+  });
+
+  test('rejects creation values outside backend text bounds', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.createPost(
+        const CreatePostInput(
+          category: PostCategory.general,
+          title: '',
+          body: 'Body',
+        ),
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.createPost(
+        CreatePostInput(
+          category: PostCategory.general,
+          title: 'Title',
+          body: ''.padRight(10001, 'x'),
+        ),
+      ),
+      throwsArgumentError,
+    );
+  });
 }

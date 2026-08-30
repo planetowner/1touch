@@ -3,10 +3,53 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 
 class MockPostRepository implements PostRepository {
-  MockPostRepository({List<Post>? posts})
-      : _posts = List.unmodifiable(posts ?? mockPosts);
+  MockPostRepository({List<Post>? posts, int currentUserId = 1001})
+      : _posts = List.of(posts ?? mockPosts),
+        _currentUserId = currentUserId {
+    for (final post in _posts) {
+      if (post.postId >= _nextPostId) {
+        _nextPostId = post.postId + 1;
+      }
+    }
+  }
 
+  // Temporary in-memory identity until an API implementation derives the
+  // current user from the authenticated request.
+  final int _currentUserId;
   final List<Post> _posts;
+  int _nextPostId = 1;
+
+  @override
+  Future<int> createPost(CreatePostInput input) async {
+    if (input.title.isEmpty || input.title.length > 200) {
+      throw ArgumentError.value(
+        input.title,
+        'input.title',
+        'Must contain between 1 and 200 characters',
+      );
+    }
+    if (input.body.isEmpty || input.body.length > 10000) {
+      throw ArgumentError.value(
+        input.body,
+        'input.body',
+        'Must contain between 1 and 10000 characters',
+      );
+    }
+
+    final postId = _nextPostId++;
+    _posts.add(
+      Post(
+        postId: postId,
+        userId: _currentUserId,
+        category: input.category,
+        title: input.title,
+        body: input.body,
+        mediaUrl: input.mediaUrl,
+        createdAt: DateTime.now().toIso8601String(),
+      ),
+    );
+    return postId;
+  }
 
   @override
   Future<List<Post>> loadPosts({
