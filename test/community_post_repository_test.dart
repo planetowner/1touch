@@ -66,6 +66,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('sends sort chip changes to the repository', (tester) async {
+    _setScreenSize(tester, const Size(393, 852));
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_loadedPost]),
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Community(teamId: 9, postRepository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('community-filter-popular')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('community-filter-best')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      repository.sorts,
+      [PostSort.newest, PostSort.popular, PostSort.best],
+    );
+    expect(repository.categories, [null, null, null]);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('ignores a stale result after the repository changes',
       (tester) async {
     _setScreenSize(tester, const Size(393, 852));
@@ -115,6 +148,8 @@ class _ScriptedPostRepository implements PostRepository {
   PostSort? lastSort;
   int? lastLimit;
   int? lastOffset;
+  final List<PostCategory?> categories = [];
+  final List<PostSort> sorts = [];
 
   @override
   Future<List<Post>> loadPosts({
@@ -127,6 +162,8 @@ class _ScriptedPostRepository implements PostRepository {
     lastSort = sort;
     lastLimit = limit;
     lastOffset = offset;
+    categories.add(category);
+    sorts.add(sort);
     return _responses[calls++]();
   }
 }

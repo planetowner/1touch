@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -16,16 +17,22 @@ String _timeAgo(String createdAt) {
 class All extends StatefulWidget {
   final int selectedTabIndex;
   final List<Post> posts;
+  final PostSort selectedSort;
+  final ValueChanged<PostSort> onSortChanged;
 
-  const All({super.key, required this.selectedTabIndex, required this.posts});
+  const All({
+    super.key,
+    required this.selectedTabIndex,
+    required this.posts,
+    required this.selectedSort,
+    required this.onSortChanged,
+  });
 
   @override
   State<All> createState() => _AllState();
 }
 
 class _AllState extends State<All> {
-  String _selectedFilter = "Newest";
-
   List<Post> _filteredPosts() {
     List<Post> base;
     switch (widget.selectedTabIndex) {
@@ -47,14 +54,6 @@ class _AllState extends State<All> {
         base = List.of(widget.posts);
     }
 
-    switch (_selectedFilter) {
-      case "Newest":
-        base.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        break;
-      // Popular / Best: placeholder — wire up likes count when available
-      default:
-        break;
-    }
     return base;
   }
 
@@ -76,9 +75,9 @@ class _AllState extends State<All> {
           child: Wrap(
             spacing: 12,
             children: [
-              _buildFilterChip("Newest"),
-              _buildFilterChip("Popular"),
-              _buildFilterChip("Best"),
+              _buildFilterChip('Newest', PostSort.newest),
+              _buildFilterChip('Popular', PostSort.popular),
+              _buildFilterChip('Best', PostSort.best),
             ],
           ),
         ),
@@ -139,13 +138,13 @@ class _AllState extends State<All> {
     );
   }
 
-  Widget _buildFilterChip(String label) {
-    final isSelected = _selectedFilter == label;
+  Widget _buildFilterChip(String label, PostSort sort) {
+    final isSelected = widget.selectedSort == sort;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: () => setState(() => _selectedFilter = label),
+      onTap: () => widget.onSortChanged(sort),
       child: Container(
         key: ValueKey('community-filter-${label.toLowerCase()}'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

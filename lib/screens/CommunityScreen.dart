@@ -45,6 +45,7 @@ class _CommunityState extends State<Community>
   late TabController _tabController;
   double _scrollOffset = 0.0;
   int _selectedTabIndex = 0;
+  PostSort _selectedPostSort = PostSort.newest;
 
   late Team _team;
   late bool _isLive;
@@ -105,7 +106,7 @@ class _CommunityState extends State<Community>
     });
 
     try {
-      final posts = await _postRepository.loadPosts();
+      final posts = await _postRepository.loadPosts(sort: _selectedPostSort);
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
         _posts = posts;
@@ -118,6 +119,12 @@ class _CommunityState extends State<Community>
         _isLoadingPosts = false;
       });
     }
+  }
+
+  void _selectPostSort(PostSort sort) {
+    if (_selectedPostSort == sort) return;
+    _selectedPostSort = sort;
+    _loadPosts();
   }
 
   Widget _buildPostBody() {
@@ -154,6 +161,8 @@ class _CommunityState extends State<Community>
     return All(
       selectedTabIndex: _selectedTabIndex,
       posts: _posts,
+      selectedSort: _selectedPostSort,
+      onSortChanged: _selectPostSort,
     );
   }
 
