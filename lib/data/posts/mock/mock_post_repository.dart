@@ -2,6 +2,8 @@ import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 
+typedef MockPostReport = ({int postId, int userId, String reason});
+
 class MockPostRepository implements PostRepository {
   MockPostRepository({List<Post>? posts, int currentUserId = 1001})
       : _posts = List.of(posts ?? mockPosts),
@@ -17,7 +19,10 @@ class MockPostRepository implements PostRepository {
   // current user from the authenticated request.
   final int _currentUserId;
   final List<Post> _posts;
+  final List<MockPostReport> _reports = [];
   int _nextPostId = 1;
+
+  List<MockPostReport> get reports => List.unmodifiable(_reports);
 
   @override
   Future<int> createPost(CreatePostInput input) async {
@@ -79,5 +84,23 @@ class MockPostRepository implements PostRepository {
     }
 
     return List.unmodifiable(posts.skip(offset).take(limit));
+  }
+
+  @override
+  Future<void> reportPost({
+    required int postId,
+    required String reason,
+  }) async {
+    if (reason.isEmpty || reason.length > maxPostReportReasonLength) {
+      throw ArgumentError.value(
+        reason,
+        'reason',
+        'Must contain between 1 and $maxPostReportReasonLength characters',
+      );
+    }
+
+    // The backend currently inserts the supplied path ID without an explicit
+    // post-existence check, so the mock deliberately does not invent one.
+    _reports.add((postId: postId, userId: _currentUserId, reason: reason));
   }
 }

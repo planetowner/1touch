@@ -38,4 +38,25 @@ void main() {
     expect(post.postId, postId);
     expect(post.userId, 42);
   });
+
+  test('keeps immutable report records inside the mock instance', () async {
+    final repository = MockPostRepository(currentUserId: 42);
+
+    await repository.reportPost(
+      postId: 4,
+      reason: 'Inappropriate Content',
+    );
+
+    expect(
+      repository.reports,
+      [
+        (
+          postId: 4,
+          userId: 42,
+          reason: 'Inappropriate Content',
+        ),
+      ],
+    );
+    expect(() => repository.reports.clear(), throwsUnsupportedError);
+  });
 }

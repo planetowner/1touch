@@ -316,6 +316,11 @@ class _ScriptedPostRepository implements PostRepository {
     sorts.add(sort);
     return _responses[calls++]();
   }
+
+  @override
+  Future<void> reportPost({required int postId, required String reason}) {
+    throw UnsupportedError('This test double does not script post reports.');
+  }
 }
 
 const _loadedPost = Post(

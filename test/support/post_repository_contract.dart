@@ -140,4 +140,32 @@ void postRepositoryContract({
       throwsArgumentError,
     );
   });
+
+  test('accepts a report at the effective backend storage limit', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.reportPost(
+        postId: posts.first.postId,
+        reason: ''.padRight(maxPostReportReasonLength, 'x'),
+      ),
+      completes,
+    );
+  });
+
+  test('rejects report reasons outside the effective storage bounds', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.reportPost(postId: posts.first.postId, reason: ''),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.reportPost(
+        postId: posts.first.postId,
+        reason: ''.padRight(maxPostReportReasonLength + 1, 'x'),
+      ),
+      throwsArgumentError,
+    );
+  });
 }
