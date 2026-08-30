@@ -99,6 +99,59 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('sends tab categories while preserving the selected sort',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_loadedPost]),
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(teamId: 9, postRepository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('community-filter-popular')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('General'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Analysis'));
+    await tester.pumpAndSettle();
+    tester.widget<TabBar>(find.byType(TabBar)).onTap!(3);
+    await tester.pumpAndSettle();
+
+    expect(
+      repository.categories,
+      [
+        null,
+        null,
+        PostCategory.general,
+        PostCategory.analysis,
+        PostCategory.news,
+      ],
+    );
+    expect(
+      repository.sorts,
+      [
+        PostSort.newest,
+        PostSort.popular,
+        PostSort.popular,
+        PostSort.popular,
+        PostSort.popular,
+      ],
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('ignores a stale result after the repository changes',
       (tester) async {
     _setScreenSize(tester, const Size(393, 852));

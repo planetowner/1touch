@@ -100,13 +100,22 @@ class _CommunityState extends State<Community>
 
   Future<void> _loadPosts() async {
     final requestId = ++_postRequestId;
+    final category = switch (_selectedTabIndex) {
+      1 => PostCategory.general,
+      2 => PostCategory.analysis,
+      3 => PostCategory.news,
+      _ => null,
+    };
     setState(() {
       _isLoadingPosts = true;
       _postLoadError = null;
     });
 
     try {
-      final posts = await _postRepository.loadPosts(sort: _selectedPostSort);
+      final posts = await _postRepository.loadPosts(
+        category: category,
+        sort: _selectedPostSort,
+      );
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
         _posts = posts;
@@ -124,6 +133,12 @@ class _CommunityState extends State<Community>
   void _selectPostSort(PostSort sort) {
     if (_selectedPostSort == sort) return;
     _selectedPostSort = sort;
+    _loadPosts();
+  }
+
+  void _selectPostTab(int index) {
+    if (_selectedTabIndex == index) return;
+    _selectedTabIndex = index;
     _loadPosts();
   }
 
@@ -373,7 +388,7 @@ class _CommunityState extends State<Community>
                 delegate: _TabBarDelegate(
                   TabBar(
                     controller: _tabController,
-                    onTap: (index) => setState(() => _selectedTabIndex = index),
+                    onTap: _selectPostTab,
                     isScrollable: true,
                     labelColor: colors.onSurface,
                     unselectedLabelColor: appColors.mutedForeground,
