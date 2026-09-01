@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:video_player/video_player.dart'; // Add this import
+import 'package:video_player/video_player.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
@@ -14,26 +14,59 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
+  Brightness? _videoBrightness;
+  int _videoLoadId = 0;
   bool _hasError = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Initialize the controller with your MP4 asset
-    _controller = VideoPlayerController.asset('assets/Onboarding.mp4')
-      ..initialize().then((_) {
-        setState(() {}); // Refresh to show video once loaded
-        _controller.setLooping(true);
-        _controller.play();
-      }).catchError((error) {
-        setState(() => _hasError = true);
-      });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = Theme.of(context).brightness;
+    if (_videoBrightness == brightness) return;
+
+    _videoBrightness = brightness;
+    _loadVideo(brightness);
+  }
+
+  Future<void> _loadVideo(Brightness brightness) async {
+    final loadId = ++_videoLoadId;
+    final previousController = _controller;
+    _controller = null;
+    _hasError = false;
+    await previousController?.dispose();
+
+    if (!mounted || loadId != _videoLoadId) return;
+
+    final asset = brightness == Brightness.dark
+        ? 'assets/Onboarding.mp4'
+        : 'assets/animations/onboarding_light.mp4';
+    final controller = VideoPlayerController.asset(asset);
+
+    try {
+      await controller.initialize();
+      await controller.setLooping(true);
+      await controller.setVolume(0);
+
+      if (!mounted || loadId != _videoLoadId) {
+        await controller.dispose();
+        return;
+      }
+
+      _controller = controller;
+      setState(() {});
+      await controller.play();
+    } on Object {
+      await controller.dispose();
+      if (!mounted || loadId != _videoLoadId) return;
+      setState(() => _hasError = true);
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose(); // Important: cleanup to prevent memory leaks
+    _videoLoadId++;
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -124,13 +157,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       return Icon(Icons.sports_soccer, size: 100, color: mutedColor);
     }
 
-    if (!_controller.value.isInitialized) {
-      return Center(child: CircularProgressIndicator(color: mutedColor));
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      return const SizedBox.expand();
     }
 
     return AspectRatio(
-      aspectRatio: _controller.value.aspectRatio,
-      child: VideoPlayer(_controller),
+      aspectRatio: controller.value.aspectRatio,
+      child: VideoPlayer(controller),
     );
   }
 }

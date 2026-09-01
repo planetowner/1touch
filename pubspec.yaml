@@ -58,6 +58,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_native_splash: ^2.4.8
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -92,6 +94,10 @@ flutter:
     - assets/bundesliga.png
     - assets/laliga.png
     - TeamLogos/
+    - assets/onetouch_mark.png
+    - assets/animations/onetouch_logo_dark.mp4
+    - assets/animations/onetouch_logo_light.mp4
+    - assets/animations/onboarding_light.mp4
 
 
 
