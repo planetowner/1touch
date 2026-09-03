@@ -123,20 +123,21 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      const verticalPadding = 20.0;
-                      const cardSpacing = 12.0;
+                      const cardHeight = 72.0;
                       final teamCount = _myTeams.length;
-                      final calculatedHeight = teamCount == 0
-                          ? 72.0
-                          : (constraints.maxHeight -
-                                  verticalPadding -
-                                  cardSpacing * teamCount) /
-                              teamCount;
-                      final cardHeight = calculatedHeight.clamp(64.0, 72.0);
+                      final verticalGap = teamCount == 0
+                          ? 20.0
+                          : ((constraints.maxHeight - cardHeight * teamCount) /
+                                  (teamCount + 1))
+                              .clamp(4.0, 20.0)
+                              .toDouble();
 
                       return ReorderableListView(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 10),
+                        key: const ValueKey('rank-team-list'),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: verticalGap,
+                        ),
                         onReorderItem: _onReorder,
                         proxyDecorator: (child, index, animation) => Material(
                           color: Colors.transparent,
@@ -146,7 +147,12 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                         ),
                         children: [
                           for (int i = 0; i < _myTeams.length; i++)
-                            _buildTeamCard(i, _myTeams[i], cardHeight),
+                            _buildTeamCard(
+                              i,
+                              _myTeams[i],
+                              cardHeight,
+                              verticalGap,
+                            ),
                         ],
                       );
                     },
@@ -198,7 +204,12 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     );
   }
 
-  Widget _buildTeamCard(int index, Team team, double cardHeight) {
+  Widget _buildTeamCard(
+    int index,
+    Team team,
+    double cardHeight,
+    double verticalGap,
+  ) {
     final colors = Theme.of(context).colorScheme;
     final onBrand = AppColors.of(context).onBrand;
     final isFirst = index == 0;
@@ -208,7 +219,9 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
 
     return Container(
       key: ValueKey(team.teamId),
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(
+        bottom: index == _myTeams.length - 1 ? 0 : verticalGap,
+      ),
       child: Row(
         children: [
           // Rank indicator — outside the card, left

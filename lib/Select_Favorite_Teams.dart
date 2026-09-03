@@ -241,12 +241,9 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
           body: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final heightScale =
+                final logoHeightScale =
                     ((constraints.maxHeight - 560) / 240).clamp(0.0, 1.0);
-                final topBarPadding = lerpDouble(20, 30, heightScale)!;
-                final topGap = lerpDouble(8, 20, heightScale)!;
-                final carouselHeight = lerpDouble(180, 220, heightScale)!;
-                final bottomGap = lerpDouble(16, 32, heightScale)!;
+                final carouselHeight = lerpDouble(112, 220, logoHeightScale)!;
 
                 return SingleChildScrollView(
                   child: ConstrainedBox(
@@ -257,9 +254,9 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                         children: [
                           // Top bar
                           Padding(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 24,
-                              vertical: topBarPadding,
+                              vertical: 20,
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,7 +286,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                             ),
                           ),
 
-                          SizedBox(height: topGap),
+                          const SizedBox(height: 12),
 
                           // Dropdown
                           _buildLeagueDropdown(),
@@ -298,6 +295,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
                           // Smooth-scrolling carousel
                           SizedBox(
+                            key: const ValueKey('favorite-team-logo-region'),
                             height: carouselHeight,
                             child: PageView.builder(
                               controller: _pageController,
@@ -507,7 +505,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                       .copyWith(color: colors.surface)),
                             ),
                           ),
-                          SizedBox(height: bottomGap),
+                          const SizedBox(height: 16),
                         ],
                       ),
                     ),

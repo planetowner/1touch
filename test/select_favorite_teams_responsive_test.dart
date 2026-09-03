@@ -31,6 +31,11 @@ void main() {
       final headerLogo = tester.widget<SvgPicture>(
         find.byKey(const ValueKey('gradient-header-logo')),
       );
+      final logoRegion = find.byKey(
+        const ValueKey('favorite-team-logo-region'),
+      );
+      final expectedLogoHeight =
+          112 + 108 * ((size.height - 560) / 240).clamp(0.0, 1.0);
       final toggleIcon = tester.widget<Icon>(
         find.descendant(
           of: find.byKey(const ValueKey('gradient-header-theme-toggle')),
@@ -40,6 +45,12 @@ void main() {
       expect(
         headerLogo.colorFilter,
         const ColorFilter.mode(app_style.AppPalette.white, BlendMode.srcIn),
+      );
+      expect(headerLogo.width, 120);
+      expect(headerLogo.height, 23);
+      expect(
+        tester.getSize(logoRegion).height,
+        closeTo(expectedLogoHeight, 0.01),
       );
       expect(toggleIcon.color, app_style.AppPalette.white);
       expect(find.text('PREMIER LEAGUE'), findsOneWidget);
@@ -176,15 +187,16 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final size in [const Size(320, 568), const Size(393, 852)]) {
-    testWidgets('rank cards scale and crop crests at ${size.height}px tall',
-        (tester) async {
-      tester.view.physicalSize = size;
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('rank cards stay fixed while vertical gaps respond to height',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      final teams = mockTeams.take(5).toList();
+    final teams = mockTeams.take(5).toList();
+
+    Future<(double, double)> pumpAtHeight(double height) async {
+      tester.view.physicalSize = Size(393, height);
       await tester.pumpWidget(
         MaterialApp(
           theme: app_style.darktheme,
@@ -194,14 +206,28 @@ void main() {
       await tester.pump();
 
       final card = find.byKey(ValueKey('rank-team-card-${teams.first.teamId}'));
+      final item =
+          tester.widget<Container>(find.byKey(ValueKey(teams.first.teamId)));
+      final teamName = tester.widget<Text>(
+        find.byKey(ValueKey('rank-team-name-${teams.first.teamId}')),
+      );
       final logo = find.byKey(ValueKey('rank-team-logo-${teams.first.teamId}'));
-      final cardHeight = tester.getSize(card).height;
+      final margin = item.margin! as EdgeInsets;
 
-      expect(cardHeight, inInclusiveRange(64, 72));
-      expect(tester.getSize(logo).height, greaterThan(cardHeight));
+      expect(tester.getSize(card).height, 72);
+      expect(tester.getSize(logo).height, greaterThan(72));
       expect(tester.takeException(), isNull);
-    });
-  }
+      return (margin.bottom, teamName.style!.fontSize!);
+    }
+
+    final compact = await pumpAtHeight(568);
+    final tall = await pumpAtHeight(852);
+
+    expect(compact.$1, 4);
+    expect(tall.$1, 20);
+    expect(tall.$1, greaterThan(compact.$1));
+    expect(tall.$2, compact.$2);
+  });
 
   for (final testCase in <({ThemeData theme, Color background})>[
     (theme: app_style.darktheme, background: app_style.AppPalette.black),
