@@ -38,10 +38,11 @@ dependencies:
   flutter_chat_ui: ^1.6.4
   flutter_chat_types: ^3.5.1
   uuid: ^4.0.0
-  http: ^0.13.6
+  http: ^1.6.0
   xml: ^6.6.1
   url_launcher: ^6.3.2
   video_player: ^2.8.0
+  lottie: ^3.5.1
   image_picker: ^1.1.2
   firebase_core: ^3.0.0
   firebase_auth: ^5.0.0
@@ -86,7 +87,8 @@ flutter:
     - assets/profileAvatar.png
     - assets/playerSilhouette.svg
     - assets/playerAvatar.png
-    - assets/Onboarding.mp4
+    - assets/onboarding_dark.mp4
+    - assets/onboarding_light.mp4
     - assets/player_comparison/
     - assets/epl.png
     - assets/seriea.png
@@ -95,9 +97,8 @@ flutter:
     - assets/laliga.png
     - TeamLogos/
     - assets/onetouch_mark.png
-    - assets/animations/onetouch_logo_dark.mp4
-    - assets/animations/onetouch_logo_light.mp4
-    - assets/animations/onboarding_light.mp4
+    - assets/animations/onetouch_logo_dark.json
+    - assets/animations/onetouch_logo_light.json
 
 
 

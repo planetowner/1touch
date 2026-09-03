@@ -14,59 +14,49 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  VideoPlayerController? _controller;
-  Brightness? _videoBrightness;
-  int _videoLoadId = 0;
+  late final VideoPlayerController _darkController;
+  late final VideoPlayerController _lightController;
+  bool _videosReady = false;
   bool _hasError = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final brightness = Theme.of(context).brightness;
-    if (_videoBrightness == brightness) return;
-
-    _videoBrightness = brightness;
-    _loadVideo(brightness);
+  void initState() {
+    super.initState();
+    _darkController = VideoPlayerController.asset('assets/onboarding_dark.mp4');
+    _lightController =
+        VideoPlayerController.asset('assets/onboarding_light.mp4');
+    _initializeVideos();
   }
 
-  Future<void> _loadVideo(Brightness brightness) async {
-    final loadId = ++_videoLoadId;
-    final previousController = _controller;
-    _controller = null;
-    _hasError = false;
-    await previousController?.dispose();
-
-    if (!mounted || loadId != _videoLoadId) return;
-
-    final asset = brightness == Brightness.dark
-        ? 'assets/Onboarding.mp4'
-        : 'assets/animations/onboarding_light.mp4';
-    final controller = VideoPlayerController.asset(asset);
-
+  Future<void> _initializeVideos() async {
     try {
-      await controller.initialize();
-      await controller.setLooping(true);
-      await controller.setVolume(0);
+      await Future.wait([
+        _darkController.initialize(),
+        _lightController.initialize(),
+      ]);
+      await Future.wait([
+        _darkController.setLooping(true),
+        _lightController.setLooping(true),
+        _darkController.setVolume(0),
+        _lightController.setVolume(0),
+      ]);
+      await Future.wait([
+        _darkController.play(),
+        _lightController.play(),
+      ]);
 
-      if (!mounted || loadId != _videoLoadId) {
-        await controller.dispose();
-        return;
-      }
-
-      _controller = controller;
-      setState(() {});
-      await controller.play();
+      if (!mounted) return;
+      setState(() => _videosReady = true);
     } on Object {
-      await controller.dispose();
-      if (!mounted || loadId != _videoLoadId) return;
+      if (!mounted) return;
       setState(() => _hasError = true);
     }
   }
 
   @override
   void dispose() {
-    _videoLoadId++;
-    _controller?.dispose();
+    _darkController.dispose();
+    _lightController.dispose();
     super.dispose();
   }
 
@@ -157,14 +147,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       return Icon(Icons.sports_soccer, size: 100, color: mutedColor);
     }
 
-    final controller = _controller;
-    if (controller == null || !controller.value.isInitialized) {
+    if (!_videosReady) {
       return const SizedBox.expand();
     }
 
-    return AspectRatio(
-      aspectRatio: controller.value.aspectRatio,
-      child: VideoPlayer(controller),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return IndexedStack(
+      alignment: Alignment.center,
+      index: isDark ? 0 : 1,
+      children: [
+        AspectRatio(
+          aspectRatio: _darkController.value.aspectRatio,
+          child: VideoPlayer(_darkController),
+        ),
+        AspectRatio(
+          aspectRatio: _lightController.value.aspectRatio,
+          child: VideoPlayer(_lightController),
+        ),
+      ],
     );
   }
 }

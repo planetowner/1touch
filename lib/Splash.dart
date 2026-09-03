@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:video_player/video_player.dart';
+import 'package:lottie/lottie.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,46 +9,45 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  VideoPlayerController? _controller;
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
   Brightness? _brightness;
-  bool _isInitializing = false;
   bool _hasNavigated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this)
+      ..addStatusListener(_handleAnimationStatus);
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_controller != null || _isInitializing) return;
-
-    _brightness = Theme.of(context).brightness;
-    _initializeVideo();
+    _brightness ??= Theme.of(context).brightness;
   }
 
-  Future<void> _initializeVideo() async {
-    _isInitializing = true;
-    final asset = _brightness == Brightness.dark
-        ? 'assets/animations/onetouch_logo_dark.mp4'
-        : 'assets/animations/onetouch_logo_light.mp4';
-    final controller = VideoPlayerController.asset(asset)
-      ..addListener(_handleVideoUpdate);
-    _controller = controller;
-
-    try {
-      await controller.initialize();
-      await controller.setLooping(false);
-      await controller.setVolume(0);
-      if (!mounted) return;
-      setState(() {});
-      await controller.play();
-    } on Object {
+  void _handleAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
       _goToOnboarding();
     }
   }
 
-  void _handleVideoUpdate() {
-    if (_controller?.value.isCompleted == true) {
-      _goToOnboarding();
-    }
+  void _startAnimation(LottieComposition composition) {
+    if (_controller.isAnimating || _controller.isCompleted) return;
+    _controller
+      ..duration = composition.duration
+      ..forward();
+  }
+
+  Widget _buildAnimationError(
+    BuildContext context,
+    Object error,
+    StackTrace? stackTrace,
+  ) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _goToOnboarding());
+    return const SizedBox.expand();
   }
 
   void _goToOnboarding() {
@@ -60,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void dispose() {
     _controller
-      ?..removeListener(_handleVideoUpdate)
+      ..removeStatusListener(_handleAnimationStatus)
       ..dispose();
     super.dispose();
   }
@@ -73,7 +72,9 @@ class _SplashScreenState extends State<SplashScreen> {
     final logoWidth = (MediaQuery.sizeOf(context).width * 0.34)
         .clamp(128.0, 160.0)
         .toDouble();
-    final controller = _controller;
+    final asset = brightness == Brightness.dark
+        ? 'assets/animations/onetouch_logo_dark.json'
+        : 'assets/animations/onetouch_logo_light.json';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -81,13 +82,16 @@ class _SplashScreenState extends State<SplashScreen> {
         child: SizedBox(
           width: logoWidth,
           child: AspectRatio(
-            aspectRatio: 480 / 68,
-            child: controller?.value.isInitialized == true
-                ? VideoPlayer(
-                    controller!,
-                    key: const ValueKey('splash-logo-video'),
-                  )
-                : ColoredBox(color: backgroundColor),
+            aspectRatio: 481 / 69,
+            child: Lottie.asset(
+              asset,
+              key: ValueKey(asset),
+              controller: _controller,
+              repeat: false,
+              fit: BoxFit.contain,
+              onLoaded: _startAnimation,
+              errorBuilder: _buildAnimationError,
+            ),
           ),
         ),
       ),
