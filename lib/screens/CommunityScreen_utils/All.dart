@@ -16,12 +16,14 @@ String _timeAgo(String createdAt) {
 
 class All extends StatelessWidget {
   final List<Post> posts;
+  final PostRepository postRepository;
   final PostSort selectedSort;
   final ValueChanged<PostSort> onSortChanged;
 
   const All({
     super.key,
     required this.posts,
+    required this.postRepository,
     required this.selectedSort,
     required this.onSortChanged,
   });
@@ -158,7 +160,12 @@ class All extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
+          MaterialPageRoute(
+            builder: (_) => PostDetailScreen(
+              post: post,
+              postRepository: postRepository,
+            ),
+          ),
         );
       },
       child: Padding(

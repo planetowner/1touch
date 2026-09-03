@@ -182,7 +182,10 @@ void main() {
                   child: const Text('Ground rules'),
                 ),
                 TextButton(
-                  onPressed: () => showReportDialog(context),
+                  onPressed: () => showReportDialog(
+                    context,
+                    onSubmit: (_) async {},
+                  ),
                   child: const Text('Report post'),
                 ),
               ],
@@ -239,7 +242,10 @@ void main() {
                   child: const Text('Ground rules'),
                 ),
                 TextButton(
-                  onPressed: () => showReportDialog(context),
+                  onPressed: () => showReportDialog(
+                    context,
+                    onSubmit: (_) async {},
+                  ),
                   child: const Text('Report post'),
                 ),
               ],

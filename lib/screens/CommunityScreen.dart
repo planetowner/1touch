@@ -187,6 +187,7 @@ class _CommunityState extends State<Community>
     }
     return All(
       posts: _posts,
+      postRepository: _postRepository,
       selectedSort: _selectedPostSort,
       onSortChanged: _selectPostSort,
     );

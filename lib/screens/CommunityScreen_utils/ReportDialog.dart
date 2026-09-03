@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
-void showReportDialog(BuildContext context) {
+Future<void> showReportDialog(
+  BuildContext context, {
+  required Future<void> Function(String reason) onSubmit,
+}) async {
+  final parentContext = context;
   final List<String> reasons = [
     "Advertising",
     "Inappropriate Content",
@@ -12,9 +16,11 @@ void showReportDialog(BuildContext context) {
   ];
 
   int? selectedIndex;
+  bool isSubmitting = false;
+  String? errorMessage;
   final isDark = Theme.of(context).brightness == Brightness.dark;
 
-  showModalBottomSheet(
+  await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
@@ -70,51 +76,103 @@ void showReportDialog(BuildContext context) {
                     const SizedBox(height: 24),
 
                     // Radio list
-                    ...List.generate(reasons.length, (index) {
-                      return Column(
-                        children: [
-                          RadioListTile<int>(
-                            value: index,
-                            groupValue: selectedIndex,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedIndex = value!;
-                              });
-                            },
-                            title: Text(
-                              reasons[index],
-                              style: Body1.style,
-                            ),
-                            activeColor: colors.onSurface,
-                            controlAffinity: ListTileControlAffinity.trailing,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          Divider(color: appColors.divider),
-                        ],
-                      );
-                    }),
+                    RadioGroup<int>(
+                      groupValue: selectedIndex,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedIndex = value;
+                          errorMessage = null;
+                        });
+                      },
+                      child: Column(
+                        children: List.generate(reasons.length, (index) {
+                          return Column(
+                            children: [
+                              RadioListTile<int>(
+                                value: index,
+                                title: Text(
+                                  reasons[index],
+                                  style: Body1.style,
+                                ),
+                                activeColor: colors.onSurface,
+                                controlAffinity:
+                                    ListTileControlAffinity.trailing,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              Divider(color: appColors.divider),
+                            ],
+                          );
+                        }),
+                      ),
+                    ),
 
                     const SizedBox(height: 24),
 
+                    if (errorMessage != null) ...[
+                      Text(
+                        errorMessage!,
+                        key: const ValueKey('community-report-error'),
+                        style: Body2.style.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
                     // Submit button
                     GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        showThanksDialog(context);
-                      },
+                      key: const ValueKey('community-report-submit'),
+                      onTap: selectedIndex == null || isSubmitting
+                          ? null
+                          : () async {
+                              final reason = reasons[selectedIndex!];
+                              setState(() {
+                                isSubmitting = true;
+                                errorMessage = null;
+                              });
+
+                              try {
+                                await onSubmit(reason);
+                                if (!context.mounted) return;
+                                Navigator.of(context).pop();
+                                if (!parentContext.mounted) return;
+                                showThanksDialog(parentContext);
+                              } catch (_) {
+                                if (!context.mounted) return;
+                                setState(() {
+                                  isSubmitting = false;
+                                  errorMessage =
+                                      'Unable to submit report. Please try again.';
+                                });
+                              }
+                            },
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          color: colors.onSurface,
+                          color: selectedIndex == null || isSubmitting
+                              ? appColors.mutedForeground
+                              : colors.onSurface,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          "SUBMIT",
-                          style:
-                              Body2_b.style.copyWith(color: colors.onPrimary),
-                        ),
+                        child: isSubmitting
+                            ? SizedBox(
+                                key: const ValueKey(
+                                  'community-report-submitting',
+                                ),
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.onPrimary,
+                                ),
+                              )
+                            : Text(
+                                "SUBMIT",
+                                style: Body2_b.style
+                                    .copyWith(color: colors.onPrimary),
+                              ),
                       ),
                     ),
                   ],

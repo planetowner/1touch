@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/data/posts/post_repository_provider.dart'
+    as post_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/post.dart';
@@ -19,8 +22,13 @@ String _timeAgo(String createdAt) {
 
 class PostDetailScreen extends StatefulWidget {
   final Post post;
+  final PostRepository? postRepository;
 
-  const PostDetailScreen({super.key, required this.post});
+  const PostDetailScreen({
+    super.key,
+    required this.post,
+    this.postRepository,
+  });
 
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -30,6 +38,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // 1. Add Scroll Controller and Offset variable
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
+
+  PostRepository get _postRepository =>
+      widget.postRepository ?? post_providers.postRepository;
 
   @override
   void initState() {
@@ -268,7 +279,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 icon: Icons.report_gmailerrorred_outlined,
                                 label: "report",
                                 color: colors.onSurface,
-                                onTap: () => showReportDialog(context),
+                                onTap: () => showReportDialog(
+                                  context,
+                                  onSubmit: (reason) =>
+                                      _postRepository.reportPost(
+                                    postId: post.postId,
+                                    reason: reason,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
