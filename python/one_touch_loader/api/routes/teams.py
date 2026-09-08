@@ -11,6 +11,7 @@ from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
 from ..repos.standings_repo import get_team_standing
 from ..repos.best_eleven_repo import get_best_eleven
+from ..repos.injuries_repo import get_team_injuries
 from ..repos.points_pace_repo import (
     build_current_form_comparison,
     get_points_pace_series,
@@ -22,6 +23,7 @@ from ..schemas.common import (
     CurrentFormOptionsResponse,
     CurrentFormResponse,
     TeamOut,
+    TeamInjuriesResponse,
     TeamTransfersResponse,
     TransferOut,
 )
@@ -89,6 +91,14 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
     }
 
 
+@router.get("/teams/{team_id}/injuries", response_model=TeamInjuriesResponse)
+def team_injuries(team_id: int, user_id: int = Depends(get_user_id)):
+    ensure_user(user_id)
+    context = find_team_current_context(team_id)
+    if context is None:
+        raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
+    # 현재 부상 목록이라 과거 시즌을 지정하는 조회는 제공하지 않아요.
+    return get_team_injuries(team_id, context[1])
 
 
 @router.get("/teams/{team_id}/best-eleven", response_model=BestElevenResponse)
