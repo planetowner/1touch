@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
@@ -49,7 +48,10 @@ class _CommunityState extends State<Community>
 
   late Team _team;
   late bool _isLive;
-  late int _followerCount;
+  // TODO: Replace this shared UI placeholder with a repository-provided team
+  // follower total when the API exposes an aggregate follower-count field or
+  // endpoint. The current user's followed-team list is not that total.
+  static const int _followerCount = 1;
   List<Post> _posts = const [];
   bool _isLoadingPosts = true;
   Object? _postLoadError;
@@ -94,8 +96,6 @@ class _CommunityState extends State<Community>
     _isLive = fixtureRepository
         .forTeam(widget.teamId, status: FixtureStatus.live)
         .isNotEmpty;
-    _followerCount =
-        mockUserFollowingTeams.where((f) => f.teamId == widget.teamId).length;
   }
 
   Future<void> _loadPosts() async {
