@@ -8,7 +8,7 @@ class MockHomeRepository implements HomeRepository {
   MockHomeRepository({
     required TeamRepository teamRepository,
     required FixtureRepository fixtureRepository,
-    required int? Function() favoriteTeamId,
+    required int Function() favoriteTeamId,
     required List<int> Function() followedTeamIds,
   })  : _teamRepository = teamRepository,
         _fixtureRepository = fixtureRepository,
@@ -17,7 +17,7 @@ class MockHomeRepository implements HomeRepository {
 
   final TeamRepository _teamRepository;
   final FixtureRepository _fixtureRepository;
-  final int? Function() _favoriteTeamId;
+  final int Function() _favoriteTeamId;
   final List<int> Function() _followedTeamIds;
 
   @override
@@ -27,17 +27,11 @@ class MockHomeRepository implements HomeRepository {
         if (_teamRepository.findById(teamId) case final team?) team,
     ];
     final favoriteTeamId = _favoriteTeamId();
-    final favoriteTeam = favoriteTeamId == null
-        ? null
-        : _teamRepository.findById(favoriteTeamId);
-
-    if (favoriteTeam == null) {
-      return HomeData(
-        favoriteTeam: null,
-        followingTeams: followingTeams,
-        nextMatch: null,
-        lastMatch: null,
-        calendar: const [],
+    final favoriteTeam = _teamRepository.findById(favoriteTeamId);
+    if (favoriteTeam == null ||
+        !followingTeams.any((team) => team.teamId == favoriteTeamId)) {
+      throw StateError(
+        'Favorite team $favoriteTeamId must exist in the followed-team list.',
       );
     }
 

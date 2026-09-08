@@ -3,6 +3,10 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
 
 /// User-specific team and fixture data returned for the Home screen.
+///
+/// The app requires a favorite team before Home can be opened. Transport
+/// implementations must reject a missing favorite instead of creating this
+/// model with incomplete data.
 @immutable
 class HomeData {
   HomeData({
@@ -14,7 +18,7 @@ class HomeData {
   })  : followingTeams = List.unmodifiable(followingTeams),
         calendar = List.unmodifiable(calendar);
 
-  final Team? favoriteTeam;
+  final Team favoriteTeam;
   final List<Team> followingTeams;
   final Fixture? nextMatch;
   final Fixture? lastMatch;

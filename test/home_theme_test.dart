@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/HomeScreenFeatures.dart';
 import 'package:onetouch/features/helper.dart';
@@ -269,6 +270,7 @@ void main() {
         home: Scaffold(
           body: TeamSelectionSheet(
             initialFavoriteTeamId: favoriteTeamId,
+            followingTeams: [teamRepository.requireById(favoriteTeamId)],
             onSwitch: (_) {},
           ),
         ),

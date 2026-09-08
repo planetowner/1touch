@@ -76,7 +76,7 @@ void main() {
   });
 
   test('reads the current user selection for every load', () async {
-    int? favoriteTeamId = 1;
+    var favoriteTeamId = 1;
     var followedTeamIds = <int>[1, 2];
     final repository = MockHomeRepository(
       teamRepository: teamRepository,
@@ -90,28 +90,25 @@ void main() {
     followedTeamIds = [2, 3];
     final second = await repository.load();
 
-    expect(first.favoriteTeam?.teamId, 1);
-    expect(second.favoriteTeam?.teamId, 2);
+    expect(first.favoriteTeam.teamId, 1);
+    expect(second.favoriteTeam.teamId, 2);
     expect(second.followingTeams.map((team) => team.teamId), [2, 3]);
   });
 
-  test('returns an empty team-specific payload without a favorite', () async {
+  test('rejects a favorite outside the followed-team list', () async {
     final repository = MockHomeRepository(
       teamRepository: teamRepository,
       fixtureRepository: fixtureRepository,
-      favoriteTeamId: () => null,
+      favoriteTeamId: () => 3,
       followedTeamIds: () => const [1, 2],
     );
 
-    final home = await repository.load(
-      start: DateTime(2026, 8, 1),
-      end: DateTime(2026, 8, 31),
+    expect(
+      repository.load(
+        start: DateTime(2026, 8, 1),
+        end: DateTime(2026, 8, 31),
+      ),
+      throwsStateError,
     );
-
-    expect(home.favoriteTeam, isNull);
-    expect(home.followingTeams, hasLength(2));
-    expect(home.nextMatch, isNull);
-    expect(home.lastMatch, isNull);
-    expect(home.calendar, isEmpty);
   });
 }

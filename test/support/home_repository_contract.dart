@@ -15,7 +15,7 @@ void homeRepositoryContract({
       end: DateTime(2026, 8, 31),
     );
 
-    expect(home.favoriteTeam?.teamId, 1);
+    expect(home.favoriteTeam.teamId, 1);
     expect(home.followingTeams.map((team) => team.teamId), [1, 2]);
     expect(home.nextMatch?.fixtureId, 3);
     expect(home.lastMatch?.fixtureId, 1);

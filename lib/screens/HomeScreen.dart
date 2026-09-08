@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/home/home_repository_provider.dart'
+    as home_provider;
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
+import '../models/home_data.dart';
 import '../models/team_overview.dart';
-import '../models/fixture.dart';
 import '../models/home_content_item.dart';
 import '../data/home/home_content_service.dart';
 import 'package:onetouch/features/index.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    super.key,
+    this.repository,
+  });
+
+  final HomeRepository? repository;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -25,13 +30,18 @@ class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
 
-  TeamOverview? _favoriteTeam;
-  bool isLoading = true;
-  Color _teamColor = const Color(0xFFD82457);
+  HomeData? _homeData;
+  bool _isLoading = true;
+  DateTime _calendarMonth =
+      DateTime(DateTime.now().year, DateTime.now().month, 1);
   final HomeContentService _contentService = HomeContentService();
   List<HomeContentItem> _highlights = List.of(homeContentFallbackItems);
   List<HomeContentItem> _news = List.of(homeContentFallbackItems);
+  int _homeRequestId = 0;
   int _contentRequestId = 0;
+
+  HomeRepository get _repository =>
+      widget.repository ?? home_provider.homeRepository;
 
   @override
   void initState() {
@@ -43,40 +53,58 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       });
 
-    _reloadWithFavorite(currentUserPreferences.favoriteTeamId.value);
     currentUserPreferences.favoriteTeamId.addListener(_onFavoriteTeamChanged);
+    _loadHome(refreshContent: true);
   }
 
   void _onFavoriteTeamChanged() {
     if (!mounted) return;
-    _reloadWithFavorite(currentUserPreferences.favoriteTeamId.value);
+    _loadHome(refreshContent: true);
   }
 
-  void _reloadWithFavorite(int newFavoriteId) {
-    final team = teamRepository.requireById(newFavoriteId);
-    final favoriteTeam = TeamOverview(
-      id: team.teamId,
-      name: team.name,
-      shortName: team.shortCode ?? '',
-      imagePath: team.imagePath ?? '',
-      liveMatch: fixtureRepository
-          .forTeam(newFavoriteId, status: FixtureStatus.live)
-          .firstOrNull,
-      nextMatch: fixtureRepository.nextForTeam(newFavoriteId),
-      lastMatch: fixtureRepository.lastForTeam(newFavoriteId),
-    );
+  Future<void> _loadHome({bool refreshContent = false}) async {
+    final requestId = ++_homeRequestId;
+    if (_homeData == null) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
-    setState(() {
-      _teamColor = Color(team.primaryColor);
-      _favoriteTeam = favoriteTeam;
-      isLoading = false;
-    });
+    try {
+      final data = await _repository.load(
+        start: _calendarMonth,
+        end: DateTime(
+          _calendarMonth.year,
+          _calendarMonth.month + 1,
+          0,
+        ),
+      );
+      if (!mounted || requestId != _homeRequestId) return;
 
-    _loadHomeContent(newFavoriteId);
+      setState(() {
+        _homeData = data;
+        _isLoading = false;
+      });
+
+      if (refreshContent) {
+        _loadHomeContent(data.favoriteTeam.teamId);
+      }
+    } on Object {
+      if (!mounted || requestId != _homeRequestId) return;
+      setState(() {
+        _homeData = null;
+        _isLoading = false;
+      });
+    }
   }
 
   void _switchFavoriteTeam(int teamId) {
     currentUserPreferences.setFavoriteTeam(teamId);
+  }
+
+  void _loadCalendarMonth(DateTime month) {
+    _calendarMonth = month;
+    _loadHome();
   }
 
   Future<void> _loadHomeContent(int favoriteTeamId) async {
@@ -118,16 +146,46 @@ class _HomeScreenState extends State<HomeScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     const appBarForeground = AppPalette.white;
 
-    final favoriteTeam = _favoriteTeam;
-    if (isLoading || favoriteTeam == null) {
+    final homeData = _homeData;
+    if (_isLoading && homeData == null) {
       return Scaffold(
         backgroundColor: pageBackground,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
+    if (homeData == null) {
+      return Scaffold(
+        backgroundColor: pageBackground,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Unable to load Home.', style: Body1.style),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                key: const ValueKey('home-retry-button'),
+                onPressed: () => _loadHome(refreshContent: true),
+                child: const Text('RETRY'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final team = homeData.favoriteTeam;
+    final favoriteTeam = TeamOverview(
+      id: team.teamId,
+      name: team.name,
+      shortName: team.shortCode ?? '',
+      imagePath: team.imagePath ?? '',
+      liveMatch: homeData.liveMatch,
+      nextMatch: homeData.nextMatch,
+      lastMatch: homeData.lastMatch,
+    );
     final favoriteTeamId = favoriteTeam.id;
-    final favoriteMatches = fixtureRepository.forTeam(favoriteTeamId);
+    final teamColor = Color(team.primaryColor);
 
     return Scaffold(
       backgroundColor: pageBackground,
@@ -148,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [_teamColor, pageBackground],
+                    colors: [teamColor, pageBackground],
                     stops: const [0.0, 0.6],
                   ),
                 ),
@@ -177,8 +235,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        _teamColor,
-                        _teamColor.withValues(alpha: 0),
+                        teamColor,
+                        teamColor.withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -216,6 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () => TeamSelectionSheet.show(
                             context,
                             initialFavoriteTeamId: favoriteTeamId,
+                            followingTeams: homeData.followingTeams,
                             onSwitch: _switchFavoriteTeam,
                           ),
                           child: Container(
@@ -284,8 +343,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   FixtureCalendar(
-                    allMatches: favoriteMatches,
+                    allMatches: homeData.calendar,
                     favoriteTeamId: favoriteTeamId,
+                    onMonthChanged: _loadCalendarMonth,
                   ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "HIGHLIGHTS"),

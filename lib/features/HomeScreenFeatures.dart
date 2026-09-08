@@ -7,13 +7,13 @@ import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/models/team.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
 import '../models/home_content_item.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
-import 'package:onetouch/core/user_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // 1. Converted _showSyncDialog to a reusable Widget class
@@ -87,11 +87,13 @@ class SyncDialog extends StatelessWidget {
 // 2. Converted _showTeamSelection to a reusable StatefulWidget class
 class TeamSelectionSheet extends StatefulWidget {
   final int initialFavoriteTeamId;
+  final List<Team> followingTeams;
   final void Function(int teamId) onSwitch;
 
   const TeamSelectionSheet({
     super.key,
     required this.initialFavoriteTeamId,
+    required this.followingTeams,
     required this.onSwitch,
   });
 
@@ -99,6 +101,7 @@ class TeamSelectionSheet extends StatefulWidget {
   static void show(
     BuildContext context, {
     required int initialFavoriteTeamId,
+    required List<Team> followingTeams,
     required void Function(int teamId) onSwitch,
   }) {
     final appColors = AppColors.of(context);
@@ -110,6 +113,7 @@ class TeamSelectionSheet extends StatefulWidget {
       ),
       builder: (BuildContext context) => TeamSelectionSheet(
         initialFavoriteTeamId: initialFavoriteTeamId,
+        followingTeams: followingTeams,
         onSwitch: onSwitch,
       ),
     );
@@ -125,14 +129,13 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   @override
   void initState() {
     super.initState();
-    _followingTeams = currentUserPreferences.followedTeamIds.value.map((id) {
-      final t = teamRepository.requireById(id);
+    _followingTeams = widget.followingTeams.map((team) {
       return <String, dynamic>{
-        'id': id,
-        'name': t.name,
-        'league': teamCompetitionContextResolver.labelFor(id),
-        'logo': t.imagePath ?? '',
-        'isSelected': id == widget.initialFavoriteTeamId,
+        'id': team.teamId,
+        'name': team.name,
+        'league': teamCompetitionContextResolver.labelFor(team.teamId),
+        'logo': team.imagePath ?? '',
+        'isSelected': team.teamId == widget.initialFavoriteTeamId,
       };
     }).toList();
   }
@@ -394,11 +397,13 @@ class CalendarEvent {
 class FixtureCalendar extends StatefulWidget {
   final List<Fixture> allMatches;
   final int favoriteTeamId;
+  final ValueChanged<DateTime>? onMonthChanged;
 
   const FixtureCalendar({
     super.key,
     required this.allMatches,
     required this.favoriteTeamId,
+    this.onMonthChanged,
   });
 
   @override
@@ -449,12 +454,14 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1, 1);
     });
+    widget.onMonthChanged?.call(_currentMonth);
   }
 
   void _nextMonth() {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 1);
     });
+    widget.onMonthChanged?.call(_currentMonth);
   }
 
   String _getMonthName(int month) {
