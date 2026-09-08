@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 
 from ..deps import get_user_id
 from ..repos.users_repo import ensure_user
-from ..schemas.common import HomeResponse, TeamOut, FixtureOut
+from ..schemas.common import HomeResponse
 from ..services.home_service import build_home_payload
 
 router = APIRouter()

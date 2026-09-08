@@ -1,0 +1,658 @@
+{
+  "description": "실제 KÍ 3경기 응답에서 잘못 연결된 이벤트 4건과 두 선수 라인업을 추렸어요. 시각·유형은 원문대로 보존해요.",
+  "sources": [
+    "https://www.roysni.fo/foroyameistararnir-hava-fyrimunin-eftir-fyrra-dystin",
+    "https://www.roysni.fo/video-arni-og-pall-snyta-malverjan-og-allar-hinar",
+    "https://kvf.fo/greinar/2026/07/15/arni-og-pall-gjordu-tad-aftur-fyri-ki-i-evropa",
+    "https://nordlysid.fo/tvey-kedilig-mal-sendu-ki-ut/"
+  ],
+  "known_player_ids": [
+    86326,
+    86656
+  ],
+  "cases": [
+    {
+      "fixture": {
+        "id": 19719891,
+        "events": [
+          {
+            "id": 157250665,
+            "fixture_id": 19719891,
+            "period_id": 7005155,
+            "participant_id": 5284,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 86326,
+            "related_player_id": 86653,
+            "player_name": "Páll Klettskard",
+            "related_player_name": "Andras Frederiksberg",
+            "result": "2-0",
+            "info": "Field Goal",
+            "addition": "2nd Goal",
+            "minute": 49,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7005155,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674130901,
+            "sport_id": 1,
+            "fixture_id": 19719891,
+            "player_id": 86656,
+            "team_id": 5284,
+            "position_id": 26,
+            "formation_field": "4:1",
+            "type_id": 11,
+            "formation_position": 9,
+            "player_name": "Árni Frederiksberg",
+            "jersey_number": 7,
+            "details": [
+              {
+                "id": 2127003787,
+                "fixture_id": 19719891,
+                "player_id": 86656,
+                "team_id": 5284,
+                "lineup_id": 14674130901,
+                "type_id": 118,
+                "data": {
+                  "value": 6.37
+                }
+              },
+              {
+                "id": 2127017287,
+                "fixture_id": 19719891,
+                "player_id": 86656,
+                "team_id": 5284,
+                "lineup_id": 14674130901,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 86656,
+              "sport_id": 1,
+              "country_id": 2154,
+              "nationality_id": 2154,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 156,
+              "type_id": 26,
+              "common_name": "Á. Frederiksberg",
+              "firstname": "Árni",
+              "lastname": "Frederiksberg",
+              "name": "Árni Frederiksberg",
+              "display_name": "Árni Frederiksberg",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/0/86656.png",
+              "height": 180,
+              "weight": null,
+              "date_of_birth": "1992-06-13",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674130903,
+            "sport_id": 1,
+            "fixture_id": 19719891,
+            "player_id": 86326,
+            "team_id": 5284,
+            "position_id": 27,
+            "formation_field": "4:2",
+            "type_id": 11,
+            "formation_position": 10,
+            "player_name": "Páll Klettskard",
+            "jersey_number": 9,
+            "details": [
+              {
+                "id": 2127006976,
+                "fixture_id": 19719891,
+                "player_id": 86326,
+                "team_id": 5284,
+                "lineup_id": 14674130903,
+                "type_id": 118,
+                "data": {
+                  "value": 6.82
+                }
+              },
+              {
+                "id": 2127017289,
+                "fixture_id": 19719891,
+                "player_id": 86326,
+                "team_id": 5284,
+                "lineup_id": 14674130903,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 86326,
+              "sport_id": 1,
+              "country_id": 2154,
+              "nationality_id": 2154,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 151,
+              "type_id": 27,
+              "common_name": "P. Klettskard",
+              "firstname": "Páll",
+              "lastname": "Klettskard",
+              "name": "Páll Klettskard",
+              "display_name": "Páll Klettskard",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/86326.png",
+              "height": 185,
+              "weight": 79,
+              "date_of_birth": "1990-05-17",
+              "gender": "male"
+            }
+          }
+        ],
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 157250665,
+          "fixture_id": 19719891,
+          "period_id": 7005155,
+          "participant_id": 5284,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 86326,
+          "related_player_id": 86656,
+          "player_name": "Páll Klettskard",
+          "related_player_name": "Árni Frederiksberg",
+          "result": "2-0",
+          "info": "Field Goal",
+          "addition": "2nd Goal",
+          "minute": 49,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005155,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19719890,
+        "events": [
+          {
+            "id": 157274524,
+            "fixture_id": 19719890,
+            "period_id": 7009606,
+            "participant_id": 5284,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 86653,
+            "related_player_id": 86326,
+            "player_name": "Andras Frederiksberg",
+            "related_player_name": "Páll Klettskard",
+            "result": "0-1",
+            "info": "Field Goal",
+            "addition": "1st Goal",
+            "minute": 8,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7009606,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 157274780,
+            "fixture_id": 19719890,
+            "period_id": 7009650,
+            "participant_id": 5284,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 86326,
+            "related_player_id": 86653,
+            "player_name": "Páll Klettskard",
+            "related_player_name": "Andras Frederiksberg",
+            "result": "1-2",
+            "info": "Field Goal",
+            "addition": "3rd Goal",
+            "minute": 59,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7009650,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674146811,
+            "sport_id": 1,
+            "fixture_id": 19719890,
+            "player_id": 86656,
+            "team_id": 5284,
+            "position_id": 26,
+            "formation_field": "4:3",
+            "type_id": 11,
+            "formation_position": 8,
+            "player_name": "Árni Frederiksberg",
+            "jersey_number": 7,
+            "details": [
+              {
+                "id": 2128218920,
+                "fixture_id": 19719890,
+                "player_id": 86656,
+                "team_id": 5284,
+                "lineup_id": 14674146811,
+                "type_id": 118,
+                "data": {
+                  "value": 6.94
+                }
+              },
+              {
+                "id": 2128225570,
+                "fixture_id": 19719890,
+                "player_id": 86656,
+                "team_id": 5284,
+                "lineup_id": 14674146811,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 86656,
+              "sport_id": 1,
+              "country_id": 2154,
+              "nationality_id": 2154,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 156,
+              "type_id": 26,
+              "common_name": "Á. Frederiksberg",
+              "firstname": "Árni",
+              "lastname": "Frederiksberg",
+              "name": "Árni Frederiksberg",
+              "display_name": "Árni Frederiksberg",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/0/86656.png",
+              "height": 180,
+              "weight": null,
+              "date_of_birth": "1992-06-13",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674146813,
+            "sport_id": 1,
+            "fixture_id": 19719890,
+            "player_id": 86326,
+            "team_id": 5284,
+            "position_id": 27,
+            "formation_field": "5:1",
+            "type_id": 11,
+            "formation_position": 11,
+            "player_name": "Páll Klettskard",
+            "jersey_number": 9,
+            "details": [
+              {
+                "id": 2128218921,
+                "fixture_id": 19719890,
+                "player_id": 86326,
+                "team_id": 5284,
+                "lineup_id": 14674146813,
+                "type_id": 118,
+                "data": {
+                  "value": 7.19
+                }
+              },
+              {
+                "id": 2128225573,
+                "fixture_id": 19719890,
+                "player_id": 86326,
+                "team_id": 5284,
+                "lineup_id": 14674146813,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 86326,
+              "sport_id": 1,
+              "country_id": 2154,
+              "nationality_id": 2154,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 151,
+              "type_id": 27,
+              "common_name": "P. Klettskard",
+              "firstname": "Páll",
+              "lastname": "Klettskard",
+              "name": "Páll Klettskard",
+              "display_name": "Páll Klettskard",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/86326.png",
+              "height": 185,
+              "weight": 79,
+              "date_of_birth": "1990-05-17",
+              "gender": "male"
+            }
+          }
+        ],
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 157274524,
+          "fixture_id": 19719890,
+          "period_id": 7009606,
+          "participant_id": 5284,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 86656,
+          "related_player_id": 86326,
+          "player_name": "Árni Frederiksberg",
+          "related_player_name": "Páll Klettskard",
+          "result": "0-1",
+          "info": "Field Goal",
+          "addition": "1st Goal",
+          "minute": 8,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7009606,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157274780,
+          "fixture_id": 19719890,
+          "period_id": 7009650,
+          "participant_id": 5284,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 86326,
+          "related_player_id": 86656,
+          "player_name": "Páll Klettskard",
+          "related_player_name": "Árni Frederiksberg",
+          "result": "1-2",
+          "info": "Field Goal",
+          "addition": "3rd Goal",
+          "minute": 59,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7009650,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19788608,
+        "events": [
+          {
+            "id": 157652206,
+            "fixture_id": 19788608,
+            "period_id": 7060635,
+            "participant_id": 5284,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 86326,
+            "related_player_id": 86653,
+            "player_name": "Páll Klettskard",
+            "related_player_name": "Andras Frederiksberg",
+            "result": "1-1",
+            "info": "Field Goal",
+            "addition": "2nd Goal",
+            "minute": 67,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7060635,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674477995,
+            "sport_id": 1,
+            "fixture_id": 19788608,
+            "player_id": 86656,
+            "team_id": 5284,
+            "position_id": 26,
+            "formation_field": "3:4",
+            "type_id": 11,
+            "formation_position": 7,
+            "player_name": "Árni Frederiksberg",
+            "jersey_number": 7,
+            "details": [
+              {
+                "id": 2179367745,
+                "fixture_id": 19788608,
+                "player_id": 86656,
+                "team_id": 5284,
+                "lineup_id": 14674477995,
+                "type_id": 118,
+                "data": {
+                  "value": 6.23
+                }
+              },
+              {
+                "id": 2179601899,
+                "fixture_id": 19788608,
+                "player_id": 86656,
+                "team_id": 5284,
+                "lineup_id": 14674477995,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 86656,
+              "sport_id": 1,
+              "country_id": 2154,
+              "nationality_id": 2154,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 156,
+              "type_id": 26,
+              "common_name": "Á. Frederiksberg",
+              "firstname": "Árni",
+              "lastname": "Frederiksberg",
+              "name": "Árni Frederiksberg",
+              "display_name": "Árni Frederiksberg",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/0/86656.png",
+              "height": 180,
+              "weight": null,
+              "date_of_birth": "1992-06-13",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674477991,
+            "sport_id": 1,
+            "fixture_id": 19788608,
+            "player_id": 86326,
+            "team_id": 5284,
+            "position_id": 27,
+            "formation_field": "4:1",
+            "type_id": 11,
+            "formation_position": 11,
+            "player_name": "Páll Klettskard",
+            "jersey_number": 9,
+            "details": [
+              {
+                "id": 2179367749,
+                "fixture_id": 19788608,
+                "player_id": 86326,
+                "team_id": 5284,
+                "lineup_id": 14674477991,
+                "type_id": 118,
+                "data": {
+                  "value": 6.79
+                }
+              },
+              {
+                "id": 2179601908,
+                "fixture_id": 19788608,
+                "player_id": 86326,
+                "team_id": 5284,
+                "lineup_id": 14674477991,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 86326,
+              "sport_id": 1,
+              "country_id": 2154,
+              "nationality_id": 2154,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 151,
+              "type_id": 27,
+              "common_name": "P. Klettskard",
+              "firstname": "Páll",
+              "lastname": "Klettskard",
+              "name": "Páll Klettskard",
+              "display_name": "Páll Klettskard",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/86326.png",
+              "height": 185,
+              "weight": 79,
+              "date_of_birth": "1990-05-17",
+              "gender": "male"
+            }
+          }
+        ],
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 157652206,
+          "fixture_id": 19788608,
+          "period_id": 7060635,
+          "participant_id": 5284,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 86326,
+          "related_player_id": 86656,
+          "player_name": "Páll Klettskard",
+          "related_player_name": "Árni Frederiksberg",
+          "result": "1-1",
+          "info": "Field Goal",
+          "addition": "2nd Goal",
+          "minute": 67,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7060635,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}

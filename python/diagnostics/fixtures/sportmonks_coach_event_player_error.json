@@ -1,0 +1,81 @@
+{
+  "source": {
+    "fixture_id": 18535379,
+    "event_id": 82392114,
+    "official_club_report": "https://www.tottenhamhotspur.com/news/988647/cristians-verdict-on-brighton-we-fought-a-lot-to-win-this-game",
+    "primary_photo_caption": "https://www.gettyimages.co.uk/detail/news-photo/referee-stuart-attwell-shows-a-red-card-to-cristian-news-photo/1480818499",
+    "correct_coach": {
+      "id": 128374,
+      "player_id": 128374,
+      "sport_id": 1,
+      "country_id": 251,
+      "nationality_id": 251,
+      "city_id": null,
+      "common_name": "C. Stellini",
+      "firstname": "Cristian",
+      "lastname": "Stellini",
+      "name": "Cristian Stellini",
+      "display_name": "Cristian Stellini",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 181,
+      "weight": 79,
+      "date_of_birth": "1974-04-27",
+      "gender": "male",
+      "teams": [
+        {
+          "id": 1493932,
+          "team_id": 6,
+          "coach_id": 128374,
+          "position_id": 221,
+          "active": false,
+          "start": "2023-03-26",
+          "end": "2023-04-23",
+          "temporary": false
+        }
+      ]
+    },
+    "storage_limitation": "Current fixture_events stores nullable player_id but no coach_id. Correcting this event follows the existing coach-event storage contract and does not add a schema column or fabricate an absent De Zerbi event."
+  },
+  "fixture": {
+    "id": 18535379,
+    "events": [
+      {
+        "id": 82392114,
+        "fixture_id": 18535379,
+        "period_id": 4721710,
+        "participant_id": 6,
+        "type_id": 20,
+        "section": "event",
+        "player_id": 333528,
+        "related_player_id": null,
+        "player_name": "Tameka Yallop",
+        "related_player_name": null,
+        "result": null,
+        "info": null,
+        "addition": "1st Redcard",
+        "minute": 59,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 4721710,
+        "rescinded": false,
+        "sort_order": 1,
+        "type": {
+          "id": 20,
+          "name": "Redcard",
+          "code": "redcard",
+          "developer_name": "REDCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "statistics": [],
+    "lineups": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  }
+}

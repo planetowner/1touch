@@ -21,8 +21,6 @@ from ..schemas.common import (
     BestElevenResponse,
     CurrentFormOptionsResponse,
     CurrentFormResponse,
-    FixtureOut,
-    StandingRowOut,
     TeamOut,
     TeamTransfersResponse,
     TransferOut,
@@ -63,10 +61,10 @@ def put_following_teams(body: PutFollowingTeamsBody, user_id: int = Depends(get_
 @router.get("/teams/{team_id}")
 def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
     """
-    Team Overview MVP:
-    - team info
-    - next/last match
-    - standing summary (가능하면)
+    팀 개요 MVP에 필요한 정보를 모아요.
+    - 팀 정보
+    - 다음 경기와 최근 경기
+    - 가능하면 순위 요약
     """
     ensure_user(user_id)
 
@@ -80,8 +78,8 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
     standing = None
     ctx = find_team_current_context(team_id)
     if ctx:
-        league_id, season_id = ctx
-        standing = get_team_standing(league_id, season_id, team_id)
+        competition_id, season_id = ctx
+        standing = get_team_standing(competition_id, season_id, team_id)
 
     return {
         "team": team,
@@ -89,6 +87,8 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
         "last_match": last_match,
         "standing": standing,
     }
+
+
 
 
 @router.get("/teams/{team_id}/best-eleven", response_model=BestElevenResponse)
@@ -211,10 +211,10 @@ def team_matches(
 
 
 # ---------------------------------------------------------------------------
-# Transfers
+# 이적
 # ---------------------------------------------------------------------------
 
-_LOAN_TYPE_IDS = {219, 220}  # SportMonks type IDs for loan-related transfers
+_LOAN_TYPE_IDS = {219, 220}  # Sportmonks의 임대 관련 이적 type_id예요.
 
 def _make_display_type(type_id: int | None, amount: int | None) -> str | None:
     # DB scan of team_transfers confirms exactly these four type_ids appear:

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routes.home import router as home_router
 from .routes.teams import router as teams_router
-from .routes.leagues import router as leagues_router
+from .routes.competitions import router as competitions_router
 from .routes.fixtures import router as fixtures_router
 from .routes.posts import router as posts_router
 
@@ -33,7 +33,7 @@ def create_app() -> FastAPI:
 
     app.include_router(home_router, prefix="/v1", tags=["home"])
     app.include_router(teams_router, prefix="/v1", tags=["teams"])
-    app.include_router(leagues_router, prefix="/v1", tags=["leagues"])
+    app.include_router(competitions_router, prefix="/v1", tags=["competitions"])
     app.include_router(fixtures_router, prefix="/v1", tags=["fixtures"])
     app.include_router(posts_router, prefix="/v1", tags=["posts"])
 

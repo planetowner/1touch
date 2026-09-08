@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -13,15 +14,22 @@ class TeamOut(BaseModel):
 
 class FixtureOut(BaseModel):
     fixture_id: int
-    league_id: int
+    competition_id: int
     season_id: int
-    competition_type: Optional[str] = None
+    competition_type: str
     round_name: Optional[str] = None
-    stage_id: Optional[int] = None
+    stage_id: int
+    stage_name: str
+    round_id: Optional[int] = None
     group_id: Optional[int] = None
-    leg_number: Optional[int] = None
+    aggregate_id: Optional[int] = None
+    leg: str
+    venue_id: Optional[int] = None
+    state_id: int
+    state_code: str
+    state_name: str
 
-    status: str
+    status: Optional[str] = None
     starting_at: Optional[str] = None
 
     home_team_id: int
@@ -89,6 +97,12 @@ class BestElevenResponse(BaseModel):
     players: List[BestElevenPlayerOut] = []
 
 
+
+
+
+
+
+
 class CurrentFormPointOut(BaseModel):
     round_no: int
     match_date: Optional[str] = None
@@ -140,16 +154,16 @@ class TransferOut(BaseModel):
     player_id: int
     player_name: Optional[str] = None
     player_image: Optional[str] = None
-    direction: str                          # "in" | "out"
+    direction: str                          # "in" 또는 "out"
     other_team_id: Optional[int] = None
     other_team_name: Optional[str] = None
-    display_type: Optional[str] = None      # "Loan", "Free Agent", "€8.5M" etc.
+    display_type: Optional[str] = None      # "Loan", "Free Agent", "€8.5M" 같은 표시값
     amount: Optional[int] = None
     transfer_date: Optional[str] = None
 
 
 class TeamTransfersResponse(BaseModel):
-    window_key: str                         # e.g. "2026 winter"
+    window_key: str                         # 예: "2026 winter"
     transfers_in: List[TransferOut] = []
     transfers_out: List[TransferOut] = []
 

@@ -1,0 +1,1966 @@
+{
+  "description": "Sheriff 42번·Hearts 24번·Anderlecht 53번은 라인업 슬롯은 있지만 선수 ID·프로필이 null이에요. 실제 경기 기록·공식 프로필을 대조한 슬롯만 복원해요. Milsami의 4번·17번도 협회 기록과 현재 스쿼드의 선수 ID를 대조했어요. 같은 두 경기 7번 Silcenco와 사라진 단건 ID를 쓰던 86분 교체도 현재 스쿼드·이적 기록·협회 생년월일로 확인했어요. St Josephs의 후보 13번 Romero는 실제 골키퍼 교체와 다음 경기 13번으로 확인했어요. Mondorf의 72번 Tinelli·77번 Klica도 UEFA 명단과 현재 소속 선수 ID로 확인했어요.",
+  "source_fixture_ids": [
+    19719405,
+    19719399,
+    19721002,
+    19720991,
+    19783794,
+    19783796,
+    19766404,
+    19766390,
+    19788631,
+    19788584,
+    19720999,
+    19720989,
+    19766398,
+    19766393,
+    19788667,
+    19788658,
+    19719456,
+    19719430,
+    19719458,
+    19719432,
+    19719451,
+    19719425
+  ],
+  "fixtures": [
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719405,
+      "events": [
+        {
+          "id": 157253995,
+          "fixture_id": 19719405,
+          "period_id": 7005912,
+          "participant_id": 627,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37691762,
+          "related_player_id": 37727159,
+          "player_name": "Sapata",
+          "related_player_name": "Loukou Jaures-Ulrich",
+          "result": null,
+          "info": null,
+          "addition": "3rd Substitution",
+          "minute": 68,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005912,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674133358,
+          "sport_id": 1,
+          "fixture_id": 19719405,
+          "player_id": null,
+          "team_id": 627,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Natus Jamel Swen",
+          "jersey_number": 4,
+          "details": [],
+          "player": null
+        },
+        {
+          "id": 14674133363,
+          "sport_id": 1,
+          "fixture_id": 19719405,
+          "player_id": 37691762,
+          "team_id": 627,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Sapata",
+          "jersey_number": 11,
+          "details": [
+            {
+              "id": 2127239460,
+              "fixture_id": 19719405,
+              "player_id": 37691762,
+              "team_id": 627,
+              "lineup_id": 14674133363,
+              "type_id": 119,
+              "data": {
+                "value": 21
+              }
+            },
+            {
+              "id": 2127239489,
+              "fixture_id": 19719405,
+              "player_id": 37691762,
+              "team_id": 627,
+              "lineup_id": 14674133363,
+              "type_id": 118,
+              "data": {
+                "value": 6.5
+              }
+            }
+          ],
+          "player": {
+            "id": 37691762,
+            "sport_id": 1,
+            "country_id": 5,
+            "nationality_id": 5,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": null,
+            "common_name": "V. Morais de Oliveira",
+            "firstname": "Vitor Hugo",
+            "lastname": "Morais de Oliveira",
+            "name": "Vitor Hugo Morais de Oliveira",
+            "display_name": "Sapata",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 180,
+            "weight": 76,
+            "date_of_birth": "2003-03-26",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674133376,
+          "sport_id": 1,
+          "fixture_id": 19719405,
+          "player_id": null,
+          "team_id": 627,
+          "position_id": 26,
+          "formation_field": "4:3",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Konan Jaures-Ulrich Loukou",
+          "jersey_number": 42,
+          "details": [
+            {
+              "id": 2127239468,
+              "fixture_id": 19719405,
+              "player_id": null,
+              "team_id": 627,
+              "lineup_id": 14674133376,
+              "type_id": 119,
+              "data": {
+                "value": 69
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "id": 19766390,
+      "events": [
+        {
+          "id": 157461342,
+          "fixture_id": 19766390,
+          "period_id": 7038693,
+          "participant_id": 314,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37675238,
+          "related_player_id": 27440420,
+          "player_name": "MJ Kamson-Kamara",
+          "related_player_name": "Oisin McEntee",
+          "result": null,
+          "info": null,
+          "addition": "10th Substitution",
+          "minute": 84,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7038693,
+          "rescinded": null,
+          "sort_order": 10,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674334358,
+          "sport_id": 1,
+          "fixture_id": 19766390,
+          "player_id": 27440420,
+          "team_id": 314,
+          "position_id": 25,
+          "formation_field": "2:2",
+          "type_id": 11,
+          "formation_position": 3,
+          "player_name": "Oisin McEntee",
+          "jersey_number": 6,
+          "details": [
+            {
+              "id": 2151875417,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 122,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 2151875418,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 101,
+              "data": {
+                "value": 9
+              }
+            },
+            {
+              "id": 2151875419,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27266,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2151875420,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 1491,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2151867869,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 120,
+              "data": {
+                "value": 84
+              }
+            },
+            {
+              "id": 2151867765,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 118,
+              "data": {
+                "value": 7.01
+              }
+            },
+            {
+              "id": 2151867866,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 117172,
+              "data": {
+                "value": 85
+              }
+            },
+            {
+              "id": 2151867867,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 80,
+              "data": {
+                "value": 63
+              }
+            },
+            {
+              "id": 2151867868,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 116,
+              "data": {
+                "value": 51
+              }
+            },
+            {
+              "id": 2151930314,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 100,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2151929448,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27271,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2151929451,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 1584,
+              "data": {
+                "value": 81
+              }
+            },
+            {
+              "id": 2151929449,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27272,
+              "data": {
+                "value": 6
+              }
+            },
+            {
+              "id": 2151929450,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27273,
+              "data": {
+                "value": 13
+              }
+            },
+            {
+              "id": 2151929447,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 119,
+              "data": {
+                "value": 84
+              }
+            },
+            {
+              "id": 2151937049,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27269,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 2151937050,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 123,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2151937051,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27270,
+              "data": {
+                "value": 38
+              }
+            },
+            {
+              "id": 2151958564,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 106,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2151958565,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 105,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2151954739,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 97,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2151958563,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 96,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2152043626,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2152026470,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 110,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2152049869,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27275,
+              "data": {
+                "value": 50
+              }
+            },
+            {
+              "id": 2152049870,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27276,
+              "data": {
+                "value": 50
+              }
+            },
+            {
+              "id": 2152049509,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 107,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2152049868,
+              "fixture_id": 19766390,
+              "player_id": 27440420,
+              "team_id": 314,
+              "lineup_id": 14674334358,
+              "type_id": 27274,
+              "data": {
+                "value": 2
+              }
+            }
+          ],
+          "player": {
+            "id": 27440420,
+            "sport_id": 1,
+            "country_id": 455,
+            "nationality_id": 455,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 149,
+            "type_id": 25,
+            "common_name": "O. McEntee",
+            "firstname": "Oisin",
+            "lastname": "McEntee",
+            "name": "Oisin McEntee",
+            "display_name": "Oisin McEntee",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/4/27440420.png",
+            "height": 190,
+            "weight": 74,
+            "date_of_birth": "2001-01-05",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674334370,
+          "sport_id": 1,
+          "fixture_id": 19766390,
+          "player_id": null,
+          "team_id": 314,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "MJ Kamson-Kamara",
+          "jersey_number": 24,
+          "details": [
+            {
+              "id": 2152049867,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 119,
+              "data": {
+                "value": 6
+              }
+            },
+            {
+              "id": 2152051693,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 80,
+              "data": {
+                "value": 6
+              }
+            },
+            {
+              "id": 2152051694,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 116,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2152052422,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 27273,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2152052423,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 1584,
+              "data": {
+                "value": 67
+              }
+            },
+            {
+              "id": 2152051695,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 120,
+              "data": {
+                "value": 6
+              }
+            },
+            {
+              "id": 2152051890,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 122,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2152060389,
+              "fixture_id": 19766390,
+              "player_id": null,
+              "team_id": 314,
+              "lineup_id": 14674334370,
+              "type_id": 27269,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": null
+        }
+      ],
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": []
+    },
+    {
+      "id": 19788667,
+      "events": [
+        {
+          "id": 157568731,
+          "fixture_id": 19788667,
+          "period_id": 7050152,
+          "participant_id": 2555,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37749100,
+          "related_player_id": 9939202,
+          "player_name": "Noa Ojea",
+          "related_player_name": "Enric Llansana",
+          "result": null,
+          "info": null,
+          "addition": "10th Substitution",
+          "minute": 84,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7050152,
+          "rescinded": null,
+          "sort_order": 10,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674406790,
+          "sport_id": 1,
+          "fixture_id": 19788667,
+          "player_id": 9939202,
+          "team_id": 2555,
+          "position_id": 26,
+          "formation_field": "3:1",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Enric Llansana",
+          "jersey_number": 24,
+          "details": [
+            {
+              "id": 2158953527,
+              "fixture_id": 19788667,
+              "player_id": 9939202,
+              "team_id": 2555,
+              "lineup_id": 14674406790,
+              "type_id": 118,
+              "data": {
+                "value": 6.45
+              }
+            },
+            {
+              "id": 2158954453,
+              "fixture_id": 19788667,
+              "player_id": 9939202,
+              "team_id": 2555,
+              "lineup_id": 14674406790,
+              "type_id": 119,
+              "data": {
+                "value": 84
+              }
+            },
+            {
+              "id": 2158953577,
+              "fixture_id": 19788667,
+              "player_id": 9939202,
+              "team_id": 2555,
+              "lineup_id": 14674406790,
+              "type_id": 117172,
+              "data": {
+                "value": 85
+              }
+            },
+            {
+              "id": 2158973674,
+              "fixture_id": 19788667,
+              "player_id": 9939202,
+              "team_id": 2555,
+              "lineup_id": 14674406790,
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2158974561,
+              "fixture_id": 19788667,
+              "player_id": 9939202,
+              "team_id": 2555,
+              "lineup_id": 14674406790,
+              "type_id": 84,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 9939202,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 38,
+            "city_id": 88921,
+            "position_id": 26,
+            "detailed_position_id": 149,
+            "type_id": 26,
+            "common_name": "E. Llansana",
+            "firstname": "Enric",
+            "lastname": "Llansana",
+            "name": "Enric Llansana",
+            "display_name": "Enric Llansana",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/2/9939202.png",
+            "height": 183,
+            "weight": 64,
+            "date_of_birth": "2001-04-12",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674406816,
+          "sport_id": 1,
+          "fixture_id": 19788667,
+          "player_id": null,
+          "team_id": 2555,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Noa Thomas Ojea Cobiella",
+          "jersey_number": 53,
+          "details": [
+            {
+              "id": 2158973896,
+              "fixture_id": 19788667,
+              "player_id": null,
+              "team_id": 2555,
+              "lineup_id": 14674406816,
+              "type_id": 119,
+              "data": {
+                "value": 7
+              }
+            }
+          ],
+          "player": null
+        }
+      ],
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": []
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719456,
+      "events": [
+        {
+          "id": 157254115,
+          "fixture_id": 19719456,
+          "period_id": 7005916,
+          "participant_id": 6538,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37721425,
+          "related_player_id": 38206364,
+          "player_name": "Leonard Bulmaga",
+          "related_player_name": "Igor Souza",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 90,
+          "extra_minute": 1,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005916,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157253871,
+          "fixture_id": 19719456,
+          "period_id": 7005890,
+          "participant_id": 6538,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 528152,
+          "related_player_id": null,
+          "player_name": "Aleksandar Angelov",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "2nd Yellowcard",
+          "minute": 39,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1496,
+          "detailed_period_id": 7005890,
+          "rescinded": false,
+          "sort_order": 2,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674133204,
+          "sport_id": 1,
+          "fixture_id": 19719456,
+          "player_id": null,
+          "team_id": 6538,
+          "position_id": 25,
+          "formation_field": "2:4",
+          "type_id": 11,
+          "formation_position": 3,
+          "player_name": "Aleksandar Angelov",
+          "jersey_number": 4,
+          "details": [
+            {
+              "id": 2127236289,
+              "fixture_id": 19719456,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674133204,
+              "type_id": 117172,
+              "data": {
+                "value": 96
+              }
+            },
+            {
+              "id": 2127273189,
+              "fixture_id": 19719456,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674133204,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674133617,
+          "sport_id": 1,
+          "fixture_id": 19719456,
+          "player_id": null,
+          "team_id": 6538,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Leonard Bulmaga",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2127238030,
+              "fixture_id": 19719456,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674133617,
+              "type_id": 117172,
+              "data": {
+                "value": 4
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674133207,
+          "sport_id": 1,
+          "fixture_id": 19719456,
+          "player_id": 38206364,
+          "team_id": 6538,
+          "position_id": 26,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Igor Souza",
+          "jersey_number": 20,
+          "details": [
+            {
+              "id": 2127236292,
+              "fixture_id": 19719456,
+              "player_id": 38206364,
+              "team_id": 6538,
+              "lineup_id": 14674133207,
+              "type_id": 117172,
+              "data": {
+                "value": 92
+              }
+            },
+            {
+              "id": 2127314504,
+              "fixture_id": 19719456,
+              "player_id": 38206364,
+              "team_id": 6538,
+              "lineup_id": 14674133207,
+              "type_id": 118,
+              "data": {
+                "value": 6.5
+              }
+            }
+          ],
+          "player": {
+            "id": 38206364,
+            "sport_id": 1,
+            "country_id": 5,
+            "nationality_id": 5,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 27,
+            "type_id": null,
+            "common_name": "Igor Souza de Carvalho",
+            "firstname": "Igor Souza",
+            "lastname": "de Carvalho",
+            "name": "Igor Souza de Carvalho",
+            "display_name": "Igor Souza",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "2005-10-31",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674133612,
+          "sport_id": 1,
+          "fixture_id": 19719456,
+          "player_id": null,
+          "team_id": 6538,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Chiril Silcenco",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 2127238027,
+              "fixture_id": 19719456,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674133612,
+              "type_id": 117172,
+              "data": {
+                "value": 4
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719430,
+      "events": [
+        {
+          "id": 157280997,
+          "fixture_id": 19719430,
+          "period_id": 7010152,
+          "participant_id": 6538,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37721430,
+          "related_player_id": 37704291,
+          "player_name": "Chiril Șilcenco",
+          "related_player_name": "Decio Neto",
+          "result": null,
+          "info": null,
+          "addition": "4th Substitution",
+          "minute": 86,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7010152,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674157930,
+          "sport_id": 1,
+          "fixture_id": 19719430,
+          "player_id": null,
+          "team_id": 6538,
+          "position_id": 25,
+          "formation_field": "2:2",
+          "type_id": 11,
+          "formation_position": 3,
+          "player_name": "Aleksandar Angelov",
+          "jersey_number": 4,
+          "details": [
+            {
+              "id": 2128395687,
+              "fixture_id": 19719430,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674157930,
+              "type_id": 117172,
+              "data": {
+                "value": 96
+              }
+            },
+            {
+              "id": 2128737102,
+              "fixture_id": 19719430,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674157930,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674158008,
+          "sport_id": 1,
+          "fixture_id": 19719430,
+          "player_id": null,
+          "team_id": 6538,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Chiril Silcenco",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 2128420230,
+              "fixture_id": 19719430,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674158008,
+              "type_id": 117172,
+              "data": {
+                "value": 9
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674158012,
+          "sport_id": 1,
+          "fixture_id": 19719430,
+          "player_id": null,
+          "team_id": 6538,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Leonard Bulmaga",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2128420232,
+              "fixture_id": 19719430,
+              "player_id": null,
+              "team_id": 6538,
+              "lineup_id": 14674158012,
+              "type_id": 117172,
+              "data": {
+                "value": 9
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674157940,
+          "sport_id": 1,
+          "fixture_id": 19719430,
+          "player_id": 37704291,
+          "team_id": 6538,
+          "position_id": 25,
+          "formation_field": "2:3",
+          "type_id": 11,
+          "formation_position": 4,
+          "player_name": "Decio Neto",
+          "jersey_number": 34,
+          "details": [
+            {
+              "id": 2128395567,
+              "fixture_id": 19719430,
+              "player_id": 37704291,
+              "team_id": 6538,
+              "lineup_id": 14674157940,
+              "type_id": 118,
+              "data": {
+                "value": 6.25
+              }
+            },
+            {
+              "id": 2128395697,
+              "fixture_id": 19719430,
+              "player_id": 37704291,
+              "team_id": 6538,
+              "lineup_id": 14674157940,
+              "type_id": 117172,
+              "data": {
+                "value": 87
+              }
+            },
+            {
+              "id": 2128419219,
+              "fixture_id": 19719430,
+              "player_id": 37704291,
+              "team_id": 6538,
+              "lineup_id": 14674157940,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2128421639,
+              "fixture_id": 19719430,
+              "player_id": 37704291,
+              "team_id": 6538,
+              "lineup_id": 14674157940,
+              "type_id": 119,
+              "data": {
+                "value": 86
+              }
+            },
+            {
+              "id": 2128421640,
+              "fixture_id": 19719430,
+              "player_id": 37704291,
+              "team_id": 6538,
+              "lineup_id": 14674157940,
+              "type_id": 84,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 37704291,
+            "sport_id": 1,
+            "country_id": 5,
+            "nationality_id": 5,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 148,
+            "type_id": null,
+            "common_name": "D. Ferreira da Silva Neto",
+            "firstname": "Décio",
+            "lastname": "Ferreira da Silva Neto",
+            "name": "Décio Ferreira da Silva Neto",
+            "display_name": "Decio Neto",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 187,
+            "weight": null,
+            "date_of_birth": "1997-11-04",
+            "gender": "male"
+          }
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719458,
+      "events": [
+        {
+          "id": 157253983,
+          "fixture_id": 19719458,
+          "period_id": 7005913,
+          "participant_id": 94900,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 379230,
+          "related_player_id": 7708893,
+          "player_name": "Romero",
+          "related_player_name": "Bradley Banda",
+          "result": null,
+          "info": null,
+          "addition": "3rd Substitution",
+          "minute": 64,
+          "extra_minute": null,
+          "injured": true,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005913,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674133272,
+          "sport_id": 1,
+          "fixture_id": 19719458,
+          "player_id": 7708893,
+          "team_id": 94900,
+          "position_id": 24,
+          "formation_field": "1:1",
+          "type_id": 11,
+          "formation_position": 1,
+          "player_name": "Bradley Banda",
+          "jersey_number": 1,
+          "details": [
+            {
+              "id": 2127268033,
+              "fixture_id": 19719458,
+              "player_id": 7708893,
+              "team_id": 94900,
+              "lineup_id": 14674133272,
+              "type_id": 1535,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2127268034,
+              "fixture_id": 19719458,
+              "player_id": 7708893,
+              "team_id": 94900,
+              "lineup_id": 14674133272,
+              "type_id": 118,
+              "data": {
+                "value": 6.12
+              }
+            },
+            {
+              "id": 2127236156,
+              "fixture_id": 19719458,
+              "player_id": 7708893,
+              "team_id": 94900,
+              "lineup_id": 14674133272,
+              "type_id": 117172,
+              "data": {
+                "value": 66
+              }
+            }
+          ],
+          "player": {
+            "id": 7708893,
+            "sport_id": 1,
+            "country_id": 3374,
+            "nationality_id": 3374,
+            "city_id": null,
+            "position_id": 24,
+            "detailed_position_id": 24,
+            "type_id": 24,
+            "common_name": "B. Banda",
+            "firstname": "Bradley",
+            "lastname": "Banda",
+            "name": "Bradley Banda",
+            "display_name": "Bradley Banda",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/29/7708893.png",
+            "height": 186,
+            "weight": null,
+            "date_of_birth": "1998-01-20",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674133663,
+          "sport_id": 1,
+          "fixture_id": 19719458,
+          "player_id": null,
+          "team_id": 94900,
+          "position_id": 24,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Jesús Romero",
+          "jersey_number": 13,
+          "details": [
+            {
+              "id": 2127238402,
+              "fixture_id": 19719458,
+              "player_id": null,
+              "team_id": 94900,
+              "lineup_id": 14674133663,
+              "type_id": 117172,
+              "data": {
+                "value": 20
+              }
+            },
+            {
+              "id": 2127267050,
+              "fixture_id": 19719458,
+              "player_id": null,
+              "team_id": 94900,
+              "lineup_id": 14674133663,
+              "type_id": 1535,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719451,
+      "events": [
+        {
+          "id": 157254097,
+          "fixture_id": 19719451,
+          "period_id": 7005918,
+          "participant_id": 2600,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 140448,
+          "related_player_id": 2178606,
+          "player_name": "Mehdi Kirch",
+          "related_player_name": "Almir Klica",
+          "result": null,
+          "info": null,
+          "addition": "6th Substitution",
+          "minute": 72,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005918,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157254119,
+          "fixture_id": 19719451,
+          "period_id": 7005918,
+          "participant_id": 2600,
+          "type_id": 18,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": 538864,
+          "player_name": "Jean-Paul Kumbi",
+          "related_player_name": "Loris Tinelli",
+          "result": null,
+          "info": null,
+          "addition": "8th Substitution",
+          "minute": 81,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005918,
+          "rescinded": null,
+          "sort_order": 8,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674133695,
+          "sport_id": 1,
+          "fixture_id": 19719451,
+          "player_id": 140448,
+          "team_id": 2600,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Mehdi Kirch",
+          "jersey_number": 24,
+          "details": [
+            {
+              "id": 2127238153,
+              "fixture_id": 19719451,
+              "player_id": 140448,
+              "team_id": 2600,
+              "lineup_id": 14674133695,
+              "type_id": 117172,
+              "data": {
+                "value": 24
+              }
+            }
+          ],
+          "player": {
+            "id": 140448,
+            "sport_id": 1,
+            "country_id": 17,
+            "nationality_id": 17,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 25,
+            "common_name": "M. Kirch",
+            "firstname": "Mehdi",
+            "lastname": "Kirch",
+            "name": "Mehdi Kirch",
+            "display_name": "Mehdi Kirch",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 172,
+            "weight": null,
+            "date_of_birth": "1990-01-27",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674133481,
+          "sport_id": 1,
+          "fixture_id": 19719451,
+          "player_id": null,
+          "team_id": 2600,
+          "position_id": 27,
+          "formation_field": "3:1",
+          "type_id": 11,
+          "formation_position": 6,
+          "player_name": "Loris Tinelli",
+          "jersey_number": 72,
+          "details": [
+            {
+              "id": 2127236359,
+              "fixture_id": 19719451,
+              "player_id": null,
+              "team_id": 2600,
+              "lineup_id": 14674133481,
+              "type_id": 117172,
+              "data": {
+                "value": 47
+              }
+            },
+            {
+              "id": 2127273049,
+              "fixture_id": 19719451,
+              "player_id": null,
+              "team_id": 2600,
+              "lineup_id": 14674133481,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2127267086,
+              "fixture_id": 19719451,
+              "player_id": null,
+              "team_id": 2600,
+              "lineup_id": 14674133481,
+              "type_id": 1535,
+              "data": {
+                "value": 2
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674133483,
+          "sport_id": 1,
+          "fixture_id": 19719451,
+          "player_id": null,
+          "team_id": 2600,
+          "position_id": 25,
+          "formation_field": "4:3",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Almir Klica",
+          "jersey_number": 77,
+          "details": [
+            {
+              "id": 2127236363,
+              "fixture_id": 19719451,
+              "player_id": null,
+              "team_id": 2600,
+              "lineup_id": 14674133483,
+              "type_id": 117172,
+              "data": {
+                "value": 47
+              }
+            },
+            {
+              "id": 2127273051,
+              "fixture_id": 19719451,
+              "player_id": null,
+              "team_id": 2600,
+              "lineup_id": 14674133483,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2127267088,
+              "fixture_id": 19719451,
+              "player_id": null,
+              "team_id": 2600,
+              "lineup_id": 14674133483,
+              "type_id": 1535,
+              "data": {
+                "value": 2
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 37727159,
+      "sport_id": 1,
+      "country_id": 23,
+      "nationality_id": 23,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": null,
+      "common_name": "K. Loukou",
+      "firstname": "Konan Jaures-Ulrich",
+      "lastname": "Loukou",
+      "name": "Konan Jaures-Ulrich Loukou",
+      "display_name": "Loukou Jaures-Ulrich",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 178,
+      "weight": null,
+      "date_of_birth": "2005-06-15",
+      "gender": "male"
+    },
+    {
+      "id": 37675238,
+      "sport_id": 1,
+      "country_id": 462,
+      "nationality_id": 462,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "type_id": null,
+      "common_name": "M. Kamson-Kamara",
+      "firstname": "Michael-John",
+      "lastname": "Kamson-Kamara",
+      "name": "Michael-John Kamson-Kamara",
+      "display_name": "MJ Kamson-Kamara",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 185,
+      "weight": null,
+      "date_of_birth": "2006-02-14",
+      "gender": "male"
+    },
+    {
+      "id": 37749100,
+      "sport_id": 1,
+      "country_id": 556,
+      "nationality_id": null,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": null,
+      "common_name": "N. Ojea Cobiella",
+      "firstname": "Noa",
+      "lastname": "Ojea Cobiella",
+      "name": "Noa Ojea Cobiella",
+      "display_name": "Noa Ojea",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2009-08-10",
+      "gender": "male"
+    },
+    {
+      "id": 528152,
+      "sport_id": 1,
+      "country_id": 224,
+      "nationality_id": 224,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "type_id": 24,
+      "common_name": "A. Angelov",
+      "firstname": "Aleksandar",
+      "lastname": "Angelov",
+      "name": "Aleksandar Angelov",
+      "display_name": "Aleksandar Angelov",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 181,
+      "weight": null,
+      "date_of_birth": "2002-05-27",
+      "gender": "male"
+    },
+    {
+      "id": 37721425,
+      "sport_id": 1,
+      "country_id": 2345,
+      "nationality_id": 2345,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 149,
+      "type_id": null,
+      "common_name": "L. Bulmaga",
+      "firstname": "Leonard",
+      "lastname": "Bulmaga",
+      "name": "Leonard Bulmaga",
+      "display_name": "Leonard Bulmaga",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 178,
+      "weight": null,
+      "date_of_birth": "2007-08-14",
+      "gender": "male"
+    },
+    {
+      "id": 38213137,
+      "sport_id": 1,
+      "country_id": 2345,
+      "nationality_id": 2345,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": null,
+      "common_name": "C. Silcenco",
+      "firstname": "Chiril",
+      "lastname": "Silcenco",
+      "name": "Chiril Silcenco",
+      "display_name": "Chiril Silcenco",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 177,
+      "weight": null,
+      "date_of_birth": "2007-05-15",
+      "gender": "male"
+    },
+    {
+      "id": 379230,
+      "sport_id": 1,
+      "country_id": 32,
+      "nationality_id": 32,
+      "city_id": 82287,
+      "position_id": 24,
+      "detailed_position_id": 24,
+      "type_id": 24,
+      "common_name": "J. Romero Correa",
+      "firstname": "Jesús",
+      "lastname": "Romero Correa",
+      "name": "Jesús Romero Correa",
+      "display_name": "Gato Romero",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/30/379230.png",
+      "height": 186,
+      "weight": 78,
+      "date_of_birth": "1990-01-17",
+      "gender": "male"
+    },
+    {
+      "id": 538864,
+      "sport_id": 1,
+      "country_id": 3126,
+      "nationality_id": 3126,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": 25,
+      "common_name": "L. Tinelli",
+      "firstname": "Loris",
+      "lastname": "Tinelli",
+      "name": "Loris Tinelli",
+      "display_name": "Loris Tinelli",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 182,
+      "weight": null,
+      "date_of_birth": "1999-02-02",
+      "gender": "male"
+    },
+    {
+      "id": 2178606,
+      "sport_id": 1,
+      "country_id": 998,
+      "nationality_id": 998,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 155,
+      "type_id": 27,
+      "common_name": "A. Klica",
+      "firstname": "Almir",
+      "lastname": "Klica",
+      "name": "Almir Klica",
+      "display_name": "Almir Klica",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 168,
+      "weight": null,
+      "date_of_birth": "1998-11-10",
+      "gender": "male"
+    }
+  ],
+  "sources": [
+    "https://www.heartsfc.co.uk/blogs/news/match-report-hearts-1-1-benfica",
+    "https://www.heartsfc.co.uk/blogs/news/kamson-kamara-to-join-jambos",
+    "https://belgianfootball.s3.eu-central-1.amazonaws.com/s3fs-public/rbfa/docs/pdf/selections/u15_futures/squadlist_U15F_050224.pdf",
+    "https://www.sportschau.de/live-und-ergebnisse/die-finals/uefa-el-quali/ma12402280/fk-kairat_rsc-anderlecht/liveticker",
+    "https://fmf.md/noutate/18029/liga-conferintei-velez-mostarmilsami-11",
+    "https://www.fmf.md/noutate/18088/liga-conferintei-milsami-sia-incheiat-parcursul-european",
+    "https://www.uefa.com/under19/teams/players/250172170--leonardo-bulmaga/",
+    "https://fmf.md/noutate/17953/liga-7777-loturile-echipelor",
+    "https://www.rte.ie/sport/soccer/2026/0709/1582658-bohemians-toil-to-victory-on-european-return/",
+    "https://ar.uefa.com/uefaconferenceleague/clubs/2603085--mondorf/squad/",
+    "https://www.sportschau.de/live-und-ergebnisse/fussball/europa-conference-league-qual/ma12127780/us-mondorf_dinamo-tbilisi/liveticker"
+  ],
+  "expected_lineups": {
+    "19719405": [
+      [
+        37691762,
+        11
+      ],
+      [
+        37727159,
+        42
+      ]
+    ],
+    "19766390": [
+      [
+        27440420,
+        6
+      ],
+      [
+        37675238,
+        24
+      ]
+    ],
+    "19788667": [
+      [
+        9939202,
+        24
+      ],
+      [
+        37749100,
+        53
+      ]
+    ],
+    "19719456": [
+      [
+        528152,
+        4
+      ],
+      [
+        37721425,
+        17
+      ],
+      [
+        38206364,
+        20
+      ],
+      [
+        38213137,
+        7
+      ]
+    ],
+    "19719430": [
+      [
+        528152,
+        4
+      ],
+      [
+        38213137,
+        7
+      ],
+      [
+        37721425,
+        17
+      ],
+      [
+        37704291,
+        34
+      ]
+    ],
+    "19719458": [
+      [
+        7708893,
+        1
+      ],
+      [
+        379230,
+        13
+      ]
+    ],
+    "19719451": [
+      [
+        140448,
+        24
+      ],
+      [
+        538864,
+        72
+      ],
+      [
+        2178606,
+        77
+      ]
+    ]
+  },
+  "expected_profile_requests": {
+    "19719456": 3,
+    "19719430": 3,
+    "19719451": 2
+  },
+  "expected_events": {
+    "19719430": [
+      {
+        "id": 157280997,
+        "fixture_id": 19719430,
+        "period_id": 7010152,
+        "participant_id": 6538,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 38213137,
+        "related_player_id": 37704291,
+        "player_name": "Chiril Șilcenco",
+        "related_player_name": "Decio Neto",
+        "result": null,
+        "info": null,
+        "addition": "4th Substitution",
+        "minute": 86,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7010152,
+        "rescinded": null,
+        "sort_order": 4,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ]
+  }
+}
