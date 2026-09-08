@@ -120,6 +120,28 @@ void main() {
     });
   }
 
+  for (final size in const [Size(320, 568), Size(430, 932)]) {
+    testWidgets('Fixture calendar fits at ${size.width.toInt()}px',
+        (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: FixtureCalendar(allMatches: [], favoriteTeamId: 8),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final testCase in <({
     String name,
     ThemeData theme,

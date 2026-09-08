@@ -509,8 +509,15 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
-                    Text(_getMonthName(_currentMonth.month),
-                        style: Heading3.style),
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _getMonthName(_currentMonth.month),
+                          style: Heading3.style,
+                        ),
+                      ),
+                    ),
                     IconButton(
                       onPressed: _nextMonth,
                       icon: Icon(
@@ -544,13 +551,13 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
         // Legend outside the calendar
         Container(
           padding: const EdgeInsets.all(24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          child: Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 16,
+            runSpacing: 8,
             children: [
               _buildLegendDot(Colors.red, 'League'),
-              const SizedBox(width: 16),
               _buildLegendDot(Colors.blue, 'Europe'),
-              const SizedBox(width: 16),
               _buildLegendDot(Colors.green, 'Cup'),
             ],
           ),
