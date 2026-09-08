@@ -14,9 +14,8 @@ from one_touch_loader.loaders.team_seasons_loader import (
 )
 from one_touch_loader.loaders.seasons_loader import collect_all_seasons
 from one_touch_loader.loaders.standings_loader import (
-    build_all_standings,
-    refresh_current_standings,
-    compute_rank_delta_since_last_match,
+    collect_all_standings,
+    collect_standings_for_name,
 )
 from one_touch_loader.loaders.xg_standings_loader import (
     build_all_xg_standings,
@@ -146,6 +145,10 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli wages all
   python -m one_touch_loader.cli wages <season_name> <competition_id> [competition_id ...]
 
+12. standings
+  python -m one_touch_loader.cli standings all
+  python -m one_touch_loader.cli standings <season_name> <competition_id> [competition_id ...]
+
 """
 
 
@@ -167,12 +170,6 @@ def _parse_competition_ids(values: list[str]) -> list[int]:
         raise ValueError("At least one competition_id is required")
     return competition_ids
 
-
-from one_touch_loader.loaders.points_pace import (
-    build_points_pace_all,
-    refresh_points_pace_current,
-    validate_points_pace,
-)
 
 def main():
     if len(sys.argv) < 2:
@@ -274,28 +271,23 @@ def main():
             print(USAGE)
 
     elif cmd == "standings":
-        if len(sys.argv) < 3:
-            print(USAGE)
-            return
-
-        sub = sys.argv[2]
-
-        if sub == "build":
-            build_all_standings()
-            print("Standings build done.")
-
-        elif sub == "refresh-current":
-            refresh_current_standings()
-            print("Standings refresh-current done.")
-
-        elif sub == "delta" and len(sys.argv) == 6:
-            lid = int(sys.argv[3])
-            sid = int(sys.argv[4])
-            tid = int(sys.argv[5])
-
-            delta, symbol = compute_rank_delta_since_last_match(tid, lid, sid)
-            print(f"team {tid} @ league {lid} season {sid}: delta={delta} {symbol}")
-
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_standings()
+            print(
+                "Standings all done: "
+                f"seasons={result['processed_seasons']} "
+                f"rows={result['stored_rows']}"
+            )
+        elif len(sys.argv) >= 4:
+            season_name = sys.argv[2]
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            result = collect_standings_for_name(season_name, competition_ids)
+            print(
+                "Standings season done: "
+                f"season={season_name} "
+                f"competitions={competition_ids} "
+                f"rows={result['stored_rows']}"
+            )
         else:
             print(USAGE)
 
@@ -732,27 +724,6 @@ def main():
 
             result = refresh_current_team_attributes(update_fixtures=update_fixtures)
             print(f"Team-attributes refresh-current done: {result}")
-
-        else:
-            print(USAGE)
-
-    elif cmd == "points-pace":
-        if len(sys.argv) < 3:
-            print(USAGE)
-            return
-
-        sub = sys.argv[2]
-
-        if sub == "build":
-            build_points_pace_all()
-            print("Points pace build done.")
-
-        elif sub == "refresh-current":
-            refresh_points_pace_current()
-            print("Points pace refresh-current done.")
-
-        elif sub == "validate":
-            validate_points_pace()
 
         else:
             print(USAGE)

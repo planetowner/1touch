@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from one_touch_loader.loaders.big5_bootstrap import run_big5_bootstrap
-from one_touch_loader.loaders.standings_loader import refresh_current_standings
 from one_touch_loader.loaders.team_stats_loader import (
     refresh_fixture_team_stats_for_current_seasons,
 )
@@ -39,8 +38,6 @@ def refresh_current_team_attributes(update_fixtures: bool = True) -> dict:
 
     if not current_season_ids:
         raise RuntimeError("No current Big 5 seasons found in seasons table.")
-
-    refresh_current_standings()
 
     refresh_fixture_team_stats_for_current_seasons(only_status="past")
 
