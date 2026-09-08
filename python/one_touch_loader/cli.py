@@ -39,6 +39,11 @@ from one_touch_loader.loaders.players_loader import (
     collect_all_players,
     collect_players_for_competition_season,
 )
+from one_touch_loader.loaders.fixture_details_loader import (
+    collect_all_fixture_details,
+    collect_fixture_details,
+    collect_fixture_details_for_competition_season,
+)
 from one_touch_loader.loaders.countries_loader import refresh_countries
 from one_touch_loader.loaders.player_team_honours_loader import (
     refresh_player_team_honours,
@@ -110,6 +115,12 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli squads <season_name> <competition_id> [competition_id ...]
   python -m one_touch_loader.cli squads refresh-current
   python -m one_touch_loader.cli squads refresh-team <team_id>
+
+8. fixture-details
+  python -m one_touch_loader.cli fixture-details <season_name>  (Big 5 leagues)
+  python -m one_touch_loader.cli fixture-details fixture <fixture_id>
+  python -m one_touch_loader.cli fixture-details all
+  python -m one_touch_loader.cli fixture-details <season_name> <competition_id> [competition_id ...]
 
 """
 
@@ -415,6 +426,33 @@ def main():
             print(
                 "Players season done: "
                 f"season={season_name} competitions={competition_ids}"
+            )
+        else:
+            print(USAGE)
+
+    elif cmd == "fixture-details":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_fixture_details()
+            print(f"Fixture details all done: {result}")
+        elif len(sys.argv) == 4 and sys.argv[2] == "fixture":
+            result = collect_fixture_details(int(sys.argv[3]))
+            print(f"Fixture details fixture done: {result}")
+        elif len(sys.argv) >= 3 and sys.argv[2] not in {"all", "fixture"}:
+            season_name = sys.argv[2]
+            # 시즌만 지정하면 선수·스쿼드와 같은 5대 리그를 한 번에 처리해요.
+            competition_ids = (
+                _parse_competition_ids(sys.argv[3:])
+                if len(sys.argv) >= 4
+                else list(BIG5_COMPETITION_IDS)
+            )
+            result = collect_fixture_details_for_competition_season(
+                season_name,
+                competition_ids,
+            )
+            print(
+                "Fixture details season done: "
+                f"season={season_name} competitions={competition_ids} "
+                f"result={result}"
             )
         else:
             print(USAGE)
