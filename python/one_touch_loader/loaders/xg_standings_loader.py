@@ -8,9 +8,10 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 
 from ..core.db import fetch_all, transaction
+from ..core.fixture_states import COMPLETED_STATE_IDS
 
 
-BIG5_LEAGUE_IDS: Tuple[int, ...] = (8, 82, 301, 384, 564)
+BIG5_COMPETITION_IDS: Tuple[int, ...] = (8, 82, 301, 384, 564)
 
 CALIBRATION_LOOKBACK_SEASONS = 5
 CALIBRATION_METHOD = "historical_draw_rate"
@@ -24,7 +25,7 @@ DRAW_RATE_DECIMAL_PLACES = "0.000001"
 
 SQL_UPSERT_XG_STANDINGS = """
 INSERT INTO xg_standings (
-  league_id,
+  competition_id,
   season_id,
   team_id,
   position,
@@ -50,7 +51,7 @@ ON DUPLICATE KEY UPDATE
 
 SQL_UPSERT_XG_STANDINGS_CALIBRATION = """
 INSERT INTO xg_standings_calibration (
-  league_id,
+  competition_id,
   season_id,
   method,
   lookback_seasons,
@@ -74,8 +75,10 @@ FROM understat_season_map usm
 JOIN seasons s
   ON s.season_id = usm.sportmonks_season_id
 JOIN understat_league_map ulm
-  ON ulm.sportmonks_league_id = s.league_id
-WHERE s.league_id = %s
+-- Sportmonks는 공급자 식별자를 league_id라고 불러요. 내부 시즌 행에서는
+-- competitions.competition_id를 써요.
+  ON ulm.sportmonks_league_id = s.competition_id
+WHERE s.competition_id = %s
   AND usm.sportmonks_season_id = %s
 LIMIT 1
 """
@@ -94,73 +97,76 @@ SELECT
 FROM seasons s
 JOIN understat_season_map usm
   ON usm.sportmonks_season_id = s.season_id
-WHERE s.league_id = %s
-  AND s.starting_at < (
-    SELECT target.starting_at
+WHERE s.competition_id = %s
+  AND s.name < (
+    SELECT target.name
     FROM seasons target
     WHERE target.season_id = %s
     LIMIT 1
   )
-ORDER BY s.starting_at DESC
+ORDER BY s.name DESC
 LIMIT {limit}
 """
 
 
-SQL_GET_ACTUAL_DRAW_RATE = """
+SQL_GET_ACTUAL_DRAW_RATE = f"""
 SELECT
   COUNT(*) AS match_count,
   CAST(SUM(CASE WHEN home_score = away_score THEN 1 ELSE 0 END) AS SIGNED) AS draw_count
-FROM fixtures
-WHERE league_id = %s
-  AND season_id IN ({placeholders})
-  AND competition_type = 'league'
-  AND status = 'past'
-  AND home_score IS NOT NULL
-  AND away_score IS NOT NULL
+FROM fixtures f
+JOIN stages st ON st.stage_id = f.stage_id
+JOIN seasons s ON s.season_id = st.season_id
+JOIN competitions c ON c.competition_id = s.competition_id
+WHERE s.competition_id = %s
+  AND s.season_id IN ({{placeholders}})
+  AND c.competition_type = 'league'
+  AND f.state_id IN ({','.join(str(value) for value in COMPLETED_STATE_IDS)})
+  AND f.home_score IS NOT NULL
+  AND f.away_score IS NOT NULL
 """
 
 
 SQL_GET_ELIGIBLE_BUILD_SEASONS = """
 SELECT
-  s.league_id,
+  s.competition_id,
   s.season_id
 FROM seasons s
 JOIN understat_season_map usm
   ON usm.sportmonks_season_id = s.season_id
-WHERE s.league_id IN (8, 82, 301, 384, 564)
-  AND YEAR(s.starting_at) >= %s
+WHERE s.competition_id IN (8, 82, 301, 384, 564)
+  AND CAST(LEFT(s.name, 4) AS UNSIGNED) >= %s
   AND (
     SELECT COUNT(*)
     FROM seasons previous_s
     JOIN understat_season_map previous_usm
       ON previous_usm.sportmonks_season_id = previous_s.season_id
-    WHERE previous_s.league_id = s.league_id
-      AND previous_s.starting_at < s.starting_at
+    WHERE previous_s.competition_id = s.competition_id
+      AND previous_s.name < s.name
   ) >= %s
-ORDER BY s.league_id, s.starting_at
+ORDER BY s.competition_id, s.name
 """
 
 
 SQL_GET_CURRENT_BIG5_SEASONS = """
-SELECT s.league_id, s.season_id
+SELECT s.competition_id, s.season_id
 FROM seasons s
 JOIN understat_season_map usm
   ON usm.sportmonks_season_id = s.season_id
 WHERE s.is_current = 1
-  AND s.league_id IN (8, 82, 301, 384, 564)
-ORDER BY s.league_id, s.starting_at
+  AND s.competition_id IN (8, 82, 301, 384, 564)
+ORDER BY s.competition_id, s.name
 """
 
 
 SQL_DELETE_XG_STANDINGS = """
 DELETE FROM xg_standings
-WHERE league_id = %s
+WHERE competition_id = %s
   AND season_id = %s
 """
 
 
 # =========================================================
-# Strict helpers
+# 값을 엄격하게 확인하는 도우미
 # =========================================================
 
 def _require_int(value, field_name: str) -> int:
@@ -182,12 +188,12 @@ def _to_decimal(value: Any, places: str) -> Decimal:
 
 
 # =========================================================
-# Dataclass
+# 데이터 클래스
 # =========================================================
 
 @dataclass(frozen=True)
 class DrawBandCalibration:
-    league_id: int
+    competition_id: int
     season_id: int
     method: str
     lookback_seasons: int
@@ -198,7 +204,7 @@ class DrawBandCalibration:
 
 
 # =========================================================
-# Understat source loader
+# Understat 원본 로더
 # =========================================================
 
 def _load_understat_schedule(
@@ -209,15 +215,14 @@ def _load_understat_schedule(
     no_store: bool,
 ) -> pd.DataFrame:
     """
-    Verified against soccerdata.Understat.read_schedule:
-      - Returns a MultiIndex DataFrame.
-      - After reset_index, exposes columns including:
+    soccerdata.Understat.read_schedule에서 확인한 규칙이에요.
+      - MultiIndex DataFrame을 반환해요.
+      - reset_index 뒤에는 다음 열을 포함해요.
           home_team_id, away_team_id, home_xg, away_xg
 
-    include_matches_without_data=False so future / not-yet-played matches
-    (which would arrive with NaN xG and NaN team_id) are excluded by the
-    source itself. This matters for in-season refreshes — the previous
-    True setting would inject NaN rows into the standings aggregation.
+    include_matches_without_data=False로 두어, xG와 team_id가 NaN인 미래·미경기 항목을
+    원본 단계에서 제외해요. 시즌 중 갱신에 꼭 필요해요. 이전처럼 True로 두면
+    NaN 행이 순위 집계에 들어가요.
     """
     import soccerdata as sd
 
@@ -235,19 +240,19 @@ def _load_understat_schedule(
 
 
 # =========================================================
-# Mapping readers
+# 매핑 조회
 # =========================================================
 
 def _get_understat_mapping_for_season(
-    league_id: int,
+    competition_id: int,
     season_id: int,
 ) -> Tuple[str, str]:
-    rows = fetch_all(SQL_GET_UNDERSTAT_MAPPING_FOR_SEASON, (league_id, season_id))
+    rows = fetch_all(SQL_GET_UNDERSTAT_MAPPING_FOR_SEASON, (competition_id, season_id))
 
     if not rows:
         raise RuntimeError(
             f"No Understat league/season mapping found for "
-            f"league_id={league_id}, season_id={season_id}"
+            f"competition_id={competition_id}, season_id={season_id}"
         )
 
     return (
@@ -257,7 +262,7 @@ def _get_understat_mapping_for_season(
 
 
 def _get_team_map() -> Dict[int, int]:
-    """Returns {understat_team_id: sportmonks_team_id}."""
+    """{understat_team_id: sportmonks_team_id} 매핑을 반환해요."""
     rows = fetch_all(SQL_GET_TEAM_MAP)
     mapping: Dict[int, int] = {}
 
@@ -270,11 +275,11 @@ def _get_team_map() -> Dict[int, int]:
 
 
 # =========================================================
-# Calibration: draw rate from Sportmonks + draw band from Understat
+# 보정: Sportmonks의 무승부 비율과 Understat의 무승부 범위를 함께 써요.
 # =========================================================
 
 def _get_calibration_seasons(
-    league_id: int,
+    competition_id: int,
     season_id: int,
     lookback_seasons: int,
 ) -> List[Dict[str, Any]]:
@@ -282,7 +287,7 @@ def _get_calibration_seasons(
         raise ValueError(f"lookback_seasons must be > 0, got {lookback_seasons!r}")
 
     sql = SQL_GET_CALIBRATION_SEASONS.replace("{limit}", str(int(lookback_seasons)))
-    rows = fetch_all(sql, (league_id, season_id))
+    rows = fetch_all(sql, (competition_id, season_id))
 
     return [
         {
@@ -297,7 +302,7 @@ def _get_calibration_seasons(
 
 
 def _get_actual_draw_rate_from_fixtures(
-    league_id: int,
+    competition_id: int,
     season_ids: List[int],
 ) -> Tuple[Decimal, int]:
     if not season_ids:
@@ -305,7 +310,7 @@ def _get_actual_draw_rate_from_fixtures(
 
     placeholders = ",".join(["%s"] * len(season_ids))
     sql = SQL_GET_ACTUAL_DRAW_RATE.replace("{placeholders}", placeholders)
-    rows = fetch_all(sql, (league_id, *season_ids))
+    rows = fetch_all(sql, (competition_id, *season_ids))
 
     match_count = _require_int(rows[0][0], "draw-rate calibration match_count")
     draw_count = _require_int(rows[0][1], "draw-rate calibration draw_count")
@@ -313,7 +318,7 @@ def _get_actual_draw_rate_from_fixtures(
     if match_count == 0:
         raise RuntimeError(
             f"No completed fixture data found for draw-rate calibration. "
-            f"league_id={league_id}, season_ids={season_ids}"
+            f"competition_id={competition_id}, season_ids={season_ids}"
         )
 
     rate = Decimal(draw_count) / Decimal(match_count)
@@ -329,8 +334,10 @@ def _empirical_percentile_threshold(
     percentile: Decimal,
 ) -> Decimal:
     """
-    Discrete empirical percentile. Returns the smallest observed threshold
-    such that at least `percentile` of values are <= threshold.
+    이산 경험적 백분위수를 계산해요.
+
+    전체 값 가운데 최소 `percentile` 비율이 threshold 이하가 되는
+    가장 작은 관측 threshold를 반환해요.
     """
     if not values:
         raise RuntimeError("Cannot calculate percentile threshold from empty values.")
@@ -386,7 +393,7 @@ def _calculate_draw_band_from_understat(
 
 
 def calibrate_draw_band_for_season(
-    league_id: int,
+    competition_id: int,
     season_id: int,
     understat_league_key: str,
     *,
@@ -395,17 +402,17 @@ def calibrate_draw_band_for_season(
     no_store: bool,
 ) -> Optional[DrawBandCalibration]:
     """
-    Builds the xG draw threshold for one league-season.
+    한 대회 시즌의 xG 무승부 기준값을 만들어요.
 
-    Method:
-      1. Use exactly previous N mapped seasons in the same league.
-      2. If fewer than N previous seasons exist, return None (skip).
-      3. Calculate actual draw rate from completed league fixtures.
-      4. Calculate abs(home_xg - away_xg) distribution from Understat.
+    계산 방법은 다음과 같아요.
+      1. 같은 리그에서 매핑된 직전 N개 시즌만 써요.
+      2. 이전 시즌이 N개보다 적으면 None을 반환하고 건너뛰어요.
+      3. 완료된 리그 경기에서 실제 무승부 비율을 계산해요.
+      4. Understat에서 abs(home_xg - away_xg) 분포를 계산해요.
       5. draw_band = empirical percentile(abs_xg_diff, actual_draw_rate)
     """
     calibration_seasons = _get_calibration_seasons(
-        league_id,
+        competition_id,
         season_id,
         lookback_seasons=lookback_seasons,
     )
@@ -416,7 +423,7 @@ def calibrate_draw_band_for_season(
     calibration_season_ids = [s["season_id"] for s in calibration_seasons]
 
     target_draw_rate, match_count = _get_actual_draw_rate_from_fixtures(
-        league_id,
+        competition_id,
         calibration_season_ids,
     )
 
@@ -429,7 +436,7 @@ def calibrate_draw_band_for_season(
     )
 
     return DrawBandCalibration(
-        league_id=league_id,
+        competition_id=competition_id,
         season_id=season_id,
         method=CALIBRATION_METHOD,
         lookback_seasons=lookback_seasons,
@@ -445,14 +452,13 @@ def _persist_xg_standings_atomically(
     calibration: DrawBandCalibration,
     standings_batch: List[Tuple],
 ) -> None:
-    """Calibration upsert + DELETE existing standings + INSERT new ones in one transaction.
+    """보정값 upsert와 기존 순위 DELETE, 새 순위 INSERT를 한 트랜잭션에서 실행해요.
 
-    Ensures we never leave calibration metadata ahead of the standings rows
-    they describe, and never wipe existing standings without a successful
-    replacement.
+    보정 메타데이터만 순위 행보다 먼저 저장되거나, 새 순위를 넣지 못한 채 기존 순위만
+    지워지는 일을 막아요.
     """
     calibration_row = (
-        calibration.league_id,
+        calibration.competition_id,
         calibration.season_id,
         calibration.method,
         calibration.lookback_seasons,
@@ -466,7 +472,7 @@ def _persist_xg_standings_atomically(
             cur.execute(SQL_UPSERT_XG_STANDINGS_CALIBRATION, calibration_row)
             cur.execute(
                 SQL_DELETE_XG_STANDINGS,
-                (calibration.league_id, calibration.season_id),
+                (calibration.competition_id, calibration.season_id),
             )
 
             if standings_batch:
@@ -474,7 +480,7 @@ def _persist_xg_standings_atomically(
 
 
 # =========================================================
-# Standings aggregation
+# 순위 집계
 # =========================================================
 
 def _empty_team_agg(team_id: int) -> Dict[str, Any]:
@@ -514,7 +520,7 @@ def _add_match_result(
 
 def _rank_xg_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Sorting:
+    정렬 순서예요.
       xPts DESC, xG diff DESC, xG DESC, team_id ASC
     """
     rows.sort(
@@ -533,41 +539,41 @@ def _rank_xg_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 # =========================================================
-# Public API
+# 외부에서 쓰는 함수
 # =========================================================
 
 def build_xg_standings_for_season(
-    league_id: int,
+    competition_id: int,
     season_id: int,
     *,
     no_cache: bool = True,
     no_store: bool = False,
 ) -> int:
     """
-    Build xG standings for one Big 5 league-season.
+    Big 5 대회 시즌 하나의 xG 순위를 만들어요.
 
-    Important:
-      - xPts is NOT Understat expected points. It is 1touch's own xG-result rule.
-      - Draws are decided by calibrated draw_band:
+    꼭 알아둘 규칙이에요.
+      - xPts는 Understat의 기대 승점이 아니에요. 1Touch가 정한 xG 결과 규칙이에요.
+      - 무승부는 보정한 draw_band로 결정해요.
           team_xg - opponent_xg > draw_band       -> W, +3
           abs(team_xg - opponent_xg) <= draw_band -> D, +1
           team_xg - opponent_xg < -draw_band      -> L, +0
-      - draw_band is calibrated from previous N seasons.
-      - If fewer than N previous mapped seasons exist, this season is skipped.
+      - draw_band는 이전 N개 시즌으로 보정해요.
+      - 매핑된 이전 시즌이 N개보다 적으면 해당 시즌을 건너뛰어요.
     """
-    if league_id not in BIG5_LEAGUE_IDS:
+    if competition_id not in BIG5_COMPETITION_IDS:
         raise ValueError(
-            f"xg_standings only supports Big 5 league IDs: {BIG5_LEAGUE_IDS}. "
-            f"Received league_id={league_id}"
+            f"xg_standings only supports Big 5 league IDs: {BIG5_COMPETITION_IDS}. "
+            f"Received competition_id={competition_id}"
         )
 
     understat_league_key, understat_season_key = _get_understat_mapping_for_season(
-        league_id,
+        competition_id,
         season_id,
     )
 
     calibration = calibrate_draw_band_for_season(
-        league_id,
+        competition_id,
         season_id,
         understat_league_key,
         lookback_seasons=CALIBRATION_LOOKBACK_SEASONS,
@@ -577,7 +583,7 @@ def build_xg_standings_for_season(
 
     if calibration is None:
         print(
-            f"[xg_standings] skipped league_id={league_id} season_id={season_id} "
+            f"[xg_standings] skipped competition_id={competition_id} season_id={season_id} "
             f"reason=not_enough_previous_mapped_seasons "
             f"required_previous_seasons={CALIBRATION_LOOKBACK_SEASONS}"
         )
@@ -624,14 +630,14 @@ def build_xg_standings_for_season(
     if unmapped:
         raise RuntimeError(
             f"Some Understat teams are not mapped to Sportmonks teams. "
-            f"league_id={league_id}, season_id={season_id}, sample={unmapped[:10]}"
+            f"competition_id={competition_id}, season_id={season_id}, sample={unmapped[:10]}"
         )
 
     ranked = _rank_xg_rows(list(agg.values()))
 
     batch = [
         (
-            league_id,
+            competition_id,
             season_id,
             row["team_id"],
             row["position"],
@@ -652,7 +658,7 @@ def build_xg_standings_for_season(
     )
 
     print(
-        f"[xg_standings] league_id={league_id} season_id={season_id} "
+        f"[xg_standings] competition_id={competition_id} season_id={season_id} "
         f"understat=({understat_league_key}, {understat_season_key}) "
         f"teams={len(batch)} "
         f"method={calibration.method} "
@@ -672,10 +678,9 @@ def build_all_xg_standings(
     no_cache: bool = True,
     no_store: bool = False,
 ) -> int:
-    # Lower bound only — no upper cap. The understat_season_map join already
-    # restricts to seasons with xG data, so future seasons are naturally
-    # excluded until their data exists; an explicit upper year would just need
-    # a manual yearly bump and silently drop the newest season.
+    # 시작 연도만 제한하고 끝 연도는 막지 않아요. understat_season_map 조인이 이미
+    # xG 데이터가 있는 시즌만 남겨요. 미래 시즌은 데이터가 생기기 전까지 자연스럽게 빠져요.
+    # 끝 연도를 고정하면 해마다 직접 올려야 하고, 최신 시즌을 조용히 누락할 수 있어요.
     rows = fetch_all(
         SQL_GET_ELIGIBLE_BUILD_SEASONS,
         (start_year, CALIBRATION_LOOKBACK_SEASONS),
@@ -683,9 +688,9 @@ def build_all_xg_standings(
 
     total = 0
 
-    for league_id, season_id in rows:
+    for competition_id, season_id in rows:
         total += build_xg_standings_for_season(
-            _require_int(league_id, "seasons.league_id"),
+            _require_int(competition_id, "seasons.competition_id"),
             _require_int(season_id, "seasons.season_id"),
             no_cache=no_cache,
             no_store=no_store,
@@ -704,9 +709,9 @@ def refresh_current_xg_standings(
 
     total = 0
 
-    for league_id, season_id in rows:
+    for competition_id, season_id in rows:
         total += build_xg_standings_for_season(
-            _require_int(league_id, "seasons.league_id"),
+            _require_int(competition_id, "seasons.competition_id"),
             _require_int(season_id, "seasons.season_id"),
             no_cache=no_cache,
             no_store=no_store,

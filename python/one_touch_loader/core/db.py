@@ -1,7 +1,6 @@
 import os
 from contextlib import contextmanager
 
-import mysql.connector
 from mysql.connector import pooling
 from dotenv import load_dotenv
 
@@ -25,12 +24,11 @@ def get_conn():
 
 @contextmanager
 def transaction():
-    """Yield a connection. Commit on success, roll back on any exception.
+    """DB 연결을 열고, 성공하면 커밋하고 예외가 나면 롤백해요.
 
-    Use when several statements must succeed or fail together — e.g. a
-    DELETE + INSERT cache replacement, or a multi-table standings rebuild.
-    The caller is responsible for using cur.execute / cur.executemany on
-    cursors opened from the yielded connection.
+    여러 문장이 함께 성공하거나 실패해야 할 때 써요. 예를 들면 DELETE + INSERT로
+    캐시를 바꾸거나 여러 테이블의 순위를 다시 만들 때예요. 호출하는 쪽에서 반환된
+    연결의 커서로 cur.execute 또는 cur.executemany를 실행해야 해요.
     """
     conn = get_conn()
     try:

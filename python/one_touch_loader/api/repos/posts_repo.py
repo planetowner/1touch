@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from ..db import execute, fetch_all_dict, fetch_one_dict
 
@@ -15,13 +15,13 @@ def list_posts(category: Optional[str], sort: str, limit: int, offset: int) -> L
 
     where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
 
-    # MVP: popular은 일단 created_at desc로 대체(추후 likes/comments 집계로 교체)
-    order_by = "p.created_at DESC" if sort in ("newest", "popular", "best") else "p.created_at DESC"
+    # 현재 posts에는 별도 인기 점수가 없어 공개된 세 정렬값 모두 작성일 역순이에요.
+    order_by = "p.created_at DESC"
 
     return fetch_all_dict(
         f"""
         SELECT p.post_id, p.user_id, p.category, p.title, p.body, p.media_url,
-               DATE_FORMAT(p.created_at,'%%Y-%%m-%%d %%H:%%i:%%s') AS created_at
+      DATE_FORMAT(p.created_at,'%Y-%m-%d %H:%i:%S') AS created_at
         FROM posts p
         {where}
         ORDER BY {order_by}
