@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
@@ -750,27 +749,40 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 }
 
 class MyHighlights extends StatelessWidget {
-  const MyHighlights({super.key, required this.highlights});
+  const MyHighlights({
+    super.key,
+    required this.highlights,
+    required this.fallbacks,
+  });
 
   final List<HomeContentItem> highlights;
+  final List<HomeContentItem> fallbacks;
 
   @override
-  Widget build(BuildContext context) => _HomeContentList(items: highlights);
+  Widget build(BuildContext context) =>
+      _HomeContentList(items: highlights, fallbacks: fallbacks);
 }
 
 class MyNews extends StatelessWidget {
-  const MyNews({super.key, required this.news});
+  const MyNews({
+    super.key,
+    required this.news,
+    required this.fallbacks,
+  });
 
   final List<HomeContentItem> news;
+  final List<HomeContentItem> fallbacks;
 
   @override
-  Widget build(BuildContext context) => _HomeContentList(items: news);
+  Widget build(BuildContext context) =>
+      _HomeContentList(items: news, fallbacks: fallbacks);
 }
 
 class _HomeContentList extends StatelessWidget {
-  const _HomeContentList({required this.items});
+  const _HomeContentList({required this.items, required this.fallbacks});
 
   final List<HomeContentItem> items;
+  final List<HomeContentItem> fallbacks;
 
   @override
   Widget build(BuildContext context) {
@@ -785,8 +797,7 @@ class _HomeContentList extends StatelessWidget {
             child: _HomeContentCard(
               key: ValueKey('${items[index].destinationUrl}-$index'),
               item: items[index],
-              fallback: homeContentFallbackItems[
-                  index % homeContentFallbackItems.length],
+              fallback: fallbacks[index % fallbacks.length],
             ),
           ),
         ),

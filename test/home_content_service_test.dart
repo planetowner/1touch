@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/data/home/home_content_repository.dart';
 import 'package:onetouch/data/home/home_content_service.dart';
 
 void main() {
@@ -101,6 +102,23 @@ void main() {
 
     expect(await service.fetchNews(), isEmpty);
     expect(await service.fetchHighlights(favoriteTeamId: 8), isEmpty);
+    service.dispose();
+  });
+
+  test(
+      'repository load supplies immutable fallbacks when feeds are unavailable',
+      () async {
+    final service = HomeContentService(
+      client: MockClient((_) async => http.Response('Unavailable', 503)),
+    );
+    final HomeContentRepository repository = service;
+
+    final content = await repository.loadForTeam(8);
+
+    expect(content.highlights, hasLength(2));
+    expect(content.news, hasLength(2));
+    expect(() => content.highlights.clear(), throwsUnsupportedError);
+    expect(() => content.news.clear(), throwsUnsupportedError);
     service.dispose();
   });
 }

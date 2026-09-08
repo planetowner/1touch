@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/home/home_content_repository.dart';
 import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/models/home_content.dart';
+import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/HomeScreen.dart';
@@ -13,11 +16,15 @@ void main() {
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
     final repository = _ControlledHomeRepository();
+    final contentRepository = _RecordingHomeContentRepository();
 
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: HomeScreen(repository: repository),
+        home: HomeScreen(
+          repository: repository,
+          contentRepository: contentRepository,
+        ),
       ),
     );
 
@@ -33,6 +40,7 @@ void main() {
     repository.calls.single.completer.complete(_homeData());
     await tester.pump();
 
+    expect(contentRepository.requestedTeamIds, [1]);
     expect(find.text('Alpha FC'), findsOneWidget);
     await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
     await tester.pumpAndSettle();
@@ -50,7 +58,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: HomeScreen(repository: repository),
+        home: HomeScreen(
+          repository: repository,
+          contentRepository: _RecordingHomeContentRepository(),
+        ),
       ),
     );
 
@@ -77,7 +88,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: HomeScreen(repository: repository),
+        home: HomeScreen(
+          repository: repository,
+          contentRepository: _RecordingHomeContentRepository(),
+        ),
       ),
     );
     repository.calls.single.completer.complete(_homeData());
@@ -116,7 +130,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: HomeScreen(repository: repository),
+        home: HomeScreen(
+          repository: repository,
+          contentRepository: _RecordingHomeContentRepository(),
+        ),
       ),
     );
     repository.calls.single.completer.complete(_homeData());
@@ -174,3 +191,42 @@ class _ControlledHomeRepository implements HomeRepository {
     return call.completer.future;
   }
 }
+
+class _RecordingHomeContentRepository implements HomeContentRepository {
+  final List<int> requestedTeamIds = [];
+
+  @override
+  final HomeContent fallback = HomeContent(
+    highlights: const [_fallbackContentItem],
+    news: const [_fallbackContentItem],
+  );
+
+  @override
+  Future<HomeContent> loadForTeam(int favoriteTeamId) async {
+    requestedTeamIds.add(favoriteTeamId);
+    return HomeContent(
+      highlights: const [_loadedContentItem],
+      news: const [_loadedContentItem],
+    );
+  }
+
+  @override
+  Future<HomeContentItem?> loadForMatch({
+    required int homeTeamId,
+    required int awayTeamId,
+  }) async {
+    return null;
+  }
+}
+
+const _fallbackContentItem = HomeContentItem(
+  title: 'Fallback content',
+  source: 'Local',
+  timeLabel: 'Latest',
+);
+
+const _loadedContentItem = HomeContentItem(
+  title: 'Repository content',
+  source: 'Repository',
+  timeLabel: 'Now',
+);

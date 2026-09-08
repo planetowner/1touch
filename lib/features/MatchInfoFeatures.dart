@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/home/home_content_service.dart';
+import 'package:onetouch/data/home/home_content_repository.dart';
+import 'package:onetouch/data/home/home_content_repository_provider.dart';
 import 'package:onetouch/models/match_data.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/home_content_item.dart';
@@ -352,12 +353,14 @@ class MatchHighlights extends StatefulWidget {
   final String imageAsset;
   final int homeTeamId;
   final int awayTeamId;
+  final HomeContentRepository? repository;
 
   const MatchHighlights({
     super.key,
     required this.imageAsset,
     required this.homeTeamId,
     required this.awayTeamId,
+    this.repository,
   });
 
   @override
@@ -365,10 +368,12 @@ class MatchHighlights extends StatefulWidget {
 }
 
 class _MatchHighlightsState extends State<MatchHighlights> {
-  final HomeContentService _contentService = HomeContentService();
   HomeContentItem? _highlight;
   bool _networkImageFailed = false;
   int _requestId = 0;
+
+  HomeContentRepository get _repository =>
+      widget.repository ?? homeContentRepository;
 
   @override
   void initState() {
@@ -380,7 +385,8 @@ class _MatchHighlightsState extends State<MatchHighlights> {
   void didUpdateWidget(MatchHighlights oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.homeTeamId != widget.homeTeamId ||
-        oldWidget.awayTeamId != widget.awayTeamId) {
+        oldWidget.awayTeamId != widget.awayTeamId ||
+        oldWidget.repository != widget.repository) {
       _highlight = null;
       _networkImageFailed = false;
       _loadHighlight();
@@ -389,15 +395,23 @@ class _MatchHighlightsState extends State<MatchHighlights> {
 
   Future<void> _loadHighlight() async {
     final requestId = ++_requestId;
-    final highlight = await _contentService.fetchMatchHighlight(
-      homeTeamId: widget.homeTeamId,
-      awayTeamId: widget.awayTeamId,
-    );
-    if (!mounted || requestId != _requestId) return;
-    setState(() {
-      _highlight = highlight;
-      _networkImageFailed = false;
-    });
+    try {
+      final highlight = await _repository.loadForMatch(
+        homeTeamId: widget.homeTeamId,
+        awayTeamId: widget.awayTeamId,
+      );
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _highlight = highlight;
+        _networkImageFailed = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _highlight = null;
+        _networkImageFailed = false;
+      });
+    }
   }
 
   Future<void> _openHighlight() async {
@@ -413,12 +427,6 @@ class _MatchHighlightsState extends State<MatchHighlights> {
         setState(() => _networkImageFailed = true);
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _contentService.dispose();
-    super.dispose();
   }
 
   @override

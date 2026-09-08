@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/data/home/home_content_repository.dart';
+import 'package:onetouch/data/home/home_content_repository_provider.dart'
+    as content_provider;
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
-import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
+import '../models/home_content.dart';
 import '../models/home_data.dart';
 import '../models/team_overview.dart';
-import '../models/home_content_item.dart';
-import '../data/home/home_content_service.dart';
 import 'package:onetouch/features/index.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
     this.repository,
+    this.contentRepository,
   });
 
   final HomeRepository? repository;
+  final HomeContentRepository? contentRepository;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -34,18 +37,21 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   DateTime _calendarMonth =
       DateTime(DateTime.now().year, DateTime.now().month, 1);
-  final HomeContentService _contentService = HomeContentService();
-  List<HomeContentItem> _highlights = List.of(homeContentFallbackItems);
-  List<HomeContentItem> _news = List.of(homeContentFallbackItems);
+  late final HomeContent _fallbackContent;
+  late HomeContent _content;
   int _homeRequestId = 0;
   int _contentRequestId = 0;
 
   HomeRepository get _repository =>
       widget.repository ?? home_provider.homeRepository;
+  HomeContentRepository get _contentRepository =>
+      widget.contentRepository ?? content_provider.homeContentRepository;
 
   @override
   void initState() {
     super.initState();
+    _fallbackContent = _contentRepository.fallback;
+    _content = _fallbackContent;
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -109,24 +115,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadHomeContent(int favoriteTeamId) async {
     final requestId = ++_contentRequestId;
-    final results = await Future.wait([
-      _contentService.fetchHighlights(favoriteTeamId: favoriteTeamId),
-      _contentService.fetchNews(),
-    ]);
-
-    if (!mounted || requestId != _contentRequestId) return;
-    setState(() {
-      _highlights = _withFallbacks(results[0]);
-      _news = _withFallbacks(results[1]);
-    });
-  }
-
-  List<HomeContentItem> _withFallbacks(List<HomeContentItem> items) {
-    final result = items.take(homeContentFallbackItems.length).toList();
-    while (result.length < homeContentFallbackItems.length) {
-      result.add(homeContentFallbackItems[result.length]);
+    try {
+      final content = await _contentRepository.loadForTeam(favoriteTeamId);
+      if (!mounted || requestId != _contentRequestId) return;
+      setState(() {
+        _content = content;
+      });
+    } on Object {
+      if (!mounted || requestId != _contentRequestId) return;
+      setState(() {
+        _content = _fallbackContent;
+      });
     }
-    return result;
   }
 
   @override
@@ -134,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
     currentUserPreferences.favoriteTeamId
         .removeListener(_onFavoriteTeamChanged);
     _scrollController.dispose();
-    _contentService.dispose();
     super.dispose();
   }
 
@@ -349,10 +348,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "HIGHLIGHTS"),
-                  MyHighlights(highlights: _highlights),
+                  MyHighlights(
+                    highlights: _content.highlights,
+                    fallbacks: _fallbackContent.highlights,
+                  ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "NEWS"),
-                  MyNews(news: _news),
+                  MyNews(
+                    news: _content.news,
+                    fallbacks: _fallbackContent.news,
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Container(

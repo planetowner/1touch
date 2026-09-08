@@ -3,11 +3,14 @@ import 'dart:math';
 
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:onetouch/data/home/home_content_repository.dart';
+import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_highlight_catalog.dart';
+import 'package:onetouch/models/home_content.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:xml/xml.dart';
 
-class HomeContentService {
+class HomeContentService implements HomeContentRepository {
   HomeContentService({http.Client? client, Random? random})
       : _client = client ?? http.Client(),
         _random = random ?? Random();
@@ -18,6 +21,43 @@ class HomeContentService {
 
   final http.Client _client;
   final Random _random;
+
+  @override
+  HomeContent get fallback => HomeContent(
+        highlights: homeContentFallbackItems,
+        news: homeContentFallbackItems,
+      );
+
+  @override
+  Future<HomeContent> loadForTeam(int favoriteTeamId) async {
+    final results = await Future.wait([
+      fetchHighlights(favoriteTeamId: favoriteTeamId),
+      fetchNews(),
+    ]);
+    return HomeContent(
+      highlights: _withFallbacks(results[0]),
+      news: _withFallbacks(results[1]),
+    );
+  }
+
+  @override
+  Future<HomeContentItem?> loadForMatch({
+    required int homeTeamId,
+    required int awayTeamId,
+  }) {
+    return fetchMatchHighlight(
+      homeTeamId: homeTeamId,
+      awayTeamId: awayTeamId,
+    );
+  }
+
+  List<HomeContentItem> _withFallbacks(List<HomeContentItem> items) {
+    final result = items.take(homeContentFallbackItems.length).toList();
+    while (result.length < homeContentFallbackItems.length) {
+      result.add(homeContentFallbackItems[result.length]);
+    }
+    return result;
+  }
 
   Future<List<HomeContentItem>> fetchHighlights({
     required int favoriteTeamId,
