@@ -47,10 +47,7 @@ class FixtureOut(BaseModel):
 
 class StandingRowOut(BaseModel):
     position: int
-    # Official position at the previous completed round, and the resulting
-    # movement (prev_position - position; positive = moved up). None when there
-    # is no previous round or it does not apply (euro group/league-phase).
-    prev_position: Optional[int] = None
+    # 직전 완료 라운드보다 순위가 오르면 양수예요. 직전 라운드가 없으면 None이에요.
     rank_delta: Optional[int] = None
     team_id: int
     team_name: Optional[str] = None
@@ -65,7 +62,7 @@ class StandingRowOut(BaseModel):
     goal_diff: int
     points: int
 
-    last5_form: List[str] = []
+    last5_form: List[str]
 
 
 class BestElevenPlayerOut(BaseModel):
@@ -114,11 +111,9 @@ class CurrentFormSeriesOut(BaseModel):
     team_name: Optional[str] = None
     team_short_code: Optional[str] = None
     team_logo: Optional[str] = None
-    league_id: int
+    competition_id: int
     season_id: int
     season_name: str
-    season_starting_at: Optional[str] = None
-    season_ending_at: Optional[str] = None
     is_current: bool
     points: List[CurrentFormPointOut] = []
 
@@ -135,11 +130,9 @@ class CurrentFormOptionOut(BaseModel):
     team_name: Optional[str] = None
     team_short_code: Optional[str] = None
     team_logo: Optional[str] = None
-    league_id: int
+    competition_id: int
     season_id: int
     season_name: str
-    season_starting_at: Optional[str] = None
-    season_ending_at: Optional[str] = None
     rounds_available: int
     latest_round: int
 
