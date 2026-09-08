@@ -260,16 +260,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              // TODO: Replace the sample count and wire liking
+                              // through a repository when the API supports it.
                               _buildPostAction(
                                 icon: Icons.thumb_up_alt_outlined,
                                 label: "1,290",
                                 color: colors.onSurface,
                               ),
+                              // TODO: Use the real comment count when the API
+                              // exposes post comment data.
                               _buildPostAction(
                                 icon: Icons.mode_comment_outlined,
                                 label: "12",
                                 color: colors.onSurface,
                               ),
+                              // TODO: Revisit sharing when the API/product
+                              // defines a shareable post URL or deep link.
                               _buildPostAction(
                                 icon: Icons.share,
                                 label: "share",
@@ -295,7 +301,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Comment section
+                    // TODO: Replace these sample comments with repository data
+                    // when the API provides post comments and reply threads.
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
@@ -348,7 +355,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ],
       ),
 
-      // 📝 Reply bar
+      // TODO: Connect reply submission through a repository when the API
+      // supports creating comments/replies. This input is currently UI-only.
       bottomNavigationBar: Container(
         color: isDark ? AppPalette.darkGrey : AppPalette.white,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),

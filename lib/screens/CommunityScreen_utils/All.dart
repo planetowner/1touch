@@ -213,7 +213,8 @@ class All extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // Like count (placeholder until likes are wired)
+                  // TODO: Replace this placeholder with repository data when
+                  // the API exposes post like counts.
                   Row(
                     children: [
                       Icon(

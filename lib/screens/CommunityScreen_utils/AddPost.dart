@@ -104,8 +104,9 @@ class _AddPostState extends State<AddPost> {
     }
 
     // ImagePicker returns a device-local path, while POST /v1/posts expects a
-    // remotely accessible media_url. Keep the draft intact until an upload
-    // endpoint can provide that URL.
+    // remotely accessible media_url. TODO: Revisit when the API provides an
+    // upload contract; upload selected media and submit the returned URL.
+    // Until then, keep the draft intact and block media submission.
     if (_mediaFiles.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Media upload is not available yet.')),
