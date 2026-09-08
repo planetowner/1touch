@@ -159,6 +159,10 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli best-eleven validate <season_name>
   python -m one_touch_loader.cli best-eleven validate all
 
+15. injuries
+  python -m one_touch_loader.cli injuries refresh-current  (current Big 5 DB squads)
+  python -m one_touch_loader.cli injuries refresh-current <team_id,team_id,...>
+  python -m one_touch_loader.cli injuries refresh-team <team_id>
 """
 
 
@@ -358,19 +362,19 @@ def main():
 
         sub = sys.argv[2]
 
-        if sub == "refresh-current":
+        if sub == "refresh-current" and len(sys.argv) in (3, 4):
             team_ids = None
 
             if len(sys.argv) == 4:
                 team_ids = _parse_team_ids_csv(sys.argv[3])
 
-            refresh_current_injuries(team_ids)
-            print("Injuries refresh-current done.")
+            result = refresh_current_injuries(team_ids)
+            print(f"Injuries refresh-current done: {result}")
 
         elif sub == "refresh-team" and len(sys.argv) == 4:
             team_id = int(sys.argv[3])
-            refresh_team_injuries(team_id)
-            print(f"Injuries refresh-team done: team={team_id}")
+            result = refresh_team_injuries(team_id)
+            print(f"Injuries refresh-team done: team={team_id} {result}")
 
         else:
             print(USAGE)

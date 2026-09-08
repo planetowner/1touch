@@ -95,10 +95,27 @@ class BestElevenResponse(BaseModel):
     players: List[BestElevenPlayerOut]
 
 
+class InjuryOut(BaseModel):
+    sideline_id: int
+    type_id: int
+    type_name: str
+    start_date: date | None
+    # 공급자의 원문 종료일이에요. 확정 복귀일이나 남은 주 수로 해석하지 않아요.
+    end_date: date | None
 
 
+class InjuredPlayerOut(BaseModel):
+    player_id: int
+    player_name: str
+    player_image: str | None
+    jersey_number: int | None
+    injuries: List[InjuryOut]
 
 
+class TeamInjuriesResponse(BaseModel):
+    team_id: int
+    season_id: int
+    players: List[InjuredPlayerOut]
 
 
 class CurrentFormPointOut(BaseModel):

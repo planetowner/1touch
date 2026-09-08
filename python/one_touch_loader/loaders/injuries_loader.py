@@ -1,225 +1,111 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Set, Tuple
+import json
 
-from ..core.db import execute, fetch_all, upsert_many
+from ..core.db import transaction
 from ..core.sportmonks import SportmonksClient
+from .team_squad_members_loader import load_squad_scope
 
 
-SQL_SELECT_CURRENT_TEAM_IDS = """
-SELECT DISTINCT team_id
-FROM (
-  SELECT f.home_team_id AS team_id
-  FROM fixtures f
-  JOIN seasons s ON s.season_id = f.season_id
-  WHERE s.is_current = 1
-
-  UNION
-
-  SELECT f.away_team_id AS team_id
-  FROM fixtures f
-  JOIN seasons s ON s.season_id = f.season_id
-  WHERE s.is_current = 1
-) t
-WHERE team_id IS NOT NULL
-ORDER BY team_id
+SQL_SELECT_SQUAD_PLAYER_IDS = """
+SELECT player_id FROM team_squad_members WHERE team_id = %s AND season_id = %s
 """
-
-SQL_SELECT_ACTIVE_SIDELINE_IDS_BY_TEAM = """
-SELECT sideline_id
-FROM team_player_injuries
-WHERE team_id = %s
-  AND is_active = 1
+SQL_UPSERT_INJURY_TYPES = """
+INSERT INTO injury_types (type_id, name) VALUES (%s, %s)
+ON DUPLICATE KEY UPDATE name = VALUES(name)
 """
-
-SQL_UPSERT_INJURY = """
+SQL_INSERT_INJURIES = """
 INSERT INTO team_player_injuries (
-  sideline_id,
-  team_id,
-  player_id,
-  type_id,
-  category,
-  type_name,
-  player_name,
-  start_date,
-  end_date,
-  games_missed,
-  completed,
-  is_active,
-  last_seen_at
-) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,1,NOW())
-ON DUPLICATE KEY UPDATE
-  team_id      = VALUES(team_id),
-  player_id    = VALUES(player_id),
-  type_id      = VALUES(type_id),
-  category     = VALUES(category),
-  type_name    = VALUES(type_name),
-  player_name  = VALUES(player_name),
-  start_date   = VALUES(start_date),
-  end_date     = VALUES(end_date),
-  games_missed = VALUES(games_missed),
-  completed    = VALUES(completed),
-  is_active    = 1,
-  last_seen_at = VALUES(last_seen_at)
+  sideline_id, team_id, player_id, type_id, start_date, end_date
+) VALUES (%s, %s, %s, %s, %s, %s)
 """
 
 
-def _require_int(value, field_name: str) -> int:
-    if type(value) is not int:
-        raise ValueError(f"Missing or invalid integer field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_bool(value, field_name: str) -> bool:
-    if not isinstance(value, bool):
-        raise ValueError(f"Missing or invalid boolean field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_non_empty_str(value, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Missing or invalid string field: {field_name}={value!r}")
-
-    return value.strip()
-
-
-def _require_optional_date_str(value, field_name: str) -> Optional[str]:
-    if value is None:
-        return None
-
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Invalid optional date field: {field_name}={value!r}")
-
-    return value
-
-
-def _normalize_sidelined_rows(team_id: int, sidelined: List[Dict]) -> Tuple[List[Tuple], Set[int]]:
-    rows: List[Tuple] = []
-    incoming_ids: Set[int] = set()
-
+def build_injury_rows(team_id: int, sidelined: list[dict], squad_player_ids: set[int]) -> dict:
+    injuries = []
+    types = {}
+    excluded = []
+    non_injury = 0
     for item in sidelined:
-        sideline_id = _require_int(item["id"], "sidelined.id")
-        item_team_id = _require_int(item["team_id"], "sidelined.team_id")
-        player_id = _require_int(item["player_id"], "sidelined.player_id")
-        type_id = _require_int(item["type_id"], "sidelined.type_id")
-        category = _require_non_empty_str(item["category"], "sidelined.category")
-        start_date = _require_optional_date_str(item["start_date"], "sidelined.start_date")
-        end_date = _require_optional_date_str(item["end_date"], "sidelined.end_date")
-        games_missed = _require_int(item["games_missed"], "sidelined.games_missed")
-        completed = _require_bool(item["completed"], "sidelined.completed")
+        # 실제 category는 injury와 suspended예요. 팀 부상 화면에는 injury만 저장해요.
+        if item["category"] != "injury":
+            non_injury += 1
+            continue
+        # 사용자가 2026-09-08 확정한 기준은 공급자 스쿼드 원문이 아닌 DB 스쿼드예요.
+        # 여기서 빠졌다는 이유로 부상이 끝났거나 선수가 회복됐다고 판단하지 않아요.
+        if item["player_id"] not in squad_player_ids:
+            excluded.append({"sideline_id": item["id"], "player_id": item["player_id"]})
+            continue
+        type_id = item["type_id"]
+        types[type_id] = item["type"]["name"]
+        # games_missed=null이 실제로 중단을 일으켰지만 화면에 쓰지 않아 변환·저장을 없앴어요.
+        # end_date는 원문 그대로 두고, 과거 날짜나 NULL로 복귀 상태를 계산하지 않아요.
+        injuries.append((
+            item["id"], team_id, item["player_id"], type_id,
+            item["start_date"], item["end_date"],
+        ))
+    return {
+        "injuries": injuries,
+        "types": sorted(types.items()),
+        "non_injury": non_injury,
+        "excluded_not_in_squad": excluded,
+    }
 
-        player = item["player"]
-        type_obj = item["type"]
 
-        player_id_from_player = _require_int(player["id"], "sidelined.player.id")
-        type_id_from_type = _require_int(type_obj["id"], "sidelined.type.id")
+def replace_team_injuries(team_id: int, season_id: int, sidelined: list[dict]) -> dict:
+    # 스쿼드 조회·사유 갱신·목록 교체를 한 트랜잭션으로 묶어 실패 시 기존 목록을 보존해요.
+    with transaction() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(SQL_SELECT_SQUAD_PLAYER_IDS, (team_id, season_id))
+            squad_player_ids = {row[0] for row in cursor.fetchall()}
+            rows = build_injury_rows(team_id, sidelined, squad_player_ids)
+            if rows["types"]:
+                cursor.executemany(SQL_UPSERT_INJURY_TYPES, rows["types"])
+            cursor.execute("DELETE FROM team_player_injuries WHERE team_id = %s", (team_id,))
+            if rows["injuries"]:
+                cursor.executemany(SQL_INSERT_INJURIES, rows["injuries"])
+    # 빈 응답도 현재 목록 교체예요. is_active나 수집 이력 컬럼은 따로 두지 않아요.
+    return {
+        "received": len(sidelined),
+        "injuries": len(rows["injuries"]),
+        "non_injury": rows["non_injury"],
+        "excluded_not_in_squad": rows["excluded_not_in_squad"],
+    }
 
-        if player_id_from_player != player_id:
-            raise ValueError(
-                f"Player id mismatch for sideline_id={sideline_id}: "
-                f"sidelined.player_id={player_id!r}, player.id={player_id_from_player!r}"
-            )
 
-        if type_id_from_type != type_id:
-            raise ValueError(
-                f"Type id mismatch for sideline_id={sideline_id}: "
-                f"sidelined.type_id={type_id!r}, type.id={type_id_from_type!r}"
-            )
-
-        player_name = _require_non_empty_str(player["display_name"], "sidelined.player.display_name")
-        type_name = _require_non_empty_str(type_obj["name"], "sidelined.type.name")
-
-        incoming_ids.add(sideline_id)
-
-        rows.append(
-            (
-                sideline_id,
-                item_team_id,
-                player_id,
-                type_id,
-                category,
-                type_name,
-                player_name,
-                start_date,
-                end_date,
-                games_missed,
-                1 if completed else 0,
-            )
+def refresh_current_injuries(team_ids: list[int] | None = None) -> dict:
+    # 선수·스쿼드와 같은 현재 Big 5 팀 범위를 써서 컵의 외부 상대팀을 포함하지 않아요.
+    scope = load_squad_scope(current_only=True)
+    if team_ids is not None:
+        requested = set(team_ids)
+        unknown = requested - {row["team_id"] for row in scope}
+        if unknown:
+            raise ValueError(f"Not a current Big 5 team: {sorted(unknown)}")
+        scope = [row for row in scope if row["team_id"] in requested]
+    client = SportmonksClient()
+    totals = {"teams": 0, "received": 0, "injuries": 0, "non_injury": 0, "excluded_not_in_squad": 0}
+    for index, row in enumerate(scope, 1):
+        team_id = row["team_id"]
+        payload = client.get_team_with_sidelined(team_id)
+        result = replace_team_injuries(team_id, row["season_id"], payload["sidelined"])
+        totals["teams"] += 1
+        for key in ("received", "injuries", "non_injury"):
+            totals[key] += result[key]
+        totals["excluded_not_in_squad"] += len(result["excluded_not_in_squad"])
+        print(
+            f"[injuries {index}/{len(scope)}] team_id={team_id} season_id={row['season_id']} "
+            f"received={result['received']} injuries={result['injuries']} "
+            f"non_injury={result['non_injury']} excluded_not_in_squad={len(result['excluded_not_in_squad'])}",
+            flush=True,
         )
-
-    return rows, incoming_ids
-
-
-def _mark_missing_inactive(team_id: int, incoming_ids: Set[int]) -> int:
-    existing_rows = fetch_all(SQL_SELECT_ACTIVE_SIDELINE_IDS_BY_TEAM, (team_id,))
-    existing_ids = {int(row[0]) for row in existing_rows}
-
-    if not existing_ids:
-        return 0
-
-    missing_ids = existing_ids - incoming_ids
-
-    if not missing_ids:
-        return 0
-
-    placeholders = ",".join(["%s"] * len(missing_ids))
-    sql = f"""
-    UPDATE team_player_injuries
-    SET is_active = 0,
-        updated_at = NOW()
-    WHERE team_id = %s
-      AND is_active = 1
-      AND sideline_id IN ({placeholders})
-    """
-
-    return execute(sql, (team_id, *sorted(missing_ids)))
+        if result["excluded_not_in_squad"]:
+            print(
+                f"[injuries excluded] team_id={team_id} reason=not_in_db_current_squad "
+                + json.dumps(result["excluded_not_in_squad"]),
+                flush=True,
+            )
+    return totals
 
 
-def refresh_team_injuries(team_id: int) -> None:
-    sm = SportmonksClient()
-    team = sm.get_team_with_sidelined(team_id)
-
-    returned_team_id = _require_int(team["id"], "team.id")
-
-    if returned_team_id != team_id:
-        raise ValueError(
-            f"Requested team_id={team_id}, "
-            f"but Sportmonks returned team.id={returned_team_id}."
-        )
-
-    sidelined = team["sidelined"]
-
-    if not isinstance(sidelined, list):
-        raise ValueError(
-            f"Expected team.sidelined to be list for team_id={team_id}, "
-            f"got {type(sidelined).__name__}."
-        )
-
-    rows, incoming_ids = _normalize_sidelined_rows(team_id, sidelined)
-
-    if rows:
-        upsert_many(SQL_UPSERT_INJURY, rows)
-
-    inactivated = _mark_missing_inactive(team_id, incoming_ids)
-
-    print(
-        f"[injuries] team {team_id}: "
-        f"received={len(sidelined)} normalized={len(rows)} inactivated={inactivated}"
-    )
-
-
-def refresh_current_injuries(team_ids: Optional[List[int]] = None) -> None:
-    if team_ids is None:
-        ids = [int(row[0]) for row in fetch_all(SQL_SELECT_CURRENT_TEAM_IDS)]
-    else:
-        ids = team_ids
-
-    total = 0
-
-    for team_id in ids:
-        refresh_team_injuries(team_id)
-        total += 1
-
-    print(f"[injuries] refresh-current done: teams={total}")
+def refresh_team_injuries(team_id: int) -> dict:
+    return refresh_current_injuries([team_id])
