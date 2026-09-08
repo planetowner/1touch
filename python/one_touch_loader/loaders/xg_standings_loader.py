@@ -6,7 +6,6 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
-import soccerdata as sd
 
 from ..core.db import fetch_all, transaction
 
@@ -220,6 +219,8 @@ def _load_understat_schedule(
     source itself. This matters for in-season refreshes — the previous
     True setting would inject NaN rows into the standings aggregation.
     """
+    import soccerdata as sd
+
     source = sd.Understat(
         leagues=understat_league_key,
         seasons=understat_season_key,

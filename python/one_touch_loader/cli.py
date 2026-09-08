@@ -1,6 +1,18 @@
 import sys
 
-from one_touch_loader.loaders.big5_bootstrap import run_big5_bootstrap
+from one_touch_loader.loaders.teams_loader import (
+    collect_all_teams,
+    collect_teams_for_competition_season,
+)
+from one_touch_loader.loaders.fixtures_loader import (
+    collect_all_fixtures,
+    collect_fixtures_for_competition_season,
+)
+from one_touch_loader.loaders.team_seasons_loader import (
+    collect_all_team_seasons,
+    collect_team_seasons_for_name,
+)
+from one_touch_loader.loaders.seasons_loader import collect_all_seasons
 from one_touch_loader.loaders.standings_loader import (
     build_all_standings,
     refresh_current_standings,
@@ -11,15 +23,25 @@ from one_touch_loader.loaders.xg_standings_loader import (
     refresh_current_xg_standings,
     build_xg_standings_for_season,
 )
-from one_touch_loader.loaders.points_pace import (
-    build_points_pace_all,
-    refresh_points_pace_current,
-    validate_points_pace,
-)
 from one_touch_loader.loaders.highlights_loader import refresh_highlights
 from one_touch_loader.loaders.injuries_loader import (
     refresh_current_injuries,
     refresh_team_injuries,
+)
+from one_touch_loader.loaders.team_squad_members_loader import (
+    BIG5_COMPETITION_IDS,
+    collect_all_squads,
+    collect_squads_for_competition_season,
+    refresh_current_squads,
+    refresh_team_squad,
+)
+from one_touch_loader.loaders.players_loader import (
+    collect_all_players,
+    collect_players_for_competition_season,
+)
+from one_touch_loader.loaders.countries_loader import refresh_countries
+from one_touch_loader.loaders.player_team_honours_loader import (
+    refresh_player_team_honours,
 )
 from one_touch_loader.loaders.best_eleven_loader import (
     rebuild_best_eleven,
@@ -51,53 +73,44 @@ from one_touch_loader.loaders.team_attribute_refresh_loader import (
 )
 
 
+# 새 DB 재적재용으로 다시 만든 명령만 의존 순서대로 적어요.
+# fixtures는 team-seasons, players는 countries와 fixtures, squads는 players,
+# Capology 선수 ID와 주급은 앞 단계의 팀·선수 매핑을 사용해요.
+# team-attributes는 fixture-details·standings를 집계한 뒤 학습하고 점수를 계산해요.
+# best-eleven은 fixture-details의 라인업으로 시즌·포메이션별 대표 선발을 계산해요.
+# injuries는 갱신된 현재 DB 스쿼드에 속한 선수의 부상만 저장해요.
 USAGE = """
-Usage:
-  python -m one_touch_loader.cli big5
-  python -m one_touch_loader.cli big5 <league_name,league_name,...>
+New database reload order (redesigned commands):
 
-  python -m one_touch_loader.cli standings build
-  python -m one_touch_loader.cli standings refresh-current
-  python -m one_touch_loader.cli standings delta <league_id> <season_id> <team_id>
+1. seasons
+  python -m one_touch_loader.cli seasons all
 
-  python -m one_touch_loader.cli xg-standings build
-  python -m one_touch_loader.cli xg-standings refresh-current
-  python -m one_touch_loader.cli xg-standings season <league_id> <season_id>
+2. teams
+  python -m one_touch_loader.cli teams all
+  python -m one_touch_loader.cli teams <season_name> <competition_id> [competition_id ...]
 
-  python -m one_touch_loader.cli points-pace build
-  python -m one_touch_loader.cli points-pace refresh-current
-  python -m one_touch_loader.cli points-pace validate
+3. team-seasons
+  python -m one_touch_loader.cli team-seasons all
+  python -m one_touch_loader.cli team-seasons <season_name>
 
-  python -m one_touch_loader.cli highlights
-  python -m one_touch_loader.cli highlights refresh
-  python -m one_touch_loader.cli highlights refresh <team_id,team_id,...>
+4. fixtures
+  python -m one_touch_loader.cli fixtures all
+  python -m one_touch_loader.cli fixtures <season_name> <competition_id>
 
-  python -m one_touch_loader.cli injuries refresh-current
-  python -m one_touch_loader.cli injuries refresh-current <team_id,team_id,...>
-  python -m one_touch_loader.cli injuries refresh-team <team_id>
+5. countries
+  python -m one_touch_loader.cli countries refresh
 
-  python -m one_touch_loader.cli best-eleven
-  python -m one_touch_loader.cli best-eleven rebuild-current
-  python -m one_touch_loader.cli best-eleven rebuild-all
-  python -m one_touch_loader.cli best-eleven validate
+6. players
+  python -m one_touch_loader.cli players all
+  python -m one_touch_loader.cli players <season_name> <competition_id> [competition_id ...]
+  python -m one_touch_loader.cli players refresh-honours <player_id>
 
-  python -m one_touch_loader.cli transfers refresh-current
-  python -m one_touch_loader.cli transfers refresh-current <team_id,team_id,...>
-  python -m one_touch_loader.cli transfers refresh-team <team_id>
+7. squads
+  python -m one_touch_loader.cli squads all
+  python -m one_touch_loader.cli squads <season_name> <competition_id> [competition_id ...]
+  python -m one_touch_loader.cli squads refresh-current
+  python -m one_touch_loader.cli squads refresh-team <team_id>
 
-  python -m one_touch_loader.cli team-stats fixture <fixture_id>
-  python -m one_touch_loader.cli team-stats season <season_id>
-  python -m one_touch_loader.cli team-stats season <season_id> <past|live|upcoming>
-  python -m one_touch_loader.cli team-stats current
-  python -m one_touch_loader.cli team-stats current <past|live|upcoming>
-
-  python -m one_touch_loader.cli team-attributes build-training-features
-  python -m one_touch_loader.cli team-attributes build-current-features
-  python -m one_touch_loader.cli team-attributes train-regression
-  python -m one_touch_loader.cli team-attributes build-scores
-  python -m one_touch_loader.cli team-attributes build-current-scores
-  python -m one_touch_loader.cli team-attributes refresh-current
-  python -m one_touch_loader.cli team-attributes refresh-current --skip-fixtures
 """
 
 
@@ -105,21 +118,125 @@ def _parse_team_ids_csv(value: str) -> list[int]:
     return [int(x.strip()) for x in value.split(",") if x.strip()]
 
 
+def _parse_competition_ids(values: list[str]) -> list[int]:
+    competition_ids: list[int] = []
+    seen: set[int] = set()
+
+    for value in values:
+        competition_id = int(value)
+        if competition_id not in seen:
+            seen.add(competition_id)
+            competition_ids.append(competition_id)
+
+    if not competition_ids:
+        raise ValueError("At least one competition_id is required")
+    return competition_ids
+
+
+from one_touch_loader.loaders.points_pace import (
+    build_points_pace_all,
+    refresh_points_pace_current,
+    validate_points_pace,
+)
+
 def main():
     if len(sys.argv) < 2:
         print(USAGE)
         return
-
     cmd = sys.argv[1]
 
-    if cmd == "big5":
-        names = None
+    if cmd == "countries":
+        if len(sys.argv) == 3 and sys.argv[2] == "refresh":
+            refresh_countries()
+            print("Countries refresh done.")
+        else:
+            print(USAGE)
 
-        if len(sys.argv) == 3:
-            names = [x.strip() for x in sys.argv[2].split(",") if x.strip()]
+    elif cmd == "seasons":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_seasons()
+            print(
+                "Seasons all done: "
+                f"competitions={result['competition_count']} "
+                f"seasons={result['season_count']}"
+            )
+        else:
+            print(USAGE)
 
-        run_big5_bootstrap(names)
-        print("Big5 bootstrap done.")
+    elif cmd == "teams":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_teams()
+            print(
+                "Teams all done: "
+                f"collection_runs={result['collection_runs']}"
+            )
+
+        elif len(sys.argv) >= 4:
+            season_name = sys.argv[2]
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            for competition_id in competition_ids:
+                result = collect_teams_for_competition_season(
+                    season_name,
+                    competition_id,
+                )
+                print(
+                    "Teams competition done: "
+                    f"season={season_name} "
+                    f"competition={competition_id} "
+                    f"result={result}"
+                )
+            print(
+                "Teams season done: "
+                f"season={season_name} competitions={competition_ids}"
+            )
+
+        else:
+            print(USAGE)
+
+    elif cmd == "team-seasons":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_team_seasons()
+            print(
+                "Team-seasons all done: "
+                f"seasons={result['processed_seasons']} "
+                f"memberships={result['stored_memberships']} "
+                f"pending={result['pending_seasons']}"
+            )
+        elif len(sys.argv) == 3:
+            result = collect_team_seasons_for_name(sys.argv[2])
+            print(
+                "Team-seasons season done: "
+                f"season={sys.argv[2]} "
+                f"season_ids={result['processed_seasons']} "
+                f"memberships={result['stored_memberships']} "
+                f"pending={result['pending_seasons']}"
+            )
+        else:
+            print(USAGE)
+
+    elif cmd == "fixtures":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_fixtures()
+            print(
+                "Fixtures all done: "
+                f"collection_runs={result['collection_runs']} "
+                f"fixtures={result['stored_fixtures']}"
+            )
+        elif len(sys.argv) == 4:
+            season_name = sys.argv[2]
+            competition_id = int(sys.argv[3])
+            result = collect_fixtures_for_competition_season(
+                season_name,
+                competition_id,
+            )
+            print(
+                "Fixtures competition done: "
+                f"season={season_name} "
+                f"competition={competition_id} "
+                f"fixtures={result['stored_fixture_count']}"
+            )
+        else:
+            print(USAGE)
 
     elif cmd == "standings":
         if len(sys.argv) < 3:
@@ -180,27 +297,6 @@ def main():
         else:
             print(USAGE)
 
-    elif cmd == "points-pace":
-        if len(sys.argv) < 3:
-            print(USAGE)
-            return
-
-        sub = sys.argv[2]
-
-        if sub == "build":
-            build_points_pace_all()
-            print("Points pace build done.")
-
-        elif sub == "refresh-current":
-            refresh_points_pace_current()
-            print("Points pace refresh-current done.")
-
-        elif sub == "validate":
-            validate_points_pace()
-
-        else:
-            print(USAGE)
-
     elif cmd == "highlights":
         team_ids = None
 
@@ -239,6 +335,87 @@ def main():
             refresh_team_injuries(team_id)
             print(f"Injuries refresh-team done: team={team_id}")
 
+        else:
+            print(USAGE)
+
+    elif cmd == "squads":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_squads()
+            print(
+                "Squads all done: "
+                f"team_seasons={result['loaded_team_seasons']} "
+                f"members={result['stored_squad_members']}"
+            )
+
+        elif len(sys.argv) == 3 and sys.argv[2] == "refresh-current":
+            refresh_current_squads()
+            print("Squads refresh-current done.")
+
+        elif len(sys.argv) == 4 and sys.argv[2] == "refresh-team":
+            team_id = int(sys.argv[3])
+            refresh_team_squad(team_id)
+            print(f"Squads refresh-team done: team={team_id}")
+
+        elif len(sys.argv) >= 4 and sys.argv[2] not in {
+            "refresh-current",
+            "refresh-team",
+        }:
+            season_name = sys.argv[2]
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            for competition_id in competition_ids:
+                result = collect_squads_for_competition_season(
+                    season_name,
+                    competition_id,
+                )
+                print(
+                    "Squads competition done: "
+                    f"season={season_name} "
+                    f"competition={competition_id} "
+                    f"team_seasons={result['loaded_team_seasons']} "
+                    f"members={result['stored_squad_members']}"
+                )
+            print(
+                "Squads season done: "
+                f"season={season_name} competitions={competition_ids}"
+            )
+        else:
+            print(USAGE)
+
+    elif cmd == "players":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_players()
+            print(
+                "Players all done: "
+                f"team_seasons={result['loaded_team_seasons']} "
+                f"unique_players={result['unique_players']}"
+            )
+
+        elif len(sys.argv) == 4 and sys.argv[2] == "refresh-honours":
+            player_id = int(sys.argv[3])
+            refresh_player_team_honours(player_id)
+            print(f"Players refresh-honours done: player={player_id}")
+
+        elif len(sys.argv) >= 4 and sys.argv[2] not in {
+            "refresh-honours",
+        }:
+            season_name = sys.argv[2]
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            for competition_id in competition_ids:
+                result = collect_players_for_competition_season(
+                    season_name,
+                    competition_id,
+                )
+                print(
+                    "Players competition done: "
+                    f"season={season_name} "
+                    f"competition={competition_id} "
+                    f"team_seasons={result['loaded_team_seasons']} "
+                    f"unique_players={result['unique_players']}"
+                )
+            print(
+                "Players season done: "
+                f"season={season_name} competitions={competition_ids}"
+            )
         else:
             print(USAGE)
 
@@ -375,6 +552,26 @@ def main():
         else:
             print(USAGE)
 
+    elif cmd == "points-pace":
+        if len(sys.argv) < 3:
+            print(USAGE)
+            return
+
+        sub = sys.argv[2]
+
+        if sub == "build":
+            build_points_pace_all()
+            print("Points pace build done.")
+
+        elif sub == "refresh-current":
+            refresh_points_pace_current()
+            print("Points pace refresh-current done.")
+
+        elif sub == "validate":
+            validate_points_pace()
+
+        else:
+            print(USAGE)
     else:
         print(USAGE)
 

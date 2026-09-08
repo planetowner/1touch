@@ -1,0 +1,1114 @@
+{
+  "description": "Strassen의 La Fiorita 두 경기에서 양 팀 17번 null 슬롯과 다른 ID를 쓰는 교체·도움을 확인했어요. 네 라인업과 다섯 이벤트만 수정해요.",
+  "sources": [
+    "https://es.uefa.com/uefaconferenceleague/clubs/players/250221520--babou-seye/",
+    "https://de.uefa.com/uefaconferenceleague/clubs/2603092--una-strassen/squad/",
+    "https://www.fsgc.sm/it/notizia/european-cups-narrow-defeats-for-tre-fiori-and-la-fiorita/2271",
+    "https://www.fsgc.sm/it/notizia/coppe-europee-una-strassen-dautorit-su-la-fiorita-il-tre-fiori-spaventa-il-larne-/2276",
+    "https://www.fsgc.sm/it/giocatore/djuric-marco/943",
+    "https://www.uefa.com/uefaconferenceleague/clubs/64508--la-fiorita/squad/"
+  ],
+  "source_fixture_ids": [
+    19719435,
+    19719409,
+    19720959,
+    19720917
+  ],
+  "fixtures": [
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719435,
+      "events": [
+        {
+          "id": 157250422,
+          "fixture_id": 19719435,
+          "period_id": 7005094,
+          "participant_id": 10945,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37776409,
+          "related_player_id": 401462,
+          "player_name": "Babou Seye",
+          "related_player_name": "Matheus Souza",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 70,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005094,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157250485,
+          "fixture_id": 19719435,
+          "period_id": 7005094,
+          "participant_id": 10945,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 432982,
+          "related_player_id": 62585,
+          "player_name": "João Teixeira",
+          "related_player_name": "Nicolas Perez",
+          "result": null,
+          "info": null,
+          "addition": "8th Substitution",
+          "minute": 88,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005094,
+          "rescinded": null,
+          "sort_order": 8,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674130642,
+          "sport_id": 1,
+          "fixture_id": 19719435,
+          "player_id": 401462,
+          "team_id": 10945,
+          "position_id": 27,
+          "formation_field": "4:2",
+          "type_id": 11,
+          "formation_position": 10,
+          "player_name": "Matheus Souza",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 2127006962,
+              "fixture_id": 19719435,
+              "player_id": 401462,
+              "team_id": 10945,
+              "lineup_id": 14674130642,
+              "type_id": 119,
+              "data": {
+                "value": 70
+              }
+            },
+            {
+              "id": 2127006963,
+              "fixture_id": 19719435,
+              "player_id": 401462,
+              "team_id": 10945,
+              "lineup_id": 14674130642,
+              "type_id": 84,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2126987745,
+              "fixture_id": 19719435,
+              "player_id": 401462,
+              "team_id": 10945,
+              "lineup_id": 14674130642,
+              "type_id": 118,
+              "data": {
+                "value": 6.46
+              }
+            },
+            {
+              "id": 2126987744,
+              "fixture_id": 19719435,
+              "player_id": 401462,
+              "team_id": 10945,
+              "lineup_id": 14674130642,
+              "type_id": 117172,
+              "data": {
+                "value": 73
+              }
+            }
+          ],
+          "player": {
+            "id": 401462,
+            "sport_id": 1,
+            "country_id": 5,
+            "nationality_id": 5,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "M. Nogueira Albuquerque de Souza",
+            "firstname": "Matheus",
+            "lastname": "Nogueira Albuquerque de Souza",
+            "name": "Matheus Nogueira Albuquerque de Souza",
+            "display_name": "Matheus Souza",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/401462.png",
+            "height": 188,
+            "weight": null,
+            "date_of_birth": "1993-09-15",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674130745,
+          "sport_id": 1,
+          "fixture_id": 19719435,
+          "player_id": null,
+          "team_id": 10945,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "João Teixeira",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2127000233,
+              "fixture_id": 19719435,
+              "player_id": null,
+              "team_id": 10945,
+              "lineup_id": 14674130745,
+              "type_id": 117172,
+              "data": {
+                "value": 38
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674130750,
+          "sport_id": 1,
+          "fixture_id": 19719435,
+          "player_id": 37708770,
+          "team_id": 10945,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Babou Seye",
+          "jersey_number": 44,
+          "details": [
+            {
+              "id": 2127000238,
+              "fixture_id": 19719435,
+              "player_id": 37708770,
+              "team_id": 10945,
+              "lineup_id": 14674130750,
+              "type_id": 117172,
+              "data": {
+                "value": 24
+              }
+            }
+          ],
+          "player": {
+            "id": 37708770,
+            "sport_id": 1,
+            "country_id": 17,
+            "nationality_id": 17,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": null,
+            "common_name": "S. Babou",
+            "firstname": "Seye",
+            "lastname": "Babou",
+            "name": "Seye Babou",
+            "display_name": "Babou Seye",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "2003-09-18",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674130648,
+          "sport_id": 1,
+          "fixture_id": 19719435,
+          "player_id": 62585,
+          "team_id": 10945,
+          "position_id": 27,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 9,
+          "player_name": "Nicolas Perez",
+          "jersey_number": 90,
+          "details": [
+            {
+              "id": 2127267917,
+              "fixture_id": 19719435,
+              "player_id": 62585,
+              "team_id": 10945,
+              "lineup_id": 14674130648,
+              "type_id": 40,
+              "data": {
+                "value": true
+              }
+            },
+            {
+              "id": 2126987751,
+              "fixture_id": 19719435,
+              "player_id": 62585,
+              "team_id": 10945,
+              "lineup_id": 14674130648,
+              "type_id": 117172,
+              "data": {
+                "value": 91
+              }
+            },
+            {
+              "id": 2127314301,
+              "fixture_id": 19719435,
+              "player_id": 62585,
+              "team_id": 10945,
+              "lineup_id": 14674130648,
+              "type_id": 118,
+              "data": {
+                "value": 6.5
+              }
+            }
+          ],
+          "player": {
+            "id": 62585,
+            "sport_id": 1,
+            "country_id": 17,
+            "nationality_id": 17,
+            "city_id": 54981,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "N. Perez",
+            "firstname": "Nicolas",
+            "lastname": "Perez",
+            "name": "Nicolas Perez",
+            "display_name": "Nicolas Perez",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/25/62585.png",
+            "height": 180,
+            "weight": 80,
+            "date_of_birth": "1990-10-26",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674130710,
+          "sport_id": 1,
+          "fixture_id": 19719435,
+          "player_id": null,
+          "team_id": 847,
+          "position_id": 26,
+          "formation_field": "3:4",
+          "type_id": 11,
+          "formation_position": 6,
+          "player_name": "Marco Djuric",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2127267906,
+              "fixture_id": 19719435,
+              "player_id": null,
+              "team_id": 847,
+              "lineup_id": 14674130710,
+              "type_id": 1535,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2126987732,
+              "fixture_id": 19719435,
+              "player_id": null,
+              "team_id": 847,
+              "lineup_id": 14674130710,
+              "type_id": 117172,
+              "data": {
+                "value": 97
+              }
+            },
+            {
+              "id": 2127273028,
+              "fixture_id": 19719435,
+              "player_id": null,
+              "team_id": 847,
+              "lineup_id": 14674130710,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719409,
+      "events": [
+        {
+          "id": 157272490,
+          "fixture_id": 19719409,
+          "period_id": 7009159,
+          "participant_id": 10945,
+          "type_id": 14,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": 37776409,
+          "player_name": "Valentin Steinmetz",
+          "related_player_name": "Babou Seye",
+          "result": "0-2",
+          "info": "Field Goal",
+          "addition": "2nd Goal",
+          "minute": 38,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7009159,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157272982,
+          "fixture_id": 19719409,
+          "period_id": 7009231,
+          "participant_id": 10945,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 432982,
+          "related_player_id": 2511087,
+          "player_name": "João Teixeira",
+          "related_player_name": "Kino Delorge",
+          "result": null,
+          "info": null,
+          "addition": "4th Substitution",
+          "minute": 69,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7009231,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157273053,
+          "fixture_id": 19719409,
+          "period_id": 7009231,
+          "participant_id": 10945,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 21053578,
+          "related_player_id": 37776409,
+          "player_name": "Alen Agovic",
+          "related_player_name": "Babou Seye",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 77,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7009231,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157273096,
+          "fixture_id": 19719409,
+          "period_id": 7009231,
+          "participant_id": 847,
+          "type_id": 18,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": 435952,
+          "player_name": "Thomas Bonifazi",
+          "related_player_name": "Marco Djuric",
+          "result": null,
+          "info": null,
+          "addition": "9th Substitution",
+          "minute": 90,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7009231,
+          "rescinded": null,
+          "sort_order": 9,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157273012,
+          "fixture_id": 19719409,
+          "period_id": 7009231,
+          "participant_id": 847,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 435952,
+          "related_player_id": null,
+          "player_name": "Marco Djuric",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "2nd Yellowcard",
+          "minute": 71,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1496,
+          "detailed_period_id": 7009231,
+          "rescinded": false,
+          "sort_order": 2,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674145182,
+          "sport_id": 1,
+          "fixture_id": 19719409,
+          "player_id": 2511087,
+          "team_id": 10945,
+          "position_id": 25,
+          "formation_field": "2:5",
+          "type_id": 11,
+          "formation_position": 2,
+          "player_name": "Kino Delorge",
+          "jersey_number": 3,
+          "details": [
+            {
+              "id": 2128219573,
+              "fixture_id": 19719409,
+              "player_id": 2511087,
+              "team_id": 10945,
+              "lineup_id": 14674145182,
+              "type_id": 118,
+              "data": {
+                "value": 6.5
+              }
+            },
+            {
+              "id": 2128114994,
+              "fixture_id": 19719409,
+              "player_id": 2511087,
+              "team_id": 10945,
+              "lineup_id": 14674145182,
+              "type_id": 117172,
+              "data": {
+                "value": 71
+              }
+            }
+          ],
+          "player": {
+            "id": 2511087,
+            "sport_id": 1,
+            "country_id": 556,
+            "nationality_id": 556,
+            "city_id": 36172,
+            "position_id": 25,
+            "detailed_position_id": 154,
+            "type_id": 25,
+            "common_name": "K. Delorge",
+            "firstname": "Kino",
+            "lastname": "Delorge",
+            "name": "Kino Delorge",
+            "display_name": "Kino Delorge",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/15/2511087.png",
+            "height": 180,
+            "weight": null,
+            "date_of_birth": "1998-01-05",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674145259,
+          "sport_id": 1,
+          "fixture_id": 19719409,
+          "player_id": null,
+          "team_id": 10945,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "João Teixeira",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2128123531,
+              "fixture_id": 19719409,
+              "player_id": null,
+              "team_id": 10945,
+              "lineup_id": 14674145259,
+              "type_id": 117172,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2128127008,
+              "fixture_id": 19719409,
+              "player_id": null,
+              "team_id": 10945,
+              "lineup_id": 14674145259,
+              "type_id": 119,
+              "data": {
+                "value": 21
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674145260,
+          "sport_id": 1,
+          "fixture_id": 19719409,
+          "player_id": 21053578,
+          "team_id": 10945,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Alen Agovic",
+          "jersey_number": 20,
+          "details": [
+            {
+              "id": 2128125906,
+              "fixture_id": 19719409,
+              "player_id": 21053578,
+              "team_id": 10945,
+              "lineup_id": 14674145260,
+              "type_id": 117172,
+              "data": {
+                "value": 17
+              }
+            }
+          ],
+          "player": {
+            "id": 21053578,
+            "sport_id": 1,
+            "country_id": 998,
+            "nationality_id": 3126,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 154,
+            "type_id": 26,
+            "common_name": "A. Agovic",
+            "firstname": "Alen",
+            "lastname": "Agovic",
+            "name": "Alen Agovic",
+            "display_name": "Alen Agovic",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 187,
+            "weight": null,
+            "date_of_birth": "1997-11-28",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674145189,
+          "sport_id": 1,
+          "fixture_id": 19719409,
+          "player_id": 37708770,
+          "team_id": 10945,
+          "position_id": 27,
+          "formation_field": "4:2",
+          "type_id": 11,
+          "formation_position": 10,
+          "player_name": "Babou Seye",
+          "jersey_number": 44,
+          "details": [
+            {
+              "id": 2128115001,
+              "fixture_id": 19719409,
+              "player_id": 37708770,
+              "team_id": 10945,
+              "lineup_id": 14674145189,
+              "type_id": 117172,
+              "data": {
+                "value": 96
+              }
+            },
+            {
+              "id": 2128114788,
+              "fixture_id": 19719409,
+              "player_id": 37708770,
+              "team_id": 10945,
+              "lineup_id": 14674145189,
+              "type_id": 118,
+              "data": {
+                "value": 6.59
+              }
+            },
+            {
+              "id": 2128127011,
+              "fixture_id": 19719409,
+              "player_id": 37708770,
+              "team_id": 10945,
+              "lineup_id": 14674145189,
+              "type_id": 79,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2128127012,
+              "fixture_id": 19719409,
+              "player_id": 37708770,
+              "team_id": 10945,
+              "lineup_id": 14674145189,
+              "type_id": 119,
+              "data": {
+                "value": 77
+              }
+            }
+          ],
+          "player": {
+            "id": 37708770,
+            "sport_id": 1,
+            "country_id": 17,
+            "nationality_id": 17,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": null,
+            "common_name": "S. Babou",
+            "firstname": "Seye",
+            "lastname": "Babou",
+            "name": "Seye Babou",
+            "display_name": "Babou Seye",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "2003-09-18",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674145202,
+          "sport_id": 1,
+          "fixture_id": 19719409,
+          "player_id": null,
+          "team_id": 847,
+          "position_id": 26,
+          "formation_field": "3:3",
+          "type_id": 11,
+          "formation_position": 7,
+          "player_name": "Marco Djuric",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2128115008,
+              "fixture_id": 19719409,
+              "player_id": null,
+              "team_id": 847,
+              "lineup_id": 14674145202,
+              "type_id": 117172,
+              "data": {
+                "value": 62
+              }
+            },
+            {
+              "id": 2128191653,
+              "fixture_id": 19719409,
+              "player_id": null,
+              "team_id": 847,
+              "lineup_id": 14674145202,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 21404660,
+      "sport_id": 1,
+      "country_id": 20,
+      "nationality_id": 20,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "J. Teixeira Almeida",
+      "firstname": "João",
+      "lastname": "Teixeira Almeida",
+      "name": "João Teixeira Almeida",
+      "display_name": "João Teixeira",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 182,
+      "weight": 66,
+      "date_of_birth": "1996-05-07",
+      "gender": "male"
+    },
+    {
+      "id": 435952,
+      "sport_id": 1,
+      "country_id": 251,
+      "nationality_id": 296,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "M. Djuric",
+      "firstname": "Marco",
+      "lastname": "Djuric",
+      "name": "Marco Djuric",
+      "display_name": "Marco Djuric",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 193,
+      "weight": null,
+      "date_of_birth": "1992-09-18",
+      "gender": "male"
+    }
+  ],
+  "expected_events": {
+    "19719435": [
+      {
+        "id": 157250422,
+        "fixture_id": 19719435,
+        "period_id": 7005094,
+        "participant_id": 10945,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37708770,
+        "related_player_id": 401462,
+        "player_name": "Babou Seye",
+        "related_player_name": "Matheus Souza",
+        "result": null,
+        "info": null,
+        "addition": "5th Substitution",
+        "minute": 70,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005094,
+        "rescinded": null,
+        "sort_order": 5,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157250485,
+        "fixture_id": 19719435,
+        "period_id": 7005094,
+        "participant_id": 10945,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 21404660,
+        "related_player_id": 62585,
+        "player_name": "João Teixeira",
+        "related_player_name": "Nicolas Perez",
+        "result": null,
+        "info": null,
+        "addition": "8th Substitution",
+        "minute": 88,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005094,
+        "rescinded": null,
+        "sort_order": 8,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19719409": [
+      {
+        "id": 157272490,
+        "fixture_id": 19719409,
+        "period_id": 7009159,
+        "participant_id": 10945,
+        "type_id": 14,
+        "section": "event",
+        "player_id": null,
+        "related_player_id": 37708770,
+        "player_name": "Valentin Steinmetz",
+        "related_player_name": "Babou Seye",
+        "result": "0-2",
+        "info": "Field Goal",
+        "addition": "2nd Goal",
+        "minute": 38,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7009159,
+        "rescinded": null,
+        "sort_order": 2,
+        "type": {
+          "id": 14,
+          "name": "Goal",
+          "code": "goal",
+          "developer_name": "GOAL",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157272982,
+        "fixture_id": 19719409,
+        "period_id": 7009231,
+        "participant_id": 10945,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 21404660,
+        "related_player_id": 2511087,
+        "player_name": "João Teixeira",
+        "related_player_name": "Kino Delorge",
+        "result": null,
+        "info": null,
+        "addition": "4th Substitution",
+        "minute": 69,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7009231,
+        "rescinded": null,
+        "sort_order": 4,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157273053,
+        "fixture_id": 19719409,
+        "period_id": 7009231,
+        "participant_id": 10945,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 21053578,
+        "related_player_id": 37708770,
+        "player_name": "Alen Agovic",
+        "related_player_name": "Babou Seye",
+        "result": null,
+        "info": null,
+        "addition": "7th Substitution",
+        "minute": 77,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7009231,
+        "rescinded": null,
+        "sort_order": 7,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157273096,
+        "fixture_id": 19719409,
+        "period_id": 7009231,
+        "participant_id": 847,
+        "type_id": 18,
+        "section": "event",
+        "player_id": null,
+        "related_player_id": 435952,
+        "player_name": "Thomas Bonifazi",
+        "related_player_name": "Marco Djuric",
+        "result": null,
+        "info": null,
+        "addition": "9th Substitution",
+        "minute": 90,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7009231,
+        "rescinded": null,
+        "sort_order": 9,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157273012,
+        "fixture_id": 19719409,
+        "period_id": 7009231,
+        "participant_id": 847,
+        "type_id": 19,
+        "section": "event",
+        "player_id": 435952,
+        "related_player_id": null,
+        "player_name": "Marco Djuric",
+        "related_player_name": null,
+        "result": null,
+        "info": "Foul",
+        "addition": "2nd Yellowcard",
+        "minute": 71,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": 1496,
+        "detailed_period_id": 7009231,
+        "rescinded": false,
+        "sort_order": 2,
+        "type": {
+          "id": 19,
+          "name": "Yellowcard",
+          "code": "yellowcard",
+          "developer_name": "YELLOWCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "expected_lineups": {
+    "19719435": [
+      [
+        401462,
+        7
+      ],
+      [
+        21404660,
+        17
+      ],
+      [
+        37708770,
+        44
+      ],
+      [
+        62585,
+        90
+      ],
+      [
+        435952,
+        17
+      ]
+    ],
+    "19719409": [
+      [
+        2511087,
+        3
+      ],
+      [
+        21404660,
+        17
+      ],
+      [
+        21053578,
+        20
+      ],
+      [
+        37708770,
+        44
+      ],
+      [
+        435952,
+        17
+      ]
+    ]
+  },
+  "expected_profile_requests": {
+    "19719435": 2,
+    "19719409": 2
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "source": {
+    "fixture_id": 18545266,
+    "event_id": 83630899,
+    "verified_minute": 59,
+    "source": "https://www.rtve.es/deportes/20230121/sevilla-cadiz-liga-resumen/2416768.shtml",
+    "reason": "RTVE match record states consecutive yellow cards and expulsion at minute 59. Provider first yellow 80254118 also occurs at 59. Only the invalid minute of the second yellow is corrected."
+  },
+  "fixture": {
+    "id": 18545266,
+    "events": [
+      {
+        "id": 83630899,
+        "fixture_id": 18545266,
+        "period_id": null,
+        "participant_id": 676,
+        "type_id": 21,
+        "section": "event",
+        "player_id": null,
+        "related_player_id": null,
+        "player_name": "Jorge Sampaoli",
+        "related_player_name": null,
+        "result": null,
+        "info": "Argument",
+        "addition": null,
+        "minute": -4,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": true,
+        "coach_id": 456014,
+        "sub_type_id": 1497,
+        "detailed_period_id": null,
+        "rescinded": false,
+        "sort_order": 1,
+        "type": {
+          "id": 21,
+          "name": "Yellow/Red card",
+          "code": "yellowredcard",
+          "developer_name": "YELLOWREDCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 80254118,
+        "fixture_id": 18545266,
+        "period_id": 4566364,
+        "participant_id": 676,
+        "type_id": 19,
+        "section": "event",
+        "player_id": null,
+        "related_player_id": null,
+        "player_name": "Jorge Sampaoli",
+        "related_player_name": null,
+        "result": null,
+        "info": "Argument",
+        "addition": null,
+        "minute": 59,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": true,
+        "coach_id": 456014,
+        "sub_type_id": 1497,
+        "detailed_period_id": null,
+        "rescinded": false,
+        "sort_order": 1,
+        "type": {
+          "id": 19,
+          "name": "Yellowcard",
+          "code": "yellowcard",
+          "developer_name": "YELLOWCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "statistics": [],
+    "lineups": [],
+    "formations": [],
+    "coaches": [
+      {
+        "id": 456014,
+        "player_id": 456014,
+        "sport_id": 1,
+        "country_id": 44,
+        "nationality_id": 44,
+        "city_id": null,
+        "common_name": "J. Sampaoli Moya",
+        "firstname": "Jorge Luis",
+        "lastname": "Sampaoli Moya",
+        "name": "Jorge Luis Sampaoli Moya",
+        "display_name": "Jorge Sampaoli Moya",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/players/14/456014.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "1960-03-13",
+        "gender": "male",
+        "meta": {
+          "fixture_id": 18545266,
+          "coach_id": 456014,
+          "participant_id": 676
+        }
+      }
+    ],
+    "pressure": []
+  }
+}

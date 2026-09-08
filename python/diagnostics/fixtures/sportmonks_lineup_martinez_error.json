@@ -1,0 +1,104 @@
+{
+  "source": {
+    "official_lineups": "https://datencenter.dfb.de/en/data-center/bundesliga/18356/30-matchday/2315405",
+    "club_lineups": "https://fcbayern.com/en/matches/profis/bundesliga/2020-2021/fc-bayern-muenchen-bayer-04-leverkusen-21-04-2021/lineup",
+    "normal_provider_fixture_id": 16840346
+  },
+  "fixtures": [
+    {
+      "id": 16840330,
+      "lineups": [
+        {
+          "id": 142293,
+          "sport_id": 1,
+          "fixture_id": 16840330,
+          "player_id": 31824,
+          "team_id": 503,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Leon Goretzka",
+          "jersey_number": 8,
+          "details": [],
+          "player": {
+            "id": 31824,
+            "sport_id": 1,
+            "country_id": 11,
+            "nationality_id": 11,
+            "city_id": 10292,
+            "position_id": 26,
+            "detailed_position_id": 153,
+            "type_id": 26,
+            "common_name": "L. Goretzka",
+            "firstname": "Leon",
+            "lastname": "Goretzka",
+            "name": "Leon Goretzka",
+            "display_name": "Leon Goretzka",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/16/31824.png",
+            "height": 189,
+            "weight": 82,
+            "date_of_birth": "1995-02-06",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 6787715862,
+          "sport_id": 1,
+          "fixture_id": 16840330,
+          "player_id": 31824,
+          "team_id": 503,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Leon Goretzka",
+          "jersey_number": 18,
+          "details": [],
+          "player": {
+            "id": 31824,
+            "sport_id": 1,
+            "country_id": 11,
+            "nationality_id": 11,
+            "city_id": 10292,
+            "position_id": 26,
+            "detailed_position_id": 153,
+            "type_id": 26,
+            "common_name": "L. Goretzka",
+            "firstname": "Leon",
+            "lastname": "Goretzka",
+            "name": "Leon Goretzka",
+            "display_name": "Leon Goretzka",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/16/31824.png",
+            "height": 189,
+            "weight": 82,
+            "date_of_birth": "1995-02-06",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 31686,
+      "sport_id": 1,
+      "country_id": 32,
+      "nationality_id": 32,
+      "city_id": 27516,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "type_id": 26,
+      "common_name": "J. Martínez Aginaga",
+      "firstname": "Javier",
+      "lastname": "Martínez Aginaga",
+      "name": "Javier Martínez Aginaga",
+      "display_name": "Javi Martínez",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/6/31686.png",
+      "height": 192,
+      "weight": 86,
+      "date_of_birth": "1988-09-02",
+      "gender": "male"
+    }
+  ]
+}

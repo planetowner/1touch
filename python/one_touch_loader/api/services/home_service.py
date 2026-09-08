@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from ..repos.users_repo import get_favorite_team_id
 from ..repos.teams_repo import get_teams, list_following_team_ids

@@ -1,0 +1,169 @@
+{
+  "source": {
+    "captured_at": "2026-09-06T10:28:37Z",
+    "official_lineups": "https://www.uefa.com/uefachampionsleague/match/2021502--la-fiorita-vs-linfield/lineups/",
+    "first_leg_report": "https://www.fsgc.sm/assets/documents/474.pdf"
+  },
+  "fixtures": [
+    {
+      "id": 1818661,
+      "lineups": [
+        {
+          "id": 884743462,
+          "sport_id": 1,
+          "fixture_id": 1818661,
+          "player_id": 149243,
+          "team_id": 260,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": 7,
+          "player_name": "M. Clarke",
+          "jersey_number": 16,
+          "details": [
+            {
+              "id": 192276061,
+              "fixture_id": 1818661,
+              "player_id": 149243,
+              "team_id": 260,
+              "lineup_id": 884743462,
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ],
+          "player": {
+            "id": 149243,
+            "sport_id": 1,
+            "country_id": 491,
+            "nationality_id": 491,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 25,
+            "common_name": "M. Clarke",
+            "firstname": "Matthew",
+            "lastname": "Clarke",
+            "name": "Matthew Clarke",
+            "display_name": "Matthew Clarke",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/27/149243.png",
+            "height": 181,
+            "weight": 77,
+            "date_of_birth": "1994-03-03",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 6955752879,
+          "sport_id": 1,
+          "fixture_id": 1818661,
+          "player_id": 149243,
+          "team_id": 260,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "M. Clarke",
+          "jersey_number": 32,
+          "details": [],
+          "player": {
+            "id": 149243,
+            "sport_id": 1,
+            "country_id": 491,
+            "nationality_id": 491,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 25,
+            "common_name": "M. Clarke",
+            "firstname": "Matthew",
+            "lastname": "Clarke",
+            "name": "Matthew Clarke",
+            "display_name": "Matthew Clarke",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/27/149243.png",
+            "height": 181,
+            "weight": 77,
+            "date_of_birth": "1994-03-03",
+            "gender": "male"
+          }
+        }
+      ],
+      "formations": []
+    },
+    {
+      "id": 2457629,
+      "lineups": [
+        {
+          "id": 4321876,
+          "sport_id": 1,
+          "fixture_id": 2457629,
+          "player_id": 149243,
+          "team_id": 260,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "M. Clarke",
+          "jersey_number": 32,
+          "player": {
+            "id": 149243,
+            "sport_id": 1,
+            "country_id": 491,
+            "nationality_id": 491,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 25,
+            "common_name": "M. Clarke",
+            "firstname": "Matthew",
+            "lastname": "Clarke",
+            "name": "Matthew Clarke",
+            "display_name": "Matthew Clarke",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/27/149243.png",
+            "height": 181,
+            "weight": 77,
+            "date_of_birth": "1994-03-03",
+            "gender": "male"
+          },
+          "details": [
+            {
+              "id": 193637923,
+              "fixture_id": 2457629,
+              "player_id": 148658,
+              "team_id": 260,
+              "lineup_id": 4321876,
+              "type_id": 88,
+              "data": {
+                "value": 4
+              }
+            }
+          ]
+        }
+      ],
+      "formations": []
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 148658,
+      "sport_id": 1,
+      "country_id": 491,
+      "nationality_id": 491,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": 26,
+      "common_name": "R. Clarke",
+      "firstname": "Ross",
+      "lastname": "Clarke",
+      "name": "Ross Clarke",
+      "display_name": "Ross Clarke",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/18/148658.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "1993-05-17",
+      "gender": "male"
+    }
+  ]
+}

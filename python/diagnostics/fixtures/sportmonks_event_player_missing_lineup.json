@@ -1,0 +1,393 @@
+{
+  "description": "Pafos–Salzburg의 실제 교체 선수 Anderson은 전체 라인업 41행에서 누락됐어요. 필요한 이벤트·관련 선수 라인업과 단건 프로필만 남긴 표본이에요.",
+  "sources": [
+    "https://sport.sky.de/fussball/pafos-vs-salzburg/live/571443",
+    "Sportmonks fixtures/19766394; fixtures/19788644; fixtures/19788604; players/226852"
+  ],
+  "fixture": {
+    "id": 19766394,
+    "events": [
+      {
+        "id": 157460319,
+        "fixture_id": 19766394,
+        "period_id": 7038608,
+        "participant_id": 8119,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 226852,
+        "related_player_id": 74124,
+        "player_name": "Anderson Silva",
+        "related_player_name": "Ivan Šunjić",
+        "result": null,
+        "info": null,
+        "addition": "4th Substitution",
+        "minute": 76,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7038608,
+        "rescinded": null,
+        "sort_order": 4,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "lineups": [
+      {
+        "id": 14674333141,
+        "sport_id": 1,
+        "fixture_id": 19766394,
+        "player_id": 74124,
+        "team_id": 8119,
+        "position_id": 26,
+        "formation_field": "3:3",
+        "type_id": 11,
+        "formation_position": 7,
+        "player_name": "Ivan Šunjić",
+        "jersey_number": 26,
+        "details": [
+          {
+            "id": 2151727634,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 117172,
+            "data": {
+              "value": 77
+            }
+          },
+          {
+            "id": 2151728108,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 119,
+            "data": {
+              "value": 76
+            }
+          },
+          {
+            "id": 2151728109,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 120,
+            "data": {
+              "value": 44
+            }
+          },
+          {
+            "id": 2151728110,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 27273,
+            "data": {
+              "value": 7
+            }
+          },
+          {
+            "id": 2151728232,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 118,
+            "data": {
+              "value": 6.66
+            }
+          },
+          {
+            "id": 2151728230,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 106,
+            "data": {
+              "value": 4
+            }
+          },
+          {
+            "id": 2151728231,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 105,
+            "data": {
+              "value": 6
+            }
+          },
+          {
+            "id": 2151728797,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 80,
+            "data": {
+              "value": 33
+            }
+          },
+          {
+            "id": 2151728798,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 116,
+            "data": {
+              "value": 29
+            }
+          },
+          {
+            "id": 2151729027,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 27269,
+            "data": {
+              "value": 4
+            }
+          },
+          {
+            "id": 2151729028,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 1584,
+            "data": {
+              "value": 88
+            }
+          },
+          {
+            "id": 2151730744,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 27270,
+            "data": {
+              "value": 83
+            }
+          },
+          {
+            "id": 2151730537,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 122,
+            "data": {
+              "value": 6
+            }
+          },
+          {
+            "id": 2151730538,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 123,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 2151733172,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 27271,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 2151732057,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 27272,
+            "data": {
+              "value": 8
+            }
+          },
+          {
+            "id": 2151743369,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 101,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2151745831,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 110,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2151745832,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 1491,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 2151761818,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 78,
+            "data": {
+              "value": 4
+            }
+          },
+          {
+            "id": 2151761819,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 27267,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 2151761820,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 27268,
+            "data": {
+              "value": 50
+            }
+          },
+          {
+            "id": 2151795564,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 88,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 2151807660,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 42,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2151807359,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 41,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2151821138,
+            "fixture_id": 19766394,
+            "player_id": 74124,
+            "team_id": 8119,
+            "lineup_id": 14674333141,
+            "type_id": 56,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 74124,
+          "sport_id": 1,
+          "country_id": 507,
+          "nationality_id": 507,
+          "city_id": 101775,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "I. Šunjić",
+          "firstname": "Ivan",
+          "lastname": "Šunjić",
+          "name": "Ivan Šunjić",
+          "display_name": "Ivan Šunjić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/12/74124.png",
+          "height": 183,
+          "weight": 75,
+          "date_of_birth": "1996-10-09",
+          "gender": "male"
+        }
+      }
+    ],
+    "statistics": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  },
+  "profiles": {
+    "226852": {
+      "id": 226852,
+      "sport_id": 1,
+      "country_id": 5,
+      "nationality_id": 5,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": 27,
+      "common_name": "A. Oliveira Silva",
+      "firstname": "Anderson",
+      "lastname": "Oliveira Silva",
+      "name": "Anderson Oliveira Silva",
+      "display_name": "Anderson Silva",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/4/226852.png",
+      "height": 186,
+      "weight": 80,
+      "date_of_birth": "1997-11-21",
+      "gender": "male"
+    }
+  }
+}

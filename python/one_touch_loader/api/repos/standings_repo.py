@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 from ..db import fetch_all_dict
 
 
-def get_current_season_id_for_league(league_id: int) -> Optional[int]:
+def get_current_season_id_for_competition(competition_id: int) -> Optional[int]:
     # A league holds at most one is_current=1 season, but no DB constraint
     # enforces it. Read LIMIT 2 and check cardinality so a duplicate actually
     # surfaces instead of being silently resolved to whichever row comes first:
@@ -15,23 +15,23 @@ def get_current_season_id_for_league(league_id: int) -> Optional[int]:
         """
         SELECT season_id
         FROM seasons
-        WHERE league_id=%s AND is_current=1
+        WHERE competition_id=%s AND is_current=1
         LIMIT 2
         """,
-        (league_id,),
+        (competition_id,),
     )
     if not rows:
         return None
     if len(rows) > 1:
         raise ValueError(
-            f"league_id={league_id} has multiple is_current=1 seasons: "
+            f"competition_id={competition_id} has multiple is_current=1 seasons: "
             f"{[int(r['season_id']) for r in rows]}"
         )
     return int(rows[0]["season_id"])
 
 
 def list_standings(
-    league_id: int,
+    competition_id: int,
     season_id: int,
     phase: str = "league",
     group_name: str = "",
@@ -47,11 +47,11 @@ def list_standings(
           s.last5_form
         FROM standings s
         LEFT JOIN teams t ON t.team_id = s.team_id
-        WHERE s.league_id=%s AND s.season_id=%s
+        WHERE s.competition_id=%s AND s.season_id=%s
           AND s.phase=%s AND s.group_name=%s
         ORDER BY s.position ASC, s.team_id ASC
         """,
-        (league_id, season_id, phase, group_name),
+        (competition_id, season_id, phase, group_name),
     )
 
     # position is the official Sportmonks value (source of truth); team_id only
@@ -73,13 +73,13 @@ def list_standings(
 
 
 def get_team_standing(
-    league_id: int,
+    competition_id: int,
     season_id: int,
     team_id: int,
     phase: str = "league",
     group_name: str = "",
 ) -> Optional[Dict[str, Any]]:
-    rows = list_standings(league_id, season_id, phase, group_name)
+    rows = list_standings(competition_id, season_id, phase, group_name)
     for r in rows:
         if int(r["team_id"]) == int(team_id):
             return r
