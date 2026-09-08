@@ -44,9 +44,21 @@ from one_touch_loader.loaders.fixture_details_loader import (
     collect_fixture_details,
     collect_fixture_details_for_competition_season,
 )
+from one_touch_loader.loaders.capology_player_ids_loader import (
+    collect_all_capology_player_ids,
+    collect_capology_player_ids_for_competition_season,
+)
+from one_touch_loader.loaders.capology_team_slugs_loader import (
+    collect_all_capology_team_slugs,
+    collect_capology_team_slugs_for_competition_season,
+)
 from one_touch_loader.loaders.countries_loader import refresh_countries
 from one_touch_loader.loaders.player_team_honours_loader import (
     refresh_player_team_honours,
+)
+from one_touch_loader.loaders.player_wage_loader import (
+    collect_all_wages,
+    collect_wages_for_competition_season,
 )
 from one_touch_loader.loaders.best_eleven_loader import (
     rebuild_best_eleven,
@@ -121,6 +133,18 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli fixture-details fixture <fixture_id>
   python -m one_touch_loader.cli fixture-details all
   python -m one_touch_loader.cli fixture-details <season_name> <competition_id> [competition_id ...]
+
+9. capology-team-slugs
+  python -m one_touch_loader.cli capology-team-slugs all
+  python -m one_touch_loader.cli capology-team-slugs <season_name> <competition_id> [competition_id ...]
+
+10. capology-player-ids
+  python -m one_touch_loader.cli capology-player-ids all
+  python -m one_touch_loader.cli capology-player-ids <season_name> <competition_id> [competition_id ...]
+
+11. wages
+  python -m one_touch_loader.cli wages all
+  python -m one_touch_loader.cli wages <season_name> <competition_id> [competition_id ...]
 
 """
 
@@ -453,6 +477,128 @@ def main():
                 "Fixture details season done: "
                 f"season={season_name} competitions={competition_ids} "
                 f"result={result}"
+            )
+        else:
+            print(USAGE)
+
+    elif cmd == "capology-team-slugs":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_capology_team_slugs()
+            print(
+                "Capology team slugs all done: "
+                f"target_team_seasons={result['target_team_seasons']} "
+                f"target_teams={result['target_teams']} "
+                f"existing={result['existing_mappings']} "
+                f"inserted={result['inserted_mappings']} "
+                f"unmatched_team_seasons={result['unmatched_team_seasons']} "
+                f"report={result['report_path']}"
+            )
+
+        elif len(sys.argv) >= 4:
+            season_name = sys.argv[2]
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            for competition_id in competition_ids:
+                result = (
+                    collect_capology_team_slugs_for_competition_season(
+                        season_name,
+                        competition_id,
+                    )
+                )
+                print(
+                    "Capology team slugs competition done: "
+                    f"season={season_name} "
+                    f"competition={competition_id} "
+                    f"target_team_seasons={result['target_team_seasons']} "
+                    f"target_teams={result['target_teams']} "
+                    f"existing={result['existing_mappings']} "
+                    f"inserted={result['inserted_mappings']} "
+                    f"unmatched_team_seasons={result['unmatched_team_seasons']} "
+                    f"report={result['report_path']}"
+                )
+            print(
+                "Capology team slugs season done: "
+                f"season={season_name} competitions={competition_ids}"
+            )
+        else:
+            print(USAGE)
+
+    elif cmd == "capology-player-ids":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_capology_player_ids()
+            print(
+                "Capology player IDs all done: "
+                f"targets={result['target_players']} "
+                f"existing={result['existing_capology_mappings']} "
+                f"inserted={result['inserted_mappings']} "
+                "ignored_without_loaded_db_match="
+                f"{result['ignored_source_players_without_loaded_db_match']} "
+                f"ambiguous={result['ambiguous_players']} "
+                f"report={result['report_path']}"
+            )
+
+        elif len(sys.argv) >= 4:
+            season_name = sys.argv[2]
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            for competition_id in competition_ids:
+                result = collect_capology_player_ids_for_competition_season(
+                    season_name,
+                    competition_id,
+                )
+                print(
+                    "Capology player IDs competition done: "
+                    f"season={season_name} "
+                    f"competition={competition_id} "
+                    f"targets={result['target_players']} "
+                    f"existing={result['existing_capology_mappings']} "
+                    f"inserted={result['inserted_mappings']} "
+                    "ignored_without_loaded_db_match="
+                    f"{result['ignored_source_players_without_loaded_db_match']} "
+                    f"ambiguous={result['ambiguous_players']} "
+                    f"report={result['report_path']}"
+                )
+            print(
+                "Capology player IDs season done: "
+                f"season={season_name} competitions={competition_ids}"
+            )
+        else:
+            print(USAGE)
+
+    elif cmd == "wages":
+        if len(sys.argv) == 3 and sys.argv[2] == "all":
+            result = collect_all_wages()
+            print(
+                "Wages all done: "
+                f"team_seasons={result['target_team_seasons']} "
+                f"mapped={result['mapped_wages']} "
+                "ignored_without_loaded_db_match="
+                f"{result['ignored_source_players_without_loaded_db_match']} "
+                f"unavailable={result['unavailable_wages']} "
+                f"inserted={result['inserted_wages']} "
+                f"report={result['report_path']}"
+            )
+
+        elif len(sys.argv) >= 4:
+            season_name = sys.argv[2]
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            for competition_id in competition_ids:
+                result = collect_wages_for_competition_season(
+                    season_name,
+                    competition_id,
+                )
+                print(
+                    "Wages competition done: "
+                    f"season={season_name} "
+                    f"competition={competition_id} "
+                    f"mapped={result['mapped_wages']} "
+                    "ignored_without_loaded_db_match="
+                    f"{result['ignored_source_players_without_loaded_db_match']} "
+                    f"unavailable={result['unavailable_wages']} "
+                    f"inserted={result['inserted_wages']} "
+                    f"report={result['report_path']}"
+                )
+            print(
+                "Wages season done: "
+                f"season={season_name} competitions={competition_ids}"
             )
         else:
             print(USAGE)
