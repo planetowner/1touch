@@ -5,7 +5,7 @@ DROP VIEW IF EXISTS `v_team_attribute_display_scores`;
 CREATE VIEW `v_team_attribute_display_scores` AS
 SELECT
   s.model_id,
-  s.league_id,
+  season.competition_id,
   s.season_id,
   s.team_id,
   t.name AS team_name,
@@ -28,6 +28,8 @@ SELECT
   MAX(s.updated_at) AS attributes_updated_at
 
 FROM team_attribute_group_scores s
+-- 대회 ID는 시즌에만 저장하고 조회할 때 연결해요.
+JOIN seasons season ON season.season_id = s.season_id
 JOIN team_attribute_regression_models m
   ON m.id = s.model_id
  AND m.is_active = 1
@@ -37,7 +39,7 @@ LEFT JOIN teams t
 
 GROUP BY
   s.model_id,
-  s.league_id,
+  season.competition_id,
   s.season_id,
   s.team_id,
   t.name;

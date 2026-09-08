@@ -1,116 +1,41 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score
 
-from one_touch_loader.core.db import fetch_all, transaction
+from one_touch_loader.core.db import transaction
+from one_touch_loader.loaders.team_attribute_common import (
+    FEATURE_GROUPS,
+    LOWER_IS_BETTER_FEATURES,
+)
+from one_touch_loader.loaders.team_attribute_training_features_loader import (
+    TARGET_SEASON_IDS as TRAINING_SEASON_IDS,
+    fetch_team_attribute_feature_dataframe,
+)
 
 
+# 5개 영역을 각각 시즌 경기당 승점에 맞춰 학습해요. 순수한 영역별 능력을 검증한 정답은 아니에요.
 MODEL_NAME = "team_attribute_ridge_v1"
 MODEL_VERSION = 1
 TARGET_NAME = "points_per_match"
-TRAINING_SCOPE = "big5_2020_2021_to_2024_2025"
-NORMALIZATION_SCOPE = "league_season_zscore"
+TRAINING_SCOPE = "big5_2021_2022_to_2025_2026"
+NORMALIZATION_SCOPE = "competition_season_zscore"
 REGRESSION_METHOD = "ridge"
+# Ridge는 서로 비슷한 통계의 계수가 지나치게 커지는 것을 억제해요. 기존 강도 1.0을 유지해요.
 ALPHA = 1.0
 
 
-TRAINING_SEASON_IDS = [
-    17420, 18378, 19734, 21646, 23614,
-    17361, 18444, 19744, 21795, 23744,
-    17160, 18441, 19745, 21779, 23643,
-    17488, 18576, 19806, 21818, 23746,
-    17480, 18462, 19799, 21694, 23621,
-]
-
-
-FEATURE_GROUPS: Dict[str, List[str]] = {
-    "possession_build_up": [
-        "ball_possession_avg",
-        "ball_safe_per_match",
-        "passes_per_match",
-        "pass_accuracy",
-    ],
-    "attacking_threat": [
-        "dangerous_attacks_per_match",
-        "total_crosses_per_match",
-        "cross_accuracy",
-        "dribble_attempts_per_match",
-        "dribble_success_rate",
-    ],
-    "chance_creation": [
-        "corners_per_match",
-        "key_passes_per_match",
-        "big_chances_created_per_match",
-    ],
-    "finishing": [
-        "shots_insidebox_per_match",
-        "conversion_rate",
-        "shots_on_target_per_match",
-        "shot_accuracy",
-    ],
-    "defending": [
-        "goals_against_per_match",
-        "shots_on_target_against_per_match",
-        "shots_insidebox_against_per_match",
-        "big_chances_against_per_match",
-        "dangerous_attacks_against_per_match",
-    ],
-}
-
-
-LOWER_IS_BETTER_FEATURES = {
-    "goals_against_per_match",
-    "shots_on_target_against_per_match",
-    "shots_insidebox_against_per_match",
-    "big_chances_against_per_match",
-    "dangerous_attacks_against_per_match",
-}
-
-
-ALL_FEATURES = [
-    feature
-    for features in FEATURE_GROUPS.values()
-    for feature in features
-]
 
 
 def _fetch_training_dataframe() -> pd.DataFrame:
-    cols = [
-        "league_id",
-        "season_id",
-        "team_id",
-        "matches_played",
-        "points",
-        "points_per_match",
-        *ALL_FEATURES,
-    ]
+    df = fetch_team_attribute_feature_dataframe(TRAINING_SEASON_IDS, include_target=True)
 
-    placeholders = ", ".join(["%s"] * len(TRAINING_SEASON_IDS))
-
-    sql = f"""
-    SELECT
-      {", ".join(cols)}
-    FROM team_attribute_training_features
-    WHERE season_id IN ({placeholders})
-    ORDER BY league_id, season_id, team_id
-    """
-
-    rows = fetch_all(sql, tuple(TRAINING_SEASON_IDS))
-    df = pd.DataFrame(rows, columns=cols)
-
-    if df.empty:
-        raise RuntimeError("No rows found in team_attribute_training_features.")
-
-    for col in ["points_per_match", *ALL_FEATURES]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    missing = df[["points_per_match", *ALL_FEATURES]].isna().sum()
+    # 미제공 특성은 NULL로 받아 영역별로 제외하고, 학습 목표의 누락만 전체 오류로 처리해요.
+    missing = df[["points_per_match"]].isna().sum()
     missing = missing[missing > 0]
 
     if not missing.empty:
@@ -122,16 +47,14 @@ def _fetch_training_dataframe() -> pd.DataFrame:
     return df
 
 
-def _add_league_season_zscores(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    group_keys = ["league_id", "season_id"]
+def _add_competition_season_zscores(df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
+    # 한 영역의 고정 항목이 모두 계산된 팀·시즌만 비교해요. 다른 영역의 누락은 영향을 주지 않아요.
+    out = df.dropna(subset=features).copy()
+    group_keys = ["competition_id", "season_id"]
 
-    # std=0 inside a (league_id, season_id) means every team has the same
-    # value for that feature — verified to happen for stats Sportmonks did
-    # not track in some seasons. We keep z=0 in that case so the untracked
-    # feature contributes nothing to the regression instead of producing
-    # NaNs and breaking the fit.
-    for feature in ALL_FEATURES:
+    # (값 - 평균) / 표준편차로 단위를 맞춰 같은 리그·시즌 안의 상대적 수준을 비교해요.
+    # 실제 값이 모두 같아 표준편차가 0이면 기존처럼 상대값을 0으로 둬요. 미제공을 0으로 채우지는 않아요.
+    for feature in features:
         mean = out.groupby(group_keys)[feature].transform("mean")
         std = out.groupby(group_keys)[feature].transform(lambda s: s.std(ddof=0))
 
@@ -139,8 +62,7 @@ def _add_league_season_zscores(df: pd.DataFrame) -> pd.DataFrame:
         out[z_col] = (out[feature] - mean) / std.replace(0, np.nan)
         out[z_col] = out[z_col].replace([np.inf, -np.inf], np.nan).fillna(0.0)
 
-        # Defensive "against" features are lower-is-better.
-        # Flip them so higher z means better defending.
+        # 상대에게 허용한 값은 부호를 바꿔 높은 상대값이 좋은 수비를 뜻하게 해요.
         if feature in LOWER_IS_BETTER_FEATURES:
             out[z_col] = -out[z_col]
 
@@ -154,17 +76,14 @@ def _persist_model_atomically(
     notes: dict,
     build_weight_rows: callable,
 ) -> int:
-    """Deactivate any currently-active model, replace this model row, and
-    insert all feature weights — in a single transaction so the active model
-    and its weights are never out of sync.
+    """활성 모델을 끄고 새 모델 행과 모든 특성 가중치를 한 트랜잭션에서 저장해요.
 
-    The reader (_get_active_model_id) treats "the active model" as a single
-    global row, so activation is global: exactly one is_active=1 across the
-    whole table at a time. Deactivate every active row (not just this
-    model_name) before inserting the new active one.
+    활성 모델과 가중치가 서로 어긋나는 순간이 없게 해요. 조회 함수
+    _get_active_model_id는 테이블 전체에서 활성 모델이 하나라고 봐요.
+    따라서 같은 model_name만이 아니라 모든 활성 행을 먼저 끄고,
+    is_active=1인 새 모델 하나를 넣어요.
 
-    `build_weight_rows(model_id)` returns the list of weight tuples once the
-    new model_id is known.
+    새 model_id가 정해지면 `build_weight_rows(model_id)`가 가중치 튜플 목록을 반환해요.
     """
     with transaction() as conn:
         with conn.cursor() as cur:
@@ -228,10 +147,9 @@ def _persist_model_atomically(
                       attribute_group,
                       feature_name,
                       coefficient,
-                      positive_coefficient,
                       weight
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s)
                     """,
                     weight_rows,
                 )
@@ -240,6 +158,8 @@ def _persist_model_atomically(
 
 
 def _weights_from_coefficients(coefficients: np.ndarray) -> tuple[list[float], list[float]]:
+    # 지표가 좋아질 때 표시 점수가 낮아지지 않게 음수 계수를 0으로 바꾸고, 나머지 합을 1로 맞춰요.
+    # 사용자가 유지하기로 한 기존 방식이에요. 이 후처리로 표시 점수는 학습한 회귀식과 달라져요.
     positive_coefficients = [max(float(coef), 0.0) for coef in coefficients]
     total_positive = sum(positive_coefficients)
 
@@ -256,19 +176,20 @@ def _weights_from_coefficients(coefficients: np.ndarray) -> tuple[list[float], l
 
 def train_team_attribute_regression_weights() -> int:
     df = _fetch_training_dataframe()
-    df = _add_league_season_zscores(df)
-
-    y = df[TARGET_NAME].astype(float).to_numpy()
 
     group_results = {}
 
     for attribute_group, features in FEATURE_GROUPS.items():
+        group_df = _add_competition_season_zscores(df, features)
         z_features = [f"{feature}_z" for feature in features]
-        X = df[z_features].astype(float).to_numpy()
+        X = group_df[z_features].astype(float).to_numpy()
+        y = group_df[TARGET_NAME].astype(float).to_numpy()
 
+        # 영역별 통계로 시즌 경기당 승점을 설명하는 계수를 학습해요. 부분 경기 수도 가중치에 추가하지 않아요.
         model = Ridge(alpha=ALPHA, fit_intercept=True)
         model.fit(X, y)
 
+        # 기존 R²는 학습 자료에 대한 적합도예요. 다른 시즌 성능이나 후처리한 표시 점수의 검증값은 아니에요.
         predictions = model.predict(X)
         group_r2 = float(r2_score(y, predictions))
         coefficients = model.coef_
@@ -276,7 +197,7 @@ def train_team_attribute_regression_weights() -> int:
         positive_coefficients, weights = _weights_from_coefficients(coefficients)
 
         group_results[attribute_group] = {
-            "features": features,
+            "rows_used": len(group_df),
             "intercept": float(model.intercept_),
             "r2_score": group_r2,
             "coefficients": {
@@ -291,11 +212,6 @@ def train_team_attribute_regression_weights() -> int:
                 feature: float(weight)
                 for feature, weight in zip(features, weights)
             },
-            "lower_is_better_features": [
-                feature
-                for feature in features
-                if feature in LOWER_IS_BETTER_FEATURES
-            ],
         }
 
     avg_r2_score = float(
@@ -313,7 +229,6 @@ def train_team_attribute_regression_weights() -> int:
                         attribute_group,
                         feature,
                         float(result["coefficients"][feature]),
-                        float(result["positive_coefficients"][feature]),
                         float(result["weights"][feature]),
                     )
                 )
@@ -323,16 +238,11 @@ def train_team_attribute_regression_weights() -> int:
         rows_used=len(df),
         avg_r2_score=avg_r2_score,
         notes={
-            "description": (
-                "Ridge regression trained per attribute group. "
-                "Features are z-scored within each league-season. "
-                "Lower-is-better defensive features are sign-flipped after z-score. "
-                "For UI attribute scoring, negative coefficients are ignored and "
-                "positive coefficients are normalized into non-negative weights."
-            ),
-            "feature_groups": FEATURE_GROUPS,
-            "lower_is_better_features": sorted(LOWER_IS_BETTER_FEATURES),
-            "group_results": group_results,
+            # 계수·가중치는 가중치 테이블에 두고, 영역별 학습 진단값만 남겨요.
+            "group_results": {
+                group: {key: result[key] for key in ("rows_used", "intercept", "r2_score")}
+                for group, result in group_results.items()
+            },
         },
         build_weight_rows=_build_weight_rows,
     )
@@ -343,7 +253,10 @@ def train_team_attribute_regression_weights() -> int:
     )
 
     for group, result in group_results.items():
-        print(f"[team-attributes][{group}] r2={result['r2_score']:.6f}")
+        print(
+            f"[team-attributes][{group}] rows_used={result['rows_used']} "
+            f"unavailable_rows={len(df) - result['rows_used']} r2={result['r2_score']:.6f}"
+        )
         for feature in FEATURE_GROUPS[group]:
             coef = result["coefficients"][feature]
             pos_coef = result["positive_coefficients"][feature]

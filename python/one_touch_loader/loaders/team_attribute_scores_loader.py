@@ -1,73 +1,51 @@
 from __future__ import annotations
 
-import json
 from typing import Dict
 
-import numpy as np
-import pandas as pd
-
-from one_touch_loader.core.db import fetch_all, upsert_many
-from one_touch_loader.loaders.team_attribute_regression_trainer import (
+from one_touch_loader.core.db import fetch_all, transaction
+from one_touch_loader.loaders.team_attribute_common import (
     FEATURE_GROUPS,
-    LOWER_IS_BETTER_FEATURES,
+)
+from one_touch_loader.loaders.team_attribute_regression_trainer import (
+    _add_competition_season_zscores,
 )
 from one_touch_loader.loaders.team_attribute_training_features_loader import (
     get_current_big5_season_ids,
+    fetch_team_attribute_feature_dataframe,
 )
 
 
-ALL_FEATURES = [
-    feature
-    for features in FEATURE_GROUPS.values()
-    for feature in features
-]
-
+# 같은 리그·시즌의 상대값을 50 중심으로 표시하는 기존 규칙이에요. 백분위나 리그 간 절대 능력이 아니에요.
 DISPLAY_BASE = 50.0
 DISPLAY_SCALE = 15.0
 DISPLAY_MIN = 5.0
 DISPLAY_MAX = 95.0
 
 
-UPSERT_SQL = """
+INSERT_SQL = """
 INSERT INTO team_attribute_group_scores (
   model_id,
-  league_id,
   season_id,
   team_id,
   attribute_group,
-  raw_score,
-  display_score_0_100,
-  feature_contributions_json
+  display_score_0_100
 )
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-ON DUPLICATE KEY UPDATE
-  raw_score = VALUES(raw_score),
-  display_score_0_100 = VALUES(display_score_0_100),
-  feature_contributions_json = VALUES(feature_contributions_json)
+VALUES (%s, %s, %s, %s, %s)
 """
 
 
 def _get_active_model_id() -> int:
-    # The UNIQUE constraint is on (model_name, model_version); it does NOT
-    # enforce a single is_active=1 row. Read LIMIT 2 and require exactly one:
-    #   0 -> error, 1 -> it, >=2 -> error (surface, don't silently pick first).
     rows = fetch_all(
         """
         SELECT id
         FROM team_attribute_regression_models
         WHERE is_active = 1
-        LIMIT 2
+        LIMIT 1
         """
     )
 
     if not rows:
         raise RuntimeError("No active team_attribute_regression_models row found.")
-
-    if len(rows) > 1:
-        raise RuntimeError(
-            "Multiple active team_attribute_regression_models rows: "
-            f"{[int(r[0]) for r in rows]}"
-        )
 
     return int(rows[0][0])
 
@@ -97,78 +75,8 @@ def _fetch_weights(model_id: int) -> Dict[str, Dict[str, float]]:
     return weights
 
 
-def _fetch_feature_dataframe(season_ids: list[int] | None = None) -> pd.DataFrame:
-    cols = [
-        "league_id",
-        "season_id",
-        "team_id",
-        "matches_played",
-        "points",
-        "points_per_match",
-        *ALL_FEATURES,
-    ]
-
-    where_sql = ""
-    params: tuple = ()
-
-    if season_ids:
-        placeholders = ", ".join(["%s"] * len(season_ids))
-        where_sql = f"WHERE season_id IN ({placeholders})"
-        params = tuple(season_ids)
-
-    sql = f"""
-    SELECT
-      {", ".join(cols)}
-    FROM team_attribute_training_features
-    {where_sql}
-    ORDER BY league_id, season_id, team_id
-    """
-
-    rows = fetch_all(sql, params)
-    df = pd.DataFrame(rows, columns=cols)
-
-    if df.empty:
-        raise RuntimeError("No rows found in team_attribute_training_features.")
-
-    for col in ["points_per_match", *ALL_FEATURES]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    missing = df[ALL_FEATURES].isna().sum()
-    missing = missing[missing > 0]
-
-    if not missing.empty:
-        raise RuntimeError(
-            "Score input data contains NULL/NaN values:\n"
-            + missing.to_string()
-        )
-
-    return df
-
-
-def _add_league_season_zscores(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    group_keys = ["league_id", "season_id"]
-
-    # std=0 inside a (league_id, season_id) means every team in that group has
-    # the same value for that feature — verified to occur for stats Sportmonks
-    # did not track in some seasons (e.g. key-passes, big-chances-created).
-    # In that case the z-score is undefined; we keep it at 0.0 so the team's
-    # display score is unaffected by an untracked feature.
-    for feature in ALL_FEATURES:
-        mean = out.groupby(group_keys)[feature].transform("mean")
-        std = out.groupby(group_keys)[feature].transform(lambda s: s.std(ddof=0))
-
-        z_col = f"{feature}_z"
-        out[z_col] = (out[feature] - mean) / std.replace(0, np.nan)
-        out[z_col] = out[z_col].replace([np.inf, -np.inf], np.nan).fillna(0.0)
-
-        if feature in LOWER_IS_BETTER_FEATURES:
-            out[z_col] = -out[z_col]
-
-    return out
-
-
 def _to_display_score(raw_score: float) -> float:
+    # 극단값을 표시 범위 5~95로 제한하는 기존 환산식을 유지해요.
     display_score = DISPLAY_BASE + DISPLAY_SCALE * raw_score
     return float(max(DISPLAY_MIN, min(DISPLAY_MAX, display_score)))
 
@@ -180,58 +88,56 @@ def build_team_attribute_group_scores(
     model_id = model_id or _get_active_model_id()
 
     weights_by_group = _fetch_weights(model_id)
-    df = _fetch_feature_dataframe(season_ids=season_ids)
-    df = _add_league_season_zscores(df)
+    df = fetch_team_attribute_feature_dataframe(season_ids=season_ids)
 
     db_rows = []
 
-    for _, row in df.iterrows():
-        league_id = int(row["league_id"])
-        season_id = int(row["season_id"])
-        team_id = int(row["team_id"])
-
-        for attribute_group, features in FEATURE_GROUPS.items():
-            group_weights = weights_by_group[attribute_group]
+    for attribute_group, features in FEATURE_GROUPS.items():
+        # 학습과 같은 누락 제외·표준화 규칙을 써요. 가중치가 0인 항목도 필수 비교 항목에 포함해요.
+        group_df = _add_competition_season_zscores(df, features)
+        group_weights = weights_by_group[attribute_group]
+        print(
+            f"[team-attributes][{attribute_group}] scored_rows={len(group_df)} "
+            f"unavailable_rows={len(df) - len(group_df)}"
+        )
+        for _, row in group_df.iterrows():
+            season_id = int(row["season_id"])
+            team_id = int(row["team_id"])
 
             raw_score = 0.0
-            contributions = {}
 
             for feature in features:
+                # 학습 후 고정된 가중치와 상대값을 곱해 더해요. 팀별로 항목을 빼거나 가중치를 다시 나누지 않아요.
                 weight = float(group_weights[feature])
                 z_value = float(row[f"{feature}_z"])
-                raw_value = float(row[feature])
                 contribution = z_value * weight
 
                 raw_score += contribution
-
-                contributions[feature] = {
-                    "raw_value": raw_value,
-                    "z_value": z_value,
-                    "weight": weight,
-                    "contribution": contribution,
-                    "direction": (
-                        "lower_is_better"
-                        if feature in LOWER_IS_BETTER_FEATURES
-                        else "higher_is_better"
-                    ),
-                }
 
             display_score = _to_display_score(raw_score)
 
             db_rows.append(
                 (
                     model_id,
-                    league_id,
                     season_id,
                     team_id,
                     attribute_group,
-                    float(raw_score),
                     float(display_score),
-                    json.dumps(contributions, ensure_ascii=False),
                 )
             )
 
-    upsert_many(UPSERT_SQL, db_rows)
+    # 미산출로 바뀐 영역의 예전 점수가 남지 않게 요청한 모델·시즌 결과를 한 트랜잭션에서 교체해요.
+    delete_sql = "DELETE FROM team_attribute_group_scores WHERE model_id = %s"
+    delete_params = (model_id,)
+    if season_ids:
+        delete_sql += f" AND season_id IN ({', '.join(['%s'] * len(season_ids))})"
+        delete_params += tuple(season_ids)
+    with transaction() as conn:
+        with conn.cursor() as cur:
+            cur.execute(delete_sql, delete_params)
+            if db_rows:
+                # 같은 범위를 먼저 지웠으므로 중복 갱신 없이 새 결과만 넣어요.
+                cur.executemany(INSERT_SQL, db_rows)
 
     scope = "all seasons" if not season_ids else ",".join(str(x) for x in season_ids)
 
