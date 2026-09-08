@@ -189,6 +189,7 @@ def main():
     if len(sys.argv) < 2:
         print(USAGE)
         return
+
     cmd = sys.argv[1]
 
     if cmd == "countries":
@@ -321,18 +322,18 @@ def main():
             print(f"xG standings refresh-current done. rows={rows}")
 
         elif sub == "season" and len(sys.argv) == 5:
-            league_id = int(sys.argv[3])
+            competition_id = int(sys.argv[3])
             season_id = int(sys.argv[4])
 
             rows = build_xg_standings_for_season(
-                league_id,
+                competition_id,
                 season_id,
                 no_cache=True,
             )
 
             print(
                 f"xG standings season done: "
-                f"league_id={league_id} season_id={season_id} rows={rows}"
+                f"competition_id={competition_id} season_id={season_id} rows={rows}"
             )
 
         else:
@@ -725,6 +726,7 @@ def main():
 
         else:
             print(USAGE)
+
     else:
         print(USAGE)
 

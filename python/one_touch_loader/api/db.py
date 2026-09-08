@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..core.db import get_conn, transaction  # re-export for repo modules
+from ..core.db import get_conn, transaction  # 저장소 모듈에서 바로 쓸 수 있게 다시 내보내요.
 
 
 def fetch_all_dict(sql: str, params: Tuple | None = None) -> List[Dict[str, Any]]:

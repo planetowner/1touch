@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS transfer_windows (
   KEY idx_tw_dates (start_date, end_date)
 );
 
--- seed: known transfer windows
+-- 초기값: 확인된 이적 기간
 INSERT IGNORE INTO transfer_windows (season_year, window_name, start_date, end_date) VALUES
   (2025, 'summer', '2025-06-10', '2025-09-01'),
   (2025, 'winter', '2025-12-01', '2025-12-31'),

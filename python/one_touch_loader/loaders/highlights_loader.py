@@ -11,7 +11,7 @@ from one_touch_loader.core.db import execute, fetch_all, transaction
 
 
 # =========================================================
-# Constants
+# 상수
 # =========================================================
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
@@ -19,23 +19,22 @@ YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3"
 HTTP_TIMEOUT_SECONDS = 30
 
-# Verified against team_youtube_sources schema (DB scan): exactly these two
-# values appear, NOT NULL.
+# team_youtube_sources 스키마를 확인한 결과 두 값만 있고, 둘 다 NOT NULL이에요.
 VALID_SOURCE_MODES = frozenset({"playlists", "channel_rules"})
 
-# Verified against YouTube API v3 playlistItems response:
-# every video carries default/medium/high; standard/maxres only for HD source.
-# Priority picks the highest-resolution thumbnail that the API returned.
+# YouTube API v3 playlistItems 응답을 확인했어요. 모든 영상에는 default, medium,
+# high가 있고 HD 원본에만 standard와 maxres가 있어요. API가 준 썸네일 가운데
+# 해상도가 가장 높은 것을 우선해요.
 THUMBNAIL_PRIORITY: Tuple[str, ...] = ("maxres", "standard", "high", "medium", "default")
 
-# YouTube API returns timestamps in RFC 3339 UTC form, e.g. "2026-06-19T14:00:30Z".
+# YouTube API 시각은 "2026-06-19T14:00:30Z" 같은 RFC 3339 UTC 형식이에요.
 YOUTUBE_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 TOP_N_HIGHLIGHTS = 3
 
 
 # =========================================================
-# Strict helpers
+# 값을 엄격하게 확인하는 도우미
 # =========================================================
 
 def _require_int(value, field_name: str) -> int:
@@ -95,7 +94,7 @@ def _split_keywords_csv(value: Optional[str]) -> List[str]:
 
 
 # =========================================================
-# DB readers
+# DB 조회
 # =========================================================
 
 def _load_team_sources(team_ids: Optional[List[int]]) -> List[Dict]:
@@ -178,7 +177,7 @@ def _load_team_playlists(team_id: int) -> List[Dict]:
 
 
 # =========================================================
-# YouTube API
+# YouTube API 호출
 # =========================================================
 
 def _yt_get(path: str, params: Dict) -> Dict:
@@ -222,14 +221,14 @@ def _fetch_playlist_items(playlist_id: str, max_results: int) -> List[Dict]:
 
 
 # =========================================================
-# Candidate construction
+# 후보 만들기
 # =========================================================
 
 def _pick_thumbnail_url(thumbnails: Dict) -> str:
-    """Return the highest-resolution thumbnail URL the API returned.
+    """API가 반환한 썸네일 가운데 해상도가 가장 높은 URL을 골라요.
 
-    Verified against the v3 API: 'default' is always present, so the loop
-    is guaranteed to hit at least that size.
+    v3 API에서 'default'는 항상 오는 것을 확인했어요. 따라서 반복문은 최소한
+    default 크기를 찾아요.
     """
     for size in THUMBNAIL_PRIORITY:
         if size in thumbnails:
@@ -246,29 +245,27 @@ def _build_candidate_from_playlist_item(
     source_ref: str,
 ) -> Optional[Dict]:
     """
-    Build a single candidate from a YouTube playlistItems response item.
+    YouTube playlistItems 응답 항목 하나를 하이라이트 후보로 만들어요.
 
-    Returns None for private or deleted videos, which we skip rather than
-    treat as an error: such items are unusable as highlights and the API
-    omits the fields below for them (the item's title shows up as
-    "Private video" / "Deleted video").
+    비공개·삭제 영상은 None을 반환하고 건너뛰어요. 하이라이트로 쓸 수 없고,
+    API도 아래 필드를 주지 않기 때문이에요. 제목은 "Private video" 또는
+    "Deleted video"로 와요.
 
-    Verified against the v3 API (part=snippet,contentDetails):
-      - snippet.resourceId.videoId and contentDetails.videoId are both present
-        and equal for playable videos, but absent for deleted ones.
-      - snippet.publishedAt = when this item was added to the playlist.
-      - contentDetails.videoPublishedAt = when the video itself was uploaded
-        to YouTube. We use this one because users care about video recency,
-        not when the channel re-added it to a playlist. Absent for
-        private/deleted videos.
-      - snippet.thumbnails always has at least default/medium/high; we pick
-        the highest-resolution size that the API returned.
+    v3 API(part=snippet,contentDetails)에서 확인한 규칙이에요.
+      - 재생 가능한 영상에는 snippet.resourceId.videoId와 contentDetails.videoId가
+        모두 있고 값도 같아요. 삭제 영상에는 없어요.
+      - snippet.publishedAt은 항목이 재생목록에 추가된 시각이에요.
+      - contentDetails.videoPublishedAt은 영상이 YouTube에 올라온 시각이에요.
+        채널이 재생목록에 다시 넣은 시각보다 영상의 최신성이 중요하므로 이 값을 써요.
+        비공개·삭제 영상에는 없어요.
+      - snippet.thumbnails에는 최소한 default, medium, high가 있어요.
+        API가 준 값 가운데 해상도가 가장 높은 것을 골라요.
     """
     snippet = _require_dict(item["snippet"], "playlistItem.snippet")
     content = _require_dict(item["contentDetails"], "playlistItem.contentDetails")
 
-    # Private/deleted videos omit videoId and/or videoPublishedAt. They can
-    # appear in any playlist at any time, so skip them instead of crashing.
+    # 비공개·삭제 영상에는 videoId나 videoPublishedAt이 없을 수 있어요.
+    # 어느 재생목록에든 생길 수 있으므로 오류를 내지 않고 해당 영상만 건너뛰어요.
     video_id = content.get("videoId")
     published_at_raw = content.get("videoPublishedAt")
     if not video_id or not published_at_raw:
@@ -314,33 +311,17 @@ def _dedupe_by_video_id(candidates: List[Dict]) -> List[Dict]:
 
 
 # =========================================================
-# Per-team candidate collection
+# 팀별 후보 수집
 # =========================================================
 
-def _collect_playlist_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
-    """Returns (candidates, had_failure).
-
-    `had_failure=True` when any playlist fetch raised — the caller must NOT
-    treat the partial result as authoritative, since some playlists may have
-    contributed highlights that are now missing from `candidates`.
-    """
+def _collect_playlist_candidates(team_cfg: Dict) -> List[Dict]:
     playlists = _load_team_playlists(team_cfg["team_id"])
     max_items = team_cfg["max_candidate_items"]
     candidates: List[Dict] = []
-    had_failure = False
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
-
-        try:
-            items = _fetch_playlist_items(playlist_id, max_results=max_items)
-        except requests.RequestException as error:
-            print(
-                f"  [highlights] playlist fetch error "
-                f"team={team_cfg['team_name']!r} playlist_id={playlist_id!r}: {error}"
-            )
-            had_failure = True
-            continue
+        items = _fetch_playlist_items(playlist_id, max_results=max_items)
 
         for item in items:
             candidate = _build_candidate_from_playlist_item(
@@ -351,30 +332,15 @@ def _collect_playlist_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
             if candidate is not None:
                 candidates.append(candidate)
 
-    return _dedupe_by_video_id(candidates), had_failure
+    return _dedupe_by_video_id(candidates)
 
 
-def _collect_channel_rule_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
-    """Returns (candidates, had_failure). See _collect_playlist_candidates."""
+def _collect_channel_rule_candidates(team_cfg: Dict) -> List[Dict]:
     channel_id = team_cfg["channel_id"]
     max_items = team_cfg["max_candidate_items"]
 
-    try:
-        uploads_playlist_id = _fetch_uploads_playlist_id(channel_id)
-    except requests.RequestException as error:
-        print(
-            f"  [highlights] uploads playlist lookup error "
-            f"team={team_cfg['team_name']!r}: {error}"
-        )
-        return [], True
-
-    try:
-        items = _fetch_playlist_items(uploads_playlist_id, max_results=max_items)
-    except requests.RequestException as error:
-        print(
-            f"  [highlights] uploads fetch error team={team_cfg['team_name']!r}: {error}"
-        )
-        return [], True
+    uploads_playlist_id = _fetch_uploads_playlist_id(channel_id)
+    items = _fetch_playlist_items(uploads_playlist_id, max_results=max_items)
 
     candidates: List[Dict] = []
 
@@ -387,11 +353,11 @@ def _collect_channel_rule_candidates(team_cfg: Dict) -> Tuple[List[Dict], bool]:
         if candidate is not None:
             candidates.append(candidate)
 
-    return _dedupe_by_video_id(candidates), False
+    return _dedupe_by_video_id(candidates)
 
 
 # =========================================================
-# Filtering & sorting
+# 필터링과 정렬
 # =========================================================
 
 def _passes_keyword_filters(candidate: Dict, team_cfg: Dict) -> bool:
@@ -413,14 +379,14 @@ def _sort_candidates_latest_first(candidates: List[Dict]) -> List[Dict]:
 
 
 # =========================================================
-# Persistence
+# 저장
 # =========================================================
 
 def _replace_team_highlights(team_id: int, top: List[Dict]) -> None:
-    """Atomically replace one team's cache rows.
+    """한 팀의 캐시 행을 한 트랜잭션에서 바꿔요.
 
-    DELETE + executemany(INSERT) run in a single transaction so a mid-write
-    failure either leaves the previous cache intact or commits the new one.
+    DELETE와 executemany(INSERT)를 한 트랜잭션에서 실행해요. 쓰는 중에 실패하면
+    이전 캐시를 그대로 두고, 성공하면 새 캐시 전체를 커밋해요.
     """
     insert_rows = [
         (
@@ -458,7 +424,7 @@ def _replace_team_highlights(team_id: int, top: List[Dict]) -> None:
 
 
 # =========================================================
-# Public API
+# 외부에서 쓰는 함수
 # =========================================================
 
 def refresh_highlights(team_ids: Optional[List[int]] = None) -> None:
@@ -475,18 +441,9 @@ def refresh_highlights(team_ids: Optional[List[int]] = None) -> None:
         print(f"[highlights] processing team={team_name!r} source_mode={source_mode!r}")
 
         if source_mode == "playlists":
-            candidates, had_failure = _collect_playlist_candidates(team_cfg)
-        elif source_mode == "channel_rules":
-            candidates, had_failure = _collect_channel_rule_candidates(team_cfg)
+            candidates = _collect_playlist_candidates(team_cfg)
         else:
-            raise AssertionError(f"Unreachable source_mode={source_mode!r}")
-
-        if had_failure:
-            print(
-                f"  [highlights] one or more YouTube fetches failed; "
-                f"keeping existing cache for team {team_id}"
-            )
-            continue
+            candidates = _collect_channel_rule_candidates(team_cfg)
 
         if not candidates:
             print(f"  [highlights] no candidates collected; clearing cache")

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS xg_standings_calibration (
-  league_id BIGINT UNSIGNED NOT NULL,
+  competition_id BIGINT UNSIGNED NOT NULL,
   season_id BIGINT UNSIGNED NOT NULL,
 
   method VARCHAR(64) NOT NULL DEFAULT 'historical_draw_rate',
@@ -12,12 +12,12 @@ CREATE TABLE IF NOT EXISTS xg_standings_calibration (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     ON UPDATE CURRENT_TIMESTAMP,
 
-  PRIMARY KEY (league_id, season_id, method),
+  PRIMARY KEY (competition_id, season_id, method),
 
   KEY idx_xg_standings_calibration_season (season_id),
 
-  CONSTRAINT fk_xg_stand_calib_league
-    FOREIGN KEY (league_id) REFERENCES leagues(league_id)
+  CONSTRAINT fk_xg_stand_calib_competition
+    FOREIGN KEY (competition_id) REFERENCES competitions(competition_id)
     ON DELETE RESTRICT ON UPDATE CASCADE,
 
   CONSTRAINT fk_xg_stand_calib_season
