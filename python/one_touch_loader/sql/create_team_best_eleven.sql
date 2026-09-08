@@ -1,45 +1,32 @@
-CREATE TABLE IF NOT EXISTS team_best_eleven (
-  id              BIGINT AUTO_INCREMENT PRIMARY KEY,
-  team_id         BIGINT NOT NULL,
-  season_id       BIGINT NOT NULL,
-  formation       VARCHAR(20) NOT NULL,      -- 이 Best Eleven이 사용하는 포메이션
-  slot_key        VARCHAR(10) NOT NULL,      -- formation_field 값 ("1:1", "2:3", ...)
-  slot_index      TINYINT NOT NULL,          -- 0~10 (프론트 렌더링 순서)
-  player_id       BIGINT NOT NULL,
-  player_name     VARCHAR(255) NULL,
-  player_image    VARCHAR(512) NULL,
-  position_name   VARCHAR(50) NULL,
-  detailed_position_name VARCHAR(100) NULL,
-  starts          INT NOT NULL DEFAULT 0,
-  total_minutes   INT NOT NULL DEFAULT 0,
-
-  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-                    ON UPDATE CURRENT_TIMESTAMP,
-
-  UNIQUE KEY uq_tbe_team_season_formation_slot
-    (team_id, season_id, formation, slot_key),
-  KEY idx_tbe_team_season (team_id, season_id)
-);
-
+-- 포메이션별 사용 경기 수와 자리별 선정 선수는 서로 다른 관계로 저장해요.
 CREATE TABLE IF NOT EXISTS team_best_eleven_formations (
-  id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
-  team_id             BIGINT NOT NULL,
-  season_id           BIGINT NOT NULL,
-  formation           VARCHAR(20) NOT NULL,
-  matches_used        INT NOT NULL,
-  total_valid_matches INT NOT NULL,
-  is_default          TINYINT(1) NOT NULL DEFAULT 0,
+  team_id BIGINT UNSIGNED NOT NULL,
+  season_id BIGINT UNSIGNED NOT NULL,
+  formation VARCHAR(20) NOT NULL,
+  matches_used INT UNSIGNED NOT NULL,
+  PRIMARY KEY (team_id, season_id, formation),
+  CONSTRAINT chk_tbef_matches_positive CHECK (matches_used > 0),
+  CONSTRAINT fk_tbef_team_season
+    FOREIGN KEY (team_id, season_id) REFERENCES team_seasons (team_id, season_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-  updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-                        ON UPDATE CURRENT_TIMESTAMP,
-
-  UNIQUE KEY uq_tbef_team_season_formation
-    (team_id, season_id, formation),
-  KEY idx_tbef_team_season_default
-    (team_id, season_id, is_default),
-
-  CONSTRAINT chk_tbef_matches
-    CHECK (matches_used > 0 AND total_valid_matches >= matches_used),
-  CONSTRAINT chk_tbef_default
-    CHECK (is_default IN (0, 1))
-);
+CREATE TABLE IF NOT EXISTS team_best_eleven (
+  team_id BIGINT UNSIGNED NOT NULL,
+  season_id BIGINT UNSIGNED NOT NULL,
+  formation VARCHAR(20) NOT NULL,
+  slot_key VARCHAR(10) NOT NULL,
+  player_id BIGINT UNSIGNED NOT NULL,
+  starts INT UNSIGNED NOT NULL,
+  PRIMARY KEY (team_id, season_id, formation, slot_key),
+  UNIQUE KEY uq_tbe_formation_player (team_id, season_id, formation, player_id),
+  KEY idx_tbe_player (player_id),
+  CONSTRAINT chk_tbe_starts CHECK (starts > 0),
+  CONSTRAINT fk_tbe_formation
+    FOREIGN KEY (team_id, season_id, formation)
+    REFERENCES team_best_eleven_formations (team_id, season_id, formation)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_tbe_player
+    FOREIGN KEY (player_id) REFERENCES players (player_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

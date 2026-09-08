@@ -61,7 +61,6 @@ from one_touch_loader.loaders.player_wage_loader import (
 )
 from one_touch_loader.loaders.best_eleven_loader import (
     rebuild_best_eleven,
-    refresh_best_eleven,
     validate_best_eleven,
 )
 from one_touch_loader.loaders.transfers_loader import (
@@ -153,6 +152,12 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli team-attributes build-training-features
   python -m one_touch_loader.cli team-attributes train-regression
   python -m one_touch_loader.cli team-attributes build-scores
+
+14. best-eleven
+  python -m one_touch_loader.cli best-eleven <season_name>  (Big 5 teams, stored fixtures from all competitions)
+  python -m one_touch_loader.cli best-eleven all
+  python -m one_touch_loader.cli best-eleven validate <season_name>
+  python -m one_touch_loader.cli best-eleven validate all
 
 """
 
@@ -601,23 +606,18 @@ def main():
             print(USAGE)
 
     elif cmd == "best-eleven":
-        if len(sys.argv) == 2:
-            # Fetch incomplete lineups across every competition in each current
-            # Big 5 club campaign, then recompute affected canonical seasons.
-            refresh_best_eleven()
-            print("Best-eleven refresh done.")
-
-        elif len(sys.argv) == 3 and sys.argv[2] == "rebuild-current":
-            rebuild_best_eleven(current_only=True)
-
-        elif len(sys.argv) == 3 and sys.argv[2] == "rebuild-all":
-            rebuild_best_eleven(current_only=False)
-
-        elif len(sys.argv) == 3 and sys.argv[2] == "validate":
-            validate_best_eleven()
-
+        if len(sys.argv) == 4 and sys.argv[2] == "validate":
+            season_name = None if sys.argv[3] == "all" else sys.argv[3]
+            result = validate_best_eleven(season_name)
+            if result["status"] != "PASS":
+                raise SystemExit(1)
+        elif len(sys.argv) == 3 and sys.argv[2] != "validate":
+            season_name = None if sys.argv[2] == "all" else sys.argv[2]
+            result = rebuild_best_eleven(season_name)
+            print(f"Best-eleven done: season={season_name or 'all'} {result}")
         else:
             print(USAGE)
+            raise SystemExit(2)
 
     elif cmd == "transfers":
         if len(sys.argv) < 3:
