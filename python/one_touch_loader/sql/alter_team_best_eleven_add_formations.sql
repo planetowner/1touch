@@ -1,5 +1,6 @@
--- One-time migration from the single-dominant-formation Best Eleven schema.
--- Run before rebuilding current Best Eleven results with the updated loader.
+-- 대표 포메이션 하나만 저장하던 Best Eleven 스키마를 한 번만 이전해요.
+-- 이미 적용된 과거 이력이며 새 최소 스키마에는 실행하지 않아요.
+-- 현재 DB 정리는 run_best_eleven_minimal_migration.ps1을 사용해요.
 
 ALTER TABLE team_best_eleven
   DROP INDEX uq_tbe_team_season_slot,

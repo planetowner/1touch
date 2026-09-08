@@ -71,10 +71,9 @@ class BestElevenPlayerOut(BaseModel):
     player_id: int
     player_name: Optional[str] = None
     player_image: Optional[str] = None
-    position_name: Optional[str] = None
-    detailed_position_name: Optional[str] = None
-    starts: int = 0
-    total_minutes: int = 0
+    position_group_code: Optional[str] = None
+    position_code: Optional[str] = None
+    starts: int
 
 
 class BestElevenFormationOut(BaseModel):
@@ -86,12 +85,14 @@ class BestElevenFormationOut(BaseModel):
 
 
 class BestElevenResponse(BaseModel):
+    team_id: int
+    season_id: int
     formation: str
     matches_used: int
     total_valid_matches: int
     usage_percentage: float
-    formations: List[BestElevenFormationOut] = []
-    players: List[BestElevenPlayerOut] = []
+    formations: List[BestElevenFormationOut]
+    players: List[BestElevenPlayerOut]
 
 
 
