@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from one_touch_loader.loaders.big5_bootstrap import run_big5_bootstrap
 from one_touch_loader.loaders.team_stats_loader import (
     refresh_fixture_team_stats_for_current_seasons,
 )
@@ -13,26 +12,18 @@ from one_touch_loader.loaders.team_attribute_scores_loader import (
 )
 
 
-BIG5_NAMES = ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"]
-
-
-def refresh_current_team_attributes(update_fixtures: bool = True) -> dict:
+def refresh_current_team_attributes() -> dict:
     """
-    Refresh current-season team attribute scores.
+    현재 시즌의 팀 특성 점수를 갱신해요.
 
-    This does NOT retrain regression.
-    It only applies the active regression model to current Big 5 seasons.
+    회귀 모델을 다시 학습하지 않아요.
+    활성 회귀 모델을 현재 Big 5 시즌에 적용하기만 해요.
 
-    Steps:
-      1. update current fixtures/seasons/teams, optional
-      2. rebuild current standings
-      3. refresh current fixture team stats
-      4. rebuild current team attribute features
-      5. rebuild current team attribute group scores
+    실행 순서는 다음과 같아요.
+    1. 현재 경기의 팀 통계를 갱신해요.
+    2. 현재 팀 특성값을 다시 만들어요.
+    3. 현재 팀 특성 그룹 점수를 다시 만들어요.
     """
-
-    if update_fixtures:
-        run_big5_bootstrap(BIG5_NAMES)
 
     current_season_ids = get_current_big5_season_ids()
 
@@ -49,7 +40,7 @@ def refresh_current_team_attributes(update_fixtures: bool = True) -> dict:
         "current_season_ids": current_season_ids,
         "feature_rows": feature_rows,
         "score_rows": score_rows,
-        "updated_fixtures": update_fixtures,
+        "updated_fixtures": False,
     }
 
     print(
@@ -57,7 +48,7 @@ def refresh_current_team_attributes(update_fixtures: bool = True) -> dict:
         f"season_ids={current_season_ids} "
         f"feature_rows={feature_rows} "
         f"score_rows={score_rows} "
-        f"updated_fixtures={update_fixtures}"
+        "updated_fixtures=False"
     )
 
     return result

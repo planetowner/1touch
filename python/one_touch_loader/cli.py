@@ -149,6 +149,11 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli standings all
   python -m one_touch_loader.cli standings <season_name> <competition_id> [competition_id ...]
 
+13. team-attributes
+  python -m one_touch_loader.cli team-attributes build-training-features
+  python -m one_touch_loader.cli team-attributes train-regression
+  python -m one_touch_loader.cli team-attributes build-scores
+
 """
 
 
@@ -710,19 +715,8 @@ def main():
             count = build_current_team_attribute_group_scores()
             print(f"Team-attributes current group scores done: rows={count}")
 
-        elif sub == "refresh-current" and len(sys.argv) in {3, 4}:
-            update_fixtures = True
-
-            if len(sys.argv) == 4:
-                flag = sys.argv[3].strip().lower()
-
-                if flag == "--skip-fixtures":
-                    update_fixtures = False
-                else:
-                    print(USAGE)
-                    return
-
-            result = refresh_current_team_attributes(update_fixtures=update_fixtures)
+        elif sub == "refresh-current" and len(sys.argv) == 3:
+            result = refresh_current_team_attributes()
             print(f"Team-attributes refresh-current done: {result}")
 
         else:
