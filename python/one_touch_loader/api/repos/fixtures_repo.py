@@ -78,6 +78,102 @@ def get_fixture(fixture_id: int) -> Optional[Dict[str, Any]]:
     )
 
 
+def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
+    fixture = get_fixture(fixture_id)
+    if fixture is None:
+        return None
+
+    fixture["events"] = fetch_all_dict(
+        """
+        SELECT
+          fe.event_id,
+          fe.team_id,
+          fe.event_type_id,
+          fet.code AS event_type_code,
+          fet.name AS event_type_name,
+          fe.player_id,
+          p.display_name AS player_name,
+          p.image_path AS player_image,
+          fe.related_player_id,
+          rp.display_name AS related_player_name,
+          rp.image_path AS related_player_image,
+          fe.minute,
+          fe.extra_minute,
+          fe.on_bench
+        FROM fixture_events fe
+        JOIN fixture_event_types fet
+          ON fet.event_type_id = fe.event_type_id
+        LEFT JOIN players p ON p.player_id = fe.player_id
+        LEFT JOIN players rp ON rp.player_id = fe.related_player_id
+        WHERE fe.fixture_id = %s
+        ORDER BY fe.minute, fe.extra_minute, fe.event_id
+        """,
+        (fixture_id,),
+    )
+    fixture["statistics"] = fetch_all_dict(
+        """
+        SELECT
+          fts.team_id,
+          fts.stat_type_id,
+          fst.code AS stat_code,
+          fst.name AS stat_name,
+          fts.stat_value AS value
+        FROM fixture_team_stats fts
+        JOIN fixture_stat_types fst ON fst.stat_type_id = fts.stat_type_id
+        WHERE fts.fixture_id = %s
+        ORDER BY fts.team_id, fts.stat_type_id
+        """,
+        (fixture_id,),
+    )
+    fixture["lineups"] = fetch_all_dict(
+        """
+        SELECT
+          fl.team_id,
+          fl.player_id,
+          p.display_name AS player_name,
+          p.image_path AS player_image,
+          p.position_id,
+          fl.lineup_type_id,
+          fl.formation_field,
+          fl.jersey_number,
+          fl.minutes_played,
+          fl.rating
+        FROM fixture_lineups fl
+        JOIN players p ON p.player_id = fl.player_id
+        WHERE fl.fixture_id = %s
+        ORDER BY fl.team_id, fl.lineup_type_id, fl.formation_field, fl.player_id
+        """,
+        (fixture_id,),
+    )
+    fixture["formations"] = fetch_all_dict(
+        """
+        SELECT team_id, formation
+        FROM fixture_formations
+        WHERE fixture_id = %s
+        ORDER BY team_id
+        """,
+        (fixture_id,),
+    )
+    fixture["coaches"] = fetch_all_dict(
+        """
+        SELECT fc.team_id, fc.coach_id, c.name
+        FROM fixture_coaches fc
+        JOIN coaches c ON c.coach_id = fc.coach_id
+        WHERE fc.fixture_id = %s
+        ORDER BY fc.team_id
+        """,
+        (fixture_id,),
+    )
+    fixture["pressure"] = fetch_all_dict(
+        """
+        SELECT team_id, minute, pressure
+        FROM fixture_pressures
+        WHERE fixture_id = %s
+        ORDER BY minute, team_id
+        """,
+        (fixture_id,),
+    )
+    return fixture
 
 
 def get_team_next_fixture(team_id: int) -> Optional[Dict[str, Any]]:
