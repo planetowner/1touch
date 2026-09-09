@@ -7,7 +7,7 @@
 
 enum CompetitionType { league, europe, cup }
 
-enum FixtureStatus { past, live, upcoming }
+enum FixtureStatus { past, live, upcoming, unknown }
 
 class Fixture {
   final int fixtureId;
@@ -62,7 +62,7 @@ class Fixture {
       stageId: json['stage_id'] as int?,
       groupId: json['group_id'] as int?,
       legNumber: json['leg_number'] as int?,
-      status: _parseStatus(json['status'] as String),
+      status: _parseStatus(json['status'] as String?),
       startingAt: json['starting_at'] as String,
       homeScore: json['home_score'] as int?,
       awayScore: json['away_score'] as int?,
@@ -82,14 +82,16 @@ class Fixture {
     }
   }
 
-  static FixtureStatus _parseStatus(String raw) {
+  static FixtureStatus _parseStatus(String? raw) {
     switch (raw) {
+      case 'past':
+        return FixtureStatus.past;
       case 'live':
         return FixtureStatus.live;
       case 'upcoming':
         return FixtureStatus.upcoming;
       default:
-        return FixtureStatus.past;
+        return FixtureStatus.unknown;
     }
   }
 }
