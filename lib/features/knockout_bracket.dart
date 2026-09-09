@@ -12,7 +12,8 @@ import 'package:onetouch/models/team.dart';
 
 enum KnockoutRound { roundOf16, quarterFinal, semiFinal, finalRound }
 
-KnockoutRound? knockoutRoundFromName(String raw) {
+KnockoutRound? knockoutRoundFromName(String? raw) {
+  if (raw == null) return null;
   final normalized = raw.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
   return switch (normalized) {
     'R16' || 'RO16' || 'ROUND16' || 'LAST16' => KnockoutRound.roundOf16,

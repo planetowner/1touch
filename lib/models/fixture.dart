@@ -16,7 +16,7 @@ class Fixture {
   final int homeTeamId;
   final int awayTeamId;
   final CompetitionType competitionType;
-  final String roundName;
+  final String? roundName;
   final int? stageTypeId;
   final int? stageId;
   final int? groupId;
@@ -57,7 +57,7 @@ class Fixture {
       awayTeamId: json['away_team_id'] as int,
       competitionType:
           _parseCompetitionType(json['competition_type'] as String),
-      roundName: json['round_name'] as String,
+      roundName: json['round_name'] as String?,
       stageTypeId: json['stage_type_id'] as int?,
       stageId: json['stage_id'] as int?,
       groupId: json['group_id'] as int?,

@@ -80,6 +80,10 @@ class _H2HTabState extends State<H2HTab> {
             final leagueName =
                 competitionRepository.findById(f.competitionId)?.name ??
                     'Unknown';
+            final roundName = f.roundName?.trim();
+            final competitionAndRound = roundName?.isNotEmpty ?? false
+                ? '$leagueName · $roundName'
+                : leagueName;
             return _buildPastMatchCard(
               home.shortCode ?? home.name,
               away.shortCode ?? away.name,
@@ -89,7 +93,7 @@ class _H2HTabState extends State<H2HTab> {
               away.teamId,
               f.homeScore?.toString() ?? '-',
               f.awayScore?.toString() ?? '-',
-              '$leagueName · ${f.roundName}',
+              competitionAndRound,
             );
           }),
           const SizedBox(height: 140),

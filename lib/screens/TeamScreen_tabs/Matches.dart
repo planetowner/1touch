@@ -278,6 +278,10 @@ class _MatchesTabState extends State<MatchesTab> {
     final leagueName =
         competitionRepository.findById(fixture.competitionId)?.name ??
             'Unknown';
+    final roundName = fixture.roundName?.trim();
+    final competitionAndRound = roundName?.isNotEmpty ?? false
+        ? '$leagueName • $roundName'
+        : leagueName;
     final dt = DateTime.parse(fixture.startingAt).toLocal();
 
     return GestureDetector(
@@ -386,7 +390,7 @@ class _MatchesTabState extends State<MatchesTab> {
             ] else
               const SizedBox(height: 8),
             Text(
-              '$leagueName • ${fixture.roundName}',
+              competitionAndRound,
               style: Body2.style,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

@@ -551,6 +551,12 @@ class _MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final roundName = match?.roundName?.trim();
+    final competitionAndRound = [
+      leagueName ?? 'League',
+      if (roundName?.isNotEmpty ?? false) roundName!,
+    ].join('  ');
+
     return Column(
       children: [
         SizedBox(
@@ -571,7 +577,7 @@ class _MatchInfo extends StatelessWidget {
         SizedBox(
           width: width,
           child: Text(
-            '${leagueName ?? 'League'}  ${match?.roundName ?? ''}',
+            competitionAndRound,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,

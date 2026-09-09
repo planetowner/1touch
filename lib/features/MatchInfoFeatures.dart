@@ -46,7 +46,7 @@ class MatchScoreHeader extends StatelessWidget {
   final String homeScore;
   final String awayScore;
   final String statusLabel; // "Final" or live clock e.g. "42:02"
-  final String roundLabel; // e.g. "R16", "RO 33"
+  final String? roundLabel; // e.g. "R16", "RO 33"
 
   const MatchScoreHeader({
     super.key,
@@ -70,6 +70,7 @@ class MatchScoreHeader extends StatelessWidget {
     final away = int.tryParse(awayScore);
     final homeDimmed = home != null && away != null && home < away;
     final awayDimmed = home != null && away != null && away < home;
+    final visibleRoundLabel = roundLabel?.trim();
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -92,8 +93,10 @@ class MatchScoreHeader extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(roundLabel, style: Body2.style),
-                const SizedBox(height: 8),
+                if (visibleRoundLabel?.isNotEmpty ?? false) ...[
+                  Text(visibleRoundLabel!, style: Body2.style),
+                  const SizedBox(height: 8),
+                ],
                 Row(
                   children: [
                     _ScoreBox(

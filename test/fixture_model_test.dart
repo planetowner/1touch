@@ -28,6 +28,14 @@ void main() {
 
       expect(fixture.status, FixtureStatus.unknown);
     });
+
+    test('preserves a missing round as null', () {
+      final fixture = Fixture.fromJson(
+        _fixtureJson(status: 'upcoming')..['round_name'] = null,
+      );
+
+      expect(fixture.roundName, isNull);
+    });
   });
 }
 
