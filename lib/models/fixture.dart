@@ -22,7 +22,9 @@ class Fixture {
   final int? groupId;
   final int? legNumber; // 1 or 2 only (SQL CHECK constraint)
   final FixtureStatus status;
-  final String startingAt; // datetime string: 'YYYY-MM-DD HH:MM:SS'
+  // Kept as the backend string during the incremental repository migration.
+  // Once every constructor is behind a mapper, replace this with DateTime?.
+  final String? startingAt;
   final int? homeScore;
   final int? awayScore;
   final int? homePenaltyScore;
@@ -48,6 +50,11 @@ class Fixture {
     this.awayPenaltyScore,
   });
 
+  DateTime? get kickoff {
+    final value = startingAt;
+    return value == null ? null : DateTime.tryParse(value);
+  }
+
   factory Fixture.fromJson(Map<String, dynamic> json) {
     return Fixture(
       fixtureId: json['fixture_id'] as int,
@@ -63,7 +70,7 @@ class Fixture {
       groupId: json['group_id'] as int?,
       legNumber: json['leg_number'] as int?,
       status: _parseStatus(json['status'] as String?),
-      startingAt: json['starting_at'] as String,
+      startingAt: json['starting_at'] as String?,
       homeScore: json['home_score'] as int?,
       awayScore: json['away_score'] as int?,
       homePenaltyScore: json['home_penalty_score'] as int?,

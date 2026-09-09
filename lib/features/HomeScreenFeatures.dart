@@ -354,9 +354,12 @@ class FavoriteTeamCard extends StatelessWidget {
                         teamRepository.findByIdOrUnknown(last.homeTeamId);
                     final away =
                         teamRepository.findByIdOrUnknown(last.awayTeamId);
+                    final kickoff = last.kickoff;
                     return MatchCard2(
-                      date: DateFormat('EEE, MMM d h:mm a')
-                          .format(DateTime.parse(last.startingAt).toLocal()),
+                      date: kickoff == null
+                          ? 'Date TBD'
+                          : DateFormat('EEE, MMM d h:mm a')
+                              .format(kickoff.toLocal()),
                       venue: '',
                       team1shortname: home.shortCode ?? home.name,
                       team1Logo: home.imagePath ?? '',
@@ -424,7 +427,9 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
       if (!favoriteIsHome && !favoriteIsAway) continue;
       if (!addedFixtureIds.add(fixture.fixtureId)) continue;
 
-      final dt = DateTime.parse(fixture.startingAt).toLocal();
+      final kickoff = fixture.kickoff;
+      if (kickoff == null) continue;
+      final dt = kickoff.toLocal();
       final dateOnly = DateTime(dt.year, dt.month, dt.day);
       if (dt.year != month.year || dt.month != month.month) continue;
 

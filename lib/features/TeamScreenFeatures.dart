@@ -19,9 +19,9 @@ import 'package:onetouch/models/team_best_eleven.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 import 'package:intl/intl.dart';
 
-String _formatMatchDate(String startingAt) {
-  final dt = DateTime.parse(startingAt).toLocal();
-  return DateFormat('EEE, MMM d h:mm a').format(dt);
+String _formatMatchDate(DateTime? kickoff) {
+  if (kickoff == null) return 'Date TBD';
+  return DateFormat('EEE, MMM d h:mm a').format(kickoff.toLocal());
 }
 
 class Fixtures extends StatefulWidget {
@@ -94,7 +94,7 @@ class _FixturesState extends State<Fixtures> {
                       final away = teamRepository
                           .findByIdOrUnknown(lastMatch.awayTeamId);
                       return MatchCard2(
-                        date: _formatMatchDate(lastMatch.startingAt),
+                        date: _formatMatchDate(lastMatch.kickoff),
                         venue: '',
                         team1shortname: home.shortCode ?? home.name,
                         team1Logo: home.imagePath ?? '',

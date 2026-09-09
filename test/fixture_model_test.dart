@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/models/fixture.dart';
 
 void main() {
-  group('Fixture status parsing', () {
+  group('Fixture JSON parsing', () {
     test('preserves recognized screen statuses', () {
       const expectedStatuses = {
         'past': FixtureStatus.past,
@@ -35,6 +35,21 @@ void main() {
       );
 
       expect(fixture.roundName, isNull);
+    });
+
+    test('preserves a missing kickoff as null', () {
+      final fixture = Fixture.fromJson(
+        _fixtureJson(status: 'upcoming')..['starting_at'] = null,
+      );
+
+      expect(fixture.startingAt, isNull);
+      expect(fixture.kickoff, isNull);
+    });
+
+    test('exposes a safely parsed kickoff', () {
+      final fixture = Fixture.fromJson(_fixtureJson(status: 'upcoming'));
+
+      expect(fixture.kickoff, DateTime(2026, 8, 15, 15));
     });
   });
 }

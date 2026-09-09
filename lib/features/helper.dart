@@ -101,9 +101,9 @@ String ordinal(int number) {
   }
 }
 
-String _formatDate(String isoDate) {
-  final dt = DateTime.parse(isoDate).toLocal();
-  return DateFormat('EEE, MMM d h:mm a').format(dt);
+String _formatDate(DateTime? kickoff) {
+  if (kickoff == null) return 'Date TBD';
+  return DateFormat('EEE, MMM d h:mm a').format(kickoff.toLocal());
 }
 
 String determineMatchStatus(DateTime matchDateTime) {
@@ -562,7 +562,7 @@ class _MatchInfo extends StatelessWidget {
         SizedBox(
           width: width,
           child: Text(
-            _formatDate(match!.startingAt),
+            _formatDate(match!.kickoff),
             textAlign: TextAlign.center,
             style: Body2.style,
           ),

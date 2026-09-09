@@ -117,9 +117,11 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final foreground = Theme.of(context).colorScheme.onSurface;
     final home = teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
     final away = teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
-    final dt = DateTime.parse(widget.fixture.startingAt).toLocal();
-    final date = DateFormat('EEE, MMM d').format(dt);
-    final time = DateFormat('h:mm a').format(dt);
+    final kickoff = widget.fixture.kickoff?.toLocal();
+    final date =
+        kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
+    final time =
+        kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
 
     return Row(
       children: [
@@ -342,9 +344,11 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
     final home = teamRepository.findByIdOrUnknown(h2h.homeTeamId);
     final away = teamRepository.findByIdOrUnknown(h2h.awayTeamId);
-    final dt = DateTime.parse(h2h.startingAt).toLocal();
-    final date = DateFormat('EEE, MMM d').format(dt);
-    final time = DateFormat('h:mm a').format(dt);
+    final kickoff = h2h.kickoff?.toLocal();
+    final date =
+        kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
+    final time =
+        kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -80,10 +80,19 @@ void main() {
       );
 
       if (fixture.status != FixtureStatus.live) {
-        final kickoff = DateTime.parse(fixture.startingAt);
+        final kickoff = fixture.kickoff;
+        expect(
+          kickoff,
+          isNotNull,
+          reason: 'mock fixture ${fixture.fixtureId} needs a kickoff',
+        );
         final seasonStart = DateTime.parse(season.startingAt);
         final seasonEnd = DateTime.parse(season.endingAt);
-        final kickoffDate = DateTime(kickoff.year, kickoff.month, kickoff.day);
+        final kickoffDate = DateTime(
+          kickoff!.year,
+          kickoff.month,
+          kickoff.day,
+        );
         final startDate = DateTime(
           seasonStart.year,
           seasonStart.month,
@@ -136,5 +145,70 @@ void main() {
         expect(fixture.awayScore, isNotNull);
       }
     }
+  });
+
+  test('stores undated fixtures last and skips them for next and last', () {
+    const fixtures = [
+      Fixture(
+        fixtureId: 4,
+        seasonId: 1,
+        competitionId: 8,
+        homeTeamId: 1,
+        awayTeamId: 2,
+        competitionType: CompetitionType.league,
+        roundName: null,
+        status: FixtureStatus.upcoming,
+        startingAt: null,
+      ),
+      Fixture(
+        fixtureId: 2,
+        seasonId: 1,
+        competitionId: 8,
+        homeTeamId: 1,
+        awayTeamId: 2,
+        competitionType: CompetitionType.league,
+        roundName: '1',
+        status: FixtureStatus.past,
+        startingAt: null,
+        homeScore: 1,
+        awayScore: 0,
+      ),
+      Fixture(
+        fixtureId: 3,
+        seasonId: 1,
+        competitionId: 8,
+        homeTeamId: 1,
+        awayTeamId: 2,
+        competitionType: CompetitionType.league,
+        roundName: '3',
+        status: FixtureStatus.upcoming,
+        startingAt: '2026-08-15 15:00:00',
+      ),
+      Fixture(
+        fixtureId: 1,
+        seasonId: 1,
+        competitionId: 8,
+        homeTeamId: 1,
+        awayTeamId: 2,
+        competitionType: CompetitionType.league,
+        roundName: '2',
+        status: FixtureStatus.past,
+        startingAt: '2026-08-01 15:00:00',
+        homeScore: 2,
+        awayScore: 1,
+      ),
+    ];
+    final repository = MockFixtureRepository(fixtures: fixtures);
+
+    expect(
+      repository.allFixtures.map((fixture) => fixture.fixtureId),
+      [1, 3, 2, 4],
+    );
+    expect(repository.nextForTeam(1)?.fixtureId, 3);
+    expect(repository.lastForTeam(1)?.fixtureId, 1);
+    expect(
+      repository.headToHead(1, 2).map((fixture) => fixture.fixtureId),
+      [1, 2],
+    );
   });
 }

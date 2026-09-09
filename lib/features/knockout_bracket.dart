@@ -101,7 +101,20 @@ class KnockoutBracket extends StatelessWidget {
     final matches = fixtures
         .where((fixture) => knockoutRoundFromName(fixture.roundName) == round)
         .toList()
-      ..sort((a, b) => a.startingAt.compareTo(b.startingAt));
+      ..sort((a, b) {
+        final aKickoff = a.kickoff;
+        final bKickoff = b.kickoff;
+        if (aKickoff == null || bKickoff == null) {
+          if (aKickoff == null && bKickoff == null) {
+            return a.fixtureId.compareTo(b.fixtureId);
+          }
+          return aKickoff == null ? 1 : -1;
+        }
+        final dateComparison = aKickoff.compareTo(bKickoff);
+        return dateComparison != 0
+            ? dateComparison
+            : a.fixtureId.compareTo(b.fixtureId);
+      });
     return matches;
   }
 

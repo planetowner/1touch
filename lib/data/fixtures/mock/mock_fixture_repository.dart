@@ -90,7 +90,7 @@ class MockFixtureRepository implements FixtureRepository {
       seasonId: seasonId,
       competitionId: competitionId,
       status: FixtureStatus.upcoming,
-    ).firstOrNull;
+    ).where((fixture) => fixture.kickoff != null).firstOrNull;
   }
 
   @override
@@ -104,7 +104,7 @@ class MockFixtureRepository implements FixtureRepository {
       seasonId: seasonId,
       competitionId: competitionId,
       status: FixtureStatus.past,
-    ).lastOrNull;
+    ).where((fixture) => fixture.kickoff != null).lastOrNull;
   }
 
   @override
@@ -126,7 +126,7 @@ class MockFixtureRepository implements FixtureRepository {
               fixture.awayTeamId == secondTeamId,
         )
         .toList()
-      ..sort((a, b) => _compareChronologically(b, a));
+      ..sort((a, b) => _compareChronologically(a, b, descending: true));
     return List.unmodifiable(matches);
   }
 
@@ -146,10 +146,26 @@ class MockFixtureRepository implements FixtureRepository {
         (competitionType == null || fixture.competitionType == competitionType);
   }
 
-  static int _compareChronologically(Fixture a, Fixture b) {
-    final dateComparison =
-        DateTime.parse(a.startingAt).compareTo(DateTime.parse(b.startingAt));
+  static int _compareChronologically(
+    Fixture a,
+    Fixture b, {
+    bool descending = false,
+  }) {
+    final aKickoff = a.kickoff;
+    final bKickoff = b.kickoff;
+    if (aKickoff == null || bKickoff == null) {
+      if (aKickoff == null && bKickoff == null) {
+        return a.fixtureId.compareTo(b.fixtureId);
+      }
+      return aKickoff == null ? 1 : -1;
+    }
+
+    final dateComparison = descending
+        ? bKickoff.compareTo(aKickoff)
+        : aKickoff.compareTo(bKickoff);
     if (dateComparison != 0) return dateComparison;
-    return a.fixtureId.compareTo(b.fixtureId);
+    return descending
+        ? b.fixtureId.compareTo(a.fixtureId)
+        : a.fixtureId.compareTo(b.fixtureId);
   }
 }

@@ -282,7 +282,7 @@ class _MatchesTabState extends State<MatchesTab> {
     final competitionAndRound = roundName?.isNotEmpty ?? false
         ? '$leagueName • $roundName'
         : leagueName;
-    final dt = DateTime.parse(fixture.startingAt).toLocal();
+    final kickoff = fixture.kickoff?.toLocal();
 
     return GestureDetector(
       onTap: () => GoRouter.of(context)
@@ -326,7 +326,9 @@ class _MatchesTabState extends State<MatchesTab> {
                   width: isUpcoming ? 84 : 96,
                   child: isUpcoming
                       ? Text(
-                          DateFormat('E, MMM d\nh:mm a').format(dt),
+                          kickoff == null
+                              ? 'DATE TBD'
+                              : DateFormat('E, MMM d\nh:mm a').format(kickoff),
                           style: Body2.style,
                           textAlign: TextAlign.center,
                         )

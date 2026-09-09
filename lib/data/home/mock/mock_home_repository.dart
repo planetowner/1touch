@@ -59,12 +59,12 @@ class MockHomeRepository implements HomeRepository {
     final exclusiveEnd =
         end == null ? null : _dateOnly(end).add(const Duration(days: 1));
     final fixtures = _fixtureRepository.forTeam(teamId).where((fixture) {
-      final kickoff = DateTime.tryParse(fixture.startingAt);
+      final kickoff = fixture.kickoff;
       if (kickoff == null) return false;
       return (startDate == null || !kickoff.isBefore(startDate)) &&
           (exclusiveEnd == null || kickoff.isBefore(exclusiveEnd));
     }).toList()
-      ..sort((left, right) => right.startingAt.compareTo(left.startingAt));
+      ..sort((left, right) => right.kickoff!.compareTo(left.kickoff!));
 
     return List.unmodifiable(fixtures.take(200));
   }
