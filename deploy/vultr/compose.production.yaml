@@ -1,0 +1,53 @@
+x-logging: &bounded-logging
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# 기존 프로젝트 이름을 유지해야 이미 복원한 MySQL 볼륨을 계속 사용해요.
+services:
+  db:
+    logging: *bounded-logging
+
+  api:
+    image: onetouch-api:${RELEASE_TAG:?Set RELEASE_TAG in .env.production}
+    # 외부에는 프록시만 열어요. 전달 헤더는 이 격리된 연결에서 받아요.
+    command: ["uvicorn", "one_touch_loader.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*", "--no-server-header"]
+    user: "1001:1001"
+    init: true
+    stop_grace_period: 30s
+    environment:
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS:-}
+    # 실행 중인 코드는 이미지에 고정하고, 새 버전을 배포할 때 교체해요.
+    volumes: !override
+      - ../../logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/ready', timeout=5).read()"]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+      start_period: 30s
+    logging: *bounded-logging
+
+  proxy:
+    image: caddy:2.11.4-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?Set API_DOMAIN in .env.production}
+      COLLAB_USER: ${COLLAB_USER:-developer}
+      COLLAB_PASSWORD_HASH: ${COLLAB_PASSWORD_HASH:?Set a collaboration password hash}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging: *bounded-logging
+
+volumes:
+  caddy_data:
+  caddy_config:
