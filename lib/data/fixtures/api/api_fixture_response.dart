@@ -139,6 +139,44 @@ class ApiTeamMatchesResponse {
   }
 }
 
+/// Transport model for `GET /v1/fixtures/{fixture_id}/head2head`.
+class ApiFixtureHeadToHeadResponse {
+  const ApiFixtureHeadToHeadResponse({
+    required this.fixtureId,
+    required this.teamA,
+    required this.teamB,
+    required this.items,
+  });
+
+  final int fixtureId;
+  final int teamA;
+  final int teamB;
+  final List<ApiFixtureResponse> items;
+
+  factory ApiFixtureHeadToHeadResponse.fromJson(Map<String, dynamic> json) {
+    final rawItems = json['items'];
+    if (rawItems is! List) {
+      throw const FormatException('Expected required list field "items".');
+    }
+
+    final items = rawItems.map((item) {
+      if (item is! Map<String, dynamic>) {
+        throw const FormatException(
+          'Expected every "items" entry to be a JSON object.',
+        );
+      }
+      return ApiFixtureResponse.fromJson(item);
+    }).toList(growable: false);
+
+    return ApiFixtureHeadToHeadResponse(
+      fixtureId: _requiredInt(json, 'fixture_id'),
+      teamA: _requiredInt(json, 'team_a'),
+      teamB: _requiredInt(json, 'team_b'),
+      items: List.unmodifiable(items),
+    );
+  }
+}
+
 int _requiredInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is int) return value;

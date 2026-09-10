@@ -158,6 +158,66 @@ void main() {
       }
     });
   });
+
+  group('ApiFixtureHeadToHeadResponse', () {
+    test('parses the verified head-to-head response', () {
+      final response = ApiFixtureHeadToHeadResponse.fromJson({
+        'fixture_id': 1001,
+        'team_a': 8,
+        'team_b': 14,
+        'items': [_fixtureJson()],
+      });
+
+      expect(response.fixtureId, 1001);
+      expect(response.teamA, 8);
+      expect(response.teamB, 14);
+      expect(response.items.single.fixtureId, 19712345);
+      expect(() => response.items.clear(), throwsUnsupportedError);
+    });
+
+    test('rejects malformed identity fields', () {
+      for (final field in ['fixture_id', 'team_a', 'team_b']) {
+        final json = <String, dynamic>{
+          'fixture_id': 1001,
+          'team_a': 8,
+          'team_b': 14,
+          'items': const [],
+        }..[field] = null;
+
+        expect(
+          () => ApiFixtureHeadToHeadResponse.fromJson(json),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains(field),
+            ),
+          ),
+        );
+      }
+    });
+
+    test('rejects malformed item collections and entries', () {
+      expect(
+        () => ApiFixtureHeadToHeadResponse.fromJson({
+          'fixture_id': 1001,
+          'team_a': 8,
+          'team_b': 14,
+          'items': 'not-a-list',
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => ApiFixtureHeadToHeadResponse.fromJson({
+          'fixture_id': 1001,
+          'team_a': 8,
+          'team_b': 14,
+          'items': ['not-an-object'],
+        }),
+        throwsFormatException,
+      );
+    });
+  });
 }
 
 Map<String, dynamic> _fixtureJson({
