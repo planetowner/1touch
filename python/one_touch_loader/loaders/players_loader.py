@@ -377,14 +377,14 @@ def insert_missing_player_profiles(cursor, profiles: Dict[int, Dict]) -> int:
     cursor.execute(SQL_SELECT_POSITION_IDS)
     known_position_ids = {row[0] for row in cursor.fetchall()}
     # 기존 선수 27393의 스쿼드 보완 포지션이 라인업 프로필에서는 NULL이었어요.
-    # 경기 수집은 누락 선수만 추가하고, 기존 프로필 갱신은 players 로더가 맡아요.
+    # 경기·이적 수집은 누락 선수만 추가하고, 기존 프로필 갱신은 players 로더가 맡아요.
     # FA컵 19645311의 누락 선수 20명은 단건·내장 프로필의 저장 필드가 같았어요.
     player_rows = [
         _build_player_row(
             _audit_direct_player_profile(profiles[player_id], player_id),
             [],
             known_position_ids,
-            "fixture_profile",
+            "embedded_profile",
         )[0]
         for player_id in sorted(missing_ids)
     ]

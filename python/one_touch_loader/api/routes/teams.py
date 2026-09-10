@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,7 +18,9 @@ from ..repos.points_pace_repo import (
     get_points_pace_series,
     list_current_form_options,
 )
-from ..repos.transfers_repo import get_latest_window, get_team_transfers_by_window
+from ...core.transfer_windows import get_latest_transfer_window
+from ..repos.transfers_repo import get_team_transfers_by_window
+from ..repos.contracts_repo import get_team_contracts
 from ..schemas.common import (
     BestElevenResponse,
     CurrentFormOptionsResponse,
@@ -26,10 +29,19 @@ from ..schemas.common import (
     TeamInjuriesResponse,
     TeamTransfersResponse,
     TransferOut,
+    TeamContractsResponse,
 )
 
 
 router = APIRouter()
+
+
+@router.get("/teams/{team_id}/contracts", response_model=TeamContractsResponse)
+def team_contracts(team_id: int, descending: bool = False, user_id: int = Depends(get_user_id)):
+    context = find_team_current_context(team_id)
+    if context is None:
+        raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
+    return get_team_contracts(team_id, context[1], descending=descending)
 
 
 class PutFollowingTeamsBody(BaseModel):
@@ -224,87 +236,35 @@ def team_matches(
 # 이적
 # ---------------------------------------------------------------------------
 
-_LOAN_TYPE_IDS = {219, 220}  # Sportmonks의 임대 관련 이적 type_id예요.
-
-def _make_display_type(type_id: int | None, amount: int | None) -> str | None:
-# team_transfers를 확인한 결과 type_id는 네 가지만 있어요.
-# 218(임대), 219(이적), 220(자유 이적), 9688(임대 종료)
-# type_name으로 조용히 대체하지 않아요. 새 type_id가 들어오면 None을 반환해
-# API 응답에서 바로 드러내고, 이 매핑을 명시적으로 다시 확인해요.
-    if type_id == 218:
-        return "Loan"
-
-    if type_id == 9688:
-        return "End of Loan"
-
-    if type_id == 220:
-        return "Free Transfer"
-
-    if type_id == 219:
-        if amount and amount > 0:
-            if amount >= 1_000_000:
-                return f"€{amount / 1_000_000:.1f}M".replace(".0M", "M")
-            if amount >= 1_000:
-                return f"€{amount / 1_000:.0f}K"
-            return f"€{amount}"
-        return "Transfer"
-
-
 def _build_transfer_out(row: dict, team_id: int) -> TransferOut:
     is_in = row["to_team_id"] == team_id
-    direction = "in" if is_in else "out"
-
-    if is_in:
-        other_team_id = row["from_team_id"]
-        other_team_name = row["from_team_name"]
-    else:
-        other_team_id = row["to_team_id"]
-        other_team_name = row["to_team_name"]
-
-    # 모든 키는 get_team_transfers_by_window의 명시적인 SELECT로 보장해요.
-    # 대괄호 접근으로 스키마 변경을 바로 드러내고, nullable 열인 to_team_*,
-    # player_image, amount만 None을 허용해요. transfer_date는 로더가 요구하는
-    # NOT NULL 값이므로 truthy 대체값을 쓰지 않아요.
+    side = "from" if is_in else "to"
+    # 금액 0이나 NULL로 자유 이적을 추정하지 않아요. 통화 미확인 금액에 유로 기호도 붙이지 않아요.
     return TransferOut(
-        transfer_id=row["transfer_id"],
-        player_id=row["player_id"],
-        player_name=row["player_name"],
-        player_image=row["player_image"],
-        direction=direction,
-        other_team_id=other_team_id,
-        other_team_name=other_team_name,
-        display_type=_make_display_type(row["type_id"], row["amount"]),
-        amount=row["amount"],
+        transfer_id=row["transfer_id"], player_id=row["player_id"],
+        player_name=row["player_name"], player_image=row["player_image"],
+        direction="in" if is_in else "out", other_team_id=row[f"{side}_team_id"],
+        other_team_name=row[f"{side}_team_name"], other_team_image=row[f"{side}_team_image"],
+        jersey_number=row["jersey_number"], type_id=row["type_id"],
+        display_type=row["type_name"], amount=row["amount"], currency=None,
         transfer_date=str(row["transfer_date"]),
+        contract_start_date=row["contract_start_date"], contract_end_date=row["contract_end_date"],
     )
 
 
 @router.get("/teams/{team_id}/transfers", response_model=TeamTransfersResponse)
-def team_transfers(
-    team_id: int,
-    user_id: int = Depends(get_user_id),
-):
-    ensure_user(user_id)
-
-    window = get_latest_window()
-    if not window:
-        raise HTTPException(status_code=404, detail="No transfer window found")
-
-    rows = get_team_transfers_by_window(team_id, window["id"])
-
-    transfers_in = []
-    transfers_out = []
-    for row in rows:
-        t = _build_transfer_out(row, team_id)
-        if t.direction == "in":
-            transfers_in.append(t)
-        else:
-            transfers_out.append(t)
-
-    window_key = f"{window['season_year']} {window['window_name']}"
-
+def team_transfers(team_id: int, user_id: int = Depends(get_user_id)):
+    context = find_team_current_context(team_id)
+    if context is None:
+        raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
+    as_of = date.today()
+    window = get_latest_transfer_window(context[0], as_of)
+    if window is None:
+        raise HTTPException(status_code=404, detail="No verified transfer window found")
+    rows = get_team_transfers_by_window(team_id, context[1], window, as_of)
+    items = [_build_transfer_out(row, team_id) for row in rows]
     return TeamTransfersResponse(
-        window_key=window_key,
-        transfers_in=transfers_in,
-        transfers_out=transfers_out,
+        window_key=f"{window['season_name']} {window['window_name']}",
+        transfers_in=[item for item in items if item.direction == "in"],
+        transfers_out=[item for item in items if item.direction == "out"],
     )

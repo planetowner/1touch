@@ -1,551 +1,170 @@
+"""확정 이적 원문을 선수 단위로 저장하고, Club History에서 확인한 1군만 표시해요."""
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+import json
+from datetime import date, timedelta
 
-from ..core.db import fetch_all, upsert_many
+from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
-
-
-# ---------------------------------------------------------------------------
-# 공통 SQL
-# ---------------------------------------------------------------------------
-
-SQL_SELECT_CURRENT_TEAM_IDS = """
-SELECT DISTINCT team_id
-FROM (
-  SELECT f.home_team_id AS team_id
-  FROM fixtures f
-  JOIN stages st ON st.stage_id = f.stage_id
-  JOIN seasons s ON s.season_id = st.season_id
-  JOIN competitions c ON c.competition_id = s.competition_id
-  WHERE s.is_current = 1
-    AND c.competition_type = 'league'
-    AND s.competition_id IN (8,82,301,384,564)
-
-  UNION
-
-  SELECT f.away_team_id AS team_id
-  FROM fixtures f
-  JOIN stages st ON st.stage_id = f.stage_id
-  JOIN seasons s ON s.season_id = st.season_id
-  JOIN competitions c ON c.competition_id = s.competition_id
-  WHERE s.is_current = 1
-    AND c.competition_type = 'league'
-    AND s.competition_id IN (8,82,301,384,564)
-) t
-WHERE team_id IS NOT NULL
-ORDER BY team_id
-"""
-
-# ---------------------------------------------------------------------------
-# transfer_windows SQL
-# ---------------------------------------------------------------------------
-
-SQL_RESOLVE_FLAGGED_LATEST_WINDOW = """
-SELECT
-  id,
-  season_year,
-  window_name,
-  start_date,
-  end_date,
-  effective_start_date,
-  effective_end_date,
-  latest_detection_source
-FROM transfer_windows
-WHERE is_latest = 1
-LIMIT 1
-"""
-
-# ---------------------------------------------------------------------------
-# team_transfers SQL
-# ---------------------------------------------------------------------------
+from ..core.transfer_source_rules import WITHHELD_PLAYER_MOVEMENTS
+from ..core.transfer_team_levels import VERIFIED_NON_SENIOR_TEAM_IDS, load_senior_team_ids
+from ..core.transfer_windows import get_latest_transfer_window
+from .players_loader import insert_missing_player_profiles
+from .team_squad_members_loader import load_squad_scope
+from .teams_loader import SQL_UPSERT_TEAM, _team_row
 
 SQL_UPSERT_TRANSFER = """
-INSERT INTO team_transfers (
-  transfer_id, player_id, player_name, player_image,
-  from_team_id, from_team_name, to_team_id, to_team_name,
-  type_id, type_name, amount, transfer_date, window_id
-) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-ON DUPLICATE KEY UPDATE
-  player_name    = VALUES(player_name),
-  player_image   = VALUES(player_image),
-  from_team_id   = VALUES(from_team_id),
-  from_team_name = VALUES(from_team_name),
-  to_team_id     = VALUES(to_team_id),
-  to_team_name   = VALUES(to_team_name),
-  type_id        = VALUES(type_id),
-  type_name      = VALUES(type_name),
-  amount         = VALUES(amount),
-  transfer_date  = VALUES(transfer_date),
-  window_id      = VALUES(window_id)
+INSERT INTO transfers (transfer_id, player_id, from_team_id, to_team_id, type_id, amount, transfer_date)
+VALUES (%s,%s,%s,%s,%s,%s,%s)
+ON DUPLICATE KEY UPDATE player_id=VALUES(player_id), from_team_id=VALUES(from_team_id),
+to_team_id=VALUES(to_team_id), type_id=VALUES(type_id), amount=VALUES(amount), transfer_date=VALUES(transfer_date)
+"""
+SQL_UPSERT_TYPE = """
+INSERT INTO transfer_types (type_id, name) VALUES (%s,%s)
+ON DUPLICATE KEY UPDATE name=VALUES(name)
 """
 
 
-# ---------------------------------------------------------------------------
-# 값을 엄격하게 확인하는 도우미
-# ---------------------------------------------------------------------------
-
-def _require_int(value, field_name: str) -> int:
-    if type(value) is not int:
-        raise ValueError(f"Missing or invalid integer field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_optional_int(value, field_name: str) -> Optional[int]:
-    if value is None:
-        return None
-
-    if type(value) is not int:
-        raise ValueError(f"Invalid optional integer field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_non_empty_str(value, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Missing or invalid string field: {field_name}={value!r}")
-
-    return value.strip()
-
-
-def _require_optional_str(value, field_name: str) -> Optional[str]:
-    if value is None:
-        return None
-
-    if not isinstance(value, str):
-        raise ValueError(f"Invalid optional string field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_dict(value, field_name: str) -> Dict:
-    if not isinstance(value, dict):
-        raise ValueError(f"Missing or invalid object field: {field_name}={value!r}")
-
-    return value
-
-
-def _date_from_db(value, field_name: str) -> date:
-    if isinstance(value, datetime):
-        return value.date()
-
-    if type(value) is date:
-        return value
-
-    raise ValueError(f"Missing or invalid DB date field: {field_name}={value!r}")
-
-
-def _require_transfer_date_for_filter(value, transfer_id: int) -> date:
-    # 마감 주간 표본 2,203건 가운데 Big 5 관련 457건을 확인했어요. Sportmonks는
-    # transfer.date를 항상 채워요. 선택값이 아니라 필수값이에요. 날짜가 null인 이적은
-    # 기간 필터에서 조용히 버리지 않고 오류로 드러내야 해요. 그래야 보여야 할 이적을 잃지 않아요.
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(
-            f"Missing or invalid transfer date for transfer_id={transfer_id}: {value!r}"
-        )
-
-    return date.fromisoformat(value)
-
-
-def _require_transfer_date_str(value, transfer_id: int) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(
-            f"Missing or invalid transfer date for transfer_id={transfer_id}: {value!r}"
-        )
-
-    date.fromisoformat(value)
-    return value
-
-
-def _is_big5_related_transfer(transfer: Dict, big5_team_ids: Set[int]) -> bool:
-    from_team_id = _require_int(
-        transfer["from_team_id"],
-        "transfer.from_team_id",
-    )
-    to_team_id = _require_optional_int(
-        transfer["to_team_id"],
-        "transfer.to_team_id",
-    )
-
-    return from_team_id in big5_team_ids or to_team_id in big5_team_ids
-
-
-def _required_team_name_from_object(
-    team_obj: Dict,
-    object_field_name: str,
-) -> str:
-    team_obj = _require_dict(team_obj, object_field_name)
-    return _require_non_empty_str(team_obj["name"], f"{object_field_name}.name")
-
-
-def _optional_team_name_from_object(
-    team_obj,
-    expected_team_id: Optional[int],
-    object_field_name: str,
-) -> Optional[str]:
-    if expected_team_id is None:
-        return None
-
-    return _required_team_name_from_object(
-        team_obj,
-        object_field_name,
-    )
-
-
-# ---------------------------------------------------------------------------
-# 팀 범위
-# ---------------------------------------------------------------------------
-
-def get_current_big5_domestic_team_ids() -> List[int]:
-    rows = fetch_all(SQL_SELECT_CURRENT_TEAM_IDS)
-    return [_require_int(row[0], "current_big5_team_id") for row in rows]
-
-
-# ---------------------------------------------------------------------------
-# 이적 기간 찾기
-# ---------------------------------------------------------------------------
-
-def resolve_latest_window() -> Optional[Dict]:
-    """
-    DB에 저장된 latest/effective window만 읽는다.
-    Sportmonks API를 호출하지 않는다.
-    """
-    rows = fetch_all(SQL_RESOLVE_FLAGGED_LATEST_WINDOW)
-
-    if not rows:
-        return None
-
-    (
-        window_id,
-        season_year,
-        window_name,
-        start_date,
-        end_date,
-        effective_start_date,
-        effective_end_date,
-        detection_source,
-    ) = rows[0]
-
-    if effective_start_date is None:
-        raise ValueError(
-            "Latest transfer window is missing effective_start_date. "
-            "Run transfers refresh-current to detect and persist it."
-        )
-
-    if effective_end_date is None:
-        raise ValueError(
-            "Latest transfer window is missing effective_end_date. "
-            "Run transfers refresh-current to detect and persist it."
-        )
-
-    if detection_source is None:
-        raise ValueError(
-            "Latest transfer window is missing latest_detection_source. "
-            "Run transfers refresh-current to detect and persist it."
-        )
-
-    return {
-        "id": _require_int(window_id, "transfer_windows.id"),
-        "season_year": _require_int(season_year, "transfer_windows.season_year"),
-        "window_name": _require_non_empty_str(
-            window_name,
-            "transfer_windows.window_name",
-        ),
-        "start_date": _date_from_db(start_date, "transfer_windows.start_date"),
-        "end_date": _date_from_db(end_date, "transfer_windows.end_date"),
-        "effective_start_date": _date_from_db(
-            effective_start_date,
-            "transfer_windows.effective_start_date",
-        ),
-        "effective_end_date": _date_from_db(
-            effective_end_date,
-            "transfer_windows.effective_end_date",
-        ),
-        "detection_source": _require_non_empty_str(
-            detection_source,
-            "transfer_windows.latest_detection_source",
-        ),
-    }
-
-
-# ---------------------------------------------------------------------------
-# 필터링과 값 정리
-# ---------------------------------------------------------------------------
-
-def _filter_by_window(
-    transfers: List[Dict],
-    window: Dict,
-    big5_team_ids: Set[int],
-) -> List[Dict]:
-    effective_start_date = _date_from_db(
-        window["effective_start_date"],
-        "window.effective_start_date",
-    )
-    effective_end_date = _date_from_db(
-        window["effective_end_date"],
-        "window.effective_end_date",
-    )
-
-    filtered: List[Dict] = []
-
-    for transfer in transfers:
-        transfer_id = _require_int(transfer["id"], "transfer.id")
-
-        transfer_date = _require_transfer_date_for_filter(
-            transfer["date"],
-            transfer_id,
-        )
-
-        if not (effective_start_date <= transfer_date <= effective_end_date):
-            continue
-
-        if not _is_big5_related_transfer(transfer, big5_team_ids):
-            continue
-
-        filtered.append(transfer)
-
-    return filtered
-
-
-def _normalize_transfer_rows(
-    transfers: List[Dict],
-    window_id: int,
-) -> List[Tuple]:
-    rows: List[Tuple] = []
-
-    for transfer in transfers:
-        transfer_id = _require_int(transfer["id"], "transfer.id")
-        player_id = _require_int(transfer["player_id"], "transfer.player_id")
-        from_team_id = _require_int(transfer["from_team_id"], "transfer.from_team_id")
-        to_team_id = _require_optional_int(transfer["to_team_id"], "transfer.to_team_id")
-        type_id = _require_int(transfer["type_id"], "transfer.type_id")
-        amount = _require_optional_int(transfer["amount"], "transfer.amount")
-        transfer_date = _require_transfer_date_str(transfer["date"], transfer_id)
-
-        player = _require_dict(transfer["player"], "transfer.player")
-        type_obj = _require_dict(transfer["type"], "transfer.type")
-
-        from_team_name = _required_team_name_from_object(
-            transfer["fromteam"],
-            "transfer.fromteam",
-        )
-
-        to_team_name = _optional_team_name_from_object(
-            transfer["toteam"],
-            to_team_id,
-            "transfer.toteam",
-        )
-
-        rows.append(
-            (
-                transfer_id,
-                player_id,
-                _require_non_empty_str(
-                    player["display_name"],
-                    "transfer.player.display_name",
-                ),
-                _require_optional_str(
-                    player["image_path"],
-                    "transfer.player.image_path",
-                ),
-                from_team_id,
-                from_team_name,
-                to_team_id,
-                to_team_name,
-                type_id,
-                _require_non_empty_str(type_obj["name"], "transfer.type.name"),
-                amount,
-                transfer_date,
-                window_id,
-            )
-        )
-
-    return rows
-
-
-# ---------------------------------------------------------------------------
-# 공통 갱신 로직
-# ---------------------------------------------------------------------------
-
-def _iter_date_chunks(
-    start_date: date,
-    end_date: date,
-    *,
-    max_days: int = 31,
-):
-    if end_date < start_date:
-        raise ValueError(
-            f"Invalid date range: start_date={start_date}, end_date={end_date}"
-        )
-
-    current = start_date
-
-    while current <= end_date:
-        chunk_end = min(
-            current + timedelta(days=max_days - 1),
-            end_date,
-        )
-
-        yield current, chunk_end
-
-        current = chunk_end + timedelta(days=1)
-
-
-def _load_transfers_for_window(
-    *,
-    sm: SportmonksClient,
-    window: Dict,
-) -> List[Dict]:
-    effective_start_date = _date_from_db(
-        window["effective_start_date"],
-        "window.effective_start_date",
-    )
-    effective_end_date = _date_from_db(
-        window["effective_end_date"],
-        "window.effective_end_date",
-    )
-
-    transfers: List[Dict] = []
-
-    for chunk_start, chunk_end in _iter_date_chunks(
-        effective_start_date,
-        effective_end_date,
-    ):
-        chunk_rows = list(
-            sm.iter_transfers_between_dates(
-                chunk_start,
-                chunk_end,
-            )
-        )
-
-        print(
-            f"[transfers] between {chunk_start} ~ {chunk_end}: "
-            f"fetched={len(chunk_rows)}"
-        )
-
-        transfers.extend(chunk_rows)
-
-    print(f"[transfers] window fetched total={len(transfers)}")
-
-    return transfers
-
-
-# ---------------------------------------------------------------------------
-# 외부에서 쓰는 함수
-# ---------------------------------------------------------------------------
-
-def refresh_team_transfers(team_id: int) -> None:
-    """
-    단일 Big5 current domestic team의 latest transfer window 데이터를 적재.
-    transfers/teams/{team_id} 전체 이력을 쓰지 않는다.
-    """
-    sm = SportmonksClient()
-    big5_team_ids = set(get_current_big5_domestic_team_ids())
-
-    if team_id not in big5_team_ids:
-        raise ValueError(
-            f"team_id={team_id} is not a Big5 current domestic team."
-        )
-
-    window = resolve_latest_window()
-
-    if window is None:
-        raise ValueError(
-            "No transfer window found (transfer_windows has no is_latest=1 row). "
-            "Seed transfer_windows or run transfers refresh-current first."
-        )
-
-    all_transfers = _load_transfers_for_window(
-        sm=sm,
-        window=window,
-    )
-
-    transfers = _filter_by_window(
-        all_transfers,
-        window,
-        {team_id},
-    )
-
-    rows = _normalize_transfer_rows(
-        transfers,
-        _require_int(window["id"], "window.id"),
-    )
-
-    if rows:
-        upsert_many(SQL_UPSERT_TRANSFER, rows)
-
-    print(
-        f"[transfers] team {team_id}: "
-        f"filtered={len(transfers)} upserted={len(rows)}"
-    )
-
-
-def refresh_current_transfers(team_ids: Optional[List[int]] = None) -> None:
-    """
-    Big5 current domestic teams 또는 지정된 Big5 팀들의 latest transfer window 데이터를 적재.
-
-    transfers/teams/{team_id} 전체 이력을 쓰지 않는다.
-    transfer_windows.effective_start_date ~ effective_end_date를
-    31일 단위로 쪼개서 transfers/between/{start}/{end}로 가져온다.
-    """
-    sm = SportmonksClient()
-    big5_team_ids = set(get_current_big5_domestic_team_ids())
-
-    if not big5_team_ids:
-        raise ValueError("No Big5 current domestic team ids found.")
-
-    if team_ids is None:
-        target_team_ids = big5_team_ids
-    else:
-        invalid_ids = sorted(set(team_ids) - big5_team_ids)
-
-        if invalid_ids:
-            raise ValueError(
-                f"These team_ids are not Big5 current domestic teams: {invalid_ids}"
-            )
-
-        target_team_ids = set(team_ids)
-
-    window = resolve_latest_window()
-
-    if window is None:
-        raise ValueError(
-            "No transfer window found (transfer_windows has no is_latest=1 row). "
-            "Seed transfer_windows first."
-        )
-
-    print(
-        f"[transfers] latest window: "
-        f"{window['season_year']} {window['window_name']} "
-        f"official=({window['start_date']} ~ {window['end_date']}) "
-        f"effective=({window['effective_start_date']} ~ {window['effective_end_date']}) "
-        f"source={window['detection_source']}"
-    )
-
-    all_transfers = _load_transfers_for_window(
-        sm=sm,
-        window=window,
-    )
-
-    transfers = _filter_by_window(
-        all_transfers,
-        window,
-        target_team_ids,
-    )
-
-    rows = _normalize_transfer_rows(
-        transfers,
-        _require_int(window["id"], "window.id"),
-    )
-
-    if rows:
-        upsert_many(SQL_UPSERT_TRANSFER, rows)
-
-    print(
-        f"[transfers] refresh-current done: "
-        f"target_teams={len(target_team_ids)} "
-        f"filtered={len(transfers)} "
-        f"upserted={len(rows)}"
-    )
+def build_transfer_rows(player_id: int, payload: list[dict], senior_ids: set[int]) -> dict:
+    rows, teams, types, profiles, unclassified = [], {}, {}, {}, {}
+    confirmed = sorted((item for item in payload if item["completed"] is True), key=lambda x: (x["date"], x["id"]))
+    repeated_movements = []
+    previous = None
+    for item in confirmed:
+        if item["player_id"] != player_id:
+            raise ValueError(f"Transfer belongs to another player: {item['id']}")
+        # 확인된 중복 ID는 공통 클라이언트에서 제외해요. 그 밖의 연속된 동일 이동은 선택하지 않고 보고해요.
+        movement = (item["from_team_id"], item["to_team_id"])
+        if previous is not None and item["type_id"] == previous["type_id"] and movement == (previous["from_team_id"], previous["to_team_id"]):
+            pair = (previous["id"], item["id"])
+            if pair != WITHHELD_PLAYER_MOVEMENTS.get(player_id):
+                repeated_movements.append(list(pair))
+        previous = item
+        sides = []
+        related_teams = []
+        for key in ("fromteam", "toteam"):
+            team = item[key]
+            # 실제 TBC(260131)는 구단이 아니에요. 구단 간 이동의 원래 ID는 보존해요.
+            if team is None or team["placeholder"]:
+                sides.append(None)
+            else:
+                # 미분류 구단도 원래 관계는 보존해요. 2026-09-09 결정에 따라 화면에서만 제외해요.
+                related_teams.append(_team_row(team, key))
+                sides.append(team["id"])
+                if team["id"] not in senior_ids and team["id"] not in VERIFIED_NON_SENIOR_TEAM_IDS:
+                    unclassified[team["id"]] = team["name"]
+        for team_row in related_teams:
+            teams[team_row[0]] = team_row
+        types[item["type_id"]] = item["type"]["name"]
+        profiles[player_id] = item["player"]
+        # amount의 NULL과 제공된 0을 구분해요. 통화 확인 전에는 EUR로 이름 붙이지 않아요.
+        rows.append((item["id"], player_id, *sides, item["type_id"], item["amount"], date.fromisoformat(item["date"])))
+    return {"rows": rows, "teams": list(teams.values()), "types": list(types.items()), "profiles": profiles,
+            "unclassified_teams": unclassified, "repeated_movements": repeated_movements}
+
+
+def replace_player_transfers(player_id: int, rows: dict) -> None:
+    # 미분류·승인된 표시 보류 원문은 저장해요. 새로 발견한 충돌은 확인한 뒤 저장해요.
+    if rows["repeated_movements"]:
+        raise ValueError(f"Review transfer source for player={player_id}: repeated={rows['repeated_movements']}")
+    with transaction() as conn:
+        with conn.cursor() as cursor:
+            if rows["teams"]:
+                cursor.executemany(SQL_UPSERT_TEAM, rows["teams"])
+            insert_missing_player_profiles(cursor, rows["profiles"])
+            if rows["types"]:
+                cursor.executemany(SQL_UPSERT_TYPE, rows["types"])
+            if rows["rows"]:
+                # 계약이 참조하는 기존 이적 ID를 삭제하지 않도록 먼저 갱신해요.
+                cursor.executemany(SQL_UPSERT_TRANSFER, rows["rows"])
+                ids = [row[0] for row in rows["rows"]]
+                marks = ",".join("%s" for _ in ids)
+                cursor.execute(f"DELETE FROM transfers WHERE player_id=%s AND transfer_id NOT IN ({marks})", (player_id, *ids))
+            else:
+                cursor.execute("DELETE FROM transfers WHERE player_id=%s", (player_id,))
+
+
+def collect_player_transfers(player_ids: list[int], *, check: bool = False) -> dict:
+    senior_ids = load_senior_team_ids()
+    selected = sorted(set(player_ids))
+    totals = {"players": 0, "transfers": 0, "review_players": [], "unclassified_teams": {}, "withheld_players": []}
+    client = SportmonksClient()
+    try:
+        for index, player_id in enumerate(selected, 1):
+            rows = build_transfer_rows(player_id, list(client.iter_transfers_by_player(player_id)), senior_ids)
+            totals["unclassified_teams"].update(rows["unclassified_teams"])
+            if player_id in WITHHELD_PLAYER_MOVEMENTS:
+                totals["withheld_players"].append(player_id)
+            review = {"player_id": player_id, "repeated_movements": rows["repeated_movements"]}
+            if rows["repeated_movements"]:
+                totals["review_players"].append(review)
+                print(json.dumps(review, ensure_ascii=False), flush=True)
+            if not check:
+                replace_player_transfers(player_id, rows)
+            totals["players"] += 1
+            totals["transfers"] += len(rows["rows"])
+            print(f"[transfers {index}/{len(selected)}] player_id={player_id} transfers={len(rows['rows'])} withheld={player_id in WITHHELD_PLAYER_MOVEMENTS} check={check}", flush=True)
+    finally:
+        client._session.close()
+    return totals
+
+
+def collect_transfers_for_season(season_name: str, competition_ids: list[int], *, check: bool = False) -> dict:
+    scope = [row for competition_id in competition_ids for row in load_squad_scope(season_name, competition_id)]
+    player_ids = set()
+    for row in scope:
+        player_ids.update(item[0] for item in fetch_all(
+            "SELECT player_id FROM team_squad_members WHERE team_id=%s AND season_id=%s", (row["team_id"], row["season_id"])))
+    # 시즌은 수집할 선수 범위예요. 선택된 선수의 이적 이력은 연도로 자르지 않아요.
+    return collect_player_transfers(sorted(player_ids), check=check)
+
+
+def set_transfer_window(season_name: str, competition_id: int, window_name: str, start: date, end: date) -> None:
+    if window_name not in ("summer", "winter") or start > end:
+        raise ValueError("Expected summer/winter and start <= end")
+    season_id = load_squad_scope(season_name, competition_id)[0]["season_id"]
+    # 각국 등록 기간이 달라요. 확정된 날짜만 입력하고 최신 여부는 시작일로 구해요.
+    with transaction() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO transfer_windows (season_id, window_name, start_date, end_date) VALUES (%s,%s,%s,%s)
+                ON DUPLICATE KEY UPDATE start_date=VALUES(start_date), end_date=VALUES(end_date)
+            """, (season_id, window_name, start, end))
+
+
+def refresh_current_transfers(team_ids: list[int] | None = None, *, check: bool = False) -> dict:
+    scope = load_squad_scope(current_only=True, team_ids=team_ids)
+    windows = {}
+    by_competition = {}
+    for row in scope:
+        competition_id = row["competition_id"]
+        if competition_id not in by_competition:
+            by_competition[competition_id] = get_latest_transfer_window(competition_id, date.today())
+        window = by_competition[competition_id]
+        if window is None:
+            raise ValueError(f"Set verified transfer window first: competition_id={row['competition_id']}")
+        windows[row["team_id"]] = window
+    selected = set()
+    start = min(row["start_date"] for row in windows.values())
+    end = min(date.today(), max(row["end_date"] for row in windows.values()))
+    client = SportmonksClient()
+    try:
+        # 기존 31일 조회 범위를 유지하고 팀마다 같은 구간을 반복 요청하지 않아요.
+        while start <= end:
+            chunk_end = min(start + timedelta(days=30), end)
+            for item in client.iter_transfers_between_dates(start, chunk_end):
+                if item["completed"] is not True:
+                    continue
+                for team_id in (item["from_team_id"], item["to_team_id"]):
+                    window = windows.get(team_id)
+                    if window is not None and window["start_date"] <= date.fromisoformat(item["date"]) <= window["end_date"]:
+                        selected.add(item["player_id"])
+            start = chunk_end + timedelta(days=1)
+    finally:
+        client._session.close()
+    # 최근 행만 저장하면 Club History가 잘리므로 해당 선수의 전체 이력을 같은 경로로 수집해요.
+    return collect_player_transfers(sorted(selected), check=check)
+
+
+def refresh_team_transfers(team_id: int, *, check: bool = False) -> dict:
+    return refresh_current_transfers([team_id], check=check)
