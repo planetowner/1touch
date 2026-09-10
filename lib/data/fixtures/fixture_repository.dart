@@ -14,6 +14,20 @@ abstract interface class FixtureRepository {
     FixtureStatus? status,
   });
 
+  /// Loads the backend-supported team match window.
+  ///
+  /// This temporarily coexists with [forTeam], which remains the synchronous
+  /// cache selector used by existing screens during the incremental API
+  /// migration.
+  Future<List<Fixture>> loadForTeam(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  });
+
   List<Fixture> forCompetition(
     int competitionId, {
     int? seasonId,

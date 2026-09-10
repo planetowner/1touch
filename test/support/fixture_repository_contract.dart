@@ -94,6 +94,44 @@ void fixtureRepositoryContract({
     expect(repository.forTeam(-1), isEmpty);
   });
 
+  test('loads backend-style team match windows newest first', () async {
+    expect(
+      (await repository.loadForTeam(
+        1,
+        status: FixtureStatus.past,
+        start: DateTime(2025, 2),
+        end: DateTime(2025, 5, 10),
+      ))
+          .map((fixture) => fixture.fixtureId),
+      [2, 5],
+    );
+    expect(
+      (await repository.loadForTeam(1, limit: 2, offset: 1))
+          .map((fixture) => fixture.fixtureId),
+      [3, 2],
+    );
+    expect(await repository.loadForTeam(-1), isEmpty);
+  });
+
+  test('validates backend-style team match query parameters', () async {
+    await expectLater(
+      repository.loadForTeam(1, status: FixtureStatus.unknown),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.loadForTeam(1, limit: 0),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.loadForTeam(1, limit: 201),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.loadForTeam(1, offset: -1),
+      throwsRangeError,
+    );
+  });
+
   test('filters competition fixtures by season, status, and type', () {
     expect(
       repository
@@ -135,7 +173,7 @@ void fixtureRepositoryContract({
     expect(repository.headToHead(1, 3), isEmpty);
   });
 
-  test('does not expose mutable fixture result lists', () {
+  test('does not expose mutable fixture result lists', () async {
     expect(
       () => repository.allFixtures.add(fixtures.first),
       throwsUnsupportedError,
@@ -152,6 +190,8 @@ void fixtureRepositoryContract({
       () => repository.headToHead(1, 2).clear(),
       throwsUnsupportedError,
     );
+    final loaded = await repository.loadForTeam(1);
+    expect(() => loaded.clear(), throwsUnsupportedError);
   });
 
   test('keeps the listenable cache consistent after initialization', () async {

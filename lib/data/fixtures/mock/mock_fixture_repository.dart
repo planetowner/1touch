@@ -59,6 +59,44 @@ class MockFixtureRepository implements FixtureRepository {
   }
 
   @override
+  Future<List<Fixture>> loadForTeam(
+    int teamId, {
+    FixtureStatus? status,
+    DateTime? start,
+    DateTime? end,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    if (status == FixtureStatus.unknown) {
+      throw ArgumentError.value(
+        status,
+        'status',
+        'must be past, live, upcoming, or null',
+      );
+    }
+    if (limit < 1 || limit > 200) {
+      throw RangeError.range(limit, 1, 200, 'limit');
+    }
+    if (offset < 0) {
+      throw RangeError.range(offset, 0, null, 'offset');
+    }
+
+    final startDate = start == null ? null : _dateOnly(start);
+    final endDate = end == null ? null : _dateOnly(end);
+    final matches = forTeam(teamId, status: status).where((fixture) {
+      final kickoff = fixture.kickoff;
+      if (kickoff == null) return startDate == null && endDate == null;
+
+      final kickoffDate = _dateOnly(kickoff);
+      return (startDate == null || !kickoffDate.isBefore(startDate)) &&
+          (endDate == null || !kickoffDate.isAfter(endDate));
+    }).toList()
+      ..sort((a, b) => _compareChronologically(a, b, descending: true));
+
+    return List.unmodifiable(matches.skip(offset).take(limit));
+  }
+
+  @override
   List<Fixture> forCompetition(
     int competitionId, {
     int? seasonId,
@@ -168,4 +206,7 @@ class MockFixtureRepository implements FixtureRepository {
         ? b.fixtureId.compareTo(a.fixtureId)
         : a.fixtureId.compareTo(b.fixtureId);
   }
+
+  static DateTime _dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
 }
