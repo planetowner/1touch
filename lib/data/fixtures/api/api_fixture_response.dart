@@ -95,6 +95,50 @@ class ApiFixtureResponse {
   }
 }
 
+/// Transport model for `GET /v1/teams/{team_id}/matches`.
+class ApiTeamMatchesResponse {
+  const ApiTeamMatchesResponse({
+    required this.items,
+    required this.limit,
+    required this.offset,
+  });
+
+  final List<ApiFixtureResponse> items;
+  final int limit;
+  final int offset;
+
+  factory ApiTeamMatchesResponse.fromJson(Map<String, dynamic> json) {
+    final rawItems = json['items'];
+    if (rawItems is! List) {
+      throw const FormatException('Expected required list field "items".');
+    }
+
+    final limit = _requiredInt(json, 'limit');
+    final offset = _requiredInt(json, 'offset');
+    if (limit < 1 || limit > 200) {
+      throw const FormatException('Expected "limit" between 1 and 200.');
+    }
+    if (offset < 0) {
+      throw const FormatException('Expected non-negative "offset".');
+    }
+
+    final items = rawItems.map((item) {
+      if (item is! Map<String, dynamic>) {
+        throw const FormatException(
+          'Expected every "items" entry to be a JSON object.',
+        );
+      }
+      return ApiFixtureResponse.fromJson(item);
+    }).toList(growable: false);
+
+    return ApiTeamMatchesResponse(
+      items: List.unmodifiable(items),
+      limit: limit,
+      offset: offset,
+    );
+  }
+}
+
 int _requiredInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is int) return value;

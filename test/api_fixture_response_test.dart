@@ -106,6 +106,58 @@ void main() {
       );
     });
   });
+
+  group('ApiTeamMatchesResponse', () {
+    test('parses the verified paginated team-matches envelope', () {
+      final response = ApiTeamMatchesResponse.fromJson({
+        'items': [_fixtureJson(), _fixtureJson()],
+        'limit': 50,
+        'offset': 20,
+      });
+
+      expect(response.items, hasLength(2));
+      expect(response.items.first.fixtureId, 19712345);
+      expect(response.limit, 50);
+      expect(response.offset, 20);
+      expect(() => response.items.clear(), throwsUnsupportedError);
+    });
+
+    test('rejects malformed item collections and entries', () {
+      expect(
+        () => ApiTeamMatchesResponse.fromJson({
+          'items': 'not-a-list',
+          'limit': 50,
+          'offset': 0,
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => ApiTeamMatchesResponse.fromJson({
+          'items': ['not-an-object'],
+          'limit': 50,
+          'offset': 0,
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects pagination metadata outside backend constraints', () {
+      for (final pagination in [
+        (limit: 0, offset: 0),
+        (limit: 201, offset: 0),
+        (limit: 50, offset: -1),
+      ]) {
+        expect(
+          () => ApiTeamMatchesResponse.fromJson({
+            'items': const [],
+            'limit': pagination.limit,
+            'offset': pagination.offset,
+          }),
+          throwsFormatException,
+        );
+      }
+    });
+  });
 }
 
 Map<String, dynamic> _fixtureJson({

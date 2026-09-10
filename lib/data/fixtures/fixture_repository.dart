@@ -19,6 +19,9 @@ abstract interface class FixtureRepository {
   /// This temporarily coexists with [forTeam], which remains the synchronous
   /// cache selector used by existing screens during the incremental API
   /// migration.
+  // TODO(fixtures-api): The backend currently sorts every status by kickoff
+  // descending. Before adding paginated upcoming-match scrolling, return
+  // upcoming fixtures nearest-first or support an explicit sort direction.
   Future<List<Fixture>> loadForTeam(
     int teamId, {
     FixtureStatus? status,
