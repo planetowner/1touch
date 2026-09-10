@@ -6,6 +6,7 @@ import io
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from dotenv import dotenv_values
 
@@ -15,6 +16,23 @@ SPEC.loader.exec_module(configure_ses)
 
 
 class ConfigureSesTests(unittest.TestCase):
+    def test_explicit_environment_path_works_at_server_mount_location(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / ".env.production"
+            env_file.write_text("API_DOMAIN=api.example.test\n", encoding="utf-8")
+            credentials = Path(directory) / "smtp.csv"
+            credentials.write_text("IAM 사용자 이름,SMTP 사용자 이름,SMTP 비밀번호\n1touch-auth-smtp,test-user,test-password\n", encoding="utf-8")
+            # 실제 서버의 /input/configure_ses.py에는 parents[2]가 없어요.
+            mounted_script = Path(directory).anchor + "input/configure_ses.py"
+            arguments = [mounted_script, "--credentials-csv", str(credentials), "--env-file", str(env_file),
+                         "--from-email", "noreply@auth.1touch.football"]
+            output = io.StringIO()
+            with patch.object(configure_ses, "__file__", mounted_script), patch("sys.argv", arguments), contextlib.redirect_stdout(output):
+                configure_ses.main()
+            settings = dotenv_values(env_file)
+            self.assertEqual(settings["SES_SMTP_USERNAME"], "test-user")
+            self.assertNotIn("test-password", output.getvalue())
+
     def test_preserves_other_settings_and_secret_on_repeat_without_printing_keys(self):
         with tempfile.TemporaryDirectory() as directory:
             env_file = Path(directory) / ".env"

@@ -38,11 +38,13 @@ def configure_ses(credentials_csv: Path, env_file: Path, sender: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--credentials-csv", required=True, type=Path)
-    parser.add_argument("--env-file", type=Path, default=Path(__file__).resolve().parents[2] / ".env")
+    parser.add_argument("--env-file", type=Path)
     parser.add_argument("--from-email", required=True)
     args = parser.parse_args()
+    # 서버에서는 /input 아래에서 실행해요. 경로를 지정했다면 로컬 저장소 경로를 계산하지 않아요.
+    env_file = args.env_file if args.env_file is not None else Path(__file__).resolve().parents[2] / ".env"
     try:
-        configure_ses(args.credentials_csv, args.env_file, args.from_email)
+        configure_ses(args.credentials_csv, env_file, args.from_email)
     except (OSError, ValueError) as exc:
         parser.exit(1, f"SES 설정 실패: {exc}\n")
     print("SES 설정을 저장했어요. 비밀값은 출력하지 않았어요.")
