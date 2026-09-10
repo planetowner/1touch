@@ -15,6 +15,8 @@ from .routes.posts import router as posts_router
 from .routes.players import router as players_router
 from .routes.auth import router as auth_router
 from .routes.users import router as users_router
+from .routes.attachments import router as attachments_router
+from .routes.chat import ChatHub, router as chat_router
 
 
 def create_app() -> FastAPI:
@@ -24,6 +26,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",
         docs_url="/docs",
     )
+    app.state.chat_hub = ChatHub()
 
     # 운영에서는 실제 웹 프런트엔드 주소만 허용해요. 모바일 앱은 CORS 설정이 필요 없어요.
     origins = [value.strip() for value in os.getenv("API_CORS_ORIGINS", "*").split(",") if value.strip()]
@@ -56,6 +59,8 @@ def create_app() -> FastAPI:
     app.include_router(players_router, prefix="/v1", tags=["players"])
     app.include_router(auth_router, prefix="/v1", tags=["auth"])
     app.include_router(users_router, prefix="/v1", tags=["users"])
+    app.include_router(attachments_router, prefix="/v1", tags=["attachments"])
+    app.include_router(chat_router, prefix="/v1", tags=["chat"])
 
     return app
 

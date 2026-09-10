@@ -1,50 +1,93 @@
-from __future__ import annotations
-
+from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
-
 from ..deps import get_user_id
-from ..repos.posts_repo import list_posts, create_post, report_post
+from ..repos import posts_repo
+from ..services.community_periods import PostPeriod
 
 router = APIRouter()
+Category = Literal["general", "analysis", "news"]
 
 
 class CreatePostBody(BaseModel):
-    category: str = Field(default="general", description="general|analysis|news")
+    team_id: int = Field(gt=0)
+    category: Category = "general"
     title: str = Field(min_length=1, max_length=200)
-    body: str = Field(min_length=1, max_length=10000)
-    media_url: str | None = None
+    body: str = Field(default="", max_length=10000)
+    attachment_ids: list[int] = Field(default_factory=list, max_length=10)
 
 
-class ReportPostBody(BaseModel):
+class CommentBody(BaseModel):
+    body: str = Field(min_length=1, max_length=5000)
+    reply_to_id: int | None = Field(default=None, gt=0)
+
+
+class ReportBody(BaseModel):
     reason: str = Field(min_length=1, max_length=500)
 
 
 @router.get("/posts")
-def get_posts(
-    category: str | None = Query(default=None),
-    sort: str = Query(default="newest", description="newest|popular|best"),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    user_id: int = Depends(get_user_id),
-):
-    rows = list_posts(category=category, sort=sort, limit=limit, offset=offset)
-    return {"items": rows, "limit": limit, "offset": offset}
+def posts(team_id: int = Query(gt=0), category: Category | None = None,
+          sort: posts_repo.PostSort = posts_repo.PostSort.newest, period: PostPeriod = PostPeriod.all_time,
+          limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+          user_id: int = Depends(get_user_id)):
+    return {"items": posts_repo.list_posts(user_id, team_id, category, sort, period, limit, offset),
+            "limit": limit, "offset": offset}
 
 
-@router.post("/posts")
-def post_create(body: CreatePostBody, user_id: int = Depends(get_user_id)):
-    post_id = create_post(
-        user_id=user_id,
-        category=body.category,
-        title=body.title,
-        body=body.body,
-        media_url=body.media_url,
-    )
-    return {"ok": True, "post_id": post_id}
+@router.get("/posts/{post_id}")
+def post(post_id: int, user_id: int = Depends(get_user_id)):
+    return posts_repo.get_post(user_id, post_id)
 
 
-@router.post("/posts/{post_id}/report")
-def post_report(post_id: int, body: ReportPostBody, user_id: int = Depends(get_user_id)):
-    report_post(user_id=user_id, post_id=post_id, reason=body.reason)
-    return {"ok": True, "message": "Thanks for your report"}
+@router.post("/posts", status_code=201)
+def create_post(body: CreatePostBody, user_id: int = Depends(get_user_id)):
+    return {"post_id": posts_repo.create_post(user_id=user_id, **body.model_dump())}
+
+
+@router.get("/posts/{post_id}/comments")
+def comments(post_id: int, after_id: int = Query(default=0, ge=0),
+             limit: int = Query(default=50, ge=1, le=100), user_id: int = Depends(get_user_id)):
+    return {"items": posts_repo.list_comments(user_id, post_id, after_id, limit)}
+
+
+@router.post("/posts/{post_id}/comments", status_code=201)
+def create_comment(post_id: int, body: CommentBody, user_id: int = Depends(get_user_id)):
+    return {"comment_id": posts_repo.create_comment(user_id, post_id, body.body, body.reply_to_id)}
+
+
+# PUT·DELETE를 반복해도 좋아요 관계는 하나예요. 동일한 규칙을 게시물과 댓글에 적용해요.
+@router.put("/posts/{target_id}/like")
+def like_post(target_id: int, user_id: int = Depends(get_user_id)):
+    posts_repo.set_like(user_id, "post", target_id, True)
+    return {"ok": True}
+
+
+@router.delete("/posts/{target_id}/like")
+def unlike_post(target_id: int, user_id: int = Depends(get_user_id)):
+    posts_repo.set_like(user_id, "post", target_id, False)
+    return {"ok": True}
+
+
+@router.put("/comments/{target_id}/like")
+def like_comment(target_id: int, user_id: int = Depends(get_user_id)):
+    posts_repo.set_like(user_id, "comment", target_id, True)
+    return {"ok": True}
+
+
+@router.delete("/comments/{target_id}/like")
+def unlike_comment(target_id: int, user_id: int = Depends(get_user_id)):
+    posts_repo.set_like(user_id, "comment", target_id, False)
+    return {"ok": True}
+
+
+@router.post("/posts/{target_id}/report")
+def report_post(target_id: int, body: ReportBody, user_id: int = Depends(get_user_id)):
+    posts_repo.report_content(user_id, "post", target_id, body.reason)
+    return {"ok": True}
+
+
+@router.post("/comments/{target_id}/report")
+def report_comment(target_id: int, body: ReportBody, user_id: int = Depends(get_user_id)):
+    posts_repo.report_content(user_id, "comment", target_id, body.reason)
+    return {"ok": True}
