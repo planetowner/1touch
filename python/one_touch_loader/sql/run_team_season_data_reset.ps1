@@ -1,3 +1,5 @@
+# 과거 스키마의 전체 초기화 기록이에요. 현재 DB에는 실행하지 않아요.
+# 이후 경기 상세·attributes·Understat 변경으로 대상 테이블 구성이 달라졌어요.
 $ErrorActionPreference = 'Stop'
 
 $backendRoot = [System.IO.Path]::GetFullPath(

@@ -17,11 +17,9 @@ from one_touch_loader.loaders.standings_loader import (
     collect_all_standings,
     collect_standings_for_name,
 )
-from one_touch_loader.loaders.xg_standings_loader import (
-    build_all_xg_standings,
-    refresh_current_xg_standings,
-    build_xg_standings_for_season,
-)
+from one_touch_loader.loaders.xg_standings_loader import build_xg_standings
+from one_touch_loader.loaders.understat_ids_loader import collect_understat_ids
+from one_touch_loader.loaders.understat_loader import collect_understat
 from one_touch_loader.loaders.highlights_loader import refresh_highlights
 from one_touch_loader.loaders.injuries_loader import (
     refresh_current_injuries,
@@ -163,6 +161,18 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli injuries refresh-current  (current Big 5 DB squads)
   python -m one_touch_loader.cli injuries refresh-current <team_id,team_id,...>
   python -m one_touch_loader.cli injuries refresh-team <team_id>
+
+16. understat-ids (requires squads, fixtures and fixture-details)
+  python -m one_touch_loader.cli understat-ids <season_name> [competition_id ...] [--check]
+  python -m one_touch_loader.cli understat-ids all [--check]
+
+17. understat (requires verified Understat IDs; Big 5 only)
+  python -m one_touch_loader.cli understat <season_name> [competition_id ...] [--check]
+  python -m one_touch_loader.cli understat all [--check]
+
+18. xg-standings (requires stored xG; five previous seasons for calibration)
+  python -m one_touch_loader.cli xg-standings <season_name> [competition_id ...] [--check]
+  python -m one_touch_loader.cli xg-standings all [--check]
 """
 
 
@@ -306,38 +316,19 @@ def main():
         else:
             print(USAGE)
 
-    elif cmd == "xg-standings":
-        if len(sys.argv) < 3:
+    elif cmd in {"understat-ids", "understat", "xg-standings"}:
+        arguments = sys.argv[2:]
+        check = "--check" in arguments
+        arguments = [a for a in arguments if a != "--check"]
+        if not arguments:
             print(USAGE)
             return
-
-        sub = sys.argv[2]
-
-        if sub == "build":
-            rows = build_all_xg_standings()
-            print(f"xG standings build done. rows={rows}")
-
-        elif sub == "refresh-current":
-            rows = refresh_current_xg_standings()
-            print(f"xG standings refresh-current done. rows={rows}")
-
-        elif sub == "season" and len(sys.argv) == 5:
-            competition_id = int(sys.argv[3])
-            season_id = int(sys.argv[4])
-
-            rows = build_xg_standings_for_season(
-                competition_id,
-                season_id,
-                no_cache=True,
-            )
-
-            print(
-                f"xG standings season done: "
-                f"competition_id={competition_id} season_id={season_id} rows={rows}"
-            )
-
-        else:
-            print(USAGE)
+        season_name = None if arguments[0] == "all" else arguments[0]
+        competition_ids = _parse_competition_ids(arguments[1:]) if len(arguments) > 1 else None
+        # 매핑·수집·집계가 시즌과 대회 범위를 같은 방식으로 해석해요.
+        command = {"understat-ids": collect_understat_ids, "understat": collect_understat,
+                   "xg-standings": build_xg_standings}[cmd]
+        print(f"{cmd} done: {command(season_name, competition_ids, check=check)}")
 
     elif cmd == "highlights":
         team_ids = None

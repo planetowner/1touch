@@ -201,7 +201,12 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
             [{"team_id": 10, "minute": 1, "pressure": 12.5}],
         ]
 
-        result = fixtures_repo.get_fixture_detail(500)
+        with (
+            patch.object(fixtures_repo, "get_fixture_expected_goals", return_value=None),
+            patch.object(fixtures_repo, "list_fixture_player_expected_goals", return_value=[]),
+            patch.object(fixtures_repo, "list_fixture_shots", return_value=[]),
+        ):
+            result = fixtures_repo.get_fixture_detail(500)
 
         self.assertEqual(result["events"], [{"event_id": 900}])
         self.assertEqual(result["statistics"], [{"stat_type_id": 45}])
@@ -210,6 +215,9 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
         self.assertEqual(result["coaches"][0]["coach_id"], 700)
         self.assertEqual(result["pressure"][0]["minute"], 1)
         self.assertEqual(fetch_all_dict.call_count, 6)
+        self.assertIsNone(result["expected_goals"])
+        self.assertEqual(result["player_expected_goals"], [])
+        self.assertEqual(result["shots"], [])
 
     @patch.object(fixtures_repo, "fetch_all_dict")
     @patch.object(fixtures_repo, "get_fixture", return_value=None)
