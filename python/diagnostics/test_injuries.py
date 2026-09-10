@@ -187,10 +187,9 @@ class InjuryRouteTests(unittest.TestCase):
         app = FastAPI()
         app.include_router(routes.router, prefix="/v1")
         response = {"team_id": 8, "season_id": 28083, "players": []}
-        with patch.object(routes, "ensure_user") as ensure, patch.object(routes, "find_team_current_context", return_value=(8, 28083)) as context, patch.object(routes, "get_team_injuries", return_value=response) as read:
+        with patch.object(routes, "find_team_current_context", return_value=(8, 28083)) as context, patch.object(routes, "get_team_injuries", return_value=response) as read:
             result = routes.team_injuries(8, user_id=1)
             self.assertEqual(result, response)
-            ensure.assert_called_once_with(1)
             read.assert_called_once_with(8, 28083)
             context.return_value = None
             with self.assertRaises(HTTPException) as error:
@@ -198,7 +197,8 @@ class InjuryRouteTests(unittest.TestCase):
             self.assertEqual(error.exception.status_code, 404)
         operation = app.openapi()["paths"]["/v1/teams/{team_id}/injuries"]["get"]
         self.assertEqual(operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"], "#/components/schemas/TeamInjuriesResponse")
-        self.assertEqual({p["name"] for p in operation["parameters"]}, {"team_id", "x-user-id"})
+        self.assertEqual({p["name"] for p in operation["parameters"]}, {"team_id"})
+        self.assertEqual(operation["security"], [{"HTTPBearer": []}])
 
 
 class InjuryScopeTests(unittest.TestCase):

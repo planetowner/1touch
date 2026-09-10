@@ -3,6 +3,9 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..db import fetch_all_dict, fetch_one_dict, transaction
+from ..services.user_preferences import validate_team_selection, favorite_changed_at_after_update
+from ..services.community_periods import utc_now
+from .users_repo import lock_user, require_profile
 
 
 def get_team(team_id: int) -> Optional[Dict[str, Any]]:
@@ -37,7 +40,7 @@ def list_following_team_ids(user_id: int) -> List[int]:
         SELECT team_id
         FROM user_following_teams
         WHERE user_id=%s
-        ORDER BY created_at ASC
+        ORDER BY position ASC
         """,
         (user_id,),
     )
@@ -47,19 +50,21 @@ def list_following_team_ids(user_id: int) -> List[int]:
 def set_following_and_favorite(
     user_id: int,
     team_ids: List[int],
-    favorite_team_id: Optional[int],
+    favorite_team_id: int,
 ) -> None:
-    """Replace the following list AND set the favorite in one transaction.
-
-    All three statements (DELETE + INSERT following, UPDATE favorite) commit
-    together or not at all, so the invariant "favorite is always one of the
-    followed teams" can never be left half-applied by a mid-write failure.
-    The caller validates favorite_team_id ∈ team_ids before calling.
-    """
-    rows = [(user_id, int(tid)) for tid in team_ids]
-
+    """최애팀 제한과 팔로우 목록 변경은 같은 사용자 잠금 안에서 검사해요."""
     with transaction() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(dictionary=True) as cur:
+            user = lock_user(cur, user_id)
+            require_profile(user)
+            cur.execute("""SELECT ts.team_id,s.competition_id FROM team_seasons ts
+                JOIN seasons s ON s.season_id=ts.season_id JOIN competitions c ON c.competition_id=s.competition_id
+                WHERE s.is_current=1 AND s.competition_id IN (8,82,301,384,564) AND c.competition_type='league'""")
+            leagues = {int(row["team_id"]): int(row["competition_id"]) for row in cur.fetchall()}
+            validate_team_selection(team_ids, favorite_team_id, leagues)
+            changed_at = favorite_changed_at_after_update(
+                user["favorite_team_id"], user["favorite_changed_at"], favorite_team_id, utc_now())
+            rows = [(user_id, leagues[tid], tid, position) for position, tid in enumerate(team_ids)]
             cur.execute(
                 "DELETE FROM user_following_teams WHERE user_id=%s",
                 (user_id,),
@@ -68,15 +73,15 @@ def set_following_and_favorite(
             if rows:
                 cur.executemany(
                     """
-                    INSERT INTO user_following_teams (user_id, team_id)
-                    VALUES (%s, %s)
+                    INSERT INTO user_following_teams (user_id, competition_id, team_id, position)
+                    VALUES (%s, %s, %s, %s)
                     """,
                     rows,
                 )
 
             cur.execute(
-                "UPDATE user_profiles SET favorite_team_id=%s WHERE user_id=%s",
-                (favorite_team_id, user_id),
+                "UPDATE users SET favorite_team_id=%s,favorite_changed_at=%s WHERE user_id=%s",
+                (favorite_team_id, changed_at, user_id),
             )
 
 

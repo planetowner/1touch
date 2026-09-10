@@ -559,8 +559,7 @@ class ExecutionTests(unittest.TestCase):
 
     def test_xg_route_uses_current_season_and_discloses_1touch_method(self):
         from one_touch_loader.api.routes import competitions
-        with (patch.object(competitions, "ensure_user"),
-              patch.object(competitions, "get_current_season_id_for_competition", return_value=100),
+        with (patch.object(competitions, "get_current_season_id_for_competition", return_value=100),
               patch.object(competitions, "list_xg_standings", return_value=[]) as read):
             response = competitions.competition_xg_standings(564, season_id=None, user_id=1)
         self.assertEqual(response["xpts_method"], "historical_draw_rate")
