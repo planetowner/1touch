@@ -1,8 +1,9 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$SmtpCredentialsCsv = (Join-Path $env:USERPROFILE 'Downloads\1touch-auth-smtp_credentials.csv')
 )
 
+# Windows PowerShell 5.1이 한글 안내를 읽도록 이 파일은 UTF-8 BOM으로 저장해요.
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'ssh-common.ps1')
 $backendPath = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
