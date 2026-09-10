@@ -95,7 +95,9 @@ if [[ -f .env.production ]]; then
   cp -- .env.production .env.production.previous
 fi
 mv -- .env.production.next .env.production
-bash compose-production.sh up -d --no-build --wait --wait-timeout 180
+bash compose-production.sh up -d --no-build --wait --wait-timeout 180 db api
+# install로 교체한 파일은 기존 파일 마운트에 반영되지 않아 프록시만 새로 만들어요.
+bash compose-production.sh up -d --no-build --no-deps --force-recreate --wait --wait-timeout 180 proxy
 install -m 644 "$release_directory/deploy/vultr/onetouch-db-backup.service" /etc/systemd/system/onetouch-db-backup.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-db-backup.timer" /etc/systemd/system/onetouch-db-backup.timer
 systemctl daemon-reload
@@ -107,6 +109,8 @@ curl --fail --silent --show-error --retry 12 --retry-all-errors --retry-delay 5 
   "https://$api_domain/v1/health"
 status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/docs")
 [[ "$status" == 401 ]] || { echo "Expected protected API docs (401), got $status" >&2; exit 1; }
+status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/v1/auth/providers?country_code=KR")
+[[ "$status" == 200 ]] || { echo "Expected public login providers (200), got $status" >&2; exit 1; }
 printf '\n'
 bash compose-production.sh ps
 systemctl list-timers onetouch-db-backup.timer --no-pager
