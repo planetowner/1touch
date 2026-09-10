@@ -161,6 +161,87 @@ void main() {
     );
     expect(requestCount, 0);
   });
+
+  test('requests, maps, and caches head-to-head fixtures', () async {
+    final client = MockClient((request) async {
+      expect(request.method, 'GET');
+      expect(request.url.path, '/v1/fixtures/1001/head2head');
+      expect(request.url.queryParameters, {'limit': '20'});
+      expect(request.headers['X-User-Id'], '1');
+      return http.Response(
+        jsonEncode({
+          'fixture_id': 1001,
+          'team_a': 8,
+          'team_b': 19,
+          'items': [_fixtureJson()],
+        }),
+        200,
+      );
+    });
+    final repository = ApiFixtureRepository(
+      client: client,
+      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
+      requestHeaders: const {'X-User-Id': '1'},
+    );
+
+    final loaded = await repository.loadHeadToHead(1001, limit: 20);
+
+    expect(loaded.single.fixtureId, 19712345);
+    expect(repository.findById(19712345), same(loaded.single));
+    expect(() => loaded.clear(), throwsUnsupportedError);
+  });
+
+  test('rejects mismatched head-to-head fixture identities', () async {
+    final repository = ApiFixtureRepository(
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'fixture_id': 9999,
+            'team_a': 8,
+            'team_b': 19,
+            'items': [_fixtureJson()],
+          }),
+          200,
+        ),
+      ),
+      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
+      requestHeaders: const {'X-User-Id': '1'},
+    );
+
+    await expectLater(
+      repository.loadHeadToHead(1001),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          contains('9999'),
+        ),
+      ),
+    );
+    expect(repository.allFixtures, isEmpty);
+  });
+
+  test('rejects invalid head-to-head limits before requesting', () async {
+    var requestCount = 0;
+    final repository = ApiFixtureRepository(
+      client: MockClient((_) async {
+        requestCount++;
+        return http.Response('{}', 200);
+      }),
+      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
+      requestHeaders: const {'X-User-Id': '1'},
+    );
+
+    await expectLater(
+      repository.loadHeadToHead(1001, limit: 0),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.loadHeadToHead(1001, limit: 51),
+      throwsRangeError,
+    );
+    expect(requestCount, 0);
+  });
 }
 
 Map<String, dynamic> _fixtureJson({

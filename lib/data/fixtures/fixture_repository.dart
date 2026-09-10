@@ -57,5 +57,14 @@ abstract interface class FixtureRepository {
     int? competitionId,
   });
 
+  /// Loads completed meetings for the teams in the selected fixture.
+  ///
+  /// This temporarily coexists with [headToHead], which selects only from the
+  /// fixtures already available in memory.
+  Future<List<Fixture>> loadHeadToHead(
+    int fixtureId, {
+    int limit = 10,
+  });
+
   Future<void> initialize();
 }

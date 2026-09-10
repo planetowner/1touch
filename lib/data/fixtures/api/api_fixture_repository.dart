@@ -91,26 +91,7 @@ class ApiFixtureRepository implements FixtureRepository {
     final uri = _apiBaseUri.resolve('teams/$teamId/matches').replace(
           queryParameters: queryParameters,
         );
-    final response = await _client.get(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
-    );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Fixture request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the team-matches response to be a JSON object.',
-      );
-    }
+    final decoded = await _getJsonObject(uri, 'team-matches');
     final page = ApiTeamMatchesResponse.fromJson(decoded);
     final loaded = List<Fixture>.unmodifiable(
       page.items.map(fixtureFromApiResponse),
@@ -192,7 +173,60 @@ class ApiFixtureRepository implements FixtureRepository {
   }
 
   @override
+  Future<List<Fixture>> loadHeadToHead(
+    int fixtureId, {
+    int limit = 10,
+  }) async {
+    if (limit < 1 || limit > 50) {
+      throw RangeError.range(limit, 1, 50, 'limit');
+    }
+
+    final uri = _apiBaseUri.resolve('fixtures/$fixtureId/head2head').replace(
+      queryParameters: {'limit': '$limit'},
+    );
+    final decoded = await _getJsonObject(uri, 'head-to-head');
+    final response = ApiFixtureHeadToHeadResponse.fromJson(decoded);
+    if (response.fixtureId != fixtureId) {
+      throw FormatException(
+        'Expected fixture_id $fixtureId but received ${response.fixtureId}.',
+      );
+    }
+
+    final loaded = List<Fixture>.unmodifiable(
+      response.items.map(fixtureFromApiResponse),
+    );
+    _mergeIntoCache(loaded);
+    return loaded;
+  }
+
+  @override
   Future<void> initialize() async {}
+
+  Future<Map<String, dynamic>> _getJsonObject(
+    Uri uri,
+    String responseName,
+  ) async {
+    final response = await _client.get(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        ..._requestHeaders,
+      },
+    );
+    if (response.statusCode != 200) {
+      throw http.ClientException(
+        'Fixture request failed with status ${response.statusCode}.',
+        uri,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw FormatException(
+          'Expected the $responseName response to be a JSON object.');
+    }
+    return decoded;
+  }
 
   void _mergeIntoCache(List<Fixture> loaded) {
     final byId = {

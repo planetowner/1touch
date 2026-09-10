@@ -76,6 +76,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('HEAD TO HEAD'));
     await tester.pump();
+    await tester.pump();
     expect(
       decorationColor(tester, const ValueKey('match-h2h-wdl-card')),
       app_style.AppPalette.white,
@@ -99,6 +100,7 @@ void main() {
     );
 
     await tester.tap(find.text('HEAD TO HEAD'));
+    await tester.pump();
     await tester.pump();
     expect(
       decorationColor(tester, const ValueKey('match-h2h-wdl-card')),

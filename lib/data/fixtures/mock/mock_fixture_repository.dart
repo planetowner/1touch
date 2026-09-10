@@ -169,6 +169,24 @@ class MockFixtureRepository implements FixtureRepository {
   }
 
   @override
+  Future<List<Fixture>> loadHeadToHead(
+    int fixtureId, {
+    int limit = 10,
+  }) async {
+    if (limit < 1 || limit > 50) {
+      throw RangeError.range(limit, 1, 50, 'limit');
+    }
+
+    final fixture = findById(fixtureId);
+    if (fixture == null) {
+      throw StateError('Fixture $fixtureId was not found.');
+    }
+    return List.unmodifiable(
+      headToHead(fixture.homeTeamId, fixture.awayTeamId).take(limit),
+    );
+  }
+
+  @override
   Future<void> initialize() async {}
 
   static bool _matchesFilters(

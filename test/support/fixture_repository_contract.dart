@@ -173,6 +173,29 @@ void fixtureRepositoryContract({
     expect(repository.headToHead(1, 3), isEmpty);
   });
 
+  test('loads limited head-to-head fixtures from a fixture ID', () async {
+    expect(
+      (await repository.loadHeadToHead(1, limit: 2))
+          .map((fixture) => fixture.fixtureId),
+      [2, 5],
+    );
+    expect(
+      () async => repository.loadHeadToHead(-1),
+      throwsStateError,
+    );
+  });
+
+  test('validates head-to-head limits', () async {
+    await expectLater(
+      repository.loadHeadToHead(1, limit: 0),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.loadHeadToHead(1, limit: 51),
+      throwsRangeError,
+    );
+  });
+
   test('does not expose mutable fixture result lists', () async {
     expect(
       () => repository.allFixtures.add(fixtures.first),
@@ -192,6 +215,8 @@ void fixtureRepositoryContract({
     );
     final loaded = await repository.loadForTeam(1);
     expect(() => loaded.clear(), throwsUnsupportedError);
+    final loadedHeadToHead = await repository.loadHeadToHead(1);
+    expect(() => loadedHeadToHead.clear(), throwsUnsupportedError);
   });
 
   test('keeps the listenable cache consistent after initialization', () async {

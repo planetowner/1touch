@@ -4,7 +4,9 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
+    as fixture_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -12,8 +14,13 @@ import 'package:onetouch/features/helper.dart';
 
 class H2HTab extends StatefulWidget {
   final Fixture fixture;
+  final FixtureRepository? fixtureRepository;
 
-  const H2HTab({super.key, required this.fixture});
+  const H2HTab({
+    super.key,
+    required this.fixture,
+    this.fixtureRepository,
+  });
 
   @override
   State<H2HTab> createState() => _H2HTabState();
@@ -22,6 +29,60 @@ class H2HTab extends StatefulWidget {
 class _H2HTabState extends State<H2HTab> {
   int _selectedMatches = 5;
   final List<int> _matchOptions = [5, 10, 20];
+  List<Fixture> _h2hMatches = const [];
+  bool _isLoading = true;
+  bool _hasLoadError = false;
+  int _latestRequestId = 0;
+
+  FixtureRepository get _fixtureRepository =>
+      widget.fixtureRepository ?? fixture_providers.fixtureRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHeadToHead();
+  }
+
+  @override
+  void didUpdateWidget(H2HTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.fixture.fixtureId != oldWidget.fixture.fixtureId ||
+        widget.fixtureRepository != oldWidget.fixtureRepository) {
+      _selectedMatches = 5;
+      _loadHeadToHead();
+    }
+  }
+
+  Future<void> _loadHeadToHead() async {
+    final requestId = ++_latestRequestId;
+    final fixtureId = widget.fixture.fixtureId;
+    final limit = _selectedMatches;
+    final repository = _fixtureRepository;
+
+    setState(() {
+      _isLoading = true;
+      _hasLoadError = false;
+      _h2hMatches = const [];
+    });
+
+    try {
+      final loaded = await repository.loadHeadToHead(
+        fixtureId,
+        limit: limit,
+      );
+      if (!mounted || requestId != _latestRequestId) return;
+      setState(() {
+        _h2hMatches = loaded;
+        _isLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _latestRequestId) return;
+      setState(() {
+        _hasLoadError = true;
+        _isLoading = false;
+      });
+    }
+  }
 
   // "AGAINST" means the opponent of the team the user actually follows, not
   // just whichever side happens to be away. If neither team in this fixture
@@ -39,15 +100,10 @@ class _H2HTabState extends State<H2HTab> {
   @override
   Widget build(BuildContext context) {
     final homeId = widget.fixture.homeTeamId;
-    final awayId = widget.fixture.awayTeamId;
-
-    final allH2H = fixtureRepository.headToHead(homeId, awayId);
-
-    final h2hMatches = allH2H.take(_selectedMatches).toList();
 
     // WDL from home team's perspective
     int wins = 0, draws = 0, losses = 0;
-    for (final f in h2hMatches) {
+    for (final f in _h2hMatches) {
       final hs = f.homeScore ?? 0;
       final as_ = f.awayScore ?? 0;
       final homeIsOurHome = f.homeTeamId == homeId;
@@ -67,35 +123,77 @@ class _H2HTabState extends State<H2HTab> {
           const SizedBox(height: 48),
           _buildDropdownRow(),
           const SizedBox(height: 48),
-          _buildWDLBox(wins, draws, losses),
-          const SizedBox(height: 48),
-          _buildBetsCard(),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8, top: 40),
-            child: Text('PAST MATCHES', style: Body2_b.style),
-          ),
-          ...h2hMatches.map((f) {
-            final home = teamRepository.findByIdOrUnknown(f.homeTeamId);
-            final away = teamRepository.findByIdOrUnknown(f.awayTeamId);
-            final leagueName =
-                competitionRepository.findById(f.competitionId)?.name ??
-                    'Unknown';
-            final roundName = f.roundName?.trim();
-            final competitionAndRound = roundName?.isNotEmpty ?? false
-                ? '$leagueName · $roundName'
-                : leagueName;
-            return _buildPastMatchCard(
-              home.shortCode ?? home.name,
-              away.shortCode ?? away.name,
-              home.imagePath ?? '',
-              away.imagePath ?? '',
-              home.teamId,
-              away.teamId,
-              f.homeScore?.toString() ?? '-',
-              f.awayScore?.toString() ?? '-',
-              competitionAndRound,
-            );
-          }),
+          if (_isLoading)
+            const Padding(
+              key: ValueKey('match-h2h-loading'),
+              padding: EdgeInsets.symmetric(vertical: 80),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_hasLoadError)
+            Padding(
+              key: const ValueKey('match-h2h-error'),
+              padding: const EdgeInsets.symmetric(vertical: 48),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Text(
+                      'Unable to load head-to-head matches.',
+                      style: Body2_b.style,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: _loadHeadToHead,
+                      child: const Text('RETRY'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            _buildWDLBox(wins, draws, losses),
+            const SizedBox(height: 48),
+            _buildBetsCard(),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8, top: 40),
+              child: Text('PAST MATCHES', style: Body2_b.style),
+            ),
+            if (_h2hMatches.isEmpty)
+              const Padding(
+                key: ValueKey('match-h2h-empty'),
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(
+                  child: Text(
+                    'No previous meetings found.',
+                    style: Body2.style,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            else
+              ..._h2hMatches.map((f) {
+                final home = teamRepository.findByIdOrUnknown(f.homeTeamId);
+                final away = teamRepository.findByIdOrUnknown(f.awayTeamId);
+                final leagueName =
+                    competitionRepository.findById(f.competitionId)?.name ??
+                        'Unknown';
+                final roundName = f.roundName?.trim();
+                final competitionAndRound = roundName?.isNotEmpty ?? false
+                    ? '$leagueName · $roundName'
+                    : leagueName;
+                return _buildPastMatchCard(
+                  home.shortCode ?? home.name,
+                  away.shortCode ?? away.name,
+                  home.imagePath ?? '',
+                  away.imagePath ?? '',
+                  home.teamId,
+                  away.teamId,
+                  f.homeScore?.toString() ?? '-',
+                  f.awayScore?.toString() ?? '-',
+                  competitionAndRound,
+                );
+              }),
+          ],
           const SizedBox(height: 140),
         ],
       ),
@@ -131,7 +229,9 @@ class _H2HTabState extends State<H2HTab> {
                   ),
                   style: Body2_b.style.copyWith(color: foreground),
                   onChanged: (val) {
-                    if (val != null) setState(() => _selectedMatches = val);
+                    if (val == null || val == _selectedMatches) return;
+                    setState(() => _selectedMatches = val);
+                    _loadHeadToHead();
                   },
                   items: _matchOptions.map((n) {
                     return DropdownMenuItem<int>(
@@ -368,13 +468,28 @@ class _H2HTabState extends State<H2HTab> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(teamA, style: Heading5.style),
-              const Spacer(),
+              Expanded(
+                child: Text(
+                  teamA,
+                  style: Heading5.style,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
               _scoreBox(homeScore),
               const SizedBox(width: 8),
               _scoreBox(awayScore),
-              const Spacer(),
-              Text(teamB, style: Heading5.style),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  teamB,
+                  style: Heading5.style,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                ),
+              ),
               const SizedBox(width: 8),
               GestureDetector(
                 onTap: () => context.go('/team/$idB'),
