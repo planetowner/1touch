@@ -19,6 +19,32 @@ from one_touch_loader.loaders.capology_player_ids_loader import (
 
 
 class CapologyPlayerIdsLoaderTest(unittest.TestCase):
+    def test_two_new_ids_for_one_player_are_rejected_before_storage(self):
+        profile = {"player_id": 101, "display_name": "Global Player", "full_name": "Global Player",
+                   "date_of_birth": date(2000, 1, 1), "team_ids": {10}}
+        source = {"name": "Global Player", "normalized_name": "global player", "age": 24,
+                  "country": None, "position_group_id": None, "source_url": "https://example.com/test-fc"}
+        with self.assertRaisesRegex(ValueError, "Capology player IDs have unverified duplicates"):
+            _build_source_complete_matches(
+                [], [profile], {(8, "2024/2025"): {"test-fc": [
+                    {**source, "external_player_id": "global-player-one"},
+                    {**source, "external_player_id": "global-player-two"},
+                ]}}, {}, {}, {10: "test-fc"},
+            )
+
+    def test_existing_player_does_not_receive_a_second_capology_id(self):
+        profile = {"player_id": 101, "display_name": "Global Player", "full_name": "Global Player",
+                   "date_of_birth": date(2000, 1, 1), "team_ids": {10}}
+        source = {"external_player_id": "global-player-new", "name": "Global Player",
+                  "normalized_name": "global player", "age": 24, "country": None,
+                  "position_group_id": None, "source_url": "https://example.com/test-fc"}
+        matches, unresolved = _build_source_complete_matches(
+            [], [profile], {(8, "2024/2025"): {"test-fc": [source]}},
+            {101: "global-player-old"}, {"global-player-old": 101}, {10: "test-fc"},
+        )
+        self.assertEqual(matches, [])
+        self.assertEqual(unresolved[0]["reason"], "db_player_already_has_capology_id")
+
     def test_salary_page_waits_through_missing_title_and_captcha(self):
         driver = Mock(title=None, page_source="var data = [")
         self.assertFalse(_capology_salary_page_is_ready(driver))

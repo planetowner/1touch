@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from ..core.identity import normalize_identity_text as _normalize_identity_text
+
 import atexit
 import json
 import re
 import socket
 import subprocess
-import unicodedata
 from html import unescape
 from pathlib import Path
 from time import monotonic, sleep
@@ -111,33 +112,6 @@ ORDER BY
   squad.team_id,
   players.player_id
 """
-
-
-def _normalize_identity_text(value: str) -> str:
-    translated = value.casefold().translate(
-        str.maketrans(
-            {
-                "æ": "ae",
-                "ð": "d",
-                "đ": "dj",
-                "ł": "l",
-                "ø": "o",
-                "œ": "oe",
-                "þ": "th",
-                "ß": "ss",
-                "'": "",
-                "’": "",
-                "­": "",
-            }
-        )
-    )
-    decomposed = unicodedata.normalize("NFKD", translated)
-    without_marks = "".join(
-        character
-        for character in decomposed
-        if not unicodedata.combining(character)
-    )
-    return " ".join(re.sub(r"[^a-z0-9]+", " ", without_marks).split())
 
 
 def _season_to_capology(season_name: str) -> str:
