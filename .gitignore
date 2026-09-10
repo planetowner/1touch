@@ -55,3 +55,6 @@ logs/
 pip-wheel-metadata/
 pip-log.txt
 .pyre/
+
+# 작업 메모와 안내 문서는 PC에 보관하고 GitHub에는 올리지 않아요.
+*.[mM][dD]
