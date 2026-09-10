@@ -168,15 +168,36 @@ class TransferOut(BaseModel):
     direction: str                          # "in" 또는 "out"
     other_team_id: Optional[int] = None
     other_team_name: Optional[str] = None
-    display_type: Optional[str] = None      # "Loan", "Free Agent", "€8.5M" 같은 표시값
+    other_team_image: Optional[str] = None
+    jersey_number: Optional[int] = None
+    type_id: int
+    display_type: str
     amount: Optional[int] = None
+    currency: Optional[str] = None
     transfer_date: Optional[str] = None
+    contract_start_date: Optional[date] = None
+    contract_end_date: Optional[date] = None
 
 
 class TeamTransfersResponse(BaseModel):
-    window_key: str                         # 예: "2026 winter"
+    window_key: str                         # 예: "2026/2027 summer"
     transfers_in: List[TransferOut] = []
     transfers_out: List[TransferOut] = []
+
+
+class PlayerContractOut(BaseModel):
+    player_id: int
+    player_name: str
+    player_image: Optional[str] = None
+    jersey_number: Optional[int] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+
+
+class TeamContractsResponse(BaseModel):
+    team_id: int
+    season_id: int
+    players: List[PlayerContractOut]
 
 
 class HomeResponse(BaseModel):

@@ -1,4 +1,5 @@
 import sys
+from datetime import date
 
 from one_touch_loader.loaders.teams_loader import (
     collect_all_teams,
@@ -62,8 +63,14 @@ from one_touch_loader.loaders.best_eleven_loader import (
     validate_best_eleven,
 )
 from one_touch_loader.loaders.transfers_loader import (
+    collect_player_transfers,
+    collect_transfers_for_season,
     refresh_current_transfers,
     refresh_team_transfers,
+    set_transfer_window,
+)
+from one_touch_loader.loaders.player_contracts_loader import (
+    collect_player_contracts, refresh_current_contracts, refresh_departure_contracts,
 )
 from one_touch_loader.loaders.team_stats_loader import (
     refresh_fixture_team_stats,
@@ -173,6 +180,20 @@ New database reload order (redesigned commands):
 18. xg-standings (requires stored xG; five previous seasons for calibration)
   python -m one_touch_loader.cli xg-standings <season_name> [competition_id ...] [--check]
   python -m one_touch_loader.cli xg-standings all [--check]
+
+19. transfer-windows (verified league registration dates)
+  python -m one_touch_loader.cli transfer-windows <season_name> <competition_id> <summer|winter> <YYYY-MM-DD> <YYYY-MM-DD>
+
+20. transfers (requires players/squads; full career source; approved withheld players are reported)
+  python -m one_touch_loader.cli transfers player <player_id> [--check]
+  python -m one_touch_loader.cli transfers <season_name> [competition_id ...] [--check]
+  python -m one_touch_loader.cli transfers refresh-current [team_id,team_id,...] [--check]
+  python -m one_touch_loader.cli transfers refresh-team <team_id> [--check]
+
+21. contracts (requires stored transfers; current Big 5 DB squads; dates may be unavailable)
+  python -m one_touch_loader.cli contracts refresh-current [team_id,team_id,...] [--check]
+  python -m one_touch_loader.cli contracts departures [--check]  (after recent transfers)
+  python -m one_touch_loader.cli contracts player <player_id> [--check]
 """
 
 
@@ -615,29 +636,47 @@ def main():
             print(USAGE)
             raise SystemExit(2)
 
-    elif cmd == "transfers":
-        if len(sys.argv) < 3:
+    elif cmd == "transfer-windows":
+        if len(sys.argv) != 7:
             print(USAGE)
-            return
+            raise SystemExit(2)
+        set_transfer_window(sys.argv[2], int(sys.argv[3]), sys.argv[4], date.fromisoformat(sys.argv[5]), date.fromisoformat(sys.argv[6]))
+        print("Transfer window stored.")
 
-        sub = sys.argv[2]
-
-        if sub == "refresh-current":
-            team_ids = None
-
-            if len(sys.argv) == 4:
-                team_ids = _parse_team_ids_csv(sys.argv[3])
-
-            refresh_current_transfers(team_ids)
-            print("Transfers refresh-current done.")
-
-        elif sub == "refresh-team" and len(sys.argv) == 4:
-            team_id = int(sys.argv[3])
-            refresh_team_transfers(team_id)
-            print(f"Transfers refresh-team done: team={team_id}")
-
+    elif cmd == "transfers":
+        args = sys.argv[2:]
+        check = "--check" in args
+        args = [arg for arg in args if arg != "--check"]
+        if len(args) == 2 and args[0] == "player":
+            result = collect_player_transfers([int(args[1])], check=check)
+        elif len(args) in (1, 2) and args[0] == "refresh-current":
+            result = refresh_current_transfers(_parse_team_ids_csv(args[1]) if len(args) == 2 else None, check=check)
+        elif len(args) == 2 and args[0] == "refresh-team":
+            result = refresh_team_transfers(int(args[1]), check=check)
+        elif args and "/" in args[0]:
+            ids = _parse_competition_ids(args[1:]) if len(args) > 1 else list(BIG5_COMPETITION_IDS)
+            result = collect_transfers_for_season(args[0], ids, check=check)
         else:
             print(USAGE)
+            raise SystemExit(2)
+        print(f"Transfers done: check={check} {result}")
+        if check and result["review_players"]:
+            raise SystemExit(1)
+
+    elif cmd == "contracts":
+        args = sys.argv[2:]
+        check = "--check" in args
+        args = [arg for arg in args if arg != "--check"]
+        if args == ["departures"]:
+            result = refresh_departure_contracts(check=check)
+        elif len(args) == 2 and args[0] == "player":
+            result = collect_player_contracts([int(args[1])], check=check)
+        elif len(args) in (1, 2) and args[0] == "refresh-current":
+            result = refresh_current_contracts(_parse_team_ids_csv(args[1]) if len(args) == 2 else None, check=check)
+        else:
+            print(USAGE)
+            raise SystemExit(2)
+        print(f"Contracts done: check={check} {result}")
 
     elif cmd == "team-stats":
         if len(sys.argv) < 3:

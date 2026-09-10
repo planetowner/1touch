@@ -9,6 +9,9 @@ from urllib.parse import parse_qsl, urlparse
 import requests
 from dotenv import load_dotenv
 
+from .transfer_source_rules import DUPLICATE_TRANSFER_IDS as SPORTMONKS_DUPLICATE_TRANSFER_IDS
+from .transfer_source_rules import TRANSFER_DATE_OVERRIDES
+
 
 load_dotenv()
 
@@ -642,10 +645,10 @@ class SportmonksClient:
     # 선수
     # ------------------------------------------------------------------
 
-    def get_player_or_none(self, player_id: int) -> Optional[Dict]:
-        response = self._get(f"players/{player_id}")
-        # 시즌 스쿼드에는 남아 있지만 선수 단건 응답에는 data가 없는 ID가 있어요.
-        # 이 경우에만 검증된 스쿼드 내장 프로필을 대신 쓰도록 None으로 구분해요.
+    def get_player_or_none(self, player_id: int, *, include: Optional[str] = None) -> Optional[Dict]:
+        response = self._get(f"players/{player_id}", params={"include": include} if include else None)
+        # 스쿼드·이적에는 남아 있어도 선수 단건은 조회 불가인 ID(73643·43393)가 있어요.
+        # 포함 관계가 달라도 같은 응답이에요. 정상 조회의 빈 목록과 구분해 None을 반환해요.
         if "data" not in response:
             return None
         return response["data"]
@@ -661,6 +664,11 @@ class SportmonksClient:
             },
         )
         return response["data"]
+
+    def get_player_current_teams(self, player_id: int) -> Optional[List[Dict]]:
+        # teams는 과거 소속 전체가 아니라 현재 소속이에요. 국가대표도 함께 반환해요.
+        player = self.get_player_or_none(player_id, include="teams.team")
+        return player["teams"] if player is not None else None
 
     # ------------------------------------------------------------------
     # 경기
@@ -771,12 +779,21 @@ class SportmonksClient:
     # 이적
     # ------------------------------------------------------------------
 
+    def _iter_transfers(self, path: str, params: dict) -> Iterable[Dict]:
+        # 스쿼드 계산과 이적 적재가 같은 원문 보정을 사용하도록 조회 경로를 모아요.
+        for item in self._iter_paginated_data(path, params=params):
+            if item["id"] not in SPORTMONKS_DUPLICATE_TRANSFER_IDS:
+                if item["id"] in TRANSFER_DATE_OVERRIDES:
+                    # 확인된 이탈일만 정정해요. 응답 원본과 별도로 제공된 계약 날짜는 바꾸지 않아요.
+                    item = {**item, "date": TRANSFER_DATE_OVERRIDES[item["id"]]}
+                yield item
+
     def iter_transfers_by_team(
         self,
         team_id: int,
         per_page: int = 50,
     ) -> Iterable[Dict]:
-        return self._iter_paginated_data(
+        return self._iter_transfers(
             f"transfers/teams/{team_id}",
             params={
                 "per_page": per_page,
@@ -784,12 +801,19 @@ class SportmonksClient:
             },
         )
 
+    def iter_transfers_by_player(self, player_id: int) -> Iterable[Dict]:
+        # Club History는 경기 화면의 2017/2018 시작점보다 오래된 소속도 필요해요.
+        return self._iter_transfers(
+            f"transfers/players/{player_id}",
+            params={"include": "player;fromTeam;toTeam;type", "per_page": 50},
+        )
+
     def iter_transfers_between_dates(
         self,
         start_date: date,
         end_date: date,
     ):
-        return self._iter_paginated_data(
+        return self._iter_transfers(
             f"transfers/between/{start_date.isoformat()}/{end_date.isoformat()}",
             params={
                 "include": "player;fromTeam;toTeam;type",

@@ -125,6 +125,19 @@ class SportmonksClientTest(unittest.TestCase):
 
         self.assertIsNone(client.get_player_or_none(73643))
 
+    def test_observed_unavailable_player_is_distinct_from_empty_current_teams(self):
+        source=json.loads((Path(__file__).parent / "fixtures/sportmonks_unavailable_player.json").read_text(encoding="utf-8"))
+        client=SportmonksClient.__new__(SportmonksClient)
+        client._get=Mock(side_effect=[source["profile_response"],source["teams_response"],{"data":{"id":94761,"teams":[]}}])
+        self.assertIsNone(client.get_player_or_none(source["player_id"]))
+        self.assertIsNone(client.get_player_current_teams(source["player_id"]))
+        self.assertEqual(client.get_player_current_teams(94761),[])
+        self.assertEqual(client._get.call_args_list,[
+            call("players/43393",params=None),
+            call("players/43393",params={"include":"teams.team"}),
+            call("players/94761",params={"include":"teams.team"}),
+        ])
+
     def test_standings_requests_only_used_relation(self):
         client = SportmonksClient.__new__(SportmonksClient)
         client._get = Mock(return_value={"data": [{"id": 1}]})

@@ -764,6 +764,7 @@ def load_squad_scope(
     season_name: Optional[str] = None,
     competition_id: Optional[int] = None,
     current_only: bool = False,
+    team_ids: Optional[List[int]] = None,
 ) -> List[Dict[str, object]]:
     if (season_name is None) != (competition_id is None):
         raise ValueError(
@@ -799,6 +800,13 @@ def load_squad_scope(
             or (str(row[2]) == season_name and int(row[0]) == competition_id)
         )
     ]
+    if team_ids is not None:
+        # 이적·계약 갱신의 팀 선택도 기존 Big 5 스쿼드 범위를 공유해요.
+        requested = set(team_ids)
+        unknown = requested - {row["team_id"] for row in scope}
+        if unknown:
+            raise ValueError(f"Teams outside the selected squad scope: {sorted(unknown)}")
+        scope = [row for row in scope if row["team_id"] in requested]
     if not scope:
         if season_name is not None:
             raise ValueError(
