@@ -82,12 +82,9 @@ def verify_database() -> dict:
     if any(row[2] not in {"league", "europe", "domestic_cup"} for row in competition_rows):
         raise AssertionError(f"Invalid competition type: {competition_rows!r}")
 
-    # 교체 대상인 경기 통계의 FK는 경기 상세 검증에서 확인해요.
+    # 대회 관계는 seasons에서 확인해요. 경기 상세·Understat FK는 각 변경 검증이 맡아요.
     expected_foreign_keys = {
         "fk_seasons_competition",
-        "fk_understat_league_map_competition",
-        "fk_xg_standings_competition",
-        "fk_xg_stand_calib_competition",
     }
     foreign_key_rows = fetch_all(
         """
@@ -95,7 +92,7 @@ def verify_database() -> dict:
         FROM information_schema.key_column_usage
         WHERE constraint_schema = DATABASE()
           AND referenced_table_name = 'competitions'
-          AND table_name <> 'fixture_team_stats_raw'
+          AND table_name = 'seasons'
         ORDER BY constraint_name
         """
     )

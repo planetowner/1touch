@@ -9,6 +9,9 @@ from ...core.fixture_states import (
     state_ids_for_screen_status,
 )
 from ..db import fetch_all_dict, fetch_one_dict
+from .expected_goals_repo import (
+    get_fixture_expected_goals, list_fixture_player_expected_goals, list_fixture_shots,
+)
 
 
 def _sql_placeholders(values: tuple[int, ...]) -> str:
@@ -82,6 +85,10 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
     fixture = get_fixture(fixture_id)
     if fixture is None:
         return None
+
+    fixture["expected_goals"] = get_fixture_expected_goals(fixture_id)
+    fixture["player_expected_goals"] = list_fixture_player_expected_goals(fixture_id)
+    fixture["shots"] = list_fixture_shots(fixture_id)
 
     fixture["events"] = fetch_all_dict(
         """
@@ -234,12 +241,14 @@ def list_team_fixtures(
         params.append(end_date)
 
     where = " AND ".join(clauses)
+    # 예정 경기는 가까운 일정부터 페이지에 담고, 다른 조회는 기존 최신순을 유지해요.
+    direction = "ASC" if status == "upcoming" else "DESC"
     return _with_status_many(
         fetch_all_dict(
             _BASE_SELECT
             + f"""
             WHERE {where}
-            ORDER BY f.starting_at DESC
+            ORDER BY f.starting_at {direction}
             LIMIT %s OFFSET %s
             """,
             tuple(params + [limit, offset]),
