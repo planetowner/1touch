@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from ..core.db import fetch_all, transaction
+from ..core.identity import reciprocal_identity_matches
 from .capology_common import (
     _CapologyBrowserSession,
     _capology_league_salary_url,
@@ -120,47 +121,11 @@ def _reciprocal_team_matches(
         }
         for team_slug, source_players in source_teams.items()
     }
-    scores = {
-        (team_id, team_slug): len(db_names & source_names)
-        for team_id, db_names in db_name_sets.items()
-        for team_slug, source_names in source_name_sets.items()
-    }
-
-    db_best: Dict[int, Tuple[str, int]] = {}
-    for team_id in db_name_sets:
-        ranked = sorted(
-            (
-                (score, team_slug)
-                for (candidate_team_id, team_slug), score in scores.items()
-                if candidate_team_id == team_id
-            ),
-            reverse=True,
-        )
-        if ranked and ranked[0][0] >= MIN_TEAM_PLAYER_OVERLAP:
-            if len(ranked) == 1 or ranked[0][0] > ranked[1][0]:
-                db_best[team_id] = (ranked[0][1], ranked[0][0])
-
-    source_best: Dict[str, Tuple[int, int]] = {}
-    for team_slug in source_name_sets:
-        ranked = sorted(
-            (
-                (score, team_id)
-                for (team_id, candidate_slug), score in scores.items()
-                if candidate_slug == team_slug
-            ),
-            reverse=True,
-        )
-        if ranked and ranked[0][0] >= MIN_TEAM_PLAYER_OVERLAP:
-            if len(ranked) == 1 or ranked[0][0] > ranked[1][0]:
-                source_best[team_slug] = (ranked[0][1], ranked[0][0])
-
-    # 팀명 별칭을 추정하지 않아요. 양쪽에서 유일하게 가장 많이 겹치는 팀만 연결해요.
+    # 두 공급자 모두 선수 명단의 정확한 이름 겹침으로 팀을 연결해요.
+    reciprocal = reciprocal_identity_matches(db_name_sets, source_name_sets, MIN_TEAM_PLAYER_OVERLAP)
     matches: Dict[int, str] = {}
     evidence: List[Dict[str, object]] = []
-    for team_id, (team_slug, overlap) in db_best.items():
-        reverse = source_best.get(team_slug)
-        if reverse is None or reverse[0] != team_id:
-            continue
+    for team_id, (team_slug, overlap) in reciprocal.items():
         matches[team_id] = team_slug
         team_name = str(observations_by_team[team_id][0]["team_name"])
         evidence.append(

@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from selenium.common.exceptions import TimeoutException
 
 from ..core.db import fetch_all, transaction
+from ..core.identity import validate_external_id_uniqueness
 from .capology_common import (
     _CapologyBrowserSession,
     _canonical_capology_player_id,
@@ -814,6 +815,12 @@ def _build_source_complete_matches(
             continue
         matches.append(match)
 
+    # DB 인덱스가 Understat 별칭을 허용해도 Capology의 기존 일대일 규칙은 유지해요.
+    # 같은 실행에서 새 ID 두 개가 한 선수에 연결돼도 하나를 임의로 고르지 않고 중단해요.
+    validate_external_id_uniqueness("Capology player", {
+        **existing_by_external_id,
+        **{m["capology_player_id"]: int(m["player_id"]) for m in matches},
+    })
     return matches, unresolved
 
 
