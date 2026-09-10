@@ -13,6 +13,8 @@ from .routes.competitions import router as competitions_router
 from .routes.fixtures import router as fixtures_router
 from .routes.posts import router as posts_router
 from .routes.players import router as players_router
+from .routes.auth import router as auth_router
+from .routes.users import router as users_router
 
 
 def create_app() -> FastAPI:
@@ -52,6 +54,8 @@ def create_app() -> FastAPI:
     app.include_router(fixtures_router, prefix="/v1", tags=["fixtures"])
     app.include_router(posts_router, prefix="/v1", tags=["posts"])
     app.include_router(players_router, prefix="/v1", tags=["players"])
+    app.include_router(auth_router, prefix="/v1", tags=["auth"])
+    app.include_router(users_router, prefix="/v1", tags=["users"])
 
     return app
 

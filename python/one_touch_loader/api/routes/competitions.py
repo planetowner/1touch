@@ -7,7 +7,6 @@ from ..repos.standings_repo import (
     get_current_season_id_for_competition,
     list_standings,
 )
-from ..repos.users_repo import ensure_user
 from ..repos.expected_goals_repo import list_xg_standings
 from ...core.understat import UNDERSTAT_LEAGUES
 
@@ -22,7 +21,6 @@ def competition_xg_standings(
 ):
     if competition_id not in UNDERSTAT_LEAGUES:
         raise HTTPException(status_code=400, detail="xG standings support Big 5 leagues only")
-    ensure_user(user_id)
     sid = season_id or get_current_season_id_for_competition(competition_id)
     if sid is None:
         raise HTTPException(status_code=404, detail="Season not found for competition")
@@ -36,7 +34,6 @@ def competition_standings(
     season_id: int | None = Query(default=None),
     user_id: int = Depends(get_user_id),
 ):
-    ensure_user(user_id)
 
     sid = season_id or get_current_season_id_for_competition(competition_id)
     if not sid:

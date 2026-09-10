@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
 from ..deps import get_user_id
-from ..repos.users_repo import ensure_user
 from ..repos.posts_repo import list_posts, create_post, report_post
 
 router = APIRouter()
@@ -29,14 +28,12 @@ def get_posts(
     offset: int = Query(default=0, ge=0),
     user_id: int = Depends(get_user_id),
 ):
-    ensure_user(user_id)
     rows = list_posts(category=category, sort=sort, limit=limit, offset=offset)
     return {"items": rows, "limit": limit, "offset": offset}
 
 
 @router.post("/posts")
 def post_create(body: CreatePostBody, user_id: int = Depends(get_user_id)):
-    ensure_user(user_id)
     post_id = create_post(
         user_id=user_id,
         category=body.category,
@@ -49,6 +46,5 @@ def post_create(body: CreatePostBody, user_id: int = Depends(get_user_id)):
 
 @router.post("/posts/{post_id}/report")
 def post_report(post_id: int, body: ReportPostBody, user_id: int = Depends(get_user_id)):
-    ensure_user(user_id)
     report_post(user_id=user_id, post_id=post_id, reason=body.reason)
     return {"ok": True, "message": "Thanks for your report"}

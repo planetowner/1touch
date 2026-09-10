@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ..deps import get_user_id
-from ..repos.users_repo import ensure_user
+from ..services.user_preferences import FavoriteTeamCooldownError
 from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set_following_and_favorite, find_team_current_context
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
 from ..repos.standings_repo import get_team_standing
@@ -45,30 +45,26 @@ def team_contracts(team_id: int, descending: bool = False, user_id: int = Depend
 
 
 class PutFollowingTeamsBody(BaseModel):
-    teamIds: List[int] = Field(default_factory=list)
-    favoriteTeamId: Optional[int] = None
+    teamIds: List[int] = Field(min_length=1, max_length=5)
+    favoriteTeamId: int = Field(gt=0)
 
 
 @router.get("/users/me/following/teams", response_model=List[TeamOut])
 def get_following_teams(user_id: int = Depends(get_user_id)):
-    ensure_user(user_id)
     ids = list_following_team_ids(user_id)
-    return get_teams(ids)
+    by_id = {row['team_id']: row for row in get_teams(ids)}
+    return [by_id[team_id] for team_id in ids]
 
 
 @router.put("/users/me/following/teams")
 def put_following_teams(body: PutFollowingTeamsBody, user_id: int = Depends(get_user_id)):
-    ensure_user(user_id)
 
-    # favorite은 홈 화면에 띄울 팀이며 항상 following 목록의 일원이어야 한다.
-    # (home_service는 이 불변식을 신뢰해 following 안에서만 favorite을 찾는다.)
-    if body.favoriteTeamId is not None and body.favoriteTeamId not in body.teamIds:
-        raise HTTPException(
-            status_code=400,
-            detail="favoriteTeamId must be one of teamIds",
-        )
-
-    set_following_and_favorite(user_id, body.teamIds, body.favoriteTeamId)
+    try:
+        set_following_and_favorite(user_id, body.teamIds, body.favoriteTeamId)
+    except FavoriteTeamCooldownError as exc:
+        raise HTTPException(409, {"message": str(exc), "available_at": exc.available_at.isoformat() + "Z"}) from exc
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
     return {"ok": True}
 
 
@@ -80,7 +76,6 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
     - 다음 경기와 최근 경기
     - 가능하면 순위 요약
     """
-    ensure_user(user_id)
 
     team = get_team(team_id)
     if not team:
@@ -105,7 +100,6 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
 
 @router.get("/teams/{team_id}/injuries", response_model=TeamInjuriesResponse)
 def team_injuries(team_id: int, user_id: int = Depends(get_user_id)):
-    ensure_user(user_id)
     context = find_team_current_context(team_id)
     if context is None:
         raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
@@ -131,7 +125,6 @@ def team_best_eleven(
     ),
     user_id: int = Depends(get_user_id),
 ):
-    ensure_user(user_id)
 
     sid = season_id
     if sid is None:
@@ -161,7 +154,6 @@ def team_current_form_options(
     limit: int = Query(default=200, ge=1, le=1000),
     user_id: int = Depends(get_user_id),
 ):
-    ensure_user(user_id)
     if not get_team(team_id):
         raise HTTPException(status_code=404, detail="Team not found")
 
@@ -185,7 +177,6 @@ def team_current_form(
     ),
     user_id: int = Depends(get_user_id),
 ):
-    ensure_user(user_id)
 
     current_season_id = season_id
     if current_season_id is None:
@@ -227,7 +218,6 @@ def team_matches(
     offset: int = Query(default=0, ge=0),
     user_id: int = Depends(get_user_id),
 ):
-    ensure_user(user_id)
     items = list_team_fixtures(team_id, status=status, start_date=start, end_date=end, limit=limit, offset=offset)
     return {"items": items, "limit": limit, "offset": offset}
 

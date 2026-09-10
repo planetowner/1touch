@@ -3,7 +3,6 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import get_user_id
-from ..repos.users_repo import ensure_user
 from ..repos.fixtures_repo import get_fixture, get_fixture_detail, list_head2head
 
 router = APIRouter()
@@ -11,7 +10,6 @@ router = APIRouter()
 
 @router.get("/fixtures/{fixture_id}")
 def fixture_detail(fixture_id: int, user_id: int = Depends(get_user_id)):
-    ensure_user(user_id)
     fx = get_fixture_detail(fixture_id)
     if not fx:
         raise HTTPException(status_code=404, detail="Fixture not found")
@@ -24,7 +22,6 @@ def fixture_head2head(
     limit: int = Query(default=10, ge=1, le=50),
     user_id: int = Depends(get_user_id),
 ):
-    ensure_user(user_id)
     fx = get_fixture(fixture_id)
     if not fx:
         raise HTTPException(status_code=404, detail="Fixture not found")
