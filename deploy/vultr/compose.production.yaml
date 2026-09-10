@@ -12,12 +12,29 @@ services:
   api:
     image: onetouch-api:${RELEASE_TAG:?Set RELEASE_TAG in .env.production}
     # 외부에는 프록시만 열어요. 전달 헤더는 이 격리된 연결에서 받아요.
-    command: ["uvicorn", "one_touch_loader.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*", "--no-server-header"]
+    command: ["uvicorn", "one_touch_loader.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*", "--no-server-header", "--ws-max-size", "16384", "--ws-max-queue", "16"]
     user: "1001:1001"
     init: true
     stop_grace_period: 30s
     environment:
       API_CORS_ORIGINS: ${API_CORS_ORIGINS:-}
+      AUTH_CODE_SECRET: ${AUTH_CODE_SECRET:-}
+      SES_SMTP_HOST: ${SES_SMTP_HOST:-}
+      SES_SMTP_USERNAME: ${SES_SMTP_USERNAME:-}
+      SES_SMTP_PASSWORD: ${SES_SMTP_PASSWORD:-}
+      SES_FROM_EMAIL: ${SES_FROM_EMAIL:-}
+      GOOGLE_CLIENT_IDS: ${GOOGLE_CLIENT_IDS:-}
+      APPLE_CLIENT_IDS: ${APPLE_CLIENT_IDS:-}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+      APPLE_WEB_CLIENT_ID: ${APPLE_WEB_CLIENT_ID:-}
+      APPLE_REDIRECT_URI: ${APPLE_REDIRECT_URI:-}
+      KAKAO_APP_ID: ${KAKAO_APP_ID:-}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
+      R2_BUCKET: ${R2_BUCKET:-}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
     # 실행 중인 코드는 이미지에 고정하고, 새 버전을 배포할 때 교체해요.
     volumes: !override
       - ../../logs:/app/logs

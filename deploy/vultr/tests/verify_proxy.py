@@ -28,8 +28,8 @@ class Upstream(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         type(self).calls += 1
-        payload = json.dumps({"ok": True, "scheme": self.headers.get("X-Forwarded-Proto")}).encode()
-        self.send_response(200)
+        payload = json.dumps({"ok": True, "scheme": self.headers.get("X-Forwarded-Proto"), "authorization": self.headers.get("Authorization")}).encode()
+        self.send_response(401 if self.path == '/v1/home' and self.headers.get('Authorization') != 'Bearer test-session' else 200)
         self.end_headers()
         self.wfile.write(payload)
 
@@ -119,9 +119,13 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
                     time.sleep(0.1)
             before = Upstream.calls
             assert request("/docs")[0] == 401
-            assert request("/v1/home", {"X-User-Id": "123"})[0] == 401
             assert request("/docs", {"Authorization": "Basic " + base64.b64encode(b"developer:wrong").decode()})[0] == 401
             assert Upstream.calls == before
+            # 앱 인증은 백엔드 책임이며 Bearer 헤더를 그대로 전달해야 해요.
+            assert request("/v1/home", {"X-User-Id": "123"})[0] == 401
+            assert Upstream.calls == before + 1
+            status, body = request("/v1/home", {"Authorization": "Bearer test-session"})
+            assert status == 200 and json.loads(body)["authorization"] == "Bearer test-session"
             credentials = base64.b64encode(f"developer:{password}".encode()).decode()
             status, body = request("/docs", {"Authorization": f"Basic {credentials}"})
             assert status == 200 and json.loads(body)["scheme"] == "https"
