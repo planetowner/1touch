@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
+    as fixture_providers;
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
@@ -39,7 +41,13 @@ class _StandingRow {
 
 class MatchPreviewTab extends StatefulWidget {
   final Fixture fixture;
-  const MatchPreviewTab({super.key, required this.fixture});
+  final FixtureRepository? fixtureRepository;
+
+  const MatchPreviewTab({
+    super.key,
+    required this.fixture,
+    this.fixtureRepository,
+  });
 
   @override
   State<MatchPreviewTab> createState() => _MatchPreviewTabState();
@@ -48,6 +56,55 @@ class MatchPreviewTab extends StatefulWidget {
 class _MatchPreviewTabState extends State<MatchPreviewTab> {
   // Hardcoded for UI demo
   final int userBalance = 1200;
+  Fixture? _latestH2H;
+  bool _isLatestH2HLoading = true;
+  bool _hasLatestH2HError = false;
+  int _latestH2HRequestId = 0;
+
+  FixtureRepository get _fixtureRepository =>
+      widget.fixtureRepository ?? fixture_providers.fixtureRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLatestHeadToHead();
+  }
+
+  @override
+  void didUpdateWidget(MatchPreviewTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.fixture.fixtureId != oldWidget.fixture.fixtureId ||
+        widget.fixtureRepository != oldWidget.fixtureRepository) {
+      _loadLatestHeadToHead();
+    }
+  }
+
+  Future<void> _loadLatestHeadToHead() async {
+    final requestId = ++_latestH2HRequestId;
+    final fixtureId = widget.fixture.fixtureId;
+    final repository = _fixtureRepository;
+
+    setState(() {
+      _latestH2H = null;
+      _isLatestH2HLoading = true;
+      _hasLatestH2HError = false;
+    });
+
+    try {
+      final loaded = await repository.loadHeadToHead(fixtureId, limit: 1);
+      if (!mounted || requestId != _latestH2HRequestId) return;
+      setState(() {
+        _latestH2H = loaded.firstOrNull;
+        _isLatestH2HLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _latestH2HRequestId) return;
+      setState(() {
+        _hasLatestH2HError = true;
+        _isLatestH2HLoading = false;
+      });
+    }
+  }
 
   void _openBettingModal() {
     final homeTeam =
@@ -335,12 +392,67 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
   Widget _buildLatestH2H() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final homeId = widget.fixture.homeTeamId;
-    final awayId = widget.fixture.awayTeamId;
+    final h2h = _latestH2H;
 
-    final h2h = fixtureRepository.headToHead(homeId, awayId).firstOrNull;
+    if (_isLatestH2HLoading) {
+      return const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('LATEST H2H', style: Body2_b.style),
+          SizedBox(height: 16),
+          Padding(
+            key: ValueKey('match-preview-h2h-loading'),
+            padding: EdgeInsets.symmetric(vertical: 40),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        ],
+      );
+    }
 
-    if (h2h == null) return const SizedBox.shrink();
+    if (_hasLatestH2HError) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('LATEST H2H', style: Body2_b.style),
+          const SizedBox(height: 16),
+          Center(
+            key: const ValueKey('match-preview-h2h-error'),
+            child: Column(
+              children: [
+                const Text(
+                  'Unable to load the latest meeting.',
+                  style: Body2.style,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: _loadLatestHeadToHead,
+                  child: const Text('RETRY'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (h2h == null) {
+      return const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('LATEST H2H', style: Body2_b.style),
+          SizedBox(height: 16),
+          Center(
+            key: ValueKey('match-preview-h2h-empty'),
+            child: Text(
+              'No previous meetings found.',
+              style: Body2.style,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      );
+    }
 
     final home = teamRepository.findByIdOrUnknown(h2h.homeTeamId);
     final away = teamRepository.findByIdOrUnknown(h2h.awayTeamId);
@@ -362,32 +474,77 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             color: isDark ? AppPalette.lightGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(24),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final homeTeam = _buildSimpleTeamCol(
+                home.shortCode ?? home.name,
+                home.imagePath ?? '',
+                home.teamId,
+              );
+              final awayTeam = _buildSimpleTeamCol(
+                away.shortCode ?? away.name,
+                away.imagePath ?? '',
+                away.teamId,
+              );
+              final homeScore =
+                  _buildScoreBox(h2h.homeScore?.toString() ?? '-');
+              final awayScore =
+                  _buildScoreBox(h2h.awayScore?.toString() ?? '-');
+              final kickoff = Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildSimpleTeamCol(home.shortCode ?? home.name,
-                      home.imagePath ?? '', home.teamId),
-                  const SizedBox(width: 16),
-                  _buildScoreBox(h2h.homeScore?.toString() ?? '-'),
+                  Text(date, style: Body2.style, textAlign: TextAlign.center),
+                  Text(time, style: Body2.style, textAlign: TextAlign.center),
                 ],
-              ),
-              Column(
+              );
+
+              if (constraints.maxWidth < 300) {
+                return Column(
+                  children: [
+                    kickoff,
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: homeTeam),
+                        const SizedBox(width: 8),
+                        homeScore,
+                        const SizedBox(width: 8),
+                        awayScore,
+                        const SizedBox(width: 8),
+                        Expanded(child: awayTeam),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
                 children: [
-                  Text(date, style: Body2.style),
-                  Text(time, style: Body2.style),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Flexible(child: homeTeam),
+                        const SizedBox(width: 12),
+                        homeScore,
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  kickoff,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        awayScore,
+                        const SizedBox(width: 12),
+                        Flexible(child: awayTeam),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-              Row(
-                children: [
-                  _buildScoreBox(h2h.awayScore?.toString() ?? '-'),
-                  const SizedBox(width: 16),
-                  _buildSimpleTeamCol(away.shortCode ?? away.name,
-                      away.imagePath ?? '', away.teamId),
-                ],
-              )
-            ],
+              );
+            },
           ),
         ),
       ],
@@ -407,7 +564,13 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(name, style: Body2.style),
+        Text(
+          name,
+          style: Body2.style,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
