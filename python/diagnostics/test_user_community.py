@@ -60,6 +60,30 @@ class PasswordContractTests(unittest.TestCase):
         self.assertEqual(PasswordLoginBody(username=" member ", password="Abcdefg1").username, "member")
 
 
+class ProviderDisplayTests(unittest.TestCase):
+    def test_country_and_device_determine_signup_choices_without_database(self):
+        client = TestClient(create_app())
+        for platform, country, expected in (
+            ("ios", "KR", ["kakao", "apple", "google", "email"]),
+            ("android", "KR", ["kakao", "google", "email"]),
+            ("ios", "US", ["apple", "google", "email"]),
+            ("android", "US", ["google", "email"]),
+            ("ios", "DE", ["apple", "google", "email"]),
+            ("android", "DE", ["google", "email"]),
+            ("android", "kr", ["kakao", "google", "email"]),
+        ):
+            with self.subTest(platform=platform, country=country):
+                response = client.get("/v1/auth/providers", params={"platform": platform, "country_code": country})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json(), {"providers": expected})
+
+    def test_missing_or_unknown_device_is_not_assumed_to_be_iphone(self):
+        client = TestClient(create_app())
+        for query in ("country_code=KR", "country_code=KR&platform=web", "country_code=KR&platform=", "platform=ios"):
+            with self.subTest(query=query):
+                self.assertEqual(client.get("/v1/auth/providers?" + query).status_code, 422)
+
+
 class PeriodTests(unittest.TestCase):
     def test_same_instant_belongs_to_different_local_days(self):
         now = datetime(2026, 9, 10, 1)
@@ -293,10 +317,6 @@ class MySQLCommunityTests(CommunityDatabaseCase):
     def test_logout_invalidates_the_token(self):
         self.assertEqual(self.request("POST", "/v1/auth/logout").status_code, 200)
         self.assertEqual(self.request("GET", "/v1/users/me").status_code, 401)
-
-    def test_provider_buttons_follow_country_rule(self):
-        self.assertIn("kakao", self.client.get("/v1/auth/providers?country_code=KR").json()["providers"])
-        self.assertNotIn("kakao", self.client.get("/v1/auth/providers?country_code=US").json()["providers"])
 
     def test_signup_code_is_consumed_and_password_is_hashed(self):
         with patch.object(auth_repo, "send_verification_code") as send:
