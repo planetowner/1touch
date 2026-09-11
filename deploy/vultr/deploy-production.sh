@@ -78,7 +78,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 cd "$runtime_directory"
@@ -100,8 +100,11 @@ bash compose-production.sh up -d --no-build --wait --wait-timeout 180 db api
 bash compose-production.sh up -d --no-build --no-deps --force-recreate --wait --wait-timeout 180 proxy
 install -m 644 "$release_directory/deploy/vultr/onetouch-db-backup.service" /etc/systemd/system/onetouch-db-backup.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-db-backup.timer" /etc/systemd/system/onetouch-db-backup.timer
+install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.service" /etc/systemd/system/onetouch-community-cleanup.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.timer" /etc/systemd/system/onetouch-community-cleanup.timer
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
+systemctl enable --now onetouch-community-cleanup.timer
 systemctl start onetouch-db-backup.service
 
 # 인증서를 무시하지 않고 실제 도메인의 HTTPS 응답을 확인해요.
@@ -114,4 +117,5 @@ status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}
 printf '\n'
 bash compose-production.sh ps
 systemctl list-timers onetouch-db-backup.timer --no-pager
+systemctl list-timers onetouch-community-cleanup.timer --no-pager
 echo 'HTTPS, protected docs, API/database health and daily SQL backup verified.'
