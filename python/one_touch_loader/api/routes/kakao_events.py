@@ -11,7 +11,7 @@ router = APIRouter()
 
 def _process_event(token: bytes) -> None:
     subject, event_id = social_login.kakao_unlink_event(token)
-    users_repo.delete_kakao_account(subject, event_id)
+    users_repo.delete_social_account("kakao", subject, event_id)
 
 
 @router.post("/auth/kakao/events", status_code=202)

@@ -27,6 +27,7 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from one_touch_loader.api.services.community_periods import PostPeriod, period_bounds, utc_now
     from one_touch_loader.api.schemas.users import PasswordLoginBody, RegisterEmailBody, ResetPasswordBody
     from diagnostics.verify_community_management import verify_schema
+    from diagnostics.verify_social_webhook_receipts import verify_schema as verify_social_schema
 
 
 class PasswordContractTests(unittest.TestCase):
@@ -100,6 +101,7 @@ class MediaTests(unittest.TestCase):
 @unittest.skipUnless(os.getenv("USER_COMMUNITY_TEST_MYSQL") == "1", "Requires the isolated local MySQL test instance")
 class CommunityDatabaseCase(unittest.TestCase):
     management_schema = True
+    social_webhooks_schema = True
     @classmethod
     def setUpClass(cls):
         cls.config = {"host": "127.0.0.1", "port": 14873, "user": "root", "password": "", "connection_timeout": 5}
@@ -135,6 +137,8 @@ class CommunityDatabaseCase(unittest.TestCase):
         # 실제 배포처럼 최초 스키마 위에 후속 ALTER를 적용해요.
         if self.management_schema:
             self.apply_management_schema()
+            if self.social_webhooks_schema:
+                self.apply_social_webhooks_schema()
         self.execute("INSERT INTO teams (team_id,name) VALUES (6,'A'),(14,'B'),(503,'C'),(591,'D')")
         self.execute("INSERT INTO players VALUES (832,'Player A',NULL),(268,'Player B',NULL)")
         self.execute("INSERT INTO competitions VALUES (8,'league'),(82,'league'),(301,'league')")
@@ -166,6 +170,12 @@ class CommunityDatabaseCase(unittest.TestCase):
 
     def apply_management_schema(self):
         sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_community_management.sql"
+        for statement in sql.read_text(encoding="utf-8").split(";"):
+            if statement.strip():
+                self.execute(statement)
+
+    def apply_social_webhooks_schema(self):
+        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_social_webhook_receipts.sql"
         for statement in sql.read_text(encoding="utf-8").split(";"):
             if statement.strip():
                 self.execute(statement)
@@ -214,8 +224,24 @@ class MigrationPreservationTests(CommunityDatabaseCase):
 class MySQLCommunityTests(CommunityDatabaseCase):
 
     def test_schema_after_matches_minimal_contract(self):
-        report = verify_schema(before=False)
+        report = verify_social_schema(before=False)
         self.assertEqual(report["tables"]["users"], 3)
+
+    def test_follower_count_uses_home_team_and_tracks_changes_and_deletion(self):
+        url = "/v1/community/followers?team_id=6"
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self.assertEqual(self.request("GET", url, self.token_b).status_code, 403)
+        self.execute("INSERT INTO user_following_teams VALUES (%s,8,6,1)", (self.b,))
+        self.assertEqual(self.request("GET", url).json(), {"team_id": 6, "follower_count": 1})
+        changed = self.request("PUT", "/v1/users/me/following/teams", self.token_b,
+                               json={"teamIds": [6, 503], "favoriteTeamId": 6})
+        self.assertEqual(changed.status_code, 200)
+        self.assertEqual(self.request("GET", url).json()["follower_count"], 2)
+        self.request("PUT", f"/v1/users/me/blocks/{self.b}")
+        self.execute("UPDATE users SET suspended_until=%s WHERE user_id=%s", (utc_now() + timedelta(days=1), self.b))
+        self.assertEqual(self.request("GET", url).json()["follower_count"], 2)
+        self.assertEqual(self.request("DELETE", "/v1/users/me", self.token_b).status_code, 200)
+        self.assertEqual(self.request("GET", url).json()["follower_count"], 1)
 
     def test_common_rules_share_one_row_and_require_community_or_admin_access(self):
         url = "/v1/community/rules?team_id=6"
@@ -796,7 +822,7 @@ class KakaoWebhookTests(CommunityDatabaseCase):
         replacement = auth_repo.login_social('kakao', '321')['access_token']
         self.assertEqual(self.webhook().status_code, 202)
         self.assertNotEqual(auth_repo.session_user(replacement)['user_id'], self.a)
-        self.assertEqual(len(self.execute('SELECT * FROM kakao_webhook_receipts')), 1)
+        self.assertEqual(len(self.execute('SELECT * FROM social_webhook_receipts')), 1)
 
     def test_invalid_tokens_never_touch_accounts_and_use_kakao_error_body(self):
         for token in (b'not-signed', provider_tests.ProviderTests().kakao_event_token(app_id='wrong-app')):
@@ -804,7 +830,7 @@ class KakaoWebhookTests(CommunityDatabaseCase):
             self.assertEqual(result.status_code, 400)
             self.assertEqual(set(result.json()), {'err', 'description'})
         self.assertEqual(self.request('GET', '/v1/users/me').status_code, 200)
-        self.assertEqual(self.execute('SELECT * FROM kakao_webhook_receipts'), [])
+        self.assertEqual(self.execute('SELECT * FROM social_webhook_receipts'), [])
         result = self.client.post('/v1/auth/kakao/events', content=b'token', headers={'Content-Type': 'application/json'})
         self.assertEqual((result.status_code, result.json()['err']), (400, 'invalid_request'))
 
@@ -812,7 +838,7 @@ class KakaoWebhookTests(CommunityDatabaseCase):
         with patch.object(users_repo, '_delete_account_rows', side_effect=mysql.connector.Error('test database failure')):
             with self.assertRaises(mysql.connector.Error):
                 self.webhook()
-        self.assertEqual(self.execute('SELECT * FROM kakao_webhook_receipts'), [])
+        self.assertEqual(self.execute('SELECT * FROM social_webhook_receipts'), [])
         self.assertEqual(self.request('GET', '/v1/users/me').status_code, 200)
         self.assertEqual(self.webhook().status_code, 202)
 
@@ -821,9 +847,96 @@ class KakaoWebhookTests(CommunityDatabaseCase):
         with ThreadPoolExecutor(max_workers=2) as pool:
             results = list(pool.map(lambda _: self.webhook(token).status_code, range(2)))
         self.assertEqual(results, [202, 202])
-        self.assertEqual(len(self.execute('SELECT * FROM kakao_webhook_receipts')), 1)
+        self.assertEqual(len(self.execute('SELECT * FROM social_webhook_receipts')), 1)
         # 계정 삭제 직후 다른 SET이 도착해도 이미 없는 회원을 오류로 처리하지 않아요.
         self.assertEqual(self.webhook(provider_tests.ProviderTests().kakao_event_token(jti='another-event')).status_code, 202)
+
+
+class SocialWebhookMigrationTests(CommunityDatabaseCase):
+    social_webhooks_schema = False
+
+    def test_existing_kakao_receipts_survive_shared_table_migration(self):
+        event_hash = auth_security.token_hash("previously-processed-event")
+        self.execute("INSERT INTO kakao_webhook_receipts VALUES (%s)", (event_hash,))
+        before_users = self.execute("SELECT * FROM users ORDER BY user_id")
+        verify_social_schema(before=True)
+        self.apply_social_webhooks_schema()
+        verify_social_schema(before=False)
+        self.assertEqual(self.execute("SELECT * FROM social_webhook_receipts"),
+                         [{"provider": "kakao", "event_hash": event_hash}])
+        self.assertEqual(self.execute("SELECT * FROM users ORDER BY user_id"), before_users)
+        self.execute("INSERT INTO user_social_identities VALUES ('kakao','321',%s)", (self.a,))
+        users_repo.delete_social_account("kakao", "321", "previously-processed-event")
+        self.assertEqual(self.request("GET", "/v1/users/me").status_code, 200)
+
+
+class AppleWebhookTests(CommunityDatabaseCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        provider_tests.ProviderTests.setUpClass()
+
+    def setUp(self):
+        super().setUp()
+        self.execute("INSERT INTO user_social_identities VALUES ('apple','apple-member',%s)", (self.a,))
+        settings = patch.dict(os.environ, {"APPLE_CLIENT_IDS": "our-apple-app"})
+        settings.start()
+        self.addCleanup(settings.stop)
+        keys = SimpleNamespace(get_signing_key_from_jwt=lambda token: SimpleNamespace(key=provider_tests.ProviderTests.public))
+        key_patch = patch.object(social_login, "_keys", return_value=keys)
+        key_patch.start()
+        self.addCleanup(key_patch.stop)
+
+    def webhook(self, **kwargs):
+        return self.client.post("/v1/auth/apple/events", json={"payload": provider_tests.ProviderTests().apple_event_token(**kwargs)})
+
+    def test_external_revocation_shares_anonymization_and_provider_scoped_receipts(self):
+        post = self.post()
+        posts_repo.create_comment(self.a, post, "keep reply", None)
+        chat_repo.create_message(self.a, 10, "keep chat")
+        self.execute("INSERT INTO user_avatars VALUES (%s,'avatars/apple','image/png',3)", (self.a,))
+        self.execute("INSERT INTO user_social_identities VALUES ('kakao','apple-member',%s)", (self.b,))
+        with patch.object(social_login, "unlink_apple") as unlink:
+            response = self.webhook()
+            self.assertEqual((response.status_code, response.content), (200, b""))
+            unlink.assert_not_called()
+        for table in ("posts", "post_comments", "fixture_chat_messages"):
+            self.assertIsNone(self.execute(f"SELECT user_id FROM {table}")[0]["user_id"])
+        self.assertEqual(self.request("GET", "/v1/users/me").status_code, 401)
+        self.assertEqual(self.request("GET", "/v1/users/me", self.token_b).status_code, 200)
+        self.assertEqual(self.execute("SELECT object_key FROM media_deletions"), [{"object_key": "avatars/apple"}])
+        replacement = auth_repo.login_social("apple", "apple-member")["access_token"]
+        self.assertEqual(self.webhook().status_code, 200)
+        self.assertIsNotNone(auth_repo.session_user(replacement))
+        # 다른 공급자의 같은 ID는 별개의 알림이에요.
+        users_repo.delete_social_account("kakao", "apple-member", "event-one")
+        self.assertEqual(self.request("GET", "/v1/users/me", self.token_b).status_code, 401)
+        self.assertEqual({row["provider"] for row in self.execute("SELECT provider FROM social_webhook_receipts")}, {"apple", "kakao"})
+
+    def test_email_preferences_and_invalid_messages_never_delete_members(self):
+        for event_type in ("email-enabled", "email-disabled"):
+            self.assertEqual(self.webhook(event_type=event_type).status_code, 200)
+        self.assertEqual(self.webhook(aud="other-app").status_code, 401)
+        self.assertEqual(self.client.post("/v1/auth/apple/events", json={"payload": "invalid"}).status_code, 401)
+        self.assertEqual(self.client.post("/v1/auth/apple/events", json={}).status_code, 422)
+        self.assertEqual(self.request("GET", "/v1/users/me").status_code, 200)
+        self.assertEqual(self.execute("SELECT * FROM social_webhook_receipts"), [])
+
+    def test_failed_deletion_rolls_back_receipt_and_account_deletion_can_be_retried(self):
+        with patch.object(users_repo, "_delete_account_rows", side_effect=mysql.connector.Error("test database failure")):
+            with self.assertRaises(mysql.connector.Error):
+                self.webhook(event_type="account-deleted")
+        self.assertEqual(self.execute("SELECT * FROM social_webhook_receipts"), [])
+        self.assertEqual(self.request("GET", "/v1/users/me").status_code, 200)
+        self.assertEqual(self.webhook(event_type="account-deleted").status_code, 200)
+        self.assertEqual(self.request("GET", "/v1/users/me").status_code, 401)
+
+    def test_concurrent_notifications_and_deleted_member_are_acknowledged(self):
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(lambda _: self.webhook().status_code, range(2)))
+        self.assertEqual(results, [200, 200])
+        self.assertEqual(len(self.execute("SELECT * FROM social_webhook_receipts")), 1)
+        self.assertEqual(self.webhook(jti="later-event").status_code, 200)
 
 
 if __name__ == "__main__":

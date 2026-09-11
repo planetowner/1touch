@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import HTTPException
 from mysql.connector import IntegrityError
@@ -114,13 +114,14 @@ def _delete_account_rows(cur, user_id: int) -> None:
     cur.execute("DELETE FROM users WHERE user_id=%s", (user_id,))
 
 
-def delete_kakao_account(subject: str, event_id: str) -> None:
+def delete_social_account(provider: Literal["apple", "kakao"], subject: str, event_id: str) -> None:
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        # 카카오는 같은 SET을 재전송해요. 처리 표식과 탈퇴를 함께 커밋해 재가입 뒤 중복 탈퇴를 막아요.
-        cur.execute("INSERT IGNORE INTO kakao_webhook_receipts (event_hash) VALUES (%s)", (token_hash(event_id),))
+        # 두 공급자의 알림 ID는 독립적이에요. 공급자와 처리 표식을 함께 구분하고 탈퇴와 같은 트랜잭션으로 저장해요.
+        cur.execute("INSERT IGNORE INTO social_webhook_receipts (provider,event_hash) VALUES (%s,%s)",
+                    (provider, token_hash(event_id)))
         if cur.rowcount == 0:
             return
-        cur.execute("SELECT user_id FROM user_social_identities WHERE provider='kakao' AND subject=%s", (subject,))
+        cur.execute("SELECT user_id FROM user_social_identities WHERE provider=%s AND subject=%s", (provider, subject))
         identity = cur.fetchone()
         if identity is None:
             return
@@ -129,5 +130,5 @@ def delete_kakao_account(subject: str, event_id: str) -> None:
         cur.execute("SELECT user_id FROM users WHERE user_id=%s FOR UPDATE", (user_id,))
         if cur.fetchone() is None:
             return
-        # 현재 소셜 가입은 공급자별 독립 계정이에요. 연결 해제가 끝난 카카오에 다시 탈퇴 요청하지 않아요.
+        # 현재 소셜 가입은 공급자별 독립 계정이에요. 이미 연결이 해제된 공급자에 다시 탈퇴 요청하지 않아요.
         _delete_account_rows(cur, user_id)

@@ -13,15 +13,15 @@ def _keys(url: str, timeout: int = 10):
     return jwt.PyJWKClient(url, timeout=timeout)
 
 
-def _verify_id_token(token: str, keys_url: str, issuers, audiences) -> dict:
+def _verify_token(token: str, keys_url: str, issuers, audiences, *, required_claims=("exp", "iat", "iss", "aud", "sub")) -> dict:
     try:
         key = _keys(keys_url).get_signing_key_from_jwt(token)
         return jwt.decode(token, key.key, algorithms=["RS256"], issuer=issuers, audience=audiences,
-                          options={"require": ["exp", "iat", "iss", "aud", "sub"]})
+                          options={"require": list(required_claims)})
     except jwt.PyJWKClientConnectionError as exc:
         raise HTTPException(503, "Identity provider keys unavailable") from exc
     except (jwt.InvalidTokenError, jwt.PyJWKClientError) as exc:
-        raise HTTPException(401, "Invalid provider identity token") from exc
+        raise HTTPException(401, "Invalid provider token") from exc
 
 
 def _provider_response(method: str, url: str, **kwargs):
@@ -45,7 +45,7 @@ def google_subject(id_token: str) -> str:
     # 모바일 SDK의 serverClientId로 쓴 Web Client ID를 허용해요. 이 검증에는 Client secret이 필요 없어요.
     # 이메일이 같다는 이유로 기존 이메일 가입 계정과 합치지 않고 sub만 사용해요.
     audiences = [value.strip() for value in required_setting("GOOGLE_CLIENT_IDS").split(",")]
-    claims = _verify_id_token(id_token, "https://www.googleapis.com/oauth2/v3/certs",
+    claims = _verify_token(id_token, "https://www.googleapis.com/oauth2/v3/certs",
                               ["accounts.google.com", "https://accounts.google.com"], audiences)
     return claims["sub"]
 
@@ -67,7 +67,7 @@ def _apple_identity(code: str, client_id: str, nonce: str) -> tuple[dict, dict]:
     if client_id == os.getenv("APPLE_WEB_CLIENT_ID"):
         data["redirect_uri"] = required_setting("APPLE_REDIRECT_URI")
     payload = _provider_json("POST", "https://appleid.apple.com/auth/token", data=data)
-    claims = _verify_id_token(payload["id_token"], "https://appleid.apple.com/auth/keys",
+    claims = _verify_token(payload["id_token"], "https://appleid.apple.com/auth/keys",
                               "https://appleid.apple.com", client_id)
     # 앱은 로그인 전에 nonce를 만들고 Apple에 전달한 바로 그 값을 보내요.
     # 일회용 authorization code를 Apple에서 교환해 같은 코드의 재사용을 막아요.
@@ -92,6 +92,23 @@ def unlink_apple(subject: str, code: str, client_id: str, nonce: str) -> None:
         "token": payload["access_token"], "token_type_hint": "access_token",
     })
     # 성공 응답은 빈 HTTP 200이므로 JSON 본문을 요구하지 않아요.
+
+
+def apple_account_event(token: str) -> tuple[str, str] | None:
+    # Apple 계정 알림에는 exp와 최상위 sub가 없어요. 로그인과 같은 서명·앱 검증에 알림의 필수 항목을 전달해요.
+    # https://developer.apple.com/documentation/signinwithapple/processing-changes-for-sign-in-with-apple-accounts
+    claims = _verify_token(token, "https://appleid.apple.com/auth/keys", "https://appleid.apple.com",
+        [value.strip() for value in required_setting("APPLE_CLIENT_IDS").split(",")],
+        required_claims=("iss", "aud", "iat", "jti", "events"))
+    event = claims["events"]
+    if (not isinstance(event, dict) or not isinstance(event.get("sub"), str) or not event["sub"]
+            or not claims["jti"] or event.get("type") not in (
+                "consent-revoked", "account-deleted", "email-enabled", "email-disabled")):
+        raise HTTPException(400, "Invalid Apple account event")
+    # 소셜 이메일을 저장하거나 메일을 보내지 않으므로 전달 설정 변경으로 회원을 탈퇴시키지 않아요.
+    if event["type"] in ("email-enabled", "email-disabled"):
+        return None
+    return event["sub"], claims["jti"]
 
 
 def kakao_subject(access_token: str) -> str:
