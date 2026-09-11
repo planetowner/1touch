@@ -3,10 +3,11 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from ..db import fetch_one_dict, transaction
 from ..deps import get_user_id
 from ..repos.auth_repo import rate_limit
-from ..repos.posts_repo import get_post
+from ..repos.posts_repo import get_post, get_draft
 from ..repos.media_repo import queue_deletion
 from ..repos.users_repo import get_user, lock_user, require_profile
 from ..services.community_periods import utc_now
+from ..services.community_retention import UNPUBLISHED_RETENTION
 from ..services.media_storage import private_content, stored_upload
 
 router = APIRouter()
@@ -57,12 +58,17 @@ def create_link(body: LinkBody, user_id: int = Depends(get_user_id)):
 
 
 def _accessible_attachment(attachment_id: int, user_id: int) -> dict:
-    item = fetch_one_dict("SELECT * FROM post_attachments WHERE attachment_id=%s", (attachment_id,))
+    item = fetch_one_dict("""SELECT a.*,p.state AS post_state FROM post_attachments a
+        LEFT JOIN posts p ON p.post_id=a.post_id WHERE a.attachment_id=%s""", (attachment_id,))
     if item is None:
         raise HTTPException(404, "Attachment not found")
     if item["post_id"] is None:
         if item["user_id"] != user_id:
             raise HTTPException(403, "Private draft attachment")
+        if item["created_at"] <= utc_now() - UNPUBLISHED_RETENTION:
+            raise HTTPException(404, "Unused attachment has expired")
+    elif item["post_state"] == "draft":
+        get_draft(user_id, item["post_id"])
     else:
         get_post(user_id, item["post_id"])
     return item

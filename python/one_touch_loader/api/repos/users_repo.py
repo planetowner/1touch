@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from mysql.connector import IntegrityError
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.community_periods import utc_now
-from .media_repo import queue_deletion
+from .media_repo import queue_deletion, remove_attachments
 from ..services import social_login
 from ..services.auth_security import token_hash
 
@@ -103,6 +103,11 @@ def _delete_account_rows(cur, user_id: int) -> None:
     avatar = cur.fetchone()
     if avatar:
         queue_deletion(cur, avatar["object_key"])
+    # 미게시 초안은 익명으로 남기지 않아요. 첨부 삭제 예약과 초안 삭제를 함께 처리해요.
+    cur.execute("SELECT post_id FROM posts WHERE user_id=%s AND state='draft' FOR UPDATE", (user_id,))
+    for draft in cur.fetchall():
+        remove_attachments(cur, draft["post_id"])
+        cur.execute("DELETE FROM posts WHERE post_id=%s", (draft["post_id"],))
     cur.execute("SELECT attachment_id,object_key FROM post_attachments WHERE user_id=%s AND post_id IS NULL FOR UPDATE", (user_id,))
     for item in cur.fetchall():
         queue_deletion(cur, item["object_key"])

@@ -195,11 +195,11 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli contracts departures [--check]  (after recent transfers)
   python -m one_touch_loader.cli contracts player <player_id> [--check]
 
-22. community (community-management 마이그레이션 이후, 기본은 읽기 전용 점검)
+22. community (post-drafts 마이그레이션 이후, 기본은 읽기 전용 점검)
+  마지막 저장 후 7일이 지난 초안과 업로드 후 7일이 지난 미사용 첨부를 정리합니다.
+  게시한 글의 첨부와 현재 프로필 사진은 이 기간으로 삭제하지 않습니다.
   python -m one_touch_loader.cli community cleanup --check
   python -m one_touch_loader.cli community cleanup --apply [--limit 100]
-  python -m one_touch_loader.cli community cleanup --check --draft-before <UTC_ISO_timestamp>
-  python -m one_touch_loader.cli community cleanup --apply --draft-before <UTC_ISO_timestamp>
 """
 
 

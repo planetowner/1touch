@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.community_access import require_favorite_team_access
 from ..services.community_periods import PostPeriod, period_bounds, public_row, utc_now
+from ..services.community_retention import UNPUBLISHED_RETENTION
 from .users_repo import get_user, lock_user, require_profile
 from .media_repo import remove_attachments
 from ..services.content_visibility import blocked_sql, public_author, require_visible_author
@@ -85,10 +86,13 @@ def _set_attachments(cur, user_id: int, post_id: int, attachment_ids: list[int])
     if len(attachment_ids) > 10 or len(attachment_ids) != len(set(attachment_ids)):
         raise HTTPException(400, "Use up to ten different attachments")
     for attachment_id in sorted(attachment_ids):
-        cur.execute("SELECT user_id,post_id FROM post_attachments WHERE attachment_id=%s FOR UPDATE", (attachment_id,))
+        cur.execute("SELECT user_id,post_id,created_at FROM post_attachments WHERE attachment_id=%s FOR UPDATE", (attachment_id,))
         item = cur.fetchone()
         if item is None or item["user_id"] != user_id or item["post_id"] not in (None, post_id):
             raise HTTPException(400, "Attachment must be your draft or belong to this post")
+        # 초안에 연결한 첨부는 초안의 마지막 저장을 따라가요. 미사용 파일만 업로드 시각으로 판단해요.
+        if item["post_id"] is None and item["created_at"] <= utc_now() - UNPUBLISHED_RETENTION:
+            raise HTTPException(400, "Unused attachment has expired")
     remove_attachments(cur, post_id, tuple(attachment_ids))
     # 순서를 맞바꿀 때 UNIQUE(post_id,position)가 부딪히지 않게 연결을 한 번 비워요.
     # 같은 트랜잭션 안에서만 비우므로 외부 조회에는 중간 상태가 보이지 않아요.
@@ -114,25 +118,85 @@ def _require_author(user_id: int, content: dict) -> None:
         raise HTTPException(403, "Only the author can change this content")
 
 
-def create_post(user_id: int, team_id: int, category: str, title: str, body: str, attachment_ids: list[int]) -> int:
+def create_post(user_id: int, team_id: int, category: str, title: str, body: str, attachment_ids: list[int], *, draft: bool = False) -> int:
     if len(attachment_ids) != len(set(attachment_ids)):
         raise HTTPException(400, "Repeated attachment ID")
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
         check_community_user(lock_user(cur, user_id), team_id)
-        cur.execute("INSERT INTO posts (team_id,user_id,category,title,body,created_at) VALUES (%s,%s,%s,%s,%s,%s)",
-                    (team_id, user_id, category, title, body, utc_now()))
+        now = utc_now()
+        cur.execute("INSERT INTO posts (team_id,user_id,category,title,body,created_at,state,edited_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (team_id, user_id, category, title, body, now, "draft" if draft else "active", now if draft else None))
         post_id = cur.lastrowid
         _set_attachments(cur, user_id, post_id, attachment_ids)
     return post_id
 
 
-def update_post(user_id: int, post_id: int, category: str, title: str, body: str, attachment_ids: list[int]) -> None:
+def update_post(user_id: int, post_id: int, category: str, title: str, body: str, attachment_ids: list[int], *, draft: bool = False) -> None:
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        _require_author(user_id, _lock_post(cur, lock_user(cur, user_id), post_id))
+        user = lock_user(cur, user_id)
+        post = _lock_draft(cur, user_id, post_id) if draft else _lock_post(cur, user, post_id)
+        check_community_user(user, post["team_id"])
+        _require_author(user_id, post)
         _set_attachments(cur, user_id, post_id, attachment_ids)
         # 수정으로 최신순 맨 위에 다시 올라가지 않도록 작성 시각은 유지해요.
         cur.execute("UPDATE posts SET category=%s,title=%s,body=%s,edited_at=%s WHERE post_id=%s",
                     (category, title, body, utc_now(), post_id))
+
+
+def _require_draft(row: dict | None, user_id: int) -> dict:
+    # 정리 작업 실행 전이라도 7일이 지난 초안을 다시 저장하거나 게시할 수 없어요.
+    if (row is None or row["state"] != "draft" or row["user_id"] != user_id
+            or row["edited_at"] <= utc_now() - UNPUBLISHED_RETENTION):
+        raise HTTPException(404, "Draft not found or expired")
+    return row
+
+
+def _lock_draft(cur, user_id: int, post_id: int) -> dict:
+    cur.execute("SELECT * FROM posts WHERE post_id=%s FOR UPDATE", (post_id,))
+    return _require_draft(cur.fetchone(), user_id)
+
+
+def _public_draft(row: dict) -> dict:
+    row["attachments"] = attachments_for_post(row["post_id"])
+    row["expires_at"] = row["edited_at"] + UNPUBLISHED_RETENTION
+    return public_row(row)
+
+
+def list_drafts(user_id: int, limit: int, offset: int) -> list[dict]:
+    require_profile(get_user(user_id))
+    # 초안 목록은 작성자만 봐요. 최애팀 변경 후에도 내 초안을 확인·삭제할 수 있어요.
+    rows = fetch_all_dict("""SELECT * FROM posts WHERE user_id=%s AND state='draft' AND edited_at>%s
+        ORDER BY edited_at DESC,post_id DESC LIMIT %s OFFSET %s""",
+        (user_id, utc_now() - UNPUBLISHED_RETENTION, limit, offset))
+    return [_public_draft(row) for row in rows]
+
+
+def get_draft(user_id: int, post_id: int) -> dict:
+    require_profile(get_user(user_id))
+    row = fetch_one_dict("SELECT * FROM posts WHERE post_id=%s", (post_id,))
+    return _public_draft(_require_draft(row, user_id))
+
+
+def publish_draft(user_id: int, post_id: int) -> int:
+    with transaction() as conn, conn.cursor(dictionary=True) as cur:
+        user = lock_user(cur, user_id)
+        post = _lock_draft(cur, user_id, post_id)
+        # 게시 권한은 지금의 최애팀으로 다시 확인해요. 저장 당시 권한을 이어 쓰지 않아요.
+        check_community_user(user, post["team_id"])
+        if not post["title"]:
+            raise HTTPException(400, "A title is required to publish")
+        # 게시·댓글·첨부는 같은 ID를 써요. 최신순은 초안 작성일이 아닌 실제 게시일로 정해요.
+        cur.execute("UPDATE posts SET state='active',created_at=%s,edited_at=NULL WHERE post_id=%s", (utc_now(), post_id))
+    return post_id
+
+
+def delete_draft(user_id: int, post_id: int) -> None:
+    with transaction() as conn, conn.cursor(dictionary=True) as cur:
+        require_profile(lock_user(cur, user_id))
+        _lock_draft(cur, user_id, post_id)
+        remove_attachments(cur, post_id)
+        # 초안은 공개한 적이 없어 답글 관계를 남길 필요가 없어요.
+        cur.execute("DELETE FROM posts WHERE post_id=%s", (post_id,))
 
 
 def delete_post(user_id: int, post_id: int) -> None:
