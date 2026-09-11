@@ -1,26 +1,18 @@
 # Project Working Agreement
 
-1. Before editing files, explain the intended changes and wait for explicit user approval.
-2. Read-only inspection is allowed before approval.
-3. If requirements change before implementation, present the consolidated plan and request approval again.
-4. Implement responsive layouts for general screen sizes rather than targeting a specific device.
-5. After approved UI changes, test compact and taller screens and check for overflow.
-6. After approved changes, run formatting, focused tests, static analysis, and broader regression tests when appropriate.
-7. Treat user-provided screenshots as the visual source of truth when they conflict with the current implementation.
-8. After completing a meaningful group of changes, recommend a commit message automatically.
-9. Prefer concise implementations. Avoid unnecessary one-use helpers, excessive abstraction, and duplicated constants.
-10. Do not commit or push changes. The user handles Git operations; recommend an appropriate commit message after each meaningful change.
-11. Prefer platform-native system interfaces for permissions and other OS-owned interactions; do not imitate one platform's UI on another.
-12. When implementing a feature without a backend, keep local persistence behind a replaceable abstraction and clearly document limitations such as missing synchronization or real-time updates.
-13. Preserve architectural boundaries: presentation and core modules should depend on abstractions or domain-facing APIs rather than concrete mock, API, database, or cache implementations.
-14. Before implementing client models or integrations, verify assumptions against the actual backend schema and response contracts; do not assume an endpoint or field exists.
-15. Keep stable domain entities separate from contextual data such as rankings, statistics, seasons, user-specific state, and screen-specific aggregates.
-16. Perform architectural refactors incrementally, preserve existing behavior, and add focused contract or regression tests before replacing implementations.
-17. Isolate temporary workarounds behind a clear boundary, document their limitations and removal condition, and avoid spreading them across the codebase.
+## Scope and autonomy
 
-## Learning and Documentation
+- For explanation, review, diagnosis, or planning requests, inspect the relevant files and report the result without editing unless the user also asks for a change.
+- When the user explicitly asks to build, change, or fix something, make reversible in-scope local edits and run relevant validation without requesting another approval.
+- Ask before destructive or irreversible actions, external writes, new production dependencies, backend contract changes, broad architectural refactors, or a material expansion of scope.
+- If the requirements materially change during implementation, summarize the consolidated scope before continuing.
+- Preserve unrelated user changes in the working tree. Do not commit or push; the user handles Git operations.
 
-- When explaining this codebase to a beginner, start with the overall structure and runtime flow; show code examples last.
-- For learning quizzes, use the format: Problem → Answer → Explanation.
-- During an interactive quiz, do not reveal the full answer until every question is answered correctly. Identify the misunderstood concept and provide a focused hint instead.
-- When asked for a code-learning playground, place it under `docs/` as a standalone HTML file and do not modify application code unless explicitly requested.
+## Engineering baseline
+
+- Prefer concise implementations. Avoid unnecessary one-use helpers, excessive abstraction, and duplicated constants.
+- Verify actual backend schemas and response contracts before implementing client integrations; do not assume an endpoint or field exists.
+- Prefer platform-native interfaces for permissions and other OS-owned interactions.
+- Use the matching repository skill under `.agents/skills/` for UI, data-layer, verification, or learning work.
+- Use `./tool/verify.sh [test paths...]` for standard validation when applicable.
+- After a meaningful change, report changed behavior, validation performed, remaining limitations, and a suggested commit message.
