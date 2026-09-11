@@ -44,7 +44,7 @@ class Upstream(http.server.BaseHTTPRequestHandler):
 with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
     root = Path(temporary)
     env_file = root / "test.env"
-    env_file.write_text(f"COLLAB_PASSWORD_HASH='{hashed}'\n")
+    env_file.write_text(f"COLLAB_PASSWORD_HASH='{hashed}'\nSES_FEEDBACK_EMAIL='operator@example.com'\n")
     environment = {
         **os.environ,
         "MYSQL_PASSWORD": "test-only",
@@ -68,6 +68,8 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
     for service in ("db", "api"):
         assert all(port["host_ip"] == "127.0.0.1" for port in model["services"][service]["ports"])
     api = model["services"]["api"]
+    # 설정 파일 저장에 성공해도 API 환경에 빠지면 인증 메일이 503으로 실패해요.
+    assert api["environment"]["SES_FEEDBACK_EMAIL"] == "operator@example.com"
     assert not any(mount["target"] == "/app/python" for mount in api["volumes"])
     assert "--reload" not in api["command"] and api["user"] == "1001:1001"
     assert {port["published"] for port in model["services"]["proxy"]["ports"]} == {"80", "443"}
