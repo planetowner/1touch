@@ -169,13 +169,15 @@ class ProviderTests(unittest.TestCase):
 
     def test_ses_uses_starttls_before_credentials_and_sends_code(self):
         settings = {"SES_SMTP_HOST": "smtp.test", "SES_SMTP_USERNAME": "test-user", "SES_SMTP_PASSWORD": "test-password",
-                    "SES_FROM_EMAIL": "noreply@example.com"}
+                    "SES_FROM_EMAIL": "noreply@example.com", "SES_FEEDBACK_EMAIL": "operator@example.com"}
         with patch.dict(os.environ, settings), patch.object(email_sender.smtplib, "SMTP") as smtp:
             email_sender.send_verification_code("receiver@example.com", "012345", "signup")
             client = smtp.return_value.__enter__.return_value
             self.assertEqual([call[0] for call in client.method_calls], ["ehlo", "starttls", "ehlo", "login", "send_message"])
             message = client.send_message.call_args.args[0]
             self.assertEqual(message["To"], "receiver@example.com")
+            self.assertEqual(message["From"], "noreply@example.com")
+            self.assertEqual(message["Return-Path"], "operator@example.com")
             self.assertIn("012345", message.get_content())
 
 

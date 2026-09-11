@@ -13,9 +13,13 @@ def send_verification_code(email: str, code: str, purpose: str) -> None:
     username = required_setting("SES_SMTP_USERNAME")
     password = required_setting("SES_SMTP_PASSWORD")
     sender = required_setting("SES_FROM_EMAIL")
+    feedback = required_setting("SES_FEEDBACK_EMAIL")
     message = EmailMessage()
     message["From"] = sender
     message["To"] = email
+    # SES는 SMTP DATA의 Return-Path로 반송·신고를 전달해요. 수신 메일함이 없는 발신 주소와 구분해요.
+    # https://docs.aws.amazon.com/ses/latest/dg/monitor-sending-activity-using-notifications-email.html
+    message["Return-Path"] = feedback
     message["Subject"] = "1Touch verification code"
     action = "create your account" if purpose == "signup" else "reset your password"
     message.set_content(

@@ -18,6 +18,29 @@ SPEC.loader.exec_module(configure_ses)
 
 
 class ConfigureSesTests(unittest.TestCase):
+    def test_feedback_transfer_changes_only_feedback_address(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.env"
+            target = Path(directory) / "target.env"
+            source.write_text("SES_SMTP_PASSWORD=do-not-transfer\nSES_FEEDBACK_EMAIL=operator@example.com\n", encoding="utf-8")
+            original = "# server settings\nSES_SMTP_PASSWORD=keep-server-key\nSES_FROM_EMAIL=noreply@example.com\nDB_HOST=private-db\n"
+            target.write_text(original, encoding="utf-8")
+            with patch("sys.argv", ["configure_ses.py", "--from-env", str(source), "--env-file", str(target)]), contextlib.redirect_stdout(io.StringIO()) as output:
+                configure_ses.main()
+            self.assertEqual(dotenv_values(target), {"SES_SMTP_PASSWORD": "keep-server-key", "SES_FROM_EMAIL": "noreply@example.com",
+                "DB_HOST": "private-db", "SES_FEEDBACK_EMAIL": "operator@example.com"})
+            self.assertTrue(target.read_text(encoding="utf-8").startswith(original))
+            self.assertNotIn("do-not-transfer", output.getvalue())
+
+    def test_feedback_address_rejects_header_injection_without_writing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / ".env"
+            target.write_text("SES_FROM_EMAIL=noreply@example.com\n", encoding="utf-8")
+            original = target.read_bytes()
+            with self.assertRaises(ValueError):
+                configure_ses.configure_feedback(target, "operator@example.com\r\nBcc: other@example.com")
+            self.assertEqual(target.read_bytes(), original)
+
     def test_explicit_environment_path_works_at_server_mount_location(self):
         with tempfile.TemporaryDirectory() as directory:
             env_file = Path(directory) / ".env.production"
