@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 import io
 import os
+import re
 from threading import Barrier
 from pathlib import Path
 from types import SimpleNamespace
@@ -61,6 +62,17 @@ class PasswordContractTests(unittest.TestCase):
 
 
 class ProviderDisplayTests(unittest.TestCase):
+    def test_deployment_probes_use_valid_provider_queries(self):
+        client = TestClient(create_app())
+        deploy = Path(__file__).resolve().parents[2] / "deploy/vultr"
+        # 배포 검사의 실제 URL을 API에 넣어 필수 인자가 빠지면 배포 전에 발견해요.
+        for filename in ("deploy-production.sh", "deploy-user-community.ps1"):
+            urls = re.findall(r"/v1/auth/providers[^\s\"']*", (deploy / filename).read_text(encoding="utf-8-sig"))
+            self.assertTrue(urls, filename)
+            for url in urls:
+                with self.subTest(filename=filename, url=url):
+                    self.assertEqual(client.get(url).status_code, 200)
+
     def test_country_and_device_determine_signup_choices_without_database(self):
         client = TestClient(create_app())
         for platform, country, expected in (

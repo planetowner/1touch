@@ -112,7 +112,7 @@ curl --fail --silent --show-error --retry 12 --retry-all-errors --retry-delay 5 
   "https://$api_domain/v1/health"
 status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/docs")
 [[ "$status" == 401 ]] || { echo "Expected protected API docs (401), got $status" >&2; exit 1; }
-status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/v1/auth/providers?country_code=KR")
+status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/v1/auth/providers?country_code=KR&platform=ios")
 [[ "$status" == 200 ]] || { echo "Expected public login providers (200), got $status" >&2; exit 1; }
 printf '\n'
 bash compose-production.sh ps
