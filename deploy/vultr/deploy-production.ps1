@@ -17,7 +17,8 @@ Invoke-AccessCommand (Get-Command python.exe).Source @(
 )
 
 Write-Host '2/3. 코드를 서버에 전송해요. Enter passphrase에는 SSH 키 암호를 입력해요.'
-Invoke-AccessCommand $sshPath ($keyOptions + @("${loginUser}@$serverIp", "install -d -m 700 $remotePath"))
+# 입력이 없는 준비 명령은 Windows SSH가 터미널 입력을 기다리며 종료되지 않도록 해요.
+Invoke-AccessCommand $sshPath (@('-n') + $keyOptions + @("${loginUser}@$serverIp", "install -d -m 700 $remotePath"))
 Invoke-AccessCommand $scpPath ($keyOptions + @(
     (Join-Path $outputPath 'backend.tar.gz'), (Join-Path $outputPath 'manifest.json'),
     (Join-Path $PSScriptRoot 'deploy-production.sh'), "${loginUser}@${serverIp}:$remotePath/"
