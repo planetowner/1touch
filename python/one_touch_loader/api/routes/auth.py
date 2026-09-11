@@ -1,3 +1,4 @@
+from typing import Literal
 from fastapi import APIRouter, Depends, Query, Request
 from ..deps import get_token, get_user_id
 from ..repos import auth_repo
@@ -16,9 +17,11 @@ def auth_request_limit(request: Request):
 
 
 @router.get("/auth/providers")
-def providers(country_code: str = Query(min_length=2, max_length=2)):
+def providers(platform: Literal["ios", "android"], country_code: str = Query(min_length=2, max_length=2)):
     # 카카오 표시 여부는 국적을 추정하는 인증 규칙이 아니라 가입 화면 규칙이에요.
-    return {"providers": (["kakao"] if country_code.upper() == "KR" else []) + ["apple", "google", "email"]}
+    # Apple 로그인은 iPhone에서만 제공해요. 기기 정보가 없으면 임의로 iOS를 선택하지 않아요.
+    return {"providers": (["kakao"] if country_code.upper() == "KR" else [])
+            + (["apple"] if platform == "ios" else []) + ["google", "email"]}
 
 
 @router.post("/auth/email/code", dependencies=[Depends(auth_request_limit)])

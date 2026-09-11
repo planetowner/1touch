@@ -1,6 +1,5 @@
 """공급자가 검증한 앱·사용자 ID만 회원 계정에 연결해요."""
 from functools import lru_cache
-import os
 import time
 from fastapi import HTTPException
 import jwt
@@ -63,9 +62,7 @@ def _apple_secret(client_id: str) -> str:
 def _apple_identity(code: str, client_id: str, nonce: str) -> tuple[dict, dict]:
     secret = _apple_secret(client_id)
     data = {"grant_type": "authorization_code", "code": code, "client_id": client_id, "client_secret": secret}
-    # 웹용 Service ID는 등록한 redirect_uri가 필요하고, iOS App ID 교환에는 넣지 않아요.
-    if client_id == os.getenv("APPLE_WEB_CLIENT_ID"):
-        data["redirect_uri"] = required_setting("APPLE_REDIRECT_URI")
+    # Apple은 iOS 네이티브 로그인만 제공하므로 웹 복귀 주소를 넣지 않아요.
     payload = _provider_json("POST", "https://appleid.apple.com/auth/token", data=data)
     claims = _verify_token(payload["id_token"], "https://appleid.apple.com/auth/keys",
                               "https://appleid.apple.com", client_id)

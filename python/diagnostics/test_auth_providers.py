@@ -103,6 +103,7 @@ class ProviderTests(unittest.TestCase):
         with patch.dict(os.environ, settings), patch.object(social_login, "_provider_json", return_value={"id_token": "signed-token"}) as exchange, patch.object(social_login, "_verify_token", return_value=claims):
             self.assertEqual(social_login.apple_subject("one-use-code", "our-apple-app", "the-client-nonce"), "apple-sub")
             self.assertEqual(exchange.call_args.kwargs["data"]["grant_type"], "authorization_code")
+            self.assertNotIn("redirect_uri", exchange.call_args.kwargs["data"])
             with self.assertRaises(HTTPException):
                 social_login.apple_subject("one-use-code", "our-apple-app", "wrong-nonce")
 
