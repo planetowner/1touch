@@ -1,0 +1,9 @@
+[Unit]
+Description=1Touch expired drafts and unused media cleanup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/bash /opt/1touch/backend/deploy/vultr/cleanup-community.sh --apply --limit 1000
