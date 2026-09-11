@@ -39,7 +39,7 @@ try {
 
     Write-Host '5/5. 새 DB 구조와 공개 인증 안내를 확인해요.'
     Invoke-AccessCommand $pythonPath @('-X', 'utf8', '-B', '-m', 'diagnostics.verify_user_community', '--after')
-    Invoke-RestMethod 'https://api.1touch.football/v1/auth/providers?country_code=KR'
+    Invoke-RestMethod 'https://api.1touch.football/v1/auth/providers?country_code=KR&platform=ios'
     Write-Host '회원·커뮤니티 API 배포를 확인했어요. 실제 메일 수신·R2·소셜 로그인은 별도 확인이 필요해요.'
 }
 finally { Pop-Location }

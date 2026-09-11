@@ -119,7 +119,7 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
                     if time.monotonic() >= deadline or process.poll() is not None:
                         raise
                     time.sleep(0.1)
-            assert request("/v1/auth/providers?country_code=KR")[0] == 200
+            assert request("/v1/auth/providers?country_code=KR&platform=ios")[0] == 200
             before = Upstream.calls
             assert request("/docs")[0] == 401
             assert request("/docs", {"Authorization": "Basic " + base64.b64encode(b"developer:wrong").decode()})[0] == 401
