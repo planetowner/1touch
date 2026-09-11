@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from pydantic import AfterValidator, BaseModel, EmailStr, Field, StringConstraints, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 Username = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
@@ -70,3 +70,9 @@ class AppleLoginBody(BaseModel):
 
 class KakaoLoginBody(BaseModel):
     access_token: str = Field(min_length=1, max_length=10000)
+
+
+class DeleteAccountBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    apple: AppleLoginBody | None = None
+    kakao: KakaoLoginBody | None = None

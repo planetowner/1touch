@@ -1,11 +1,14 @@
 """R2 파일은 비공개로 보관하고 원본 형식·크기를 확인해요."""
 from functools import lru_cache
+from contextlib import contextmanager
+import re
 import warnings
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
 from PIL import Image, UnidentifiedImageError
-from .auth_security import required_setting
+from .auth_security import new_token, required_setting
 
 IMAGE_LIMIT = 10_000_000
 VIDEO_LIMIT = 100_000_000
@@ -54,3 +57,45 @@ def object_operation(operation: str, **kwargs):
         return getattr(r2_client(), operation)(Bucket=required_setting("R2_BUCKET"), **kwargs)
     except (ClientError, BotoCoreError) as exc:
         raise HTTPException(502, "Attachment storage unavailable") from exc
+
+
+@contextmanager
+def stored_upload(file, prefix: str, *, images_only: bool = False):
+    mime, size = inspect_upload(file)
+    if images_only and not mime.startswith("image/"):
+        raise HTTPException(415, "Profile photos must be images")
+    key = f"{prefix}/{new_token()}"
+    object_operation("put_object", Key=key, Body=file, ContentLength=size, ContentType=mime)
+    try:
+        yield {"object_key": key, "content_type": mime, "byte_size": size}
+    except Exception:
+        # 프로필·게시물 모두 DB 커밋에 실패하면 이번 요청에서 업로드한 파일만 지워요.
+        object_operation("delete_object", Key=key)
+        raise
+
+
+def private_content(item: dict, range_header: str | None = None):
+    args = {"Key": item["object_key"]}
+    if range_header is not None:
+        match = re.fullmatch(r"bytes=(\d*)-(\d*)", range_header)
+        if match is None or not any(match.groups()):
+            raise HTTPException(416, "A single byte range is required")
+        start, end = match.groups()
+        if (start and int(start) >= item["byte_size"]) or (start and end and int(end) < int(start)) or (not start and int(end) == 0):
+            raise HTTPException(416, "Range outside file", headers={"Content-Range": f"bytes */{item['byte_size']}"})
+        args["Range"] = range_header
+    response = object_operation("get_object", **args)
+    stream = response["Body"]
+
+    def chunks():
+        try:
+            yield from stream.iter_chunks(chunk_size=64 * 1024)
+        finally:
+            stream.close()
+
+    headers = {"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff",
+               "Accept-Ranges": "bytes", "Content-Length": str(response["ContentLength"])}
+    if range_header:
+        headers["Content-Range"] = response["ContentRange"]
+    return StreamingResponse(chunks(), status_code=206 if range_header else 200,
+                             media_type=item["content_type"], headers=headers)

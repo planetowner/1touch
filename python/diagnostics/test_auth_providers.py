@@ -52,6 +52,48 @@ class ProviderTests(unittest.TestCase):
             with self.assertRaises(HTTPException):
                 social_login.kakao_subject("token")
 
+    def kakao_event_token(self, *, header=None, **changes):
+        claims = {"iss": "https://kauth.kakao.com", "aud": "our-rest-key", "iat": int(time.time()),
+                  "app_id": "123", "sub": "321", "jti": "event-one", "events": {
+            "https://schemas.openid.net/secevent/oauth/event-type/user-unlinked": {
+                "subject": {"subject_type": "iss-sub", "iss": "https://kauth.kakao.com", "sub": "321"},
+                "reason": "UNLINK_FROM_APPS"}}}
+        claims.update(changes)
+        return jwt.encode(claims, self.private, algorithm="RS256", headers={"kid": "test", "typ": "secevent+jwt", **(header or {})}).encode()
+
+    def test_kakao_event_requires_signature_type_issuer_audience_and_matching_subject(self):
+        keys = Mock()
+        keys.get_signing_key_from_jwt.return_value = SimpleNamespace(key=self.public)
+        settings = {"KAKAO_APP_ID": "123", "KAKAO_REST_API_KEY": "our-rest-key"}
+        with patch.dict(os.environ, settings), patch.object(social_login, "_keys", return_value=keys):
+            # 실제 SET 규격처럼 exp 없이도 서명을 검증해요.
+            self.assertEqual(social_login.kakao_unlink_event(self.kakao_event_token()), ("321", "event-one"))
+            for token, code in (
+                (b"not-jwt", "invalid_request"),
+                (self.kakao_event_token(header={"typ": "JWT"}), "invalid_request"),
+                (self.kakao_event_token(iss="https://example.invalid"), "invalid_issuer"),
+                (self.kakao_event_token(aud="other-app"), "invalid_audience"),
+                (self.kakao_event_token(app_id="124"), "invalid_audience"),
+                (self.kakao_event_token(sub="another-member"), "invalid_request"),
+                (self.kakao_event_token(events={}), "invalid_request"),
+                (self.kakao_event_token(jti=""), "invalid_request"),
+            ):
+                with self.subTest(error=code), self.assertRaises(HTTPException) as error:
+                    social_login.kakao_unlink_event(token)
+                self.assertEqual((error.exception.status_code, error.exception.detail["err"]), (400, code))
+            keys.get_signing_key_from_jwt.return_value = SimpleNamespace(key=rsa.generate_private_key(public_exponent=65537, key_size=2048).public_key())
+            with self.assertRaises(HTTPException) as error:
+                social_login.kakao_unlink_event(self.kakao_event_token())
+            self.assertEqual(error.exception.detail["err"], "invalid_key")
+
+    def test_kakao_event_key_service_failure_is_retryable(self):
+        keys = Mock()
+        keys.get_signing_key_from_jwt.side_effect = jwt.PyJWKClientConnectionError("unavailable")
+        with patch.dict(os.environ, {"KAKAO_APP_ID": "123", "KAKAO_REST_API_KEY": "our-rest-key"}), patch.object(social_login, "_keys", return_value=keys):
+            with self.assertRaises(HTTPException) as error:
+                social_login.kakao_unlink_event(self.kakao_event_token())
+            self.assertEqual(error.exception.status_code, 503)
+
     def test_apple_exchanges_one_time_code_and_checks_nonce(self):
         apple_key = ec.generate_private_key(ec.SECP256R1()).private_bytes(serialization.Encoding.PEM,
                     serialization.PrivateFormat.PKCS8, serialization.NoEncryption()).decode()
@@ -72,6 +114,26 @@ class ProviderTests(unittest.TestCase):
         with patch.dict(os.environ, {"AUTH_CODE_SECRET": ""}):
             with self.assertRaises(HTTPException):
                 auth_security.code_hash("challenge-one", "012345")
+
+    def test_apple_unlink_checks_same_subject_and_accepts_empty_200(self):
+        claims, tokens = {"sub": "right-account"}, {"access_token": "new-provider-token"}
+        response = Mock(status_code=200)
+        with patch.object(social_login, "_apple_identity", return_value=(claims, tokens)), patch.object(social_login, "_apple_secret", return_value="secret"), patch.object(social_login.requests, "request", return_value=response) as request:
+            with self.assertRaises(HTTPException):
+                social_login.unlink_apple("other-account", "code", "client", "nonce")
+            request.assert_not_called()
+            social_login.unlink_apple("right-account", "code", "client", "nonce")
+            self.assertEqual(request.call_args.kwargs["data"]["token_type_hint"], "access_token")
+            self.assertEqual(request.call_args.kwargs["data"]["token"], tokens["access_token"])
+            response.json.assert_not_called()
+
+    def test_kakao_unlink_cannot_disconnect_another_account(self):
+        with patch.object(social_login, "kakao_subject", return_value="one"), patch.object(social_login, "_provider_json") as unlink:
+            with self.assertRaises(HTTPException):
+                social_login.unlink_kakao("two", "token")
+            unlink.assert_not_called()
+            social_login.unlink_kakao("one", "token")
+            self.assertEqual(unlink.call_args.args[:2], ("POST", "https://kapi.kakao.com/v1/user/unlink"))
 
     def test_ses_uses_starttls_before_credentials_and_sends_code(self):
         settings = {"SES_SMTP_HOST": "smtp.test", "SES_SMTP_USERNAME": "test-user", "SES_SMTP_PASSWORD": "test-password",

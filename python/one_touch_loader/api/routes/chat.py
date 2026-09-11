@@ -8,6 +8,7 @@ from starlette.concurrency import run_in_threadpool
 from ..deps import get_user_id
 from ..repos import auth_repo, chat_repo, posts_repo
 from .posts import ReportBody
+from ..services.content_visibility import is_blocked
 
 router = APIRouter()
 
@@ -65,7 +66,9 @@ class ChatHub:
             for peer in tuple(self.rooms.get(fixture_id, ())):
                 try:
                     # 최초 연결 이후 최애팀 변경·로그아웃·만료도 매 전달 전에 반영해요.
-                    await run_in_threadpool(_authorized, peer.token, fixture_id)
+                    recipient = await run_in_threadpool(_authorized, peer.token, fixture_id)
+                    if await run_in_threadpool(is_blocked, recipient["user_id"], message["user_id"]):
+                        continue
                     await asyncio.wait_for(peer.socket.send_json({"type": "message", **message}), 5)
                 except HTTPException as exc:
                     self.remove(fixture_id, peer)

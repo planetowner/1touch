@@ -31,10 +31,12 @@ services:
       APPLE_WEB_CLIENT_ID: ${APPLE_WEB_CLIENT_ID:-}
       APPLE_REDIRECT_URI: ${APPLE_REDIRECT_URI:-}
       KAKAO_APP_ID: ${KAKAO_APP_ID:-}
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY:-}
       R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
       R2_BUCKET: ${R2_BUCKET:-}
       R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
       R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+      COMMUNITY_ADMIN_USER_IDS: ${COMMUNITY_ADMIN_USER_IDS:-}
     # 실행 중인 코드는 이미지에 고정하고, 새 버전을 배포할 때 교체해요.
     volumes: !override
       - ../../logs:/app/logs

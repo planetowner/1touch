@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field
 from ..db import fetch_all_dict, transaction
 from ..deps import get_user_id
 from ..repos.users_repo import get_user, lock_user, update_profile
-from ..schemas.users import UserProfileBody
+from ..repos import users_repo
+from ..schemas.users import DeleteAccountBody, UserProfileBody
 from ..services.community_periods import public_row
 
 router = APIRouter()
@@ -12,6 +13,8 @@ router = APIRouter()
 @router.get("/users/me")
 def my_profile(user_id: int = Depends(get_user_id)):
     user = get_user(user_id)
+    user["avatar_url"] = f"/v1/users/{user_id}/avatar" if fetch_all_dict(
+        "SELECT 1 FROM user_avatars WHERE user_id=%s", (user_id,)) else None
     return {**public_row(user), "onboarding_complete": all(
         user[key] for key in ("username", "first_name", "last_name", "timezone", "favorite_team_id"))}
 
@@ -20,6 +23,29 @@ def my_profile(user_id: int = Depends(get_user_id)):
 def put_profile(body: UserProfileBody, user_id: int = Depends(get_user_id)):
     update_profile(user_id, body.model_dump())
     return my_profile(user_id)
+
+
+@router.delete("/users/me")
+def delete_account(body: DeleteAccountBody | None = None, user_id: int = Depends(get_user_id)):
+    users_repo.delete_account(user_id, body.model_dump(exclude_none=True) if body else None)
+    return {"ok": True}
+
+
+@router.get("/users/me/blocks")
+def blocks(user_id: int = Depends(get_user_id)):
+    return {"items": users_repo.list_blocks(user_id)}
+
+
+@router.put("/users/me/blocks/{blocked_user_id}")
+def block_user(blocked_user_id: int, user_id: int = Depends(get_user_id)):
+    users_repo.set_block(user_id, blocked_user_id, True)
+    return {"ok": True}
+
+
+@router.delete("/users/me/blocks/{blocked_user_id}")
+def unblock_user(blocked_user_id: int, user_id: int = Depends(get_user_id)):
+    users_repo.set_block(user_id, blocked_user_id, False)
+    return {"ok": True}
 
 
 class FollowingPlayersBody(BaseModel):
