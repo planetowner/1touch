@@ -1,6 +1,6 @@
 from typing import Literal
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from ..deps import get_user_id
 from ..repos import posts_repo
 from ..services.community_periods import PostPeriod
@@ -9,17 +9,26 @@ router = APIRouter()
 Category = Literal["general", "analysis", "news"]
 
 
-class CreatePostBody(BaseModel):
-    team_id: int = Field(gt=0)
+class PostBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     category: Category = "general"
     title: str = Field(min_length=1, max_length=200)
     body: str = Field(default="", max_length=10000)
     attachment_ids: list[int] = Field(default_factory=list, max_length=10)
 
 
+class CreatePostBody(PostBody):
+    team_id: int = Field(gt=0)
+
+
 class CommentBody(BaseModel):
     body: str = Field(min_length=1, max_length=5000)
     reply_to_id: int | None = Field(default=None, gt=0)
+
+
+class EditCommentBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    body: str = Field(min_length=1, max_length=5000)
 
 
 class ReportBody(BaseModel):
@@ -43,6 +52,30 @@ def post(post_id: int, user_id: int = Depends(get_user_id)):
 @router.post("/posts", status_code=201)
 def create_post(body: CreatePostBody, user_id: int = Depends(get_user_id)):
     return {"post_id": posts_repo.create_post(user_id=user_id, **body.model_dump())}
+
+
+@router.put("/posts/{post_id}")
+def update_post(post_id: int, body: PostBody, user_id: int = Depends(get_user_id)):
+    posts_repo.update_post(user_id, post_id, **body.model_dump())
+    return {"ok": True}
+
+
+@router.delete("/posts/{post_id}")
+def delete_post(post_id: int, user_id: int = Depends(get_user_id)):
+    posts_repo.delete_post(user_id, post_id)
+    return {"ok": True}
+
+
+@router.put("/comments/{comment_id}")
+def edit_comment(comment_id: int, body: EditCommentBody, user_id: int = Depends(get_user_id)):
+    posts_repo.change_comment(user_id, comment_id, body.body)
+    return {"ok": True}
+
+
+@router.delete("/comments/{comment_id}")
+def delete_comment(comment_id: int, user_id: int = Depends(get_user_id)):
+    posts_repo.change_comment(user_id, comment_id, None)
+    return {"ok": True}
 
 
 @router.get("/posts/{post_id}/comments")

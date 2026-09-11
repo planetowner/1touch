@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 from botocore.response import StreamingBody
 from pydantic import ValidationError
+from diagnostics import test_auth_providers as provider_tests
 
 # 테스트 수집만 해도 운영 DB 풀이 열리지 않게 해요.
 with patch("mysql.connector.pooling.MySQLConnectionPool"):
@@ -25,7 +26,7 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from one_touch_loader.api.services import auth_security, media_storage, social_login
     from one_touch_loader.api.services.community_periods import PostPeriod, period_bounds, utc_now
     from one_touch_loader.api.schemas.users import PasswordLoginBody, RegisterEmailBody, ResetPasswordBody
-    from diagnostics.verify_user_community import verify_schema
+    from diagnostics.verify_community_management import verify_schema
 
 
 class PasswordContractTests(unittest.TestCase):
@@ -97,7 +98,8 @@ class MediaTests(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv("USER_COMMUNITY_TEST_MYSQL") == "1", "Requires the isolated local MySQL test instance")
-class MySQLCommunityTests(unittest.TestCase):
+class CommunityDatabaseCase(unittest.TestCase):
+    management_schema = True
     @classmethod
     def setUpClass(cls):
         cls.config = {"host": "127.0.0.1", "port": 14873, "user": "root", "password": "", "connection_timeout": 5}
@@ -130,6 +132,9 @@ class MySQLCommunityTests(unittest.TestCase):
         for statement in sql.read_text(encoding="utf-8").split(";"):
             if statement.strip():
                 self.execute(statement)
+        # 실제 배포처럼 최초 스키마 위에 후속 ALTER를 적용해요.
+        if self.management_schema:
+            self.apply_management_schema()
         self.execute("INSERT INTO teams (team_id,name) VALUES (6,'A'),(14,'B'),(503,'C'),(591,'D')")
         self.execute("INSERT INTO players VALUES (832,'Player A',NULL),(268,'Player B',NULL)")
         self.execute("INSERT INTO competitions VALUES (8,'league'),(82,'league'),(301,'league')")
@@ -159,10 +164,20 @@ class MySQLCommunityTests(unittest.TestCase):
             conn.commit()
             return rows
 
+    def apply_management_schema(self):
+        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_community_management.sql"
+        for statement in sql.read_text(encoding="utf-8").split(";"):
+            if statement.strip():
+                self.execute(statement)
+
     def user(self, username, favorite=None):
         user_id = self.execute("INSERT INTO users (username,first_name,last_name,timezone,created_at) VALUES (%s,'First','Last','UTC',%s)", (username, utc_now()))
         if favorite:
-            teams_repo.set_following_and_favorite(user_id, [favorite], favorite)
+            # 테스트 입력은 구·신 스키마에 공통인 관계로 준비하고, 변경 규칙은 각 API 테스트에서 검사해요.
+            self.execute("""INSERT INTO user_following_teams (user_id,competition_id,team_id,position)
+                SELECT %s,s.competition_id,ts.team_id,0 FROM team_seasons ts
+                JOIN seasons s ON s.season_id=ts.season_id WHERE ts.team_id=%s""", (user_id, favorite))
+            self.execute("UPDATE users SET favorite_team_id=%s WHERE user_id=%s", (favorite, user_id))
         with db.transaction() as conn, conn.cursor(dictionary=True) as cur:
             token = auth_repo._create_session(cur, user_id)["access_token"]
         return user_id, token
@@ -173,9 +188,57 @@ class MySQLCommunityTests(unittest.TestCase):
     def post(self, user_id=None, team_id=6, **kwargs):
         return posts_repo.create_post(user_id or self.a, team_id, "general", "Title", "Body", kwargs.get("attachment_ids", []))
 
+
+class MigrationPreservationTests(CommunityDatabaseCase):
+    management_schema = False
+
+    def test_existing_users_posts_replies_sessions_and_attachments_survive_alter(self):
+        now = utc_now()
+        post = self.execute("INSERT INTO posts (team_id,user_id,category,title,body,created_at) VALUES (6,%s,'news','Old title','Old body',%s)", (self.a, now))
+        comment = self.execute("INSERT INTO post_comments (post_id,user_id,body,created_at) VALUES (%s,%s,'Old comment',%s)", (post, self.a, now))
+        self.execute("INSERT INTO post_comments (post_id,user_id,reply_to_id,body,created_at) VALUES (%s,%s,%s,'Old reply',%s)", (post, self.a, comment, now))
+        self.execute("INSERT INTO post_attachments (user_id,post_id,position,link_url,created_at) VALUES (%s,%s,0,'https://example.com',%s)", (self.a, post, now))
+        self.execute("INSERT INTO fixture_chat_messages (fixture_id,user_id,body,created_at) VALUES (10,%s,'Old message',%s)", (self.a, now))
+        tables = ("users", "posts", "post_comments", "post_attachments", "fixture_chat_messages", "user_sessions", "user_following_teams")
+        before = {table: self.execute(f"SELECT * FROM {table}") for table in tables}
+        verify_schema(before=True)
+        self.apply_management_schema()
+        verify_schema(before=False)
+        for table, original in before.items():
+            current = self.execute(f"SELECT * FROM {table}")
+            self.assertEqual([{key: row[key] for key in original[0]} for row in current], original, table)
+        self.assertEqual(posts_repo.get_post(self.a, post)["body"], "Old body")
+        self.assertEqual(posts_repo.list_comments(self.a, post, 0, 10)[1]["reply_to_id"], comment)
+
+
+class MySQLCommunityTests(CommunityDatabaseCase):
+
     def test_schema_after_matches_minimal_contract(self):
         report = verify_schema(before=False)
         self.assertEqual(report["tables"]["users"], 3)
+
+    def test_common_rules_share_one_row_and_require_community_or_admin_access(self):
+        url = "/v1/community/rules?team_id=6"
+        admin_url = "/v1/admin/community/rules"
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self.assertEqual(self.request("GET", url).json(), {"rules": None})
+        self.assertEqual(self.request("GET", url, self.token_b).status_code, 403)
+        self.assertEqual(self.request("PUT", admin_url, json={"body": "Rules"}).status_code, 403)
+        with patch.dict(os.environ, {"COMMUNITY_ADMIN_USER_IDS": str(self.a)}):
+            self.assertEqual(self.request("GET", admin_url).json(), {"rules": None})
+            for content in ("First rules", "Updated rules"):
+                self.assertEqual(self.request("PUT", admin_url, json={"body": content}).status_code, 200)
+                first = self.request("GET", url).json()
+                second = self.request("GET", "/v1/community/rules?team_id=503", self.token_b).json()
+                self.assertEqual(first, {"rules": {"body": content}})
+                self.assertEqual(first, second)
+                self.assertEqual(self.request("GET", admin_url).json(), first)
+            self.assertEqual(self.request("PUT", admin_url, json={"body": "   "}).status_code, 422)
+            self.assertEqual(self.request("PUT", admin_url, self.token_b, json={"body": "Changed"}).status_code, 403)
+        self.assertEqual(self.execute("SELECT * FROM community_rules"), [{"rules_id": 1, "body": "Updated rules"}])
+        with self.assertRaises(mysql.connector.DatabaseError) as error:
+            self.execute("INSERT INTO community_rules VALUES (2,'Another copy')")
+        self.assertEqual(error.exception.errno, 3819)
 
     def test_untrusted_user_header_and_expired_session_are_rejected(self):
         self.assertEqual(self.client.get("/v1/users/me", headers={"X-User-Id": str(self.a)}).status_code, 401)
@@ -375,7 +438,7 @@ class MySQLCommunityTests(unittest.TestCase):
         key = "posts/test-key"
         attachment_id = self.execute("INSERT INTO post_attachments (user_id,object_key,content_type,byte_size,created_at) VALUES (%s,%s,'image/png',3,%s)", (self.a, key, utc_now()))
         post_id = self.post(attachment_ids=[attachment_id])
-        with patch("one_touch_loader.api.routes.attachments.object_operation") as storage:
+        with patch.object(media_storage, "object_operation") as storage:
             denied = self.request("GET", f"/v1/attachments/{attachment_id}/content", self.token_b)
             self.assertEqual(denied.status_code, 403)
             storage.assert_not_called()
@@ -387,7 +450,7 @@ class MySQLCommunityTests(unittest.TestCase):
         file = io.BytesIO()
         Image.new("RGB", (3, 3)).save(file, format="PNG")
         data = file.getvalue()
-        with patch("one_touch_loader.api.routes.attachments.object_operation") as storage:
+        with patch.object(media_storage, "object_operation") as storage:
             response = self.request("POST", "/v1/attachments/upload",
                                     files={"file": ("wrong.html", data, "text/html")})
             self.assertEqual(response.status_code, 201, response.text)
@@ -413,7 +476,7 @@ class MySQLCommunityTests(unittest.TestCase):
     def test_upload_failure_rolls_back_attachment(self):
         file = io.BytesIO()
         Image.new("RGB", (3, 3)).save(file, format="PNG")
-        with patch("one_touch_loader.api.routes.attachments.object_operation", side_effect=HTTPException(502, "R2 unavailable")):
+        with patch.object(media_storage, "object_operation", side_effect=HTTPException(502, "R2 unavailable")):
             response = self.request("POST", "/v1/attachments/upload", files={"file": ("image.png", file.getvalue())})
         self.assertEqual(response.status_code, 502)
         self.assertEqual(self.execute("SELECT * FROM post_attachments"), [])
@@ -483,6 +546,284 @@ class MySQLCommunityTests(unittest.TestCase):
                 socket.receive_json()
             self.assertEqual(error.exception.code, 4400)
         self.assertEqual(self.execute("SELECT * FROM fixture_chat_messages"), [])
+
+    def test_edit_post_preserves_creation_and_reorders_own_attachments(self):
+        ids = [self.request("POST", "/v1/attachments/link", json={"url": f"https://example.com/{i}"}).json()["attachment_id"] for i in range(3)]
+        post = self.post(attachment_ids=ids[:2])
+        created = self.execute("SELECT created_at FROM posts WHERE post_id=%s", (post,))[0]["created_at"]
+        body = {"category": "news", "title": "Edited", "body": "Changed", "attachment_ids": ids[::-1]}
+        self.assertEqual(self.request("PUT", f"/v1/posts/{post}", json=body).status_code, 200)
+        item = self.request("GET", f"/v1/posts/{post}").json()
+        self.assertEqual([row["attachment_id"] for row in item["attachments"]], ids[::-1])
+        self.assertIsNotNone(item["edited_at"])
+        self.assertEqual(self.execute("SELECT created_at FROM posts WHERE post_id=%s", (post,))[0]["created_at"], created)
+        other, token = self.user("other-editor", 6)
+        self.assertEqual(self.request("PUT", f"/v1/posts/{post}", token, json=body).status_code, 403)
+        self.assertEqual(self.request("DELETE", f"/v1/posts/{post}", token).status_code, 403)
+        foreign = self.request("POST", "/v1/attachments/link", token, json={"url": "https://example.com/foreign"}).json()["attachment_id"]
+        self.assertEqual(self.request("PUT", f"/v1/posts/{post}", json={**body, "attachment_ids": [foreign]}).status_code, 400)
+        self.assertEqual([row["attachment_id"] for row in posts_repo.get_post(self.a, post)["attachments"]], ids[::-1])
+
+    def test_deleted_post_hides_children_and_queues_only_its_file(self):
+        attachment = self.execute("INSERT INTO post_attachments (user_id,object_key,content_type,byte_size,created_at) VALUES (%s,'posts/remove','image/png',3,%s)", (self.a, utc_now()))
+        post = self.post(attachment_ids=[attachment])
+        comment = posts_repo.create_comment(self.a, post, "comment", None)
+        posts_repo.report_content(self.a, "post", post, "report")
+        self.assertEqual(self.request("DELETE", f"/v1/posts/{post}").status_code, 200)
+        self.assertEqual(self.execute("SELECT object_key FROM media_deletions"), [{"object_key": "posts/remove"}])
+        for method, url, payload in [("GET", f"/v1/posts/{post}", None), ("GET", f"/v1/posts/{post}/comments", None),
+                                     ("PUT", f"/v1/comments/{comment}/like", None), ("GET", f"/v1/attachments/{attachment}/content", None),
+                                     ("POST", f"/v1/posts/{post}/comments", {"body": "late"})]:
+            self.assertEqual(self.request(method, url, json=payload).status_code, 404, url)
+        self.assertEqual(self.request("GET", "/v1/posts?team_id=6").json()["items"], [])
+        self.assertEqual(len(self.execute("SELECT * FROM content_reports")), 1)
+
+    def test_deleted_comment_keeps_nested_reply_ids_without_original_text(self):
+        post = self.post()
+        parent = posts_repo.create_comment(self.a, post, "parent", None)
+        child = posts_repo.create_comment(self.a, post, "reply", parent)
+        self.assertEqual(self.request("PUT", f"/v1/comments/{parent}", json={"body": "edited", "reply_to_id": child}).status_code, 422)
+        self.assertEqual(self.request("PUT", f"/v1/comments/{parent}", json={"body": "edited"}).status_code, 200)
+        self.assertEqual(self.request("DELETE", f"/v1/comments/{parent}").status_code, 200)
+        items = posts_repo.list_comments(self.a, post, 0, 10)
+        self.assertEqual((items[0]["body"], items[0]["state"], items[1]["reply_to_id"]), ("", "deleted", parent))
+        self.assertEqual(posts_repo.get_post(self.a, post)["comment_count"], 1)
+        self.assertEqual(self.request("POST", f"/v1/posts/{post}/comments", json={"body": "late", "reply_to_id": parent}).status_code, 400)
+
+    def test_block_applies_only_to_viewer_and_direct_content_access(self):
+        other, token = self.user("blocked-writer", 6)
+        own_post, other_post = self.post(), self.post(other)
+        comment = posts_repo.create_comment(other, own_post, "hidden reply", None)
+        self.assertEqual(self.request("PUT", f"/v1/users/me/blocks/{other}").status_code, 200)
+        self.assertEqual(self.request("PUT", f"/v1/users/me/blocks/{other}").status_code, 200)
+        self.assertEqual(len(self.request("GET", "/v1/users/me/blocks").json()["items"]), 1)
+        self.assertEqual([x["post_id"] for x in self.request("GET", "/v1/posts?team_id=6").json()["items"]], [own_post])
+        self.assertEqual(self.request("GET", f"/v1/posts/{other_post}").status_code, 404)
+        self.assertEqual(self.request("GET", f"/v1/posts/{own_post}", token).status_code, 200)
+        hidden = posts_repo.list_comments(self.a, own_post, 0, 10)[0]
+        self.assertEqual((hidden["comment_id"], hidden["body"], hidden["state"]), (comment, "", "blocked"))
+        self.assertEqual(self.request("PUT", f"/v1/comments/{comment}/like").status_code, 404)
+        self.assertEqual(self.request("DELETE", f"/v1/users/me/blocks/{other}").status_code, 200)
+        self.assertEqual(self.request("GET", f"/v1/posts/{other_post}").status_code, 200)
+        self.assertEqual(self.request("PUT", f"/v1/users/me/blocks/{self.a}").status_code, 400)
+
+    def test_live_chat_block_hides_sender_without_disconnecting_recipient(self):
+        self.request("PUT", f"/v1/users/me/blocks/{self.a}", self.token_b)
+        with self.client.websocket_connect("/v1/fixtures/10/chat") as a, self.client.websocket_connect("/v1/fixtures/10/chat") as b:
+            a.send_json({"token": self.token_a}); a.receive_json()
+            b.send_json({"token": self.token_b}); b.receive_json()
+            a.send_json({"text": "blocked message"})
+            a.receive_json()
+            b.send_json({"text": "still connected"})
+            self.assertEqual(b.receive_json()["text"], "still connected")
+            self.assertEqual(a.receive_json()["text"], "still connected")
+            self.request("DELETE", f"/v1/users/me/blocks/{self.a}", self.token_b)
+            a.send_json({"text": "unblocked"})
+            a.receive_json()
+            self.assertEqual(b.receive_json()["text"], "unblocked")
+        self.request("PUT", f"/v1/users/me/blocks/{self.a}", self.token_b)
+        self.assertEqual([x["text"] for x in chat_repo.history(self.b, 10, None, None, 10)], ["still connected"])
+
+    def test_account_deletion_unlinks_authors_and_removes_private_relations(self):
+        viewer, token = self.user("remaining-reader", 6)
+        published, draft = [self.request("POST", "/v1/attachments/link", json={"url": f"https://example.com/{i}"}).json()["attachment_id"] for i in range(2)]
+        post = self.post(attachment_ids=[published])
+        comment = posts_repo.create_comment(self.a, post, "preserved", None)
+        reply = posts_repo.create_comment(viewer, post, "reply", comment)
+        chat_repo.create_message(self.a, 10, "anonymous chat")
+        posts_repo.set_like(self.a, "post", post, True)
+        self.execute("INSERT INTO user_email_credentials VALUES (%s,'alpha@example.com','not-a-real-hash')", (self.a,))
+        self.execute("INSERT INTO user_social_identities VALUES ('google','old-subject',%s)", (self.a,))
+        self.execute("INSERT INTO user_avatars VALUES (%s,'avatars/old','image/png',3)", (self.a,))
+        self.request("PUT", f"/v1/users/me/blocks/{self.b}")
+        self.assertEqual(self.request("DELETE", "/v1/users/me").status_code, 200)
+        self.assertEqual(self.request("GET", "/v1/users/me").status_code, 401)
+        for table in ("users", "user_email_credentials", "user_social_identities", "user_sessions", "user_following_teams", "post_likes", "user_avatars", "user_blocks"):
+            self.assertEqual(self.execute(f"SELECT * FROM {table} WHERE user_id=%s", (self.a,)), [], table)
+        item = posts_repo.get_post(viewer, post)
+        self.assertEqual((item["user_id"], item["username"], item["author_deleted"], item["like_count"]), (None, None, True, 0))
+        comments = posts_repo.list_comments(viewer, post, 0, 10)
+        self.assertEqual((comments[0]["body"], comments[0]["user_id"], comments[1]["reply_to_id"]), ("preserved", None, comment))
+        self.assertIsNone(chat_repo.history(viewer, 10, None, None, 10)[0]["user_id"])
+        self.assertEqual(self.execute("SELECT attachment_id FROM post_attachments"), [{"attachment_id": published}])
+        self.assertEqual(self.execute("SELECT object_key FROM media_deletions"), [{"object_key": "avatars/old"}])
+        self.assertNotEqual(auth_repo.session_user(auth_repo.login_social("google", "old-subject")["access_token"])["user_id"], self.a)
+
+    def test_profile_photo_reuses_verified_upload_and_requires_visible_author(self):
+        image = io.BytesIO(); Image.new("RGB", (2, 2)).save(image, format="PNG")
+        files = {"file": ("photo.html", image.getvalue(), "text/html")}
+        with patch.object(media_storage, "object_operation") as storage:
+            self.assertEqual(self.request("PUT", "/v1/users/me/avatar", files=files).status_code, 200)
+            first = self.execute("SELECT object_key FROM user_avatars")[0]["object_key"]
+            self.assertEqual(self.request("PUT", "/v1/users/me/avatar", files=files).status_code, 200)
+            self.assertEqual(self.execute("SELECT object_key FROM media_deletions"), [{"object_key": first}])
+            storage.reset_mock()
+            self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).status_code, 404)
+            storage.assert_not_called()
+            chat_repo.create_message(self.a, 10, "visible author")
+            storage.return_value = {"Body": StreamingBody(io.BytesIO(b"abc"), 3), "ContentLength": 3}
+            self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).content, b"abc")
+            self.request("PUT", f"/v1/users/me/blocks/{self.a}", self.token_b)
+            storage.reset_mock()
+            self.assertEqual(self.request("GET", f"/v1/users/{self.a}/avatar", self.token_b).status_code, 404)
+            storage.assert_not_called()
+        self.assertEqual(self.request("DELETE", "/v1/users/me/avatar").status_code, 200)
+        self.assertIsNone(self.request("GET", "/v1/users/me").json()["avatar_url"])
+
+    def test_report_resolution_requires_server_admin_and_preserves_evidence(self):
+        other, token = self.user("reported-author", 6)
+        post = self.post(other)
+        posts_repo.report_content(self.a, "post", post, "spam")
+        report = self.execute("SELECT report_id FROM content_reports")[0]["report_id"]
+        self.assertEqual(self.request("GET", "/v1/admin/reports").status_code, 403)
+        with patch.dict(os.environ, {"COMMUNITY_ADMIN_USER_IDS": str(self.a)}):
+            self.assertEqual(self.request("GET", "/v1/admin/reports", token).status_code, 403)
+            self.assertEqual(self.request("PUT", f"/v1/admin/reports/{report}", json={"resolution": "hidden"}).status_code, 200)
+            self.assertEqual(self.request("GET", f"/v1/posts/{post}").status_code, 404)
+            reports = self.request("GET", "/v1/admin/reports?resolved=true").json()["items"]
+            self.assertEqual((reports[0]["content_body"], reports[0]["resolved_by"]), ("Body", self.a))
+            self.assertEqual(self.request("GET", "/v1/admin/reports").json()["items"], [])
+            self.assertEqual(self.request("PUT", f"/v1/admin/reports/{report}", json={"resolution": "dismissed"}).status_code, 409)
+
+    def test_suspension_blocks_community_but_allows_account_deletion(self):
+        post = self.post()
+        with patch.dict(os.environ, {"COMMUNITY_ADMIN_USER_IDS": str(self.b)}):
+            url = f"/v1/admin/users/{self.a}/suspension"
+            end = (utc_now() + timedelta(days=1)).isoformat() + "Z"
+            self.assertEqual(self.request("PUT", url, self.token_b, json={"suspended_until": end}).status_code, 200)
+            self.assertEqual(self.request("GET", f"/v1/posts/{post}").status_code, 403)
+            self.assertEqual(self.request("GET", "/v1/fixtures/10/chat/messages").status_code, 403)
+            self.assertEqual(self.request("GET", "/v1/users/me").status_code, 200)
+            self.assertEqual(self.request("PUT", url, self.token_b, json={"suspended_until": None}).status_code, 200)
+            self.assertEqual(self.request("GET", f"/v1/posts/{post}").status_code, 200)
+            self.request("PUT", url, self.token_b, json={"suspended_until": end})
+            self.assertEqual(self.request("DELETE", "/v1/users/me").status_code, 200)
+
+    def test_cleanup_preview_does_not_write_and_storage_failure_keeps_queue(self):
+        from one_touch_loader.loaders import community_maintenance
+        key = "posts/queued"
+        self.execute("INSERT INTO media_deletions VALUES (%s)", (key,))
+        self.execute("UPDATE user_sessions SET expires_at=%s WHERE user_id=%s", (utc_now() - timedelta(seconds=1), self.c))
+        with patch.object(community_maintenance, "object_operation") as storage:
+            report = community_maintenance.maintain_community(check=True)
+            self.assertEqual((report["queued_files"], report["user_sessions"]), (1, 1))
+            self.assertEqual(len(self.execute("SELECT * FROM user_sessions")), 3)
+            storage.assert_not_called()
+            storage.side_effect = HTTPException(502, "storage down")
+            with self.assertRaises(HTTPException):
+                community_maintenance.maintain_community(check=False)
+            self.assertEqual(self.execute("SELECT object_key FROM media_deletions"), [{"object_key": key}])
+            storage.side_effect = None
+            report = community_maintenance.maintain_community(check=False)
+            self.assertEqual(report["deleted_files"], 1)
+            self.assertEqual(self.execute("SELECT * FROM media_deletions"), [])
+
+    def test_cleanup_never_removes_published_attachments(self):
+        from one_touch_loader.loaders.community_maintenance import maintain_community
+        published, draft = [self.request("POST", "/v1/attachments/link", json={"url": f"https://example.com/{i}"}).json()["attachment_id"] for i in range(2)]
+        self.post(attachment_ids=[published])
+        self.execute("UPDATE post_attachments SET created_at=%s", (utc_now() - timedelta(days=3),))
+        cutoff = utc_now() - timedelta(days=1)
+        self.assertEqual(maintain_community(check=True, draft_before=cutoff)["drafts"], 1)
+        self.assertEqual(maintain_community(check=False, draft_before=cutoff)["drafts"], 1)
+        self.assertEqual(self.execute("SELECT attachment_id FROM post_attachments"), [{"attachment_id": published}])
+
+    def test_social_account_deletion_requires_unlink_and_rolls_back_on_provider_failure(self):
+        self.execute("INSERT INTO user_social_identities VALUES ('apple','apple-sub',%s)", (self.a,))
+        self.assertEqual(self.request("DELETE", "/v1/users/me").status_code, 400)
+        proof = {"apple": {"code": "fresh-code", "client_id": "our-app", "nonce": "a" * 16}}
+        with patch.object(social_login, "unlink_apple", side_effect=HTTPException(503, "provider down")):
+            self.assertEqual(self.request("DELETE", "/v1/users/me", json=proof).status_code, 503)
+        self.assertEqual(self.request("GET", "/v1/users/me").status_code, 200)
+        with patch.object(social_login, "unlink_apple") as unlink:
+            self.assertEqual(self.request("DELETE", "/v1/users/me", json=proof).status_code, 200)
+            unlink.assert_called_once_with("apple-sub", **proof["apple"])
+
+    def test_upload_commit_failure_removes_new_file_without_replacing_avatar(self):
+        image = io.BytesIO(); Image.new("RGB", (2, 2)).save(image, format="PNG")
+        from one_touch_loader.api.routes import avatars
+        from contextlib import contextmanager
+        @contextmanager
+        def failing_transaction():
+            with db.transaction() as conn:
+                yield conn
+                raise RuntimeError("Commit failed")
+        self.execute("INSERT INTO user_avatars VALUES (%s,'avatars/previous','image/png',3)", (self.a,))
+        with patch.object(media_storage, "object_operation") as storage, patch.object(avatars, "transaction", failing_transaction):
+            with self.assertRaisesRegex(RuntimeError, "Commit failed"):
+                self.request("PUT", "/v1/users/me/avatar", files={"file": ("photo.png", image.getvalue())})
+        self.assertEqual([call.args[0] for call in storage.call_args_list], ["put_object", "delete_object"])
+        self.assertEqual(storage.call_args.kwargs["Key"], storage.call_args_list[0].kwargs["Key"])
+        self.assertEqual(self.execute("SELECT object_key FROM user_avatars"), [{"object_key": "avatars/previous"}])
+        self.assertEqual(self.execute("SELECT * FROM media_deletions"), [])
+
+
+class KakaoWebhookTests(CommunityDatabaseCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        provider_tests.ProviderTests.setUpClass()
+
+    def setUp(self):
+        super().setUp()
+        self.execute("INSERT INTO user_social_identities VALUES ('kakao','321',%s)", (self.a,))
+        self.kakao_settings = patch.dict(os.environ, {"KAKAO_APP_ID": "123", "KAKAO_REST_API_KEY": "our-rest-key"})
+        self.kakao_settings.start()
+        self.addCleanup(self.kakao_settings.stop)
+        keys = SimpleNamespace(get_signing_key_from_jwt=lambda token: SimpleNamespace(key=provider_tests.ProviderTests.public))
+        self.kakao_keys = patch.object(social_login, "_keys", return_value=keys)
+        self.kakao_keys.start()
+        self.addCleanup(self.kakao_keys.stop)
+
+    def webhook(self, token=None):
+        return self.client.post('/v1/auth/kakao/events', content=token or provider_tests.ProviderTests().kakao_event_token(),
+                                headers={'Content-Type': 'application/secevent+jwt'})
+
+    def test_unlink_anonymizes_content_and_repeat_does_not_delete_new_account(self):
+        post = self.post()
+        comment = posts_repo.create_comment(self.a, post, 'keep reply', None)
+        chat_repo.create_message(self.a, 10, 'keep chat')
+        self.execute("INSERT INTO user_avatars VALUES (%s,'avatars/old','image/png',3)", (self.a,))
+        with patch.object(social_login, 'unlink_kakao') as unlink:
+            response = self.webhook()
+            self.assertEqual((response.status_code, response.content), (202, b''))
+            unlink.assert_not_called()
+        self.assertEqual(self.request('GET', '/v1/users/me').status_code, 401)
+        self.assertIsNone(self.execute('SELECT user_id FROM posts WHERE post_id=%s', (post,))[0]['user_id'])
+        self.assertIsNone(self.execute('SELECT user_id FROM post_comments WHERE comment_id=%s', (comment,))[0]['user_id'])
+        self.assertIsNone(self.execute('SELECT user_id FROM fixture_chat_messages')[0]['user_id'])
+        self.assertEqual(self.execute('SELECT object_key FROM media_deletions'), [{'object_key': 'avatars/old'}])
+        replacement = auth_repo.login_social('kakao', '321')['access_token']
+        self.assertEqual(self.webhook().status_code, 202)
+        self.assertNotEqual(auth_repo.session_user(replacement)['user_id'], self.a)
+        self.assertEqual(len(self.execute('SELECT * FROM kakao_webhook_receipts')), 1)
+
+    def test_invalid_tokens_never_touch_accounts_and_use_kakao_error_body(self):
+        for token in (b'not-signed', provider_tests.ProviderTests().kakao_event_token(app_id='wrong-app')):
+            result = self.webhook(token)
+            self.assertEqual(result.status_code, 400)
+            self.assertEqual(set(result.json()), {'err', 'description'})
+        self.assertEqual(self.request('GET', '/v1/users/me').status_code, 200)
+        self.assertEqual(self.execute('SELECT * FROM kakao_webhook_receipts'), [])
+        result = self.client.post('/v1/auth/kakao/events', content=b'token', headers={'Content-Type': 'application/json'})
+        self.assertEqual((result.status_code, result.json()['err']), (400, 'invalid_request'))
+
+    def test_database_failure_rolls_back_receipt_and_retry_completes(self):
+        with patch.object(users_repo, '_delete_account_rows', side_effect=mysql.connector.Error('test database failure')):
+            with self.assertRaises(mysql.connector.Error):
+                self.webhook()
+        self.assertEqual(self.execute('SELECT * FROM kakao_webhook_receipts'), [])
+        self.assertEqual(self.request('GET', '/v1/users/me').status_code, 200)
+        self.assertEqual(self.webhook().status_code, 202)
+
+    def test_simultaneous_delivery_and_unknown_member_are_acknowledged(self):
+        token = provider_tests.ProviderTests().kakao_event_token()
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(lambda _: self.webhook(token).status_code, range(2)))
+        self.assertEqual(results, [202, 202])
+        self.assertEqual(len(self.execute('SELECT * FROM kakao_webhook_receipts')), 1)
+        # 계정 삭제 직후 다른 SET이 도착해도 이미 없는 회원을 오류로 처리하지 않아요.
+        self.assertEqual(self.webhook(provider_tests.ProviderTests().kakao_event_token(jti='another-event')).status_code, 202)
 
 
 if __name__ == "__main__":

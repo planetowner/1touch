@@ -3,6 +3,7 @@ from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.community_access import require_favorite_team_access
 from ..services.community_periods import public_row, utc_now
 from .users_repo import get_user, lock_user, require_profile
+from ..services.content_visibility import blocked_sql, public_author
 
 
 def fixture_teams(fixture_id: int) -> tuple[int, int]:
@@ -21,7 +22,7 @@ def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int 
     check_chat_user(get_user(user_id), fixture_id)
     if before_id is not None and after_id is not None:
         raise HTTPException(400, "Use either before_id or after_id")
-    condition, params = "", [fixture_id]
+    condition, params = "", [fixture_id, user_id]
     if before_id is not None:
         condition = "AND m.message_id<%s"
         params.append(before_id)
@@ -29,12 +30,14 @@ def history(user_id: int, fixture_id: int, before_id: int | None, after_id: int 
         condition = "AND m.message_id>%s"
         params.append(after_id)
     order = "ASC" if after_id is not None else "DESC"
-    rows = fetch_all_dict(f"""SELECT m.message_id,m.fixture_id,m.user_id,u.username,m.body AS text,m.created_at
-        FROM fixture_chat_messages m JOIN users u ON u.user_id=m.user_id
-        WHERE m.fixture_id=%s {condition} ORDER BY m.message_id {order} LIMIT %s""", tuple(params + [limit]))
+    rows = fetch_all_dict(f"""SELECT m.message_id,m.fixture_id,m.user_id,u.username,m.body AS text,m.created_at,
+        EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=m.user_id) AS has_avatar
+        FROM fixture_chat_messages m LEFT JOIN users u ON u.user_id=m.user_id
+        WHERE m.fixture_id=%s AND m.state='active' AND NOT {blocked_sql('m.user_id')}
+        {condition} ORDER BY m.message_id {order} LIMIT %s""", tuple(params + [limit]))
     if after_id is None:
         rows.reverse()
-    return [public_row(row) for row in rows]
+    return [public_row(public_author(row)) for row in rows]
 
 
 def create_message(user_id: int, fixture_id: int, text: str) -> dict:
@@ -46,5 +49,7 @@ def create_message(user_id: int, fixture_id: int, text: str) -> dict:
                     (fixture_id, user_id, text, now))
         result = {"message_id": cur.lastrowid, "fixture_id": fixture_id, "user_id": user_id,
                   "username": user["username"], "text": text, "created_at": now}
+        cur.execute("SELECT 1 FROM user_avatars WHERE user_id=%s", (user_id,))
+        result["has_avatar"] = cur.fetchone() is not None
     # DB 저장에 실패한 메시지를 실시간으로 먼저 전달하지 않아요.
-    return public_row(result)
+    return public_row(public_author(result))

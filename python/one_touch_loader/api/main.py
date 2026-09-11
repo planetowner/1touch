@@ -17,6 +17,10 @@ from .routes.auth import router as auth_router
 from .routes.users import router as users_router
 from .routes.attachments import router as attachments_router
 from .routes.chat import ChatHub, router as chat_router
+from .routes.avatars import router as avatars_router
+from .routes.moderation import router as moderation_router
+from .routes.community import router as community_router
+from .routes.kakao_events import router as kakao_events_router
 
 
 def create_app() -> FastAPI:
@@ -58,9 +62,13 @@ def create_app() -> FastAPI:
     app.include_router(posts_router, prefix="/v1", tags=["posts"])
     app.include_router(players_router, prefix="/v1", tags=["players"])
     app.include_router(auth_router, prefix="/v1", tags=["auth"])
+    app.include_router(kakao_events_router, prefix="/v1", tags=["auth"])
     app.include_router(users_router, prefix="/v1", tags=["users"])
     app.include_router(attachments_router, prefix="/v1", tags=["attachments"])
     app.include_router(chat_router, prefix="/v1", tags=["chat"])
+    app.include_router(avatars_router, prefix="/v1", tags=["users"])
+    app.include_router(moderation_router, prefix="/v1", tags=["moderation"])
+    app.include_router(community_router, prefix="/v1", tags=["community"])
 
     return app
 

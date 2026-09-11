@@ -194,6 +194,12 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli contracts refresh-current [team_id,team_id,...] [--check]
   python -m one_touch_loader.cli contracts departures [--check]  (after recent transfers)
   python -m one_touch_loader.cli contracts player <player_id> [--check]
+
+22. community (community-management 마이그레이션 이후, 기본은 읽기 전용 점검)
+  python -m one_touch_loader.cli community cleanup --check
+  python -m one_touch_loader.cli community cleanup --apply [--limit 100]
+  python -m one_touch_loader.cli community cleanup --check --draft-before <UTC_ISO_timestamp>
+  python -m one_touch_loader.cli community cleanup --apply --draft-before <UTC_ISO_timestamp>
 """
 
 
@@ -223,7 +229,14 @@ def main():
 
     cmd = sys.argv[1]
 
-    if cmd == "countries":
+    if cmd == "community":
+        if len(sys.argv) >= 3 and sys.argv[2] == "cleanup":
+            from one_touch_loader.loaders.community_maintenance import main as cleanup
+            cleanup(sys.argv[3:])
+        else:
+            print(USAGE)
+
+    elif cmd == "countries":
         if len(sys.argv) == 3 and sys.argv[2] == "refresh":
             refresh_countries()
             print("Countries refresh done.")

@@ -51,13 +51,17 @@ OLD_FKS = {("post_reports", "post_id", "posts", "post_id"),
            *[(table, "user_id", "users", "user_id") for table in ("post_reports", "posts", "user_following_teams", "user_profiles")]}
 
 
-def verify_schema(*, before: bool) -> dict:
+def verify_schema(*, before: bool, columns=None, primary=None, foreign_keys=None, print_report: bool = True) -> dict:
+    # 후속 변경도 같은 컬럼·PK·FK·답글 관계 검사에 최종 계약만 전달해요.
+    columns = COLUMNS if columns is None else columns
+    primary = PRIMARY if primary is None else primary
+    foreign_keys = FOREIGN_KEYS if foreign_keys is None else foreign_keys
     report = {"before": before, "tables": {}}
-    expected = OLD if before else COLUMNS
+    expected = OLD if before else columns
     with closing(get_conn()) as conn:
         conn.start_transaction(readonly=True, consistent_snapshot=True)
         with conn.cursor() as cur:
-            for table in sorted(OLD.keys() | COLUMNS.keys()):
+            for table in sorted(OLD.keys() | columns.keys()):
                 cur.execute("SELECT column_name FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=%s ORDER BY ordinal_position", (table,))
                 if [row[0] for row in cur.fetchall()] != expected.get(table, "").split():
                     raise AssertionError(f"Unexpected columns: {table}")
@@ -70,13 +74,13 @@ def verify_schema(*, before: bool) -> dict:
                 report["tables"][table] = count
                 if not before:
                     cur.execute("SELECT column_name FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name=%s AND index_name='PRIMARY' ORDER BY seq_in_index", (table,))
-                    if [row[0] for row in cur.fetchall()] != PRIMARY[table].split():
+                    if [row[0] for row in cur.fetchall()] != primary[table].split():
                         raise AssertionError(f"Unexpected primary key: {table}")
             cur.execute("""SELECT table_name,column_name,referenced_table_name,referenced_column_name FROM information_schema.key_column_usage
                 WHERE table_schema=DATABASE() AND referenced_table_name IS NOT NULL""")
-            scope = OLD.keys() | COLUMNS.keys()
+            scope = OLD.keys() | columns.keys()
             actual_fks = {row for row in cur.fetchall() if row[0] in scope or row[2] in scope}
-            if actual_fks != (OLD_FKS if before else FOREIGN_KEYS):
+            if actual_fks != (OLD_FKS if before else foreign_keys):
                 raise AssertionError(f"Unexpected user/community foreign keys: {actual_fks}")
             for table, key in (("teams", "team_id"), ("players", "player_id"), ("fixtures", "fixture_id"), ("competitions", "competition_id")):
                 cur.execute("SELECT column_type FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=%s AND column_name=%s", (table, key))
@@ -92,7 +96,8 @@ def verify_schema(*, before: bool) -> dict:
                 if cur.fetchone()[0]:
                     raise AssertionError("Reply points to another post")
         conn.rollback()
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    if print_report:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     return report
 
 
