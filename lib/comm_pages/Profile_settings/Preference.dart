@@ -12,20 +12,12 @@ class PreferencePage extends StatefulWidget {
 }
 
 class _PreferencePageState extends State<PreferencePage> {
-  // 1. State variables to hold current selections
-  String _timeZone = "New York (GMT - 5:00)";
+  // State variables to hold current selections
   String _language = "English";
   String _unit = "Metric (cm)";
   String _currency = "USD (\$)";
 
-  // 2. Mock Data Options
-  final List<String> _timeZoneOptions = [
-    "New York (GMT - 5:00)",
-    "London (GMT + 0:00)",
-    "Paris (GMT + 1:00)",
-    "Tokyo (GMT + 9:00)",
-    "Sydney (GMT + 11:00)"
-  ];
+  // Mock data options
   final List<String> _languageOptions = [
     "English",
     "Spanish",
@@ -88,19 +80,6 @@ class _PreferencePageState extends State<PreferencePage> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
-                      _buildPreferenceSection("TIME ZONE", _timeZone,
-                          onTap: () => _navigateAndSelect(
-                              "Time Zone",
-                              _timeZoneOptions,
-                              _timeZone,
-                              (val) => _timeZone = val)),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      _buildDivider(),
-                      const SizedBox(
-                        height: 12,
-                      ),
                       _buildPreferenceSection("LANGUAGE", _language,
                           onTap: () => _navigateAndSelect(
                               "Language",
