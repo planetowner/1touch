@@ -63,6 +63,7 @@ services:
       COLLAB_PASSWORD_HASH: ${COLLAB_PASSWORD_HASH:?Set a collaboration password hash}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site:/srv/1touch:ro
       - caddy_data:/data
       - caddy_config:/config
     logging: *bounded-logging

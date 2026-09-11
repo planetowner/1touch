@@ -12,14 +12,15 @@ release_directory="/opt/1touch/releases/$release_tag"
 runtime_directory=/opt/1touch/backend/deploy/vultr
 candidate_environment="$runtime_directory/.env.production.next"
 
-# DNS가 아직 주차 페이지를 가리키면 실행 중인 API를 변경하지 않아요.
+# 대표 도메인도 같은 서버를 가리켜야 소개 페이지의 HTTPS 인증서를 발급할 수 있어요.
 python3 - "$api_domain" "$server_ip" <<'PY'
 import socket, sys
-domain, expected = sys.argv[1:]
-addresses = {item[4][0] for item in socket.getaddrinfo(domain, 443, type=socket.SOCK_STREAM)}
-if addresses != {expected}:
-    raise SystemExit(f'DNS must point only to {expected}; observed: {sorted(addresses)}')
-print(f'DNS verified: {domain} -> {expected}')
+api_domain, expected = sys.argv[1:]
+for domain in (api_domain, '1touch.football'):
+    addresses = {item[4][0] for item in socket.getaddrinfo(domain, 443, type=socket.SOCK_STREAM)}
+    if addresses != {expected}:
+        raise SystemExit(f'DNS for {domain} must point only to {expected}; observed: {sorted(addresses)}')
+    print(f'DNS verified: {domain} -> {expected}')
 PY
 
 # 현재 API는 그대로 둔 채 전송 파일을 확인하고 새 이미지를 먼저 만들어요.
@@ -81,6 +82,10 @@ fi
 for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
+# 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
+for filename in index.html styles.css assets/1touch-wordmark.jpg; do
+  install -D -m 644 "$release_directory/deploy/vultr/site/$filename" "$runtime_directory/site/$filename"
+done
 cd "$runtime_directory"
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh config --quiet
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps proxy caddy validate --config /etc/caddy/Caddyfile
@@ -114,8 +119,12 @@ status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}
 [[ "$status" == 401 ]] || { echo "Expected protected API docs (401), got $status" >&2; exit 1; }
 status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/v1/auth/providers?country_code=KR&platform=ios")
 [[ "$status" == 200 ]] || { echo "Expected public login providers (200), got $status" >&2; exit 1; }
+# 실제 소개 파일이 배포됐는지 확인해 주차 페이지의 200 응답을 성공으로 보지 않아요.
+curl --fail --silent --show-error --retry 12 --retry-all-errors --retry-delay 5 --max-time 10 \
+  'https://1touch.football/' --output "$transfer_directory/served-introduction.html"
+cmp "$runtime_directory/site/index.html" "$transfer_directory/served-introduction.html"
 printf '\n'
 bash compose-production.sh ps
 systemctl list-timers onetouch-db-backup.timer --no-pager
 systemctl list-timers onetouch-community-cleanup.timer --no-pager
-echo 'HTTPS, protected docs, API/database health and daily SQL backup verified.'
+echo 'Public introduction, HTTPS, protected docs, API/database health and daily SQL backup verified.'
