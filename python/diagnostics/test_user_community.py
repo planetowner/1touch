@@ -104,6 +104,7 @@ class CommunityDatabaseCase(unittest.TestCase):
     management_schema = True
     social_webhooks_schema = True
     account_management_schema = True
+    post_drafts_schema = True
     @classmethod
     def setUpClass(cls):
         cls.config = {"host": "127.0.0.1", "port": 14873, "user": "root", "password": "", "connection_timeout": 5}
@@ -143,6 +144,8 @@ class CommunityDatabaseCase(unittest.TestCase):
                 self.apply_social_webhooks_schema()
                 if self.account_management_schema:
                     self.apply_account_management_schema()
+                    if self.post_drafts_schema:
+                        self.apply_post_drafts_schema()
         self.execute("INSERT INTO teams (team_id,name) VALUES (6,'A'),(14,'B'),(503,'C'),(591,'D')")
         self.execute("INSERT INTO players VALUES (832,'Player A',NULL),(268,'Player B',NULL)")
         self.execute("INSERT INTO competitions VALUES (8,'league'),(82,'league'),(301,'league')")
@@ -204,6 +207,12 @@ class CommunityDatabaseCase(unittest.TestCase):
 
     def apply_account_management_schema(self):
         sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_account_management.sql"
+        for statement in sql.read_text(encoding="utf-8").split(";"):
+            if statement.strip():
+                self.execute(statement)
+
+    def apply_post_drafts_schema(self):
+        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_post_drafts.sql"
         for statement in sql.read_text(encoding="utf-8").split(";"):
             if statement.strip():
                 self.execute(statement)
@@ -762,10 +771,9 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         from one_touch_loader.loaders.community_maintenance import maintain_community
         published, draft = [self.request("POST", "/v1/attachments/link", json={"url": f"https://example.com/{i}"}).json()["attachment_id"] for i in range(2)]
         self.post(attachment_ids=[published])
-        self.execute("UPDATE post_attachments SET created_at=%s", (utc_now() - timedelta(days=3),))
-        cutoff = utc_now() - timedelta(days=1)
-        self.assertEqual(maintain_community(check=True, draft_before=cutoff)["drafts"], 1)
-        self.assertEqual(maintain_community(check=False, draft_before=cutoff)["drafts"], 1)
+        self.execute("UPDATE post_attachments SET created_at=%s", (utc_now() - timedelta(days=8),))
+        self.assertEqual(maintain_community(check=True)["unused_attachments"], 1)
+        self.assertEqual(maintain_community(check=False)["unused_attachments"], 1)
         self.assertEqual(self.execute("SELECT attachment_id FROM post_attachments"), [{"attachment_id": published}])
 
     def test_social_account_deletion_requires_unlink_and_rolls_back_on_provider_failure(self):

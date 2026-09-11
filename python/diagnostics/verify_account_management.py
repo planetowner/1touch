@@ -11,7 +11,7 @@ COLUMNS = dict(previous.COLUMNS)
 COLUMNS["users"] = " ".join(column for column in COLUMNS["users"].split() if column != "timezone")
 
 
-def verify_schema(*, before: bool) -> dict:
+def verify_schema(*, before: bool, print_report: bool = True) -> dict:
     report = (previous.verify_schema(before=False, print_report=False) if before else
               base.verify_schema(before=False, columns=COLUMNS, primary=previous.PRIMARY,
                                  foreign_keys=previous.management.FOREIGN_KEYS, print_report=False))
@@ -25,7 +25,8 @@ def verify_schema(*, before: bool) -> dict:
                 raise AssertionError("Unexpected email verification purposes")
         conn.rollback()
     report["before"] = before
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    if print_report:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     return report
 
 
