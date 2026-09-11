@@ -13,10 +13,13 @@ router = APIRouter()
 @router.get("/users/me")
 def my_profile(user_id: int = Depends(get_user_id)):
     user = get_user(user_id)
+    # 이메일 가입자만 우리 앱의 인증·복구 주소를 수정해요. 소셜 공급자의 이메일은 저장하지 않아요.
+    credentials = fetch_all_dict("SELECT email FROM user_email_credentials WHERE user_id=%s", (user_id,))
+    user["email"] = credentials[0]["email"] if credentials else None
     user["avatar_url"] = f"/v1/users/{user_id}/avatar" if fetch_all_dict(
         "SELECT 1 FROM user_avatars WHERE user_id=%s", (user_id,)) else None
     return {**public_row(user), "onboarding_complete": all(
-        user[key] for key in ("username", "first_name", "last_name", "timezone", "favorite_team_id"))}
+        user[key] for key in ("username", "first_name", "last_name", "favorite_team_id"))}
 
 
 @router.put("/users/me/profile")

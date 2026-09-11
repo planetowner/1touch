@@ -1,6 +1,5 @@
 from typing import Annotated, Literal
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 Username = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
@@ -23,21 +22,11 @@ class UserProfileBody(BaseModel):
     username: Username
     first_name: Name
     last_name: Name
-    timezone: str = Field(max_length=64)
-
-    @field_validator("timezone")
-    @classmethod
-    def valid_timezone(cls, value):
-        try:
-            ZoneInfo(value)
-        except (ZoneInfoNotFoundError, ValueError) as exc:
-            raise ValueError("Use an IANA timezone such as Asia/Seoul") from exc
-        return value
 
 
 class EmailCodeBody(BaseModel):
     email: EmailStr
-    purpose: Literal["signup", "password_reset"] = "signup"
+    purpose: Literal["signup", "password_reset", "username_recovery"] = "signup"
 
 
 class CodeBody(BaseModel):
@@ -56,6 +45,17 @@ class PasswordLoginBody(BaseModel):
 
 class ResetPasswordBody(CodeBody):
     password: Password
+
+
+class EmailChangeRequestBody(BaseModel):
+    email: EmailStr
+    password: Password
+
+
+class EmailChangeConfirmBody(BaseModel):
+    password: Password
+    current_email: CodeBody
+    new_email: CodeBody
 
 
 class GoogleLoginBody(BaseModel):

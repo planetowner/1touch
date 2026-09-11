@@ -13,7 +13,7 @@ PRIMARY = {key: value for key, value in management.PRIMARY.items() if key != "ka
 PRIMARY["social_webhook_receipts"] = "provider event_hash"
 
 
-def verify_schema(*, before: bool) -> dict:
+def verify_schema(*, before: bool, print_report: bool = True) -> dict:
     if before:
         report = management.verify_schema(before=False, print_report=False)
     else:
@@ -33,7 +33,8 @@ def verify_schema(*, before: bool) -> dict:
                     raise AssertionError("Unexpected webhook provider contract")
         conn.rollback()
     report["before"] = before
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    if print_report:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     return report
 
 

@@ -1,7 +1,8 @@
 """사용자의 달력 경계를 UTC 조회 범위로 바꿔요."""
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from fastapi import HTTPException
 
 
 class PostPeriod(str, Enum):
@@ -22,10 +23,17 @@ def public_row(row: dict) -> dict:
     return {key: value.isoformat() + "Z" if isinstance(value, datetime) else value for key, value in row.items()}
 
 
-def period_bounds(period: PostPeriod, timezone_name: str, now: datetime) -> tuple[datetime, datetime] | None:
+def period_bounds(period: PostPeriod, timezone_name: str | None, now: datetime) -> tuple[datetime, datetime] | None:
     if period == PostPeriod.all_time:
         return None
-    local = now.replace(tzinfo=timezone.utc).astimezone(ZoneInfo(timezone_name))
+    # 기기마다 현재 시간대가 다를 수 있어 회원 설정 대신 조회 요청의 시간대를 사용해요.
+    if not timezone_name:
+        raise HTTPException(422, "Device timezone is required for a date period")
+    try:
+        device_zone = ZoneInfo(timezone_name)
+    except (ZoneInfoNotFoundError, ValueError) as exc:
+        raise HTTPException(422, "Use an IANA device timezone such as Asia/Seoul") from exc
+    local = now.replace(tzinfo=timezone.utc).astimezone(device_zone)
     start = local.replace(hour=0, minute=0, second=0, microsecond=0)
     if period == PostPeriod.today:
         end = start + timedelta(days=1)
