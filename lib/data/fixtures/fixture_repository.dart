@@ -1,11 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 
 abstract interface class FixtureRepository {
   List<Fixture> get allFixtures;
   ValueListenable<List<Fixture>> get fixtures;
 
   Fixture? findById(int fixtureId);
+
+  /// Loads the contextual data returned by `GET /v1/fixtures/{fixture_id}`.
+  Future<FixtureDetail> loadDetail(int fixtureId);
 
   List<Fixture> forTeam(
     int teamId, {

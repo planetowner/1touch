@@ -2,10 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:onetouch/data/fixtures/api/api_fixture_detail_mapper.dart';
+import 'package:onetouch/data/fixtures/api/api_fixture_detail_response.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_mapper.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 
 /// HTTP implementation of the verified team-matches fixture query.
 ///
@@ -36,6 +39,23 @@ class ApiFixtureRepository implements FixtureRepository {
   Fixture? findById(int fixtureId) => _fixtures.value
       .where((fixture) => fixture.fixtureId == fixtureId)
       .firstOrNull;
+
+  @override
+  Future<FixtureDetail> loadDetail(int fixtureId) async {
+    final uri = _apiBaseUri.resolve('fixtures/$fixtureId');
+    final decoded = await _getJsonObject(uri, 'fixture-detail');
+    final response = ApiFixtureDetailResponse.fromJson(decoded);
+    if (response.fixture.fixtureId != fixtureId) {
+      throw FormatException(
+        'Expected fixture_id $fixtureId but received '
+        '${response.fixture.fixtureId}.',
+      );
+    }
+
+    final detail = fixtureDetailFromApiResponse(response);
+    _mergeIntoCache([detail.fixture]);
+    return detail;
+  }
 
   @override
   List<Fixture> forTeam(

@@ -4,6 +4,7 @@ import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_season_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 
 import 'support/fixture_repository_contract.dart';
 
@@ -21,6 +22,51 @@ void main() {
     expect(
       repository.allFixtures.map((fixture) => fixture.fixtureId).toSet(),
       mockFixtures.map((fixture) => fixture.fixtureId).toSet(),
+    );
+  });
+
+  test('loads only explicitly supplied fixture detail', () async {
+    const fixture = Fixture(
+      fixtureId: 1001,
+      seasonId: 25583,
+      competitionId: 8,
+      homeTeamId: 8,
+      awayTeamId: 19,
+      competitionType: CompetitionType.league,
+      roundName: '3',
+      status: FixtureStatus.past,
+      startingAt: '2026-08-29 14:00:00',
+      homeScore: 2,
+      awayScore: 1,
+    );
+    final suppliedDetail = FixtureDetail(
+      fixture: fixture,
+      venueName: 'Anfield',
+      expectedGoals: null,
+      playerExpectedGoals: const [],
+      shots: const [],
+      events: const [],
+      statistics: const [],
+      lineups: const [],
+      formations: const [],
+      coaches: const [],
+      pressure: const [],
+    );
+    final repository = MockFixtureRepository(
+      fixtures: const [fixture],
+      fixtureDetails: [suppliedDetail],
+    );
+
+    expect(await repository.loadDetail(1001), same(suppliedDetail));
+    await expectLater(repository.loadDetail(9999), throwsStateError);
+  });
+
+  test('does not invent detail for a fixture in the base catalog', () async {
+    final repository = MockFixtureRepository();
+
+    await expectLater(
+      repository.loadDetail(mockFixtures.first.fixtureId),
+      throwsStateError,
     );
   });
 

@@ -162,6 +162,57 @@ void main() {
     expect(requestCount, 0);
   });
 
+  test('requests, maps, and caches fixture detail', () async {
+    final client = MockClient((request) async {
+      expect(request.method, 'GET');
+      expect(request.url.path, '/v1/fixtures/19712345');
+      expect(request.url.queryParameters, isEmpty);
+      expect(request.headers['Authorization'], 'Bearer session-token');
+      expect(request.headers['Accept'], 'application/json');
+      return http.Response(jsonEncode(_fixtureDetailJson()), 200);
+    });
+    final repository = ApiFixtureRepository(
+      client: client,
+      apiBaseUri: Uri.parse('http://localhost:8000/v1'),
+      requestHeaders: const {
+        'Authorization': 'Bearer session-token',
+      },
+    );
+
+    final detail = await repository.loadDetail(19712345);
+
+    expect(detail.fixture.fixtureId, 19712345);
+    expect(detail.venueName, 'Anfield');
+    expect(detail.expectedGoals?.homeXg, 1.75);
+    expect(detail.pressure.single.pressure, 0.78);
+    expect(repository.findById(19712345), same(detail.fixture));
+  });
+
+  test('rejects a mismatched fixture-detail identity', () async {
+    final repository = ApiFixtureRepository(
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode(_fixtureDetailJson(fixtureId: 9999)),
+          200,
+        ),
+      ),
+      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.loadDetail(19712345),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          contains('9999'),
+        ),
+      ),
+    );
+    expect(repository.allFixtures, isEmpty);
+  });
+
   test('requests, maps, and caches head-to-head fixtures', () async {
     final client = MockClient((request) async {
       expect(request.method, 'GET');
@@ -276,5 +327,33 @@ Map<String, dynamic> _fixtureJson({
     'away_team_name': 'Arsenal',
     'home_team_logo': 'https://cdn.example/liverpool.png',
     'away_team_logo': null,
+  };
+}
+
+Map<String, dynamic> _fixtureDetailJson({int fixtureId = 19712345}) {
+  return {
+    ..._fixtureJson(fixtureId: fixtureId),
+    'venue_name': 'Anfield',
+    'expected_goals': {
+      'home_xg': 1.75,
+      'away_xg': 0.82,
+      'home_xga': 0.82,
+      'away_xga': 1.75,
+      'provider': 'understat',
+    },
+    'player_expected_goals': [],
+    'shots': [],
+    'events': [],
+    'statistics': [],
+    'lineups': [],
+    'formations': [],
+    'coaches': [],
+    'pressure': [
+      {
+        'team_id': 8,
+        'minute': 27,
+        'pressure': 0.78,
+      },
+    ],
   };
 }

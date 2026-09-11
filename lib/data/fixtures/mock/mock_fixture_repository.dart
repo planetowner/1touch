@@ -2,9 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 
 class MockFixtureRepository implements FixtureRepository {
-  MockFixtureRepository({List<Fixture>? fixtures}) {
+  MockFixtureRepository({
+    List<Fixture>? fixtures,
+    List<FixtureDetail>? fixtureDetails,
+  }) {
     final sortedFixtures = List<Fixture>.of(fixtures ?? mockFixtures)
       ..sort(_compareChronologically);
     _allFixtures = List.unmodifiable(sortedFixtures);
@@ -21,12 +25,17 @@ class MockFixtureRepository implements FixtureRepository {
       for (final entry in byTeam.entries)
         entry.key: List<Fixture>.unmodifiable(entry.value),
     });
+    _fixtureDetailsById = Map.unmodifiable({
+      for (final detail in fixtureDetails ?? const <FixtureDetail>[])
+        detail.fixture.fixtureId: detail,
+    });
     _fixtures = ValueNotifier(_allFixtures);
   }
 
   late final List<Fixture> _allFixtures;
   late final Map<int, Fixture> _fixturesById;
   late final Map<int, List<Fixture>> _fixturesByTeam;
+  late final Map<int, FixtureDetail> _fixtureDetailsById;
   late final ValueNotifier<List<Fixture>> _fixtures;
 
   @override
@@ -37,6 +46,15 @@ class MockFixtureRepository implements FixtureRepository {
 
   @override
   Fixture? findById(int fixtureId) => _fixturesById[fixtureId];
+
+  @override
+  Future<FixtureDetail> loadDetail(int fixtureId) async {
+    final detail = _fixtureDetailsById[fixtureId];
+    if (detail == null) {
+      throw StateError('Fixture detail $fixtureId was not found.');
+    }
+    return detail;
+  }
 
   @override
   List<Fixture> forTeam(
