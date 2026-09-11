@@ -29,7 +29,7 @@ void homeRepositoryContract({
     );
 
     expect(
-      home.calendar.map((fixture) => fixture.fixtureId),
+      home.calendar.map((item) => item.fixture.fixtureId),
       [3, 2, 1],
     );
     expect(home.liveMatch?.fixtureId, 2);
@@ -60,12 +60,14 @@ void homeRepositoryContract({
 
     expect(
       home.calendar.every(
-        (fixture) => fixture.homeTeamId == 1 || fixture.awayTeamId == 1,
+        (item) => item.fixture.homeTeamId == 1 || item.fixture.awayTeamId == 1,
       ),
       isTrue,
     );
     expect(
-      home.calendar.where((fixture) => fixture.status == FixtureStatus.live),
+      home.calendar.where(
+        (item) => item.fixture.status == FixtureStatus.live,
+      ),
       hasLength(1),
     );
   });

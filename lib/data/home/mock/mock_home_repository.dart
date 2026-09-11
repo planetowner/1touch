@@ -1,7 +1,6 @@
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
-import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/home_data.dart';
 
 class MockHomeRepository implements HomeRepository {
@@ -48,7 +47,7 @@ class MockHomeRepository implements HomeRepository {
     );
   }
 
-  List<Fixture> _calendarForTeam(
+  List<HomeCalendarFixture> _calendarForTeam(
     int teamId, {
     required DateTime? start,
     required DateTime? end,
@@ -66,7 +65,17 @@ class MockHomeRepository implements HomeRepository {
     }).toList()
       ..sort((left, right) => right.kickoff!.compareTo(left.kickoff!));
 
-    return List.unmodifiable(fixtures.take(200));
+    return List.unmodifiable(
+      fixtures.take(200).map((fixture) {
+        final opponentTeamId = fixture.homeTeamId == teamId
+            ? fixture.awayTeamId
+            : fixture.homeTeamId;
+        return HomeCalendarFixture(
+          fixture: fixture,
+          opponent: _teamRepository.findByIdOrUnknown(opponentTeamId),
+        );
+      }),
+    );
   }
 
   static DateTime _dateOnly(DateTime value) =>

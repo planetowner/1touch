@@ -21,7 +21,13 @@ void main() {
       expect(home.followingTeams.map((team) => team.teamId), [8, 19]);
       expect(home.nextMatch?.fixtureId, 1001);
       expect(home.lastMatch?.fixtureId, 1002);
-      expect(home.calendar.single.fixtureId, 1003);
+      expect(home.calendar.single.fixture.fixtureId, 1003);
+      expect(home.calendar.single.opponent.teamId, 19);
+      expect(home.calendar.single.opponent.name, 'Arsenal');
+      expect(
+        home.calendar.single.opponent.imagePath,
+        'https://cdn.example/19.png',
+      );
       expect(home.liveMatch?.fixtureId, 1003);
     });
 
@@ -57,6 +63,24 @@ void main() {
             contains('20'),
           ),
         ),
+      );
+    });
+
+    test('rejects a calendar fixture unrelated to the favorite team', () {
+      expect(
+        () => homeDataFromApiResponse(
+          _response(
+            calendar: [
+              _fixture(
+                1003,
+                FixtureStatus.upcoming,
+                homeTeamId: 2,
+                awayTeamId: 19,
+              ),
+            ],
+          ),
+        ),
+        throwsStateError,
       );
     });
 
@@ -114,7 +138,12 @@ ApiTeamResponse _team(int id, String name, String shortCode) {
   );
 }
 
-ApiFixtureResponse _fixture(int fixtureId, FixtureStatus status) {
+ApiFixtureResponse _fixture(
+  int fixtureId,
+  FixtureStatus status, {
+  int homeTeamId = 8,
+  int awayTeamId = 19,
+}) {
   return ApiFixtureResponse(
     fixtureId: fixtureId,
     competitionId: 8,
@@ -133,13 +162,13 @@ ApiFixtureResponse _fixture(int fixtureId, FixtureStatus status) {
     stateName: 'Not Started',
     status: status.name,
     startingAt: '2026-08-29 14:00:00',
-    homeTeamId: 8,
-    awayTeamId: 19,
+    homeTeamId: homeTeamId,
+    awayTeamId: awayTeamId,
     homeScore: status == FixtureStatus.past ? 2 : null,
     awayScore: status == FixtureStatus.past ? 1 : null,
     homePenaltyScore: null,
     awayPenaltyScore: null,
-    homeTeamName: 'Liverpool',
+    homeTeamName: homeTeamId == 8 ? 'Liverpool' : 'Other FC',
     awayTeamName: 'Arsenal',
     homeTeamLogo: 'https://cdn.example/8.png',
     awayTeamLogo: 'https://cdn.example/19.png',

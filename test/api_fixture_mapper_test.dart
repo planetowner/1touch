@@ -41,8 +41,8 @@ void main() {
       expect(fixture.roundName, '3');
       expect(fixture.stageId, 77432101);
       expect(fixture.groupId, 42);
-      expect(fixture.startingAt, '2026-08-29 14:00:00');
-      expect(fixture.kickoff, DateTime(2026, 8, 29, 14));
+      expect(fixture.startingAt, '2026-08-29T14:00:00.000Z');
+      expect(fixture.kickoff, DateTime.utc(2026, 8, 29, 14));
       expect(fixture.homeScore, 2);
       expect(fixture.awayScore, 1);
       expect(fixture.homePenaltyScore, 5);
@@ -80,6 +80,15 @@ void main() {
       );
 
       expect(fixture.status, FixtureStatus.unknown);
+    });
+
+    test('preserves the instant from an offset-aware timestamp', () {
+      final fixture = fixtureFromApiResponse(
+        _response(startingAt: '2026-08-29T15:00:00+01:00'),
+      );
+
+      expect(fixture.startingAt, '2026-08-29T14:00:00.000Z');
+      expect(fixture.kickoff, DateTime.utc(2026, 8, 29, 14));
     });
 
     test('rejects an unsupported required competition type', () {

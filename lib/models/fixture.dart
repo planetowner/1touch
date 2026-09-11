@@ -22,7 +22,8 @@ class Fixture {
   final int? groupId;
   final int? legNumber; // 1 or 2 only (SQL CHECK constraint)
   final FixtureStatus status;
-  // Kept as the backend string during the incremental repository migration.
+  // Kept as a string during the incremental repository migration. API mappers
+  // normalize backend UTC values to offset-aware ISO 8601 before storing them.
   // Once every constructor is behind a mapper, replace this with DateTime?.
   final String? startingAt;
   final int? homeScore;

@@ -9,6 +9,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 import '../models/team_overview.dart';
 import '../models/fixture.dart';
+import '../models/home_data.dart';
 import '../models/home_content_item.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
@@ -397,7 +398,7 @@ class CalendarEvent {
 }
 
 class FixtureCalendar extends StatefulWidget {
-  final List<Fixture> allMatches;
+  final List<HomeCalendarFixture> allMatches;
   final int favoriteTeamId;
   final ValueChanged<DateTime>? onMonthChanged;
 
@@ -421,7 +422,8 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     final events = <DateTime, List<CalendarEvent>>{};
     final addedFixtureIds = <int>{};
 
-    for (final fixture in widget.allMatches) {
+    for (final calendarFixture in widget.allMatches) {
+      final fixture = calendarFixture.fixture;
       final favoriteIsHome = fixture.homeTeamId == widget.favoriteTeamId;
       final favoriteIsAway = fixture.awayTeamId == widget.favoriteTeamId;
       if (!favoriteIsHome && !favoriteIsAway) continue;
@@ -433,9 +435,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
       final dateOnly = DateTime(dt.year, dt.month, dt.day);
       if (dt.year != month.year || dt.month != month.month) continue;
 
-      final opponentTeamId =
-          favoriteIsHome ? fixture.awayTeamId : fixture.homeTeamId;
-      final opponent = teamRepository.findByIdOrUnknown(opponentTeamId);
+      final opponent = calendarFixture.opponent;
       final color = switch (fixture.competitionType) {
         CompetitionType.league => Colors.red,
         CompetitionType.europe => Colors.blue,

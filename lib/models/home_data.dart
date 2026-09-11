@@ -14,7 +14,7 @@ class HomeData {
     required List<Team> followingTeams,
     required this.nextMatch,
     required this.lastMatch,
-    required List<Fixture> calendar,
+    required List<HomeCalendarFixture> calendar,
   })  : followingTeams = List.unmodifiable(followingTeams),
         calendar = List.unmodifiable(calendar);
 
@@ -22,12 +22,29 @@ class HomeData {
   final List<Team> followingTeams;
   final Fixture? nextMatch;
   final Fixture? lastMatch;
-  final List<Fixture> calendar;
+  final List<HomeCalendarFixture> calendar;
 
   Fixture? get liveMatch {
-    for (final fixture in calendar) {
-      if (fixture.status == FixtureStatus.live) return fixture;
+    for (final calendarFixture in calendar) {
+      if (calendarFixture.fixture.status == FixtureStatus.live) {
+        return calendarFixture.fixture;
+      }
     }
     return null;
   }
+}
+
+/// A Home calendar fixture with the opponent data needed to render it.
+///
+/// The opponent is contextual to the user's favorite team, so it belongs to
+/// the Home aggregate instead of the stable [Fixture] entity.
+@immutable
+class HomeCalendarFixture {
+  const HomeCalendarFixture({
+    required this.fixture,
+    required this.opponent,
+  });
+
+  final Fixture fixture;
+  final Team opponent;
 }
