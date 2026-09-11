@@ -48,11 +48,12 @@ fi
         assert not (root / credential_name).exists()
         assert (root / "before.env.production").read_text() == (runtime / ".env.production").read_text()
         stages = trace.read_text().splitlines()
-        assert ("stop" in stages) == (scenario == "success" and service == "ses"), stages
+        assert ("stop" in stages) == (scenario == "success" and source_name == "prepare-user-community.sh"), stages
 
 
 for service, script, credential in (
     ("ses", "prepare-user-community.sh", "smtp.csv"),
+    ("ses", "prepare-ses.sh", "ses.env"),
     ("r2", "prepare-r2.sh", "r2.env"),
     ("google", "prepare-google.sh", "google.env"),
     ("apple", "prepare-apple.sh", "apple.env"),
@@ -60,4 +61,4 @@ for service, script, credential in (
 ):
     for scenario in ("success", "configure", "check"):
         verify(service, script, credential, scenario)
-print("PASS: shared settings backup, temporary key cleanup, stop on failure; only SES initial migration preparation stops API (15 mocked cases)")
+print("PASS: shared settings backup, temporary key cleanup, stop on failure; only SES initial migration preparation stops API (18 mocked cases)")

@@ -8,12 +8,13 @@ $testRoot = Join-Path $backendDirectory ('logs\service-settings-test-' + [guid]:
 $testScripts = Join-Path $testRoot 'deploy\vultr'
 [void](New-Item -ItemType Directory -Path $testScripts -Force)
 $encoding = [Text.UTF8Encoding]::new($true)
-foreach ($name in @('prepare-service-settings.ps1', 'prepare-r2.ps1', 'configure_google.py', 'configure_r2.py', 'configure_apple.py', 'configure_kakao.py', 'environment_settings.py')) {
+foreach ($name in @('prepare-service-settings.ps1', 'prepare-r2.ps1', 'configure_google.py', 'configure_r2.py', 'configure_apple.py', 'configure_kakao.py', 'configure_ses.py', 'environment_settings.py')) {
     Copy-Item -LiteralPath (Join-Path $sourceDirectory $name) -Destination $testScripts
 }
 $fakeEnvironment = "DB_HOST=test-db`nSES_SMTP_PASSWORD=test-smtp`nAUTH_CODE_SECRET=test-auth`nR2_ACCOUNT_ID=test-account`nR2_BUCKET=test-bucket`nR2_ACCESS_KEY_ID=test-access`nR2_SECRET_ACCESS_KEY=test-secret`nGOOGLE_CLIENT_IDS=test.apps.googleusercontent.com`n"
 $fakeEnvironment += "APPLE_CLIENT_IDS=com.example.football`nAPPLE_TEAM_ID=TESTTEAM01`nAPPLE_KEY_ID=TESTKEY001`nAPPLE_PRIVATE_KEY='-----BEGIN PRIVATE KEY-----\nZmFrZS1rZXk=\n-----END PRIVATE KEY-----'`n"
 $fakeEnvironment += "KAKAO_APP_ID=123456`nKAKAO_REST_API_KEY=0123456789abcdef0123456789abcdef`n"
+$fakeEnvironment += "SES_FEEDBACK_EMAIL=operator@example.com`n"
 [IO.File]::WriteAllText((Join-Path $testRoot '.env'), $fakeEnvironment, [Text.UTF8Encoding]::new($false))
 
 # 실제 Python 내보내기만 실행하고 SSH·SCP는 기록만 남겨 운영 서버에 접근하지 않아요.
@@ -43,7 +44,7 @@ function Invoke-AccessCommand {
 [IO.File]::WriteAllText((Join-Path $testScripts 'ssh-common.ps1'), $fakeAccess, $encoding)
 $powershellPath = (Get-Command powershell.exe -ErrorAction Stop).Source
 $caseCount = 0
-foreach ($service in @('r2', 'google', 'apple', 'kakao')) {
+foreach ($service in @('r2', 'google', 'apple', 'kakao', 'ses')) {
     foreach ($failAt in 0..5) {
         $caseName = "$service-$failAt"
         $env:ONETOUCH_TEST_TRACE = Join-Path $testRoot "$caseName.jsonl"
@@ -73,6 +74,7 @@ foreach ($service in @('r2', 'google', 'apple', 'kakao')) {
                 'google' { @('GOOGLE_CLIENT_IDS') }
                 'apple' { @('APPLE_CLIENT_IDS', 'APPLE_TEAM_ID', 'APPLE_KEY_ID', 'APPLE_PRIVATE_KEY') }
                 'kakao' { @('KAKAO_APP_ID', 'KAKAO_REST_API_KEY') }
+                'ses' { @('SES_FEEDBACK_EMAIL') }
             }
             if (Compare-Object $selectedKeys $expectedKeys) { throw "Unrelated settings exported: $caseName" }
         }
