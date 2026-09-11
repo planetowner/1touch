@@ -21,7 +21,11 @@ def send_verification_code(email: str, code: str, purpose: str) -> None:
     # https://docs.aws.amazon.com/ses/latest/dg/monitor-sending-activity-using-notifications-email.html
     message["Return-Path"] = feedback
     message["Subject"] = "1Touch verification code"
-    action = "create your account" if purpose == "signup" else "reset your password"
+    # 인증번호 발송 규칙은 공유하고, 사용자가 요청한 작업 안내만 구분해요.
+    action = {
+        "signup": "create your account", "password_reset": "reset your password",
+        "username_recovery": "find your 1Touch username", "email_change": "change your account email address",
+    }[purpose]
     message.set_content(
         f"Your 1Touch code is {code}.\n\nUse it to {action}. "
         f"It expires in {CODE_LIFETIME_MINUTES} minutes.\n"

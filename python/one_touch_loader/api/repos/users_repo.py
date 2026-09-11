@@ -28,7 +28,7 @@ def lock_user(cur, user_id: int) -> dict:
 
 
 def require_profile(user: dict) -> None:
-    if not all(user[key] for key in ("username", "first_name", "last_name", "timezone")):
+    if not all(user[key] for key in ("username", "first_name", "last_name")):
         raise HTTPException(403, "Complete your profile first")
     # 이용 정지는 커뮤니티·채팅 활동에 적용해요. 내 정보 확인과 탈퇴는 계속 가능해요.
     if user["suspended_until"] is not None and user["suspended_until"] > utc_now():
@@ -39,8 +39,8 @@ def update_profile(user_id: int, profile: dict) -> None:
     try:
         with transaction() as conn, conn.cursor(dictionary=True) as cur:
             lock_user(cur, user_id)
-            cur.execute("UPDATE users SET username=%s,first_name=%s,last_name=%s,timezone=%s WHERE user_id=%s",
-                        (profile["username"], profile["first_name"], profile["last_name"], profile["timezone"], user_id))
+            cur.execute("UPDATE users SET username=%s,first_name=%s,last_name=%s WHERE user_id=%s",
+                        (profile["username"], profile["first_name"], profile["last_name"], user_id))
     except IntegrityError as exc:
         if exc.errno != 1062:
             raise

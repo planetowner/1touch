@@ -39,8 +39,9 @@ class ReportBody(BaseModel):
 def posts(team_id: int = Query(gt=0), category: Category | None = None,
           sort: posts_repo.PostSort = posts_repo.PostSort.newest, period: PostPeriod = PostPeriod.all_time,
           limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+          timezone: str | None = Query(default=None, max_length=64, description="현재 기기의 IANA 시간대. 기간 필터 사용 시 앱이 자동 전달해요."),
           user_id: int = Depends(get_user_id)):
-    return {"items": posts_repo.list_posts(user_id, team_id, category, sort, period, limit, offset),
+    return {"items": posts_repo.list_posts(user_id, team_id, category, sort, period, limit, offset, timezone),
             "limit": limit, "offset": offset}
 
 

@@ -28,10 +28,11 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from one_touch_loader.api.schemas.users import PasswordLoginBody, RegisterEmailBody, ResetPasswordBody
     from diagnostics.verify_community_management import verify_schema
     from diagnostics.verify_social_webhook_receipts import verify_schema as verify_social_schema
+    from diagnostics.verify_account_management import verify_schema as verify_account_schema
 
 
 class PasswordContractTests(unittest.TestCase):
-    profile = {"username": "member", "first_name": "First", "last_name": "Last", "timezone": "UTC"}
+    profile = {"username": "member", "first_name": "First", "last_name": "Last"}
     code = {"challenge_id": "c" * 43, "code": "123456"}
 
     def test_same_password_policy_applies_to_signup_reset_and_login(self):
@@ -102,6 +103,7 @@ class MediaTests(unittest.TestCase):
 class CommunityDatabaseCase(unittest.TestCase):
     management_schema = True
     social_webhooks_schema = True
+    account_management_schema = True
     @classmethod
     def setUpClass(cls):
         cls.config = {"host": "127.0.0.1", "port": 14873, "user": "root", "password": "", "connection_timeout": 5}
@@ -139,6 +141,8 @@ class CommunityDatabaseCase(unittest.TestCase):
             self.apply_management_schema()
             if self.social_webhooks_schema:
                 self.apply_social_webhooks_schema()
+                if self.account_management_schema:
+                    self.apply_account_management_schema()
         self.execute("INSERT INTO teams (team_id,name) VALUES (6,'A'),(14,'B'),(503,'C'),(591,'D')")
         self.execute("INSERT INTO players VALUES (832,'Player A',NULL),(268,'Player B',NULL)")
         self.execute("INSERT INTO competitions VALUES (8,'league'),(82,'league'),(301,'league')")
@@ -181,7 +185,7 @@ class CommunityDatabaseCase(unittest.TestCase):
                 self.execute(statement)
 
     def user(self, username, favorite=None):
-        user_id = self.execute("INSERT INTO users (username,first_name,last_name,timezone,created_at) VALUES (%s,'First','Last','UTC',%s)", (username, utc_now()))
+        user_id = self.execute("INSERT INTO users (username,first_name,last_name,created_at) VALUES (%s,'First','Last',%s)", (username, utc_now()))
         if favorite:
             # 테스트 입력은 구·신 스키마에 공통인 관계로 준비하고, 변경 규칙은 각 API 테스트에서 검사해요.
             self.execute("""INSERT INTO user_following_teams (user_id,competition_id,team_id,position)
@@ -197,6 +201,12 @@ class CommunityDatabaseCase(unittest.TestCase):
 
     def post(self, user_id=None, team_id=6, **kwargs):
         return posts_repo.create_post(user_id or self.a, team_id, "general", "Title", "Body", kwargs.get("attachment_ids", []))
+
+    def apply_account_management_schema(self):
+        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_account_management.sql"
+        for statement in sql.read_text(encoding="utf-8").split(";"):
+            if statement.strip():
+                self.execute(statement)
 
 
 class MigrationPreservationTests(CommunityDatabaseCase):
@@ -224,7 +234,7 @@ class MigrationPreservationTests(CommunityDatabaseCase):
 class MySQLCommunityTests(CommunityDatabaseCase):
 
     def test_schema_after_matches_minimal_contract(self):
-        report = verify_social_schema(before=False)
+        report = verify_account_schema(before=False)
         self.assertEqual(report["tables"]["users"], 3)
 
     def test_follower_count_uses_home_team_and_tracks_changes_and_deletion(self):
@@ -284,7 +294,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("new@example.com", "signup")["challenge_id"]
         code = send.call_args.args[1]
         self.assertRegex(code, r"^\d{6}$")
-        profile = {"username": "new", "first_name": "First", "last_name": "Last", "timezone": "Asia/Seoul"}
+        profile = {"username": "new", "first_name": "First", "last_name": "Last"}
         token = auth_repo.register_email(challenge, code, "Password123", profile)["access_token"]
         row = self.execute("SELECT password_hash FROM user_email_credentials")[0]
         self.assertNotEqual(row["password_hash"], "Password123")
@@ -298,7 +308,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("signup@example.com", "signup")["challenge_id"]
         registered = self.request("POST", "/v1/auth/email/register", json={
             "challenge_id": challenge, "code": send.call_args.args[1], "password": "Abcdefg1",
-            "username": "newmember", "first_name": "F", "last_name": "L", "timezone": "UTC"})
+            "username": "newmember", "first_name": "F", "last_name": "L"})
         self.assertEqual(registered.status_code, 201, registered.text)
         token = registered.json()["access_token"]
         user_id = auth_repo.session_user(token)["user_id"]
@@ -322,7 +332,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.execute("INSERT INTO user_email_credentials VALUES (%s,%s,%s)",
                      (self.a, "alpha@example.com", auth_security.PASSWORDS.hash("Password123")))
         response = self.request("PUT", "/v1/users/me/profile", json={
-            "username": "renamed", "first_name": "F", "last_name": "L", "timezone": "UTC"})
+            "username": "renamed", "first_name": "F", "last_name": "L"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(auth_repo.session_user(auth_repo.login_password("renamed", "Password123")["access_token"])["user_id"], self.a)
         with self.assertRaises(HTTPException):
@@ -338,7 +348,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("attempts@example.com", "signup")["challenge_id"]
         code = send.call_args.args[1]
         wrong = "000000" if code != "000000" else "111111"
-        profile = {"username": "new", "first_name": "F", "last_name": "L", "timezone": "UTC"}
+        profile = {"username": "new", "first_name": "F", "last_name": "L"}
         for _ in range(5):
             with self.assertRaises(HTTPException):
                 auth_repo.register_email(challenge, wrong, "Password123", profile)
@@ -433,13 +443,17 @@ class MySQLCommunityTests(CommunityDatabaseCase):
 
     def test_popular_sort_and_local_date_filter(self):
         first, second = self.post(), self.post()
-        self.execute("UPDATE posts SET created_at=%s WHERE post_id=%s", (datetime(2026, 9, 9, 16), first))
+        self.execute("UPDATE posts SET created_at=%s WHERE post_id=%s", (datetime(2026, 9, 9, 14), first))
         self.execute("UPDATE posts SET created_at=%s WHERE post_id=%s", (datetime(2026, 9, 10, 1), second))
         posts_repo.set_like(self.a, "post", first, True)
-        self.execute("UPDATE users SET timezone='Asia/Seoul' WHERE user_id=%s", (self.a,))
         with patch.object(posts_repo, "utc_now", return_value=datetime(2026, 9, 10, 2)):
-            items = self.request("GET", "/v1/posts?team_id=6&sort=popular&period=today").json()["items"]
-        self.assertEqual([x["post_id"] for x in items], [first, second])
+            items = self.request("GET", "/v1/posts?team_id=6&sort=popular&period=today&timezone=Asia/Seoul").json()["items"]
+            other_device = self.request("GET", "/v1/posts?team_id=6&sort=popular&period=today&timezone=America/New_York").json()["items"]
+            self.assertEqual(self.request("GET", "/v1/posts?team_id=6&period=today").status_code, 422)
+            self.assertEqual(self.request("GET", "/v1/posts?team_id=6&period=today&timezone=wrong").status_code, 422)
+        self.assertEqual([x["post_id"] for x in items], [second])
+        self.assertEqual([x["post_id"] for x in other_device], [first, second])
+        self.assertNotIn("timezone", self.request("GET", "/v1/users/me").json())
 
     def test_nested_replies_preserve_target_and_other_post_is_rejected(self):
         one, two = self.post(), self.post()

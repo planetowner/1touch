@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from ..deps import get_token, get_user_id
 from ..repos import auth_repo
 from ..schemas.users import (
-    AppleLoginBody, EmailCodeBody, GoogleLoginBody, KakaoLoginBody,
+    AppleLoginBody, CodeBody, EmailCodeBody, EmailChangeRequestBody, EmailChangeConfirmBody, GoogleLoginBody, KakaoLoginBody,
     PasswordLoginBody, RegisterEmailBody, ResetPasswordBody,
 )
 from ..services import social_login
@@ -29,7 +29,7 @@ def email_code(body: EmailCodeBody):
 @router.post("/auth/email/register", dependencies=[Depends(auth_request_limit)], status_code=201)
 def register_email(body: RegisterEmailBody):
     return auth_repo.register_email(body.challenge_id, body.code, body.password,
-                                   body.model_dump(include={"username", "first_name", "last_name", "timezone"}))
+                                   body.model_dump(include={"username", "first_name", "last_name"}))
 
 
 @router.post("/auth/login", dependencies=[Depends(auth_request_limit)])
@@ -43,19 +43,42 @@ def reset_password(body: ResetPasswordBody):
     return {"ok": True}
 
 
+@router.post("/auth/email/find-username", dependencies=[Depends(auth_request_limit)])
+def find_username(body: CodeBody):
+    return {"username": auth_repo.find_username(body.challenge_id, body.code)}
+
+
+@router.post("/users/me/email/code", dependencies=[Depends(auth_request_limit)])
+def email_change_code(body: EmailChangeRequestBody, user_id: int = Depends(get_user_id)):
+    return auth_repo.request_email_change(user_id, str(body.email), body.password)
+
+
+@router.put("/users/me/email", dependencies=[Depends(auth_request_limit)])
+def change_email(body: EmailChangeConfirmBody, user_id: int = Depends(get_user_id)):
+    auth_repo.change_email(user_id, body.password, body.current_email.model_dump(), body.new_email.model_dump())
+    return {"ok": True}
+
+
 @router.post("/auth/google", dependencies=[Depends(auth_request_limit)])
-def google_login(body: GoogleLoginBody):
-    return auth_repo.login_social("google", social_login.google_subject(body.id_token))
+def google_login(body: GoogleLoginBody, find_username: bool = False):
+    return _social_response("google", social_login.google_subject(body.id_token), find_username)
 
 
 @router.post("/auth/apple", dependencies=[Depends(auth_request_limit)])
-def apple_login(body: AppleLoginBody):
-    return auth_repo.login_social("apple", social_login.apple_subject(body.code, body.client_id, body.nonce))
+def apple_login(body: AppleLoginBody, find_username: bool = False):
+    return _social_response("apple", social_login.apple_subject(body.code, body.client_id, body.nonce), find_username)
 
 
 @router.post("/auth/kakao", dependencies=[Depends(auth_request_limit)])
-def kakao_login(body: KakaoLoginBody):
-    return auth_repo.login_social("kakao", social_login.kakao_subject(body.access_token))
+def kakao_login(body: KakaoLoginBody, find_username: bool = False):
+    return _social_response("kakao", social_login.kakao_subject(body.access_token), find_username)
+
+
+def _social_response(provider: str, subject: str, find_username: bool) -> dict:
+    # 공급자 인증은 같지만 찾기에서는 회원·세션을 생성하지 않고 유저네임만 반환해요.
+    if find_username:
+        return {"username": auth_repo.find_social_username(provider, subject)}
+    return auth_repo.login_social(provider, subject)
 
 
 @router.post("/auth/logout")

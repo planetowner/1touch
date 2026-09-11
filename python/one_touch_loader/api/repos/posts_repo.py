@@ -34,13 +34,13 @@ def _post_team(post_id: int) -> int:
 
 
 def list_posts(user_id: int, team_id: int, category: str | None, sort: PostSort,
-               period: PostPeriod, limit: int, offset: int) -> list[dict]:
-    user = community_user(user_id, team_id)
+               period: PostPeriod, limit: int, offset: int, timezone: str | None = None) -> list[dict]:
+    community_user(user_id, team_id)
     clauses, params = ["p.team_id=%s", "p.state='active'", f"NOT {blocked_sql('p.user_id')}"], [user_id, user_id, team_id, user_id]
     if category:
         clauses.append("p.category=%s")
         params.append(category)
-    bounds = period_bounds(period, user["timezone"], utc_now())
+    bounds = period_bounds(period, timezone, utc_now())
     if bounds:
         clauses.append("p.created_at >= %s AND p.created_at < %s")
         params.extend(bounds)
