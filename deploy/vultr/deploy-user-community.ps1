@@ -23,6 +23,8 @@ try {
     Invoke-AccessCommand $scpPath ($keyOptions + @($credentialsPath, "${loginUser}@${serverIp}:$remotePath/smtp.csv"))
     Invoke-AccessCommand $scpPath ($keyOptions + @(
         (Join-Path $PSScriptRoot 'configure_ses.py'),
+        (Join-Path $PSScriptRoot 'environment_settings.py'),
+        (Join-Path $PSScriptRoot 'prepare-service-settings.sh'),
         (Join-Path $PSScriptRoot 'prepare-user-community.sh'), "${loginUser}@${serverIp}:$remotePath/"
     ))
     Write-Host 'sudo에는 서버 onetouch 계정 암호를 입력해요. SMTP 연결 확인 후 기존 API를 멈춰요.'

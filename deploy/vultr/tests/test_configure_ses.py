@@ -6,10 +6,12 @@ import io
 from pathlib import Path
 import tempfile
 import unittest
+import sys
 from unittest.mock import patch
 
 from dotenv import dotenv_values
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 SPEC = importlib.util.spec_from_file_location("configure_ses", Path(__file__).resolve().parents[1] / "configure_ses.py")
 configure_ses = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(configure_ses)
