@@ -17,3 +17,10 @@
 	}
 	reverse_proxy api:8000
 }
+
+# 서비스 소개는 회원 로그인 없이 읽고, API 문서의 접근 제한은 위 호스트에 유지해요.
+1touch.football {
+	encode zstd gzip
+	root * /srv/1touch
+	file_server
+}

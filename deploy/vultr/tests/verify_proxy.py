@@ -73,6 +73,8 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
     assert not any(mount["target"] == "/app/python" for mount in api["volumes"])
     assert "--reload" not in api["command"] and api["user"] == "1001:1001"
     assert {port["published"] for port in model["services"]["proxy"]["ports"]} == {"80", "443"}
+    website_mount = next(mount for mount in model["services"]["proxy"]["volumes"] if mount["target"] == "/srv/1touch")
+    assert Path(website_mount["source"]) == deploy / "site" and website_mount["read_only"]
     assert all(service["logging"]["options"]["max-file"] == "3" for service in model["services"].values())
     print("PASS: existing DB volume, private API/DB ports, non-root immutable API and bounded logs")
 
@@ -84,9 +86,14 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
     with socket.socket() as reservation:
         reservation.bind(("127.0.0.1", 0))
         proxy_port = reservation.getsockname()[1]
+        with socket.socket() as site_reservation:
+            site_reservation.bind(("127.0.0.1", 0))
+            site_port = site_reservation.getsockname()[1]
     configuration = deploy.joinpath("Caddyfile").read_text()
     configuration = configuration.replace("{$API_DOMAIN} {", "{$API_DOMAIN} {\n\tbind 127.0.0.1\n\ttls internal", 1)
     configuration = configuration.replace("reverse_proxy api:8000", f"reverse_proxy 127.0.0.1:{upstream.server_port}")
+    configuration = configuration.replace("1touch.football {", f"localhost:{site_port} {{\n\tbind 127.0.0.1\n\ttls internal")
+    configuration = configuration.replace("root * /srv/1touch", f'root * "{deploy / "site"}"')
     configuration = "{\n admin off\n skip_install_trust\n auto_https disable_redirects\n}\n" + configuration
     test_config = root / "Caddyfile"
     test_config.write_text(configuration)
@@ -102,8 +109,8 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
             # 시스템 신뢰 저장소는 변경하지 않고 이 테스트의 CA만 요청에 지정해요.
             context = ssl.create_default_context(cafile=str(certificate))
 
-            def request(path, headers=None, method="GET"):
-                req = urllib.request.Request(f"https://localhost:{proxy_port}{path}", headers=headers or {}, method=method)
+            def request(path, headers=None, method="GET", port=proxy_port):
+                req = urllib.request.Request(f"https://localhost:{port}{path}", headers=headers or {}, method=method)
                 try:
                     with urllib.request.urlopen(req, context=context, timeout=5) as response:
                         return response.status, response.read()
@@ -133,6 +140,15 @@ with tempfile.TemporaryDirectory(prefix="onetouch-proxy-test-") as temporary:
             status, body = request("/docs", {"Authorization": f"Basic {credentials}"})
             assert status == 200 and json.loads(body)["scheme"] == "https"
             assert request("/v1/home", method="OPTIONS")[0] == 204
+            # 소개 도메인은 정적 파일만 공개하고 회원 API·환경 파일을 노출하지 않아요.
+            before = Upstream.calls
+            for filename in ("index.html", "styles.css", "assets/1touch-wordmark.jpg"):
+                status, body = request("/" if filename == "index.html" else "/" + filename, port=site_port)
+                assert status == 200 and body == (deploy / "site" / filename).read_bytes()
+            assert request("/.env", port=site_port)[0] == 404
+            assert request("/v1/users/me", port=site_port)[0] == 404
+            assert Upstream.calls == before
+            print("PASS: public introduction and assets match source; private API and configuration stay inaccessible")
             print("PASS: verified local TLS, unauthenticated/spoofed/wrong-password requests blocked, authenticated proxy and OPTIONS")
         except Exception:
             print((root / "caddy.log").read_text(), file=sys.stderr)
