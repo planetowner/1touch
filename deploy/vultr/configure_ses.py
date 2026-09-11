@@ -4,13 +4,12 @@ import csv
 from pathlib import Path
 import secrets
 
-from dotenv import dotenv_values, set_key
+from environment_settings import read_environment, save_settings
 
 
 def configure_ses(credentials_csv: Path, env_file: Path, sender: str) -> None:
     # 기존 DB·배포 설정이 있는 파일에 필요한 키만 추가해요.
-    if not env_file.is_file():
-        raise ValueError("기존 환경 설정 파일을 찾을 수 없어요.")
+    existing = read_environment(env_file)
     with credentials_csv.open(encoding="utf-8-sig", newline="") as stream:
         rows = list(csv.DictReader(stream))
     # 실제 내려받은 한국어 CSV 형식을 사용해요. 예전 AWS 계정 CSV와 구분해요.
@@ -27,12 +26,10 @@ def configure_ses(credentials_csv: Path, env_file: Path, sender: str) -> None:
         "SES_SMTP_PASSWORD": password,
         "SES_FROM_EMAIL": sender,
     }
-    existing = dotenv_values(env_file, interpolate=False)
     # 다시 실행해도 발급 중인 인증번호가 무효화되지 않도록 기존 비밀값은 유지해요.
     if not existing.get("AUTH_CODE_SECRET"):
         settings["AUTH_CODE_SECRET"] = secrets.token_urlsafe(48)
-    for key, value in settings.items():
-        set_key(env_file, key, value, quote_mode="always")
+    save_settings(env_file, settings)
 
 
 def main() -> None:
