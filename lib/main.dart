@@ -195,7 +195,7 @@ class MainScreen extends StatelessWidget {
     return Scaffold(
       // The body should simply be the navigationShell
       body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
           // Special case for the 'Team' tab (index 2)
@@ -213,31 +213,111 @@ class MainScreen extends StatelessWidget {
             initialLocation: index == navigationShell.currentIndex,
           );
         },
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
-        showSelectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            label: 'Home',
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home), // filled icon
+      ),
+    );
+  }
+}
+
+class OneTouchBottomNavigationBar extends StatelessWidget {
+  const OneTouchBottomNavigationBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final background = style.AppColors.of(context).cardBackground;
+
+    return ColoredBox(
+      color: background,
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          key: const ValueKey('main-bottom-navigation-content'),
+          height: 68,
+          child: Row(
+            children: [
+              _buildItem(
+                index: 0,
+                label: 'Home',
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home,
+                foreground: foreground,
+              ),
+              _buildItem(
+                index: 1,
+                label: 'Players',
+                icon: Icons.person_outline,
+                activeIcon: Icons.person,
+                foreground: foreground,
+              ),
+              _buildItem(
+                index: 2,
+                label: 'Team',
+                icon: Icons.local_police_outlined,
+                activeIcon: Icons.local_police,
+                foreground: foreground,
+              ),
+              _buildItem(
+                index: 3,
+                label: 'Community',
+                icon: Icons.people_alt_outlined,
+                activeIcon: Icons.people_alt,
+                foreground: foreground,
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            label: 'Players',
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItem({
+    required int index,
+    required String label,
+    required IconData icon,
+    required IconData activeIcon,
+    required Color foreground,
+  }) {
+    final isSelected = currentIndex == index;
+    final itemColor =
+        isSelected ? foreground : foreground.withValues(alpha: 0.65);
+
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        label: '$label tab',
+        child: InkWell(
+          key: ValueKey('main-bottom-navigation-$index'),
+          onTap: () => onTap(index),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isSelected ? activeIcon : icon,
+                color: itemColor,
+                size: 24,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: itemColor,
+                  fontSize: 14,
+                  height: 1,
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            label: 'Team',
-            icon: Icon(Icons.local_police_outlined),
-            activeIcon: Icon(Icons.local_police),
-          ),
-          BottomNavigationBarItem(
-            label: 'Community',
-            icon: Icon(Icons.people_alt_outlined),
-            activeIcon: Icon(Icons.people_alt),
-          ),
-        ],
+        ),
       ),
     );
   }
