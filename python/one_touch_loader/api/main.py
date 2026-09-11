@@ -21,6 +21,7 @@ from .routes.avatars import router as avatars_router
 from .routes.moderation import router as moderation_router
 from .routes.community import router as community_router
 from .routes.kakao_events import router as kakao_events_router
+from .routes.apple_events import router as apple_events_router
 
 
 def create_app() -> FastAPI:
@@ -63,6 +64,7 @@ def create_app() -> FastAPI:
     app.include_router(players_router, prefix="/v1", tags=["players"])
     app.include_router(auth_router, prefix="/v1", tags=["auth"])
     app.include_router(kakao_events_router, prefix="/v1", tags=["auth"])
+    app.include_router(apple_events_router, prefix="/v1", tags=["auth"])
     app.include_router(users_router, prefix="/v1", tags=["users"])
     app.include_router(attachments_router, prefix="/v1", tags=["attachments"])
     app.include_router(chat_router, prefix="/v1", tags=["chat"])

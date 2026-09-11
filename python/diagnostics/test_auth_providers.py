@@ -100,11 +100,43 @@ class ProviderTests(unittest.TestCase):
         settings = {"APPLE_CLIENT_IDS": "our-apple-app", "APPLE_TEAM_ID": "test-team", "APPLE_KEY_ID": "test-key",
                     "APPLE_PRIVATE_KEY": apple_key}
         claims = {"sub": "apple-sub", "nonce": "the-client-nonce"}
-        with patch.dict(os.environ, settings), patch.object(social_login, "_provider_json", return_value={"id_token": "signed-token"}) as exchange, patch.object(social_login, "_verify_id_token", return_value=claims):
+        with patch.dict(os.environ, settings), patch.object(social_login, "_provider_json", return_value={"id_token": "signed-token"}) as exchange, patch.object(social_login, "_verify_token", return_value=claims):
             self.assertEqual(social_login.apple_subject("one-use-code", "our-apple-app", "the-client-nonce"), "apple-sub")
             self.assertEqual(exchange.call_args.kwargs["data"]["grant_type"], "authorization_code")
             with self.assertRaises(HTTPException):
                 social_login.apple_subject("one-use-code", "our-apple-app", "wrong-nonce")
+
+    def apple_event_token(self, event_type="consent-revoked", subject="apple-member", **changes):
+        claims = {"iss": "https://appleid.apple.com", "aud": "our-apple-app", "iat": int(time.time()),
+                  "jti": "event-one", "events": {"type": event_type, "sub": subject, "event_time": int(time.time())}}
+        claims.update(changes)
+        return jwt.encode(claims, self.private, algorithm="RS256", headers={"kid": "test"})
+
+    def test_apple_events_verify_signatures_audience_and_event_identity_without_exp(self):
+        keys = SimpleNamespace(get_signing_key_from_jwt=lambda token: SimpleNamespace(key=self.public))
+        with patch.dict(os.environ, {"APPLE_CLIENT_IDS": "our-apple-app"}), patch.object(social_login, "_keys", return_value=keys):
+            for event_type in ("consent-revoked", "account-deleted"):
+                self.assertEqual(social_login.apple_account_event(self.apple_event_token(event_type)), ("apple-member", "event-one"))
+            for event_type in ("email-disabled", "email-enabled"):
+                self.assertIsNone(social_login.apple_account_event(self.apple_event_token(event_type)))
+            for token in ("not-signed", self.apple_event_token(aud="another-app"),
+                          self.apple_event_token(iss="https://example.invalid"), self.apple_event_token(jti=""),
+                          self.apple_event_token(events={"type": "consent-revoked", "sub": ""}),
+                          self.apple_event_token(events="unverified-event"), self.apple_event_token("unsupported")):
+                with self.subTest(token_case=token[:12]), self.assertRaises(HTTPException):
+                    social_login.apple_account_event(token)
+            wrong_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+            claims = jwt.decode(self.apple_event_token(), options={"verify_signature": False})
+            with self.assertRaises(HTTPException):
+                social_login.apple_account_event(jwt.encode(claims, wrong_key, algorithm="RS256", headers={"kid": "test"}))
+
+    def test_apple_event_key_outage_does_not_acknowledge_delivery(self):
+        keys = Mock()
+        keys.get_signing_key_from_jwt.side_effect = jwt.PyJWKClientConnectionError("unavailable")
+        with patch.dict(os.environ, {"APPLE_CLIENT_IDS": "our-apple-app"}), patch.object(social_login, "_keys", return_value=keys):
+            with self.assertRaises(HTTPException) as error:
+                social_login.apple_account_event(self.apple_event_token())
+            self.assertEqual(error.exception.status_code, 503)
 
     def test_code_hash_requires_server_secret_and_binds_challenge(self):
         with patch.dict(os.environ, {"AUTH_CODE_SECRET": "x" * 32}):

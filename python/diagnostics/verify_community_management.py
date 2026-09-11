@@ -29,7 +29,7 @@ FOREIGN_KEYS = base.FOREIGN_KEYS | {
 ANONYMOUS = {"posts", "post_comments", "fixture_chat_messages", "post_attachments", "content_reports"}
 
 
-def verify_schema(*, before: bool) -> dict:
+def verify_schema(*, before: bool, print_report: bool = True) -> dict:
     report = base.verify_schema(before=False, print_report=False, **({} if before else {
         "columns": COLUMNS, "primary": PRIMARY, "foreign_keys": FOREIGN_KEYS}))
     with closing(get_conn()) as conn:
@@ -53,7 +53,8 @@ def verify_schema(*, before: bool) -> dict:
                         raise AssertionError(f"Unexpected account deletion rule: {table}.{column}")
         conn.rollback()
     report["before"] = before
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    if print_report:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     return report
 
 
