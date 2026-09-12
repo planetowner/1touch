@@ -9,6 +9,7 @@ import 'package:onetouch/features/MatchInfoFeatures.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
+import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
 
 void main() {
@@ -375,6 +376,78 @@ void main() {
     expect(find.byType(MatchEventsSection), findsNothing);
     expect(find.byType(MomentumChart), findsNothing);
     expect(find.byType(LineupPitch), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('passes loaded team expected goals to Analysis', (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final repository = _ControlledFixtureRepository();
+    final detail = _detail(
+      expectedGoals: const FixtureExpectedGoals(
+        homeXg: 1.234,
+        awayXg: 0.567,
+        homeXga: 0.567,
+        awayXga: 1.234,
+        provider: 'understat',
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: MatchScreen(
+          matchId: '${_fixture.fixtureId}',
+          matchStatus: 'past',
+          repository: repository,
+        ),
+      ),
+    );
+
+    repository.calls.single.complete(detail);
+    await tester.pump();
+    await tester.drag(
+      find.byKey(const ValueKey('match-tab-scroll')),
+      const Offset(-300, 0),
+    );
+    await tester.pump();
+    await tester.tap(find.text('ANALYSIS'));
+    await tester.pump();
+
+    final analysis = tester.widget<AnalysisTab>(find.byType(AnalysisTab));
+    expect(analysis.detail, same(detail));
+    expect(find.byKey(const ValueKey('match-analysis-xg')), findsOneWidget);
+    expect(find.text('1.23'), findsOneWidget);
+    expect(find.text('0.57'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('omits Analysis xG when the backend has no expected goals',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final repository = _ControlledFixtureRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: MatchScreen(
+          matchId: '${_fixture.fixtureId}',
+          matchStatus: 'past',
+          repository: repository,
+        ),
+      ),
+    );
+
+    repository.calls.single.complete(_detail());
+    await tester.pump();
+    await tester.drag(
+      find.byKey(const ValueKey('match-tab-scroll')),
+      const Offset(-300, 0),
+    );
+    await tester.pump();
+    await tester.tap(find.text('ANALYSIS'));
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('match-analysis-xg')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

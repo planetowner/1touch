@@ -261,7 +261,10 @@ class _MatchScreenState extends State<MatchScreen> {
           fixtureRepository: _repository,
         );
       case 'ANALYSIS':
-        return AnalysisTab(fixture: fixture!);
+        return AnalysisTab(
+          fixture: fixture!,
+          detail: _fixtureDetail,
+        );
       case 'LIVE CHAT':
         return LiveChatTab(
           matchId: fixture!.fixtureId,
