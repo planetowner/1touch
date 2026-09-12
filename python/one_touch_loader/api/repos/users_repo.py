@@ -83,15 +83,17 @@ def delete_account(user_id: int, provider_proof: dict | None = None) -> None:
         lock_user(cur, user_id)
         cur.execute("SELECT provider,subject FROM user_social_identities WHERE user_id=%s", (user_id,))
         identities = cur.fetchall()
+        # 공급자마다 인증값은 다르지만 연결 해제 완료 후 같은 탈퇴 규칙을 적용해요.
+        unlinkers = {"apple": social_login.unlink_apple, "kakao": social_login.unlink_kakao,
+                     "line": social_login.unlink_line}
         for identity in identities:
             provider = identity["provider"]
-            if provider in ("apple", "kakao") and provider not in provider_proof:
+            if provider in unlinkers and provider not in provider_proof:
                 raise HTTPException(400, {"message": "Provider authentication required to unlink account", "provider": provider})
         for identity in identities:
-            if identity["provider"] == "apple":
-                social_login.unlink_apple(identity["subject"], **provider_proof["apple"])
-            elif identity["provider"] == "kakao":
-                social_login.unlink_kakao(identity["subject"], **provider_proof["kakao"])
+            provider = identity["provider"]
+            if provider in unlinkers:
+                unlinkers[provider](identity["subject"], **provider_proof[provider])
         # 연결 해제에 실패하면 회원 정보는 유지해요. 공급자 성공과 DB 삭제를 하나의 원격 트랜잭션으로 묶을 수는 없어요.
         _delete_account_rows(cur, user_id)
 

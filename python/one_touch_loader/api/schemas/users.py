@@ -68,11 +68,13 @@ class AppleLoginBody(BaseModel):
     nonce: str = Field(min_length=16, max_length=255)
 
 
-class KakaoLoginBody(BaseModel):
+class AccessTokenBody(BaseModel):
+    # Kakao·LINE 로그인과 탈퇴에서 같은 토큰 입력 규칙을 사용해요.
     access_token: str = Field(min_length=1, max_length=10000)
 
 
 class DeleteAccountBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     apple: AppleLoginBody | None = None
-    kakao: KakaoLoginBody | None = None
+    kakao: AccessTokenBody | None = None
+    line: AccessTokenBody | None = None

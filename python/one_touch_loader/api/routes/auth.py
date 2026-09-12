@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from ..deps import get_token, get_user_id
 from ..repos import auth_repo
 from ..schemas.users import (
-    AppleLoginBody, CodeBody, EmailCodeBody, EmailChangeRequestBody, EmailChangeConfirmBody, GoogleLoginBody, KakaoLoginBody,
+    AccessTokenBody, AppleLoginBody, CodeBody, EmailCodeBody, EmailChangeRequestBody, EmailChangeConfirmBody, GoogleLoginBody,
     PasswordLoginBody, RegisterEmailBody, ResetPasswordBody,
 )
 from ..services import social_login
@@ -18,9 +18,12 @@ def auth_request_limit(request: Request):
 
 @router.get("/auth/providers")
 def providers(platform: Literal["ios", "android"], country_code: str = Query(min_length=2, max_length=2)):
-    # 카카오 표시 여부는 국적을 추정하는 인증 규칙이 아니라 가입 화면 규칙이에요.
+    # 국가 코드는 가입 화면의 선택지를 정해요. 사용자의 국적이나 로그인 권한을 제한하지 않아요.
+    # 한국·일본만 지역별 로그인을 추가하고, 그 외는 영미권과 같은 기본 목록을 써요.
+    # 중국 전용 로그인은 추후에 추가해요. 지금 CN은 기타와 같고, 중국어 표시 지원과는 별개예요.
     # Apple 로그인은 iPhone에서만 제공해요. 기기 정보가 없으면 임의로 iOS를 선택하지 않아요.
-    return {"providers": (["kakao"] if country_code.upper() == "KR" else [])
+    regional_providers = {"KR": ["kakao"], "JP": ["line"]}
+    return {"providers": regional_providers.get(country_code.upper(), [])
             + (["apple"] if platform == "ios" else []) + ["google", "email"]}
 
 
@@ -73,8 +76,13 @@ def apple_login(body: AppleLoginBody, find_username: bool = False):
 
 
 @router.post("/auth/kakao", dependencies=[Depends(auth_request_limit)])
-def kakao_login(body: KakaoLoginBody, find_username: bool = False):
+def kakao_login(body: AccessTokenBody, find_username: bool = False):
     return _social_response("kakao", social_login.kakao_subject(body.access_token), find_username)
+
+
+@router.post("/auth/line", dependencies=[Depends(auth_request_limit)])
+def line_login(body: AccessTokenBody, find_username: bool = False):
+    return _social_response("line", social_login.line_subject(body.access_token), find_username)
 
 
 def _social_response(provider: str, subject: str, find_username: bool) -> dict:

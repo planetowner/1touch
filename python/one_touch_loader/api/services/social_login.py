@@ -23,14 +23,14 @@ def _verify_token(token: str, keys_url: str, issuers, audiences, *, required_cla
         raise HTTPException(401, "Invalid provider token") from exc
 
 
-def _provider_response(method: str, url: str, **kwargs):
+def _provider_response(method: str, url: str, *, expected_status: int = 200, **kwargs):
     try:
         response = requests.request(method, url, timeout=15, **kwargs)
     except requests.RequestException as exc:
         raise HTTPException(503, "Identity provider unavailable") from exc
     if response.status_code >= 500:
         raise HTTPException(503, "Identity provider unavailable")
-    if response.status_code != 200:
+    if response.status_code != expected_status:
         raise HTTPException(401, "Provider rejected login credentials")
     return response
 
@@ -122,6 +122,36 @@ def unlink_kakao(subject: str, access_token: str) -> None:
         raise HTTPException(403, "Authenticate the Kakao account linked to this user")
     _provider_json("POST", "https://kapi.kakao.com/v1/user/unlink",
                    headers={"Authorization": f"Bearer {access_token}"})
+
+
+def line_subject(access_token: str) -> str:
+    channel_id = required_setting("LINE_CHANNEL_ID")
+    # 네이티브 SDK 토큰도 우리 채널용인지 먼저 확인해요. 클라이언트가 보낸 사용자 ID는 신뢰하지 않아요.
+    # https://developers.line.biz/en/docs/line-login/secure-login-process/
+    info = _provider_json("GET", "https://api.line.me/oauth2/v2.1/verify",
+                          params={"access_token": access_token})
+    if info["client_id"] != channel_id or info["expires_in"] <= 0:
+        raise HTTPException(401, "Invalid LINE channel or expired token")
+    # 앱은 openid 권한으로 로그인해요. 이름·이메일을 수집하지 않고 검증된 sub만 계정에 연결해요.
+    claims = _provider_json("GET", "https://api.line.me/oauth2/v2.1/userinfo",
+                            headers={"Authorization": f"Bearer {access_token}"})
+    return claims["sub"]
+
+
+def unlink_line(subject: str, access_token: str) -> None:
+    channel_id = required_setting("LINE_CHANNEL_ID")
+    channel_secret = required_setting("LINE_CHANNEL_SECRET")
+    if line_subject(access_token) != subject:
+        raise HTTPException(403, "Authenticate the LINE account linked to this user")
+    # 탈퇴에는 토큰 폐기(revoke)만으로 부족해요. LINE 공식 deauthorize로 앱 동의를 해제해요.
+    # https://developers.line.biz/en/reference/line-login/#deauthorize
+    # 사용자 토큰은 저장하지 않고 탈퇴 요청에서 받아요. 채널 토큰은 이 요청에만 발급해 써요.
+    channel = _provider_json("POST", "https://api.line.me/oauth2/v3/token", data={
+        "grant_type": "client_credentials", "client_id": channel_id, "client_secret": channel_secret,
+    })
+    _provider_response("POST", "https://api.line.me/user/v1/deauthorize", expected_status=204,
+        headers={"Authorization": f"Bearer {channel['access_token']}"}, json={"userAccessToken": access_token})
+    # LINE 연결 해제 성공은 본문 없는 204예요. 다른 공급자의 200 응답 규칙은 유지해요.
 
 
 def kakao_unlink_event(token: bytes) -> tuple[str, str]:
