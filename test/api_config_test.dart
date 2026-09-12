@@ -25,6 +25,15 @@ void main() {
       expect(config.requestHeaders['Authorization'], 'Bearer session-token');
     });
 
+    test('creates unauthenticated API settings without a session token', () {
+      final config = ApiConfig.unauthenticated(
+        baseUri: ' https://api.1touch.football/v1 ',
+      );
+
+      expect(config.baseUri, Uri.parse('https://api.1touch.football/v1/'));
+      expect(config.requestHeaders, isEmpty);
+    });
+
     test('rejects missing configuration values', () {
       expect(
         () => ApiConfig.fromValues(baseUri: '', sessionToken: 'token'),
@@ -53,6 +62,11 @@ void main() {
           throwsFormatException,
         );
       }
+
+      expect(
+        () => ApiConfig.unauthenticated(baseUri: 'not-a-uri'),
+        throwsFormatException,
+      );
     });
 
     test('does not expose mutable request headers', () {

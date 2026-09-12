@@ -27,6 +27,18 @@ class ApiConfig {
     );
   }
 
+  factory ApiConfig.unauthenticatedFromEnvironment() {
+    const baseUri = String.fromEnvironment('API_BASE_URI');
+    return ApiConfig.unauthenticated(baseUri: baseUri);
+  }
+
+  factory ApiConfig.unauthenticated({required String baseUri}) {
+    return ApiConfig._(
+      baseUri: _parseBaseUri(baseUri),
+      requestHeaders: const {},
+    );
+  }
+
   factory ApiConfig.fromValues({
     required String baseUri,
     required String sessionToken,
