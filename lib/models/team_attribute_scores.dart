@@ -1,7 +1,6 @@
 const teamAttributeLabels = <String>[
   'Attack',
   'Progression',
-  'Pressure',
   'Dominance',
   'Defense',
   'Possession',
@@ -13,7 +12,6 @@ class TeamAttributeScores {
   final String seasonLabel;
   final double attack;
   final double progression;
-  final double pressure;
   final double dominance;
   final double defense;
   final double possession;
@@ -24,7 +22,6 @@ class TeamAttributeScores {
     required this.seasonLabel,
     required this.attack,
     required this.progression,
-    required this.pressure,
     required this.dominance,
     required this.defense,
     required this.possession,
@@ -33,7 +30,6 @@ class TeamAttributeScores {
   List<double> get radarValues => [
         attack,
         progression,
-        pressure,
         dominance,
         defense,
         possession,

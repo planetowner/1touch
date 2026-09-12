@@ -24,20 +24,19 @@ void main() {
     }
   });
 
-  test('retains pressure in the provisional six-axis product order', () {
+  test('uses the five-axis backend attribute order', () {
     expect(
       teamAttributeLabels,
       const [
         'Attack',
         'Progression',
-        'Pressure',
         'Dominance',
         'Defense',
         'Possession',
       ],
     );
     expect(
-      mockTeamAttributes.every((scores) => scores.radarValues.length == 6),
+      mockTeamAttributes.every((scores) => scores.radarValues.length == 5),
       isTrue,
     );
   });
