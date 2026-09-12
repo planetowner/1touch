@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
@@ -92,24 +91,10 @@ class _TeamScreenState extends State<TeamScreen>
       });
 
     _tabController = TabController(length: 5, vsync: this); // ✅ add init
-    currentUserPreferences.followedTeamIds.addListener(_onFollowingChanged);
 
     // 🔁 Toggle which source to use
     loadMockData(); // local fake JSON
     // fetchTeamData(); // real API
-  }
-
-  void _onFollowingChanged() {
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _toggleFollowing() async {
-    final changed =
-        await currentUserPreferences.toggleFollowedTeam(widget.teamId);
-    if (!mounted || changed) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('At least one team must stay followed.')),
-    );
   }
 
   @override
@@ -194,7 +179,6 @@ class _TeamScreenState extends State<TeamScreen>
 
   @override
   void dispose() {
-    currentUserPreferences.followedTeamIds.removeListener(_onFollowingChanged);
     _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
@@ -340,34 +324,14 @@ class _TeamScreenState extends State<TeamScreen>
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(right: 8, top: 30),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          key: const Key('team-follow-button'),
-                          tooltip: currentUserPreferences.followedTeamIds.value
-                                  .contains(widget.teamId)
-                              ? 'Unfollow team'
-                              : 'Follow team',
-                          onPressed: _toggleFollowing,
-                          icon: Icon(
-                            currentUserPreferences.followedTeamIds.value
-                                    .contains(widget.teamId)
-                                ? Icons.star
-                                : Icons.star_outline,
-                            size: 32,
-                            color: AppPalette.white,
-                          ),
-                        ),
-                        IconButton(
-                          key: const Key('team-search-button'),
-                          onPressed: () => context.push('/search'),
-                          icon: const Icon(
-                            Icons.search,
-                            size: 32,
-                            color: AppPalette.white,
-                          ),
-                        ),
-                      ],
+                    child: IconButton(
+                      key: const Key('team-search-button'),
+                      onPressed: () => context.push('/search'),
+                      icon: const Icon(
+                        Icons.search,
+                        size: 32,
+                        color: AppPalette.white,
+                      ),
                     ),
                   ),
                 ],

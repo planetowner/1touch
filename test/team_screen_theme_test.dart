@@ -192,6 +192,24 @@ void main() {
     }
   }
 
+  testWidgets('Team header fits a 430x932 viewport', (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamScreen(teamId: 9),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('team-search-button')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Team tabs use black foregrounds in light mode', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -205,12 +223,6 @@ void main() {
     final indicator = tabBar.indicator! as UnderlineTabIndicator;
     final appColors =
         app_style.AppColors.of(tester.element(find.byType(TabBar)));
-    final followIcon = tester.widget<Icon>(
-      find.descendant(
-        of: find.byKey(const Key('team-follow-button')),
-        matching: find.byType(Icon),
-      ),
-    );
     final searchIcon = tester.widget<Icon>(
       find.descendant(
         of: find.byKey(const Key('team-search-button')),
@@ -241,7 +253,6 @@ void main() {
     expect(indicator.borderSide.color, app_style.AppPalette.black);
     expect(indicator.borderSide.width, 2);
     expect(tabBar.padding, const EdgeInsets.only(left: 8));
-    expect(followIcon.color, app_style.AppPalette.white);
     expect(find.byKey(const Key('team-profile-button')), findsNothing);
     expect(searchIcon.color, app_style.AppPalette.white);
     expect(nextMatch.backgroundColor, app_style.AppPalette.white);
