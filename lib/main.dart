@@ -41,15 +41,16 @@ void main() async {
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
-  // Temporary development bypass. It skips the splash as well as onboarding.
-  // See docs/development-launch-modes.md for the proposed scenario runner.
-  initialLocation: ApiConfig.skipOnboardingForDevelopment ? '/home' : '/',
+  initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
   routes: [
     // Splash
     GoRoute(
       path: '/',
-      builder: (context, state) => const SplashScreen(),
+      builder: (context, state) => SplashScreen(
+        nextLocation:
+            ApiConfig.skipOnboardingForDevelopment ? '/home' : '/onboarding',
+      ),
     ),
 
     // Onboarding
