@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:onetouch/core/style.dart';
@@ -5,7 +7,9 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
+    as fixture_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -13,8 +17,13 @@ import 'package:onetouch/features/helper.dart';
 
 class MatchesTab extends StatefulWidget {
   final Map<String, dynamic>? team;
+  final FixtureRepository? fixtureRepository;
 
-  const MatchesTab({super.key, required this.team});
+  const MatchesTab({
+    super.key,
+    required this.team,
+    this.fixtureRepository,
+  });
 
   @override
   State<MatchesTab> createState() => _MatchesTabState();
@@ -31,21 +40,22 @@ class _MatchesTabState extends State<MatchesTab> {
   bool _headerSyncScheduled = false;
   bool _applyingHeaderCorrection = false;
   double _trailingScrollExtent = 24;
+  bool _isLoading = true;
+  Object? _loadError;
+  int _requestId = 0;
 
-  List<Fixture> pastMatches = [];
-  List<Fixture> liveMatches = [];
-  List<Fixture> upcomingMatches = [];
+  List<Fixture> pastMatches = const [];
+  List<Fixture> liveMatches = const [];
+  List<Fixture> upcomingMatches = const [];
+
+  FixtureRepository get _fixtureRepository =>
+      widget.fixtureRepository ?? fixture_providers.fixtureRepository;
 
   @override
   void initState() {
     super.initState();
-    _loadFixtures();
     _scrollController.addListener(_scheduleHeaderSync);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollToLiveSection();
-      _scheduleHeaderSync();
-    });
+    unawaited(_loadFixtures());
   }
 
   @override
@@ -62,36 +72,91 @@ class _MatchesTabState extends State<MatchesTab> {
     // This tab's State is reused across team switches (the Team-tab branch
     // stays alive in the bottom-nav shell), so reload instead of only
     // loading once in initState.
-    if (widget.team?['id'] != oldWidget.team?['id']) {
+    if (widget.team?['id'] != oldWidget.team?['id'] ||
+        widget.fixtureRepository != oldWidget.fixtureRepository) {
       setState(() {
-        _loadFixtures();
-        _sectionOffsets.clear();
-        _visibleHeaderCount = 1;
-        _trailingScrollExtent = 24;
+        _resetForLoad();
       });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        scrollToLiveSection();
-        _scheduleHeaderSync();
+      unawaited(_loadFixtures());
+    }
+  }
+
+  Future<void> _loadFixtures() async {
+    final requestId = ++_requestId;
+    final teamId = widget.team?['id'] as int?;
+    if (teamId == null) {
+      if (!mounted || requestId != _requestId) return;
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final repository = _fixtureRepository;
+      final results = await Future.wait([
+        repository.loadForTeam(
+          teamId,
+          status: FixtureStatus.past,
+          limit: 200,
+        ),
+        repository.loadForTeam(
+          teamId,
+          status: FixtureStatus.live,
+          limit: 200,
+        ),
+        repository.loadForTeam(
+          teamId,
+          status: FixtureStatus.upcoming,
+          limit: 200,
+        ),
+      ]);
+      if (!mounted || requestId != _requestId || teamId != widget.team?['id']) {
+        return;
+      }
+
+      setState(() {
+        pastMatches = results[0];
+        liveMatches = results[1];
+        upcomingMatches = results[2];
+        _isLoading = false;
+        _loadError = null;
+      });
+      _schedulePostLoadLayout();
+    } on Object catch (error) {
+      if (!mounted || requestId != _requestId || teamId != widget.team?['id']) {
+        return;
+      }
+      setState(() {
+        pastMatches = const [];
+        liveMatches = const [];
+        upcomingMatches = const [];
+        _isLoading = false;
+        _loadError = error;
       });
     }
   }
 
-  void _loadFixtures() {
-    final teamId = widget.team?['id'] as int?;
-    if (teamId == null) return;
+  void _retryLoad() {
+    setState(_resetForLoad);
+    unawaited(_loadFixtures());
+  }
 
-    pastMatches = fixtureRepository.forTeam(
-      teamId,
-      status: FixtureStatus.past,
-    );
-    liveMatches = fixtureRepository.forTeam(
-      teamId,
-      status: FixtureStatus.live,
-    );
-    upcomingMatches = fixtureRepository.forTeam(
-      teamId,
-      status: FixtureStatus.upcoming,
-    );
+  void _resetForLoad() {
+    pastMatches = const [];
+    liveMatches = const [];
+    upcomingMatches = const [];
+    _isLoading = true;
+    _loadError = null;
+    _sectionOffsets.clear();
+    _visibleHeaderCount = 1;
+    _trailingScrollExtent = 24;
+  }
+
+  void _schedulePostLoadLayout() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      scrollToLiveSection();
+      _scheduleHeaderSync();
+    });
   }
 
   void scrollToLiveSection() {
@@ -204,7 +269,45 @@ class _MatchesTabState extends State<MatchesTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          key: ValueKey('matches-loading'),
+        ),
+      );
+    }
+
+    if (_loadError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Unable to load matches',
+              style: Body1.style,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              key: const ValueKey('matches-retry'),
+              onPressed: _retryLoad,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
     final sections = _sections;
+    if (sections.isEmpty) {
+      return Center(
+        child: Text(
+          'No matches available',
+          key: const ValueKey('matches-empty'),
+          style: Body1.style,
+        ),
+      );
+    }
     final visibleHeaderCount = _visibleHeaderCount.clamp(0, sections.length);
 
     return Column(

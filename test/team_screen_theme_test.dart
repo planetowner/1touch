@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repository.dart';
 import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
@@ -13,6 +14,7 @@ Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
 }
 
 void main() {
+  final teamAttributeRepository = MockTeamAttributeRepository();
   const phoneSizes = [
     Size(320, 568),
     Size(375, 667),
@@ -35,7 +37,10 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               theme: testCase.theme,
-              home: TeamScreen(teamId: 9),
+              home: TeamScreen(
+                teamId: 9,
+                teamAttributeRepository: teamAttributeRepository,
+              ),
             ),
           );
           await tester.pump();
@@ -66,6 +71,9 @@ void main() {
           for (var index = 1; index < 5; index++) {
             await tester.drag(tabView, Offset(-size.width, 0));
             await tester.pump(const Duration(milliseconds: 350));
+            if (index == 1) {
+              await tester.pump();
+            }
             if (index == 3) {
               await tester.pump(const Duration(milliseconds: 450));
             }
@@ -201,7 +209,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: TeamScreen(teamId: 9),
+        home: TeamScreen(
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+        ),
       ),
     );
     await tester.pump();
@@ -214,7 +225,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: TeamScreen(teamId: 9),
+        home: TeamScreen(
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+        ),
       ),
     );
     await tester.pump();
@@ -396,7 +410,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: TeamScreen(teamId: 9),
+        home: TeamScreen(
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+        ),
       ),
     );
     await tester.pump();
@@ -426,13 +443,17 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: TeamScreen(teamId: 9),
+        home: TeamScreen(
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+        ),
       ),
     );
     await tester.pump();
 
     await tester.drag(find.byType(TabBarView), const Offset(-393, 0));
     await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
 
     final matchesScrollFinder = find.byKey(
       const ValueKey('matches-scroll'),
@@ -556,7 +577,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: TeamScreen(teamId: 9),
+        home: TeamScreen(
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+        ),
       ),
     );
     await tester.pump();
