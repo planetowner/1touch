@@ -8,6 +8,7 @@ import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
+import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
 
 void main() {
   testWidgets('loads a fixture detail asynchronously on a compact screen',
@@ -131,6 +132,31 @@ void main() {
       find.byKey(const ValueKey('match-betting-card')),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('passes the loaded fixture detail to Match Info', (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final repository = _ControlledFixtureRepository();
+    final detail = _detail();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: MatchScreen(
+          matchId: '${_fixture.fixtureId}',
+          matchStatus: 'past',
+          repository: repository,
+        ),
+      ),
+    );
+
+    repository.calls.single.complete(detail);
+    await tester.pump();
+
+    final matchInfo = tester.widget<MatchInfoTab>(find.byType(MatchInfoTab));
+    expect(matchInfo.detail, same(detail));
+    expect(matchInfo.fixture, same(detail.fixture));
     expect(tester.takeException(), isNull);
   });
 }

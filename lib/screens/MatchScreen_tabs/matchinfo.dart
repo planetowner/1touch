@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
 import 'package:onetouch/features/KaneRest.dart';
 
@@ -10,11 +11,13 @@ import '../../models/match_data.dart';
 class MatchInfoTab extends StatelessWidget {
   final Fixture fixture;
   final String matchStatus; // "past" | "live"
+  final FixtureDetail? detail;
 
   MatchInfoTab({
     super.key,
     required this.fixture,
     required this.matchStatus,
+    this.detail,
   });
 
   bool get isLive => matchStatus == 'live';
