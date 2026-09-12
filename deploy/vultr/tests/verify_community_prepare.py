@@ -58,8 +58,9 @@ for service, script, credential in (
     ("google", "prepare-google.sh", "google.env"),
     ("apple", "prepare-apple.sh", "apple.env"),
     ("kakao", "prepare-kakao.sh", "kakao.env"),
+    ("line", "prepare-line.sh", "line.env"),
     ("community", "prepare-community.sh", "community.env"),
 ):
     for scenario in ("success", "configure", "check"):
         verify(service, script, credential, scenario)
-print("PASS: shared settings backup, temporary key cleanup, stop on failure; only SES initial migration preparation stops API (21 mocked cases)")
+print("PASS: shared settings backup, temporary key cleanup, stop on failure; only SES initial migration preparation stops API (24 mocked cases)")
