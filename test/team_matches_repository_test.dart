@@ -7,7 +7,8 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Matches.dart';
 
 void main() {
-  testWidgets('loads each match status asynchronously', (tester) async {
+  testWidgets('loads each match status and centers labels responsively',
+      (tester) async {
     tester.view.physicalSize = const Size(320, 568);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -58,6 +59,24 @@ void main() {
       find.byKey(const ValueKey('matches-inline-past-header')),
       findsOneWidget,
     );
+    final competitionAndRound = find.byKey(
+      const ValueKey('match-competition-round-3'),
+    );
+    expect(tester.widget<SizedBox>(competitionAndRound).width, double.infinity);
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: competitionAndRound,
+              matching: find.byType(Text),
+            ),
+          )
+          .textAlign,
+      TextAlign.center,
+    );
+
+    tester.view.physicalSize = const Size(430, 932);
+    await tester.pump();
     expect(tester.takeException(), isNull);
   });
 

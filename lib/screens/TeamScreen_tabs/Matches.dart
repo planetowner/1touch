@@ -496,12 +496,16 @@ class _MatchesTabState extends State<MatchesTab> {
               const SizedBox(height: 8),
             ] else
               const SizedBox(height: 8),
-            Text(
-              competitionAndRound,
-              style: Body2.style,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
+            SizedBox(
+              key: ValueKey('match-competition-round-${fixture.fixtureId}'),
+              width: double.infinity,
+              child: Text(
+                competitionAndRound,
+                style: Body2.style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),
