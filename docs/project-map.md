@@ -48,12 +48,23 @@ screen/widget -> repository interface -> selected implementation -> external or 
 
 ## Current implementation status
 
-Most active providers still select mock implementations, including teams, players, competitions, seasons, standings, current form, transfers, trophies, posts, best eleven, fixtures, and the Home aggregate.
+Most catalog-oriented providers still select mock implementations, including
+teams, players, competitions, seasons, standings, current form, transfers,
+trophies, posts, best eleven, and the primary fixture catalog.
+
+The Home aggregate and authenticated current-user profile now use API-backed
+repositories configured through `ApiConfig`.
 
 The fixture area is in an incremental API migration:
 
 - `lib/data/fixtures/api/` contains an HTTP repository, transport responses, and mapping code.
-- `fixture_repository_provider.dart` still selects `MockFixtureRepository`.
+- `fixture_repository_provider.dart` exposes the mock-backed
+  `fixtureRepository` for complete-catalog consumers and the API-backed
+  `fixtureDetailRepository` for query-specific Match screens.
+- Match navigation passes its already displayed `Fixture` as transient route
+  data for immediate rendering. Direct links without route data load the
+  fixture through `GET /v1/fixtures/{fixture_id}`.
+- Match Preview and Head-to-Head use the API-backed query repository.
 - Synchronous selectors currently coexist with asynchronous loaders and an in-memory compatibility cache.
 - See `docs/fixture-cache-migration-plan.md` before extending that cache or switching the provider.
 
@@ -61,8 +72,11 @@ Other live or local integrations are deliberately separate:
 
 - Firebase is initialized at startup. Match live chat uses Firebase Authentication and Realtime Database directly.
 - Authentication screens remain mock behavior; `docs/authentication.md` describes the intended production design.
-- Theme and user team preferences use `shared_preferences` through local state classes.
-- Home highlights and news use a feed-backed `HomeContentService`; the Home aggregate itself is mock-backed.
+- Theme and user team preferences, including followed teams and players, use
+  local state and `shared_preferences`. Profile editing must remain local until
+  matching backend write endpoints are deployed.
+- Home highlights and news use a feed-backed `HomeContentService`; the Home
+  aggregate itself is API-backed.
 
 ## Documentation routing
 
@@ -71,7 +85,9 @@ Read only the document relevant to the task:
 | Topic | Document |
 | --- | --- |
 | Authentication architecture and status | `docs/authentication.md` |
+| Development startup and named-user launch modes | `docs/development-launch-modes.md` |
 | Verified backend loader endpoints | `docs/backend-loader-reference.md` |
+| Fixture-detail fields and display rules | `docs/fixture-detail-display-contract.md` |
 | Fixture cache limitations and removal | `docs/fixture-cache-migration-plan.md` |
 | Flutter 3.47 migration | `docs/flutter-3.47-migration-notes.md` |
 | Frontend performance opportunities | `docs/frontend-optimization-notes.md` |
