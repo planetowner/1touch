@@ -115,7 +115,7 @@ New database reload order (redesigned commands):
 
 4. fixtures
   python -m one_touch_loader.cli fixtures all
-  python -m one_touch_loader.cli fixtures <season_name> <competition_id>
+  python -m one_touch_loader.cli fixtures <season_name> <competition_id> [competition_id ...]
 
 5. countries
   python -m one_touch_loader.cli countries refresh
@@ -154,9 +154,18 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli standings <season_name> <competition_id> [competition_id ...]
 
 13. team-attributes
+  지난 시즌(21/22~25/26) 집계 → 가중치 학습 → 저장된 전체 시즌 점수 계산
   python -m one_touch_loader.cli team-attributes build-training-features
   python -m one_touch_loader.cli team-attributes train-regression
   python -m one_touch_loader.cli team-attributes build-scores
+
+  현재 시즌: 경기 통계 갱신 → 집계 → 기존 가중치로 점수 계산
+  경기 목록·종료 상태와 순위표는 fixtures·standings로 먼저 갱신해요.
+  python -m one_touch_loader.cli team-attributes refresh-current
+
+  현재 시즌의 경기 통계가 이미 최신이면 집계·점수 계산만 실행할 수 있어요.
+  python -m one_touch_loader.cli team-attributes build-current-features
+  python -m one_touch_loader.cli team-attributes build-current-scores
 
 14. best-eleven
   python -m one_touch_loader.cli best-eleven <season_name>  (Big 5 teams, stored fixtures from all competitions)
@@ -313,18 +322,24 @@ def main():
                 f"collection_runs={result['collection_runs']} "
                 f"fixtures={result['stored_fixtures']}"
             )
-        elif len(sys.argv) == 4:
+        elif len(sys.argv) >= 4:
             season_name = sys.argv[2]
-            competition_id = int(sys.argv[3])
-            result = collect_fixtures_for_competition_season(
-                season_name,
-                competition_id,
-            )
+            # 다른 수집 명령처럼 중복 대회를 빼고 입력한 순서대로 처리해요.
+            competition_ids = _parse_competition_ids(sys.argv[3:])
+            for competition_id in competition_ids:
+                result = collect_fixtures_for_competition_season(
+                    season_name,
+                    competition_id,
+                )
+                print(
+                    "Fixtures competition done: "
+                    f"season={season_name} "
+                    f"competition={competition_id} "
+                    f"fixtures={result['stored_fixture_count']}"
+                )
             print(
-                "Fixtures competition done: "
-                f"season={season_name} "
-                f"competition={competition_id} "
-                f"fixtures={result['stored_fixture_count']}"
+                "Fixtures season done: "
+                f"season={season_name} competitions={competition_ids}"
             )
         else:
             print(USAGE)
