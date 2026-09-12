@@ -1,12 +1,12 @@
-import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_config.dart';
+import 'package:onetouch/data/home/api/api_home_repository.dart';
 import 'package:onetouch/data/home/home_repository.dart';
-import 'package:onetouch/data/home/mock/mock_home_repository.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
 
-final HomeRepository homeRepository = MockHomeRepository(
-  teamRepository: teamRepository,
-  fixtureRepository: fixtureRepository,
-  favoriteTeamId: () => currentUserPreferences.favoriteTeamId.value,
-  followedTeamIds: () => currentUserPreferences.followedTeamIds.value,
+final ApiConfig _apiConfig = ApiConfig.fromEnvironment();
+
+final HomeRepository homeRepository = ApiHomeRepository(
+  client: http.Client(),
+  apiBaseUri: _apiConfig.baseUri,
+  requestHeaders: _apiConfig.requestHeaders,
 );

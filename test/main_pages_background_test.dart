@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/models/home_data.dart';
+import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
 import 'package:onetouch/screens/HomeScreen.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
@@ -10,7 +13,7 @@ void main() {
   final pages = <({String name, Widget screen, String gradientKey})>[
     (
       name: 'home',
-      screen: const HomeScreen(),
+      screen: const HomeScreen(repository: _StaticHomeRepository()),
       gradientKey: 'home-brand-gradient',
     ),
     (
@@ -53,5 +56,26 @@ void main() {
         closeTo(596.4, 0.01),
       );
     });
+  }
+}
+
+class _StaticHomeRepository implements HomeRepository {
+  const _StaticHomeRepository();
+
+  @override
+  Future<HomeData> load({DateTime? start, DateTime? end}) async {
+    const favoriteTeam = Team(
+      teamId: 8,
+      name: 'Liverpool',
+      shortCode: 'LIV',
+      imagePath: 'https://cdn.example/8.png',
+    );
+    return HomeData(
+      favoriteTeam: favoriteTeam,
+      followingTeams: const [favoriteTeam],
+      nextMatch: null,
+      lastMatch: null,
+      calendar: const [],
+    );
   }
 }
