@@ -1,0 +1,26 @@
+{$API_DOMAIN} {
+	encode zstd gzip
+	log
+
+	# 앱 요청은 FastAPI의 Bearer 세션으로 인증해요. 문서·운영 상태만 개발팀 암호로 보호해요.
+	# 같은 Authorization 헤더에 Basic과 Bearer 인증을 동시에 요구하지 않아요.
+	@protected {
+		path /docs /docs/* /redoc /openapi.json /v1/ready
+		not method OPTIONS
+	}
+	# 승인한 파일 한 개 100MB와 multipart 헤더가 들어갈 만큼만 허용해요.
+	request_body {
+		max_size 110MB
+	}
+	basic_auth @protected {
+		{$COLLAB_USER} {$COLLAB_PASSWORD_HASH}
+	}
+	reverse_proxy api:8000
+}
+
+# 서비스 소개는 회원 로그인 없이 읽고, API 문서의 접근 제한은 위 호스트에 유지해요.
+1touch.football {
+	encode zstd gzip
+	root * /srv/1touch
+	file_server
+}

@@ -1,0 +1,583 @@
+{
+  "description": "Lugano–Dukagjini에서 Rexhaj의 이벤트 ID·이름은 있지만 라인업 ID·프로필은 null이에요. 이 선수만 최소 정보로 등록하기로 합의했어요.",
+  "sources": [
+    "https://www.uefa.com/uefaconferenceleague/clubs/2608311--dukagjini/squad/"
+  ],
+  "fixture": {
+    "id": 19720970,
+    "events": [
+      {
+        "id": 157313161,
+        "fixture_id": 19720970,
+        "period_id": 7014916,
+        "participant_id": 231923,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37763035,
+        "related_player_id": 13186421,
+        "player_name": "Arvanit Rexhaj",
+        "related_player_name": "Kushtrim Gashi",
+        "result": null,
+        "info": null,
+        "addition": "6th Substitution",
+        "minute": 81,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014916,
+        "rescinded": null,
+        "sort_order": 6,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157313199,
+        "fixture_id": 19720970,
+        "period_id": 7014916,
+        "participant_id": 231923,
+        "type_id": 20,
+        "section": "event",
+        "player_id": 37763035,
+        "related_player_id": null,
+        "player_name": "Arvanit Rexhaj",
+        "related_player_name": null,
+        "result": null,
+        "info": "Foul",
+        "addition": "1st Redcard",
+        "minute": 88,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": 1496,
+        "detailed_period_id": 7014916,
+        "rescinded": false,
+        "sort_order": 1,
+        "type": {
+          "id": 20,
+          "name": "Redcard",
+          "code": "redcard",
+          "developer_name": "REDCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "lineups": [
+      {
+        "id": 14674190712,
+        "sport_id": 1,
+        "fixture_id": 19720970,
+        "player_id": null,
+        "team_id": 231923,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Arvanit Rexhaj",
+        "jersey_number": 6,
+        "details": [
+          {
+            "id": 2133758571,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 119,
+            "data": {
+              "value": 7
+            }
+          },
+          {
+            "id": 2133748330,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 117172,
+            "data": {
+              "value": 25
+            }
+          },
+          {
+            "id": 2133761279,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 120,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133761280,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 96,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133761281,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 27271,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133761282,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 106,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133761283,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 105,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 2133761482,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 56,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133761483,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 1491,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133761948,
+            "fixture_id": 19720970,
+            "player_id": null,
+            "team_id": 231923,
+            "lineup_id": 14674190712,
+            "type_id": 83,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": null
+      },
+      {
+        "id": 14674190624,
+        "sport_id": 1,
+        "fixture_id": 19720970,
+        "player_id": 13186421,
+        "team_id": 231923,
+        "position_id": 26,
+        "formation_field": "3:2",
+        "type_id": 11,
+        "formation_position": 8,
+        "player_name": "Kushtrim Gashi",
+        "jersey_number": 8,
+        "details": [
+          {
+            "id": 2133679794,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 117172,
+            "data": {
+              "value": 81
+            }
+          },
+          {
+            "id": 2133686298,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 1491,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 2133679587,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 118,
+            "data": {
+              "value": 6.47
+            }
+          },
+          {
+            "id": 2133688855,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 120,
+            "data": {
+              "value": 32
+            }
+          },
+          {
+            "id": 2133686297,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 105,
+            "data": {
+              "value": 11
+            }
+          },
+          {
+            "id": 2133686296,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 56,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 2133680636,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 119,
+            "data": {
+              "value": 81
+            }
+          },
+          {
+            "id": 2133688856,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 1584,
+            "data": {
+              "value": 85
+            }
+          },
+          {
+            "id": 2133689820,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 101,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133688853,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 80,
+            "data": {
+              "value": 20
+            }
+          },
+          {
+            "id": 2133688854,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 116,
+            "data": {
+              "value": 17
+            }
+          },
+          {
+            "id": 2133694620,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27271,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 2133707705,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27272,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 2133707706,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27274,
+            "data": {
+              "value": 4
+            }
+          },
+          {
+            "id": 2133707708,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 106,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 2133707704,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 96,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133707707,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 107,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133707709,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27273,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 2133707710,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27275,
+            "data": {
+              "value": 25
+            }
+          },
+          {
+            "id": 2133704010,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27266,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 2133714493,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133721761,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 41,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133734586,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 108,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 2133730572,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 100,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 2133707711,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27276,
+            "data": {
+              "value": 29
+            }
+          },
+          {
+            "id": 2133736396,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 42,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 2133736397,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 58,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133740891,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 27269,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 2133740899,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 109,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133750535,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 122,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 2133749076,
+            "fixture_id": 19720970,
+            "player_id": 13186421,
+            "team_id": 231923,
+            "lineup_id": 14674190624,
+            "type_id": 117,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 13186421,
+          "sport_id": 1,
+          "country_id": 122,
+          "nationality_id": 122,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 153,
+          "type_id": 26,
+          "common_name": "K. Gashi",
+          "firstname": "Kushtrim",
+          "lastname": "Gashi",
+          "name": "Kushtrim Gashi",
+          "display_name": "Kushtrim Gashi",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1992-11-15",
+          "gender": "male"
+        }
+      }
+    ],
+    "statistics": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  }
+}

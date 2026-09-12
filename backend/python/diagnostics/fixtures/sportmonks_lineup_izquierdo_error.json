@@ -1,0 +1,104 @@
+{
+  "source": {
+    "official_lineups": "https://www.premierleague.com/en/match/2128598/chelsea-vs-brighton-hove-albion/lineups",
+    "supporting_lineups": "https://www.skysports.com/football/chelsea-vs-brighton-and-hove-albion/teams/429149",
+    "normal_provider_fixture_id": 16943134
+  },
+  "fixtures": [
+    {
+      "id": 16943119,
+      "lineups": [
+        {
+          "id": 143428,
+          "sport_id": 1,
+          "fixture_id": 16943119,
+          "player_id": 199544,
+          "team_id": 78,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Andi Zeqiri",
+          "jersey_number": 19,
+          "details": [],
+          "player": {
+            "id": 199544,
+            "sport_id": 1,
+            "country_id": 62,
+            "nationality_id": 62,
+            "city_id": 48836,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "A. Zeqiri",
+            "firstname": "Andi",
+            "lastname": "Zeqiri",
+            "name": "Andi Zeqiri",
+            "display_name": "Andi Zeqiri",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/24/199544.png",
+            "height": 185,
+            "weight": 81,
+            "date_of_birth": "1999-06-22",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 6783830416,
+          "sport_id": 1,
+          "fixture_id": 16943119,
+          "player_id": 199544,
+          "team_id": 78,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Andi Zeqiri",
+          "jersey_number": 29,
+          "details": [],
+          "player": {
+            "id": 199544,
+            "sport_id": 1,
+            "country_id": 62,
+            "nationality_id": 62,
+            "city_id": 48836,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "A. Zeqiri",
+            "firstname": "Andi",
+            "lastname": "Zeqiri",
+            "name": "Andi Zeqiri",
+            "display_name": "Andi Zeqiri",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/24/199544.png",
+            "height": 185,
+            "weight": 81,
+            "date_of_birth": "1999-06-22",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 62408,
+      "sport_id": 1,
+      "country_id": 353,
+      "nationality_id": 353,
+      "city_id": 68191,
+      "position_id": null,
+      "detailed_position_id": null,
+      "type_id": 27,
+      "common_name": "J. Izquierdo Mena",
+      "firstname": "José Heriberto",
+      "lastname": "Izquierdo Mena",
+      "name": "José Heriberto Izquierdo Mena",
+      "display_name": "José Izquierdo",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/8/62408.png",
+      "height": 171,
+      "weight": 73,
+      "date_of_birth": "1992-07-07",
+      "gender": "male"
+    }
+  ]
+}

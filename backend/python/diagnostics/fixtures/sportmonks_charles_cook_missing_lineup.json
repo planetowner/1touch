@@ -1,0 +1,139 @@
+{
+  "description": "Motherwell–HB의 78분 교체 선수는 실제 경기와 다음 경기 17번에서 확인되지만 라인업 행이 없어요.",
+  "sources": [
+    "https://www.footballwebpages.co.uk/match/2026-2027/uefa-conference-league/motherwell/hb-torshavn/574647"
+  ],
+  "fixture": {
+    "statistics": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": [],
+    "id": 19720944,
+    "events": [
+      {
+        "id": 157313260,
+        "fixture_id": 19720944,
+        "period_id": 7014924,
+        "participant_id": 309,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 6234,
+        "related_player_id": 37365878,
+        "player_name": "Regan Charles-Cook",
+        "related_player_name": "D. Williams",
+        "result": null,
+        "info": null,
+        "addition": "6th Substitution",
+        "minute": 78,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014924,
+        "rescinded": null,
+        "sort_order": 6,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "lineups": [
+      {
+        "id": 14674191043,
+        "sport_id": 1,
+        "fixture_id": 19720944,
+        "player_id": 37365878,
+        "team_id": 309,
+        "position_id": 26,
+        "formation_field": "3:1",
+        "type_id": 11,
+        "formation_position": 6,
+        "player_name": "D. Williams",
+        "jersey_number": 20,
+        "details": [
+          {
+            "id": 2133697196,
+            "fixture_id": 19720944,
+            "player_id": 37365878,
+            "team_id": 309,
+            "lineup_id": 14674191043,
+            "type_id": 118,
+            "data": {
+              "value": 6.5
+            }
+          },
+          {
+            "id": 2133697522,
+            "fixture_id": 19720944,
+            "player_id": 37365878,
+            "team_id": 309,
+            "lineup_id": 14674191043,
+            "type_id": 117172,
+            "data": {
+              "value": 78
+            }
+          },
+          {
+            "id": 2133768869,
+            "fixture_id": 19720944,
+            "player_id": 37365878,
+            "team_id": 309,
+            "lineup_id": 14674191043,
+            "type_id": 119,
+            "data": {
+              "value": 78
+            }
+          }
+        ],
+        "player": {
+          "id": 37365878,
+          "sport_id": 1,
+          "country_id": 462,
+          "nationality_id": 462,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 155,
+          "type_id": 26,
+          "common_name": "D. Williams",
+          "firstname": "Dylan",
+          "lastname": "Williams",
+          "name": "Dylan Willis",
+          "display_name": "D. Williams",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "2003-09-13",
+          "gender": "male"
+        }
+      }
+    ]
+  },
+  "profiles": {
+    "6234": {
+      "id": 6234,
+      "sport_id": 1,
+      "country_id": 462,
+      "nationality_id": 462,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": 26,
+      "common_name": "R. Charles-Cook",
+      "firstname": "Regan",
+      "lastname": "Charles-Cook",
+      "name": "Regan Charles-Cook",
+      "display_name": "Regan Charles-Cook",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/26/6234.png",
+      "height": 174,
+      "weight": 69,
+      "date_of_birth": "1997-02-14",
+      "gender": "male"
+    }
+  }
+}

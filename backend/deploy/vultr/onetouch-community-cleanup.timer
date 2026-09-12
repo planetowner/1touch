@@ -1,0 +1,10 @@
+[Unit]
+Description=1Touch community cleanup schedule
+
+[Timer]
+# 초안은 7일이 되는 순간 API에서 숨기고, 실제 DB·R2 삭제는 시간마다 처리해요.
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

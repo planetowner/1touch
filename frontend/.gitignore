@@ -1,0 +1,38 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+
+# Android
+android/.gradle/
+android/app/build/
+**/local.properties
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+Runner.xcodeproj/project.xcworkspace/
+Runner.xcworkspace/
+**/*.xcuserstate
+**/*.xcuserdatad
+
+# Web
+web/.dart_tool/
+
+# Desktop
+linux/build/
+windows/build/
+macos/Flutter/ephemeral/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
