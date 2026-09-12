@@ -8,6 +8,8 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
 
+import 'match_event_view_data.dart';
+
 class AnalysisTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureDetail? detail;
@@ -25,17 +27,6 @@ class AnalysisTab extends StatefulWidget {
 class _AnalysisTabState extends State<AnalysisTab> {
   bool showFCB = true; // default view
   bool get isLive => false;
-
-  //   Mock data — replace with real API models
-  final List<Map<String, dynamic>> _goalEvents = const [
-    {'player': 'Lewandowski', 'minute': "23'", 'team': 'home'},
-    {'player': 'Lewandowski', 'minute': "67'", 'team': 'home'},
-    {'player': 'Yamal', 'minute': "45'", 'team': 'home'},
-    {'player': 'Yamal', 'minute': "45'+7'", 'team': 'home'},
-    {'player': 'Yamal', 'minute': "90'+9'", 'team': 'home'},
-    {'player': 'Dovbyk', 'minute': "45'", 'team': 'away'},
-    {'player': 'Gutiérrez', 'minute': "78'", 'team': 'away', 'type': 'redCard'},
-  ];
 
   //   Shot map: normalized (0..1) origin of each shot. y=0 is the halfway
   // line edge of the diagram, y=1 is the goal line — matches FCB's 10
@@ -90,13 +81,22 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   @override
   Widget build(BuildContext context) {
+    final matchEvents = fixtureSummaryEventRows(
+      events: widget.detail?.events ?? const <FixtureEvent>[],
+      homeTeamId: widget.fixture.homeTeamId,
+      awayTeamId: widget.fixture.awayTeamId,
+    );
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 48),
           _buildScoreHeader(),
-          MatchEventsSection(events: _goalEvents),
+          if (matchEvents.isNotEmpty)
+            MatchEventsSection(
+              key: const ValueKey('match-analysis-events'),
+              events: matchEvents,
+            ),
           if (widget.detail?.expectedGoals case final expectedGoals?)
             _buildXGSection(expectedGoals),
           const SizedBox(height: 48),

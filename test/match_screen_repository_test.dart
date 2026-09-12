@@ -379,7 +379,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('passes loaded team expected goals to Analysis', (tester) async {
+  testWidgets('passes loaded expected goals and events to Analysis',
+      (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
     final repository = _ControlledFixtureRepository();
     final detail = _detail(
@@ -390,6 +391,7 @@ void main() {
         awayXga: 1.234,
         provider: 'understat',
       ),
+      events: _matchEvents,
     );
 
     await tester.pumpWidget(
@@ -414,15 +416,43 @@ void main() {
     await tester.pump();
 
     final analysis = tester.widget<AnalysisTab>(find.byType(AnalysisTab));
+    final events = tester.widget<MatchEventsSection>(
+      find.byKey(const ValueKey('match-analysis-events')),
+    );
     expect(analysis.detail, same(detail));
+    expect(events.events, hasLength(2));
+    expect(
+      events.events,
+      contains(
+        predicate<Map<String, dynamic>>(
+          (event) =>
+              event['player'] == 'Home Starter' &&
+              event['minute'] == "45+2'" &&
+              event['team'] == 'home' &&
+              event['type'] == 'goal',
+        ),
+      ),
+    );
+    expect(
+      events.events,
+      contains(
+        predicate<Map<String, dynamic>>(
+          (event) =>
+              event['player'] == 'Away Defender' &&
+              event['minute'] == "70'" &&
+              event['team'] == 'away' &&
+              event['type'] == 'redCard',
+        ),
+      ),
+    );
+    expect(find.text('Lewandowski'), findsNothing);
     expect(find.byKey(const ValueKey('match-analysis-xg')), findsOneWidget);
     expect(find.text('1.23'), findsOneWidget);
     expect(find.text('0.57'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('omits Analysis xG when the backend has no expected goals',
-      (tester) async {
+  testWidgets('omits unavailable Analysis detail sections', (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
     final repository = _ControlledFixtureRepository();
 
@@ -448,6 +478,7 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('match-analysis-xg')), findsNothing);
+    expect(find.byKey(const ValueKey('match-analysis-events')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

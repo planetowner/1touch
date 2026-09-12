@@ -6,6 +6,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 
 import '../../models/match_data.dart';
+import 'match_event_view_data.dart';
 
 class MatchInfoTab extends StatelessWidget {
   final Fixture fixture;
@@ -21,8 +22,6 @@ class MatchInfoTab extends StatelessWidget {
 
   bool get isLive => matchStatus == 'live';
 
-  static const _goalEventCodes = {'goal', 'owngoal', 'penalty'};
-  static const _redCardEventCodes = {'redcard', 'yellowredcard'};
   static const _statDefinitions =
       <({String code, String label, bool isPercent})>[
     (code: 'shots-total', label: 'Shots', isPercent: false),
@@ -38,36 +37,6 @@ class MatchInfoTab extends StatelessWidget {
     (code: 'yellowcards', label: 'Yellow Cards', isPercent: false),
     (code: 'saves', label: 'Saves', isPercent: false),
   ];
-
-  List<Map<String, dynamic>> _matchEvents() {
-    final source = List<FixtureEvent>.of(
-      detail?.events ?? const <FixtureEvent>[],
-    )..sort(_compareEvents);
-    final result = <Map<String, dynamic>>[];
-
-    for (final event in source) {
-      final playerName = event.playerName?.trim();
-      final type = _summaryEventType(event.eventTypeCode);
-      final team = event.teamId == fixture.homeTeamId
-          ? 'home'
-          : event.teamId == fixture.awayTeamId
-              ? 'away'
-              : null;
-      if (playerName == null ||
-          playerName.isEmpty ||
-          type == null ||
-          team == null) {
-        continue;
-      }
-      result.add({
-        'player': playerName,
-        'minute': _minuteLabel(event),
-        'team': team,
-        'type': type,
-      });
-    }
-    return result;
-  }
 
   List<StatBarData> _statBars() {
     final valuesByCode = <String, Map<int, double>>{};
@@ -162,14 +131,14 @@ class MatchInfoTab extends StatelessWidget {
 
     for (final event in detail?.events ?? const <FixtureEvent>[]) {
       final code = event.eventTypeCode;
-      if (_goalEventCodes.contains(code)) {
+      if (fixtureGoalEventCodes.contains(code)) {
         add(event.playerId, LineupEventType.goal, event.minute);
         if (code != 'owngoal') {
           add(event.relatedPlayerId, LineupEventType.assist, event.minute);
         }
       } else if (code == 'yellowcard') {
         add(event.playerId, LineupEventType.yellowCard, event.minute);
-      } else if (_redCardEventCodes.contains(code)) {
+      } else if (fixtureRedCardEventCodes.contains(code)) {
         add(event.playerId, LineupEventType.redCard, event.minute);
       } else if (code == 'substitution') {
         add(event.playerId, LineupEventType.subIn, event.minute);
@@ -235,7 +204,7 @@ class MatchInfoTab extends StatelessWidget {
     final goalScorers = {
       for (final event in events)
         if (event.teamId == teamId &&
-            _goalEventCodes.contains(event.eventTypeCode) &&
+            fixtureGoalEventCodes.contains(event.eventTypeCode) &&
             event.playerId != null)
           event.playerId!,
     };
@@ -273,28 +242,6 @@ class MatchInfoTab extends StatelessWidget {
       .map((formation) => formation.formation)
       .firstOrNull;
 
-  static int _compareEvents(FixtureEvent a, FixtureEvent b) {
-    // The 1Touch response does not currently expose Sportmonks `sort_order`,
-    // so minute, added time, and event ID provide a deterministic fallback.
-    final minute = a.minute.compareTo(b.minute);
-    if (minute != 0) return minute;
-    final extraMinute = (a.extraMinute ?? 0).compareTo(b.extraMinute ?? 0);
-    return extraMinute != 0 ? extraMinute : a.eventId.compareTo(b.eventId);
-  }
-
-  static String _minuteLabel(FixtureEvent event) {
-    final extraMinute = event.extraMinute;
-    return extraMinute == null || extraMinute == 0
-        ? "${event.minute}'"
-        : "${event.minute}+$extraMinute'";
-  }
-
-  static String? _summaryEventType(String code) {
-    if (_goalEventCodes.contains(code)) return 'goal';
-    if (_redCardEventCodes.contains(code)) return 'redCard';
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     final homeTeam = teamRepository.findByIdOrUnknown(fixture.homeTeamId);
@@ -305,7 +252,11 @@ class MatchInfoTab extends StatelessWidget {
       for (final coach in detail?.coaches ?? const <FixtureCoach>[])
         coach.teamId: coach.name,
     };
-    final matchEvents = _matchEvents();
+    final matchEvents = fixtureSummaryEventRows(
+      events: detail?.events ?? const <FixtureEvent>[],
+      homeTeamId: fixture.homeTeamId,
+      awayTeamId: fixture.awayTeamId,
+    );
     final momentumValues = _momentumValues();
     final statBars = _statBars();
     final homeLineupRows = _lineupRows(fixture.homeTeamId, reverse: true);
