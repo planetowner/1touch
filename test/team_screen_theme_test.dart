@@ -588,6 +588,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     await tester.drag(tabView, const Offset(-393, 0));
     await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
 
     final attributesFilter = tester.widget<DropdownButton<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),

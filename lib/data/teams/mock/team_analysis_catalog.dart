@@ -26,16 +26,6 @@ import 'package:onetouch/models/team_attribute_scores.dart';
 // does not yet expose an independent pressure score. Replace this catalog only
 // after the backend defines and tests the required six-axis API contract.
 
-// Axis labels in the same order as TeamAttributeScores.radarValues.
-const teamAttributeLabels = <String>[
-  'Attack',
-  'Progression',
-  'Pressure',
-  'Dominance',
-  'Defense',
-  'Possession',
-];
-
 const mockTeamAttributes = <TeamAttributeScores>[
   //   FC Barcelona
   TeamAttributeScores(
@@ -213,17 +203,5 @@ const mockTeamAttributes = <TeamAttributeScores>[
       defense: 84,
       possession: 80),
 ];
-
-TeamAttributeScores? teamAttributesByTeamSeason(int teamId, int seasonId) =>
-    mockTeamAttributes
-        .where((a) => a.teamId == teamId && a.seasonId == seasonId)
-        .firstOrNull;
-
-// All seasons recorded for a team, newest first.
-List<TeamAttributeScores> teamAttributesByTeam(int teamId) {
-  final list = mockTeamAttributes.where((a) => a.teamId == teamId).toList();
-  list.sort((a, b) => b.seasonId.compareTo(a.seasonId));
-  return list;
-}
 
 //

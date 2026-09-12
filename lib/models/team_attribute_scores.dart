@@ -1,3 +1,12 @@
+const teamAttributeLabels = <String>[
+  'Attack',
+  'Progression',
+  'Pressure',
+  'Dominance',
+  'Defense',
+  'Possession',
+];
+
 class TeamAttributeScores {
   final int teamId;
   final int seasonId;

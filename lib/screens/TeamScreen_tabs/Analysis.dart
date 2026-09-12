@@ -10,7 +10,8 @@ import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/current_form_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
-import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
+import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
+import 'package:onetouch/data/team_attributes/team_attribute_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
@@ -87,7 +88,13 @@ class _AnalysisSectionHeader extends StatelessWidget {
 
 class AttributesSection extends StatefulWidget {
   final Map<String, dynamic>? team;
-  const AttributesSection({super.key, required this.team});
+  final TeamAttributeRepository? repository;
+
+  const AttributesSection({
+    super.key,
+    required this.team,
+    this.repository,
+  });
 
   @override
   State<AttributesSection> createState() => _AttributesSectionState();
@@ -97,13 +104,17 @@ class _AttributesSectionState extends State<AttributesSection> {
   TeamAttributeScores? _myScores;
   TeamAttributeScores? _comparisonScores;
   List<TeamAttributeScores> _comparisonOptions = const [];
+  bool _isLoading = true;
+  int _requestId = 0;
 
   int get _teamId => widget.team?['id'] as int? ?? 83; // default Barcelona
+  TeamAttributeRepository get _repository =>
+      widget.repository ?? teamAttributeRepository;
 
   @override
   void initState() {
     super.initState();
-    _loadAttributes();
+    unawaited(_loadAttributes());
   }
 
   @override
@@ -112,13 +123,45 @@ class _AttributesSectionState extends State<AttributesSection> {
     // This section's State is reused across team switches (the Team-tab
     // branch stays alive in the bottom-nav shell), so reload instead of
     // only loading once in initState.
-    if (widget.team?['id'] != oldWidget.team?['id']) {
-      setState(_loadAttributes);
+    if (widget.team?['id'] != oldWidget.team?['id'] ||
+        widget.repository != oldWidget.repository) {
+      setState(() {
+        _myScores = null;
+        _comparisonScores = null;
+        _comparisonOptions = const [];
+        _isLoading = true;
+      });
+      unawaited(_loadAttributes());
     }
   }
 
-  void _loadAttributes() {
-    final all = teamAttributesByTeam(_teamId);
+  Future<void> _loadAttributes() async {
+    final requestId = ++_requestId;
+    final teamId = _teamId;
+
+    try {
+      final all = await _repository.loadForTeam(teamId);
+      if (!mounted || requestId != _requestId || teamId != _teamId) return;
+
+      setState(() {
+        _applyAttributes(all);
+        _isLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _requestId || teamId != _teamId) return;
+      setState(() {
+        _myScores = null;
+        _comparisonScores = null;
+        _comparisonOptions = const [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _applyAttributes(List<TeamAttributeScores> all) {
+    _myScores = null;
+    _comparisonScores = null;
+    _comparisonOptions = const [];
     if (all.isEmpty) return;
 
     // MY TEAM is always the current season — find it via the isCurrent flag,
@@ -141,6 +184,13 @@ class _AttributesSectionState extends State<AttributesSection> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (_myScores == null) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),

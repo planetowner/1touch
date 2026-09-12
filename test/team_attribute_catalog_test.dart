@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/teams/mock/team_analysis_catalog.dart';
+import 'package:onetouch/models/team_attribute_scores.dart';
 
 void main() {
   test('uses the verified domestic season IDs for every displayed label', () {
