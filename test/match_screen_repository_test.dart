@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
+import 'package:onetouch/features/MatchInfoFeatures.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
@@ -138,7 +139,20 @@ void main() {
   testWidgets('passes the loaded fixture detail to Match Info', (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
     final repository = _ControlledFixtureRepository();
-    final detail = _detail();
+    final detail = _detail(
+      coaches: [
+        FixtureCoach(
+          teamId: _fixture.awayTeamId,
+          coachId: 902,
+          name: 'Away Coach',
+        ),
+        FixtureCoach(
+          teamId: _fixture.homeTeamId,
+          coachId: 901,
+          name: 'Home Coach',
+        ),
+      ],
+    );
 
     await tester.pumpWidget(
       MaterialApp(
@@ -155,8 +169,40 @@ void main() {
     await tester.pump();
 
     final matchInfo = tester.widget<MatchInfoTab>(find.byType(MatchInfoTab));
+    final coaches = tester.widget<SubstitutesAndCoach>(
+      find.byType(SubstitutesAndCoach),
+    );
     expect(matchInfo.detail, same(detail));
     expect(matchInfo.fixture, same(detail.fixture));
+    expect(coaches.coachA, 'Home Coach');
+    expect(coaches.coachB, 'Away Coach');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('uses a neutral label when fixture coach data is missing',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final repository = _ControlledFixtureRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: MatchScreen(
+          matchId: '${_fixture.fixtureId}',
+          matchStatus: 'past',
+          repository: repository,
+        ),
+      ),
+    );
+
+    repository.calls.single.complete(_detail());
+    await tester.pump();
+
+    final coaches = tester.widget<SubstitutesAndCoach>(
+      find.byType(SubstitutesAndCoach),
+    );
+    expect(coaches.coachA, '—');
+    expect(coaches.coachB, '—');
     expect(tester.takeException(), isNull);
   });
 }
@@ -172,7 +218,7 @@ final Fixture _fixture = mockFixtures.firstWhere(
   (fixture) => fixture.fixtureId == 20100001,
 );
 
-FixtureDetail _detail() {
+FixtureDetail _detail({List<FixtureCoach> coaches = const []}) {
   return FixtureDetail(
     fixture: _fixture,
     venueName: null,
@@ -183,7 +229,7 @@ FixtureDetail _detail() {
     statistics: const [],
     lineups: const [],
     formations: const [],
-    coaches: const [],
+    coaches: coaches,
     pressure: const [],
   );
 }

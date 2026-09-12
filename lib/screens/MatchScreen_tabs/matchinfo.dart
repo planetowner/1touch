@@ -153,6 +153,10 @@ class MatchInfoTab extends StatelessWidget {
     final awayTeam = teamRepository.findByIdOrUnknown(fixture.awayTeamId);
     final homeScore = fixture.homeScore?.toString() ?? '#';
     final awayScore = fixture.awayScore?.toString() ?? '#';
+    final coachNamesByTeam = {
+      for (final coach in detail?.coaches ?? const <FixtureCoach>[])
+        coach.teamId: coach.name,
+    };
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -201,8 +205,8 @@ class MatchInfoTab extends StatelessWidget {
           SubstitutesAndCoach(
             subsA: _subsA,
             subsB: _subsB,
-            coachA: 'Xavi',
-            coachB: 'Michel',
+            coachA: coachNamesByTeam[fixture.homeTeamId] ?? '—',
+            coachB: coachNamesByTeam[fixture.awayTeamId] ?? '—',
           ),
           const SizedBox(height: 100),
         ],
