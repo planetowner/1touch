@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
 
 void main() {
@@ -14,14 +15,43 @@ void main() {
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    final repository = MockFixtureRepository();
+    final fixtureCatalog = MockFixtureRepository();
+    final fixture = fixtureCatalog.findById(int.parse(matchId))!;
+    final repository = MockFixtureRepository(
+      fixtureDetails: [
+        FixtureDetail(
+          fixture: fixture,
+          venueName: null,
+          expectedGoals: null,
+          playerExpectedGoals: const [],
+          shots: const [],
+          events: const [],
+          statistics: const [],
+          lineups: const [],
+          formations: const [],
+          coaches: const [],
+          pressure: [
+            FixturePressurePoint(
+              teamId: fixture.homeTeamId,
+              minute: 10,
+              pressure: 0.7,
+            ),
+            FixturePressurePoint(
+              teamId: fixture.awayTeamId,
+              minute: 20,
+              pressure: 0.4,
+            ),
+          ],
+        ),
+      ],
+    );
     await tester.pumpWidget(
       MaterialApp(
         theme: theme,
         home: MatchScreen(
           matchId: matchId,
           matchStatus: matchStatus,
-          initialFixture: repository.findById(int.parse(matchId)),
+          initialFixture: fixture,
           repository: repository,
         ),
       ),
@@ -164,6 +194,7 @@ void main() {
 
     expect(find.text('MATCH INFO'), findsOneWidget);
     expect(find.text('LIVE CHAT'), findsOneWidget);
+    expect(find.text('Live'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

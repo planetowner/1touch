@@ -26,7 +26,7 @@ class LineupEvent {
 }
 
 class LineupPlayer {
-  final int number;
+  final int? number;
   final String name;
   final List<LineupEvent> events;
   const LineupPlayer({
@@ -45,8 +45,9 @@ class MatchScoreHeader extends StatelessWidget {
   final String awayTeamName;
   final String homeScore;
   final String awayScore;
-  final String statusLabel; // "Final" or live clock e.g. "42:02"
+  final String statusLabel; // e.g. "Final" or "Live"
   final String? roundLabel; // e.g. "R16", "RO 33"
+  final String? venueLabel;
 
   const MatchScoreHeader({
     super.key,
@@ -60,6 +61,7 @@ class MatchScoreHeader extends StatelessWidget {
     required this.awayScore,
     required this.statusLabel,
     required this.roundLabel,
+    this.venueLabel,
   });
 
   @override
@@ -114,6 +116,19 @@ class MatchScoreHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(statusLabel, style: Body2_b.style),
+                if (venueLabel?.trim().isNotEmpty ?? false) ...[
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: compact ? 92 : 120,
+                    child: Text(
+                      venueLabel!.trim(),
+                      style: Eyebrow.style,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ],
             ),
             SizedBox(width: gap),
@@ -857,13 +872,17 @@ class LineupPitch extends StatelessWidget {
   final List<List<LineupPlayer>> homeRows;
 
   /// Called when the user taps a player dot.
-  final void Function(BuildContext context, LineupPlayer player) onPlayerTap;
+  final void Function(BuildContext context, LineupPlayer player)? onPlayerTap;
+  final String? homeFormation;
+  final String? awayFormation;
 
   const LineupPitch({
     super.key,
     required this.awayRows,
     required this.homeRows,
-    required this.onPlayerTap,
+    this.onPlayerTap,
+    this.homeFormation,
+    this.awayFormation,
   });
 
   static const double _centerGap = 64;
@@ -881,7 +900,20 @@ class LineupPitch extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("LINEUP", style: Body2_b.style),
+        Row(
+          children: [
+            const Text("LINEUP", style: Body2_b.style),
+            const Spacer(),
+            Flexible(
+              child: Text(
+                'HOME ${homeFormation ?? '—'}  •  AWAY ${awayFormation ?? '—'}',
+                style: Eyebrow.style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
         Container(
           key: const ValueKey('match-lineup-card'),
@@ -916,7 +948,9 @@ class LineupPitch extends StatelessWidget {
                             _PlayerRow(
                               players: row,
                               isHome: false,
-                              onTap: (p) => onPlayerTap(context, p),
+                              onTap: onPlayerTap == null
+                                  ? null
+                                  : (p) => onPlayerTap!(context, p),
                             ),
                         ],
                       ),
@@ -933,7 +967,9 @@ class LineupPitch extends StatelessWidget {
                             _PlayerRow(
                               players: row,
                               isHome: true,
-                              onTap: (p) => onPlayerTap(context, p),
+                              onTap: onPlayerTap == null
+                                  ? null
+                                  : (p) => onPlayerTap!(context, p),
                             ),
                         ],
                       ),
@@ -954,7 +990,7 @@ class LineupPitch extends StatelessWidget {
 class _PlayerRow extends StatelessWidget {
   final List<LineupPlayer> players;
   final bool isHome;
-  final void Function(LineupPlayer) onTap;
+  final void Function(LineupPlayer)? onTap;
 
   const _PlayerRow({
     required this.players,
@@ -968,8 +1004,11 @@ class _PlayerRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: players
-          .map((p) =>
-              _PlayerDot(player: p, isHome: isHome, onTap: () => onTap(p)))
+          .map((p) => _PlayerDot(
+                player: p,
+                isHome: isHome,
+                onTap: onTap == null ? null : () => onTap!(p),
+              ))
           .toList(),
     );
   }
@@ -980,7 +1019,7 @@ class _PlayerRow extends StatelessWidget {
 class _PlayerDot extends StatelessWidget {
   final LineupPlayer player;
   final bool isHome;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _PlayerDot({
     required this.player,
@@ -1043,7 +1082,7 @@ class _PlayerDot extends StatelessWidget {
 //   Player circle
 
 class _PlayerCircle extends StatelessWidget {
-  final int number;
+  final int? number;
   final bool isHome;
 
   const _PlayerCircle({required this.number, required this.isHome});
@@ -1067,7 +1106,7 @@ class _PlayerCircle extends StatelessWidget {
         ],
       ),
       child: Center(
-        child: Text('$number',
+        child: Text(number?.toString() ?? '—',
             style: Heading5.style.copyWith(
               color: isHome ? Colors.white : Colors.black,
             )),
@@ -1233,19 +1272,22 @@ class SubstitutesAndCoach extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasSubstitutes = subsA.isNotEmpty || subsB.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("SUBSTITUTES", style: Body2_b.style),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _SubList(subs: subsA, alignEnd: false)),
-            Expanded(child: _SubList(subs: subsB, alignEnd: true)),
-          ],
-        ),
-        const SizedBox(height: 24),
+        if (hasSubstitutes) ...[
+          const Text("SUBSTITUTES", style: Body2_b.style),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _SubList(subs: subsA, alignEnd: false)),
+              Expanded(child: _SubList(subs: subsB, alignEnd: true)),
+            ],
+          ),
+          const SizedBox(height: 24),
+        ],
         const Text("COACH", style: Body2_b.style),
         const SizedBox(height: 16),
         Row(

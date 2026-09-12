@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/features/MatchInfoFeatures.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
-import 'package:onetouch/features/MatchInfoFeatures.dart';
-import 'package:onetouch/features/KaneRest.dart';
 
 import '../../models/match_data.dart';
 
@@ -22,124 +21,279 @@ class MatchInfoTab extends StatelessWidget {
 
   bool get isLive => matchStatus == 'live';
 
-  //   Mock data — replace with real API models
-
-  final List<Substitute> _subsA = [
-    Substitute(name: "Ferran Torres", minute: 82, goal: true, subIn: true),
-    Substitute(name: "Raphinha"),
-    Substitute(name: "Eric García"),
+  static const _goalEventCodes = {'goal', 'owngoal', 'penalty'};
+  static const _redCardEventCodes = {'redcard', 'yellowredcard'};
+  static const _statDefinitions =
+      <({String code, String label, bool isPercent})>[
+    (code: 'shots-total', label: 'Shots', isPercent: false),
+    (code: 'shots-on-target', label: 'Shots on Target', isPercent: false),
+    (
+      code: 'successful-passes-percentage',
+      label: 'Pass Accuracy',
+      isPercent: true,
+    ),
+    (code: 'fouls', label: 'Fouls', isPercent: false),
+    (code: 'corners', label: 'Corners', isPercent: false),
+    (code: 'offsides', label: 'Offsides', isPercent: false),
+    (code: 'yellowcards', label: 'Yellow Cards', isPercent: false),
+    (code: 'saves', label: 'Saves', isPercent: false),
   ];
 
-  final List<Substitute> _subsB = [
-    Substitute(name: "Tsygankov", minute: 82, subIn: true, goal: true),
-    Substitute(name: "Dovbyk"),
-    Substitute(name: "Blind"),
-  ];
+  List<Map<String, dynamic>> _matchEvents() {
+    final source = List<FixtureEvent>.of(
+      detail?.events ?? const <FixtureEvent>[],
+    )..sort(_compareEvents);
+    final result = <Map<String, dynamic>>[];
 
-  final List<Map<String, dynamic>> _goalEvents = const [
-    {'player': 'Lewandowski', 'minute': "23'", 'team': 'home'},
-    {'player': 'Lewandowski', 'minute': "67'", 'team': 'home'},
-    {'player': 'Yamal', 'minute': "45'", 'team': 'home'},
-    {'player': 'Yamal', 'minute': "45'+7'", 'team': 'home'},
-    {'player': 'Yamal', 'minute': "90'+9'", 'team': 'home'},
-    {'player': 'Dovbyk', 'minute': "45'", 'team': 'away'},
-    {'player': 'Gutiérrez', 'minute': "78'", 'team': 'away', 'type': 'redCard'},
-  ];
+    for (final event in source) {
+      final playerName = event.playerName?.trim();
+      final type = _summaryEventType(event.eventTypeCode);
+      final team = event.teamId == fixture.homeTeamId
+          ? 'home'
+          : event.teamId == fixture.awayTeamId
+              ? 'away'
+              : null;
+      if (playerName == null ||
+          playerName.isEmpty ||
+          type == null ||
+          team == null) {
+        continue;
+      }
+      result.add({
+        'player': playerName,
+        'minute': _minuteLabel(event),
+        'team': team,
+        'type': type,
+      });
+    }
+    return result;
+  }
 
-  final List<StatBarData> _mockStatBars = const [
-    StatBarData(
-        category: "Shots", homePercent: 10, awayPercent: 6, isPercent: false),
-    StatBarData(
-        category: "Shots on Target",
-        homePercent: 6,
-        awayPercent: 2,
-        isPercent: false),
-    StatBarData(category: "Pass Accuracy", homePercent: 82, awayPercent: 78),
-    StatBarData(
-        category: "Fouls", homePercent: 9, awayPercent: 14, isPercent: false),
-    StatBarData(
-        category: "Corners", homePercent: 7, awayPercent: 3, isPercent: false),
-    StatBarData(
-        category: "Offsides", homePercent: 1, awayPercent: 2, isPercent: false),
-    StatBarData(
-        category: "Yellow Cards",
-        homePercent: 2,
-        awayPercent: 3,
-        isPercent: false),
-    StatBarData(
-        category: "Saves", homePercent: 1, awayPercent: 3, isPercent: false),
-  ];
+  List<StatBarData> _statBars() {
+    final valuesByCode = <String, Map<int, double>>{};
+    for (final statistic in detail?.statistics ?? const <FixtureStatistic>[]) {
+      valuesByCode.putIfAbsent(
+              statistic.statCode, () => <int, double>{})[statistic.teamId] =
+          statistic.value;
+    }
 
-  // Away: rows ordered GK → attackers (shown top → bottom on pitch)
-  final List<List<LineupPlayer>> _awayRows = const [
-    [LineupPlayer(number: 13, name: 'Gazzaniga')],
-    [
-      LineupPlayer(number: 16, name: 'Francés'),
-      LineupPlayer(number: 17, name: 'Blind'),
-      LineupPlayer(number: 18, name: 'Krejci'),
-      LineupPlayer(
-          number: 3,
-          name: 'Gutiérrez',
-          events: [LineupEvent(type: LineupEventType.yellowCard)]),
-    ],
-    [
-      LineupPlayer(number: 8, name: 'Tsigankov'),
-      LineupPlayer(
-          number: 4,
-          name: 'Martinez',
-          events: [LineupEvent(type: LineupEventType.yellowCard)]),
-      LineupPlayer(number: 12, name: 'Arthur'),
-      LineupPlayer(number: 21, name: 'Herrera'),
-    ],
-    [
-      LineupPlayer(number: 11, name: 'Danjuma'),
-      LineupPlayer(
-          number: 10,
-          name: 'Asprilla',
-          events: [LineupEvent(type: LineupEventType.redCard)]),
-    ],
-  ];
+    StatBarData? pairedStatistic({
+      required String code,
+      required String label,
+      required bool isPercent,
+    }) {
+      final values = valuesByCode[code];
+      if (values == null || values.isEmpty) return null;
+      final homeValue = values[fixture.homeTeamId];
+      final awayValue = values[fixture.awayTeamId];
+      // Sportmonks omits zero-valued count statistics. If this statistic is
+      // present for one team, a missing opponent count therefore displays 0;
+      // percentages still require both sides to avoid inventing a ratio.
+      if (isPercent && (homeValue == null || awayValue == null)) return null;
+      return StatBarData(
+        category: label,
+        homePercent: homeValue ?? 0,
+        awayPercent: awayValue ?? 0,
+        isPercent: isPercent,
+      );
+    }
 
-  // Home: rows ordered attackers → GK (shown top → bottom in home half)
-  final List<List<LineupPlayer>> _homeRows = const [
-    [
-      LineupPlayer(
-          number: 9,
-          name: 'Lewandowski',
-          events: [LineupEvent(type: LineupEventType.subIn, minute: 82)]),
-    ],
-    [
-      LineupPlayer(
-          number: 6,
-          name: 'Gavi',
-          events: [LineupEvent(type: LineupEventType.subOut, minute: 82)]),
-      LineupPlayer(number: 16, name: 'Lopez'),
-      LineupPlayer(
-          number: 11,
-          name: 'Lamine Yamal',
-          events: [LineupEvent(type: LineupEventType.goal)]),
-    ],
-    [
-      LineupPlayer(
-          number: 8,
-          name: 'Pedri',
-          events: [LineupEvent(type: LineupEventType.goal)]),
-      LineupPlayer(
-          number: 24,
-          name: 'Eric Garcia',
-          events: [LineupEvent(type: LineupEventType.yellowCard)]),
-    ],
-    [
-      LineupPlayer(number: 35, name: 'Martin'),
-      LineupPlayer(
-          number: 5,
-          name: 'Martinez',
-          events: [LineupEvent(type: LineupEventType.yellowCard)]),
-      LineupPlayer(number: 4, name: 'Araujo'),
-      LineupPlayer(number: 23, name: 'Koundé'),
-    ],
-    [LineupPlayer(number: 25, name: 'Szczesny')],
-  ];
+    final result = <StatBarData>[];
+    final possession = pairedStatistic(
+      code: 'ball-possession',
+      label: 'Possession',
+      isPercent: true,
+    );
+    if (possession != null) result.add(possession);
+
+    final expectedGoals = detail?.expectedGoals;
+    if (expectedGoals != null) {
+      result.add(
+        StatBarData(
+          category: 'Expected Goals',
+          homePercent: expectedGoals.homeXg,
+          awayPercent: expectedGoals.awayXg,
+          isPercent: false,
+          fractionDigits: 2,
+        ),
+      );
+    }
+
+    for (final definition in _statDefinitions) {
+      final bar = pairedStatistic(
+        code: definition.code,
+        label: definition.label,
+        isPercent: definition.isPercent,
+      );
+      if (bar != null) result.add(bar);
+    }
+    return result;
+  }
+
+  List<double> _momentumValues() {
+    final points = (detail?.pressure ?? const <FixturePressurePoint>[])
+        .where(
+          (point) =>
+              point.minute >= 0 &&
+              point.minute <= 90 &&
+              (point.teamId == fixture.homeTeamId ||
+                  point.teamId == fixture.awayTeamId),
+        )
+        .toList(growable: false);
+    if (points.length < 2) return const [];
+
+    final values = List<double>.filled(91, 0);
+    for (final point in points) {
+      final direction = point.teamId == fixture.homeTeamId ? 1 : -1;
+      values[point.minute] += point.pressure * direction;
+    }
+    return values;
+  }
+
+  Map<int, List<LineupEvent>> _lineupEventsByPlayer() {
+    final result = <int, List<LineupEvent>>{};
+
+    void add(int? playerId, LineupEventType type, int minute) {
+      if (playerId == null) return;
+      result
+          .putIfAbsent(playerId, () => <LineupEvent>[])
+          .add(LineupEvent(type: type, minute: minute));
+    }
+
+    for (final event in detail?.events ?? const <FixtureEvent>[]) {
+      final code = event.eventTypeCode;
+      if (_goalEventCodes.contains(code)) {
+        add(event.playerId, LineupEventType.goal, event.minute);
+        if (code != 'owngoal') {
+          add(event.relatedPlayerId, LineupEventType.assist, event.minute);
+        }
+      } else if (code == 'yellowcard') {
+        add(event.playerId, LineupEventType.yellowCard, event.minute);
+      } else if (_redCardEventCodes.contains(code)) {
+        add(event.playerId, LineupEventType.redCard, event.minute);
+      } else if (code == 'substitution') {
+        add(event.playerId, LineupEventType.subIn, event.minute);
+        add(event.relatedPlayerId, LineupEventType.subOut, event.minute);
+      }
+    }
+    return result;
+  }
+
+  List<List<LineupPlayer>> _lineupRows(
+    int teamId, {
+    required bool reverse,
+  }) {
+    final eventsByPlayer = _lineupEventsByPlayer();
+    final positioned = <({FixtureLineupEntry entry, int row, int slot})>[];
+    for (final entry in detail?.lineups ?? const <FixtureLineupEntry>[]) {
+      if (entry.teamId != teamId) continue;
+      final parts = entry.formationField?.split(':');
+      if (parts == null || parts.length < 2) continue;
+      final row = int.tryParse(parts[0]);
+      final slot = int.tryParse(parts[1]);
+      if (row == null || slot == null) continue;
+      positioned.add((entry: entry, row: row, slot: slot));
+    }
+
+    final grouped = <int, List<({FixtureLineupEntry entry, int slot})>>{};
+    for (final item in positioned) {
+      grouped
+          .putIfAbsent(
+        item.row,
+        () => <({FixtureLineupEntry entry, int slot})>[],
+      )
+          .add((entry: item.entry, slot: item.slot));
+    }
+    final rowNumbers = grouped.keys.toList()..sort();
+    final orderedRows = reverse ? rowNumbers.reversed : rowNumbers;
+
+    return [
+      for (final rowNumber in orderedRows)
+        [
+          for (final item in (grouped[rowNumber]!
+            ..sort(
+              (a, b) => a.slot.compareTo(b.slot),
+            )))
+            LineupPlayer(
+              number: item.entry.jerseyNumber,
+              name: item.entry.playerName,
+              events: eventsByPlayer[item.entry.playerId] ?? const [],
+            ),
+        ],
+    ];
+  }
+
+  List<Substitute> _substitutes(int teamId) {
+    final events = detail?.events ?? const <FixtureEvent>[];
+    final substitutionsByPlayer = <int, FixtureEvent>{
+      for (final event in events)
+        if (event.teamId == teamId &&
+            event.eventTypeCode == 'substitution' &&
+            event.playerId != null)
+          event.playerId!: event,
+    };
+    final goalScorers = {
+      for (final event in events)
+        if (event.teamId == teamId &&
+            _goalEventCodes.contains(event.eventTypeCode) &&
+            event.playerId != null)
+          event.playerId!,
+    };
+    final result = <int, Substitute>{};
+
+    for (final entry in detail?.lineups ?? const <FixtureLineupEntry>[]) {
+      final formationField = entry.formationField?.trim();
+      if (entry.teamId != teamId ||
+          (formationField != null && formationField.isNotEmpty)) {
+        continue;
+      }
+      final substitution = substitutionsByPlayer[entry.playerId];
+      result[entry.playerId] = Substitute(
+        name: entry.playerName,
+        minute: substitution?.minute,
+        subIn: substitution != null,
+        goal: goalScorers.contains(entry.playerId),
+      );
+    }
+    for (final entry in substitutionsByPlayer.entries) {
+      final event = entry.value;
+      if (result.containsKey(entry.key) || event.playerName == null) continue;
+      result[entry.key] = Substitute(
+        name: event.playerName!,
+        minute: event.minute,
+        subIn: true,
+        goal: goalScorers.contains(entry.key),
+      );
+    }
+    return result.values.toList(growable: false);
+  }
+
+  String? _formation(int teamId) => detail?.formations
+      .where((formation) => formation.teamId == teamId)
+      .map((formation) => formation.formation)
+      .firstOrNull;
+
+  static int _compareEvents(FixtureEvent a, FixtureEvent b) {
+    // The 1Touch response does not currently expose Sportmonks `sort_order`,
+    // so minute, added time, and event ID provide a deterministic fallback.
+    final minute = a.minute.compareTo(b.minute);
+    if (minute != 0) return minute;
+    final extraMinute = (a.extraMinute ?? 0).compareTo(b.extraMinute ?? 0);
+    return extraMinute != 0 ? extraMinute : a.eventId.compareTo(b.eventId);
+  }
+
+  static String _minuteLabel(FixtureEvent event) {
+    final extraMinute = event.extraMinute;
+    return extraMinute == null || extraMinute == 0
+        ? "${event.minute}'"
+        : "${event.minute}+$extraMinute'";
+  }
+
+  static String? _summaryEventType(String code) {
+    if (_goalEventCodes.contains(code)) return 'goal';
+    if (_redCardEventCodes.contains(code)) return 'redCard';
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,34 +305,15 @@ class MatchInfoTab extends StatelessWidget {
       for (final coach in detail?.coaches ?? const <FixtureCoach>[])
         coach.teamId: coach.name,
     };
-    final possessionByTeam = {
-      for (final statistic in detail?.statistics ?? const <FixtureStatistic>[])
-        if (statistic.statCode == 'ball-possession')
-          statistic.teamId: statistic.value,
-    };
-    final homePossession = possessionByTeam[fixture.homeTeamId];
-    final awayPossession = possessionByTeam[fixture.awayTeamId];
-    final expectedGoals = detail?.expectedGoals;
-    final statBars = <StatBarData>[
-      if (homePossession != null && awayPossession != null)
-        StatBarData(
-          category: 'Possession',
-          homePercent: homePossession,
-          awayPercent: awayPossession,
-        ),
-    ];
-    if (expectedGoals != null) {
-      statBars.add(
-        StatBarData(
-          category: 'Expected Goals',
-          homePercent: expectedGoals.homeXg,
-          awayPercent: expectedGoals.awayXg,
-          isPercent: false,
-          fractionDigits: 2,
-        ),
-      );
-    }
-    statBars.addAll(_mockStatBars);
+    final matchEvents = _matchEvents();
+    final momentumValues = _momentumValues();
+    final statBars = _statBars();
+    final homeLineupRows = _lineupRows(fixture.homeTeamId, reverse: true);
+    final awayLineupRows = _lineupRows(fixture.awayTeamId, reverse: false);
+    final hasCompleteLineup =
+        homeLineupRows.isNotEmpty && awayLineupRows.isNotEmpty;
+    final homeSubstitutes = _substitutes(fixture.homeTeamId);
+    final awaySubstitutes = _substitutes(fixture.awayTeamId);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -194,11 +329,14 @@ class MatchInfoTab extends StatelessWidget {
             awayTeamName: awayTeam.name,
             homeScore: homeScore,
             awayScore: awayScore,
-            statusLabel: isLive ? '42:02' : 'Final',
+            statusLabel: isLive ? 'Live' : 'Final',
             roundLabel: fixture.roundName,
+            venueLabel: detail?.venueName,
           ),
-          const SizedBox(height: 12),
-          MatchEventsSection(events: _goalEvents),
+          if (matchEvents.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            MatchEventsSection(events: matchEvents),
+          ],
           if (!isLive) ...[
             const SizedBox(height: 24),
             MatchHighlights(
@@ -206,27 +344,30 @@ class MatchInfoTab extends StatelessWidget {
               homeTeamId: homeTeam.teamId,
               awayTeamId: awayTeam.teamId,
             ),
-            const SizedBox(height: 32),
-            const PlayerOfTheMatch(
-              rating: '8.9',
-              playerName: 'Player\nName',
-              teamAndNumber: 'Team Name • ##',
+            // TODO(match-info): Restore Player of the Match when the backend
+            // exposes an explicit award instead of inferring one from rating.
+          ],
+          if (momentumValues.isNotEmpty) ...[
+            const SizedBox(height: 48),
+            MomentumChart(values: momentumValues),
+          ],
+          if (statBars.isNotEmpty) ...[
+            const SizedBox(height: 48),
+            StatBarsSection(bars: statBars),
+          ],
+          if (hasCompleteLineup) ...[
+            const SizedBox(height: 48),
+            LineupPitch(
+              awayRows: awayLineupRows,
+              homeRows: homeLineupRows,
+              homeFormation: _formation(fixture.homeTeamId),
+              awayFormation: _formation(fixture.awayTeamId),
             ),
           ],
           const SizedBox(height: 48),
-          const MomentumChart(),
-          const SizedBox(height: 48),
-          StatBarsSection(bars: statBars),
-          const SizedBox(height: 48),
-          LineupPitch(
-            awayRows: _awayRows,
-            homeRows: _homeRows,
-            onPlayerTap: _onPlayerTap,
-          ),
-          const SizedBox(height: 48),
           SubstitutesAndCoach(
-            subsA: _subsA,
-            subsB: _subsB,
+            subsA: homeSubstitutes,
+            subsB: awaySubstitutes,
             coachA: coachNamesByTeam[fixture.homeTeamId] ?? '—',
             coachB: coachNamesByTeam[fixture.awayTeamId] ?? '—',
           ),
@@ -234,9 +375,5 @@ class MatchInfoTab extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _onPlayerTap(BuildContext context, LineupPlayer player) {
-    showPlayerMatchStatSheet(context, mockRashfordStats);
   }
 }
