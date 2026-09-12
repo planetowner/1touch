@@ -22,3 +22,22 @@ prepare_service_settings() {
       --env-file /settings/.env.production "$@"
     chmod 600 .env.production
 }
+
+# 채널 설정은 입력한 값과 저장된 값이 같은지 확인해요. 공급자 로그인 시험과는 별개예요.
+verify_saved_service_settings() {
+    docker run --rm -i --network none --user 0:0 \
+      -v "$runtime_directory:/settings:ro" -v "$transfer_directory:/input:ro" \
+      --entrypoint python "$api_image" -X utf8 -B - "$1" <<'PY'
+import sys
+from dotenv import dotenv_values
+service = sys.argv[1]
+selected = dotenv_values(f'/input/{service}.env', interpolate=False)
+saved = dotenv_values('/settings/.env.production', interpolate=False)
+if not selected or any(saved.get(key) != value for key, value in selected.items()):
+    raise SystemExit(f'{service} settings were not saved correctly.')
+print(f'Server {service} settings verified: values={len(selected)}')
+print('Saved settings checked only. Real social sign-in has not been tested.')
+print('No database changes. The running API has not been restarted.')
+PY
+    echo "Server settings backup retained: $transfer_directory/before.env.production"
+}
