@@ -303,21 +303,14 @@ class FavoriteTeamCard extends StatelessWidget {
                             style: Heading3.style,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  "$leagueName ${rank != null ? ordinal(rank) : '-'}",
-                                  style: Body2.style,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const Icon(Icons.arrow_drop_up,
-                                  color: Colors.green),
-                              const Text("1", style: Body2.style),
-                            ],
-                          )
+                          // TODO(api-standings): Add movement when standings
+                          // exposes the team's previous position.
+                          Text(
+                            "$leagueName ${rank != null ? ordinal(rank) : '-'}",
+                            style: Body2.style,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
                       ),
                     )

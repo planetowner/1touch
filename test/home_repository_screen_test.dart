@@ -42,6 +42,7 @@ void main() {
 
     expect(contentRepository.requestedTeamIds, [1]);
     expect(find.text('Alpha FC'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
     await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
     await tester.pumpAndSettle();
 
