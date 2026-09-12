@@ -137,9 +137,16 @@ void main() {
   });
 
   testWidgets('passes the loaded fixture detail to Match Info', (tester) async {
-    await _setScreenSize(tester, const Size(430, 932));
+    await _setScreenSize(tester, const Size(320, 568));
     final repository = _ControlledFixtureRepository();
     final detail = _detail(
+      expectedGoals: const FixtureExpectedGoals(
+        homeXg: 0.518846,
+        awayXg: 4.76916,
+        homeXga: 4.76916,
+        awayXga: 0.518846,
+        provider: 'understat',
+      ),
       coaches: [
         FixtureCoach(
           teamId: _fixture.awayTeamId,
@@ -172,14 +179,27 @@ void main() {
     final coaches = tester.widget<SubstitutesAndCoach>(
       find.byType(SubstitutesAndCoach),
     );
+    final statistics = tester.widget<StatBarsSection>(
+      find.byType(StatBarsSection),
+    );
+    final expectedGoals = statistics.bars.singleWhere(
+      (bar) => bar.category == 'Expected Goals',
+    );
     expect(matchInfo.detail, same(detail));
     expect(matchInfo.fixture, same(detail.fixture));
     expect(coaches.coachA, 'Home Coach');
     expect(coaches.coachB, 'Away Coach');
+    expect(expectedGoals.homePercent, 0.518846);
+    expect(expectedGoals.awayPercent, 4.76916);
+    expect(expectedGoals.isPercent, isFalse);
+    expect(expectedGoals.fractionDigits, 2);
+    expect(find.text('0.52'), findsOneWidget);
+    expect(find.text('4.77'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('uses a neutral label when fixture coach data is missing',
+  testWidgets(
+      'uses neutral labels when coach and expected-goal data are missing',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
     final repository = _ControlledFixtureRepository();
@@ -201,8 +221,15 @@ void main() {
     final coaches = tester.widget<SubstitutesAndCoach>(
       find.byType(SubstitutesAndCoach),
     );
+    final statistics = tester.widget<StatBarsSection>(
+      find.byType(StatBarsSection),
+    );
     expect(coaches.coachA, '—');
     expect(coaches.coachB, '—');
+    expect(
+      statistics.bars.where((bar) => bar.category == 'Expected Goals'),
+      isEmpty,
+    );
     expect(tester.takeException(), isNull);
   });
 }
@@ -218,11 +245,14 @@ final Fixture _fixture = mockFixtures.firstWhere(
   (fixture) => fixture.fixtureId == 20100001,
 );
 
-FixtureDetail _detail({List<FixtureCoach> coaches = const []}) {
+FixtureDetail _detail({
+  FixtureExpectedGoals? expectedGoals,
+  List<FixtureCoach> coaches = const [],
+}) {
   return FixtureDetail(
     fixture: _fixture,
     venueName: null,
-    expectedGoals: null,
+    expectedGoals: expectedGoals,
     playerExpectedGoals: const [],
     shots: const [],
     events: const [],

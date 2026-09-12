@@ -770,12 +770,14 @@ class StatBarData {
   /// Percentage stats show "63%"; count stats (shots, corners…) show the
   /// raw value and only use the numbers to proportion the bar.
   final bool isPercent;
+  final int? fractionDigits;
 
   const StatBarData({
     required this.category,
     required this.homePercent,
     required this.awayPercent,
     this.isPercent = true,
+    this.fractionDigits,
   });
 }
 
@@ -785,7 +787,9 @@ class StatComparisonBar extends StatelessWidget {
   const StatComparisonBar({super.key, required this.data});
 
   String _fmt(double v) {
-    final number = v % 1 == 0 ? v.toInt().toString() : v.toString();
+    final number = data.fractionDigits == null
+        ? (v % 1 == 0 ? v.toInt().toString() : v.toString())
+        : v.toStringAsFixed(data.fractionDigits!);
     return data.isPercent ? '$number%' : number;
   }
 

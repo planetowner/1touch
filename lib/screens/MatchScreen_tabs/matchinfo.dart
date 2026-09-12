@@ -49,11 +49,6 @@ class MatchInfoTab extends StatelessWidget {
   final List<StatBarData> _statBars = const [
     StatBarData(category: "Possession", homePercent: 64, awayPercent: 36),
     StatBarData(
-        category: "Expected Goals",
-        homePercent: 2.7,
-        awayPercent: 0.6,
-        isPercent: false),
-    StatBarData(
         category: "Shots", homePercent: 10, awayPercent: 6, isPercent: false),
     StatBarData(
         category: "Shots on Target",
@@ -157,6 +152,20 @@ class MatchInfoTab extends StatelessWidget {
       for (final coach in detail?.coaches ?? const <FixtureCoach>[])
         coach.teamId: coach.name,
     };
+    final expectedGoals = detail?.expectedGoals;
+    final statBars = List<StatBarData>.of(_statBars);
+    if (expectedGoals != null) {
+      statBars.insert(
+        1,
+        StatBarData(
+          category: 'Expected Goals',
+          homePercent: expectedGoals.homeXg,
+          awayPercent: expectedGoals.awayXg,
+          isPercent: false,
+          fractionDigits: 2,
+        ),
+      );
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -194,7 +203,7 @@ class MatchInfoTab extends StatelessWidget {
           const SizedBox(height: 48),
           const MomentumChart(),
           const SizedBox(height: 48),
-          StatBarsSection(bars: _statBars),
+          StatBarsSection(bars: statBars),
           const SizedBox(height: 48),
           LineupPitch(
             awayRows: _awayRows,
