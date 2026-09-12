@@ -3,8 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, field_validator
 from ..deps import get_user_id
-from ..repos import community_repo, moderation_repo
-from ..schemas.community import CommunityLanguage, RulesBody
+from ..repos import moderation_repo
 
 router = APIRouter()
 
@@ -36,17 +35,6 @@ class SuspensionBody(BaseModel):
 def reports(resolved: bool = False, after_id: int = Query(default=0, ge=0),
             limit: int = Query(default=50, ge=1, le=100), admin_id: int = Depends(get_admin_id)):
     return {"items": moderation_repo.list_reports(admin_id, resolved, after_id, limit)}
-
-
-@router.get("/admin/community/rules")
-def rules(language: CommunityLanguage, admin_id: int = Depends(get_admin_id)):
-    return {"rules": community_repo.read_rules(language)}
-
-
-@router.put("/admin/community/rules")
-def save_rules(language: CommunityLanguage, body: RulesBody, admin_id: int = Depends(get_admin_id)):
-    community_repo.set_rules(admin_id, body.body, language)
-    return {"ok": True}
 
 
 @router.put("/admin/reports/{report_id}")
