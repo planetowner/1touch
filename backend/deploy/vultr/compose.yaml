@@ -1,0 +1,56 @@
+name: onetouch-dev
+
+services:
+  db:
+    # 이번 작업은 개발 환경 이전이므로 기존 DB 버전을 유지해요.
+    image: mysql:8.0.43
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --lower-case-table-names=1
+    environment:
+      MYSQL_DATABASE: 1touch
+      MYSQL_USER: onetouch
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Run init-env.sh first}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run init-env.sh first}
+      # 원본 DB의 SYSTEM / Eastern Daylight Time 동작을 유지해요.
+      TZ: America/New_York
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP --host=127.0.0.1 --user=\"$$MYSQL_USER\" --database=\"$$MYSQL_DATABASE\" --execute='SELECT 1' --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/vultr/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: 1touch
+      DB_USER: onetouch
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Run init-env.sh first}
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+      SPORTMONKS_API_TOKEN: ${SPORTMONKS_API_TOKEN:-}
+      TZ: America/New_York
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      # 서버의 소스 파일을 수정하면 기존 개발용 reload가 반영해요.
+      - ../../python:/app/python
+      - ../../logs:/app/logs
+
+volumes:
+  mysql_data:

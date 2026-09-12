@@ -1,0 +1,151 @@
+{
+  "description": "Partizan–Tobol의 Lisakovich는 실제 68분 교체 기록과 다음 경기 99번에서 확인되지만 라인업 행이 없어요. 프로필만 보충하고 경기 행은 보존해요.",
+  "sources": [
+    "https://www.skysports.com/football/partizan-belgrade-vs-tobol-kostanay/577228",
+    "https://www.uefa.com/news-media/mediaservices/informationkits/competitions/european-qualifiers/2026/match/2044320/printmatchpresskits/"
+  ],
+  "fixture": {
+    "statistics": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": [],
+    "id": 19766274,
+    "events": [
+      {
+        "id": 157401474,
+        "fixture_id": 19766274,
+        "period_id": 7028158,
+        "participant_id": 5834,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 58436,
+        "related_player_id": 784559,
+        "player_name": "Vitaliy Lisakovich",
+        "related_player_name": "Uros Milovanović",
+        "result": null,
+        "info": null,
+        "addition": "1st Substitution",
+        "minute": 68,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7028158,
+        "rescinded": null,
+        "sort_order": 1,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "lineups": [
+      {
+        "id": 14674276626,
+        "sport_id": 1,
+        "fixture_id": 19766274,
+        "player_id": 784559,
+        "team_id": 5834,
+        "position_id": 27,
+        "formation_field": "5:1",
+        "type_id": 11,
+        "formation_position": 11,
+        "player_name": "Uros Milovanović",
+        "jersey_number": 18,
+        "details": [
+          {
+            "id": 2146036330,
+            "fixture_id": 19766274,
+            "player_id": 784559,
+            "team_id": 5834,
+            "lineup_id": 14674276626,
+            "type_id": 118,
+            "data": {
+              "value": 6.43
+            }
+          },
+          {
+            "id": 2146051776,
+            "fixture_id": 19766274,
+            "player_id": 784559,
+            "team_id": 5834,
+            "lineup_id": 14674276626,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 2146036444,
+            "fixture_id": 19766274,
+            "player_id": 784559,
+            "team_id": 5834,
+            "lineup_id": 14674276626,
+            "type_id": 117172,
+            "data": {
+              "value": 74
+            }
+          },
+          {
+            "id": 2146102131,
+            "fixture_id": 19766274,
+            "player_id": 784559,
+            "team_id": 5834,
+            "lineup_id": 14674276626,
+            "type_id": 119,
+            "data": {
+              "value": 68
+            }
+          }
+        ],
+        "player": {
+          "id": 784559,
+          "sport_id": 1,
+          "country_id": 11,
+          "nationality_id": 296,
+          "city_id": 24747,
+          "position_id": 27,
+          "detailed_position_id": 151,
+          "type_id": 27,
+          "common_name": "U. Milovanović",
+          "firstname": "Uroš",
+          "lastname": "Milovanović",
+          "name": "Uroš Milovanović",
+          "display_name": "Uros Milovanović",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/15/784559.png",
+          "height": 190,
+          "weight": 77,
+          "date_of_birth": "2000-10-18",
+          "gender": "male"
+        }
+      }
+    ]
+  },
+  "profiles": {
+    "58436": {
+      "id": 58436,
+      "sport_id": 1,
+      "country_id": 212,
+      "nationality_id": 212,
+      "city_id": 57572,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": 27,
+      "common_name": "V. Lisakovich",
+      "firstname": "Vitali",
+      "lastname": "Lisakovich",
+      "name": "Vitali Lisakovich",
+      "display_name": "Vitaliy Lisakovich",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 179,
+      "weight": 73,
+      "date_of_birth": "1998-02-08",
+      "gender": "male"
+    }
+  }
+}

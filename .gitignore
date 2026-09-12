@@ -1,38 +1,8 @@
-# Flutter / Dart
-.dart_tool/
-.packages
-.pub/
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
-.melos_tool/
+# 두 제품 폴더와 이 설정만 추적하고 루트의 작업 메모·백업은 PC에 보관해요.
+/*
+!/.gitignore
+!/backend/
+!/frontend/
 
-# Android
-android/.gradle/
-android/app/build/
-**/local.properties
-
-# iOS
-ios/Pods/
-ios/.symlinks/
-ios/Flutter/Flutter.podspec
-ios/Flutter/Generated.xcconfig
-ios/Flutter/ephemeral/
-Runner.xcodeproj/project.xcworkspace/
-Runner.xcworkspace/
-**/*.xcuserstate
-**/*.xcuserdatad
-
-# Web
-web/.dart_tool/
-
-# Desktop
-linux/build/
-windows/build/
-macos/Flutter/ephemeral/
-
-# IDE / OS
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+# 안내 문서는 로컬에서 읽고 GitHub에는 코드만 올려요.
+*.[mM][dD]

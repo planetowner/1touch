@@ -1,0 +1,10 @@
+[Unit]
+Description=1Touch daily MySQL backup schedule
+
+[Timer]
+# Vultr의 01:00 UTC 서버 백업 전에 SQL 복사본을 만들어요.
+OnCalendar=*-*-* 00:30:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

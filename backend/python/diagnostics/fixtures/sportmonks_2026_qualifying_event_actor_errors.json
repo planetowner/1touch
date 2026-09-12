@@ -1,0 +1,2292 @@
+{
+  "description": "현재 시즌 유럽 예선의 실제 선수 연결 오류만 추렸어요. 확인한 이벤트 필드 외 원문은 보존해요.",
+  "sources": [
+    "https://www.uefa.com/news-media/mediaservices/informationkits/competitions/uefachampionsleague/2027/match/2048737/",
+    "https://hotsport.rs/2026/08/11/stankovic-crveni-karton-navijaci/",
+    "https://www.fcucluj.ro/stire/cronica-u-cluj-vs-dinamo-kiev-0-0-2-4-la-lovituri-de-departajare-continuam-in-conference-league",
+    "https://www.fcucluj.ro/stire/cronica-u-cluj-vs-sk-brann-2-2-final-spectaculos-la-sfantu-gheorghe-totul-se-decide-in-norvegia",
+    "https://de.uefa.com/uefachampionsleague/clubs/players/250086826--sandro-lima/",
+    "https://primapagina.ro/2026-08-20/universitatea-craiova-egal-cu-ararat-armenia-in-playoff-ul-europa-league.html",
+    "https://partizan.rs/en/vesti/5385/crno-beli-krenuli-u-luksemburg",
+    "https://sportklub.rs/fudbal/europa-conference-league/una-partizan-revans-utakmica-drugog-kola-lige-konferencije-sastavi-izvestaj-strelci/",
+    "https://www.uefa.com/news-media/mediaservices/informationkits/competitions/uefaconferenceleague/2026/match/2046365/",
+    "https://kfshkendija.com/europa-fc-0-5-shkendija-eliminatoret-e-conference-league/",
+    "https://www.nzs.si/podrocja/novinarji/novice/bravo-s-preobratom-do-prednosti-382255",
+    "https://kfshkendija.com/football-match/fc-shkendija-nk-bravo-00/",
+    "https://www.vi.nl/wedstrijden/2026-07-16/shkendija-vs-europa",
+    "https://www.uefa.com/uefaconferenceleague/clubs/53080--vardar/squad/",
+    "https://pt.uefa.com/uefaconferenceleague/clubs/players/250222734--debohi-dieudonne-gaucho/"
+  ],
+  "known_player_ids": [
+    32141,
+    96351,
+    788702,
+    841472,
+    1068604,
+    3526277,
+    5283689,
+    37438908,
+    37569232,
+    37640040,
+    37642698,
+    37788117,
+    37788791
+  ],
+  "cases": [
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19721243,
+        "events": [
+          {
+            "id": 157351936,
+            "fixture_id": 19721243,
+            "period_id": 7021006,
+            "participant_id": 2417,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 38217816,
+            "related_player_id": 37438908,
+            "player_name": "Matus Tomasko",
+            "related_player_name": "Mykola Kukharevych",
+            "result": null,
+            "info": null,
+            "addition": "10th Substitution",
+            "minute": 84,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7021006,
+            "rescinded": null,
+            "sort_order": 10,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674228235,
+            "sport_id": 1,
+            "fixture_id": 19721243,
+            "player_id": 37438908,
+            "team_id": 2417,
+            "position_id": 27,
+            "formation_field": "4:2",
+            "type_id": 11,
+            "formation_position": 10,
+            "player_name": "Mykola Kukharevych",
+            "jersey_number": 9,
+            "details": [
+              {
+                "id": 2141025194,
+                "fixture_id": 19721243,
+                "player_id": 37438908,
+                "team_id": 2417,
+                "lineup_id": 14674228235,
+                "type_id": 118,
+                "data": {
+                  "value": 6.82
+                }
+              },
+              {
+                "id": 2141128693,
+                "fixture_id": 19721243,
+                "player_id": 37438908,
+                "team_id": 2417,
+                "lineup_id": 14674228235,
+                "type_id": 119,
+                "data": {
+                  "value": 84
+                }
+              }
+            ],
+            "player": {
+              "id": 37438908,
+              "sport_id": 1,
+              "country_id": 86,
+              "nationality_id": 86,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 151,
+              "type_id": 27,
+              "common_name": "M. Kukharevych",
+              "firstname": "Mykola",
+              "lastname": "Kukharevych",
+              "name": "Mykola Kukharevych",
+              "display_name": "Mykola Kukharevych",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/37438908.png",
+              "height": 193,
+              "weight": 81,
+              "date_of_birth": "2001-07-01",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674228259,
+            "sport_id": 1,
+            "fixture_id": 19721243,
+            "player_id": 37788117,
+            "team_id": 2417,
+            "position_id": 27,
+            "formation_field": null,
+            "type_id": 12,
+            "formation_position": null,
+            "player_name": "Matúš Tomáško",
+            "jersey_number": 24,
+            "details": [],
+            "player": {
+              "id": 37788117,
+              "sport_id": 1,
+              "country_id": 401,
+              "nationality_id": null,
+              "city_id": null,
+              "position_id": 25,
+              "detailed_position_id": null,
+              "type_id": null,
+              "common_name": "M. Tomáško",
+              "firstname": "Matúš",
+              "lastname": "Tomáško",
+              "name": "Matúš Tomáško",
+              "display_name": "Matúš Tomáško",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": null,
+              "weight": null,
+              "date_of_birth": "2009-11-30",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157351936,
+          "fixture_id": 19721243,
+          "period_id": 7021006,
+          "participant_id": 2417,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37788117,
+          "related_player_id": 37438908,
+          "player_name": "Matúš Tomáško",
+          "related_player_name": "Mykola Kukharevych",
+          "result": null,
+          "info": null,
+          "addition": "10th Substitution",
+          "minute": 84,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7021006,
+          "rescinded": null,
+          "sort_order": 10,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "pressure": [],
+        "lineups": [],
+        "id": 19766300,
+        "events": [
+          {
+            "id": 157450859,
+            "fixture_id": 19766300,
+            "period_id": 7035595,
+            "participant_id": 2673,
+            "type_id": 20,
+            "section": "event",
+            "player_id": 127597,
+            "related_player_id": null,
+            "player_name": "D. Stanković",
+            "related_player_name": null,
+            "result": null,
+            "info": "Argument",
+            "addition": "2nd Redcard",
+            "minute": 57,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": 1497,
+            "detailed_period_id": 7035595,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 20,
+              "name": "Redcard",
+              "code": "redcard",
+              "developer_name": "REDCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [
+          {
+            "id": 127597,
+            "player_id": 127597,
+            "sport_id": 1,
+            "country_id": 296,
+            "nationality_id": 296,
+            "city_id": null,
+            "common_name": "D. Stankovic",
+            "firstname": "Dejan",
+            "lastname": "Stankovic",
+            "name": "Dejan Stankovic",
+            "display_name": "Dejan Stankovic",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/13/127597.png",
+            "height": 181,
+            "weight": 75,
+            "date_of_birth": "1978-11-09",
+            "gender": "male",
+            "meta": {
+              "fixture_id": 19766300,
+              "coach_id": 127597,
+              "participant_id": 2673
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157450859,
+          "fixture_id": 19766300,
+          "period_id": 7035595,
+          "participant_id": 2673,
+          "type_id": 20,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": null,
+          "player_name": "D. Stanković",
+          "related_player_name": null,
+          "result": null,
+          "info": "Argument",
+          "addition": "2nd Redcard",
+          "minute": 57,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": 127597,
+          "sub_type_id": 1497,
+          "detailed_period_id": 7035595,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 20,
+            "name": "Redcard",
+            "code": "redcard",
+            "developer_name": "REDCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19719397,
+        "events": [
+          {
+            "id": 157281284,
+            "fixture_id": 19719397,
+            "period_id": 7010257,
+            "participant_id": 9426,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37600520,
+            "related_player_id": 3526277,
+            "player_name": "Dan Nistor",
+            "related_player_name": "Issouf Macalou",
+            "result": null,
+            "info": null,
+            "addition": "9th Substitution",
+            "minute": 92,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7010256,
+            "rescinded": null,
+            "sort_order": 9,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674158142,
+            "sport_id": 1,
+            "fixture_id": 19719397,
+            "player_id": 96351,
+            "team_id": 9426,
+            "position_id": 26,
+            "formation_field": null,
+            "type_id": 12,
+            "formation_position": null,
+            "player_name": "Dan Nistor",
+            "jersey_number": 10,
+            "details": [],
+            "player": {
+              "id": 96351,
+              "sport_id": 1,
+              "country_id": 155,
+              "nationality_id": 155,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "D. Nistor",
+              "firstname": "Dan Nicolae",
+              "lastname": "Nistor",
+              "name": "Dan Nicolae Nistor",
+              "display_name": "Dan Nistor",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/31/96351.png",
+              "height": 172,
+              "weight": 72,
+              "date_of_birth": "1988-05-06",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674158146,
+            "sport_id": 1,
+            "fixture_id": 19719397,
+            "player_id": 3526277,
+            "team_id": 9426,
+            "position_id": 27,
+            "formation_field": "5:1",
+            "type_id": 11,
+            "formation_position": 11,
+            "player_name": "Issouf Macalou",
+            "jersey_number": 19,
+            "details": [
+              {
+                "id": 2128397362,
+                "fixture_id": 19719397,
+                "player_id": 3526277,
+                "team_id": 9426,
+                "lineup_id": 14674158146,
+                "type_id": 118,
+                "data": {
+                  "value": 6.5
+                }
+              },
+              {
+                "id": 2128430179,
+                "fixture_id": 19719397,
+                "player_id": 3526277,
+                "team_id": 9426,
+                "lineup_id": 14674158146,
+                "type_id": 119,
+                "data": {
+                  "value": 92
+                }
+              }
+            ],
+            "player": {
+              "id": 3526277,
+              "sport_id": 1,
+              "country_id": 17,
+              "nationality_id": 17,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 156,
+              "type_id": 27,
+              "common_name": "I. Macalou",
+              "firstname": "Issouf",
+              "lastname": "Macalou",
+              "name": "Issouf Macalou",
+              "display_name": "Issouf Macalou",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": 187,
+              "weight": 75,
+              "date_of_birth": "1998-12-27",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157281284,
+          "fixture_id": 19719397,
+          "period_id": 7010257,
+          "participant_id": 9426,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 96351,
+          "related_player_id": 3526277,
+          "player_name": "Dan Nistor",
+          "related_player_name": "Issouf Macalou",
+          "result": null,
+          "info": null,
+          "addition": "9th Substitution",
+          "minute": 92,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7010256,
+          "rescinded": null,
+          "sort_order": 9,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19720974,
+        "events": [
+          {
+            "id": 157312228,
+            "fixture_id": 19720974,
+            "period_id": 7014839,
+            "participant_id": 9426,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37642698,
+            "related_player_id": 37600520,
+            "player_name": "Friday Adams",
+            "related_player_name": "Dan Nistor",
+            "result": null,
+            "info": null,
+            "addition": "1st Substitution",
+            "minute": 61,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7014839,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674189656,
+            "sport_id": 1,
+            "fixture_id": 19720974,
+            "player_id": 96351,
+            "team_id": 9426,
+            "position_id": 26,
+            "formation_field": "3:1",
+            "type_id": 11,
+            "formation_position": 6,
+            "player_name": "Dan Nistor",
+            "jersey_number": 10,
+            "details": [
+              {
+                "id": 2133628307,
+                "fixture_id": 19720974,
+                "player_id": 96351,
+                "team_id": 9426,
+                "lineup_id": 14674189656,
+                "type_id": 118,
+                "data": {
+                  "value": 6.27
+                }
+              },
+              {
+                "id": 2133700599,
+                "fixture_id": 19720974,
+                "player_id": 96351,
+                "team_id": 9426,
+                "lineup_id": 14674189656,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 96351,
+              "sport_id": 1,
+              "country_id": 155,
+              "nationality_id": 155,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "D. Nistor",
+              "firstname": "Dan Nicolae",
+              "lastname": "Nistor",
+              "name": "Dan Nicolae Nistor",
+              "display_name": "Dan Nistor",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/31/96351.png",
+              "height": 172,
+              "weight": 72,
+              "date_of_birth": "1988-05-06",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674189838,
+            "sport_id": 1,
+            "fixture_id": 19720974,
+            "player_id": 37642698,
+            "team_id": 9426,
+            "position_id": 25,
+            "formation_field": null,
+            "type_id": 12,
+            "formation_position": null,
+            "player_name": "Friday Adams",
+            "jersey_number": 12,
+            "details": [
+              {
+                "id": 2133700857,
+                "fixture_id": 19720974,
+                "player_id": 37642698,
+                "team_id": 9426,
+                "lineup_id": 14674189838,
+                "type_id": 118,
+                "data": {
+                  "value": 6.49
+                }
+              },
+              {
+                "id": 2133700600,
+                "fixture_id": 19720974,
+                "player_id": 37642698,
+                "team_id": 9426,
+                "lineup_id": 14674189838,
+                "type_id": 119,
+                "data": {
+                  "value": 29
+                }
+              }
+            ],
+            "player": {
+              "id": 37642698,
+              "sport_id": 1,
+              "country_id": 716,
+              "nationality_id": 716,
+              "city_id": null,
+              "position_id": 25,
+              "detailed_position_id": 154,
+              "type_id": null,
+              "common_name": "A. Friday",
+              "firstname": "Adams",
+              "lastname": "Friday",
+              "name": "Adams Friday",
+              "display_name": "Friday Adams",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": 172,
+              "weight": null,
+              "date_of_birth": "2002-11-23",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157312228,
+          "fixture_id": 19720974,
+          "period_id": 7014839,
+          "participant_id": 9426,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37642698,
+          "related_player_id": 96351,
+          "player_name": "Friday Adams",
+          "related_player_name": "Dan Nistor",
+          "result": null,
+          "info": null,
+          "addition": "1st Substitution",
+          "minute": 61,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014839,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "id": 19788665,
+        "events": [
+          {
+            "id": 157569490,
+            "fixture_id": 19788665,
+            "period_id": 7050246,
+            "participant_id": 132649,
+            "type_id": 10,
+            "section": "event",
+            "player_id": 159536,
+            "related_player_id": null,
+            "player_name": "Sandro Lima",
+            "related_player_name": null,
+            "result": null,
+            "info": "Offside",
+            "addition": "Goal Disallowed",
+            "minute": 63,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1512,
+            "detailed_period_id": 7050246,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 10,
+              "name": "VAR",
+              "code": "VAR",
+              "developer_name": "VAR",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674407707,
+            "sport_id": 1,
+            "fixture_id": 19788665,
+            "player_id": 37640040,
+            "team_id": 132649,
+            "position_id": 27,
+            "formation_field": "4:2",
+            "type_id": 11,
+            "formation_position": 10,
+            "player_name": "Sandro Lima",
+            "jersey_number": 91,
+            "details": [
+              {
+                "id": 2158982411,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              },
+              {
+                "id": 2158987526,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 88,
+                "data": {
+                  "value": 1
+                }
+              },
+              {
+                "id": 2158994280,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 86,
+                "data": {
+                  "value": 2
+                }
+              },
+              {
+                "id": 2158993714,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 41,
+                "data": {
+                  "value": 1
+                }
+              },
+              {
+                "id": 2159008808,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 51,
+                "data": {
+                  "value": 2
+                }
+              },
+              {
+                "id": 2159045965,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 58,
+                "data": {
+                  "value": 1
+                }
+              },
+              {
+                "id": 2158979601,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 117172,
+                "data": {
+                  "value": 97
+                }
+              },
+              {
+                "id": 2158979575,
+                "fixture_id": 19788665,
+                "player_id": 37640040,
+                "team_id": 132649,
+                "lineup_id": 14674407707,
+                "type_id": 118,
+                "data": {
+                  "value": 6.73
+                }
+              }
+            ],
+            "player": {
+              "id": 37640040,
+              "sport_id": 1,
+              "country_id": 5,
+              "nationality_id": 5,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 151,
+              "type_id": null,
+              "common_name": "S. Cesar",
+              "firstname": "Sandro",
+              "lastname": "Cesar",
+              "name": "Sandro Cesar",
+              "display_name": "Sandro Lima",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/8/37640040.png",
+              "height": 186,
+              "weight": 82,
+              "date_of_birth": "1990-10-28",
+              "gender": null
+            }
+          }
+        ],
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 157569490,
+          "fixture_id": 19788665,
+          "period_id": 7050246,
+          "participant_id": 132649,
+          "type_id": 10,
+          "section": "event",
+          "player_id": 37640040,
+          "related_player_id": null,
+          "player_name": "Sandro Lima",
+          "related_player_name": null,
+          "result": null,
+          "info": "Offside",
+          "addition": "Goal Disallowed",
+          "minute": 63,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1512,
+          "detailed_period_id": 7050246,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 10,
+            "name": "VAR",
+            "code": "VAR",
+            "developer_name": "VAR",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19720917,
+        "events": [
+          {
+            "id": 157356069,
+            "fixture_id": 19720917,
+            "period_id": 7021553,
+            "participant_id": 2736,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 38217824,
+            "related_player_id": 32141,
+            "player_name": "Vojin Marinkovic",
+            "related_player_name": "Stefan Mitrovic",
+            "result": null,
+            "info": null,
+            "addition": "10th Substitution",
+            "minute": 85,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7021553,
+            "rescinded": null,
+            "sort_order": 10,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674233021,
+            "sport_id": 1,
+            "fixture_id": 19720917,
+            "player_id": 32141,
+            "team_id": 2736,
+            "position_id": 25,
+            "formation_field": "2:2",
+            "type_id": 11,
+            "formation_position": 4,
+            "player_name": "Stefan Mitrovic",
+            "jersey_number": 23,
+            "details": [
+              {
+                "id": 2141514610,
+                "fixture_id": 19720917,
+                "player_id": 32141,
+                "team_id": 2736,
+                "lineup_id": 14674233021,
+                "type_id": 118,
+                "data": {
+                  "value": 6.5
+                }
+              },
+              {
+                "id": 2141514745,
+                "fixture_id": 19720917,
+                "player_id": 32141,
+                "team_id": 2736,
+                "lineup_id": 14674233021,
+                "type_id": 117172,
+                "data": {
+                  "value": 85
+                }
+              },
+              {
+                "id": 2141561208,
+                "fixture_id": 19720917,
+                "player_id": 32141,
+                "team_id": 2736,
+                "lineup_id": 14674233021,
+                "type_id": 119,
+                "data": {
+                  "value": 85
+                }
+              }
+            ],
+            "player": {
+              "id": 32141,
+              "sport_id": 1,
+              "country_id": 296,
+              "nationality_id": 296,
+              "city_id": null,
+              "position_id": 25,
+              "detailed_position_id": 148,
+              "type_id": 25,
+              "common_name": "S. Mitrović",
+              "firstname": "Stefan",
+              "lastname": "Mitrović",
+              "name": "Stefan Mitrović",
+              "display_name": "Stefan Mitrovic",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/13/32141.png",
+              "height": 189,
+              "weight": 84,
+              "date_of_birth": "1990-05-22",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674233033,
+            "sport_id": 1,
+            "fixture_id": 19720917,
+            "player_id": 37788791,
+            "team_id": 2736,
+            "position_id": 25,
+            "formation_field": null,
+            "type_id": 12,
+            "formation_position": null,
+            "player_name": "Vojin Marinković",
+            "jersey_number": 66,
+            "details": [
+              {
+                "id": 2141558008,
+                "fixture_id": 19720917,
+                "player_id": 37788791,
+                "team_id": 2736,
+                "lineup_id": 14674233033,
+                "type_id": 117172,
+                "data": {
+                  "value": 8
+                }
+              },
+              {
+                "id": 2141561216,
+                "fixture_id": 19720917,
+                "player_id": 37788791,
+                "team_id": 2736,
+                "lineup_id": 14674233033,
+                "type_id": 119,
+                "data": {
+                  "value": 5
+                }
+              },
+              {
+                "id": 2141561330,
+                "fixture_id": 19720917,
+                "player_id": 37788791,
+                "team_id": 2736,
+                "lineup_id": 14674233033,
+                "type_id": 118,
+                "data": {
+                  "value": 6.5
+                }
+              }
+            ],
+            "player": {
+              "id": 37788791,
+              "sport_id": 1,
+              "country_id": 296,
+              "nationality_id": null,
+              "city_id": null,
+              "position_id": 25,
+              "detailed_position_id": null,
+              "type_id": null,
+              "common_name": "V. Marinković",
+              "firstname": "Vojin",
+              "lastname": "Marinković",
+              "name": "Vojin Marinković",
+              "display_name": "Vojin Marinković",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": null,
+              "weight": null,
+              "date_of_birth": "2009-02-14",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157356069,
+          "fixture_id": 19720917,
+          "period_id": 7021553,
+          "participant_id": 2736,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37788791,
+          "related_player_id": 32141,
+          "player_name": "Vojin Marinkovic",
+          "related_player_name": "Stefan Mitrovic",
+          "result": null,
+          "info": null,
+          "addition": "10th Substitution",
+          "minute": 85,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7021553,
+          "rescinded": null,
+          "sort_order": 10,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19719439,
+        "events": [
+          {
+            "id": 157253906,
+            "fixture_id": 19719439,
+            "period_id": 7005901,
+            "participant_id": 876,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 788702,
+            "related_player_id": 37664368,
+            "player_name": "Fahd Ndzengue",
+            "related_player_name": "Endrit Krasniqi",
+            "result": "0-1",
+            "info": "Right foot shot",
+            "addition": "1st Goal",
+            "minute": 28,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1522,
+            "detailed_period_id": 7005901,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674133549,
+            "sport_id": 1,
+            "fixture_id": 19719439,
+            "player_id": 788702,
+            "team_id": 876,
+            "position_id": 27,
+            "formation_field": "4:2",
+            "type_id": 11,
+            "formation_position": 10,
+            "player_name": "Fahd Ndzengue",
+            "jersey_number": 9,
+            "details": [
+              {
+                "id": 2127236442,
+                "fixture_id": 19719439,
+                "player_id": 788702,
+                "team_id": 876,
+                "lineup_id": 14674133549,
+                "type_id": 117172,
+                "data": {
+                  "value": 78
+                }
+              },
+              {
+                "id": 2127314376,
+                "fixture_id": 19719439,
+                "player_id": 788702,
+                "team_id": 876,
+                "lineup_id": 14674133549,
+                "type_id": 118,
+                "data": {
+                  "value": 6.5
+                }
+              }
+            ],
+            "player": {
+              "id": 788702,
+              "sport_id": 1,
+              "country_id": 3662,
+              "nationality_id": 3662,
+              "city_id": null,
+              "position_id": 27,
+              "detailed_position_id": 151,
+              "type_id": 27,
+              "common_name": "F. Ndzengue Moubeti",
+              "firstname": "Fahd Richard",
+              "lastname": "Ndzengue Moubeti",
+              "name": "Fahd Richard Ndzengue Moubeti",
+              "display_name": "Fahd Ndzengue",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": 180,
+              "weight": 65,
+              "date_of_birth": "2000-07-07",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674133551,
+            "sport_id": 1,
+            "fixture_id": 19719439,
+            "player_id": 1068604,
+            "team_id": 876,
+            "position_id": 26,
+            "formation_field": "3:2",
+            "type_id": 11,
+            "formation_position": 8,
+            "player_name": "Endrit Krasniqi",
+            "jersey_number": 10,
+            "details": [
+              {
+                "id": 2127236443,
+                "fixture_id": 19719439,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674133551,
+                "type_id": 117172,
+                "data": {
+                  "value": 94
+                }
+              },
+              {
+                "id": 2127236420,
+                "fixture_id": 19719439,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674133551,
+                "type_id": 118,
+                "data": {
+                  "value": 6.61
+                }
+              },
+              {
+                "id": 2127240496,
+                "fixture_id": 19719439,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674133551,
+                "type_id": 79,
+                "data": {
+                  "value": 1
+                }
+              },
+              {
+                "id": 2127240497,
+                "fixture_id": 19719439,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674133551,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 1068604,
+              "sport_id": 1,
+              "country_id": 122,
+              "nationality_id": 122,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "E. Krasniqi",
+              "firstname": "Endrit",
+              "lastname": "Krasniqi",
+              "name": "Endrit Krasniqi",
+              "display_name": "Endrit Krasniqi",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/1068604.png",
+              "height": 177,
+              "weight": null,
+              "date_of_birth": "1994-10-26",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157253906,
+          "fixture_id": 19719439,
+          "period_id": 7005901,
+          "participant_id": 876,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 788702,
+          "related_player_id": 1068604,
+          "player_name": "Fahd Ndzengue",
+          "related_player_name": "Endrit Krasniqi",
+          "result": "0-1",
+          "info": "Right foot shot",
+          "addition": "1st Goal",
+          "minute": 28,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1522,
+          "detailed_period_id": 7005901,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19719413,
+        "events": [
+          {
+            "id": 157281256,
+            "fixture_id": 19719413,
+            "period_id": 7010234,
+            "participant_id": 876,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37664368,
+            "related_player_id": null,
+            "player_name": "Endrit Krasniqi",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "1st Yellowcard",
+            "minute": 71,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1496,
+            "detailed_period_id": 7010234,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674158318,
+            "sport_id": 1,
+            "fixture_id": 19719413,
+            "player_id": 1068604,
+            "team_id": 876,
+            "position_id": 26,
+            "formation_field": "3:3",
+            "type_id": 11,
+            "formation_position": 8,
+            "player_name": "Endrit Krasniqi",
+            "jersey_number": 10,
+            "details": [
+              {
+                "id": 2128402058,
+                "fixture_id": 19719413,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674158318,
+                "type_id": 118,
+                "data": {
+                  "value": 6.5
+                }
+              },
+              {
+                "id": 2128402262,
+                "fixture_id": 19719413,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674158318,
+                "type_id": 117172,
+                "data": {
+                  "value": 94
+                }
+              },
+              {
+                "id": 2128427753,
+                "fixture_id": 19719413,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674158318,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 1068604,
+              "sport_id": 1,
+              "country_id": 122,
+              "nationality_id": 122,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "E. Krasniqi",
+              "firstname": "Endrit",
+              "lastname": "Krasniqi",
+              "name": "Endrit Krasniqi",
+              "display_name": "Endrit Krasniqi",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/1068604.png",
+              "height": 177,
+              "weight": null,
+              "date_of_birth": "1994-10-26",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157281256,
+          "fixture_id": 19719413,
+          "period_id": 7010234,
+          "participant_id": 876,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 1068604,
+          "related_player_id": null,
+          "player_name": "Endrit Krasniqi",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "1st Yellowcard",
+          "minute": 71,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1496,
+          "detailed_period_id": 7010234,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19720947,
+        "events": [
+          {
+            "id": 157312629,
+            "fixture_id": 19720947,
+            "period_id": 7014875,
+            "participant_id": 876,
+            "type_id": 16,
+            "section": "event",
+            "player_id": 37664368,
+            "related_player_id": null,
+            "player_name": "Endrit Krasniqi",
+            "related_player_name": null,
+            "result": "0-1",
+            "info": "Penalty",
+            "addition": "1st Penalty",
+            "minute": 11,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7014875,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 16,
+              "name": "Penalty",
+              "code": "penalty",
+              "developer_name": "PENALTY",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 157313188,
+            "fixture_id": 19720947,
+            "period_id": 7014923,
+            "participant_id": 876,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 5283689,
+            "related_player_id": 37664368,
+            "player_name": "Florent Ramadani",
+            "related_player_name": "Endrit Krasniqi",
+            "result": null,
+            "info": null,
+            "addition": "5th Substitution",
+            "minute": 69,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7014923,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 157312638,
+            "fixture_id": 19720947,
+            "period_id": 7014875,
+            "participant_id": 876,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37664368,
+            "related_player_id": null,
+            "player_name": "Endrit Krasniqi",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "1st Yellowcard",
+            "minute": 13,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1496,
+            "detailed_period_id": 7014875,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674190874,
+            "sport_id": 1,
+            "fixture_id": 19720947,
+            "player_id": 1068604,
+            "team_id": 876,
+            "position_id": 26,
+            "formation_field": "3:1",
+            "type_id": 11,
+            "formation_position": 8,
+            "player_name": "Endrit Krasniqi",
+            "jersey_number": 10,
+            "details": [
+              {
+                "id": 2133695524,
+                "fixture_id": 19720947,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674190874,
+                "type_id": 118,
+                "data": {
+                  "value": 6.27
+                }
+              },
+              {
+                "id": 2133695272,
+                "fixture_id": 19720947,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674190874,
+                "type_id": 117172,
+                "data": {
+                  "value": 93
+                }
+              },
+              {
+                "id": 2133715330,
+                "fixture_id": 19720947,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674190874,
+                "type_id": 88,
+                "data": {
+                  "value": 2
+                }
+              },
+              {
+                "id": 2133765548,
+                "fixture_id": 19720947,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674190874,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 1068604,
+              "sport_id": 1,
+              "country_id": 122,
+              "nationality_id": 122,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "E. Krasniqi",
+              "firstname": "Endrit",
+              "lastname": "Krasniqi",
+              "name": "Endrit Krasniqi",
+              "display_name": "Endrit Krasniqi",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/1068604.png",
+              "height": 177,
+              "weight": null,
+              "date_of_birth": "1994-10-26",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674190890,
+            "sport_id": 1,
+            "fixture_id": 19720947,
+            "player_id": 5283689,
+            "team_id": 876,
+            "position_id": 26,
+            "formation_field": null,
+            "type_id": 12,
+            "formation_position": null,
+            "player_name": "Florent Ramadani",
+            "jersey_number": 77,
+            "details": [
+              {
+                "id": 2133765573,
+                "fixture_id": 19720947,
+                "player_id": 5283689,
+                "team_id": 876,
+                "lineup_id": 14674190890,
+                "type_id": 119,
+                "data": {
+                  "value": 21
+                }
+              },
+              {
+                "id": 2133768796,
+                "fixture_id": 19720947,
+                "player_id": 5283689,
+                "team_id": 876,
+                "lineup_id": 14674190890,
+                "type_id": 118,
+                "data": {
+                  "value": 6.5
+                }
+              },
+              {
+                "id": 2133760837,
+                "fixture_id": 19720947,
+                "player_id": 5283689,
+                "team_id": 876,
+                "lineup_id": 14674190890,
+                "type_id": 117172,
+                "data": {
+                  "value": 24
+                }
+              }
+            ],
+            "player": {
+              "id": 5283689,
+              "sport_id": 1,
+              "country_id": 57142,
+              "nationality_id": 57142,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "F. Ramadani",
+              "firstname": "Florent",
+              "lastname": "Ramadani",
+              "name": "Florent Ramadani",
+              "display_name": "Florent Ramadani",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/5283689.png",
+              "height": 178,
+              "weight": null,
+              "date_of_birth": "2000-08-27",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157312629,
+          "fixture_id": 19720947,
+          "period_id": 7014875,
+          "participant_id": 876,
+          "type_id": 16,
+          "section": "event",
+          "player_id": 1068604,
+          "related_player_id": null,
+          "player_name": "Endrit Krasniqi",
+          "related_player_name": null,
+          "result": "0-1",
+          "info": "Penalty",
+          "addition": "1st Penalty",
+          "minute": 11,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014875,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 16,
+            "name": "Penalty",
+            "code": "penalty",
+            "developer_name": "PENALTY",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157313188,
+          "fixture_id": 19720947,
+          "period_id": 7014923,
+          "participant_id": 876,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 5283689,
+          "related_player_id": 1068604,
+          "player_name": "Florent Ramadani",
+          "related_player_name": "Endrit Krasniqi",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 69,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014923,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157312638,
+          "fixture_id": 19720947,
+          "period_id": 7014875,
+          "participant_id": 876,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 1068604,
+          "related_player_id": null,
+          "player_name": "Endrit Krasniqi",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "1st Yellowcard",
+          "minute": 13,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1496,
+          "detailed_period_id": 7014875,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19720898,
+        "events": [
+          {
+            "id": 157355767,
+            "fixture_id": 19720898,
+            "period_id": 7021543,
+            "participant_id": 876,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37664368,
+            "related_player_id": 841472,
+            "player_name": "Endrit Krasniqi",
+            "related_player_name": "Sebastjan Spahiu",
+            "result": null,
+            "info": null,
+            "addition": "2nd Substitution",
+            "minute": 66,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7021543,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674232941,
+            "sport_id": 1,
+            "fixture_id": 19720898,
+            "player_id": 1068604,
+            "team_id": 876,
+            "position_id": 26,
+            "formation_field": null,
+            "type_id": 12,
+            "formation_position": null,
+            "player_name": "Endrit Krasniqi",
+            "jersey_number": 10,
+            "details": [
+              {
+                "id": 2141547661,
+                "fixture_id": 19720898,
+                "player_id": 1068604,
+                "team_id": 876,
+                "lineup_id": 14674232941,
+                "type_id": 117172,
+                "data": {
+                  "value": 4
+                }
+              }
+            ],
+            "player": {
+              "id": 1068604,
+              "sport_id": 1,
+              "country_id": 122,
+              "nationality_id": 122,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "E. Krasniqi",
+              "firstname": "Endrit",
+              "lastname": "Krasniqi",
+              "name": "Endrit Krasniqi",
+              "display_name": "Endrit Krasniqi",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/1068604.png",
+              "height": 177,
+              "weight": null,
+              "date_of_birth": "1994-10-26",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674232914,
+            "sport_id": 1,
+            "fixture_id": 19720898,
+            "player_id": 841472,
+            "team_id": 876,
+            "position_id": 26,
+            "formation_field": "4:2",
+            "type_id": 11,
+            "formation_position": 9,
+            "player_name": "Sebastjan Spahiu",
+            "jersey_number": 49,
+            "details": [
+              {
+                "id": 2141505454,
+                "fixture_id": 19720898,
+                "player_id": 841472,
+                "team_id": 876,
+                "lineup_id": 14674232914,
+                "type_id": 118,
+                "data": {
+                  "value": 6.37
+                }
+              },
+              {
+                "id": 2141506023,
+                "fixture_id": 19720898,
+                "player_id": 841472,
+                "team_id": 876,
+                "lineup_id": 14674232914,
+                "type_id": 117172,
+                "data": {
+                  "value": 68
+                }
+              },
+              {
+                "id": 2141515210,
+                "fixture_id": 19720898,
+                "player_id": 841472,
+                "team_id": 876,
+                "lineup_id": 14674232914,
+                "type_id": 88,
+                "data": {
+                  "value": 1
+                }
+              },
+              {
+                "id": 2141556442,
+                "fixture_id": 19720898,
+                "player_id": 841472,
+                "team_id": 876,
+                "lineup_id": 14674232914,
+                "type_id": 119,
+                "data": {
+                  "value": 66
+                }
+              }
+            ],
+            "player": {
+              "id": 841472,
+              "sport_id": 1,
+              "country_id": 556,
+              "nationality_id": 2454,
+              "city_id": 59736,
+              "position_id": 26,
+              "detailed_position_id": 150,
+              "type_id": 26,
+              "common_name": "S. Spahiu",
+              "firstname": "Sebastjan",
+              "lastname": "Spahiu",
+              "name": "Sebastjan Spahiu",
+              "display_name": "Sebastjan Spahiu",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": 175,
+              "weight": null,
+              "date_of_birth": "1999-10-30",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157355767,
+          "fixture_id": 19720898,
+          "period_id": 7021543,
+          "participant_id": 876,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 1068604,
+          "related_player_id": 841472,
+          "player_name": "Endrit Krasniqi",
+          "related_player_name": "Sebastjan Spahiu",
+          "result": null,
+          "info": null,
+          "addition": "2nd Substitution",
+          "minute": 66,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7021543,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "pressure": [],
+        "id": 19757926,
+        "events": [
+          {
+            "id": 157348954,
+            "fixture_id": 19757926,
+            "period_id": 7020311,
+            "participant_id": 3546,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 163293,
+            "related_player_id": null,
+            "player_name": "C. Fabbiani",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "4th Yellowcard",
+            "minute": 105,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7020310,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [],
+        "coaches": [
+          {
+            "id": 1477278,
+            "player_id": 1477278,
+            "sport_id": 1,
+            "country_id": 401,
+            "nationality_id": 401,
+            "city_id": null,
+            "common_name": "A. Guľa",
+            "firstname": "Adrián",
+            "lastname": "Guľa",
+            "name": "Adrián Guľa",
+            "display_name": "Adrián Guľa",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "1975-06-29",
+            "gender": "male",
+            "meta": {
+              "fixture_id": 19757926,
+              "coach_id": 1477278,
+              "participant_id": 3546
+            }
+          },
+          {
+            "id": 163293,
+            "player_id": 163293,
+            "sport_id": 1,
+            "country_id": 44,
+            "nationality_id": 44,
+            "city_id": null,
+            "common_name": "C. Fabbiani",
+            "firstname": "Cristian Gastón",
+            "lastname": "Fabbiani",
+            "name": "Cristian Gastón Fabbiani",
+            "display_name": "Cristian Fabbiani",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 188,
+            "weight": 97,
+            "date_of_birth": "1983-09-03",
+            "gender": "male",
+            "meta": {
+              "fixture_id": 19757926,
+              "coach_id": 163293,
+              "participant_id": 5492
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157348954,
+          "fixture_id": 19757926,
+          "period_id": 7020311,
+          "participant_id": 5492,
+          "type_id": 19,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": null,
+          "player_name": "C. Fabbiani",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "4th Yellowcard",
+          "minute": 105,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": 163293,
+          "sub_type_id": null,
+          "detailed_period_id": 7020310,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "pressure": [],
+        "id": 19766261,
+        "events": [
+          {
+            "id": 157460575,
+            "fixture_id": 19766261,
+            "period_id": 7038612,
+            "participant_id": 3270,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37653357,
+            "related_player_id": null,
+            "player_name": "Dieudonné Gaucho Debohi",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "7th Yellowcard",
+            "minute": 90,
+            "extra_minute": 6,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7038612,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674333477,
+            "sport_id": 1,
+            "fixture_id": 19766261,
+            "player_id": 37569232,
+            "team_id": 3270,
+            "position_id": 25,
+            "formation_field": "2:3",
+            "type_id": 11,
+            "formation_position": 2,
+            "player_name": "Didí Gaucho",
+            "jersey_number": 77,
+            "details": [
+              {
+                "id": 2151727582,
+                "fixture_id": 19766261,
+                "player_id": 37569232,
+                "team_id": 3270,
+                "lineup_id": 14674333477,
+                "type_id": 117172,
+                "data": {
+                  "value": 80
+                }
+              },
+              {
+                "id": 2151727386,
+                "fixture_id": 19766261,
+                "player_id": 37569232,
+                "team_id": 3270,
+                "lineup_id": 14674333477,
+                "type_id": 118,
+                "data": {
+                  "value": 6.49
+                }
+              },
+              {
+                "id": 2151894175,
+                "fixture_id": 19766261,
+                "player_id": 37569232,
+                "team_id": 3270,
+                "lineup_id": 14674333477,
+                "type_id": 119,
+                "data": {
+                  "value": 78
+                }
+              },
+              {
+                "id": 2152188990,
+                "fixture_id": 19766261,
+                "player_id": 37569232,
+                "team_id": 3270,
+                "lineup_id": 14674333477,
+                "type_id": 84,
+                "data": {
+                  "value": 1
+                }
+              }
+            ],
+            "player": {
+              "id": 37569232,
+              "sport_id": 1,
+              "country_id": 23,
+              "nationality_id": 23,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": null,
+              "type_id": 26,
+              "common_name": "D. Gaucho",
+              "firstname": "Didi",
+              "lastname": "Gaucho",
+              "name": "Didi Gaucho",
+              "display_name": "Didí Gaucho",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": null,
+              "weight": null,
+              "date_of_birth": "2001-01-15",
+              "gender": "male"
+            }
+          }
+        ],
+        "coaches": []
+      },
+      "expected_events": [
+        {
+          "id": 157460575,
+          "fixture_id": 19766261,
+          "period_id": 7038612,
+          "participant_id": 3270,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 37569232,
+          "related_player_id": null,
+          "player_name": "Dieudonné Gaucho Debohi",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "7th Yellowcard",
+          "minute": 90,
+          "extra_minute": 6,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7038612,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}

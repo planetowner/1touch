@@ -1,0 +1,610 @@
+{
+  "source": "https://api.sportmonks.com/v3/football/fixtures/10420711",
+  "comment_source": "https://api.sportmonks.com/v3/football/fixtures/10420711?include=comments",
+  "description": "실제 응답에서 FK 실패 이벤트와 두 선수 라인업을 추린 회귀 표본이에요.",
+  "fixture": {
+    "id": 10420711,
+    "events": [
+      {
+        "id": 32722265,
+        "fixture_id": 10420711,
+        "period_id": 403162,
+        "participant_id": 528,
+        "type_id": 15,
+        "section": "event",
+        "player_id": 186591,
+        "related_player_id": 107746,
+        "player_name": "Bono",
+        "related_player_name": "Julián López",
+        "result": "1-2",
+        "info": null,
+        "addition": "3rd Goal",
+        "minute": 89,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": null,
+        "rescinded": null,
+        "sort_order": 3,
+        "type": {
+          "id": 15,
+          "name": "Own Goal",
+          "code": "owngoal",
+          "developer_name": "OWNGOAL",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "lineups": [
+      {
+        "id": 5754271,
+        "sport_id": 1,
+        "fixture_id": 10420711,
+        "player_id": 186591,
+        "team_id": 231,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 1,
+        "player_name": "Bono",
+        "jersey_number": 13,
+        "details": [
+          {
+            "id": 10504791,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 277263558,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 324,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 10505036,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 297502023,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 57,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 297502025,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 104,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 297502032,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 118,
+            "data": {
+              "value": 5.81
+            }
+          },
+          {
+            "id": 301801850,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 105,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 301801854,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 1584,
+            "data": {
+              "value": 69
+            }
+          },
+          {
+            "id": 336699760,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 1535,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 297502027,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 80,
+            "data": {
+              "value": 23
+            }
+          },
+          {
+            "id": 297502029,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 116,
+            "data": {
+              "value": 16
+            }
+          },
+          {
+            "id": 365446515,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 1491,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 365446523,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 94,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 614802441,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 122,
+            "data": {
+              "value": 13
+            }
+          },
+          {
+            "id": 614802232,
+            "fixture_id": 10420711,
+            "player_id": 186591,
+            "team_id": 231,
+            "lineup_id": 5754271,
+            "type_id": 123,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 186591,
+          "sport_id": 1,
+          "country_id": 1004,
+          "nationality_id": 1424,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "Y. Bounou",
+          "firstname": "Yassine",
+          "lastname": "Bounou",
+          "name": "Yassine Bounou",
+          "display_name": "Yassine Bounou",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/31/186591.png",
+          "height": 195,
+          "weight": 78,
+          "date_of_birth": "1991-04-05",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5754464,
+        "sport_id": 1,
+        "fixture_id": 10420711,
+        "player_id": 185640,
+        "team_id": 528,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 5,
+        "player_name": "Javi López",
+        "jersey_number": 16,
+        "details": [
+          {
+            "id": 202006982,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 10511637,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 297501431,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 118,
+            "data": {
+              "value": 7.34
+            }
+          },
+          {
+            "id": 297501724,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 101,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 297501798,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 78,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 297501800,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 110,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 297501930,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 96,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 297501932,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 99,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 297501934,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 108,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 297502291,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 40,
+            "data": {
+              "value": true
+            }
+          },
+          {
+            "id": 297502309,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 56,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 297502315,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 98,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 297502378,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 100,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 297502387,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 106,
+            "data": {
+              "value": 7
+            }
+          },
+          {
+            "id": 297502412,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 109,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 297502429,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 117,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 148660747,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 84,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 301801868,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 105,
+            "data": {
+              "value": 10
+            }
+          },
+          {
+            "id": 301801870,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 1584,
+            "data": {
+              "value": 85
+            }
+          },
+          {
+            "id": 365444601,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 1491,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 297502422,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 80,
+            "data": {
+              "value": 28
+            }
+          },
+          {
+            "id": 297501937,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 116,
+            "data": {
+              "value": 24
+            }
+          },
+          {
+            "id": 614802239,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 122,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 614802459,
+            "fixture_id": 10420711,
+            "player_id": 185640,
+            "team_id": 528,
+            "lineup_id": 5754464,
+            "type_id": 123,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 185640,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": 32,
+          "city_id": 65962,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "J. López Rodríguez",
+          "firstname": "Javier",
+          "lastname": "López Rodríguez",
+          "name": "Javier López Rodríguez",
+          "display_name": "Javi López",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/8/185640.png",
+          "height": 180,
+          "weight": 76,
+          "date_of_birth": "1986-01-21",
+          "gender": "male"
+        }
+      }
+    ],
+    "statistics": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  },
+  "comments": [
+    {
+      "id": 3378984,
+      "fixture_id": 10420711,
+      "comment": "Sergi Darder  - Espanyol -  hits the left post with a shot with right foot from outside the box. Assist -  Javi López.",
+      "minute": 89,
+      "extra_minute": null,
+      "is_goal": false,
+      "is_important": false,
+      "order": 125
+    },
+    {
+      "id": 3378986,
+      "fixture_id": 10420711,
+      "comment": "Own Goal by Yassine Bounou, Girona.  Girona 1, Espanyol 2.",
+      "minute": 89,
+      "extra_minute": null,
+      "is_goal": true,
+      "is_important": true,
+      "order": 126
+    }
+  ],
+  "wrong_player": {
+    "id": 107746,
+    "sport_id": 1,
+    "country_id": 32,
+    "nationality_id": 32,
+    "city_id": 5463,
+    "position_id": 26,
+    "detailed_position_id": null,
+    "type_id": 26,
+    "common_name": "J. Lopez de Lerma Barahona",
+    "firstname": "Julian",
+    "lastname": "Lopez de Lerma Barahona",
+    "name": "Julian Lopez de Lerma Barahona",
+    "display_name": "Julián López",
+    "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+    "height": 178,
+    "weight": null,
+    "date_of_birth": "1987-02-27",
+    "gender": "male"
+  },
+  "correct_player": {
+    "id": 185640,
+    "sport_id": 1,
+    "country_id": 32,
+    "nationality_id": 32,
+    "city_id": 65962,
+    "position_id": 25,
+    "detailed_position_id": null,
+    "type_id": 25,
+    "common_name": "J. López Rodríguez",
+    "firstname": "Javier",
+    "lastname": "López Rodríguez",
+    "name": "Javier López Rodríguez",
+    "display_name": "Javi López",
+    "image_path": "https://cdn.sportmonks.com/images/soccer/players/8/185640.png",
+    "height": 180,
+    "weight": 76,
+    "date_of_birth": "1986-01-21",
+    "gender": "male"
+  },
+  "corroborating_report": "https://sport.sky.it/calcio/liga/2019/04/06/girona-espanyol-1-2"
+}

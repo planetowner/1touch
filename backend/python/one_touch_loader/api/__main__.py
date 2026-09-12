@@ -1,0 +1,14 @@
+from __future__ import annotations
+
+import os
+import uvicorn
+
+
+def main():
+    host = os.getenv("API_HOST", "0.0.0.0")
+    port = int(os.getenv("API_PORT", "8000"))
+    uvicorn.run("one_touch_loader.api.main:app", host=host, port=port, reload=True)
+
+
+if __name__ == "__main__":
+    main()

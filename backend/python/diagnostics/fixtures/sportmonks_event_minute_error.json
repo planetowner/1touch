@@ -1,0 +1,130 @@
+{
+  "source": {
+    "fixture_id": 18156897,
+    "provider_event_id": 84175108,
+    "verified_record": "https://datencenter.dfb.de/datencenter/bundesliga/2021-22/34/vfb-stuttgart-1-fc-koeln-2327777",
+    "verified_minute": 90,
+    "verified_extra_minute": 6
+  },
+  "fixture": {
+    "id": 18156897,
+    "events": [
+      {
+        "id": 84175108,
+        "fixture_id": 18156897,
+        "period_id": null,
+        "participant_id": 3319,
+        "type_id": 19,
+        "section": "event",
+        "player_id": null,
+        "related_player_id": null,
+        "player_name": "Pellegrino Matarazzo",
+        "related_player_name": null,
+        "result": null,
+        "info": "Argument",
+        "addition": null,
+        "minute": -4,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": true,
+        "coach_id": 45305,
+        "sub_type_id": null,
+        "detailed_period_id": null,
+        "rescinded": false,
+        "sort_order": 2,
+        "type": {
+          "id": 19,
+          "name": "Yellowcard",
+          "code": "yellowcard",
+          "developer_name": "YELLOWCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 67686961,
+        "fixture_id": 18156897,
+        "period_id": 307647,
+        "participant_id": 3320,
+        "type_id": 19,
+        "section": "event",
+        "player_id": null,
+        "related_player_id": null,
+        "player_name": "Steffen Baumgart",
+        "related_player_name": null,
+        "result": null,
+        "info": "Argument",
+        "addition": null,
+        "minute": 28,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": true,
+        "coach_id": 29676,
+        "sub_type_id": null,
+        "detailed_period_id": null,
+        "rescinded": false,
+        "sort_order": 1,
+        "type": {
+          "id": 19,
+          "name": "Yellowcard",
+          "code": "yellowcard",
+          "developer_name": "YELLOWCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "statistics": [],
+    "lineups": [],
+    "formations": [],
+    "coaches": [
+      {
+        "id": 45305,
+        "player_id": 45305,
+        "sport_id": 1,
+        "country_id": 3483,
+        "nationality_id": 3483,
+        "city_id": null,
+        "common_name": "P. Matarazzo",
+        "firstname": "Pellegrino",
+        "lastname": "Matarazzo",
+        "name": "Pellegrino Matarazzo",
+        "display_name": "Pellegrino Matarazzo",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/coaches/25/45305.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "1977-11-28",
+        "gender": "male",
+        "meta": {
+          "fixture_id": 18156897,
+          "coach_id": 45305,
+          "participant_id": 3319
+        }
+      },
+      {
+        "id": 29676,
+        "player_id": 29676,
+        "sport_id": 1,
+        "country_id": 11,
+        "nationality_id": 11,
+        "city_id": null,
+        "common_name": "S. Baumgart",
+        "firstname": "Steffen",
+        "lastname": "Baumgart",
+        "name": "Steffen Baumgart",
+        "display_name": "Steffen Baumgart",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/coaches/12/29676.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "1972-01-05",
+        "gender": "male",
+        "meta": {
+          "fixture_id": 18156897,
+          "coach_id": 29676,
+          "participant_id": 3320
+        }
+      }
+    ],
+    "pressure": []
+  }
+}

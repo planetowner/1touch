@@ -1,0 +1,301 @@
+{
+  "liverpool": {
+    "team_id": 8,
+    "source": "logs\\diagnostics\\injuries-audit\\20260908T112805Z\\team-8.json",
+    "sidelined": [
+      {
+        "id": 811008,
+        "player_id": 129836,
+        "type_id": 554,
+        "category": "injury",
+        "start_date": "2026-08-19",
+        "end_date": "2026-09-27",
+        "games_missed": 3,
+        "completed": false,
+        "type": {
+          "id": 554,
+          "name": "Muscle Injury",
+          "code": "muscle-injury",
+          "developer_name": "MUSCLE_INJURY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 811820,
+        "player_id": 309344,
+        "type_id": 1612,
+        "category": "suspended",
+        "start_date": "2026-09-03",
+        "end_date": "2027-01-28",
+        "games_missed": 1,
+        "completed": false,
+        "type": {
+          "id": 1612,
+          "name": "No Eligibility",
+          "code": "no-eligibility",
+          "developer_name": "NO_ELIGIBILITY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 811883,
+        "player_id": 129836,
+        "type_id": 1612,
+        "category": "suspended",
+        "start_date": "2026-09-03",
+        "end_date": "2027-01-28",
+        "games_missed": 1,
+        "completed": false,
+        "type": {
+          "id": 1612,
+          "name": "No Eligibility",
+          "code": "no-eligibility",
+          "developer_name": "NO_ELIGIBILITY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 784873,
+        "player_id": 37288979,
+        "type_id": 604,
+        "category": "injury",
+        "start_date": "2026-04-15",
+        "end_date": "2026-12-31",
+        "games_missed": 15,
+        "completed": false,
+        "type": {
+          "id": 604,
+          "name": "Achilles tendon rupture",
+          "code": "achilles-tendon-rupture",
+          "developer_name": "ACHILLES_TENDON_RUPTURE",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 805418,
+        "player_id": 1453,
+        "type_id": 554,
+        "category": "injury",
+        "start_date": "2026-07-22",
+        "end_date": null,
+        "games_missed": 9,
+        "completed": false,
+        "type": {
+          "id": 554,
+          "name": "Muscle Injury",
+          "code": "muscle-injury",
+          "developer_name": "MUSCLE_INJURY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "rennes_missing_count": {
+    "team_id": 598,
+    "source": "logs\\diagnostics\\injuries-audit\\20260908T112805Z\\team-598.json",
+    "sidelined": [
+      {
+        "id": 695633,
+        "player_id": 98502,
+        "type_id": 561,
+        "category": "suspended",
+        "start_date": "2025-01-25",
+        "end_date": null,
+        "games_missed": 63,
+        "completed": false,
+        "type": {
+          "id": 561,
+          "name": "Suspended",
+          "code": "suspended",
+          "developer_name": "SUSPENDED",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 695634,
+        "player_id": 10504,
+        "type_id": 561,
+        "category": "suspended",
+        "start_date": "2025-01-25",
+        "end_date": null,
+        "games_missed": 63,
+        "completed": false,
+        "type": {
+          "id": 561,
+          "name": "Suspended",
+          "code": "suspended",
+          "developer_name": "SUSPENDED",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 812506,
+        "player_id": 96276,
+        "type_id": 549,
+        "category": "injury",
+        "start_date": "2017-07-22",
+        "end_date": "2017-11-30",
+        "games_missed": null,
+        "completed": false,
+        "type": {
+          "id": 549,
+          "name": "Foot Injury",
+          "code": "foot-injury",
+          "developer_name": "FOOT_INJURY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "troyes_multiple": {
+    "team_id": 7047,
+    "source": "logs\\diagnostics\\injuries-audit\\20260908T112805Z\\team-7047.json",
+    "sidelined": [
+      {
+        "id": 810855,
+        "player_id": 3526251,
+        "type_id": 551,
+        "category": "injury",
+        "start_date": "2026-08-14",
+        "end_date": null,
+        "games_missed": 4,
+        "completed": false,
+        "type": {
+          "id": 551,
+          "name": "Hip Injury",
+          "code": "hip-injury",
+          "developer_name": "HIP_INJURY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 571428,
+        "player_id": 96063,
+        "type_id": 537,
+        "category": "injury",
+        "start_date": "2024-02-04",
+        "end_date": null,
+        "games_missed": 107,
+        "completed": false,
+        "type": {
+          "id": 537,
+          "name": "Ankle Injury",
+          "code": "ankle-injury",
+          "developer_name": "ANKLE_INJURY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 664697,
+        "player_id": 96063,
+        "type_id": 531,
+        "category": "injury",
+        "start_date": "2024-08-24",
+        "end_date": null,
+        "games_missed": 84,
+        "completed": false,
+        "type": {
+          "id": 531,
+          "name": "Knock",
+          "code": "knock",
+          "developer_name": "KNOCK",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 810856,
+        "player_id": 37668617,
+        "type_id": 600,
+        "category": "injury",
+        "start_date": "2026-08-23",
+        "end_date": null,
+        "games_missed": 2,
+        "completed": false,
+        "type": {
+          "id": 600,
+          "name": "Dead Leg",
+          "code": "dead-leg",
+          "developer_name": "DEAD_LEG",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "atletico_past_dates": {
+    "team_id": 7980,
+    "source": "logs\\diagnostics\\injuries-audit\\20260907T113447Z\\team-7980.json",
+    "sidelined": [
+      {
+        "id": 811797,
+        "player_id": 129660,
+        "type_id": 533,
+        "category": "injury",
+        "start_date": "2024-01-29",
+        "end_date": "2024-02-01",
+        "games_missed": null,
+        "completed": false,
+        "type": {
+          "id": 533,
+          "name": "Thigh Problems",
+          "code": "thigh-problems",
+          "developer_name": "THIGH_PROBLEMS",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 811796,
+        "player_id": 129660,
+        "type_id": 745,
+        "category": "injury",
+        "start_date": "2023-05-22",
+        "end_date": "2023-05-25",
+        "games_missed": null,
+        "completed": false,
+        "type": {
+          "id": 745,
+          "name": "Neck Injury",
+          "code": "neck-injury",
+          "developer_name": "NECK_INJURY",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 811798,
+        "player_id": 129660,
+        "type_id": 832,
+        "category": "injury",
+        "start_date": "2024-04-19",
+        "end_date": "2024-04-24",
+        "games_missed": null,
+        "completed": false,
+        "type": {
+          "id": 832,
+          "name": "Toothache",
+          "code": "toothache",
+          "developer_name": "TOOTHACHE",
+          "model_type": "injury_suspension",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "empty": {
+    "team_id": 1099,
+    "source": "logs\\diagnostics\\injuries-audit\\20260908T112805Z\\team-1099.json",
+    "sidelined": []
+  }
+}

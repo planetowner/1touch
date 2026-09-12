@@ -1,0 +1,4322 @@
+{
+  "description": "남은 컨퍼런스리그 원문에서 확인한 null·잘못 연결된 라인업 사례예요. 공식 명단·소속·단건 프로필로 확인한 슬롯만 기존 저장 검증에 넣어요.",
+  "sources": [
+    "https://www.uefa.com/uefaconferenceleague/clubs/2611789--malisheva/squad/",
+    "https://www.uefa.com/uefaconferenceleague/clubs/players/250216015--sokol-uldedaj/",
+    "https://fkrfs.lv/en/player/ismael-diomande/?tid=20",
+    "https://www.soccerzz.com/live/2026-07-09-penybont-fc-santa-coloma/12249336",
+    "https://www.uefa.com/uefaconferenceleague/clubs/players/250138543--aron-ellingsgaard/",
+    "https://www.nfsbih.ba/en/news/football-m/wwin-league-bh/sarajevo-draws-with-inter-turku/",
+    "https://lff.lv/klubi/fk-liepaja-38387/?cid=23300000",
+    "https://www.veikkausliiga.com/uutiset/2025/03/08/ifk-mariehamn-testaa-hyokkaajaa-englannista-teki-vaikutuksen-heti-ensimmaisissa-harjoituksissa",
+    "https://www.veikkausliiga.com/pelaajat/1297827/bamba-abdoul-goudousse",
+    "https://www.uefa.com/under19/teams/players/250215178--benjamin-adrovic/",
+    "https://www.uefa.com/nationalassociations/teams/63401--inter-escaldes/squad/"
+  ],
+  "fixtures": [
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719434,
+      "events": [
+        {
+          "id": 157254223,
+          "fixture_id": 19719434,
+          "period_id": 7005940,
+          "participant_id": 252246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 56419,
+          "related_player_id": 31884,
+          "player_name": "Vüsal Isgandarli",
+          "related_player_name": "Valjmir Nafiu",
+          "result": null,
+          "info": null,
+          "addition": "2nd Substitution",
+          "minute": 64,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005940,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157254234,
+          "fixture_id": 19719434,
+          "period_id": 7005940,
+          "participant_id": 252246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37612096,
+          "related_player_id": 9939006,
+          "player_name": "Keslin Shani",
+          "related_player_name": "Dzemal Ibishi",
+          "result": null,
+          "info": null,
+          "addition": "3rd Substitution",
+          "minute": 64,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005940,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157254317,
+          "fixture_id": 19719434,
+          "period_id": 7005940,
+          "participant_id": 5201,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 38216439,
+          "related_player_id": 49196,
+          "player_name": "Sokol Uldedaj",
+          "related_player_name": "Emiljano Musta",
+          "result": null,
+          "info": null,
+          "addition": "6th Substitution",
+          "minute": 88,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005940,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157254199,
+          "fixture_id": 19719434,
+          "period_id": 7005940,
+          "participant_id": 252246,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 31884,
+          "related_player_id": null,
+          "player_name": "Valjmir Nafiu",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "3rd Yellowcard",
+          "minute": 58,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1496,
+          "detailed_period_id": 7005940,
+          "rescinded": false,
+          "sort_order": 3,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157254332,
+          "fixture_id": 19719434,
+          "period_id": 7005940,
+          "participant_id": 5201,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 38216439,
+          "related_player_id": null,
+          "player_name": "Sokol Uldedaj",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "5th Yellowcard",
+          "minute": 90,
+          "extra_minute": 1,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1496,
+          "detailed_period_id": 7005940,
+          "rescinded": false,
+          "sort_order": 5,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674133866,
+          "sport_id": 1,
+          "fixture_id": 19719434,
+          "player_id": 49196,
+          "team_id": 5201,
+          "position_id": 25,
+          "formation_field": "2:4",
+          "type_id": 11,
+          "formation_position": 5,
+          "player_name": "Emiljano Musta",
+          "jersey_number": 29,
+          "details": [
+            {
+              "id": 2127237849,
+              "fixture_id": 19719434,
+              "player_id": 49196,
+              "team_id": 5201,
+              "lineup_id": 14674133866,
+              "type_id": 117172,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "id": 2127273160,
+              "fixture_id": 19719434,
+              "player_id": 49196,
+              "team_id": 5201,
+              "lineup_id": 14674133866,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2127267041,
+              "fixture_id": 19719434,
+              "player_id": 49196,
+              "team_id": 5201,
+              "lineup_id": 14674133866,
+              "type_id": 1535,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2127314606,
+              "fixture_id": 19719434,
+              "player_id": 49196,
+              "team_id": 5201,
+              "lineup_id": 14674133866,
+              "type_id": 118,
+              "data": {
+                "value": 6.25
+              }
+            }
+          ],
+          "player": {
+            "id": 49196,
+            "sport_id": 1,
+            "country_id": 2454,
+            "nationality_id": 2454,
+            "city_id": 26330,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 26,
+            "common_name": "E. Musta",
+            "firstname": "Emiljano",
+            "lastname": "Musta",
+            "name": "Emiljano Musta",
+            "display_name": "Emiljano Musta",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 180,
+            "weight": null,
+            "date_of_birth": "1992-01-31",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674134079,
+          "sport_id": 1,
+          "fixture_id": 19719434,
+          "player_id": null,
+          "team_id": 5201,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Sokol Uldedaj",
+          "jersey_number": 44,
+          "details": [
+            {
+              "id": 2127240527,
+              "fixture_id": 19719434,
+              "player_id": null,
+              "team_id": 5201,
+              "lineup_id": 14674134079,
+              "type_id": 117172,
+              "data": {
+                "value": 16
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674134070,
+          "sport_id": 1,
+          "fixture_id": 19719434,
+          "player_id": 56419,
+          "team_id": 252246,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Vüsal Isgandarli",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2127240518,
+              "fixture_id": 19719434,
+              "player_id": 56419,
+              "team_id": 252246,
+              "lineup_id": 14674134070,
+              "type_id": 117172,
+              "data": {
+                "value": 32
+              }
+            }
+          ],
+          "player": {
+            "id": 56419,
+            "sport_id": 1,
+            "country_id": 2453,
+            "nationality_id": 2453,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 152,
+            "type_id": 26,
+            "common_name": "V. İsgəndərli",
+            "firstname": "Vüsal",
+            "lastname": "İsgəndərli",
+            "name": "Vüsal İsgəndərli",
+            "display_name": "Vüsal Isgandarli",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 180,
+            "weight": 70,
+            "date_of_birth": "1995-11-03",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674133845,
+          "sport_id": 1,
+          "fixture_id": 19719434,
+          "player_id": null,
+          "team_id": 252246,
+          "position_id": 26,
+          "formation_field": "3:3",
+          "type_id": 11,
+          "formation_position": 6,
+          "player_name": "Valjmir Nafiu",
+          "jersey_number": 18,
+          "details": [
+            {
+              "id": 2127237831,
+              "fixture_id": 19719434,
+              "player_id": null,
+              "team_id": 252246,
+              "lineup_id": 14674133845,
+              "type_id": 117172,
+              "data": {
+                "value": 98
+              }
+            },
+            {
+              "id": 2127273149,
+              "fixture_id": 19719434,
+              "player_id": null,
+              "team_id": 252246,
+              "lineup_id": 14674133845,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2127267029,
+              "fixture_id": 19719434,
+              "player_id": null,
+              "team_id": 252246,
+              "lineup_id": 14674133845,
+              "type_id": 1535,
+              "data": {
+                "value": 2
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674134074,
+          "sport_id": 1,
+          "fixture_id": 19719434,
+          "player_id": null,
+          "team_id": 252246,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Redjep Murati",
+          "jersey_number": 33,
+          "details": [
+            {
+              "id": 2127240522,
+              "fixture_id": 19719434,
+              "player_id": null,
+              "team_id": 252246,
+              "lineup_id": 14674134074,
+              "type_id": 117172,
+              "data": {
+                "value": 16
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674134075,
+          "sport_id": 1,
+          "fixture_id": 19719434,
+          "player_id": null,
+          "team_id": 252246,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Kesli Shani",
+          "jersey_number": 55,
+          "details": [
+            {
+              "id": 2127240523,
+              "fixture_id": 19719434,
+              "player_id": null,
+              "team_id": 252246,
+              "lineup_id": 14674134075,
+              "type_id": 117172,
+              "data": {
+                "value": 16
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674133854,
+          "sport_id": 1,
+          "fixture_id": 19719434,
+          "player_id": 9939006,
+          "team_id": 252246,
+          "position_id": 27,
+          "formation_field": "5:1",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Dzemal Ibishi",
+          "jersey_number": 99,
+          "details": [
+            {
+              "id": 2127237837,
+              "fixture_id": 19719434,
+              "player_id": 9939006,
+              "team_id": 252246,
+              "lineup_id": 14674133854,
+              "type_id": 117172,
+              "data": {
+                "value": 66
+              }
+            },
+            {
+              "id": 2127273151,
+              "fixture_id": 19719434,
+              "player_id": 9939006,
+              "team_id": 252246,
+              "lineup_id": 14674133854,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2127267031,
+              "fixture_id": 19719434,
+              "player_id": 9939006,
+              "team_id": 252246,
+              "lineup_id": 14674133854,
+              "type_id": 1535,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2127314596,
+              "fixture_id": 19719434,
+              "player_id": 9939006,
+              "team_id": 252246,
+              "lineup_id": 14674133854,
+              "type_id": 118,
+              "data": {
+                "value": 6.42
+              }
+            }
+          ],
+          "player": {
+            "id": 9939006,
+            "sport_id": 1,
+            "country_id": 57142,
+            "nationality_id": 57142,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 26,
+            "common_name": "D. Ibishi",
+            "firstname": "Dzemal",
+            "lastname": "Ibishi",
+            "name": "Dzemal Ibishi",
+            "display_name": "Dzemal Ibishi",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/30/9939006.png",
+            "height": 184,
+            "weight": null,
+            "date_of_birth": "2001-01-18",
+            "gender": "male"
+          }
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719449,
+      "events": [
+        {
+          "id": 157254151,
+          "fixture_id": 19719449,
+          "period_id": 7005923,
+          "participant_id": 6556,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 463530,
+          "related_player_id": 37621044,
+          "player_name": "Martins Kigurs",
+          "related_player_name": "Ismael Diomande",
+          "result": null,
+          "info": null,
+          "addition": "1st Substitution",
+          "minute": 32,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005923,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674133977,
+          "sport_id": 1,
+          "fixture_id": 19719449,
+          "player_id": null,
+          "team_id": 6556,
+          "position_id": 26,
+          "formation_field": "4:3",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Ismael Diomande",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 2127238619,
+              "fixture_id": 19719449,
+              "player_id": null,
+              "team_id": 6556,
+              "lineup_id": 14674133977,
+              "type_id": 117172,
+              "data": {
+                "value": 97
+              }
+            },
+            {
+              "id": 2127242771,
+              "fixture_id": 19719449,
+              "player_id": null,
+              "team_id": 6556,
+              "lineup_id": 14674133977,
+              "type_id": 119,
+              "data": {
+                "value": 32
+              }
+            },
+            {
+              "id": 2127273098,
+              "fixture_id": 19719449,
+              "player_id": null,
+              "team_id": 6556,
+              "lineup_id": 14674133977,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674134405,
+          "sport_id": 1,
+          "fixture_id": 19719449,
+          "player_id": 463530,
+          "team_id": 6556,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Martins Kigurs",
+          "jersey_number": 49,
+          "details": [
+            {
+              "id": 2127240239,
+              "fixture_id": 19719449,
+              "player_id": 463530,
+              "team_id": 6556,
+              "lineup_id": 14674134405,
+              "type_id": 117172,
+              "data": {
+                "value": 65
+              }
+            },
+            {
+              "id": 2127240276,
+              "fixture_id": 19719449,
+              "player_id": 463530,
+              "team_id": 6556,
+              "lineup_id": 14674134405,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2127242937,
+              "fixture_id": 19719449,
+              "player_id": 463530,
+              "team_id": 6556,
+              "lineup_id": 14674134405,
+              "type_id": 118,
+              "data": {
+                "value": 6.99
+              }
+            },
+            {
+              "id": 2127242786,
+              "fixture_id": 19719449,
+              "player_id": 463530,
+              "team_id": 6556,
+              "lineup_id": 14674134405,
+              "type_id": 52,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2127242787,
+              "fixture_id": 19719449,
+              "player_id": 463530,
+              "team_id": 6556,
+              "lineup_id": 14674134405,
+              "type_id": 119,
+              "data": {
+                "value": 58
+              }
+            },
+            {
+              "id": 2127242788,
+              "fixture_id": 19719449,
+              "player_id": 463530,
+              "team_id": 6556,
+              "lineup_id": 14674134405,
+              "type_id": 84,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 463530,
+            "sport_id": 1,
+            "country_id": 748,
+            "nationality_id": 748,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 150,
+            "type_id": 26,
+            "common_name": "M. Ķigurs",
+            "firstname": "Mārtiņš",
+            "lastname": "Ķigurs",
+            "name": "Mārtiņš Ķigurs",
+            "display_name": "Martins Kigurs",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/10/463530.png",
+            "height": 183,
+            "weight": null,
+            "date_of_birth": "1997-03-31",
+            "gender": "male"
+          }
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719437,
+      "events": [
+        {
+          "id": 157254481,
+          "fixture_id": 19719437,
+          "period_id": 7005958,
+          "participant_id": 7058,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 3510290,
+          "related_player_id": 37718055,
+          "player_name": "Roberto Rodríguez",
+          "related_player_name": "Alejandro Gómez",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 88,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005958,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674134310,
+          "sport_id": 1,
+          "fixture_id": 19719437,
+          "player_id": 3510290,
+          "team_id": 7058,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Roberto Rodríguez",
+          "jersey_number": 11,
+          "details": [
+            {
+              "id": 2127241293,
+              "fixture_id": 19719437,
+              "player_id": 3510290,
+              "team_id": 7058,
+              "lineup_id": 14674134310,
+              "type_id": 117172,
+              "data": {
+                "value": 5
+              }
+            }
+          ],
+          "player": {
+            "id": 3510290,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 32,
+            "city_id": 95078,
+            "position_id": 26,
+            "detailed_position_id": 150,
+            "type_id": 25,
+            "common_name": "R. Rodríguez Abreu",
+            "firstname": "Roberto",
+            "lastname": "Rodríguez Abreu",
+            "name": "Roberto Rodríguez Abreu",
+            "display_name": "Roberto Rodríguez",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "1999-08-14",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674134142,
+          "sport_id": 1,
+          "fixture_id": 19719437,
+          "player_id": null,
+          "team_id": 7058,
+          "position_id": null,
+          "formation_field": "4:3",
+          "type_id": 11,
+          "formation_position": 9,
+          "player_name": "Álex Gómez",
+          "jersey_number": 22,
+          "details": [
+            {
+              "id": 2127239398,
+              "fixture_id": 19719437,
+              "player_id": null,
+              "team_id": 7058,
+              "lineup_id": 14674134142,
+              "type_id": 117172,
+              "data": {
+                "value": 72
+              }
+            },
+            {
+              "id": 2127244683,
+              "fixture_id": 19719437,
+              "player_id": null,
+              "team_id": 7058,
+              "lineup_id": 14674134142,
+              "type_id": 119,
+              "data": {
+                "value": 88
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719416,
+      "events": [
+        {
+          "id": 157254190,
+          "fixture_id": 19719416,
+          "period_id": 7005936,
+          "participant_id": 8655,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 37649297,
+          "related_player_id": 37336173,
+          "player_name": "Aron Benjaminsen",
+          "related_player_name": "Aron Ellingsgaard",
+          "result": "0-1",
+          "info": "Right foot shot",
+          "addition": "1st Goal",
+          "minute": 12,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1522,
+          "detailed_period_id": 7005936,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674134173,
+          "sport_id": 1,
+          "fixture_id": 19719416,
+          "player_id": null,
+          "team_id": 8655,
+          "position_id": 26,
+          "formation_field": "3:1",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Aron Ellingsgaard",
+          "jersey_number": 8,
+          "details": [
+            {
+              "id": 2127240078,
+              "fixture_id": 19719416,
+              "player_id": null,
+              "team_id": 8655,
+              "lineup_id": 14674134173,
+              "type_id": 117172,
+              "data": {
+                "value": 96
+              }
+            },
+            {
+              "id": 2127241093,
+              "fixture_id": 19719416,
+              "player_id": null,
+              "team_id": 8655,
+              "lineup_id": 14674134173,
+              "type_id": 88,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2127246035,
+              "fixture_id": 19719416,
+              "player_id": null,
+              "team_id": 8655,
+              "lineup_id": 14674134173,
+              "type_id": 79,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2127246036,
+              "fixture_id": 19719416,
+              "player_id": null,
+              "team_id": 8655,
+              "lineup_id": 14674134173,
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674134180,
+          "sport_id": 1,
+          "fixture_id": 19719416,
+          "player_id": 37649297,
+          "team_id": 8655,
+          "position_id": 26,
+          "formation_field": "3:3",
+          "type_id": 11,
+          "formation_position": 6,
+          "player_name": "Aron Benjaminsen",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2127240086,
+              "fixture_id": 19719416,
+              "player_id": 37649297,
+              "team_id": 8655,
+              "lineup_id": 14674134180,
+              "type_id": 117172,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "id": 2127273146,
+              "fixture_id": 19719416,
+              "player_id": 37649297,
+              "team_id": 8655,
+              "lineup_id": 14674134180,
+              "type_id": 88,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2127267054,
+              "fixture_id": 19719416,
+              "player_id": 37649297,
+              "team_id": 8655,
+              "lineup_id": 14674134180,
+              "type_id": 1535,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2127314607,
+              "fixture_id": 19719416,
+              "player_id": 37649297,
+              "team_id": 8655,
+              "lineup_id": 14674134180,
+              "type_id": 118,
+              "data": {
+                "value": 6.17
+              }
+            }
+          ],
+          "player": {
+            "id": 37649297,
+            "sport_id": 1,
+            "country_id": 2154,
+            "nationality_id": 2154,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": null,
+            "common_name": "A. Benjaminsen",
+            "firstname": "Aron",
+            "lastname": "Benjaminsen",
+            "name": "Aron Benjaminsen",
+            "display_name": "Aron Benjaminsen",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "2007-11-02",
+            "gender": "male"
+          }
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719440,
+      "events": [
+        {
+          "id": 157254459,
+          "fixture_id": 19719440,
+          "period_id": 7005961,
+          "participant_id": 3529,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37956563,
+          "related_player_id": 177894,
+          "player_name": "J. Agyekum",
+          "related_player_name": "Francis Kyeremeh",
+          "result": null,
+          "info": null,
+          "addition": "4th Substitution",
+          "minute": 73,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7005961,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674134252,
+          "sport_id": 1,
+          "fixture_id": 19719440,
+          "player_id": 177894,
+          "team_id": 3529,
+          "position_id": 26,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 10,
+          "player_name": "Francis Kyeremeh",
+          "jersey_number": 11,
+          "details": [
+            {
+              "id": 2127240125,
+              "fixture_id": 19719440,
+              "player_id": 177894,
+              "team_id": 3529,
+              "lineup_id": 14674134252,
+              "type_id": 118,
+              "data": {
+                "value": 6.37
+              }
+            },
+            {
+              "id": 2127240056,
+              "fixture_id": 19719440,
+              "player_id": 177894,
+              "team_id": 3529,
+              "lineup_id": 14674134252,
+              "type_id": 117172,
+              "data": {
+                "value": 73
+              }
+            },
+            {
+              "id": 2127240259,
+              "fixture_id": 19719440,
+              "player_id": 177894,
+              "team_id": 3529,
+              "lineup_id": 14674134252,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2127246082,
+              "fixture_id": 19719440,
+              "player_id": 177894,
+              "team_id": 3529,
+              "lineup_id": 14674134252,
+              "type_id": 119,
+              "data": {
+                "value": 73
+              }
+            }
+          ],
+          "player": {
+            "id": 177894,
+            "sport_id": 1,
+            "country_id": 468,
+            "nationality_id": 468,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": 27,
+            "common_name": "F. Kyeremeh",
+            "firstname": "Francis",
+            "lastname": "Kyeremeh",
+            "name": "Francis Kyeremeh",
+            "display_name": "Francis Kyeremeh",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 180,
+            "weight": 65,
+            "date_of_birth": "1997-06-23",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674134391,
+          "sport_id": 1,
+          "fixture_id": 19719440,
+          "player_id": null,
+          "team_id": 3529,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Jonathan Agyekum",
+          "jersey_number": 23,
+          "details": [
+            {
+              "id": 2127242006,
+              "fixture_id": 19719440,
+              "player_id": null,
+              "team_id": 3529,
+              "lineup_id": 14674134391,
+              "type_id": 117172,
+              "data": {
+                "value": 22
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19719419,
+      "events": [
+        {
+          "id": 157280031,
+          "fixture_id": 19719419,
+          "period_id": 7010116,
+          "participant_id": 1455,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 9136,
+          "related_player_id": 392720,
+          "player_name": "Danny Gosset",
+          "related_player_name": "Iwan Lewis",
+          "result": null,
+          "info": null,
+          "addition": "2nd Substitution",
+          "minute": 58,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7010116,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674157623,
+          "sport_id": 1,
+          "fixture_id": 19719419,
+          "player_id": 392720,
+          "team_id": 1455,
+          "position_id": 26,
+          "formation_field": "3:3",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Iwan Lewis",
+          "jersey_number": 6,
+          "details": [
+            {
+              "id": 2128393419,
+              "fixture_id": 19719419,
+              "player_id": 392720,
+              "team_id": 1455,
+              "lineup_id": 14674157623,
+              "type_id": 118,
+              "data": {
+                "value": 6.18
+              }
+            },
+            {
+              "id": 2128393443,
+              "fixture_id": 19719419,
+              "player_id": 392720,
+              "team_id": 1455,
+              "lineup_id": 14674157623,
+              "type_id": 117172,
+              "data": {
+                "value": 58
+              }
+            },
+            {
+              "id": 2128393538,
+              "fixture_id": 19719419,
+              "player_id": 392720,
+              "team_id": 1455,
+              "lineup_id": 14674157623,
+              "type_id": 88,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2128404614,
+              "fixture_id": 19719419,
+              "player_id": 392720,
+              "team_id": 1455,
+              "lineup_id": 14674157623,
+              "type_id": 119,
+              "data": {
+                "value": 58
+              }
+            }
+          ],
+          "player": {
+            "id": 392720,
+            "sport_id": 1,
+            "country_id": 515,
+            "nationality_id": 515,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 153,
+            "type_id": 26,
+            "common_name": "I. Lewis",
+            "firstname": "Iwan",
+            "lastname": "Lewis",
+            "name": "Iwan Lewis",
+            "display_name": "Iwan Lewis",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "1993-06-19",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674157625,
+          "sport_id": 1,
+          "fixture_id": 19719419,
+          "player_id": null,
+          "team_id": 1455,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Danny Gossett",
+          "jersey_number": 8,
+          "details": [
+            {
+              "id": 2128399556,
+              "fixture_id": 19719419,
+              "player_id": null,
+              "team_id": 1455,
+              "lineup_id": 14674157625,
+              "type_id": 117172,
+              "data": {
+                "value": 34
+              }
+            },
+            {
+              "id": 2128400938,
+              "fixture_id": 19719419,
+              "player_id": null,
+              "team_id": 1455,
+              "lineup_id": 14674157625,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2128404653,
+              "fixture_id": 19719419,
+              "player_id": null,
+              "team_id": 1455,
+              "lineup_id": 14674157625,
+              "type_id": 119,
+              "data": {
+                "value": 32
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19720975,
+      "events": [
+        {
+          "id": 157311455,
+          "fixture_id": 19720975,
+          "period_id": 7014743,
+          "participant_id": 6142,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37597766,
+          "related_player_id": 37555865,
+          "player_name": "Afonso Leite",
+          "related_player_name": "Abiodun Ogunniyi",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 75,
+          "extra_minute": null,
+          "injured": true,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014743,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674188802,
+          "sport_id": 1,
+          "fixture_id": 19720975,
+          "player_id": 37555865,
+          "team_id": 6142,
+          "position_id": 26,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Abiodun Ogunniyi",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 2133596703,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 118,
+              "data": {
+                "value": 7.34
+              }
+            },
+            {
+              "id": 2133596642,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 120,
+              "data": {
+                "value": 54
+              }
+            },
+            {
+              "id": 2133596643,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27273,
+              "data": {
+                "value": 17
+              }
+            },
+            {
+              "id": 2133596644,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 98,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 2133596702,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 117172,
+              "data": {
+                "value": 78
+              }
+            },
+            {
+              "id": 2133596641,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 119,
+              "data": {
+                "value": 75
+              }
+            },
+            {
+              "id": 2133597458,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 41,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133597460,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27266,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133597462,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 1491,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133597194,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 116,
+              "data": {
+                "value": 22
+              }
+            },
+            {
+              "id": 2133597242,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 1584,
+              "data": {
+                "value": 81
+              }
+            },
+            {
+              "id": 2133597195,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 100,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133597490,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 117,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2133597459,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 42,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133597360,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 122,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2133597500,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 86,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133597535,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 107,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133597536,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 106,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 2133597537,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 99,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133597461,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 105,
+              "data": {
+                "value": 9
+              }
+            },
+            {
+              "id": 2133597596,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 123,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133597922,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133597668,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27269,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 2133597193,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 80,
+              "data": {
+                "value": 27
+              }
+            },
+            {
+              "id": 2133597669,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27271,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 2133597670,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27272,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 2133597671,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27274,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2133597672,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27270,
+              "data": {
+                "value": 50
+              }
+            },
+            {
+              "id": 2133597673,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27275,
+              "data": {
+                "value": 33
+              }
+            },
+            {
+              "id": 2133597674,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 1533,
+              "data": {
+                "value": 25
+              }
+            },
+            {
+              "id": 2133601355,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 94,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133602005,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 108,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133608076,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27276,
+              "data": {
+                "value": 67
+              }
+            },
+            {
+              "id": 2133607882,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 78,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133609781,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 109,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133608861,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27267,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133608862,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 27268,
+              "data": {
+                "value": 50
+              }
+            },
+            {
+              "id": 2133610787,
+              "fixture_id": 19720975,
+              "player_id": 37555865,
+              "team_id": 6142,
+              "lineup_id": 14674188802,
+              "type_id": 96,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 37555865,
+            "sport_id": 1,
+            "country_id": 716,
+            "nationality_id": 716,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": 26,
+            "common_name": "O. Ogunniyi",
+            "firstname": "Oluwatimilehin Abiodun",
+            "lastname": "Ogunniyi",
+            "name": "Oluwatimilehin Abiodun Ogunniyi",
+            "display_name": "Abiodun Ogunniyi",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/25/37555865.png",
+            "height": 175,
+            "weight": null,
+            "date_of_birth": "2001-12-20",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674188868,
+          "sport_id": 1,
+          "fixture_id": 19720975,
+          "player_id": null,
+          "team_id": 6142,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Afonso Leite",
+          "jersey_number": 77,
+          "details": [
+            {
+              "id": 2133621577,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 117,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133613278,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 117172,
+              "data": {
+                "value": 18
+              }
+            },
+            {
+              "id": 2133616761,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 27273,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 2133618615,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 27272,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133619028,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 108,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2133613160,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 119,
+              "data": {
+                "value": 15
+              }
+            },
+            {
+              "id": 2133618954,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 78,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133617053,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 1584,
+              "data": {
+                "value": 60
+              }
+            },
+            {
+              "id": 2133618955,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 27267,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133618956,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 27268,
+              "data": {
+                "value": 100
+              }
+            },
+            {
+              "id": 2133616758,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 80,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 2133616759,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 122,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133616760,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 120,
+              "data": {
+                "value": 15
+              }
+            },
+            {
+              "id": 2133617671,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 98,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133619025,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 106,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133617051,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 116,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2133619026,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 105,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2133619027,
+              "fixture_id": 19720975,
+              "player_id": null,
+              "team_id": 6142,
+              "lineup_id": 14674188868,
+              "type_id": 1491,
+              "data": {
+                "value": 3
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19720973,
+      "events": [
+        {
+          "id": 157313009,
+          "fixture_id": 19720973,
+          "period_id": 7014918,
+          "participant_id": 257125,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37356483,
+          "related_player_id": 28912852,
+          "player_name": "Artur Mykytyshyn",
+          "related_player_name": "C. David",
+          "result": null,
+          "info": null,
+          "addition": "1st Substitution",
+          "minute": 55,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014918,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674190927,
+          "sport_id": 1,
+          "fixture_id": 19720973,
+          "player_id": 37356483,
+          "team_id": 257125,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Artur Mykytyshyn",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 2133739900,
+              "fixture_id": 19720973,
+              "player_id": 37356483,
+              "team_id": 257125,
+              "lineup_id": 14674190927,
+              "type_id": 117172,
+              "data": {
+                "value": 39
+              }
+            },
+            {
+              "id": 2133763338,
+              "fixture_id": 19720973,
+              "player_id": 37356483,
+              "team_id": 257125,
+              "lineup_id": 14674190927,
+              "type_id": 118,
+              "data": {
+                "value": 6.45
+              }
+            },
+            {
+              "id": 2133763171,
+              "fixture_id": 19720973,
+              "player_id": 37356483,
+              "team_id": 257125,
+              "lineup_id": 14674190927,
+              "type_id": 119,
+              "data": {
+                "value": 35
+              }
+            },
+            {
+              "id": 2133763172,
+              "fixture_id": 19720973,
+              "player_id": 37356483,
+              "team_id": 257125,
+              "lineup_id": 14674190927,
+              "type_id": 84,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 37356483,
+            "sport_id": 1,
+            "country_id": 86,
+            "nationality_id": 86,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": 26,
+            "common_name": "A. Mykytyshyn",
+            "firstname": "Artur",
+            "lastname": "Mykytyshyn",
+            "name": "Artur Mykytyshyn",
+            "display_name": "Artur Mykytyshyn",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/3/37356483.png",
+            "height": 177,
+            "weight": 66,
+            "date_of_birth": "2003-07-14",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674190799,
+          "sport_id": 1,
+          "fixture_id": 19720973,
+          "player_id": null,
+          "team_id": 257125,
+          "position_id": 27,
+          "formation_field": "4:2",
+          "type_id": 11,
+          "formation_position": 10,
+          "player_name": "Cody David",
+          "jersey_number": 99,
+          "details": [
+            {
+              "id": 2133679572,
+              "fixture_id": 19720973,
+              "player_id": null,
+              "team_id": 257125,
+              "lineup_id": 14674190799,
+              "type_id": 117172,
+              "data": {
+                "value": 96
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19720945,
+      "events": [
+        {
+          "id": 157313292,
+          "fixture_id": 19720945,
+          "period_id": 7014928,
+          "participant_id": 2617,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37758057,
+          "related_player_id": 91682,
+          "player_name": "Bamba Abdoul Goudouss",
+          "related_player_name": "Sauli Väisänen",
+          "result": null,
+          "info": null,
+          "addition": "4th Substitution",
+          "minute": 71,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014928,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674191080,
+          "sport_id": 1,
+          "fixture_id": 19720945,
+          "player_id": 91682,
+          "team_id": 2617,
+          "position_id": 25,
+          "formation_field": "2:3",
+          "type_id": 11,
+          "formation_position": 3,
+          "player_name": "Sauli Väisänen",
+          "jersey_number": 5,
+          "details": [
+            {
+              "id": 2133650825,
+              "fixture_id": 19720945,
+              "player_id": 91682,
+              "team_id": 2617,
+              "lineup_id": 14674191080,
+              "type_id": 40,
+              "data": {
+                "value": true
+              }
+            },
+            {
+              "id": 2133713129,
+              "fixture_id": 19720945,
+              "player_id": 91682,
+              "team_id": 2617,
+              "lineup_id": 14674191080,
+              "type_id": 117172,
+              "data": {
+                "value": 71
+              }
+            },
+            {
+              "id": 2133713620,
+              "fixture_id": 19720945,
+              "player_id": 91682,
+              "team_id": 2617,
+              "lineup_id": 14674191080,
+              "type_id": 118,
+              "data": {
+                "value": 6.5
+              }
+            },
+            {
+              "id": 2133769097,
+              "fixture_id": 19720945,
+              "player_id": 91682,
+              "team_id": 2617,
+              "lineup_id": 14674191080,
+              "type_id": 119,
+              "data": {
+                "value": 71
+              }
+            }
+          ],
+          "player": {
+            "id": 91682,
+            "sport_id": 1,
+            "country_id": 1233,
+            "nationality_id": 1233,
+            "city_id": 36847,
+            "position_id": 25,
+            "detailed_position_id": 148,
+            "type_id": 25,
+            "common_name": "S. Väisänen",
+            "firstname": "Sauli",
+            "lastname": "Väisänen",
+            "name": "Sauli Väisänen",
+            "display_name": "Sauli Väisänen",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 190,
+            "weight": 75,
+            "date_of_birth": "1994-06-05",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674191170,
+          "sport_id": 1,
+          "fixture_id": 19720945,
+          "player_id": null,
+          "team_id": 2617,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Bamba Abdoul Goudouss",
+          "jersey_number": 19,
+          "details": [
+            {
+              "id": 2133764236,
+              "fixture_id": 19720945,
+              "player_id": null,
+              "team_id": 2617,
+              "lineup_id": 14674191170,
+              "type_id": 117172,
+              "data": {
+                "value": 25
+              }
+            },
+            {
+              "id": 2133769052,
+              "fixture_id": 19720945,
+              "player_id": null,
+              "team_id": 2617,
+              "lineup_id": 14674191170,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2133769104,
+              "fixture_id": 19720945,
+              "player_id": null,
+              "team_id": 2617,
+              "lineup_id": 14674191170,
+              "type_id": 119,
+              "data": {
+                "value": 19
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19766295,
+      "events": [
+        {
+          "id": 157401352,
+          "fixture_id": 19766295,
+          "period_id": 7028145,
+          "participant_id": 2617,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 38218740,
+          "related_player_id": 92087,
+          "player_name": "Yacouba Sacko",
+          "related_player_name": "Anton Popovitch",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 72,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7028145,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674276529,
+          "sport_id": 1,
+          "fixture_id": 19766295,
+          "player_id": 92087,
+          "team_id": 2617,
+          "position_id": 26,
+          "formation_field": "3:2",
+          "type_id": 11,
+          "formation_position": 7,
+          "player_name": "Anton Popovitch",
+          "jersey_number": 14,
+          "details": [
+            {
+              "id": 2146025513,
+              "fixture_id": 19766295,
+              "player_id": 92087,
+              "team_id": 2617,
+              "lineup_id": 14674276529,
+              "type_id": 118,
+              "data": {
+                "value": 6.37
+              }
+            },
+            {
+              "id": 2146026108,
+              "fixture_id": 19766295,
+              "player_id": 92087,
+              "team_id": 2617,
+              "lineup_id": 14674276529,
+              "type_id": 117172,
+              "data": {
+                "value": 75
+              }
+            },
+            {
+              "id": 2146035965,
+              "fixture_id": 19766295,
+              "player_id": 92087,
+              "team_id": 2617,
+              "lineup_id": 14674276529,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2146088573,
+              "fixture_id": 19766295,
+              "player_id": 92087,
+              "team_id": 2617,
+              "lineup_id": 14674276529,
+              "type_id": 119,
+              "data": {
+                "value": 72
+              }
+            }
+          ],
+          "player": {
+            "id": 92087,
+            "sport_id": 1,
+            "country_id": 1233,
+            "nationality_id": 1233,
+            "city_id": 93680,
+            "position_id": 26,
+            "detailed_position_id": 153,
+            "type_id": 26,
+            "common_name": "A. Popovits",
+            "firstname": "Anton",
+            "lastname": "Popovits",
+            "name": "Anton Popovits",
+            "display_name": "Anton Popovitch",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 185,
+            "weight": 64,
+            "date_of_birth": "1996-07-11",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674276558,
+          "sport_id": 1,
+          "fixture_id": 19766295,
+          "player_id": null,
+          "team_id": 2617,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Yacouba Sacko",
+          "jersey_number": 33,
+          "details": [
+            {
+              "id": 2146074307,
+              "fixture_id": 19766295,
+              "player_id": null,
+              "team_id": 2617,
+              "lineup_id": 14674276558,
+              "type_id": 117172,
+              "data": {
+                "value": 23
+              }
+            }
+          ],
+          "player": null
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19720983,
+      "events": [
+        {
+          "id": 157313281,
+          "fixture_id": 19720983,
+          "period_id": 7014925,
+          "participant_id": 444,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 37715247,
+          "related_player_id": 38218953,
+          "player_name": "Brown Irabor",
+          "related_player_name": "Benjamin Adrovic",
+          "result": "0-1",
+          "info": "Field Goal",
+          "addition": "1st Goal",
+          "minute": 82,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014925,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157313303,
+          "fixture_id": 19720983,
+          "period_id": 7014925,
+          "participant_id": 444,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 37715247,
+          "related_player_id": 38218953,
+          "player_name": "Brown Irabor",
+          "related_player_name": "Benjamin Adrovic",
+          "result": "0-2",
+          "info": "Field Goal",
+          "addition": "2nd Goal",
+          "minute": 85,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014925,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157313258,
+          "fixture_id": 19720983,
+          "period_id": 7014925,
+          "participant_id": 444,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 38218953,
+          "related_player_id": 37667196,
+          "player_name": "Benjamin Adrovic",
+          "related_player_name": "Leo Rimac",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 77,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7014925,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674190962,
+          "sport_id": 1,
+          "fixture_id": 19720983,
+          "player_id": 37715247,
+          "team_id": 444,
+          "position_id": 27,
+          "formation_field": "4:2",
+          "type_id": 11,
+          "formation_position": 10,
+          "player_name": "Brown Irabor",
+          "jersey_number": 9,
+          "details": [
+            {
+              "id": 2133695997,
+              "fixture_id": 19720983,
+              "player_id": 37715247,
+              "team_id": 444,
+              "lineup_id": 14674190962,
+              "type_id": 118,
+              "data": {
+                "value": 7.14
+              }
+            },
+            {
+              "id": 2133696672,
+              "fixture_id": 19720983,
+              "player_id": 37715247,
+              "team_id": 444,
+              "lineup_id": 14674190962,
+              "type_id": 117172,
+              "data": {
+                "value": 94
+              }
+            },
+            {
+              "id": 2133768903,
+              "fixture_id": 19720983,
+              "player_id": 37715247,
+              "team_id": 444,
+              "lineup_id": 14674190962,
+              "type_id": 52,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133768904,
+              "fixture_id": 19720983,
+              "player_id": 37715247,
+              "team_id": 444,
+              "lineup_id": 14674190962,
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ],
+          "player": {
+            "id": 37715247,
+            "sport_id": 1,
+            "country_id": 17,
+            "nationality_id": 17,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": null,
+            "common_name": "B. Irabor",
+            "firstname": "Brown",
+            "lastname": "Irabor",
+            "name": "Brown Irabor",
+            "display_name": "Brown Irabor",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 175,
+            "weight": null,
+            "date_of_birth": "2004-03-30",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674190963,
+          "sport_id": 1,
+          "fixture_id": 19720983,
+          "player_id": 37667196,
+          "team_id": 444,
+          "position_id": 26,
+          "formation_field": "3:2",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Leo Rimac",
+          "jersey_number": 10,
+          "details": [
+            {
+              "id": 2133695998,
+              "fixture_id": 19720983,
+              "player_id": 37667196,
+              "team_id": 444,
+              "lineup_id": 14674190963,
+              "type_id": 118,
+              "data": {
+                "value": 6.5
+              }
+            },
+            {
+              "id": 2133696673,
+              "fixture_id": 19720983,
+              "player_id": 37667196,
+              "team_id": 444,
+              "lineup_id": 14674190963,
+              "type_id": 117172,
+              "data": {
+                "value": 78
+              }
+            },
+            {
+              "id": 2133768896,
+              "fixture_id": 19720983,
+              "player_id": 37667196,
+              "team_id": 444,
+              "lineup_id": 14674190963,
+              "type_id": 119,
+              "data": {
+                "value": 77
+              }
+            }
+          ],
+          "player": {
+            "id": 37667196,
+            "sport_id": 1,
+            "country_id": 1638,
+            "nationality_id": 1638,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "L. Rimac",
+            "firstname": "Leo",
+            "lastname": "Rimac",
+            "name": "Leo Rimac",
+            "display_name": "Leo Rimac",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/37667196.png",
+            "height": 186,
+            "weight": null,
+            "date_of_birth": "2006-03-14",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674191063,
+          "sport_id": 1,
+          "fixture_id": 19720983,
+          "player_id": 37939973,
+          "team_id": 444,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Benjamin Adrović",
+          "jersey_number": 26,
+          "details": [
+            {
+              "id": 2133762715,
+              "fixture_id": 19720983,
+              "player_id": 37939973,
+              "team_id": 444,
+              "lineup_id": 14674191063,
+              "type_id": 117172,
+              "data": {
+                "value": 16
+              }
+            },
+            {
+              "id": 2133768911,
+              "fixture_id": 19720983,
+              "player_id": 37939973,
+              "team_id": 444,
+              "lineup_id": 14674191063,
+              "type_id": 79,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2133768912,
+              "fixture_id": 19720983,
+              "player_id": 37939973,
+              "team_id": 444,
+              "lineup_id": 14674191063,
+              "type_id": 119,
+              "data": {
+                "value": 13
+              }
+            },
+            {
+              "id": 2133768989,
+              "fixture_id": 19720983,
+              "player_id": 37939973,
+              "team_id": 444,
+              "lineup_id": 14674191063,
+              "type_id": 118,
+              "data": {
+                "value": 6.99
+              }
+            }
+          ],
+          "player": {
+            "id": 37939973,
+            "sport_id": 1,
+            "country_id": 1638,
+            "nationality_id": null,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": null,
+            "type_id": null,
+            "common_name": "B. Adrović",
+            "firstname": "Benjamin",
+            "lastname": "Adrović",
+            "name": "Benjamin Adrović",
+            "display_name": "Benjamin Adrović",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": null,
+            "gender": "male"
+          }
+        }
+      ]
+    },
+    {
+      "statistics": [],
+      "formations": [],
+      "coaches": [],
+      "pressure": [],
+      "id": 19766273,
+      "events": [
+        {
+          "id": 157459646,
+          "fixture_id": 19766273,
+          "period_id": 7038569,
+          "participant_id": 17303,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 37262563,
+          "related_player_id": 37687875,
+          "player_name": "Faysal Chouaib",
+          "related_player_name": "Souleymane Sidibe",
+          "result": "0-2",
+          "info": "Field Goal",
+          "addition": "2nd Goal",
+          "minute": 69,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7038569,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157459733,
+          "fixture_id": 19766273,
+          "period_id": 7038569,
+          "participant_id": 17303,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 37262563,
+          "related_player_id": 37687875,
+          "player_name": "Faysal Chouaib",
+          "related_player_name": "Souleymane Sidibe",
+          "result": "0-4",
+          "info": "Field Goal",
+          "addition": "4th Goal",
+          "minute": 81,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7038569,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157459772,
+          "fixture_id": 19766273,
+          "period_id": 7038569,
+          "participant_id": 17303,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 24081823,
+          "related_player_id": 37687875,
+          "player_name": "Dacu",
+          "related_player_name": "Souleymane Sidibe",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 83,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7038569,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14674332822,
+          "sport_id": 1,
+          "fixture_id": 19766273,
+          "player_id": 37262563,
+          "team_id": 17303,
+          "position_id": 27,
+          "formation_field": "4:2",
+          "type_id": 11,
+          "formation_position": 10,
+          "player_name": "Faysal Chouaib",
+          "jersey_number": 9,
+          "details": [
+            {
+              "id": 2151717336,
+              "fixture_id": 19766273,
+              "player_id": 37262563,
+              "team_id": 17303,
+              "lineup_id": 14674332822,
+              "type_id": 117172,
+              "data": {
+                "value": 86
+              }
+            },
+            {
+              "id": 2151717260,
+              "fixture_id": 19766273,
+              "player_id": 37262563,
+              "team_id": 17303,
+              "lineup_id": 14674332822,
+              "type_id": 118,
+              "data": {
+                "value": 7.14
+              }
+            },
+            {
+              "id": 2151764006,
+              "fixture_id": 19766273,
+              "player_id": 37262563,
+              "team_id": 17303,
+              "lineup_id": 14674332822,
+              "type_id": 52,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2151764007,
+              "fixture_id": 19766273,
+              "player_id": 37262563,
+              "team_id": 17303,
+              "lineup_id": 14674332822,
+              "type_id": 119,
+              "data": {
+                "value": 85
+              }
+            }
+          ],
+          "player": {
+            "id": 37262563,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 32,
+            "city_id": 6590,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "F. Hassany",
+            "firstname": "Faysal Choaib",
+            "lastname": "Hassany",
+            "name": "Faysal Choaib Hassany",
+            "display_name": "Faysal Chouaib",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 187,
+            "weight": null,
+            "date_of_birth": "2000-01-07",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674332832,
+          "sport_id": 1,
+          "fixture_id": 19766273,
+          "player_id": 24081823,
+          "team_id": 17303,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Dacu",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 2151764013,
+              "fixture_id": 19766273,
+              "player_id": 24081823,
+              "team_id": 17303,
+              "lineup_id": 14674332832,
+              "type_id": 119,
+              "data": {
+                "value": 7
+              }
+            },
+            {
+              "id": 2151756700,
+              "fixture_id": 19766273,
+              "player_id": 24081823,
+              "team_id": 17303,
+              "lineup_id": 14674332832,
+              "type_id": 117172,
+              "data": {
+                "value": 7
+              }
+            },
+            {
+              "id": 2151764883,
+              "fixture_id": 19766273,
+              "player_id": 24081823,
+              "team_id": 17303,
+              "lineup_id": 14674332832,
+              "type_id": 118,
+              "data": {
+                "value": 6.5
+              }
+            }
+          ],
+          "player": {
+            "id": 24081823,
+            "sport_id": 1,
+            "country_id": 2931,
+            "nationality_id": 2931,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 26,
+            "common_name": "A. Gomes",
+            "firstname": "Adrian Da Cunha Costa",
+            "lastname": "Gomes",
+            "name": "Adrian Da Cunha Costa Gomes",
+            "display_name": "Dacu",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 171,
+            "weight": null,
+            "date_of_birth": "2001-05-16",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14674332844,
+          "sport_id": 1,
+          "fixture_id": 19766273,
+          "player_id": 37606887,
+          "team_id": 17303,
+          "position_id": 26,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Sol Sidibé",
+          "jersey_number": 31,
+          "details": [
+            {
+              "id": 2151717274,
+              "fixture_id": 19766273,
+              "player_id": 37606887,
+              "team_id": 17303,
+              "lineup_id": 14674332844,
+              "type_id": 118,
+              "data": {
+                "value": 6.99
+              }
+            },
+            {
+              "id": 2151717342,
+              "fixture_id": 19766273,
+              "player_id": 37606887,
+              "team_id": 17303,
+              "lineup_id": 14674332844,
+              "type_id": 117172,
+              "data": {
+                "value": 91
+              }
+            },
+            {
+              "id": 2151764020,
+              "fixture_id": 19766273,
+              "player_id": 37606887,
+              "team_id": 17303,
+              "lineup_id": 14674332844,
+              "type_id": 79,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2151764021,
+              "fixture_id": 19766273,
+              "player_id": 37606887,
+              "team_id": 17303,
+              "lineup_id": 14674332844,
+              "type_id": 119,
+              "data": {
+                "value": 83
+              }
+            }
+          ],
+          "player": {
+            "id": 37606887,
+            "sport_id": 1,
+            "country_id": 17,
+            "nationality_id": 462,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 153,
+            "type_id": 26,
+            "common_name": "S. Sidibe",
+            "firstname": "Sol",
+            "lastname": "Sidibe",
+            "name": "Sol Sidibe",
+            "display_name": "Sol Sidibé",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/7/37606887.png",
+            "height": 184,
+            "weight": null,
+            "date_of_birth": "2007-02-10",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 37612096,
+      "sport_id": 1,
+      "country_id": 2454,
+      "nationality_id": 2454,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "type_id": 27,
+      "common_name": "K. Shani",
+      "firstname": "Keslin",
+      "lastname": "Shani",
+      "name": "Keslin Shani",
+      "display_name": "Keslin Shani",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 0,
+      "weight": null,
+      "date_of_birth": "2002-12-16",
+      "gender": "male"
+    },
+    {
+      "id": 37948507,
+      "sport_id": 1,
+      "country_id": null,
+      "nationality_id": null,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": null,
+      "type_id": null,
+      "common_name": "R. Murati",
+      "firstname": "Redjep",
+      "lastname": "Murati",
+      "name": "Redjep Murati",
+      "display_name": "R. Murati",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2004-02-10",
+      "gender": "male"
+    },
+    {
+      "id": 31884,
+      "sport_id": 1,
+      "country_id": 57142,
+      "nationality_id": 57142,
+      "city_id": 89615,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": 27,
+      "common_name": "V. Nafiu",
+      "firstname": "Valjmir",
+      "lastname": "Nafiu",
+      "name": "Valjmir Nafiu",
+      "display_name": "Valjmir Nafiu",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/12/31884.png",
+      "height": 175,
+      "weight": 71,
+      "date_of_birth": "1994-04-23",
+      "gender": "male"
+    },
+    {
+      "id": 38216439,
+      "sport_id": 1,
+      "country_id": 2454,
+      "nationality_id": 2454,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": null,
+      "common_name": "S. Uldedaj",
+      "firstname": "Sokol",
+      "lastname": "Uldedaj",
+      "name": "Sokol Uldedaj",
+      "display_name": "Sokol Uldedaj",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2009-02-06",
+      "gender": "male"
+    },
+    {
+      "id": 37621044,
+      "sport_id": 1,
+      "country_id": 23,
+      "nationality_id": 23,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": null,
+      "common_name": "I. Diomandé",
+      "firstname": "Ismael",
+      "lastname": "Diomandé",
+      "name": "Ismael Diomandé",
+      "display_name": "Ismael Diomande",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/20/37621044.png",
+      "height": 184,
+      "weight": null,
+      "date_of_birth": "2003-12-07",
+      "gender": "male"
+    },
+    {
+      "id": 37718055,
+      "sport_id": 1,
+      "country_id": 32,
+      "nationality_id": 32,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": null,
+      "common_name": "A. Gómez de Gispert",
+      "firstname": "Alejandro",
+      "lastname": "Gómez de Gispert",
+      "name": "Alejandro Gómez de Gispert",
+      "display_name": "Alejandro Gómez",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2003-06-25",
+      "gender": "male"
+    },
+    {
+      "id": 37336173,
+      "sport_id": 1,
+      "country_id": 2154,
+      "nationality_id": 2154,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "A. Jarnskor Ellingsgaard",
+      "firstname": "Aron",
+      "lastname": "Jarnskor Ellingsgaard",
+      "name": "Aron Jarnskor Ellingsgaard",
+      "display_name": "Aron Ellingsgaard",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/13/37336173.png",
+      "height": 182,
+      "weight": null,
+      "date_of_birth": "2002-09-16",
+      "gender": "male"
+    },
+    {
+      "id": 37956563,
+      "sport_id": 1,
+      "country_id": null,
+      "nationality_id": null,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": null,
+      "common_name": "Jonathan Nanaosei Agyekum",
+      "firstname": "Jonathan",
+      "lastname": "Nanaosei Agyekum",
+      "name": "Jonathan Agyekum",
+      "display_name": "Jonathan Agyekum",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2006-03-23",
+      "gender": "male"
+    },
+    {
+      "id": 9136,
+      "sport_id": 1,
+      "country_id": 515,
+      "nationality_id": 515,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "D. Gosset",
+      "firstname": "Danny",
+      "lastname": "Gosset",
+      "name": "Danny Gosset",
+      "display_name": "Danny Gosset",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 180,
+      "weight": null,
+      "date_of_birth": "1994-09-30",
+      "gender": "male"
+    },
+    {
+      "id": 37597766,
+      "sport_id": 1,
+      "country_id": 20,
+      "nationality_id": 20,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": 27,
+      "common_name": "A. Torcato Tavares Leite",
+      "firstname": "Afonso",
+      "lastname": "Torcato Tavares Leite",
+      "name": "Afonso Torcato Tavares Leite",
+      "display_name": "Afonso Leite",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 183,
+      "weight": null,
+      "date_of_birth": "2005-05-19",
+      "gender": "male"
+    },
+    {
+      "id": 28912852,
+      "sport_id": 1,
+      "country_id": 716,
+      "nationality_id": 462,
+      "city_id": 47715,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": 26,
+      "common_name": "K. Adedoyin",
+      "firstname": "Korede",
+      "lastname": "Adedoyin",
+      "name": "Korede Adedoyin",
+      "display_name": "Cody David",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 185,
+      "weight": 75,
+      "date_of_birth": "2000-11-14",
+      "gender": "male"
+    },
+    {
+      "id": 37758057,
+      "sport_id": 1,
+      "country_id": 23,
+      "nationality_id": null,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 154,
+      "type_id": null,
+      "common_name": "B. Goudouss",
+      "firstname": "Bamba Abdoul",
+      "lastname": "Goudouss",
+      "name": "Bamba Abdoul Goudouss",
+      "display_name": "Bamba Abdoul Goudouss",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2005-10-07",
+      "gender": "male"
+    },
+    {
+      "id": 38218740,
+      "sport_id": 1,
+      "country_id": 23,
+      "nationality_id": 23,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": null,
+      "common_name": "Y.  Sacko",
+      "firstname": "Yacouba",
+      "lastname": "Sacko",
+      "name": "Yacouba Sacko",
+      "display_name": "Yacouba Sacko",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2008-02-03",
+      "gender": "male"
+    },
+    {
+      "id": 38218953,
+      "sport_id": 1,
+      "country_id": 1638,
+      "nationality_id": 1638,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": null,
+      "common_name": "B. Adrovic",
+      "firstname": "Benjamin",
+      "lastname": "Adrovic",
+      "name": "Benjamin Adrovic",
+      "display_name": "Benjamin Adrovic",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2007-12-20",
+      "gender": "male"
+    },
+    {
+      "id": 37263359,
+      "sport_id": 1,
+      "country_id": 26,
+      "nationality_id": 26,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": 27,
+      "common_name": "S. Sidibe",
+      "firstname": "Souleymane",
+      "lastname": "Sidibe",
+      "name": "Souleymane Sidibe",
+      "display_name": "Soule Sidibe",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 186,
+      "weight": null,
+      "date_of_birth": "1999-04-02",
+      "gender": "male"
+    }
+  ],
+  "expected_lineups": {
+    "19719434": [
+      [
+        49196,
+        29
+      ],
+      [
+        38216439,
+        44
+      ],
+      [
+        56419,
+        17
+      ],
+      [
+        31884,
+        18
+      ],
+      [
+        37948507,
+        33
+      ],
+      [
+        37612096,
+        55
+      ],
+      [
+        9939006,
+        99
+      ]
+    ],
+    "19719449": [
+      [
+        37621044,
+        7
+      ],
+      [
+        463530,
+        49
+      ]
+    ],
+    "19719437": [
+      [
+        3510290,
+        11
+      ],
+      [
+        37718055,
+        22
+      ]
+    ],
+    "19719416": [
+      [
+        37336173,
+        8
+      ],
+      [
+        37649297,
+        17
+      ]
+    ],
+    "19719440": [
+      [
+        177894,
+        11
+      ],
+      [
+        37956563,
+        23
+      ]
+    ],
+    "19719419": [
+      [
+        392720,
+        6
+      ],
+      [
+        9136,
+        8
+      ]
+    ],
+    "19720975": [
+      [
+        37555865,
+        7
+      ],
+      [
+        37597766,
+        77
+      ]
+    ],
+    "19720973": [
+      [
+        37356483,
+        7
+      ],
+      [
+        28912852,
+        99
+      ]
+    ],
+    "19720945": [
+      [
+        91682,
+        5
+      ],
+      [
+        37758057,
+        19
+      ]
+    ],
+    "19766295": [
+      [
+        92087,
+        14
+      ],
+      [
+        38218740,
+        33
+      ]
+    ],
+    "19720983": [
+      [
+        37715247,
+        9
+      ],
+      [
+        37667196,
+        10
+      ],
+      [
+        38218953,
+        26
+      ]
+    ],
+    "19766273": [
+      [
+        37262563,
+        9
+      ],
+      [
+        24081823,
+        17
+      ],
+      [
+        37263359,
+        31
+      ]
+    ]
+  },
+  "expected_events": {
+    "19719434": [
+      {
+        "id": 157254223,
+        "fixture_id": 19719434,
+        "period_id": 7005940,
+        "participant_id": 252246,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 56419,
+        "related_player_id": 31884,
+        "player_name": "Vüsal Isgandarli",
+        "related_player_name": "Valjmir Nafiu",
+        "result": null,
+        "info": null,
+        "addition": "2nd Substitution",
+        "minute": 64,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005940,
+        "rescinded": null,
+        "sort_order": 2,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157254234,
+        "fixture_id": 19719434,
+        "period_id": 7005940,
+        "participant_id": 252246,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37612096,
+        "related_player_id": 9939006,
+        "player_name": "Keslin Shani",
+        "related_player_name": "Dzemal Ibishi",
+        "result": null,
+        "info": null,
+        "addition": "3rd Substitution",
+        "minute": 64,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005940,
+        "rescinded": null,
+        "sort_order": 3,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157254317,
+        "fixture_id": 19719434,
+        "period_id": 7005940,
+        "participant_id": 5201,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 38216439,
+        "related_player_id": 49196,
+        "player_name": "Sokol Uldedaj",
+        "related_player_name": "Emiljano Musta",
+        "result": null,
+        "info": null,
+        "addition": "6th Substitution",
+        "minute": 88,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005940,
+        "rescinded": null,
+        "sort_order": 6,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157254199,
+        "fixture_id": 19719434,
+        "period_id": 7005940,
+        "participant_id": 252246,
+        "type_id": 19,
+        "section": "event",
+        "player_id": 31884,
+        "related_player_id": null,
+        "player_name": "Valjmir Nafiu",
+        "related_player_name": null,
+        "result": null,
+        "info": "Foul",
+        "addition": "3rd Yellowcard",
+        "minute": 58,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": 1496,
+        "detailed_period_id": 7005940,
+        "rescinded": false,
+        "sort_order": 3,
+        "type": {
+          "id": 19,
+          "name": "Yellowcard",
+          "code": "yellowcard",
+          "developer_name": "YELLOWCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157254332,
+        "fixture_id": 19719434,
+        "period_id": 7005940,
+        "participant_id": 5201,
+        "type_id": 19,
+        "section": "event",
+        "player_id": 38216439,
+        "related_player_id": null,
+        "player_name": "Sokol Uldedaj",
+        "related_player_name": null,
+        "result": null,
+        "info": "Foul",
+        "addition": "5th Yellowcard",
+        "minute": 90,
+        "extra_minute": 1,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": 1496,
+        "detailed_period_id": 7005940,
+        "rescinded": false,
+        "sort_order": 5,
+        "type": {
+          "id": 19,
+          "name": "Yellowcard",
+          "code": "yellowcard",
+          "developer_name": "YELLOWCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19719449": [
+      {
+        "id": 157254151,
+        "fixture_id": 19719449,
+        "period_id": 7005923,
+        "participant_id": 6556,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 463530,
+        "related_player_id": 37621044,
+        "player_name": "Martins Kigurs",
+        "related_player_name": "Ismael Diomande",
+        "result": null,
+        "info": null,
+        "addition": "1st Substitution",
+        "minute": 32,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005923,
+        "rescinded": null,
+        "sort_order": 1,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19719437": [
+      {
+        "id": 157254481,
+        "fixture_id": 19719437,
+        "period_id": 7005958,
+        "participant_id": 7058,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 3510290,
+        "related_player_id": 37718055,
+        "player_name": "Roberto Rodríguez",
+        "related_player_name": "Alejandro Gómez",
+        "result": null,
+        "info": null,
+        "addition": "7th Substitution",
+        "minute": 88,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005958,
+        "rescinded": null,
+        "sort_order": 7,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19719416": [
+      {
+        "id": 157254190,
+        "fixture_id": 19719416,
+        "period_id": 7005936,
+        "participant_id": 8655,
+        "type_id": 14,
+        "section": "event",
+        "player_id": 37649297,
+        "related_player_id": 37336173,
+        "player_name": "Aron Benjaminsen",
+        "related_player_name": "Aron Ellingsgaard",
+        "result": "0-1",
+        "info": "Right foot shot",
+        "addition": "1st Goal",
+        "minute": 12,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": 1522,
+        "detailed_period_id": 7005936,
+        "rescinded": null,
+        "sort_order": 1,
+        "type": {
+          "id": 14,
+          "name": "Goal",
+          "code": "goal",
+          "developer_name": "GOAL",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19719440": [
+      {
+        "id": 157254459,
+        "fixture_id": 19719440,
+        "period_id": 7005961,
+        "participant_id": 3529,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37956563,
+        "related_player_id": 177894,
+        "player_name": "J. Agyekum",
+        "related_player_name": "Francis Kyeremeh",
+        "result": null,
+        "info": null,
+        "addition": "4th Substitution",
+        "minute": 73,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7005961,
+        "rescinded": null,
+        "sort_order": 4,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19719419": [
+      {
+        "id": 157280031,
+        "fixture_id": 19719419,
+        "period_id": 7010116,
+        "participant_id": 1455,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 9136,
+        "related_player_id": 392720,
+        "player_name": "Danny Gosset",
+        "related_player_name": "Iwan Lewis",
+        "result": null,
+        "info": null,
+        "addition": "2nd Substitution",
+        "minute": 58,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7010116,
+        "rescinded": null,
+        "sort_order": 2,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19720975": [
+      {
+        "id": 157311455,
+        "fixture_id": 19720975,
+        "period_id": 7014743,
+        "participant_id": 6142,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37597766,
+        "related_player_id": 37555865,
+        "player_name": "Afonso Leite",
+        "related_player_name": "Abiodun Ogunniyi",
+        "result": null,
+        "info": null,
+        "addition": "7th Substitution",
+        "minute": 75,
+        "extra_minute": null,
+        "injured": true,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014743,
+        "rescinded": null,
+        "sort_order": 7,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19720973": [
+      {
+        "id": 157313009,
+        "fixture_id": 19720973,
+        "period_id": 7014918,
+        "participant_id": 257125,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37356483,
+        "related_player_id": 28912852,
+        "player_name": "Artur Mykytyshyn",
+        "related_player_name": "C. David",
+        "result": null,
+        "info": null,
+        "addition": "1st Substitution",
+        "minute": 55,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014918,
+        "rescinded": null,
+        "sort_order": 1,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19720945": [
+      {
+        "id": 157313292,
+        "fixture_id": 19720945,
+        "period_id": 7014928,
+        "participant_id": 2617,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37758057,
+        "related_player_id": 91682,
+        "player_name": "Bamba Abdoul Goudouss",
+        "related_player_name": "Sauli Väisänen",
+        "result": null,
+        "info": null,
+        "addition": "4th Substitution",
+        "minute": 71,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014928,
+        "rescinded": null,
+        "sort_order": 4,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19766295": [
+      {
+        "id": 157401352,
+        "fixture_id": 19766295,
+        "period_id": 7028145,
+        "participant_id": 2617,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 38218740,
+        "related_player_id": 92087,
+        "player_name": "Yacouba Sacko",
+        "related_player_name": "Anton Popovitch",
+        "result": null,
+        "info": null,
+        "addition": "7th Substitution",
+        "minute": 72,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7028145,
+        "rescinded": null,
+        "sort_order": 7,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19720983": [
+      {
+        "id": 157313281,
+        "fixture_id": 19720983,
+        "period_id": 7014925,
+        "participant_id": 444,
+        "type_id": 14,
+        "section": "event",
+        "player_id": 37715247,
+        "related_player_id": 38218953,
+        "player_name": "Brown Irabor",
+        "related_player_name": "Benjamin Adrovic",
+        "result": "0-1",
+        "info": "Field Goal",
+        "addition": "1st Goal",
+        "minute": 82,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014925,
+        "rescinded": null,
+        "sort_order": 1,
+        "type": {
+          "id": 14,
+          "name": "Goal",
+          "code": "goal",
+          "developer_name": "GOAL",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157313303,
+        "fixture_id": 19720983,
+        "period_id": 7014925,
+        "participant_id": 444,
+        "type_id": 14,
+        "section": "event",
+        "player_id": 37715247,
+        "related_player_id": 38218953,
+        "player_name": "Brown Irabor",
+        "related_player_name": "Benjamin Adrovic",
+        "result": "0-2",
+        "info": "Field Goal",
+        "addition": "2nd Goal",
+        "minute": 85,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014925,
+        "rescinded": null,
+        "sort_order": 2,
+        "type": {
+          "id": 14,
+          "name": "Goal",
+          "code": "goal",
+          "developer_name": "GOAL",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157313258,
+        "fixture_id": 19720983,
+        "period_id": 7014925,
+        "participant_id": 444,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 38218953,
+        "related_player_id": 37667196,
+        "player_name": "Benjamin Adrovic",
+        "related_player_name": "Leo Rimac",
+        "result": null,
+        "info": null,
+        "addition": "5th Substitution",
+        "minute": 77,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7014925,
+        "rescinded": null,
+        "sort_order": 5,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19766273": [
+      {
+        "id": 157459646,
+        "fixture_id": 19766273,
+        "period_id": 7038569,
+        "participant_id": 17303,
+        "type_id": 14,
+        "section": "event",
+        "player_id": 37262563,
+        "related_player_id": 37263359,
+        "player_name": "Faysal Chouaib",
+        "related_player_name": "Souleymane Sidibe",
+        "result": "0-2",
+        "info": "Field Goal",
+        "addition": "2nd Goal",
+        "minute": 69,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7038569,
+        "rescinded": null,
+        "sort_order": 2,
+        "type": {
+          "id": 14,
+          "name": "Goal",
+          "code": "goal",
+          "developer_name": "GOAL",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157459733,
+        "fixture_id": 19766273,
+        "period_id": 7038569,
+        "participant_id": 17303,
+        "type_id": 14,
+        "section": "event",
+        "player_id": 37262563,
+        "related_player_id": 37263359,
+        "player_name": "Faysal Chouaib",
+        "related_player_name": "Souleymane Sidibe",
+        "result": "0-4",
+        "info": "Field Goal",
+        "addition": "4th Goal",
+        "minute": 81,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7038569,
+        "rescinded": null,
+        "sort_order": 4,
+        "type": {
+          "id": 14,
+          "name": "Goal",
+          "code": "goal",
+          "developer_name": "GOAL",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 157459772,
+        "fixture_id": 19766273,
+        "period_id": 7038569,
+        "participant_id": 17303,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 24081823,
+        "related_player_id": 37263359,
+        "player_name": "Dacu",
+        "related_player_name": "Souleymane Sidibe",
+        "result": null,
+        "info": null,
+        "addition": "7th Substitution",
+        "minute": 83,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 7038569,
+        "rescinded": null,
+        "sort_order": 7,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "expected_profile_requests": {
+    "19719434": 4,
+    "19719449": 1,
+    "19719437": 1,
+    "19719416": 1,
+    "19719440": 1,
+    "19719419": 1,
+    "19720975": 1,
+    "19720973": 1,
+    "19720945": 1,
+    "19766295": 1,
+    "19720983": 1,
+    "19766273": 1
+  }
+}

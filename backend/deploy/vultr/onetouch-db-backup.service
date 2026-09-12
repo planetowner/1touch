@@ -1,0 +1,9 @@
+[Unit]
+Description=1Touch daily MySQL backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/bash /opt/1touch/backend/deploy/vultr/backup-db.sh --daily

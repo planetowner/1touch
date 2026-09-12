@@ -1,0 +1,270 @@
+{
+  "description": "실제 Sutjeska–Kairat(19719878)의 경고·교체 이벤트 2건과 관련 선수 라인업을 추렸어요. ID 외 필드는 원문대로 보존해요.",
+  "sources": [
+    "https://fscg.me/en/players/marko-simun-113281/",
+    "https://www.bdfutbol.com/en/p/p.php?id=403888"
+  ],
+  "known_player_ids": [
+    37583164,
+    37683336
+  ],
+  "cases": [
+    {
+      "fixture": {
+        "statistics": [],
+        "formations": [],
+        "coaches": [],
+        "pressure": [],
+        "id": 19719878,
+        "events": [
+          {
+            "id": 157274880,
+            "fixture_id": 19719878,
+            "period_id": 7009654,
+            "participant_id": 3712,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37583164,
+            "related_player_id": 34907293,
+            "player_name": "Mamadou Camara",
+            "related_player_name": "Marko Simun",
+            "result": null,
+            "info": null,
+            "addition": "3rd Substitution",
+            "minute": 56,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 7009654,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 157274758,
+            "fixture_id": 19719878,
+            "period_id": 7009640,
+            "participant_id": 3712,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 34907293,
+            "related_player_id": null,
+            "player_name": "Marko Simun",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "1st Yellowcard",
+            "minute": 25,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1496,
+            "detailed_period_id": 7009640,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [
+          {
+            "id": 14674146953,
+            "sport_id": 1,
+            "fixture_id": 19719878,
+            "player_id": 37583164,
+            "team_id": 3712,
+            "position_id": 26,
+            "formation_field": null,
+            "type_id": 12,
+            "formation_position": null,
+            "player_name": "Mamadou Camara",
+            "jersey_number": 3,
+            "details": [
+              {
+                "id": 2128228090,
+                "fixture_id": 19719878,
+                "player_id": 37583164,
+                "team_id": 3712,
+                "lineup_id": 14674146953,
+                "type_id": 119,
+                "data": {
+                  "value": 34
+                }
+              },
+              {
+                "id": 2128228141,
+                "fixture_id": 19719878,
+                "player_id": 37583164,
+                "team_id": 3712,
+                "lineup_id": 14674146953,
+                "type_id": 118,
+                "data": {
+                  "value": 6.27
+                }
+              }
+            ],
+            "player": {
+              "id": 37583164,
+              "sport_id": 1,
+              "country_id": 200,
+              "nationality_id": 200,
+              "city_id": 21881,
+              "position_id": 26,
+              "detailed_position_id": 153,
+              "type_id": 26,
+              "common_name": "M. Camara",
+              "firstname": "Mamadou",
+              "lastname": "Camara",
+              "name": "Mamadou Camara",
+              "display_name": "Mamadou Camara",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/37583164.png",
+              "height": 183,
+              "weight": 75,
+              "date_of_birth": "2002-10-15",
+              "gender": "male"
+            }
+          },
+          {
+            "id": 14674146970,
+            "sport_id": 1,
+            "fixture_id": 19719878,
+            "player_id": 37683336,
+            "team_id": 3712,
+            "position_id": 26,
+            "formation_field": "3:3",
+            "type_id": 11,
+            "formation_position": 8,
+            "player_name": "Marko Simun",
+            "jersey_number": 77,
+            "details": [
+              {
+                "id": 2128222731,
+                "fixture_id": 19719878,
+                "player_id": 37683336,
+                "team_id": 3712,
+                "lineup_id": 14674146970,
+                "type_id": 118,
+                "data": {
+                  "value": 6.27
+                }
+              },
+              {
+                "id": 2128228105,
+                "fixture_id": 19719878,
+                "player_id": 37683336,
+                "team_id": 3712,
+                "lineup_id": 14674146970,
+                "type_id": 119,
+                "data": {
+                  "value": 90
+                }
+              }
+            ],
+            "player": {
+              "id": 37683336,
+              "sport_id": 1,
+              "country_id": 998,
+              "nationality_id": 998,
+              "city_id": null,
+              "position_id": 26,
+              "detailed_position_id": null,
+              "type_id": null,
+              "common_name": "M. Šimun",
+              "firstname": "Marko",
+              "lastname": "Šimun",
+              "name": "Marko Šimun",
+              "display_name": "Marko Simun",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": null,
+              "weight": null,
+              "date_of_birth": "2001-06-16",
+              "gender": "male"
+            }
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 157274880,
+          "fixture_id": 19719878,
+          "period_id": 7009654,
+          "participant_id": 3712,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37583164,
+          "related_player_id": 37683336,
+          "player_name": "Mamadou Camara",
+          "related_player_name": "Marko Simun",
+          "result": null,
+          "info": null,
+          "addition": "3rd Substitution",
+          "minute": 56,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7009654,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 157274758,
+          "fixture_id": 19719878,
+          "period_id": 7009640,
+          "participant_id": 3712,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 37683336,
+          "related_player_id": null,
+          "player_name": "Marko Simun",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "1st Yellowcard",
+          "minute": 25,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1496,
+          "detailed_period_id": 7009640,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}
