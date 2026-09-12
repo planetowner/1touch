@@ -158,7 +158,9 @@ class CommunityDatabaseCase(unittest.TestCase):
         self.configured = {**self.config, "database": self.database}
         self.pool_patch = patch.object(db, "_pool", SimpleNamespace(get_connection=lambda: mysql.connector.connect(**self.configured)))
         self.pool_patch.start()
-        self.secret_patch = patch.dict(os.environ, {"AUTH_CODE_SECRET": "test-secret-not-used-outside-tests-123456"})
+        # 로컬 .env의 운영자 ID 1이 테스트의 첫 회원에게 권한을 주지 않게 분리해요.
+        self.secret_patch = patch.dict(os.environ, {
+            "AUTH_CODE_SECRET": "test-secret-not-used-outside-tests-123456", "COMMUNITY_ADMIN_USER_IDS": ""})
         self.secret_patch.start()
         self.execute("CREATE TABLE teams (team_id BIGINT UNSIGNED PRIMARY KEY,name VARCHAR(100),short_code VARCHAR(10),image_path TEXT)")
         self.execute("CREATE TABLE players (player_id BIGINT UNSIGNED PRIMARY KEY,display_name VARCHAR(100),image_path TEXT)")
@@ -253,6 +255,10 @@ class CommunityDatabaseCase(unittest.TestCase):
             if statement.strip():
                 self.execute(statement)
 
+    def apply_rules_schema(self):
+        sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_community_rules_languages.sql"
+        self.execute(sql.read_text(encoding="utf-8"))
+
 
 class MigrationPreservationTests(CommunityDatabaseCase):
     management_schema = False
@@ -299,8 +305,9 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(self.request("GET", url).json()["follower_count"], 1)
 
     def test_common_rules_share_one_row_and_require_community_or_admin_access(self):
-        url = "/v1/community/rules?team_id=6"
-        admin_url = "/v1/admin/community/rules"
+        self.apply_rules_schema()
+        url = "/v1/community/rules?team_id=6&language=ko"
+        admin_url = "/v1/admin/community/rules?language=ko"
         self.assertEqual(self.client.get(url).status_code, 401)
         self.assertEqual(self.request("GET", url).json(), {"rules": None})
         self.assertEqual(self.request("GET", url, self.token_b).status_code, 403)
@@ -310,16 +317,16 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             for content in ("First rules", "Updated rules"):
                 self.assertEqual(self.request("PUT", admin_url, json={"body": content}).status_code, 200)
                 first = self.request("GET", url).json()
-                second = self.request("GET", "/v1/community/rules?team_id=503", self.token_b).json()
+                second = self.request("GET", "/v1/community/rules?team_id=503&language=ko", self.token_b).json()
                 self.assertEqual(first, {"rules": {"body": content}})
                 self.assertEqual(first, second)
                 self.assertEqual(self.request("GET", admin_url).json(), first)
             self.assertEqual(self.request("PUT", admin_url, json={"body": "   "}).status_code, 422)
             self.assertEqual(self.request("PUT", admin_url, self.token_b, json={"body": "Changed"}).status_code, 403)
-        self.assertEqual(self.execute("SELECT * FROM community_rules"), [{"rules_id": 1, "body": "Updated rules"}])
+        self.assertEqual(self.execute("SELECT * FROM community_rules"), [{"language": "ko", "body": "Updated rules"}])
         with self.assertRaises(mysql.connector.DatabaseError) as error:
-            self.execute("INSERT INTO community_rules VALUES (2,'Another copy')")
-        self.assertEqual(error.exception.errno, 3819)
+            self.execute("INSERT INTO community_rules VALUES ('ko','Another copy')")
+        self.assertEqual(error.exception.errno, 1062)
 
     def test_untrusted_user_header_and_expired_session_are_rejected(self):
         self.assertEqual(self.client.get("/v1/users/me", headers={"X-User-Id": str(self.a)}).status_code, 401)
