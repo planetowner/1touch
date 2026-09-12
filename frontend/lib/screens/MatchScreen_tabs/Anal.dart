@@ -5,12 +5,18 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/features/MatchInfoFeatures.dart';
 
 class AnalysisTab extends StatefulWidget {
   final Fixture fixture;
+  final FixtureDetail? detail;
 
-  const AnalysisTab({super.key, required this.fixture});
+  const AnalysisTab({
+    super.key,
+    required this.fixture,
+    this.detail,
+  });
 
   @override
   State<AnalysisTab> createState() => _AnalysisTabState();
@@ -91,7 +97,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
           const SizedBox(height: 48),
           _buildScoreHeader(),
           MatchEventsSection(events: _goalEvents),
-          _buildXGSection(),
+          if (widget.detail?.expectedGoals case final expectedGoals?)
+            _buildXGSection(expectedGoals),
           const SizedBox(height: 48),
           const MomentumChart(),
           const SizedBox(height: 48),
@@ -128,8 +135,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _buildXGSection() {
+  Widget _buildXGSection(FixtureExpectedGoals expectedGoals) {
     return SizedBox(
+      key: const ValueKey('match-analysis-xg'),
       width: double.infinity,
       child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -151,7 +159,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    '2.7',
+                    expectedGoals.homeXg.toStringAsFixed(2),
                     style: Body2_b.style.copyWith(color: AppPalette.white),
                   ),
                 ],
@@ -172,7 +180,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text('0.6',
+                  Text(expectedGoals.awayXg.toStringAsFixed(2),
                       style: Body2_b.style.copyWith(color: Colors.black)),
                 ],
               ),
