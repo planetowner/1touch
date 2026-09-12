@@ -200,6 +200,7 @@ class _BracketMatchCard extends StatelessWidget {
           ? null
           : () => context.push(
                 '/match/${match.fixtureId}?status=${match.status.name}',
+                extra: match,
               ),
       child: Container(
         width: _width,

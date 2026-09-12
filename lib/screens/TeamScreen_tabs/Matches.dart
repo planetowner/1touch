@@ -285,8 +285,10 @@ class _MatchesTabState extends State<MatchesTab> {
     final kickoff = fixture.kickoff?.toLocal();
 
     return GestureDetector(
-      onTap: () => GoRouter.of(context)
-          .push('/match/${fixture.fixtureId}?status=${fixture.status.name}'),
+      onTap: () => GoRouter.of(context).push(
+        '/match/${fixture.fixtureId}?status=${fixture.status.name}',
+        extra: fixture,
+      ),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         padding: const EdgeInsets.all(12),

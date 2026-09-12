@@ -77,7 +77,10 @@ class _FixturesState extends State<Fixtures> {
               children: [
                 if (match != null)
                   GestureDetector(
-                    onTap: () => context.push('/match/${match.fixtureId}'),
+                    onTap: () => context.push(
+                      '/match/${match.fixtureId}',
+                      extra: match,
+                    ),
                     child: MatchCard(
                       match: match,
                       leagueName: leagueName,
@@ -87,7 +90,9 @@ class _FixturesState extends State<Fixtures> {
                 if (lastMatch != null)
                   GestureDetector(
                     onTap: () => context.push(
-                        '/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}'),
+                      '/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}',
+                      extra: lastMatch,
+                    ),
                     child: () {
                       final home = teamRepository
                           .findByIdOrUnknown(lastMatch.homeTeamId);

@@ -12,12 +12,14 @@ import '../core/stylesheet_dark.dart';
 class MatchScreen extends StatefulWidget {
   final String matchId;
   final String matchStatus;
+  final Fixture? initialFixture;
   final FixtureRepository? repository;
 
   const MatchScreen({
     super.key,
     required this.matchId,
     required this.matchStatus,
+    this.initialFixture,
     this.repository,
   });
 
@@ -34,7 +36,7 @@ class _MatchScreenState extends State<MatchScreen> {
   bool _hasLoadError = false;
 
   FixtureRepository get _repository =>
-      widget.repository ?? fixture_provider.fixtureRepository;
+      widget.repository ?? fixture_provider.fixtureDetailRepository;
 
   @override
   void initState() {
@@ -42,9 +44,8 @@ class _MatchScreenState extends State<MatchScreen> {
 
     _fixtureId = int.tryParse(widget.matchId);
     if (_fixtureId != null) {
-      // TODO(fixtures-api): Remove this synchronous compatibility lookup once
-      // MatchScreen uses the API-backed detail provider by default.
-      fixture = _repository.findById(_fixtureId!);
+      final initialFixture = widget.initialFixture;
+      fixture = initialFixture?.fixtureId == _fixtureId ? initialFixture : null;
       _isLoading = fixture == null;
       _loadFixture(_fixtureId!);
     }
@@ -243,9 +244,15 @@ class _MatchScreenState extends State<MatchScreen> {
       case 'MATCH INFO':
         return MatchInfoTab(fixture: fixture!, matchStatus: widget.matchStatus);
       case 'MATCH PREVIEW':
-        return MatchPreviewTab(fixture: fixture!);
+        return MatchPreviewTab(
+          fixture: fixture!,
+          fixtureRepository: _repository,
+        );
       case 'HEAD TO HEAD':
-        return H2HTab(fixture: fixture!);
+        return H2HTab(
+          fixture: fixture!,
+          fixtureRepository: _repository,
+        );
       case 'ANALYSIS':
         return AnalysisTab(fixture: fixture!);
       case 'LIVE CHAT':

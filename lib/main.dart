@@ -10,6 +10,7 @@ import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/models/fixture.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens
@@ -146,7 +147,12 @@ final GoRouter _router = GoRouter(
       builder: (context, state) {
         final matchId = state.pathParameters['matchId'] ?? 'Unknown Match';
         final matchStatus = state.uri.queryParameters['status'] ?? 'upcoming';
-        return MatchScreen(matchId: matchId, matchStatus: matchStatus);
+        final routeData = state.extra;
+        return MatchScreen(
+          matchId: matchId,
+          matchStatus: matchStatus,
+          initialFixture: routeData is Fixture ? routeData : null,
+        );
       },
     ),
     GoRoute(

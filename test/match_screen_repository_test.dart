@@ -97,10 +97,10 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('keeps a cached fixture visible when mock detail is unavailable',
+  testWidgets('keeps a route fixture visible when detail is unavailable',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
-    final repository = _ControlledFixtureRepository(fixtures: [_fixture]);
+    final repository = _ControlledFixtureRepository();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -108,6 +108,7 @@ void main() {
         home: MatchScreen(
           matchId: '${_fixture.fixtureId}',
           matchStatus: 'upcoming',
+          initialFixture: _fixture,
           repository: repository,
         ),
       ),
@@ -162,8 +163,7 @@ FixtureDetail _detail() {
 }
 
 class _ControlledFixtureRepository extends MockFixtureRepository {
-  _ControlledFixtureRepository({List<Fixture> fixtures = const []})
-      : super(fixtures: fixtures);
+  _ControlledFixtureRepository() : super(fixtures: const []);
 
   final List<Completer<FixtureDetail>> calls = [];
 

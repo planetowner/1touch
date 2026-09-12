@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
 
 void main() {
@@ -13,10 +14,16 @@ void main() {
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = MockFixtureRepository();
     await tester.pumpWidget(
       MaterialApp(
         theme: theme,
-        home: MatchScreen(matchId: matchId, matchStatus: matchStatus),
+        home: MatchScreen(
+          matchId: matchId,
+          matchStatus: matchStatus,
+          initialFixture: repository.findById(int.parse(matchId)),
+          repository: repository,
+        ),
       ),
     );
     await tester.pump();

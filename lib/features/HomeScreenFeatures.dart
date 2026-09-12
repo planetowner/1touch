@@ -325,7 +325,10 @@ class FavoriteTeamCard extends StatelessWidget {
                 GestureDetector(
                     onTap: () {
                       final status = match.status.name;
-                      context.push('/match/${match.fixtureId}?status=$status');
+                      context.push(
+                        '/match/${match.fixtureId}?status=$status',
+                        extra: match,
+                      );
                     },
                     child: MatchCard(
                       match: match,
@@ -340,7 +343,10 @@ class FavoriteTeamCard extends StatelessWidget {
                   onTap: () {
                     final last = team.lastMatch!;
                     final status = last.status.name;
-                    context.push('/match/${last.fixtureId}?status=$status');
+                    context.push(
+                      '/match/${last.fixtureId}?status=$status',
+                      extra: last,
+                    );
                   },
                   child: () {
                     final last = team.lastMatch!;
@@ -375,6 +381,7 @@ class FavoriteTeamCard extends StatelessWidget {
 }
 
 class CalendarEvent {
+  final Fixture fixture;
   final String opponentLogoUrl;
   final int opponentTeamId;
   final Color dotColor;
@@ -382,6 +389,7 @@ class CalendarEvent {
   final String status; // 'past' | 'live' | 'upcoming'
 
   CalendarEvent({
+    required this.fixture,
     required this.opponentLogoUrl,
     required this.opponentTeamId,
     required this.dotColor,
@@ -436,6 +444,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
       };
 
       events.putIfAbsent(dateOnly, () => []).add(CalendarEvent(
+            fixture: fixture,
             opponentLogoUrl: opponent.imagePath ?? '',
             opponentTeamId: opponent.teamId,
             dotColor: color,
@@ -683,7 +692,9 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     return GestureDetector(
       onTap: dayEvents.isNotEmpty
           ? () => context.push(
-              '/match/${dayEvents.first.fixtureId}?status=${dayEvents.first.status}')
+                '/match/${dayEvents.first.fixtureId}?status=${dayEvents.first.status}',
+                extra: dayEvents.first.fixture,
+              )
           : null,
       child: Container(
         height: 90,
