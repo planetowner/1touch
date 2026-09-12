@@ -13,6 +13,7 @@ from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, 
 from ..repos.standings_repo import get_team_standing
 from ..repos.best_eleven_repo import get_best_eleven
 from ..repos.injuries_repo import get_team_injuries
+from ..repos.team_attributes_repo import get_team_attributes, list_team_attribute_seasons
 from ..repos.points_pace_repo import (
     build_current_form_comparison,
     get_points_pace_series,
@@ -26,6 +27,8 @@ from ..schemas.common import (
     CurrentFormOptionsResponse,
     CurrentFormResponse,
     TeamOut,
+    TeamAttributeOptionsResponse,
+    TeamAttributesResponse,
     TeamInjuriesResponse,
     TeamTransfersResponse,
     TransferOut,
@@ -105,6 +108,39 @@ def team_injuries(team_id: int, user_id: int = Depends(get_user_id)):
         raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
     # 현재 부상 목록이라 과거 시즌을 지정하는 조회는 제공하지 않아요.
     return get_team_injuries(team_id, context[1])
+
+
+@router.get("/teams/{team_id}/attributes/options", response_model=TeamAttributeOptionsResponse)
+def team_attribute_options(team_id: int, user_id: int = Depends(get_user_id)):
+    """해당 팀의 점수가 저장된 Big 5 시즌을 최신 시즌부터 반환해요."""
+    if not get_team(team_id):
+        raise HTTPException(status_code=404, detail="Team not found")
+    return {"team_id": team_id, "items": list_team_attribute_seasons(team_id)}
+
+
+@router.get("/teams/{team_id}/attributes", response_model=TeamAttributesResponse)
+def team_attributes(
+    team_id: int,
+    season_id: int | None = Query(
+        default=None, gt=0,
+        description="Big 5 정규리그 season_id. 생략하면 해당 팀의 현재 시즌을 조회해요.",
+    ),
+    user_id: int = Depends(get_user_id),
+):
+    """활성 모델의 저장된 5개 점수를 조회해요. 요청할 때 다시 계산하지 않아요.
+
+    점수는 같은 리그·시즌 안의 상대 평가이며 표시 범위는 5~95예요.
+    일부 영역이 미산출이면 해당 필드는 null이고, 저장된 점수가 전혀 없으면 404예요.
+    """
+    if season_id is None:
+        context = find_team_current_context(team_id)
+        if context is None:
+            raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
+        season_id = context[1]
+    result = get_team_attributes(team_id, season_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Team attributes not available for this season")
+    return result
 
 
 @router.get("/teams/{team_id}/best-eleven", response_model=BestElevenResponse)

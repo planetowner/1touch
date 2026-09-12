@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TeamOut(BaseModel):
@@ -10,6 +10,31 @@ class TeamOut(BaseModel):
     name: str
     short_code: Optional[str] = None
     image_path: Optional[str] = None
+
+
+class TeamAttributeSeasonOut(BaseModel):
+    competition_id: int
+    season_id: int
+    season_name: str
+    is_current: bool
+
+
+class TeamAttributeOptionsResponse(BaseModel):
+    team_id: int
+    items: List[TeamAttributeSeasonOut]
+
+
+class TeamAttributesResponse(TeamAttributeSeasonOut):
+    team_id: int
+    team_name: str
+    model_id: int
+    # 누락된 영역을 0점으로 바꾸지 않고 항상 같은 다섯 필드로 전달해요.
+    possession_build_up: float | None = Field(description="점유·빌드업. 필수 통계 부족 시 null")
+    attacking_threat: float | None = Field(description="공격 위협. 필수 통계 부족 시 null")
+    chance_creation: float | None = Field(description="기회 창출. 필수 통계 부족 시 null")
+    finishing: float | None = Field(description="마무리. 필수 통계 부족 시 null")
+    defending: float | None = Field(description="수비. 필수 통계 부족 시 null")
+    attributes_updated_at: datetime = Field(description="저장된 점수의 최종 갱신 시각(UTC)")
 
 
 class FixtureOut(BaseModel):
