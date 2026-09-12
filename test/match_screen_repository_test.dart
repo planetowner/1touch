@@ -159,6 +159,22 @@ void main() {
           name: 'Home Coach',
         ),
       ],
+      statistics: [
+        FixtureStatistic(
+          teamId: _fixture.awayTeamId,
+          statTypeId: 45,
+          statCode: 'ball-possession',
+          statName: 'Ball Possession',
+          value: 36.4,
+        ),
+        FixtureStatistic(
+          teamId: _fixture.homeTeamId,
+          statTypeId: 45,
+          statCode: 'ball-possession',
+          statName: 'Ball Possession',
+          value: 63.6,
+        ),
+      ],
     );
 
     await tester.pumpWidget(
@@ -185,6 +201,9 @@ void main() {
     final expectedGoals = statistics.bars.singleWhere(
       (bar) => bar.category == 'Expected Goals',
     );
+    final possession = statistics.bars.singleWhere(
+      (bar) => bar.category == 'Possession',
+    );
     expect(matchInfo.detail, same(detail));
     expect(matchInfo.fixture, same(detail.fixture));
     expect(coaches.coachA, 'Home Coach');
@@ -193,13 +212,15 @@ void main() {
     expect(expectedGoals.awayPercent, 4.76916);
     expect(expectedGoals.isPercent, isFalse);
     expect(expectedGoals.fractionDigits, 2);
+    expect(possession.homePercent, 63.6);
+    expect(possession.awayPercent, 36.4);
+    expect(possession.isPercent, isTrue);
     expect(find.text('0.52'), findsOneWidget);
     expect(find.text('4.77'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-      'uses neutral labels when coach and expected-goal data are missing',
+  testWidgets('uses neutral labels and omits incomplete detail statistics',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
     final repository = _ControlledFixtureRepository();
@@ -215,7 +236,19 @@ void main() {
       ),
     );
 
-    repository.calls.single.complete(_detail());
+    repository.calls.single.complete(
+      _detail(
+        statistics: [
+          FixtureStatistic(
+            teamId: _fixture.homeTeamId,
+            statTypeId: 45,
+            statCode: 'ball-possession',
+            statName: 'Ball Possession',
+            value: 63.6,
+          ),
+        ],
+      ),
+    );
     await tester.pump();
 
     final coaches = tester.widget<SubstitutesAndCoach>(
@@ -228,6 +261,10 @@ void main() {
     expect(coaches.coachB, '—');
     expect(
       statistics.bars.where((bar) => bar.category == 'Expected Goals'),
+      isEmpty,
+    );
+    expect(
+      statistics.bars.where((bar) => bar.category == 'Possession'),
       isEmpty,
     );
     expect(tester.takeException(), isNull);
@@ -248,6 +285,7 @@ final Fixture _fixture = mockFixtures.firstWhere(
 FixtureDetail _detail({
   FixtureExpectedGoals? expectedGoals,
   List<FixtureCoach> coaches = const [],
+  List<FixtureStatistic> statistics = const [],
 }) {
   return FixtureDetail(
     fixture: _fixture,
@@ -256,7 +294,7 @@ FixtureDetail _detail({
     playerExpectedGoals: const [],
     shots: const [],
     events: const [],
-    statistics: const [],
+    statistics: statistics,
     lineups: const [],
     formations: const [],
     coaches: coaches,

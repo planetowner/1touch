@@ -46,8 +46,7 @@ class MatchInfoTab extends StatelessWidget {
     {'player': 'Gutiérrez', 'minute': "78'", 'team': 'away', 'type': 'redCard'},
   ];
 
-  final List<StatBarData> _statBars = const [
-    StatBarData(category: "Possession", homePercent: 64, awayPercent: 36),
+  final List<StatBarData> _mockStatBars = const [
     StatBarData(
         category: "Shots", homePercent: 10, awayPercent: 6, isPercent: false),
     StatBarData(
@@ -152,11 +151,24 @@ class MatchInfoTab extends StatelessWidget {
       for (final coach in detail?.coaches ?? const <FixtureCoach>[])
         coach.teamId: coach.name,
     };
+    final possessionByTeam = {
+      for (final statistic in detail?.statistics ?? const <FixtureStatistic>[])
+        if (statistic.statCode == 'ball-possession')
+          statistic.teamId: statistic.value,
+    };
+    final homePossession = possessionByTeam[fixture.homeTeamId];
+    final awayPossession = possessionByTeam[fixture.awayTeamId];
     final expectedGoals = detail?.expectedGoals;
-    final statBars = List<StatBarData>.of(_statBars);
+    final statBars = <StatBarData>[
+      if (homePossession != null && awayPossession != null)
+        StatBarData(
+          category: 'Possession',
+          homePercent: homePossession,
+          awayPercent: awayPossession,
+        ),
+    ];
     if (expectedGoals != null) {
-      statBars.insert(
-        1,
+      statBars.add(
         StatBarData(
           category: 'Expected Goals',
           homePercent: expectedGoals.homeXg,
@@ -166,6 +178,7 @@ class MatchInfoTab extends StatelessWidget {
         ),
       );
     }
+    statBars.addAll(_mockStatBars);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 48),
