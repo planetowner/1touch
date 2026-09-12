@@ -56,7 +56,7 @@ class AppThemeToggle extends StatelessWidget {
           size: 24,
         ),
         const SizedBox(width: 8),
-        Switch(
+        Switch.adaptive(
           value: isLight,
           activeThumbColor: AppPalette.white,
           inactiveThumbColor: AppPalette.white,
@@ -81,7 +81,7 @@ class AppThemeSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Switch(
+    return Switch.adaptive(
       value: isDark,
       activeThumbColor: foregroundColor,
       inactiveThumbColor: foregroundColor,
