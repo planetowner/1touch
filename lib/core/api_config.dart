@@ -12,6 +12,12 @@ class ApiConfig {
   final Uri baseUri;
   final Map<String, String> requestHeaders;
 
+  /// Temporary API smoke-test bypass while startup authentication is mocked.
+  /// Remove this flag when the real authenticated session controls routing.
+  static const bool skipOnboardingForDevelopment = bool.fromEnvironment(
+    'API_SKIP_ONBOARDING',
+  );
+
   factory ApiConfig.fromEnvironment() {
     const baseUri = String.fromEnvironment('API_BASE_URI');
     const sessionToken = String.fromEnvironment('API_SESSION_TOKEN');

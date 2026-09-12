@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
+import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
@@ -39,8 +40,7 @@ void main() async {
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
-  initialLocation: '/', // 스플래시부터 시작
-  // initialLocation: '/home', // 테스팅 페이지
+  initialLocation: ApiConfig.skipOnboardingForDevelopment ? '/home' : '/',
   navigatorKey: _rootNavigatorKey,
   routes: [
     // Splash
