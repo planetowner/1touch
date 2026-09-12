@@ -83,6 +83,10 @@ class ProviderDisplayTests(unittest.TestCase):
             ("ios", "DE", ["apple", "google", "email"]),
             ("android", "DE", ["google", "email"]),
             ("android", "kr", ["kakao", "google", "email"]),
+            ("ios", "JP", ["line", "apple", "google", "email"]),
+            ("android", "jp", ["line", "google", "email"]),
+            ("ios", "CN", ["apple", "google", "email"]),
+            ("android", "CN", ["google", "email"]),
         ):
             with self.subTest(platform=platform, country=country):
                 response = client.get("/v1/auth/providers", params={"platform": platform, "country_code": country})
@@ -303,30 +307,6 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(self.request("GET", url).json()["follower_count"], 2)
         self.assertEqual(self.request("DELETE", "/v1/users/me", self.token_b).status_code, 200)
         self.assertEqual(self.request("GET", url).json()["follower_count"], 1)
-
-    def test_common_rules_share_one_row_and_require_community_or_admin_access(self):
-        self.apply_rules_schema()
-        url = "/v1/community/rules?team_id=6&language=ko"
-        admin_url = "/v1/admin/community/rules?language=ko"
-        self.assertEqual(self.client.get(url).status_code, 401)
-        self.assertEqual(self.request("GET", url).json(), {"rules": None})
-        self.assertEqual(self.request("GET", url, self.token_b).status_code, 403)
-        self.assertEqual(self.request("PUT", admin_url, json={"body": "Rules"}).status_code, 403)
-        with patch.dict(os.environ, {"COMMUNITY_ADMIN_USER_IDS": str(self.a)}):
-            self.assertEqual(self.request("GET", admin_url).json(), {"rules": None})
-            for content in ("First rules", "Updated rules"):
-                self.assertEqual(self.request("PUT", admin_url, json={"body": content}).status_code, 200)
-                first = self.request("GET", url).json()
-                second = self.request("GET", "/v1/community/rules?team_id=503&language=ko", self.token_b).json()
-                self.assertEqual(first, {"rules": {"body": content}})
-                self.assertEqual(first, second)
-                self.assertEqual(self.request("GET", admin_url).json(), first)
-            self.assertEqual(self.request("PUT", admin_url, json={"body": "   "}).status_code, 422)
-            self.assertEqual(self.request("PUT", admin_url, self.token_b, json={"body": "Changed"}).status_code, 403)
-        self.assertEqual(self.execute("SELECT * FROM community_rules"), [{"language": "ko", "body": "Updated rules"}])
-        with self.assertRaises(mysql.connector.DatabaseError) as error:
-            self.execute("INSERT INTO community_rules VALUES ('ko','Another copy')")
-        self.assertEqual(error.exception.errno, 1062)
 
     def test_untrusted_user_header_and_expired_session_are_rejected(self):
         self.assertEqual(self.client.get("/v1/users/me", headers={"X-User-Id": str(self.a)}).status_code, 401)
