@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
+    as fixture_provider;
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 import 'package:onetouch/models/fixture.dart';
 
@@ -10,9 +12,14 @@ import '../core/stylesheet_dark.dart';
 class MatchScreen extends StatefulWidget {
   final String matchId;
   final String matchStatus;
+  final FixtureRepository? repository;
 
-  const MatchScreen(
-      {super.key, required this.matchId, required this.matchStatus});
+  const MatchScreen({
+    super.key,
+    required this.matchId,
+    required this.matchStatus,
+    this.repository,
+  });
 
   @override
   State<MatchScreen> createState() => _MatchScreenState();
@@ -22,13 +29,25 @@ class _MatchScreenState extends State<MatchScreen> {
   int selectedIndex = 0;
   late List<String> tabs;
   Fixture? fixture;
+  int? _fixtureId;
+  bool _isLoading = false;
+  bool _hasLoadError = false;
+
+  FixtureRepository get _repository =>
+      widget.repository ?? fixture_provider.fixtureRepository;
 
   @override
   void initState() {
     super.initState();
 
-    final id = int.tryParse(widget.matchId);
-    fixture = id != null ? fixtureRepository.findById(id) : null;
+    _fixtureId = int.tryParse(widget.matchId);
+    if (_fixtureId != null) {
+      // TODO(fixtures-api): Remove this synchronous compatibility lookup once
+      // MatchScreen uses the API-backed detail provider by default.
+      fixture = _repository.findById(_fixtureId!);
+      _isLoading = fixture == null;
+      _loadFixture(_fixtureId!);
+    }
 
     if (widget.matchStatus == 'past') {
       tabs = ['MATCH INFO', 'HEAD TO HEAD', 'ANALYSIS'];
@@ -37,6 +56,34 @@ class _MatchScreenState extends State<MatchScreen> {
     } else {
       tabs = ['MATCH PREVIEW', 'HEAD TO HEAD'];
     }
+  }
+
+  Future<void> _loadFixture(int fixtureId) async {
+    try {
+      final detail = await _repository.loadDetail(fixtureId);
+      if (!mounted) return;
+      setState(() {
+        fixture = detail.fixture;
+        _isLoading = false;
+        _hasLoadError = false;
+      });
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _hasLoadError = fixture == null;
+      });
+    }
+  }
+
+  void _retryLoad() {
+    final fixtureId = _fixtureId;
+    if (fixtureId == null) return;
+    setState(() {
+      _isLoading = true;
+      _hasLoadError = false;
+    });
+    _loadFixture(fixtureId);
   }
 
   @override
@@ -147,6 +194,40 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Widget _buildTabContent() {
     final foreground = Theme.of(context).colorScheme.onSurface;
+
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(48),
+          child: CircularProgressIndicator(
+            key: ValueKey('match-loading-indicator'),
+          ),
+        ),
+      );
+    }
+
+    if (_hasLoadError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(48),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Unable to load match.',
+                style: TextStyle(color: foreground),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                key: const ValueKey('match-retry-button'),
+                onPressed: _retryLoad,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     if (fixture == null) {
       return Center(
