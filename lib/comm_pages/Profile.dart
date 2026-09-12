@@ -8,30 +8,43 @@ import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/data/community/mock/community_catalog.dart'
+    show mockUserProfileById;
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/profile/current_user_repository.dart';
+import 'package:onetouch/data/profile/current_user_repository_provider.dart'
+    as profile_provider;
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
-import 'package:onetouch/models/user.dart';
+import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/user_profile.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  const Profile({
+    super.key,
+    this.repository,
+  });
+
+  final CurrentUserRepository? repository;
 
   @override
   State<Profile> createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
-  static const _currentUserId = 1001;
+  static const _placeholderUserId = 1001;
 
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
   Color _teamColor = const Color(0xFFD82457);
-  late User _user;
-  late UserProfile _userProfile;
+  CurrentUserProfile? _profile;
+  bool _isLoading = true;
+  late UserProfile _placeholderStats;
+
+  CurrentUserRepository get _repository =>
+      widget.repository ?? profile_provider.currentUserRepository;
 
   @override
   void initState() {
@@ -43,24 +56,46 @@ class _ProfileState extends State<Profile> {
         });
       });
 
-    _user = mockUserById(_currentUserId);
-    _userProfile = mockUserProfileById(_currentUserId);
-
-    _teamColor = Color(
-      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
-    );
+    // TODO(api-community-profile): Replace these counts when the profile API
+    // exposes points, posts, and comments.
+    _placeholderStats = mockUserProfileById(_placeholderUserId);
     currentUserPreferences.favoriteTeamId.addListener(_onPreferencesChanged);
     currentUserPreferences.followedTeamIds.addListener(_onPreferencesChanged);
     playerRepository.followedPlayerIds.addListener(_onPreferencesChanged);
+    _loadProfile();
   }
 
   void _onPreferencesChanged() {
     if (!mounted) return;
-    setState(() {
-      _teamColor = Color(
-        teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
-      );
-    });
+    setState(() {});
+  }
+
+  Future<void> _loadProfile() async {
+    if (!_isLoading) {
+      setState(() {
+        _isLoading = true;
+        _profile = null;
+      });
+    }
+
+    try {
+      final profile = await _repository.load();
+      if (!mounted) return;
+      final favoriteTeam = teamRepository.findById(profile.favoriteTeamId);
+      setState(() {
+        _profile = profile;
+        _isLoading = false;
+        if (favoriteTeam != null) {
+          _teamColor = Color(favoriteTeam.primaryColor);
+        }
+      });
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _profile = null;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -82,6 +117,35 @@ class _ProfileState extends State<Profile> {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final profileBackground =
         isLight ? AppPalette.lightGreyBox : appColors.pageBackground;
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: profileBackground,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final profile = _profile;
+    if (profile == null) {
+      return Scaffold(
+        backgroundColor: profileBackground,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Unable to load Profile.'),
+              const SizedBox(height: 12),
+              TextButton(
+                key: const ValueKey('profile-retry-button'),
+                onPressed: _loadProfile,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final gradientHeight = responsiveBrandGradientHeight(context);
     final appBarForeground =
         Color.lerp(AppPalette.white, colors.onSurface, opacityFactor)!;
@@ -186,7 +250,7 @@ class _ProfileState extends State<Profile> {
               SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 48),
-                  _buildProfileHeader(context),
+                  _buildProfileHeader(context, profile),
                   const SizedBox(height: 48),
                   _buildStatRow(),
                   const SizedBox(height: 48),
@@ -274,7 +338,10 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget _buildProfileHeader(
+    BuildContext context,
+    CurrentUserProfile profile,
+  ) {
     final appColors = AppColors.of(context);
     return Center(
       child: Column(
@@ -286,16 +353,19 @@ class _ProfileState extends State<Profile> {
             child: CircleAvatar(
               radius: 54,
               backgroundColor: appColors.subtleBackground,
-              backgroundImage: AssetImage(
-                _user.avatarAsset ?? 'assets/profileAvatar.png',
-              ),
+              // TODO(api-profile-avatar): Load profile.avatarUri through an
+              // authenticated image boundary when avatar data is available.
+              backgroundImage: const AssetImage('assets/profileAvatar.png'),
             ),
           ),
           const SizedBox(height: 12),
-          Text(_user.displayName, style: Heading5.style),
+          Text(profile.displayName, style: Heading5.style),
           Opacity(
             opacity: 0.5,
-            child: Text(_user.email, style: Body2.style),
+            child: Text(
+              profile.email ?? '@${profile.username}',
+              style: Body2.style,
+            ),
           ),
         ],
       ),
@@ -315,11 +385,11 @@ class _ProfileState extends State<Profile> {
         ),
         child: Row(
           children: [
-            _buildStat(_userProfile.pts.toString(), "PTS"),
+            _buildStat(_placeholderStats.pts.toString(), "PTS"),
             _verticalDivider(),
-            _buildStat(_userProfile.postCount.toString(), "POSTS"),
+            _buildStat(_placeholderStats.postCount.toString(), "POSTS"),
             _verticalDivider(),
-            _buildStat(_userProfile.commentCount.toString(), "COMMENTS"),
+            _buildStat(_placeholderStats.commentCount.toString(), "COMMENTS"),
           ],
         ),
       ),
