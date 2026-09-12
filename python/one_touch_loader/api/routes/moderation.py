@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 from typing import Literal
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from ..deps import get_user_id
 from ..repos import community_repo, moderation_repo
+from ..schemas.community import CommunityLanguage, RulesBody
 
 router = APIRouter()
 
@@ -15,11 +16,6 @@ def get_admin_id(user_id: int = Depends(get_user_id)) -> int:
 class ResolutionBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     resolution: Literal["dismissed", "hidden"]
-
-
-class RulesBody(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    body: str = Field(min_length=1, max_length=10000)
 
 
 class SuspensionBody(BaseModel):
@@ -43,13 +39,13 @@ def reports(resolved: bool = False, after_id: int = Query(default=0, ge=0),
 
 
 @router.get("/admin/community/rules")
-def rules(admin_id: int = Depends(get_admin_id)):
-    return {"rules": community_repo.read_rules()}
+def rules(language: CommunityLanguage, admin_id: int = Depends(get_admin_id)):
+    return {"rules": community_repo.read_rules(language)}
 
 
 @router.put("/admin/community/rules")
-def save_rules(body: RulesBody, admin_id: int = Depends(get_admin_id)):
-    community_repo.set_rules(admin_id, body.body)
+def save_rules(language: CommunityLanguage, body: RulesBody, admin_id: int = Depends(get_admin_id)):
+    community_repo.set_rules(admin_id, body.body, language)
     return {"ok": True}
 
 
