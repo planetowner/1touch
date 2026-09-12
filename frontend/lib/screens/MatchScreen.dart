@@ -4,8 +4,9 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
-import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_detail.dart';
+import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 
 import '../core/stylesheet_dark.dart';
 
@@ -31,6 +32,7 @@ class _MatchScreenState extends State<MatchScreen> {
   int selectedIndex = 0;
   late List<String> tabs;
   Fixture? fixture;
+  FixtureDetail? _fixtureDetail;
   int? _fixtureId;
   bool _isLoading = false;
   bool _hasLoadError = false;
@@ -65,6 +67,7 @@ class _MatchScreenState extends State<MatchScreen> {
       if (!mounted) return;
       setState(() {
         fixture = detail.fixture;
+        _fixtureDetail = detail;
         _isLoading = false;
         _hasLoadError = false;
       });
@@ -242,7 +245,11 @@ class _MatchScreenState extends State<MatchScreen> {
     final selectedTab = tabs[selectedIndex];
     switch (selectedTab) {
       case 'MATCH INFO':
-        return MatchInfoTab(fixture: fixture!, matchStatus: widget.matchStatus);
+        return MatchInfoTab(
+          fixture: fixture!,
+          matchStatus: widget.matchStatus,
+          detail: _fixtureDetail,
+        );
       case 'MATCH PREVIEW':
         return MatchPreviewTab(
           fixture: fixture!,
@@ -254,7 +261,10 @@ class _MatchScreenState extends State<MatchScreen> {
           fixtureRepository: _repository,
         );
       case 'ANALYSIS':
-        return AnalysisTab(fixture: fixture!);
+        return AnalysisTab(
+          fixture: fixture!,
+          detail: _fixtureDetail,
+        );
       case 'LIVE CHAT':
         return LiveChatTab(
           matchId: fixture!.fixtureId,

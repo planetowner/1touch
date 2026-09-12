@@ -3,7 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({
+    super.key,
+    this.nextLocation = '/onboarding',
+  });
+
+  final String nextLocation;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -30,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _handleAnimationStatus(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
-      _goToOnboarding();
+      _completeSplash();
     }
   }
 
@@ -46,14 +51,14 @@ class _SplashScreenState extends State<SplashScreen>
     Object error,
     StackTrace? stackTrace,
   ) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => _goToOnboarding());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _completeSplash());
     return const SizedBox.expand();
   }
 
-  void _goToOnboarding() {
+  void _completeSplash() {
     if (_hasNavigated || !mounted) return;
     _hasNavigated = true;
-    context.go('/onboarding');
+    context.go(widget.nextLocation);
   }
 
   @override

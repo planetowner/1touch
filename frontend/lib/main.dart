@@ -41,13 +41,16 @@ void main() async {
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
-  initialLocation: ApiConfig.skipOnboardingForDevelopment ? '/home' : '/',
+  initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
   routes: [
     // Splash
     GoRoute(
       path: '/',
-      builder: (context, state) => const SplashScreen(),
+      builder: (context, state) => SplashScreen(
+        nextLocation:
+            ApiConfig.skipOnboardingForDevelopment ? '/home' : '/onboarding',
+      ),
     ),
 
     // Onboarding
