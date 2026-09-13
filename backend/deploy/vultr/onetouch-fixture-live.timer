@@ -1,0 +1,11 @@
+[Unit]
+Description=1Touch live fixture refresh schedule
+
+[Timer]
+# 한 회차가 끝난 뒤 15초 후 실행해 느린 요청이 다음 회차와 겹치지 않아요.
+OnBootSec=30s
+OnUnitInactiveSec=15s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

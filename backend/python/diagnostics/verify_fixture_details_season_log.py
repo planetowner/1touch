@@ -36,11 +36,15 @@ def verify_season_log(log_path: Path) -> dict:
 
     actual = {fixture_id: [] for fixture_id in scope}
     totals = {}
-    for table, key in (
+    collections = [
         ("fixture_events", "events"), ("fixture_team_stats", "team_stats"),
         ("fixture_lineups", "lineups"), ("fixture_pressures", "pressures"),
         ("fixture_formations", "formations"), ("fixture_coaches", "fixture_coaches"),
-    ):
+    ]
+    # 선수 통계 수집 전의 보관 로그에는 이 합계가 없어요.
+    if "player_stats" in summary:
+        collections.append(("fixture_player_stats", "player_stats"))
+    for table, key in collections:
         rows = dict(fetch_all(
             f"SELECT d.fixture_id,COUNT(*) FROM {table} d "
             "JOIN fixtures f ON f.fixture_id=d.fixture_id "

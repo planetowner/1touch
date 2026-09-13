@@ -116,6 +116,8 @@ New database reload order (redesigned commands):
 4. fixtures
   python -m one_touch_loader.cli fixtures all
   python -m one_touch_loader.cli fixtures <season_name> <competition_id> [competition_id ...]
+  python -m one_touch_loader.cli fixtures live           (read-only preview)
+  python -m one_touch_loader.cli fixtures live --apply   (refresh stored fixtures)
 
 5. countries
   python -m one_touch_loader.cli countries refresh
@@ -132,6 +134,7 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli squads refresh-team <team_id>
 
 8. fixture-details
+  # 경기 상세와 함께 확정한 포지션별 선수 지표·POM을 저장해요. xG는 understat 명령으로 갱신해요.
   python -m one_touch_loader.cli fixture-details <season_name>  (Big 5 leagues)
   python -m one_touch_loader.cli fixture-details fixture <fixture_id>
   python -m one_touch_loader.cli fixture-details all
@@ -315,7 +318,10 @@ def main():
             print(USAGE)
 
     elif cmd == "fixtures":
-        if len(sys.argv) == 3 and sys.argv[2] == "all":
+        if sys.argv[2:] in (["live"], ["live", "--apply"]):
+            from .loaders.live_fixtures_loader import refresh_live_fixtures
+            print(refresh_live_fixtures(apply="--apply" in sys.argv[3:]))
+        elif len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_fixtures()
             print(
                 "Fixtures all done: "
