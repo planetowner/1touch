@@ -164,6 +164,15 @@ class FixtureNormalizationTests(unittest.TestCase):
         self.assertIsNone(_normalize_fixture(fixture, 2001, 8))
 
 class FixtureCliTests(unittest.TestCase):
+    def test_live_requires_apply_flag_to_write(self) -> None:
+        for arguments, expected in ((["live"], False), (["live", "--apply"], True)):
+            with self.subTest(arguments=arguments), patch("sys.argv", ["cli", "fixtures", *arguments]), \
+                    patch("one_touch_loader.loaders.live_fixtures_loader.refresh_live_fixtures") as refresh, \
+                    patch.object(cli, "collect_all_fixtures") as collect, redirect_stdout(io.StringIO()):
+                cli.main()
+                refresh.assert_called_once_with(apply=expected)
+                collect.assert_not_called()
+
     def test_selected_competitions_run_once_in_input_order(self) -> None:
         for ids, expected in (
             (["8"], [8]),

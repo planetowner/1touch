@@ -79,7 +79,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -107,6 +107,8 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-db-backup.service" /etc
 install -m 644 "$release_directory/deploy/vultr/onetouch-db-backup.timer" /etc/systemd/system/onetouch-db-backup.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.service" /etc/systemd/system/onetouch-community-cleanup.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.timer" /etc/systemd/system/onetouch-community-cleanup.timer
+install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.service" /etc/systemd/system/onetouch-fixture-live.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.timer" /etc/systemd/system/onetouch-fixture-live.timer
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
 systemctl enable --now onetouch-community-cleanup.timer
