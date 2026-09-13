@@ -86,10 +86,7 @@ class MockBestElevenRepository implements BestElevenRepository {
             playerId: row.playerId,
             playerName: row.playerName,
             playerImage: row.playerImage,
-            positionName: row.positionName,
-            detailedPositionName: row.detailedPositionName,
             starts: row.starts,
-            totalMinutes: row.totalMinutes,
           ),
       ],
     );
