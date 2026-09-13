@@ -55,6 +55,18 @@ void main() {
         teamAttributeLabels,
       );
       expect(
+        chart.data.getTitle!(1, 0).positionPercentageOffset,
+        0.3,
+      );
+      expect(
+        chart.data.getTitle!(4, 0).positionPercentageOffset,
+        0.3,
+      );
+      expect(
+        chart.data.dataSets.every((dataSet) => dataSet.entryRadius == 0),
+        isTrue,
+      );
+      expect(
         chart.data.dataSets.first.dataEntries.map((entry) => entry.value),
         [79.76, 73.57, 86.39, 72.96, 82.8],
       );
@@ -65,6 +77,52 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('keeps the attributes title and filter inline at 393px',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await _pumpAttributes(
+      tester,
+      _repository(
+        (_) async => http.Response(jsonEncode(_attributeJson()), 200),
+      ),
+    );
+
+    final titleCenter = tester.getCenter(find.text('ATTRIBUTES'));
+    final filterCenter = tester.getCenter(
+      find.byKey(const ValueKey('analysis-attributes-filter')),
+    );
+    expect((titleCenter.dy - filterCenter.dy).abs(), lessThan(2));
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('analysis-attributes-filter')))
+          .width,
+      lessThanOrEqualTo(120),
+    );
+    final filterRight = tester.getTopRight(
+      find.byKey(const ValueKey('analysis-attributes-filter')),
+    );
+    expect(filterRight.dx, closeTo(361, 1));
+    final filter = find.byKey(const ValueKey('analysis-attributes-filter'));
+    final season = find.descendant(of: filter, matching: find.text('SEASON'));
+    final chevron = find.descendant(
+      of: filter,
+      matching: find.byIcon(Icons.keyboard_arrow_down),
+    );
+    expect(
+      (tester.getCenter(season).dy - tester.getCenter(chevron).dy).abs(),
+      lessThan(1),
+    );
+    expect(
+      tester.getTopLeft(chevron).dx - tester.getTopRight(season).dx,
+      lessThanOrEqualTo(8),
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('loads a selected historical comparison without hiding current',
       (tester) async {
@@ -121,7 +179,49 @@ void main() {
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
     expect(filter.value, 23621);
-    expect(find.text('2024/2025 FC BARCELONA'), findsOneWidget);
+    final filterFinder = find.byKey(
+      const ValueKey('analysis-attributes-filter'),
+    );
+    expect(
+      find.descendant(of: filterFinder, matching: find.text('24/25')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: filterFinder, matching: find.byType(Image)),
+      findsNothing,
+    );
+    final selectedSeason = find.descendant(
+      of: filterFinder,
+      matching: find.text('24/25'),
+    );
+    final selectedChevron = find.descendant(
+      of: filterFinder,
+      matching: find.byIcon(Icons.keyboard_arrow_down),
+    );
+    expect(
+      (tester.getCenter(selectedSeason).dy -
+              tester.getCenter(selectedChevron).dy)
+          .abs(),
+      lessThan(1),
+    );
+    expect(
+      tester.getTopLeft(selectedChevron).dx -
+          tester.getTopRight(selectedSeason).dx,
+      lessThanOrEqualTo(8),
+    );
+    expect(find.text('24/25 FC BARCELONA'), findsOneWidget);
+    final legendFinder = find.byKey(
+      const ValueKey('analysis-attributes-legend'),
+    );
+    expect(tester.widget<SizedBox>(legendFinder).width, double.infinity);
+    expect(
+      tester
+          .widget<Wrap>(
+            find.descendant(of: legendFinder, matching: find.byType(Wrap)),
+          )
+          .alignment,
+      WrapAlignment.end,
+    );
     expect(
       tester
           .widget<RadarChart>(find.byType(RadarChart))
@@ -220,7 +320,7 @@ void main() {
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
     expect(filter.value, 23621);
-    expect(find.text('2024/2025 FC BARCELONA'), findsOneWidget);
+    expect(find.text('24/25 FC BARCELONA'), findsOneWidget);
     expect(
       tester
           .widget<RadarChart>(find.byType(RadarChart))
