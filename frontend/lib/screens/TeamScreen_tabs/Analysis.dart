@@ -9,15 +9,14 @@ import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/current_form_repository_provider.dart';
-import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/current_form.dart';
-import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
+import 'package:onetouch/models/team_attribute_season_option.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 
 class AnalysisTab extends StatelessWidget {
@@ -117,7 +116,7 @@ class AttributesSection extends StatefulWidget {
 class _AttributesSectionState extends State<AttributesSection> {
   TeamAttributeScores? _myScores;
   TeamAttributeScores? _comparisonScores;
-  List<Season> _comparisonOptions = const [];
+  List<TeamAttributeSeasonOption> _comparisonOptions = const [];
   bool _isLoading = true;
   bool _isComparisonLoading = false;
   bool _comparisonFailed = false;
@@ -154,10 +153,16 @@ class _AttributesSectionState extends State<AttributesSection> {
 
     try {
       final all = await _repository.loadForTeam(teamId);
+      List<TeamAttributeSeasonOption> options;
+      try {
+        options = await _repository.loadOptionsForTeam(teamId);
+      } on Object {
+        options = const [];
+      }
       if (!mounted || requestId != _requestId || teamId != _teamId) return;
 
       setState(() {
-        _applyAttributes(all);
+        _applyAttributes(all, options);
         _isLoading = false;
       });
     } on Object {
@@ -237,7 +242,10 @@ class _AttributesSectionState extends State<AttributesSection> {
     _comparisonFailed = false;
   }
 
-  void _applyAttributes(List<TeamAttributeScores> all) {
+  void _applyAttributes(
+    List<TeamAttributeScores> all,
+    List<TeamAttributeSeasonOption> options,
+  ) {
     _myScores = null;
     _comparisonScores = null;
     _comparisonOptions = const [];
@@ -247,24 +255,21 @@ class _AttributesSectionState extends State<AttributesSection> {
     _comparisonRequestId++;
     if (all.isEmpty) return;
 
-    // MY TEAM is always the current season — find it via the isCurrent flag,
-    // never assume "newest seasonId". Falls back to newest if no current match.
-    final currentSeasonIds = seasonRepository.allSeasons
-        .where((season) => season.isCurrent)
-        .map((season) => season.seasonId)
+    final currentSeasonIds = options
+        .where((option) => option.isCurrent)
+        .map((option) => option.seasonId)
         .toSet();
     _myScores = all.firstWhere(
       (a) => currentSeasonIds.contains(a.seasonId),
       orElse: () => all.first,
     );
 
-    // The backend returns one score per request, so build the picker from the
-    // selected competition and fetch a comparison only after it is selected.
-    _comparisonOptions = seasonRepository
-        .forCompetition(_myScores!.competitionId)
-        .where((season) => season.seasonId != _myScores!.seasonId)
-        .toList()
-      ..sort((a, b) => b.startingAt.compareTo(a.startingAt));
+    // The options endpoint already returns only seasons with stored scores,
+    // newest first. The current season is the red MY TEAM series, so only
+    // historical seasons belong in the comparison picker.
+    _comparisonOptions = List.unmodifiable(
+      options.where((option) => option.seasonId != _myScores!.seasonId),
+    );
   }
 
   @override
@@ -351,7 +356,7 @@ class _AttributesSectionState extends State<AttributesSection> {
   Widget _buildComparisonPill() {
     final colors = Theme.of(context).colorScheme;
 
-    Season? selectedSeason;
+    TeamAttributeSeasonOption? selectedSeason;
     for (final season in _comparisonOptions) {
       if (season.seasonId == _selectedComparisonSeasonId) {
         selectedSeason = season;
@@ -361,7 +366,7 @@ class _AttributesSectionState extends State<AttributesSection> {
 
     final label = selectedSeason == null
         ? 'SEASON'
-        : _compactSeasonLabel(selectedSeason.name);
+        : _compactSeasonLabel(selectedSeason.seasonName);
 
     return PopupMenuButton<int>(
       key: const ValueKey('analysis-attributes-filter'),
@@ -377,7 +382,7 @@ class _AttributesSectionState extends State<AttributesSection> {
             (season) => PopupMenuItem<int>(
               value: season.seasonId,
               child: Text(
-                _compactSeasonLabel(season.name),
+                _compactSeasonLabel(season.seasonName),
                 style: Body2_b.style.copyWith(color: colors.onSurface),
               ),
             ),

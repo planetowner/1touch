@@ -642,6 +642,21 @@ void main() {
       }
     }
     await tester.pump(const Duration(milliseconds: 450));
+    for (final key in const [
+      ValueKey('analysis-attributes-legend'),
+      ValueKey('analysis-current-form-legend'),
+    ]) {
+      final legend = find.byKey(key);
+      expect(tester.widget<SizedBox>(legend).width, double.infinity);
+      expect(
+        tester
+            .widget<Wrap>(
+              find.descendant(of: legend, matching: find.byType(Wrap)),
+            )
+            .alignment,
+        WrapAlignment.end,
+      );
+    }
     expect(tester.takeException(), isNull);
   });
 }

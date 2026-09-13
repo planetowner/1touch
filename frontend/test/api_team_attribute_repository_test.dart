@@ -6,6 +6,120 @@ import 'package:http/testing.dart';
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.dart';
 
 void main() {
+  group('loadOptionsForTeam', () {
+    test('requests and maps the available attribute seasons', () async {
+      final repository = ApiTeamAttributeRepository(
+        client: MockClient((request) async {
+          expect(request.method, 'GET');
+          expect(request.url.path, '/v1/teams/83/attributes/options');
+          expect(request.url.queryParameters, isEmpty);
+          expect(request.headers['Accept'], 'application/json');
+          expect(request.headers['Authorization'], 'Bearer session-token');
+          return http.Response(
+            jsonEncode({
+              'team_id': 83,
+              'items': [
+                {
+                  'competition_id': 564,
+                  'season_id': 25659,
+                  'season_name': '2025/2026',
+                  'is_current': true,
+                },
+                {
+                  'competition_id': 564,
+                  'season_id': 23621,
+                  'season_name': '2024/2025',
+                  'is_current': false,
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: const {
+          'Authorization': 'Bearer session-token',
+        },
+      );
+
+      final result = await repository.loadOptionsForTeam(83);
+
+      expect(result, hasLength(2));
+      expect(result.first.competitionId, 564);
+      expect(result.first.seasonId, 25659);
+      expect(result.first.seasonName, '2025/2026');
+      expect(result.first.isCurrent, isTrue);
+      expect(result.last.seasonId, 23621);
+      expect(result.last.isCurrent, isFalse);
+      expect(() => result.clear(), throwsUnsupportedError);
+    });
+
+    test('rejects options returned for another team', () async {
+      final repository = ApiTeamAttributeRepository(
+        client: MockClient(
+          (_) async => http.Response(
+            jsonEncode({'team_id': 19, 'items': []}),
+            200,
+          ),
+        ),
+        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: const {},
+      );
+
+      await expectLater(
+        repository.loadOptionsForTeam(83),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects malformed option responses', () async {
+      final responses = [
+        http.Response(jsonEncode([]), 200),
+        http.Response(jsonEncode({'team_id': 83, 'items': 'invalid'}), 200),
+        http.Response(
+          jsonEncode({
+            'team_id': 83,
+            'items': [
+              {
+                'competition_id': 564,
+                'season_id': 25659,
+                'season_name': '2025/2026',
+                'is_current': 1,
+              },
+            ],
+          }),
+          200,
+        ),
+      ];
+      var requestCount = 0;
+      final repository = ApiTeamAttributeRepository(
+        client: MockClient((_) async => responses[requestCount++]),
+        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: const {},
+      );
+
+      for (var i = 0; i < responses.length; i++) {
+        await expectLater(
+          repository.loadOptionsForTeam(83),
+          throwsFormatException,
+        );
+      }
+    });
+
+    test('surfaces option HTTP failures', () async {
+      final repository = ApiTeamAttributeRepository(
+        client: MockClient((_) async => http.Response('Unauthorized', 401)),
+        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: const {},
+      );
+
+      await expectLater(
+        repository.loadOptionsForTeam(83),
+        throwsA(isA<http.ClientException>()),
+      );
+    });
+  });
+
   test('requests and maps current attributes for the requested team', () async {
     final repository = ApiTeamAttributeRepository(
       client: MockClient((request) async {

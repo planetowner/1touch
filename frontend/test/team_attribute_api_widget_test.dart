@@ -21,12 +21,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      final repository = ApiTeamAttributeRepository(
-        client: MockClient(
-          (_) async => http.Response(jsonEncode(_attributeJson()), 200),
-        ),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {},
+      final repository = _repository(
+        (_) async => http.Response(jsonEncode(_attributeJson()), 200),
       );
 
       await tester.pumpWidget(
@@ -101,12 +97,12 @@ void main() {
       tester
           .getSize(find.byKey(const ValueKey('analysis-attributes-filter')))
           .width,
-      lessThanOrEqualTo(120),
+      lessThan(160),
     );
     final filterRight = tester.getTopRight(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
-    expect(filterRight.dx, closeTo(361, 1));
+    expect(filterRight.dx, closeTo(369, 1));
     final filter = find.byKey(const ValueKey('analysis-attributes-filter'));
     final season = find.descendant(of: filter, matching: find.text('SEASON'));
     final chevron = find.descendant(
@@ -136,13 +132,21 @@ void main() {
     });
     await _pumpAttributes(tester, repository);
 
-    var filter = tester.widget<DropdownButton<int>>(
+    final filterFinder = find.byKey(
+      const ValueKey('analysis-attributes-filter'),
+    );
+    final filter = tester.widget<PopupMenuButton<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
-    expect(filter.value, isNull);
-    expect(filter.items!.map((item) => item.value), [25659, 23621]);
+    expect(
+      filter
+          .itemBuilder(tester.element(filterFinder))
+          .whereType<PopupMenuItem<int>>()
+          .map((item) => item.value),
+      [25659, 23621],
+    );
 
-    filter.onChanged!(23621);
+    filter.onSelected!(23621);
     await tester.pump();
 
     expect(
@@ -175,13 +179,6 @@ void main() {
     );
     await tester.pump();
 
-    filter = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('analysis-attributes-filter')),
-    );
-    expect(filter.value, 23621);
-    final filterFinder = find.byKey(
-      const ValueKey('analysis-attributes-filter'),
-    );
     expect(
       find.descendant(of: filterFinder, matching: find.text('24/25')),
       findsOneWidget,
@@ -246,10 +243,10 @@ void main() {
     await _pumpAttributes(tester, repository);
 
     tester
-        .widget<DropdownButton<int>>(
+        .widget<PopupMenuButton<int>>(
           find.byKey(const ValueKey('analysis-attributes-filter')),
         )
-        .onChanged!(23621);
+        .onSelected!(23621);
     await tester.pump();
     await tester.pump();
 
@@ -260,6 +257,23 @@ void main() {
     expect(
       tester.widget<RadarChart>(find.byType(RadarChart)).data.dataSets,
       hasLength(2),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps current attributes visible when options fail',
+      (tester) async {
+    final repository = _repository(
+      (_) async => http.Response(jsonEncode(_attributeJson()), 200),
+      optionsHandler: (_) async => http.Response('Unavailable', 503),
+    );
+
+    await _pumpAttributes(tester, repository);
+
+    expect(find.byType(RadarChart), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('analysis-attributes-filter')),
+      findsNothing,
     );
     expect(tester.takeException(), isNull);
   });
@@ -276,15 +290,15 @@ void main() {
     });
     await _pumpAttributes(tester, repository);
 
-    var filter = tester.widget<DropdownButton<int>>(
+    final firstFilter = tester.widget<PopupMenuButton<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
-    filter.onChanged!(25659);
+    firstFilter.onSelected!(25659);
     await tester.pump();
-    filter = tester.widget<DropdownButton<int>>(
+    final secondFilter = tester.widget<PopupMenuButton<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
-    filter.onChanged!(23621);
+    secondFilter.onSelected!(23621);
     await tester.pump();
 
     responses[23621]!.complete(
@@ -316,10 +330,6 @@ void main() {
     );
     await tester.pump();
 
-    filter = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('analysis-attributes-filter')),
-    );
-    expect(filter.value, 23621);
     expect(find.text('24/25 FC BARCELONA'), findsOneWidget);
     expect(
       tester
@@ -336,13 +346,46 @@ void main() {
 }
 
 ApiTeamAttributeRepository _repository(
-  Future<http.Response> Function(http.Request request) handler,
-) {
+  Future<http.Response> Function(http.Request request) handler, {
+  Future<http.Response> Function(http.Request request)? optionsHandler,
+}) {
   return ApiTeamAttributeRepository(
-    client: MockClient(handler),
+    client: MockClient((request) {
+      if (request.url.path.endsWith('/attributes/options')) {
+        return optionsHandler?.call(request) ??
+            Future.value(http.Response(jsonEncode(_optionsJson()), 200));
+      }
+      return handler(request);
+    }),
     apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
     requestHeaders: const {},
   );
+}
+
+Map<String, dynamic> _optionsJson() {
+  return {
+    'team_id': 83,
+    'items': [
+      {
+        'competition_id': 564,
+        'season_id': 27965,
+        'season_name': '2026/2027',
+        'is_current': true,
+      },
+      {
+        'competition_id': 564,
+        'season_id': 25659,
+        'season_name': '2025/2026',
+        'is_current': false,
+      },
+      {
+        'competition_id': 564,
+        'season_id': 23621,
+        'season_name': '2024/2025',
+        'is_current': false,
+      },
+    ],
+  };
 }
 
 Future<void> _pumpAttributes(
@@ -362,6 +405,7 @@ Future<void> _pumpAttributes(
       ),
     ),
   );
+  await tester.pump();
   await tester.pump();
 }
 
