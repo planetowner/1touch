@@ -9,8 +9,17 @@ class MockTeamAttributeRepository implements TeamAttributeRepository {
   final List<TeamAttributeScores> _scores;
 
   @override
-  Future<List<TeamAttributeScores>> loadForTeam(int teamId) async {
-    final result = _scores.where((score) => score.teamId == teamId).toList()
+  Future<List<TeamAttributeScores>> loadForTeam(
+    int teamId, {
+    int? seasonId,
+  }) async {
+    final result = _scores
+        .where(
+          (score) =>
+              score.teamId == teamId &&
+              (seasonId == null || score.seasonId == seasonId),
+        )
+        .toList()
       ..sort((a, b) => b.seasonId.compareTo(a.seasonId));
     return List.unmodifiable(result);
   }

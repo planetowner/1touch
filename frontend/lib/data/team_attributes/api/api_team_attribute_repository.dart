@@ -6,12 +6,10 @@ import 'package:onetouch/data/team_attributes/api/api_team_attribute_response.da
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 
-/// HTTP implementation of the verified current team-attributes query.
+/// HTTP implementation of the verified team-attributes query.
 ///
-/// The deployed endpoint returns one season. Until the backend exposes a
-/// reliable list of attribute seasons, this implementation returns only the
-/// current response and the Team Analysis comparison picker remains unavailable
-/// when this repository is selected.
+/// The deployed endpoint returns one season per request. Omitting `season_id`
+/// selects the current season; supplying it selects that historical season.
 class ApiTeamAttributeRepository implements TeamAttributeRepository {
   ApiTeamAttributeRepository({
     required http.Client client,
@@ -26,8 +24,15 @@ class ApiTeamAttributeRepository implements TeamAttributeRepository {
   final Map<String, String> _requestHeaders;
 
   @override
-  Future<List<TeamAttributeScores>> loadForTeam(int teamId) async {
-    final uri = _apiBaseUri.resolve('teams/$teamId/attributes');
+  Future<List<TeamAttributeScores>> loadForTeam(
+    int teamId, {
+    int? seasonId,
+  }) async {
+    final uri = _apiBaseUri.resolve('teams/$teamId/attributes').replace(
+      queryParameters: {
+        if (seasonId != null) 'season_id': '$seasonId',
+      },
+    );
     final response = await _client.get(
       uri,
       headers: {
@@ -53,6 +58,11 @@ class ApiTeamAttributeRepository implements TeamAttributeRepository {
     if (apiResponse.teamId != teamId) {
       throw FormatException(
         'Expected team_id $teamId but received ${apiResponse.teamId}.',
+      );
+    }
+    if (seasonId != null && apiResponse.seasonId != seasonId) {
+      throw FormatException(
+        'Expected season_id $seasonId but received ${apiResponse.seasonId}.',
       );
     }
 

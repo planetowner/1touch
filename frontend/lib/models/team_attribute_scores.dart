@@ -8,6 +8,7 @@ const teamAttributeLabels = <String>[
 
 class TeamAttributeScores {
   final int teamId;
+  final int competitionId;
   final int seasonId;
   final String seasonLabel;
   final double attack;
@@ -18,6 +19,7 @@ class TeamAttributeScores {
 
   const TeamAttributeScores({
     required this.teamId,
+    required this.competitionId,
     required this.seasonId,
     required this.seasonLabel,
     required this.attack,

@@ -23,6 +23,7 @@ void main() {
     );
 
     expect(scores.teamId, 83);
+    expect(scores.competitionId, 564);
     expect(scores.seasonId, 27965);
     expect(scores.seasonLabel, '2026/2027');
     expect(scores.attack, 79.76);

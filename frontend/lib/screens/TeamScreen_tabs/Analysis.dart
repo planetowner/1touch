@@ -16,14 +16,20 @@ import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/current_form.dart';
+import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 
 class AnalysisTab extends StatelessWidget {
   final Map<String, dynamic>? team;
+  final TeamAttributeRepository? repository;
 
-  const AnalysisTab({super.key, required this.team});
+  const AnalysisTab({
+    super.key,
+    required this.team,
+    this.repository,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +38,7 @@ class AnalysisTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AttributesSection(team: team),
+          AttributesSection(team: team, repository: repository),
           ProbabilitySection(),
           BestElevenSection(team: team),
           CurrentFormSection(team: team),
@@ -55,7 +61,7 @@ class _AnalysisSectionHeader extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < 360) {
+        if (constraints.maxWidth < 400) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -103,9 +109,13 @@ class AttributesSection extends StatefulWidget {
 class _AttributesSectionState extends State<AttributesSection> {
   TeamAttributeScores? _myScores;
   TeamAttributeScores? _comparisonScores;
-  List<TeamAttributeScores> _comparisonOptions = const [];
+  List<Season> _comparisonOptions = const [];
   bool _isLoading = true;
+  bool _isComparisonLoading = false;
+  bool _comparisonFailed = false;
+  int? _selectedComparisonSeasonId;
   int _requestId = 0;
+  int _comparisonRequestId = 0;
 
   int get _teamId => widget.team?['id'] as int? ?? 83; // default Barcelona
   TeamAttributeRepository get _repository =>
@@ -125,12 +135,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     // only loading once in initState.
     if (widget.team?['id'] != oldWidget.team?['id'] ||
         widget.repository != oldWidget.repository) {
-      setState(() {
-        _myScores = null;
-        _comparisonScores = null;
-        _comparisonOptions = const [];
-        _isLoading = true;
-      });
+      setState(_resetAttributes);
       unawaited(_loadAttributes());
     }
   }
@@ -153,15 +158,85 @@ class _AttributesSectionState extends State<AttributesSection> {
         _myScores = null;
         _comparisonScores = null;
         _comparisonOptions = const [];
+        _selectedComparisonSeasonId = null;
+        _isComparisonLoading = false;
+        _comparisonFailed = false;
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _loadComparison(int seasonId) async {
+    final requestId = ++_comparisonRequestId;
+    final teamId = _teamId;
+
+    setState(() {
+      _selectedComparisonSeasonId = seasonId;
+      _comparisonScores = null;
+      _isComparisonLoading = true;
+      _comparisonFailed = false;
+    });
+
+    try {
+      final loaded = await _repository.loadForTeam(
+        teamId,
+        seasonId: seasonId,
+      );
+      if (!mounted ||
+          requestId != _comparisonRequestId ||
+          teamId != _teamId ||
+          seasonId != _selectedComparisonSeasonId) {
+        return;
+      }
+
+      TeamAttributeScores? comparison;
+      for (final scores in loaded) {
+        if (scores.seasonId == seasonId &&
+            scores.competitionId == _myScores?.competitionId) {
+          comparison = scores;
+          break;
+        }
+      }
+
+      setState(() {
+        _comparisonScores = comparison;
+        _isComparisonLoading = false;
+        _comparisonFailed = comparison == null;
+      });
+    } on Object {
+      if (!mounted ||
+          requestId != _comparisonRequestId ||
+          teamId != _teamId ||
+          seasonId != _selectedComparisonSeasonId) {
+        return;
+      }
+      setState(() {
+        _comparisonScores = null;
+        _isComparisonLoading = false;
+        _comparisonFailed = true;
+      });
+    }
+  }
+
+  void _resetAttributes() {
+    _comparisonRequestId++;
+    _myScores = null;
+    _comparisonScores = null;
+    _comparisonOptions = const [];
+    _selectedComparisonSeasonId = null;
+    _isLoading = true;
+    _isComparisonLoading = false;
+    _comparisonFailed = false;
   }
 
   void _applyAttributes(List<TeamAttributeScores> all) {
     _myScores = null;
     _comparisonScores = null;
     _comparisonOptions = const [];
+    _selectedComparisonSeasonId = null;
+    _isComparisonLoading = false;
+    _comparisonFailed = false;
+    _comparisonRequestId++;
     if (all.isEmpty) return;
 
     // MY TEAM is always the current season — find it via the isCurrent flag,
@@ -175,11 +250,13 @@ class _AttributesSectionState extends State<AttributesSection> {
       orElse: () => all.first,
     );
 
-    // Everything except the current season is a comparison candidate.
-    _comparisonOptions =
-        all.where((a) => a.seasonId != _myScores!.seasonId).toList();
-    _comparisonScores =
-        _comparisonOptions.isNotEmpty ? _comparisonOptions.first : null;
+    // The backend returns one score per request, so build the picker from the
+    // selected competition and fetch a comparison only after it is selected.
+    _comparisonOptions = seasonRepository
+        .forCompetition(_myScores!.competitionId)
+        .where((season) => season.seasonId != _myScores!.seasonId)
+        .toList()
+      ..sort((a, b) => b.startingAt.compareTo(a.startingAt));
   }
 
   @override
@@ -210,6 +287,20 @@ class _AttributesSectionState extends State<AttributesSection> {
             trailing:
                 _comparisonOptions.isNotEmpty ? _buildComparisonPill() : null,
           ),
+          if (_isComparisonLoading) ...[
+            const SizedBox(height: 8),
+            const LinearProgressIndicator(
+              key: ValueKey('analysis-attributes-comparison-loading'),
+              minHeight: 2,
+            ),
+          ] else if (_comparisonFailed) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Comparison data unavailable',
+              key: const ValueKey('analysis-attributes-comparison-error'),
+              style: TextStyle(color: AppColors.of(context).mutedForeground),
+            ),
+          ],
           const SizedBox(height: 16),
 
           //   Radar chart container
@@ -257,7 +348,11 @@ class _AttributesSectionState extends State<AttributesSection> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           key: const ValueKey('analysis-attributes-filter'),
-          value: _comparisonScores?.seasonId,
+          value: _selectedComparisonSeasonId,
+          hint: Text(
+            'SELECT SEASON',
+            style: Body2_b.style.copyWith(color: colors.onSurface),
+          ),
           icon: Icon(
             Icons.keyboard_arrow_down,
             color: Theme.of(context).colorScheme.onSurface,
@@ -266,20 +361,17 @@ class _AttributesSectionState extends State<AttributesSection> {
           style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (seasonId) {
             if (seasonId == null) return;
-            setState(() {
-              _comparisonScores =
-                  _comparisonOptions.firstWhere((s) => s.seasonId == seasonId);
-            });
+            unawaited(_loadComparison(seasonId));
           },
           selectedItemBuilder: (_) => _comparisonOptions
-              .map((s) => _pillContent(s.seasonLabel, team))
+              .map((season) => _pillContent(season.name, team))
               .toList(),
           items: _comparisonOptions
               .map(
-                (s) => DropdownMenuItem(
-                  value: s.seasonId,
+                (season) => DropdownMenuItem(
+                  value: season.seasonId,
                   child: Text(
-                    '${s.seasonLabel.toUpperCase()}  ${team.shortCode ?? team.name}',
+                    '${season.name.toUpperCase()}  ${team.shortCode ?? team.name}',
                     style: Body2_b.style.copyWith(color: colors.onSurface),
                   ),
                 ),

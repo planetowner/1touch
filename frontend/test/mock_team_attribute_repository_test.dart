@@ -5,6 +5,7 @@ import 'package:onetouch/models/team_attribute_scores.dart';
 void main() {
   const older = TeamAttributeScores(
     teamId: 8,
+    competitionId: 8,
     seasonId: 100,
     seasonLabel: 'Older',
     attack: 10,
@@ -15,6 +16,7 @@ void main() {
   );
   const newer = TeamAttributeScores(
     teamId: 8,
+    competitionId: 8,
     seasonId: 200,
     seasonLabel: 'Newer',
     attack: 60,
@@ -25,6 +27,7 @@ void main() {
   );
   const otherTeam = TeamAttributeScores(
     teamId: 19,
+    competitionId: 8,
     seasonId: 300,
     seasonLabel: 'Other',
     attack: 50,
@@ -43,6 +46,15 @@ void main() {
 
     expect(result, const [newer, older]);
     expect(() => result.add(otherTeam), throwsUnsupportedError);
+  });
+
+  test('filters the requested team by season', () async {
+    final repository = MockTeamAttributeRepository(
+      scores: const [older, otherTeam, newer],
+    );
+
+    expect(await repository.loadForTeam(8, seasonId: 100), const [older]);
+    expect(await repository.loadForTeam(8, seasonId: 999), isEmpty);
   });
 
   test('returns an immutable empty list for an unknown team', () async {
