@@ -17,7 +17,6 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/models/season.dart';
-import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 
@@ -52,7 +51,10 @@ class _AnalysisSectionHeader extends StatelessWidget {
   final String title;
   final Widget? trailing;
 
-  const _AnalysisSectionHeader({required this.title, this.trailing});
+  const _AnalysisSectionHeader({
+    required this.title,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,30 +63,36 @@ class _AnalysisSectionHeader extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < 400) {
+        if (constraints.maxWidth < 320) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: Body2_b.style),
               const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-                  child: control,
-                ),
-              ),
+              Align(alignment: Alignment.centerRight, child: control),
             ],
           );
         }
 
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(title, style: Body2_b.style), control],
+          children: [
+            Text(title, style: Body2_b.style),
+            const SizedBox(width: 12),
+            const Spacer(),
+            control,
+          ],
         );
       },
     );
   }
+}
+
+String _compactSeasonLabel(String label) {
+  final parts = label.split('/');
+  if (parts.length != 2) return label.toUpperCase();
+
+  String compact(String part) => part.length == 4 ? part.substring(2) : part;
+  return '${compact(parts[0])}/${compact(parts[1])}'.toUpperCase();
 }
 
 //
@@ -315,19 +323,23 @@ class _AttributesSectionState extends State<AttributesSection> {
 
           //   Legend
           const SizedBox(height: 16),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 20,
-            runSpacing: 8,
-            children: [
-              _legendDot(const Color(0xFFE8434A), 'MY TEAM'),
-              if (_comparisonScores != null)
-                _legendDot(
-                  Theme.of(context).colorScheme.onSurface,
-                  '${_comparisonScores!.seasonLabel} '
-                  '${teamRepository.findByIdOrUnknown(_comparisonScores!.teamId).name.toUpperCase()}',
-                ),
-            ],
+          SizedBox(
+            key: const ValueKey('analysis-attributes-legend'),
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 20,
+              runSpacing: 8,
+              children: [
+                _legendDot(const Color(0xFFE8434A), 'MY TEAM'),
+                if (_comparisonScores != null)
+                  _legendDot(
+                    Theme.of(context).colorScheme.onSurface,
+                    '${_compactSeasonLabel(_comparisonScores!.seasonLabel)} '
+                    '${teamRepository.findByIdOrUnknown(_comparisonScores!.teamId).name.toUpperCase()}',
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -337,82 +349,66 @@ class _AttributesSectionState extends State<AttributesSection> {
   //   Comparison picker pill (season-only for now)
 
   Widget _buildComparisonPill() {
-    final team = teamRepository.findByIdOrUnknown(_teamId);
     final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),
-      decoration: BoxDecoration(
-        color: AppColors.of(context).subtleBackground,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          key: const ValueKey('analysis-attributes-filter'),
-          value: _selectedComparisonSeasonId,
-          hint: Text(
-            'SELECT SEASON',
-            style: Body2_b.style.copyWith(color: colors.onSurface),
-          ),
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          dropdownColor: AppColors.of(context).cardBackground,
-          style: Body2_b.style.copyWith(color: colors.onSurface),
-          onChanged: (seasonId) {
-            if (seasonId == null) return;
-            unawaited(_loadComparison(seasonId));
-          },
-          selectedItemBuilder: (_) => _comparisonOptions
-              .map((season) => _pillContent(season.name, team))
-              .toList(),
-          items: _comparisonOptions
-              .map(
-                (season) => DropdownMenuItem(
-                  value: season.seasonId,
-                  child: Text(
-                    '${season.name.toUpperCase()}  ${team.shortCode ?? team.name}',
-                    style: Body2_b.style.copyWith(color: colors.onSurface),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ),
-    );
-  }
 
-  Widget _pillContent(String seasonLabel, Team team) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          seasonLabel.toUpperCase(),
-          style: Body2_b.style.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+    Season? selectedSeason;
+    for (final season in _comparisonOptions) {
+      if (season.seasonId == _selectedComparisonSeasonId) {
+        selectedSeason = season;
+        break;
+      }
+    }
+
+    final label = selectedSeason == null
+        ? 'SEASON'
+        : _compactSeasonLabel(selectedSeason.name);
+
+    return PopupMenuButton<int>(
+      key: const ValueKey('analysis-attributes-filter'),
+      tooltip: '',
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      color: AppColors.of(context).cardBackground,
+      onSelected: (seasonId) {
+        unawaited(_loadComparison(seasonId));
+      },
+      itemBuilder: (_) => _comparisonOptions
+          .map(
+            (season) => PopupMenuItem<int>(
+              value: season.seasonId,
+              child: Text(
+                _compactSeasonLabel(season.name),
+                style: Body2_b.style.copyWith(color: colors.onSurface),
+              ),
+            ),
+          )
+          .toList(),
+      child: Container(
+        height: 44,
+        constraints: const BoxConstraints(minWidth: 86),
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        decoration: BoxDecoration(
+          color: AppColors.of(context).subtleBackground,
+          borderRadius: BorderRadius.circular(16),
         ),
-        const SizedBox(width: 8),
-        Container(width: 1, height: 14, color: AppColors.of(context).divider),
-        const SizedBox(width: 8),
-        Image.network(
-          team.imagePath ?? '',
-          width: 16,
-          height: 16,
-          errorBuilder: (_, __, ___) => Icon(
-            Icons.shield,
-            size: 16,
-            color: AppColors.of(context).mutedForeground,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: Body2_b.style.copyWith(color: colors.onSurface),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 24,
+              color: colors.onSurface,
+            ),
+          ],
         ),
-        const SizedBox(width: 6),
-        Text(
-          team.shortCode ?? team.name,
-          style: Body2_b.style.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -441,10 +437,15 @@ class _AttributesSectionState extends State<AttributesSection> {
           tickBorderData: BorderSide(color: appColors.divider, width: 1),
           ticksTextStyle:
               const TextStyle(color: Colors.transparent, fontSize: 0),
-          getTitle: (index, _) => RadarChartTitle(
-            text: teamAttributeLabels[index],
-            angle: 0,
-          ),
+          getTitle: (index, _) {
+            final label = teamAttributeLabels[index];
+            final moveOutward = label == 'Progression' || label == 'Possession';
+            return RadarChartTitle(
+              text: label,
+              angle: 0,
+              positionPercentageOffset: moveOutward ? 0.3 : null,
+            );
+          },
           titleTextStyle: Eyebrow.style,
           titlePositionPercentageOffset: 0.15,
           dataSets: [
@@ -453,7 +454,7 @@ class _AttributesSectionState extends State<AttributesSection> {
               fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
               borderColor: const Color(0xFFE8434A),
               borderWidth: 2,
-              entryRadius: 3,
+              entryRadius: 0,
               dataEntries: _myScores!.radarValues
                   .map((v) => RadarEntry(value: v))
                   .toList(),
@@ -464,7 +465,7 @@ class _AttributesSectionState extends State<AttributesSection> {
                 fillColor: comparisonColor.withValues(alpha: 0.1),
                 borderColor: comparisonColor.withValues(alpha: 0.85),
                 borderWidth: 2,
-                entryRadius: 3,
+                entryRadius: 0,
                 dataEntries: _comparisonScores!.radarValues
                     .map((v) => RadarEntry(value: v))
                     .toList(),
@@ -1004,9 +1005,14 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
               : (option) {
                   if (option != null) _changeComparison(option);
                 },
-          selectedItemBuilder: (_) => _options.map((option) {
-            return _comparisonLabel(option);
-          }).toList(),
+          selectedItemBuilder: (_) => _options
+              .map(
+                (option) => Text(
+                  _compactSeasonLabel(option.seasonName),
+                  style: Body2_b.style.copyWith(color: colors.onSurface),
+                ),
+              )
+              .toList(),
           items: _options
               .map(
                 (option) => DropdownMenuItem(
@@ -1028,7 +1034,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          option.seasonName.toUpperCase(),
+          _compactSeasonLabel(option.seasonName),
           style: Body2_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
@@ -1220,18 +1226,22 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final comparison = _comparison!.comparison;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: Wrap(
-        alignment: WrapAlignment.end,
-        spacing: 20,
-        runSpacing: 8,
-        children: [
-          _legendItem(const Color(0xFFFF525D), 'CURRENT'),
-          _legendItem(
-            Theme.of(context).colorScheme.onSurface,
-            '${comparison.seasonName} '
-            '${(comparison.teamShortCode ?? comparison.teamName ?? '').toUpperCase()}',
-          ),
-        ],
+      child: SizedBox(
+        key: const ValueKey('analysis-current-form-legend'),
+        width: double.infinity,
+        child: Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 20,
+          runSpacing: 8,
+          children: [
+            _legendItem(const Color(0xFFFF525D), 'CURRENT'),
+            _legendItem(
+              Theme.of(context).colorScheme.onSurface,
+              '${_compactSeasonLabel(comparison.seasonName)} '
+              '${(comparison.teamShortCode ?? comparison.teamName ?? '').toUpperCase()}',
+            ),
+          ],
+        ),
       ),
     );
   }
