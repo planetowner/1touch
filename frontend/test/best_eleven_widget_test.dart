@@ -318,7 +318,6 @@ TeamBestEleven _lineup({
           playerId: 100 + index,
           playerName: '$playerPrefix$index',
           starts: 10,
-          totalMinutes: 900,
         ),
     ],
   );

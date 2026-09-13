@@ -53,11 +53,10 @@ class BestElevenEntry {
     required this.slotIndex,
     required this.playerId,
     required this.starts,
-    required this.totalMinutes,
     this.playerName,
     this.playerImage,
-    this.positionName,
-    this.detailedPositionName,
+    this.positionGroupCode,
+    this.positionCode,
   });
 
   final String slotKey;
@@ -65,10 +64,9 @@ class BestElevenEntry {
   final int playerId;
   final String? playerName;
   final String? playerImage;
-  final String? positionName;
-  final String? detailedPositionName;
+  final String? positionGroupCode;
+  final String? positionCode;
   final int starts;
-  final int totalMinutes;
 }
 
 @immutable
@@ -86,7 +84,7 @@ class TeamBestEleven {
         players = List.unmodifiable(players);
 
   final int teamId;
-  final int? seasonId;
+  final int seasonId;
   final String formation;
   final int? matchesUsed;
   final int? totalValidMatches;
