@@ -8,13 +8,14 @@ MAX_CLOCK_AGE_SECONDS = 45
 
 
 def get_fixture_clock(fixture_id: int) -> dict | None:
+    # 날짜 형식의 %s도 MySQL 드라이버가 조회 인자로 읽어서 형식 자체를 따로 전달해요.
     row = fetch_one_dict("""
         SELECT period_type_id, counts_from, period_length, minutes, seconds, ticking,
                time_added,
-               DATE_FORMAT(sampled_at, '%Y-%m-%dT%H:%i:%s.%fZ') AS sampled_at,
+               DATE_FORMAT(sampled_at, %s) AS sampled_at,
                TIMESTAMPDIFF(MICROSECOND, sampled_at, UTC_TIMESTAMP(6)) / 1000000 AS sample_age_seconds
         FROM fixture_clock WHERE fixture_id=%s
-    """, (fixture_id,))
+    """, ('%Y-%m-%dT%H:%i:%s.%fZ', fixture_id))
     if row is None:
         return None
     age = max(0.0, float(row["sample_age_seconds"]))

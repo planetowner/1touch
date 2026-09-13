@@ -159,6 +159,19 @@ class LiveRefreshTests(unittest.TestCase):
 
 
 class ClockTests(unittest.TestCase):
+    def test_mysql_binding_does_not_read_date_seconds_as_another_parameter(self):
+        from mysql.connector.cursor_cext import RE_PY_PARAM, _ParamSubstitutor
+
+        with patch.object(clock_repo, "fetch_one_dict", return_value=None) as read:
+            clock_repo.get_fixture_clock(500)
+        sql, params = read.call_args.args
+        # 운영 드라이버의 실제 치환으로 날짜 형식과 경기 ID가 모두 남는지 확인해요.
+        substitute = _ParamSubstitutor(tuple(str(value).encode() for value in params))
+        bound = RE_PY_PARAM.sub(substitute, sql.encode())
+        self.assertEqual(substitute.remaining, 0)
+        self.assertIn(b"%Y-%m-%dT%H:%i:%s.%fZ", bound)
+        self.assertIn(b"fixture_id=500", bound)
+
     def test_upcoming_has_no_invented_clock_and_extra_time_uses_period_minutes(self):
         fixture = live_payload()
         fixture["periods"] = []
