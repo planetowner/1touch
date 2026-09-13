@@ -10,6 +10,13 @@ router = APIRouter()
 
 @router.get("/fixtures/{fixture_id}")
 def fixture_detail(fixture_id: int, user_id: int = Depends(get_user_id)):
+    """경기 상세와 player_statistics의 포지션별 지표를 반환해요.
+
+    player_statistics와 lineups는 (team_id, player_id)로 연결해요.
+    categories의 순서대로 표시하고, 지표의 null은 미제공으로 구분해요.
+    pair는 numerator/denominator, percentage는 0~100의 value를 사용해요.
+    xG는 Understat, 나머지 선수 지표·평점·POM은 Sportmonks 값이에요.
+    """
     fx = get_fixture_detail(fixture_id)
     if not fx:
         raise HTTPException(status_code=404, detail="Fixture not found")

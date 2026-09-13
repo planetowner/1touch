@@ -63,6 +63,7 @@ def _payload() -> dict:
             {
                 "player_id": 100,
                 "team_id": 10,
+                "position_id": 25,
                 "type_id": 11,
                 "formation_field": "2:4",
                 "jersey_number": 2,
@@ -107,7 +108,7 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
         )
         self.assertEqual(
             rows["lineups"],
-            [(500, 10, 100, 11, "2:4", 2, 90, 7.38)],
+            [(500, 10, 100, 11, "2:4", 2, 90, 7.38, 25)],
         )
         self.assertEqual(rows["formations"], [(500, 10, "4-3-3")])
         self.assertEqual(rows["coaches"], [(700, "Coach Name")])
@@ -137,7 +138,7 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
         payload = _payload()
         payload["lineups"][0]["details"] = []
         row = _normalize_fixture_details(payload, 500)["lineups"][0]
-        self.assertEqual(row[6:], (None, None))
+        self.assertEqual(row[6:8], (None, None))
 
     def test_duplicate_player_uses_verified_id_in_events_and_lineups(self) -> None:
         payload = _payload()
@@ -195,29 +196,36 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
         fetch_all_dict.side_effect = [
             [{"event_id": 900}],
             [{"stat_type_id": 45}],
-            [{"player_id": 100}],
+            [{"player_id": 100, "team_id": 10, "match_position_id": 25,
+              "minutes_played": 90, "rating": 7.38}],
             [{"team_id": 10, "formation": "4-3-3"}],
             [{"team_id": 10, "coach_id": 700}],
             [{"team_id": 10, "minute": 1, "pressure": 12.5}],
+            [{"team_id": 10, "player_id": 100, "stat_type_id": 120, "value": 64}],
         ]
 
         with (
             patch.object(fixtures_repo, "get_fixture_expected_goals", return_value=None),
             patch.object(fixtures_repo, "list_fixture_player_expected_goals", return_value=[]),
             patch.object(fixtures_repo, "list_fixture_shots", return_value=[]),
+            patch.object(fixtures_repo, "get_fixture_clock", return_value={"minutes": 62}),
         ):
             result = fixtures_repo.get_fixture_detail(500)
 
         self.assertEqual(result["events"], [{"event_id": 900}])
         self.assertEqual(result["statistics"], [{"stat_type_id": 45}])
-        self.assertEqual(result["lineups"], [{"player_id": 100}])
+        self.assertEqual(result["lineups"][0]["player_id"], 100)
         self.assertEqual(result["formations"][0]["formation"], "4-3-3")
         self.assertEqual(result["coaches"][0]["coach_id"], 700)
         self.assertEqual(result["pressure"][0]["minute"], 1)
-        self.assertEqual(fetch_all_dict.call_count, 6)
+        self.assertEqual(fetch_all_dict.call_count, 7)
+        self.assertEqual(result["player_statistics"][0]["position_group"], "DF")
+        build_up = result["player_statistics"][0]["categories"][2]
+        self.assertEqual(build_up["metrics"][0]["value"], 64)
         self.assertIsNone(result["expected_goals"])
         self.assertEqual(result["player_expected_goals"], [])
         self.assertEqual(result["shots"], [])
+        self.assertEqual(result["clock"], {"minutes": 62})
 
     @patch.object(fixtures_repo, "fetch_all_dict")
     @patch.object(fixtures_repo, "get_fixture", return_value=None)
@@ -301,6 +309,11 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                 "minute SMALLINT UNSIGNED NOT NULL CHECK (minute BETWEEN 0 AND 65535)",
             )
             self.connection.execute(f"CREATE TABLE {table} ({definition})")
+        self.connection.execute("ALTER TABLE fixture_lineups ADD COLUMN match_position_id INTEGER")
+        stats_ddl = (Path(__file__).resolve().parents[1]
+                     / "one_touch_loader/sql/migrate_fixture_player_stats.sql").read_text(encoding="utf-8")
+        definition = re.search(r"CREATE TABLE fixture_player_stats \((.*?)\) ENGINE", stats_ddl, re.S).group(1)
+        self.connection.execute(f"CREATE TABLE fixture_player_stats ({definition})")
         self.connection.commit()
         self.mock_connection = patch.object(db, "get_conn", return_value=_SqliteConnection(self.connection))
         self.mock_connection.start()
