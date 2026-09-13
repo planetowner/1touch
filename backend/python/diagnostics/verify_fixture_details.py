@@ -9,6 +9,7 @@ from pathlib import Path
 
 from one_touch_loader.api.repos.fixtures_repo import get_fixture_detail
 from one_touch_loader.core.db import fetch_all
+from diagnostics.verify_fixture_player_stats import verify_schema as verify_player_stat_schema
 
 
 SQL_PATH = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_fixture_details_minimal.sql"
@@ -35,6 +36,8 @@ def verify_schema() -> dict:
         ):
             mysql_type = "tinyint(1)" if kind == "BOOLEAN" else kind.lower()
             expected_columns.append((name, mysql_type, "NO" if nullable == "NOT NULL" else "YES"))
+        if table == "fixture_lineups":
+            expected_columns.append(("match_position_id", "int", "YES"))
         actual_columns = fetch_all(
             """
             SELECT column_name, column_type, is_nullable
@@ -91,6 +94,7 @@ def verify_schema() -> dict:
     )
     if old_table:
         raise AssertionError("fixture_team_stats_raw still exists")
+    result["fixture_player_stats"] = verify_player_stat_schema(before=False, print_report=False)["player_stats"]
     return result
 
 
@@ -106,6 +110,8 @@ def verify_fixture(fixture_id: int) -> dict:
         if len(fixture[collection]) != stored_count:
             raise AssertionError(f"{fixture_id}: {collection} rows lost in API joins")
         counts[collection] = stored_count
+    if len(fixture["player_statistics"]) != counts["lineups"]:
+        raise AssertionError(f"{fixture_id}: player statistics must have one entry per lineup")
     return {"state_id": fixture["state_id"], "counts": counts}
 
 

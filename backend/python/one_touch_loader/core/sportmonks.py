@@ -470,6 +470,14 @@ SPORTMONKS_DUPLICATE_EVENT_IDS = {
 }
 
 
+# 단건 적재와 라이브 적재가 같은 경기 상세 항목을 요청해요.
+FIXTURE_DETAILS_INCLUDE = (
+    "events.type;statistics.type;lineups.details;"
+    "lineups.player;formations;coaches;pressure"
+)
+LIVE_FIXTURE_INCLUDE = f"participants;state;scores;periods;{FIXTURE_DETAILS_INCLUDE}"
+
+
 class SportmonksClient:
     """
     Sportmonks Football API v3 클라이언트예요.
@@ -717,14 +725,21 @@ class SportmonksClient:
     def get_fixture_details(self, fixture_id: int) -> Dict:
         response = self._get(
             f"fixtures/{fixture_id}",
-            params={
-                "include": (
-                    "events.type;statistics.type;lineups.details;"
-                    "lineups.player;formations;coaches;pressure"
-                )
-            },
+            params={"include": FIXTURE_DETAILS_INCLUDE},
         )
-        fixture = response["data"]
+        return self.correct_fixture_details(response["data"])
+
+    def get_livescores(self) -> List[Dict]:
+        # 실제 응답에는 pagination이 없어요. 경기 시작 전·종료 후 15분도 포함해요.
+        return self._get("livescores", params={"include": LIVE_FIXTURE_INCLUDE})["data"]
+
+    def get_live_fixture(self, fixture_id: int) -> Dict:
+        return self._get(
+            f"fixtures/{fixture_id}", params={"include": LIVE_FIXTURE_INCLUDE},
+        )["data"]
+
+    def correct_fixture_details(self, fixture: Dict) -> Dict:
+        # 라이브에서도 기존에 검증한 선수·이벤트 ID 보정만 공유해요.
         fixture["events"] = [
             event for event in fixture["events"] if event["id"] not in SPORTMONKS_DUPLICATE_EVENT_IDS
         ]

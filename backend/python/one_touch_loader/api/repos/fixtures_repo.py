@@ -8,7 +8,9 @@ from ...core.fixture_states import (
     screen_status_for_state_id,
     state_ids_for_screen_status,
 )
+from ...core.player_match_metrics import build_player_statistics
 from ..db import fetch_all_dict, fetch_one_dict
+from .fixture_clock_repo import get_fixture_clock
 from .expected_goals_repo import (
     get_fixture_expected_goals, list_fixture_player_expected_goals, list_fixture_shots,
 )
@@ -89,6 +91,7 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
     fixture["expected_goals"] = get_fixture_expected_goals(fixture_id)
     fixture["player_expected_goals"] = list_fixture_player_expected_goals(fixture_id)
     fixture["shots"] = list_fixture_shots(fixture_id)
+    fixture["clock"] = get_fixture_clock(fixture_id)
 
     fixture["events"] = fetch_all_dict(
         """
@@ -140,6 +143,7 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
           p.display_name AS player_name,
           p.image_path AS player_image,
           p.position_id,
+          fl.match_position_id,
           fl.lineup_type_id,
           fl.formation_field,
           fl.jersey_number,
@@ -179,6 +183,17 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
         ORDER BY minute, team_id
         """,
         (fixture_id,),
+    )
+    player_stat_rows = fetch_all_dict(
+        """
+        SELECT team_id, player_id, stat_type_id, stat_value AS value
+        FROM fixture_player_stats WHERE fixture_id = %s
+        ORDER BY team_id, player_id, stat_type_id
+        """,
+        (fixture_id,),
+    )
+    fixture["player_statistics"] = build_player_statistics(
+        fixture["lineups"], player_stat_rows, fixture["player_expected_goals"],
     )
     return fixture
 

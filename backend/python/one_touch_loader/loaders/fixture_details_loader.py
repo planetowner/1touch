@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
+from ..core.player_match_metrics import STORED_STAT_TYPE_IDS
 from .players_loader import insert_missing_player_profiles
 from .team_squad_members_loader import SPORTMONKS_DUPLICATE_PLAYER_IDS
 
@@ -59,9 +60,14 @@ VALUES (%s,%s,%s,%s)
 SQL_INSERT_LINEUP = """
 INSERT INTO fixture_lineups (
   fixture_id, team_id, player_id, lineup_type_id,
-  formation_field, jersey_number, minutes_played, rating
+  formation_field, jersey_number, minutes_played, rating, match_position_id
 )
-VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+"""
+
+SQL_INSERT_PLAYER_STAT = """
+INSERT INTO fixture_player_stats (fixture_id, team_id, player_id, stat_type_id, stat_value)
+VALUES (%s,%s,%s,%s,%s)
 """
 
 SQL_INSERT_FORMATION = """
@@ -107,6 +113,7 @@ def normalize_fixture_statistics(payload: Dict, fixture_id: int) -> Dict[str, Li
 
 def normalize_fixture_lineups(payload: Dict, fixture_id: int) -> Dict[str, List[Tuple]]:
     lineups = []
+    player_stats = []
     for lineup in payload["lineups"]:
         # 기존 라인업 수집에서도 선수를 특정할 수 없는 슬롯은 저장하지 않았어요.
         if lineup["player_id"] is None:
@@ -114,7 +121,6 @@ def normalize_fixture_lineups(payload: Dict, fixture_id: int) -> Dict[str, List[
         details = {
             detail["type_id"]: detail["data"]["value"]
             for detail in lineup["details"]
-            if detail["type_id"] in {SPORTMONKS_MINUTES_PLAYED_TYPE_ID, SPORTMONKS_RATING_TYPE_ID}
         }
         lineups.append(
             (
@@ -127,14 +133,21 @@ def normalize_fixture_lineups(payload: Dict, fixture_id: int) -> Dict[str, List[
                 # 예정 경기 19722180의 선발 22명은 출전 시간·평점이 없어요.
                 details.get(SPORTMONKS_MINUTES_PLAYED_TYPE_ID),
                 details.get(SPORTMONKS_RATING_TYPE_ID),
+                lineup.get("position_id"),
             )
+        )
+        # 표시 지표에 필요한 원값만 저장해요. xG는 기존 Understat 테이블을 사용해요.
+        player_stats.extend(
+            (fixture_id, lineup["team_id"], _canonical_player_id(lineup["player_id"]), type_id, value)
+            for type_id, value in details.items()
+            if type_id in STORED_STAT_TYPE_IDS and value is not None
         )
     formations = [
         (fixture_id, formation["participant_id"], formation["formation"])
         for formation in payload["formations"]
         if formation["participant_id"] is not None and formation["formation"]
     ]
-    return {"lineups": lineups, "formations": formations}
+    return {"lineups": lineups, "player_stats": player_stats, "formations": formations}
 
 
 def _normalize_fixture_details(payload: Dict, fixture_id: int) -> Dict[str, List[Tuple]]:
@@ -174,43 +187,53 @@ def replace_fixture_detail_rows(
     lineups: Optional[List[Dict]] = None,
     verified_event_profiles: Optional[Dict[int, Dict]] = None,
 ) -> int:
-    added_players = 0
     with transaction() as connection:
         with connection.cursor() as cursor:
-            profiles = dict(verified_event_profiles or {})
-            if lineups is not None:
-                # 선수 FK와 경기 상세가 함께 성공하거나 함께 취소돼야 해요.
-                profiles.update({
-                    lineup["player_id"]: lineup["player"]
-                    for lineup in lineups
-                    if lineup["player_id"] is not None
-                    and lineup["player_id"] not in SPORTMONKS_DUPLICATE_PLAYER_IDS
-                })
-            # 라인업 누락을 확인한 이벤트 선수도 같은 삽입 함수를 써 기존 프로필을 보존해요.
-            # 프로필만 보충하며 라인업·출전 시간·스쿼드 행은 만들지 않아요.
-            added_players = insert_missing_player_profiles(cursor, profiles)
-            for key, statement in (
-                ("event_types", SQL_UPSERT_EVENT_TYPE),
-                ("stat_types", SQL_UPSERT_STAT_TYPE),
-                ("coaches", SQL_UPSERT_COACH),
-            ):
-                if rows.get(key):
-                    cursor.executemany(statement, rows[key])
+            return write_fixture_detail_rows(
+                cursor, fixture_id, rows, lineups, verified_event_profiles,
+            )
 
-            # 통계 전용·라인업 전용 명령은 요청한 묶음만 바꿔요.
-            # 빈 응답도 교체해야 공급자가 삭제한 기존 행이 남지 않아요.
-            for key, table, statement in (
-                ("events", "fixture_events", SQL_INSERT_EVENT),
-                ("team_stats", "fixture_team_stats", SQL_INSERT_TEAM_STAT),
-                ("lineups", "fixture_lineups", SQL_INSERT_LINEUP),
-                ("formations", "fixture_formations", SQL_INSERT_FORMATION),
-                ("fixture_coaches", "fixture_coaches", SQL_INSERT_FIXTURE_COACH),
-                ("pressures", "fixture_pressures", SQL_INSERT_PRESSURE),
-            ):
-                if key in rows:
-                    cursor.execute(f"DELETE FROM {table} WHERE fixture_id = %s", (fixture_id,))
-                    if rows[key]:
-                        cursor.executemany(statement, rows[key])
+
+def write_fixture_detail_rows(
+    cursor,
+    fixture_id: int,
+    rows: Dict[str, List[Tuple]],
+    lineups: Optional[List[Dict]] = None,
+    verified_event_profiles: Optional[Dict[int, Dict]] = None,
+) -> int:
+    # 라이브 갱신은 이 저장 규칙을 점수·시계와 같은 트랜잭션 안에서 사용해요.
+    profiles = dict(verified_event_profiles or {})
+    if lineups is not None:
+        profiles.update({
+            lineup["player_id"]: lineup["player"]
+            for lineup in lineups
+            if lineup["player_id"] is not None
+            and lineup["player_id"] not in SPORTMONKS_DUPLICATE_PLAYER_IDS
+        })
+    # 프로필만 보충하며 라인업·출전 시간·스쿼드 행은 만들지 않아요.
+    added_players = insert_missing_player_profiles(cursor, profiles)
+    for key, statement in (
+        ("event_types", SQL_UPSERT_EVENT_TYPE),
+        ("stat_types", SQL_UPSERT_STAT_TYPE),
+        ("coaches", SQL_UPSERT_COACH),
+    ):
+        if rows.get(key):
+            cursor.executemany(statement, rows[key])
+
+    # 빈 응답도 교체해야 VAR 취소처럼 공급자가 삭제한 기존 행이 남지 않아요.
+    for key, table, statement in (
+        ("events", "fixture_events", SQL_INSERT_EVENT),
+        ("team_stats", "fixture_team_stats", SQL_INSERT_TEAM_STAT),
+        ("lineups", "fixture_lineups", SQL_INSERT_LINEUP),
+        ("player_stats", "fixture_player_stats", SQL_INSERT_PLAYER_STAT),
+        ("formations", "fixture_formations", SQL_INSERT_FORMATION),
+        ("fixture_coaches", "fixture_coaches", SQL_INSERT_FIXTURE_COACH),
+        ("pressures", "fixture_pressures", SQL_INSERT_PRESSURE),
+    ):
+        if key in rows:
+            cursor.execute(f"DELETE FROM {table} WHERE fixture_id = %s", (fixture_id,))
+            if rows[key]:
+                cursor.executemany(statement, rows[key])
     return added_players
 
 
@@ -244,7 +267,7 @@ def _collect_fixture_details(
     scope = _load_scope(season_name, competition_ids, fixture_id)
     client = SportmonksClient()
     totals = dict.fromkeys(
-        ("fixtures", "events", "team_stats", "lineups", "formations", "fixture_coaches", "pressures", "players"),
+        ("fixtures", "events", "team_stats", "lineups", "player_stats", "formations", "fixture_coaches", "pressures", "players"),
         0,
     )
     for index, fixture_id in enumerate(scope, start=1):
@@ -266,7 +289,8 @@ def _collect_fixture_details(
         print(
             f"[fixture-details {index}/{len(scope)}] fixture_id={fixture_id} "
             f"events={len(rows['events'])} stats={len(rows['team_stats'])} "
-            f"lineups={len(rows['lineups'])} pressure={len(rows['pressures'])}",
+            f"lineups={len(rows['lineups'])} pressure={len(rows['pressures'])} "
+            f"player_stats={len(rows['player_stats'])}",
             flush=True,
         )
     return totals
