@@ -614,20 +614,51 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pump();
 
-    final attributesFilter = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('analysis-attributes-filter')),
+    final attributesFilterFinder = find.byKey(
+      const ValueKey('analysis-attributes-filter'),
+    );
+    final attributesFilter = tester.widget<PopupMenuButton<int>>(
+      attributesFilterFinder,
     );
     final formationFilter = tester.widget<DropdownButton<String>>(
       find.byKey(const ValueKey('analysis-formation-filter')),
     );
-    final formFilter = tester.widget<DropdownButton<CurrentFormOption>>(
-      find.byKey(const ValueKey('analysis-form-filter')),
+    final formFilterFinder = find.byKey(
+      const ValueKey('analysis-form-filter'),
+    );
+    final formFilter = tester.widget<PopupMenuButton<CurrentFormOption>>(
+      formFilterFinder,
     );
 
-    expect(attributesFilter.style?.color, app_style.AppPalette.black);
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: attributesFilterFinder,
+              matching: find.byType(Text),
+            ),
+          )
+          .style
+          ?.color,
+      app_style.AppPalette.black,
+    );
     expect(formationFilter.style?.color, app_style.AppPalette.black);
-    expect(formFilter.style?.color, app_style.AppPalette.black);
-    for (final item in attributesFilter.items!) {
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: formFilterFinder,
+              matching: find.byType(Text),
+            ),
+          )
+          .style
+          ?.color,
+      app_style.AppPalette.black,
+    );
+    for (final entry in attributesFilter.itemBuilder(
+      tester.element(attributesFilterFinder),
+    )) {
+      final item = entry as PopupMenuItem<int>;
       final label = (item.child as Text).data!;
       expect(label, label.toUpperCase());
     }
@@ -635,7 +666,10 @@ void main() {
       final label = (item.child as Text).data!;
       expect(label, label.toUpperCase());
     }
-    for (final item in formFilter.items!) {
+    for (final entry in formFilter.itemBuilder(
+      tester.element(formFilterFinder),
+    )) {
+      final item = entry as PopupMenuItem<CurrentFormOption>;
       final labels = (item.child as Row).children.whereType<Text>();
       for (final text in labels) {
         expect(text.data, text.data!.toUpperCase());
