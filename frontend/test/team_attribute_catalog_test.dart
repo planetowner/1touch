@@ -6,6 +6,11 @@ void main() {
   test('uses the verified domestic season IDs for every displayed label', () {
     for (final scores in mockTeamAttributes) {
       expect(
+        scores.competitionId,
+        _competitionIds[scores.teamId],
+        reason: 'team=${scores.teamId}',
+      );
+      expect(
         scores.seasonId,
         _seasonIds[(scores.teamId, scores.seasonLabel)],
         reason: 'team=${scores.teamId} season=${scores.seasonLabel}',
@@ -41,6 +46,17 @@ void main() {
     );
   });
 }
+
+const _competitionIds = <int, int>{
+  83: 564,
+  3468: 564,
+  8: 8,
+  19: 8,
+  9: 8,
+  503: 82,
+  591: 301,
+  2930: 384,
+};
 
 const _seasonIds = <(int, String), int>{
   (83, '24/25'): 23621,

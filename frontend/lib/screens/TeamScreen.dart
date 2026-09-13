@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
+import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
@@ -15,11 +16,13 @@ import '../models/team_overview.dart';
 class TeamScreen extends StatefulWidget {
   final int teamId;
   final TeamRepository? teamRepository;
+  final TeamAttributeRepository? teamAttributeRepository;
 
   TeamScreen({
     super.key,
     required this.teamId,
     this.teamRepository,
+    this.teamAttributeRepository,
   });
 
   @override
@@ -372,7 +375,10 @@ class _TeamScreenState extends State<TeamScreen>
                 MatchesTab(team: team),
                 StandingTab(team: team),
                 SquadTab(team: team),
-                AnalysisTab(team: team),
+                AnalysisTab(
+                  team: team,
+                  repository: widget.teamAttributeRepository,
+                ),
               ],
             ),
           ),

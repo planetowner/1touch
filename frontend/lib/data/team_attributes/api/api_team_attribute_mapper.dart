@@ -6,6 +6,7 @@ TeamAttributeScores teamAttributeScoresFromApiResponse(
 ) {
   return TeamAttributeScores(
     teamId: response.teamId,
+    competitionId: response.competitionId,
     seasonId: response.seasonId,
     seasonLabel: response.seasonName,
     attack: response.finishing,

@@ -6,3 +6,38 @@
 
 # 안내 문서는 로컬에서 읽고 GitHub에는 코드만 올려요.
 *.[mM][dD]
+
+# Android
+**/android/.gradle/
+**/android/app/build/
+**/local.properties
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/Runner.xcodeproj/project.xcworkspace/
+**/Runner.xcworkspace/
+**/*.xcuserstate
+**/*.xcuserdatad
+
+# Web
+**/web/.dart_tool/
+
+# Desktop
+**/linux/build/
+**/windows/build/
+**/macos/Flutter/ephemeral/
+
+# IDE / OS
+**/.vscode/
+**/.idea/
+**/.DS_Store
+**/Thumbs.db
+
+# Environment
+**/.env
+**/.env.*
+!**/.env.example

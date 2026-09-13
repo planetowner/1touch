@@ -106,6 +106,11 @@ void fixtureRepositoryContract({
       [2, 5],
     );
     expect(
+      (await repository.loadForTeam(1, status: FixtureStatus.upcoming))
+          .map((fixture) => fixture.fixtureId),
+      [4, 3],
+    );
+    expect(
       (await repository.loadForTeam(1, limit: 2, offset: 1))
           .map((fixture) => fixture.fixtureId),
       [3, 2],

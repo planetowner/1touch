@@ -44,6 +44,32 @@ void main() {
     expect(await repository.loadForTeam(83), hasLength(1));
   });
 
+  test('requests and verifies a historical attribute season', () async {
+    final repository = ApiTeamAttributeRepository(
+      client: MockClient((request) async {
+        expect(request.url.path, '/v1/teams/83/attributes');
+        expect(request.url.queryParameters, {'season_id': '21646'});
+        return http.Response(
+          jsonEncode(
+            _attributeJson(
+              seasonId: 21646,
+              seasonName: '2024/2025',
+              isCurrent: false,
+            ),
+          ),
+          200,
+        );
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      requestHeaders: const {},
+    );
+
+    final result = await repository.loadForTeam(83, seasonId: 21646);
+
+    expect(result.single.seasonId, 21646);
+    expect(result.single.seasonLabel, '2024/2025');
+  });
+
   test('rejects a response for a different team', () async {
     final repository = ApiTeamAttributeRepository(
       client: MockClient(
@@ -57,6 +83,21 @@ void main() {
     );
 
     await expectLater(repository.loadForTeam(83), throwsFormatException);
+  });
+
+  test('rejects a response for a different requested season', () async {
+    final repository = ApiTeamAttributeRepository(
+      client: MockClient(
+        (_) async => http.Response(jsonEncode(_attributeJson()), 200),
+      ),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.loadForTeam(83, seasonId: 21646),
+      throwsFormatException,
+    );
   });
 
   test('surfaces HTTP failures and malformed response roots', () async {
@@ -79,12 +120,16 @@ void main() {
   });
 }
 
-Map<String, dynamic> _attributeJson() {
+Map<String, dynamic> _attributeJson({
+  int seasonId = 27965,
+  String seasonName = '2026/2027',
+  bool isCurrent = true,
+}) {
   return {
     'competition_id': 564,
-    'season_id': 27965,
-    'season_name': '2026/2027',
-    'is_current': true,
+    'season_id': seasonId,
+    'season_name': seasonName,
+    'is_current': isCurrent,
     'team_id': 83,
     'team_name': 'FC Barcelona',
     'model_id': 1,

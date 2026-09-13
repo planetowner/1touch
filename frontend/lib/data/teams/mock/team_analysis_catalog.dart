@@ -21,6 +21,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   FC Barcelona
   TeamAttributeScores(
       teamId: 83,
+      competitionId: 564,
       seasonId: 23621,
       seasonLabel: '24/25',
       attack: 92,
@@ -30,6 +31,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 94),
   TeamAttributeScores(
       teamId: 83,
+      competitionId: 564,
       seasonId: 19799,
       seasonLabel: '22/23',
       attack: 82,
@@ -39,6 +41,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 89),
   TeamAttributeScores(
       teamId: 83,
+      competitionId: 564,
       seasonId: 18462,
       seasonLabel: '21/22',
       attack: 75,
@@ -48,6 +51,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 86),
   TeamAttributeScores(
       teamId: 83,
+      competitionId: 564,
       seasonId: 17480,
       seasonLabel: '20/21',
       attack: 72,
@@ -59,6 +63,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Real Madrid
   TeamAttributeScores(
       teamId: 3468,
+      competitionId: 564,
       seasonId: 23621,
       seasonLabel: '24/25',
       attack: 88,
@@ -68,6 +73,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 80),
   TeamAttributeScores(
       teamId: 3468,
+      competitionId: 564,
       seasonId: 19799,
       seasonLabel: '22/23',
       attack: 85,
@@ -77,6 +83,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 78),
   TeamAttributeScores(
       teamId: 3468,
+      competitionId: 564,
       seasonId: 18462,
       seasonLabel: '21/22',
       attack: 90,
@@ -88,6 +95,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Liverpool
   TeamAttributeScores(
       teamId: 8,
+      competitionId: 8,
       seasonId: 23614,
       seasonLabel: '24/25',
       attack: 90,
@@ -97,6 +105,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 78),
   TeamAttributeScores(
       teamId: 8,
+      competitionId: 8,
       seasonId: 19734,
       seasonLabel: '22/23',
       attack: 84,
@@ -108,6 +117,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Arsenal
   TeamAttributeScores(
       teamId: 19,
+      competitionId: 8,
       seasonId: 23614,
       seasonLabel: '24/25',
       attack: 87,
@@ -117,6 +127,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 81),
   TeamAttributeScores(
       teamId: 19,
+      competitionId: 8,
       seasonId: 19734,
       seasonLabel: '22/23',
       attack: 80,
@@ -128,6 +139,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Manchester City
   TeamAttributeScores(
       teamId: 9,
+      competitionId: 8,
       seasonId: 23614,
       seasonLabel: '24/25',
       attack: 88,
@@ -137,6 +149,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
       possession: 92),
   TeamAttributeScores(
       teamId: 9,
+      competitionId: 8,
       seasonId: 19734,
       seasonLabel: '22/23',
       attack: 92,
@@ -148,6 +161,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Bayern Munich
   TeamAttributeScores(
       teamId: 503,
+      competitionId: 82,
       seasonId: 23744,
       seasonLabel: '24/25',
       attack: 90,
@@ -159,6 +173,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   PSG
   TeamAttributeScores(
       teamId: 591,
+      competitionId: 301,
       seasonId: 23643,
       seasonLabel: '24/25',
       attack: 88,
@@ -170,6 +185,7 @@ const mockTeamAttributes = <TeamAttributeScores>[
   //   Inter Milan
   TeamAttributeScores(
       teamId: 2930,
+      competitionId: 384,
       seasonId: 23746,
       seasonLabel: '24/25',
       attack: 86,
