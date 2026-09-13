@@ -13,9 +13,10 @@ void main() {
   Widget buildSubject({
     required int? teamId,
     required CurrentFormRepository repository,
+    ThemeData? theme,
   }) {
     return MaterialApp(
-      theme: whitetheme,
+      theme: theme ?? whitetheme,
       home: Scaffold(
         body: SingleChildScrollView(
           child: CurrentFormSection(
@@ -53,8 +54,14 @@ void main() {
     expect(queries, hasLength(1));
     expect(queries.single.compareTeamId, 1);
     expect(queries.single.compareSeasonId, 100);
-    expect(find.text('2024/25 PREV'), findsOneWidget);
-    expect(find.byKey(const ValueKey('analysis-form-filter')), findsOneWidget);
+    expect(find.text('24/25 PREV'), findsOneWidget);
+    final filter = find.byKey(const ValueKey('analysis-form-filter'));
+    expect(filter, findsOneWidget);
+    expect(tester.getSize(filter).width, lessThanOrEqualTo(145));
+    expect(
+      find.descendant(of: filter, matching: find.text('24/25')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -84,7 +91,7 @@ void main() {
     expect(queries, hasLength(2));
     expect(queries.last.compareTeamId, 2);
     expect(queries.last.compareSeasonId, 200);
-    expect(find.text('2025/26 BETA'), findsOneWidget);
+    expect(find.text('25/26 BETA'), findsOneWidget);
   });
 
   testWidgets('shows an option error and retries the repository request',
@@ -113,7 +120,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(optionAttempts, 2);
-    expect(find.text('2024/25 RECOVERED'), findsOneWidget);
+    expect(find.text('24/25 RECOVERED'), findsOneWidget);
   });
 
   testWidgets('ignores a stale comparison after the selected team changes',
@@ -166,7 +173,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('STALE'), findsNothing);
-    expect(find.text('2024/25 FRESH'), findsOneWidget);
+    expect(find.text('24/25 FRESH'), findsOneWidget);
   });
 
   testWidgets('does not load or invent a fallback when no team is available',
@@ -204,9 +211,48 @@ void main() {
     await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('2024/25 TALL'), findsOneWidget);
+    expect(find.text('24/25 TALL'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final theme in [darktheme, whitetheme]) {
+    final isDark = theme.brightness == Brightness.dark;
+    testWidgets(
+      'shows separate ${isDark ? 'dark' : 'light'} value boxes for a selected round',
+      (tester) async {
+        useScreen(tester, const Size(393, 852));
+        final repository = _TestCurrentFormRepository(
+          optionsLoader: (_) async => _optionsForTeam(1),
+          comparisonLoader: (query) async =>
+              _comparisonFor(query, comparisonShortCode: 'PREV'),
+        );
+        addTearDown(repository.dispose);
+
+        await tester.pumpWidget(
+          buildSubject(teamId: 1, repository: repository, theme: theme),
+        );
+        await tester.pumpAndSettle();
+
+        final chart = find.byKey(
+          const ValueKey('analysis-current-form-chart'),
+        );
+        await tester.tapAt(tester.getCenter(chart));
+        await tester.pump();
+
+        final expectedBoxColor = isDark ? AppPalette.black : AppPalette.white;
+        for (final key in const [
+          ValueKey('analysis-current-form-current-tooltip'),
+          ValueKey('analysis-current-form-comparison-tooltip'),
+        ]) {
+          final box = tester.widget<Container>(find.byKey(key));
+          expect((box.decoration! as BoxDecoration).color, expectedBoxColor);
+        }
+        expect(find.text('Round 1'), findsNWidgets(2));
+        expect(find.text('1 Pts'), findsNWidgets(2));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('opens all 192 catalog options at compact width without overflow',
       (tester) async {
@@ -216,10 +262,11 @@ void main() {
     await tester.pumpWidget(buildSubject(teamId: 83, repository: repository));
     await tester.pumpAndSettle();
 
-    final dropdown = tester.widget<DropdownButton<CurrentFormOption>>(
-      find.byKey(const ValueKey('analysis-form-filter')),
+    final filterFinder = find.byKey(const ValueKey('analysis-form-filter'));
+    final popup = tester.widget<PopupMenuButton<CurrentFormOption>>(
+      filterFinder,
     );
-    expect(dropdown.items, hasLength(192));
+    expect(popup.itemBuilder(tester.element(filterFinder)), hasLength(192));
 
     await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
     await tester.pumpAndSettle();

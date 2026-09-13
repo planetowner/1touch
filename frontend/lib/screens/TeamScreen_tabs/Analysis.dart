@@ -771,6 +771,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   bool _isLoading = false;
   bool _loadFailed = false;
   int _loadRequestId = 0;
+  int? _selectedFormRound;
 
   CurrentFormRepository get _repository =>
       widget.repository ?? currentFormRepository;
@@ -811,6 +812,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     _options = cachedOptions ?? const [];
     _selectedOption = selectedOption;
     _comparison = cachedComparison;
+    _selectedFormRound = null;
     _loadFailed = false;
     _isLoading = teamId != null &&
         (cachedOptions == null ||
@@ -909,6 +911,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     setState(() {
       _selectedOption = option;
       _comparison = cached;
+      _selectedFormRound = null;
       _isLoading = cached == null;
       _loadFailed = false;
     });
@@ -988,44 +991,51 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
 
   Widget _buildComparisonPicker() {
     final colors = Theme.of(context).colorScheme;
+    final selectedOption = _selectedOption;
+    final label = selectedOption == null
+        ? 'SEASON'
+        : _compactSeasonLabel(selectedOption.seasonName);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 0, 8, 0),
-      decoration: BoxDecoration(
-        color: AppColors.of(context).subtleBackground,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<CurrentFormOption>(
-          key: const ValueKey('analysis-form-filter'),
-          value: _selectedOption,
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          dropdownColor: AppColors.of(context).cardBackground,
-          style: Body2_b.style.copyWith(color: colors.onSurface),
-          onChanged: _isLoading
-              ? null
-              : (option) {
-                  if (option != null) _changeComparison(option);
-                },
-          selectedItemBuilder: (_) => _options
-              .map(
-                (option) => Text(
-                  _compactSeasonLabel(option.seasonName),
-                  style: Body2_b.style.copyWith(color: colors.onSurface),
-                ),
-              )
-              .toList(),
-          items: _options
-              .map(
-                (option) => DropdownMenuItem(
-                  value: option,
-                  child: _comparisonLabel(option),
-                ),
-              )
-              .toList(),
+    return PopupMenuButton<CurrentFormOption>(
+      key: const ValueKey('analysis-form-filter'),
+      tooltip: '',
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      color: AppColors.of(context).cardBackground,
+      enabled: !_isLoading,
+      onSelected: _changeComparison,
+      itemBuilder: (_) => _options
+          .map(
+            (option) => PopupMenuItem<CurrentFormOption>(
+              value: option,
+              child: _comparisonLabel(option),
+            ),
+          )
+          .toList(),
+      child: Container(
+        height: 44,
+        constraints: const BoxConstraints(minWidth: 86),
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        decoration: BoxDecoration(
+          color: AppColors.of(context).subtleBackground,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: Body2_b.style.copyWith(color: colors.onSurface),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 24,
+              color: colors.onSurface,
+            ),
+          ],
         ),
       ),
     );
@@ -1104,101 +1114,149 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   Widget _buildChart() {
     final appColors = AppColors.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final data = _comparison!;
     final current = data.current;
     final comparison = data.comparison;
     final maxRound = math.max(2, data.maxRound);
     final maxPoints = math.max(5, ((data.maxPoints + 4) ~/ 5) * 5).toDouble();
+    final selectedRound = _selectedFormRound;
+    final currentPoint =
+        selectedRound == null ? null : _pointAtRound(current, selectedRound);
+    final comparisonPoint =
+        selectedRound == null ? null : _pointAtRound(comparison, selectedRound);
+    final gridColor = colorScheme.onSurface.withValues(
+      alpha: isDark ? 0.32 : 0.18,
+    );
 
     return Container(
+      key: const ValueKey('analysis-current-form-chart-card'),
       height: 346,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: appColors.subtleBackground,
+        color: appColors.cardBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           Expanded(
-            child: Row(
-              children: [
-                RotatedBox(
-                  quarterTurns: 3,
-                  child: Text('POINTS', style: Body2_b.style),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: LineChart(
-                    LineChartData(
-                      minX: 0,
-                      maxX: maxRound.toDouble(),
-                      minY: 0,
-                      maxY: maxPoints,
-                      gridData: FlGridData(
-                        drawVerticalLine: false,
-                        horizontalInterval: maxPoints / 8,
-                        getDrawingHorizontalLine: (_) => FlLine(
-                          color: appColors.divider,
-                          strokeWidth: 1,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final chartSize = Size(
+                  constraints.maxWidth,
+                  constraints.maxHeight,
+                );
+                return GestureDetector(
+                  key: const ValueKey('analysis-current-form-chart'),
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (details) => _selectFormRound(
+                    details.localPosition.dx,
+                    chartSize.width,
+                    maxRound,
+                    current,
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _CurrentFormGridPainter(
+                            color: gridColor,
+                            topLineInset: 68,
+                          ),
                         ),
                       ),
-                      borderData: FlBorderData(show: false),
-                      titlesData: const FlTitlesData(
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        topTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                      ),
-                      lineTouchData: LineTouchData(
-                        touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (_) => colorScheme.onSurface,
-                          getTooltipItems: (spots) => spots
-                              .map(
-                                (spot) => LineTooltipItem(
-                                  'Round ${spot.x.toInt()}  ${spot.y.toInt()} Pts',
-                                  Body2_b.style.copyWith(
-                                    color: colorScheme.onPrimary,
-                                  ),
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: LineChart(
+                            LineChartData(
+                              minX: 0,
+                              maxX: maxRound.toDouble(),
+                              minY: 0,
+                              maxY: maxPoints,
+                              gridData: const FlGridData(show: false),
+                              borderData: FlBorderData(show: false),
+                              titlesData: const FlTitlesData(
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
                                 ),
-                              )
-                              .toList(),
-                        ),
-                        getTouchedSpotIndicator: (bar, indexes) => indexes
-                            .map(
-                              (_) => TouchedSpotIndicatorData(
-                                FlLine(
-                                  color: appColors.mutedForeground,
-                                  strokeWidth: 1,
-                                  dashArray: [6, 6],
+                                rightTitles: AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
                                 ),
-                                FlDotData(
-                                  getDotPainter: (_, __, ___, ____) =>
-                                      FlDotCirclePainter(
-                                    radius: 4,
-                                    color: bar.color ?? colorScheme.onSurface,
-                                    strokeWidth: 0,
-                                  ),
+                                topTitles: AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
                                 ),
                               ),
-                            )
-                            .toList(),
+                              lineTouchData:
+                                  const LineTouchData(enabled: false),
+                              lineBarsData: [
+                                _formLine(current, const Color(0xFFFF525D)),
+                                _formLine(comparison, colorScheme.onSurface),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      lineBarsData: [
-                        _formLine(current, const Color(0xFFFF525D)),
-                        _formLine(comparison, colorScheme.onSurface),
-                      ],
-                    ),
+                      if (selectedRound != null)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: CustomPaint(
+                              painter: _CurrentFormSelectionPainter(
+                                round: selectedRound,
+                                maxRound: maxRound,
+                                maxPoints: maxPoints,
+                                currentPoints:
+                                    currentPoint?.cumulativePoints.toDouble(),
+                                comparisonPoints: comparisonPoint
+                                    ?.cumulativePoints
+                                    .toDouble(),
+                                currentColor: const Color(0xFFFF525D),
+                                comparisonColor: colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        left: 4,
+                        top: 0,
+                        child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text('POINTS', style: Body2_b.style),
+                        ),
+                      ),
+                      if (selectedRound != null && comparisonPoint != null)
+                        _formTooltip(
+                          chartSize: chartSize,
+                          round: selectedRound,
+                          points: comparisonPoint.cumulativePoints,
+                          maxRound: maxRound,
+                          maxPoints: maxPoints,
+                          placeBefore: true,
+                          isDark: isDark,
+                          key: const ValueKey(
+                            'analysis-current-form-comparison-tooltip',
+                          ),
+                        ),
+                      if (selectedRound != null && currentPoint != null)
+                        _formTooltip(
+                          chartSize: chartSize,
+                          round: selectedRound,
+                          points: currentPoint.cumulativePoints,
+                          maxRound: maxRound,
+                          maxPoints: maxPoints,
+                          placeBefore: false,
+                          isDark: isDark,
+                          key: const ValueKey(
+                            'analysis-current-form-current-tooltip',
+                          ),
+                        ),
+                    ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
           Align(
@@ -1206,6 +1264,112 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
             child: Text('ROUND', style: Body2_b.style),
           ),
         ],
+      ),
+    );
+  }
+
+  CurrentFormPoint? _pointAtRound(CurrentFormSeries series, int round) {
+    for (final point in series.points) {
+      if (point.roundNo == round) return point;
+    }
+    return null;
+  }
+
+  void _selectFormRound(
+    double localX,
+    double chartWidth,
+    int maxRound,
+    CurrentFormSeries current,
+  ) {
+    if (chartWidth <= 0 || current.points.isEmpty) return;
+
+    final targetRound = (localX / chartWidth * maxRound).clamp(0, maxRound);
+    var nearest = current.points.first;
+    for (final point in current.points.skip(1)) {
+      if ((point.roundNo - targetRound).abs() <
+          (nearest.roundNo - targetRound).abs()) {
+        nearest = point;
+      }
+    }
+    if (_selectedFormRound == nearest.roundNo) return;
+    setState(() => _selectedFormRound = nearest.roundNo);
+  }
+
+  Widget _formTooltip({
+    required Size chartSize,
+    required int round,
+    required int points,
+    required int maxRound,
+    required double maxPoints,
+    required bool placeBefore,
+    required bool isDark,
+    required Key key,
+  }) {
+    const tooltipWidth = 128.0;
+    const tooltipHeight = 40.0;
+    const gap = 10.0;
+    final anchorX = chartSize.width * round / maxRound;
+    final anchorY = chartSize.height * (1 - points / maxPoints);
+    final left = (placeBefore ? anchorX - tooltipWidth - gap : anchorX + gap)
+        .clamp(0.0, math.max(0.0, chartSize.width - tooltipWidth))
+        .toDouble();
+    final top = (placeBefore ? anchorY - tooltipHeight - gap : anchorY + gap)
+        .clamp(0.0, math.max(0.0, chartSize.height - tooltipHeight))
+        .toDouble();
+    final foreground = isDark ? AppPalette.white : AppPalette.black;
+
+    return Positioned(
+      left: left,
+      top: top,
+      width: tooltipWidth,
+      height: tooltipHeight,
+      child: Container(
+        key: key,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isDark ? AppPalette.black : AppPalette.white,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: isDark
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x1F090A0A),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Round $round',
+                  maxLines: 1,
+                  style: Body2_b.style.copyWith(
+                    color: foreground.withValues(alpha: 0.55),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              flex: 2,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '$points Pts',
+                  maxLines: 1,
+                  style: Body2_b.style.copyWith(color: foreground),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1277,6 +1441,98 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       ),
     );
   }
+}
+
+class _CurrentFormGridPainter extends CustomPainter {
+  const _CurrentFormGridPainter({
+    required this.color,
+    required this.topLineInset,
+  });
+
+  final Color color;
+  final double topLineInset;
+
+  static const int _divisionCount = 8;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    for (var index = 0; index <= _divisionCount; index++) {
+      final y = size.height * index / _divisionCount;
+      final startX = index < 3 ? topLineInset : 0.0;
+      canvas.drawLine(Offset(startX, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CurrentFormGridPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.topLineInset != topLineInset;
+}
+
+class _CurrentFormSelectionPainter extends CustomPainter {
+  const _CurrentFormSelectionPainter({
+    required this.round,
+    required this.maxRound,
+    required this.maxPoints,
+    required this.currentPoints,
+    required this.comparisonPoints,
+    required this.currentColor,
+    required this.comparisonColor,
+  });
+
+  final int round;
+  final int maxRound;
+  final double maxPoints;
+  final double? currentPoints;
+  final double? comparisonPoints;
+  final Color currentColor;
+  final Color comparisonColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final x = size.width * round / maxRound;
+    final guidePaint = Paint()
+      ..color = comparisonColor.withValues(alpha: 0.9)
+      ..strokeWidth = 1;
+
+    const dashHeight = 8.0;
+    const dashGap = 7.0;
+    for (var y = 0.0; y < size.height; y += dashHeight + dashGap) {
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(x, math.min(y + dashHeight, size.height)),
+        guidePaint,
+      );
+    }
+
+    _drawPoint(canvas, size, x, comparisonPoints, comparisonColor);
+    _drawPoint(canvas, size, x, currentPoints, currentColor);
+  }
+
+  void _drawPoint(
+    Canvas canvas,
+    Size size,
+    double x,
+    double? points,
+    Color color,
+  ) {
+    if (points == null) return;
+    final y = size.height * (1 - points / maxPoints);
+    canvas.drawCircle(Offset(x, y), 4, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_CurrentFormSelectionPainter oldDelegate) =>
+      oldDelegate.round != round ||
+      oldDelegate.maxRound != maxRound ||
+      oldDelegate.maxPoints != maxPoints ||
+      oldDelegate.currentPoints != currentPoints ||
+      oldDelegate.comparisonPoints != comparisonPoints ||
+      oldDelegate.currentColor != currentColor ||
+      oldDelegate.comparisonColor != comparisonColor;
 }
 
 class ProbabilitySection extends StatelessWidget {
