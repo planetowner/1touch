@@ -53,7 +53,8 @@ void main() {
     );
 
     expect(find.text("15'"), findsNothing);
-    expect(find.text("30' · 75'"), findsOneWidget);
+    expect(find.text("30'"), findsOneWidget);
+    expect(find.text("75'"), findsOneWidget);
   });
 
   testWidgets('places pitch-out at the top right of the player circle',
@@ -72,6 +73,9 @@ void main() {
     expect(pitchOutRect.center.dy, lessThan(circleRect.center.dy));
     expect(pitchOutRect.left, lessThan(circleRect.right));
     expect(pitchOutRect.bottom, greaterThan(circleRect.top));
+    final icon = find.byKey(const ValueKey('lineup-sub-out-icon'));
+    final time = find.text("75'");
+    expect(tester.getRect(time).left - tester.getRect(icon).right, 3);
   });
 
   testWidgets('renders the updated event icon set', (tester) async {
