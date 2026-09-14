@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repository.dart';
@@ -18,6 +19,7 @@ Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
 void main() {
   final teamAttributeRepository = MockTeamAttributeRepository();
   final teamOverviewRepository = TestTeamOverviewRepository.withTeam9();
+  final xgStandingRepository = MockXgStandingRepository();
   const phoneSizes = [
     Size(320, 568),
     Size(375, 667),
@@ -44,6 +46,7 @@ void main() {
                 teamId: 9,
                 teamAttributeRepository: teamAttributeRepository,
                 teamOverviewRepository: teamOverviewRepository,
+                xgStandingRepository: xgStandingRepository,
               ),
             ),
           );
