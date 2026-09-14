@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
+import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Squad.dart';
 
 void main() {
@@ -26,16 +29,22 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final repository = _FakeTeamContractRepository();
     await tester.pumpWidget(
       MaterialApp(
         theme: whitetheme,
-        home: const Scaffold(
-          body: SquadTab(team: {'id': 83}),
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: repository,
+          ),
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 450));
+    await tester.pumpAndSettle();
 
+    expect(find.text('API Player'), findsOneWidget);
+    expect(repository.requestedSeasonIds, [25659]);
     expect(find.text('25/26'), findsOneWidget);
     await tester.tap(find.text('POSITION'));
     await tester.pumpAndSettle();
@@ -73,15 +82,19 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final repository = _FakeTeamContractRepository();
     await tester.pumpWidget(
       MaterialApp(
         theme: whitetheme,
-        home: const Scaffold(
-          body: SquadTab(team: {'id': 83}),
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: repository,
+          ),
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 450));
+    await tester.pumpAndSettle();
 
     final season = find.byKey(const ValueKey('squad-season-dropdown'));
     final sort = find.byKey(const ValueKey('squad-sort-dropdown'));
@@ -96,6 +109,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('24/25'), findsOneWidget);
+    expect(repository.requestedSeasonIds, [25659, 23621]);
 
     await tester.tap(find.byKey(const ValueKey('squad-sort-arrow')));
     await tester.pumpAndSettle();
@@ -103,4 +117,103 @@ void main() {
     expect(find.text('WAGE'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('shows an API error and retries the roster request',
+      (tester) async {
+    final repository = _FakeTeamContractRepository(failuresRemaining: 1);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: whitetheme,
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: repository,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('squad-error')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('squad-retry')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('API Player'), findsOneWidget);
+    expect(repository.requestedSeasonIds, [25659, 25659]);
+  });
+
+  testWidgets('shows the empty state for an empty API roster', (tester) async {
+    final repository = _FakeTeamContractRepository(returnEmpty: true);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: whitetheme,
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: repository,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('squad-empty')), findsOneWidget);
+    expect(find.byKey(const ValueKey('squad-error')), findsNothing);
+  });
+}
+
+class _FakeTeamContractRepository implements TeamContractRepository {
+  _FakeTeamContractRepository({
+    this.failuresRemaining = 0,
+    this.returnEmpty = false,
+  });
+
+  final ValueNotifier<Map<TeamContractQuery, TeamContractRoster>> _cache =
+      ValueNotifier(const {});
+  final List<int?> requestedSeasonIds = [];
+  int failuresRemaining;
+  final bool returnEmpty;
+
+  @override
+  ValueListenable<Map<TeamContractQuery, TeamContractRoster>>
+      get cachedRosters => _cache;
+
+  @override
+  TeamContractRoster? cachedForTeam(int teamId, {int? seasonId}) {
+    return _cache.value[TeamContractQuery(teamId: teamId, seasonId: seasonId)];
+  }
+
+  @override
+  Future<TeamContractRoster> loadForTeam(int teamId, {int? seasonId}) async {
+    requestedSeasonIds.add(seasonId);
+    if (failuresRemaining > 0) {
+      failuresRemaining--;
+      throw StateError('Test roster failure');
+    }
+    final roster = TeamContractRoster(
+      teamId: teamId,
+      seasonId: seasonId ?? 25659,
+      isCurrent: seasonId != 23621,
+      players: returnEmpty
+          ? const []
+          : [
+              TeamPlayerContract(
+                playerId: 1,
+                playerName: 'API Player',
+                positionGroup: TeamPositionGroup.forward,
+                jerseyNumber: 9,
+                dateOfBirth: DateTime.utc(2000, 1, 1),
+                estimatedWeeklyGrossEur: 100000,
+                endDate: seasonId == 23621 ? null : DateTime.utc(2028, 6, 30),
+              ),
+            ],
+    );
+    _cache.value = Map.unmodifiable({
+      ..._cache.value,
+      TeamContractQuery(teamId: teamId, seasonId: seasonId): roster,
+    });
+    return roster;
+  }
 }
