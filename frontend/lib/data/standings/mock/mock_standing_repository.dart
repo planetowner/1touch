@@ -15,17 +15,56 @@ class MockStandingRepository implements StandingRepository {
         entry.key: List<Standing>.unmodifiable(entry.value),
     });
     _standings = ValueNotifier(_allStandings);
+    _cachedTables = ValueNotifier(Map.unmodifiable({
+      for (final standing in _allStandings)
+        StandingQuery(
+          competitionId: standing.competitionId,
+          seasonId: standing.seasonId,
+        ): List<Standing>.unmodifiable(
+          _allStandings.where(
+            (candidate) =>
+                candidate.competitionId == standing.competitionId &&
+                candidate.seasonId == standing.seasonId,
+          ),
+        ),
+    }));
   }
 
   final List<Standing> _allStandings;
   late final Map<int, List<Standing>> _standingsByCompetition;
   late final ValueNotifier<List<Standing>> _standings;
+  late final ValueNotifier<Map<StandingQuery, List<Standing>>> _cachedTables;
 
   @override
   List<Standing> get allStandings => _allStandings;
 
   @override
   ValueListenable<List<Standing>> get standings => _standings;
+
+  @override
+  ValueListenable<Map<StandingQuery, List<Standing>>> get cachedTables =>
+      _cachedTables;
+
+  @override
+  List<Standing>? cachedForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) {
+    if (seasonId == null) {
+      final matches = forCompetition(competitionId);
+      return matches.isEmpty ? null : matches;
+    }
+    return _cachedTables
+        .value[StandingQuery(competitionId: competitionId, seasonId: seasonId)];
+  }
+
+  @override
+  Future<List<Standing>> loadForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) async {
+    return cachedForCompetition(competitionId, seasonId: seasonId) ?? const [];
+  }
 
   @override
   List<Standing> forCompetition(
