@@ -7,6 +7,8 @@ import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repositor
 import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
+import 'support/test_team_overview_repository.dart';
+
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
   final element = tester.element(finder);
   final text = tester.widget<Text>(finder);
@@ -15,6 +17,7 @@ Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
 
 void main() {
   final teamAttributeRepository = MockTeamAttributeRepository();
+  final teamOverviewRepository = TestTeamOverviewRepository.withTeam9();
   const phoneSizes = [
     Size(320, 568),
     Size(375, 667),
@@ -40,6 +43,7 @@ void main() {
               home: TeamScreen(
                 teamId: 9,
                 teamAttributeRepository: teamAttributeRepository,
+                teamOverviewRepository: teamOverviewRepository,
               ),
             ),
           );
@@ -212,6 +216,7 @@ void main() {
         home: TeamScreen(
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
         ),
       ),
     );
@@ -228,6 +233,7 @@ void main() {
         home: TeamScreen(
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
         ),
       ),
     );
@@ -413,6 +419,7 @@ void main() {
         home: TeamScreen(
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
         ),
       ),
     );
@@ -446,6 +453,7 @@ void main() {
         home: TeamScreen(
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
         ),
       ),
     );
@@ -580,6 +588,7 @@ void main() {
         home: TeamScreen(
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
         ),
       ),
     );
