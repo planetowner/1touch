@@ -162,12 +162,54 @@ void main() {
     expect(find.byKey(const ValueKey('squad-empty')), findsOneWidget);
     expect(find.byKey(const ValueKey('squad-error')), findsNothing);
   });
+
+  testWidgets('shows the exact captain and vice-captain card treatments',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: darktheme,
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: _FakeTeamContractRepository(
+              includeLeadershipPlayers: true,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final captain = find.byKey(
+      const ValueKey('squad-leadership-captain-1'),
+    );
+    final viceCaptain = find.byKey(
+      const ValueKey('squad-leadership-vice-captain-2'),
+    );
+    final captainBadge = tester.widget<Container>(captain);
+    final captainDecoration = captainBadge.decoration! as BoxDecoration;
+
+    expect(captain, findsOneWidget);
+    expect(tester.getSize(captain), const Size(24, 18));
+    expect(captainDecoration.border, Border.all(color: AppPalette.white));
+    expect(
+        find.descendant(of: captain, matching: find.text('C')), findsOneWidget);
+    expect(viceCaptain, findsOneWidget);
+    expect(tester.widget<Text>(viceCaptain).style?.color, AppPalette.white);
+    expect(find.text('VC'), findsOneWidget);
+  });
 }
 
 class _FakeTeamContractRepository implements TeamContractRepository {
   _FakeTeamContractRepository({
     this.failuresRemaining = 0,
     this.returnEmpty = false,
+    this.includeLeadershipPlayers = false,
   });
 
   final ValueNotifier<Map<TeamContractQuery, TeamContractRoster>> _cache =
@@ -175,6 +217,7 @@ class _FakeTeamContractRepository implements TeamContractRepository {
   final List<int?> requestedSeasonIds = [];
   int failuresRemaining;
   final bool returnEmpty;
+  final bool includeLeadershipPlayers;
 
   @override
   ValueListenable<Map<TeamContractQuery, TeamContractRoster>>
@@ -206,8 +249,19 @@ class _FakeTeamContractRepository implements TeamContractRepository {
                 jerseyNumber: 9,
                 dateOfBirth: DateTime.utc(2000, 1, 1),
                 estimatedWeeklyGrossEur: 100000,
+                leadershipRole: includeLeadershipPlayers
+                    ? TeamLeadershipRole.captain
+                    : null,
                 endDate: seasonId == 23621 ? null : DateTime.utc(2028, 6, 30),
               ),
+              if (includeLeadershipPlayers)
+                TeamPlayerContract(
+                  playerId: 2,
+                  playerName: 'Vice Captain',
+                  positionGroup: TeamPositionGroup.forward,
+                  jerseyNumber: 10,
+                  leadershipRole: TeamLeadershipRole.viceCaptain,
+                ),
             ],
     );
     _cache.value = Map.unmodifiable({
