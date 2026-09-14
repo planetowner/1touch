@@ -9,6 +9,8 @@ import 'package:onetouch/screens/HomeScreen.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
+import 'support/test_team_overview_repository.dart';
+
 void main() {
   final pages = <({String name, Widget screen, String gradientKey})>[
     (
@@ -23,7 +25,10 @@ void main() {
     ),
     (
       name: 'team',
-      screen: TeamScreen(teamId: 9),
+      screen: TeamScreen(
+        teamId: 9,
+        teamOverviewRepository: TestTeamOverviewRepository.withTeam9(),
+      ),
       gradientKey: 'team-brand-gradient',
     ),
     (

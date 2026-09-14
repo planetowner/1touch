@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
-import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
+import 'package:onetouch/data/team_overview/team_overview_repository.dart';
+import 'package:onetouch/data/team_overview/team_overview_repository_provider.dart'
+    as team_overview_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
@@ -17,12 +20,14 @@ class TeamScreen extends StatefulWidget {
   final int teamId;
   final TeamRepository? teamRepository;
   final TeamAttributeRepository? teamAttributeRepository;
+  final TeamOverviewRepository? teamOverviewRepository;
 
   TeamScreen({
     super.key,
     required this.teamId,
     this.teamRepository,
     this.teamAttributeRepository,
+    this.teamOverviewRepository,
   });
 
   @override
@@ -37,51 +42,16 @@ class _TeamScreenState extends State<TeamScreen>
 
   Map<String, dynamic>? team;
   bool isLoading = true;
+  Object? _loadError;
+  int _loadRequestId = 0;
   Color _teamColor = const Color(0xFFD82457);
 
   TeamRepository get _teamRepository =>
       widget.teamRepository ?? team_providers.teamRepository;
 
-  // Future<void> fetchTeamData() async {
-  //   final url =
-  //       'https://3e6a1be77d44.ngrok-free.app/api/teams/${widget.teamId}/overview';
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //     if (response.statusCode == 200) {
-  //       final jsonMap = json.decode(response.body) as Map<String, dynamic>;
-  //       final parsed = Team.fromJson(jsonMap); // ✅ parse API object
-  //       final int leagueId = parsed.competitionId;
-  //       final int? rank = parsed.standing?['rank'] as int?;
-  //       final String leagueName = {
-  //         8: "Premier League",
-  //         82: "La Liga",
-  //         301: "Serie A",
-  //         384: "Bundesliga",
-  //         564: "Ligue 1",
-  //       }[leagueId] ?? 'League';
-  //       final position = rank != null ? "$leagueName ${ordinal(rank)}" : leagueName;
-  //
-  //       setState(() {
-  //         teams = [parsed]; // ✅ List<Team>
-  //         team = {          // ✅ Map<String, dynamic> for your UI
-  //           "id": parsed.id,
-  //           "name": parsed.name,
-  //           "position": position,
-  //           "logo": parsed.imagePath, // network URL; we handle below
-  //           "rankChange": 0,
-  //           "raw": jsonMap,
-  //         };
-  //         isLoading = false;
-  //       });
-  //     } else {
-  //       print("Failed to load team data: ${response.statusCode}");
-  //       setState(() => isLoading = false);
-  //     }
-  //   } catch (e) {
-  //     print("Error: $e");
-  //     setState(() => isLoading = false);
-  //   }
-  // }
+  TeamOverviewRepository get _teamOverviewRepository =>
+      widget.teamOverviewRepository ??
+      team_overview_providers.teamOverviewRepository;
 
   @override
   void initState() {
@@ -95,9 +65,7 @@ class _TeamScreenState extends State<TeamScreen>
 
     _tabController = TabController(length: 5, vsync: this); // ✅ add init
 
-    // 🔁 Toggle which source to use
-    loadMockData(); // local fake JSON
-    // fetchTeamData(); // real API
+    _startOverviewLoad(updateState: false);
   }
 
   @override
@@ -107,77 +75,85 @@ class _TeamScreenState extends State<TeamScreen>
     // branch stays alive in the bottom-nav shell), so reload instead of
     // only loading once in initState — otherwise it keeps showing whichever
     // team was loaded first, forever.
-    if (widget.teamId != oldWidget.teamId) {
-      loadMockData();
+    if (widget.teamId != oldWidget.teamId ||
+        widget.teamOverviewRepository != oldWidget.teamOverviewRepository) {
+      _startOverviewLoad();
     }
   }
 
-  void loadMockData() {
-    final resolvedTeam = _teamRepository.findById(widget.teamId);
-    if (resolvedTeam == null) {
-      setState(() {
-        team = null;
-        isLoading = false;
-      });
-      return;
+  void _startOverviewLoad({bool updateState = true}) {
+    final requestId = ++_loadRequestId;
+    final cached = _teamOverviewRepository.cachedForTeam(widget.teamId);
+
+    void prepare() {
+      team = cached == null ? null : _teamMap(cached);
+      isLoading = cached == null;
+      _loadError = null;
+      final localTeam = _teamRepository.findById(widget.teamId);
+      _teamColor = Color(localTeam?.primaryColor ?? 0xFFD82457);
     }
-    _teamColor = Color(resolvedTeam.primaryColor);
 
-    final nextMatch = fixtureRepository.nextForTeam(widget.teamId);
-    final lastMatch = fixtureRepository.lastForTeam(widget.teamId);
+    if (updateState) {
+      setState(prepare);
+    } else {
+      prepare();
+    }
+    unawaited(_loadOverview(widget.teamId, requestId));
+  }
 
-    // Get league from fixtures
-    final leagueId = nextMatch?.competitionId ?? lastMatch?.competitionId;
-    final standing = leagueId != null
-        ? standingRepository.findForTeam(leagueId, widget.teamId)
-        : null;
-    final leagueName = leagueId != null
-        ? (competitionRepository.findById(leagueId)?.name ?? 'League')
-        : 'League';
-    final position = standing != null
-        ? '$leagueName ${ordinal(standing.position)}'
+  Future<void> _loadOverview(int teamId, int requestId) async {
+    try {
+      final overview = await _teamOverviewRepository.loadForTeam(teamId);
+      if (!mounted || requestId != _loadRequestId || teamId != widget.teamId) {
+        return;
+      }
+      setState(() {
+        team = _teamMap(overview);
+        isLoading = false;
+        _loadError = null;
+      });
+    } on Object catch (error) {
+      if (!mounted || requestId != _loadRequestId || teamId != widget.teamId) {
+        return;
+      }
+      setState(() {
+        isLoading = false;
+        if (team == null) _loadError = error;
+      });
+    }
+  }
+
+  Map<String, dynamic> _teamMap(TeamOverview overview) {
+    final leagueId =
+        overview.nextMatch?.competitionId ?? overview.lastMatch?.competitionId;
+    final leagueName = leagueId == null
+        ? 'League'
+        : competitionRepository.findById(leagueId)?.name ?? 'League';
+    final positionValue = overview.standing?['position'];
+    final position = positionValue is int
+        ? '$leagueName ${ordinal(positionValue)}'
         : leagueName;
 
-    // Build team view model
-    final teamObj = TeamOverview(
-      id: resolvedTeam.teamId,
-      name: resolvedTeam.name,
-      shortName: resolvedTeam.shortCode ?? '',
-      imagePath: resolvedTeam.imagePath ?? '',
-      standing: standing != null
-          ? {
-              'position': standing.position,
-              'points': standing.points,
-              'matches_played': standing.matchesPlayed,
-              'won': standing.won,
-              'draw': standing.draw,
-              'lost': standing.lost,
-              'goals_for': standing.goalsFor,
-              'goals_against': standing.goalsAgainst,
-              'goal_diff': standing.goalDiff,
-            }
-          : null,
-      nextMatch: nextMatch,
-      lastMatch: lastMatch,
-    );
+    return {
+      'id': overview.id,
+      'name': overview.name,
+      'short_code': overview.shortName,
+      'image_path': overview.imagePath,
+      'position': position,
+      'logo': overview.imagePath,
+      // TODO(team-overview): The current design always renders an upward green
+      // arrow. Connect the signed API rank_delta when that indicator supports
+      // upward, downward, and unchanged states.
+      'rankChange': 0,
+      'standing': overview.standing,
+      'next_match': overview.nextMatch,
+      'last_match': overview.lastMatch,
+      'teamObj': overview,
+    };
+  }
 
-    setState(() {
-      team = {
-        'id': teamObj.id,
-        'name': teamObj.name,
-        'short_code': teamObj.shortName,
-        'image_path': teamObj.imagePath,
-        'position': position,
-        'logo': teamObj.imagePath,
-        'rankChange': 0,
-        'standing': teamObj.standing,
-        'next_match': nextMatch,
-        'last_match': lastMatch,
-        // Pass raw team object for widgets that need it
-        'teamObj': teamObj,
-      };
-      isLoading = false;
-    });
+  void _retryOverviewLoad() {
+    _startOverviewLoad();
   }
 
   @override
@@ -203,9 +179,22 @@ class _TeamScreenState extends State<TeamScreen>
 
     if (team == null) {
       return Scaffold(
-        key: const ValueKey('team-not-found'),
+        key: const ValueKey('team-load-error'),
         backgroundColor: pageBackground,
-        body: const Center(child: Text('Team Not Found')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Unable to load team', style: Body1.style),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                key: const ValueKey('team-retry'),
+                onPressed: _loadError == null ? null : _retryOverviewLoad,
+                child: const Text('RETRY'),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
