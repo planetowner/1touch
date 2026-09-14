@@ -171,12 +171,13 @@ class _PlayerDot extends StatelessWidget {
     final lowerEvents = player.events
         .where((event) => event.type != LineupEventType.subOut)
         .toList();
-    final substitutionMinutes = player.events
-        .where(
-          (event) =>
-              event.type == LineupEventType.subIn ||
-              event.type == LineupEventType.subOut,
-        )
+    final pitchInMinutes = player.events
+        .where((event) => event.type == LineupEventType.subIn)
+        .map((event) => event.minute)
+        .whereType<int>()
+        .map((minute) => "$minute'")
+        .join(' · ');
+    final pitchOutMinutes = pitchOutEvents
         .map((event) => event.minute)
         .whereType<int>()
         .map((minute) => "$minute'")
@@ -202,8 +203,17 @@ class _PlayerDot extends StatelessWidget {
                     Positioned(
                       key: const ValueKey('lineup-pitch-out-badge'),
                       top: -4,
-                      right: -4,
-                      child: _EventBadges(events: pitchOutEvents),
+                      left: 24,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _EventBadges(events: pitchOutEvents),
+                          if (pitchOutMinutes.isNotEmpty) ...[
+                            const SizedBox(width: 3),
+                            Text(pitchOutMinutes, style: Body2.style),
+                          ],
+                        ],
+                      ),
                     ),
                   if (badges != null)
                     Positioned(
@@ -211,12 +221,12 @@ class _PlayerDot extends StatelessWidget {
                       bottom: -6,
                       child: badges,
                     ),
-                  if (substitutionMinutes.isNotEmpty)
+                  if (pitchInMinutes.isNotEmpty)
                     Positioned(
                       left: minuteLeft,
                       bottom: -5,
                       child: Center(
-                        child: Text(substitutionMinutes, style: Body2.style),
+                        child: Text(pitchInMinutes, style: Body2.style),
                       ),
                     ),
                 ],
