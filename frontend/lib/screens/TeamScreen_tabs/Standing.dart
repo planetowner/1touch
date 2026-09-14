@@ -4,18 +4,27 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
-import 'package:onetouch/data/standings/standing_repository_provider.dart';
+import 'package:onetouch/data/standings/api_standing_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
+import 'package:onetouch/data/standings/standing_repository_provider.dart'
+    as standing_options;
 import 'package:onetouch/data/standings/xg_standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/knockout_bracket.dart';
 
 class StandingTab extends StatefulWidget {
   final Map<String, dynamic>? team;
+  final StandingRepository? regularStandingRepository;
 
-  const StandingTab({super.key, required this.team});
+  const StandingTab({
+    super.key,
+    required this.team,
+    this.regularStandingRepository,
+  });
 
   @override
   State<StandingTab> createState() => _StandingTabState();
@@ -34,6 +43,9 @@ class _StandingTabState extends State<StandingTab> {
   // Two separate data sources — different shapes, different endpoints.
   List<Map<String, dynamic>> standings = [];
   List<Map<String, dynamic>> xgStandings = [];
+  bool _isStandingLoading = true;
+  Object? _standingLoadError;
+  int _standingRequestId = 0;
 
   int? currentTeamId;
   List<int> _validLeagueIds = [];
@@ -41,6 +53,9 @@ class _StandingTabState extends State<StandingTab> {
   StandingView _selectedView = StandingView.standing;
 
   bool get _xgAvailable => _big5LeagueIds.contains(selectedLeagueId);
+
+  StandingRepository get _regularStandingRepository =>
+      widget.regularStandingRepository ?? apiStandingRepository;
 
   List<Fixture> get _selectedKnockoutFixtures => fixtureRepository
       .forCompetition(
@@ -59,7 +74,8 @@ class _StandingTabState extends State<StandingTab> {
     super.initState();
 
     _setDefaultLeagueAndSeason();
-    _loadData();
+    _loadXgData(updateState: false);
+    _startStandingLoad(updateState: false);
 
     _horizontalScrollController.addListener(_handleHorizontalScroll);
   }
@@ -70,9 +86,12 @@ class _StandingTabState extends State<StandingTab> {
     // This tab's State is reused across team switches (the Team-tab branch
     // stays alive in the bottom-nav shell), so redo the team-based setup
     // instead of only doing it once in initState.
-    if (widget.team?['id'] != oldWidget.team?['id']) {
+    if (widget.team?['id'] != oldWidget.team?['id'] ||
+        widget.regularStandingRepository !=
+            oldWidget.regularStandingRepository) {
       _setDefaultLeagueAndSeason();
-      _loadData();
+      _loadXgData();
+      _startStandingLoad();
     }
   }
 
@@ -85,7 +104,10 @@ class _StandingTabState extends State<StandingTab> {
     _validLeagueIds = fixtures
         .map((f) => f.competitionId)
         .toSet()
-        .where((id) => standingRepository.forCompetition(id).isNotEmpty)
+        .where(
+          (id) =>
+              standing_options.standingRepository.forCompetition(id).isNotEmpty,
+        )
         .toList();
 
     final leagueId = _validLeagueIds.isNotEmpty
@@ -117,27 +139,7 @@ class _StandingTabState extends State<StandingTab> {
     }
   }
 
-  void _loadData() {
-    //   Standings (always)
-    final standingRows = standingRepository.forCompetition(selectedLeagueId);
-    final newStandings = standingRows.map((s) {
-      final team = teamRepository.findByIdOrUnknown(s.teamId);
-      return {
-        'rank': s.position,
-        'teamId': s.teamId,
-        'team': team.shortCode ?? team.name,
-        'logo': team.imagePath ?? '',
-        'mp': s.matchesPlayed,
-        'w': s.won,
-        'd': s.draw,
-        'l': s.lost,
-        'gf': s.goalsFor,
-        'ga': s.goalsAgainst,
-        'pts': s.points,
-        'last5': s.last5Form,
-      };
-    }).toList();
-
+  void _loadXgData({bool updateState = true}) {
     //   xG standings (Big 5 only — different source/endpoint)
     List<Map<String, dynamic>> newXg = [];
     if (_xgAvailable) {
@@ -160,10 +162,98 @@ class _StandingTabState extends State<StandingTab> {
       }).toList();
     }
 
-    setState(() {
-      standings = newStandings;
+    if (updateState) {
+      setState(() => xgStandings = newXg);
+    } else {
       xgStandings = newXg;
-    });
+    }
+  }
+
+  List<Map<String, dynamic>> _mapStandingRows(
+    List<Standing> rows,
+  ) {
+    return rows
+        .map(
+          (standing) => {
+            'rank': standing.position,
+            'rankDelta': standing.rankDelta,
+            'teamId': standing.teamId,
+            'team': standing.teamName ?? 'Unknown Team',
+            'logo': standing.teamLogo ?? '',
+            'mp': standing.matchesPlayed,
+            'w': standing.won,
+            'd': standing.draw,
+            'l': standing.lost,
+            'gf': standing.goalsFor,
+            'ga': standing.goalsAgainst,
+            'pts': standing.points,
+            'last5': standing.last5Form,
+          },
+        )
+        .toList(growable: false);
+  }
+
+  void _startStandingLoad({bool updateState = true}) {
+    final competitionId = selectedLeagueId;
+    final seasonId = selectedSeasonId;
+    final requestId = ++_standingRequestId;
+    final cached = _regularStandingRepository.cachedForCompetition(
+      competitionId,
+      seasonId: seasonId,
+    );
+
+    void applyInitialState() {
+      standings = cached == null ? const [] : _mapStandingRows(cached);
+      _isStandingLoading = cached == null;
+      _standingLoadError = null;
+    }
+
+    if (updateState) {
+      setState(applyInitialState);
+    } else {
+      applyInitialState();
+    }
+
+    _loadStandings(
+      competitionId: competitionId,
+      seasonId: seasonId,
+      requestId: requestId,
+    );
+  }
+
+  Future<void> _loadStandings({
+    required int competitionId,
+    required int seasonId,
+    required int requestId,
+  }) async {
+    try {
+      final rows = await _regularStandingRepository.loadForCompetition(
+        competitionId,
+        seasonId: seasonId,
+      );
+      if (!mounted ||
+          requestId != _standingRequestId ||
+          competitionId != selectedLeagueId ||
+          seasonId != selectedSeasonId) {
+        return;
+      }
+      setState(() {
+        standings = _mapStandingRows(rows);
+        _isStandingLoading = false;
+        _standingLoadError = null;
+      });
+    } catch (error) {
+      if (!mounted ||
+          requestId != _standingRequestId ||
+          competitionId != selectedLeagueId ||
+          seasonId != selectedSeasonId) {
+        return;
+      }
+      setState(() {
+        _isStandingLoading = false;
+        _standingLoadError = error;
+      });
+    }
   }
 
   @override
@@ -229,6 +319,39 @@ class _StandingTabState extends State<StandingTab> {
   Widget _buildSelectedTable() {
     switch (_selectedView) {
       case StandingView.standing:
+        if (_isStandingLoading && standings.isEmpty) {
+          return const Padding(
+            key: ValueKey('standing-loading'),
+            padding: EdgeInsets.symmetric(vertical: 48),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (_standingLoadError != null && standings.isEmpty) {
+          return Padding(
+            key: const ValueKey('standing-error'),
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            child: Center(
+              child: Column(
+                children: [
+                  const Text('Unable to load standings'),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    key: const ValueKey('standing-retry'),
+                    onPressed: _startStandingLoad,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        if (standings.isEmpty) {
+          return const Padding(
+            key: ValueKey('standing-empty'),
+            padding: EdgeInsets.symmetric(vertical: 48),
+            child: Center(child: Text('No standings available')),
+          );
+        }
         return StandingTable(
           standings: standings,
           currentTeamId: currentTeamId,
@@ -283,7 +406,8 @@ class _StandingTabState extends State<StandingTab> {
                 _selectedView = StandingView.standing;
               }
             });
-            _loadData();
+            _loadXgData();
+            _startStandingLoad();
           },
           items: availableLeagues
               .map(
@@ -328,7 +452,8 @@ class _StandingTabState extends State<StandingTab> {
             setState(() {
               selectedSeasonId = val;
             });
-            _loadData();
+            _loadXgData();
+            _startStandingLoad();
           },
           items: seasons
               .map(
