@@ -719,8 +719,8 @@ class TransferTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playerImage = transfer.playerImage;
-    final displayType = transfer.displayType ?? '-';
-    final isLoan = displayType.contains('Loan');
+    final transferValue = _transferValue(transfer);
+    final isLoan = (transfer.displayType ?? '').contains('Loan');
     final appColors = AppColors.of(context);
 
     return Container(
@@ -776,7 +776,7 @@ class TransferTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        displayType,
+                        transferValue,
                         style: Heading5.style,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -838,6 +838,38 @@ class TransferTile extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _transferValue(TransferEntry transfer) {
+    if (transfer.typeId != 219) {
+      return transfer.displayType ?? '-';
+    }
+    if (transfer.amount == null) return 'Unknown';
+
+    // Temporary frontend-only rule: verified Sportmonks fixtures and public
+    // fees indicate confirmed transfer amounts are EUR. Remove this assumption
+    // when the backend starts returning authoritative currency metadata.
+    return '€${_compactAmount(transfer.amount!)}';
+  }
+
+  static String _compactAmount(int amount) {
+    if (amount >= 1000000000) {
+      return '${_scaledAmount(amount, 1000000000)}bn';
+    }
+    if (amount >= 1000000) {
+      return '${_scaledAmount(amount, 1000000)}m';
+    }
+    if (amount >= 1000) {
+      return '${_scaledAmount(amount, 1000)}k';
+    }
+    return '$amount';
+  }
+
+  static String _scaledAmount(int amount, int divisor) {
+    final scaled = amount / divisor;
+    return scaled == scaled.roundToDouble()
+        ? scaled.toInt().toString()
+        : scaled.toStringAsFixed(1);
   }
 }
 

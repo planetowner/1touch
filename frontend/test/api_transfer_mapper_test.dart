@@ -23,6 +23,7 @@ void main() {
     expect(window.incoming.map((entry) => entry.transferId), [2, 1]);
     expect(window.incoming.first.direction, TransferDirection.incoming);
     expect(window.outgoing.single.direction, TransferDirection.outgoing);
+    expect(window.incoming.first.typeId, 219);
     expect(window.incoming.first.displayType, 'Transfer');
     expect(() => window.incoming.clear(), throwsUnsupportedError);
   });
@@ -66,7 +67,7 @@ Map<String, dynamic> _transferJson({
       'jersey_number': null,
       'type_id': 219,
       'display_type': 'Transfer',
-      'amount': null,
+      'amount': 22000000,
       'currency': null,
       'transfer_date': '2026-07-01',
       'contract_start_date': null,

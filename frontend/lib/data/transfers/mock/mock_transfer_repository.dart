@@ -49,6 +49,7 @@ class MockTransferRepository implements TransferRepository {
         direction: isIncoming
             ? TransferDirection.incoming
             : TransferDirection.outgoing,
+        typeId: transfer.typeId,
         otherTeamId: isIncoming ? transfer.fromTeamId : transfer.toTeamId,
         otherTeamName: isIncoming ? transfer.fromTeamName : transfer.toTeamName,
         displayType: _displayType(transfer.typeId, transfer.amount),

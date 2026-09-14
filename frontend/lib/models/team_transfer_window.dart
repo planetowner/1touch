@@ -8,6 +8,7 @@ class TransferEntry {
     required this.transferId,
     required this.playerId,
     required this.direction,
+    required this.typeId,
     this.playerName,
     this.playerImage,
     this.otherTeamId,
@@ -22,6 +23,7 @@ class TransferEntry {
   final String? playerName;
   final String? playerImage;
   final TransferDirection direction;
+  final int typeId;
   final int? otherTeamId;
   final String? otherTeamName;
   final String? displayType;
