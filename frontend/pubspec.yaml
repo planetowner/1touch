@@ -100,6 +100,7 @@ flutter:
     - assets/onetouch_mark.png
     - assets/animations/onetouch_logo_dark.json
     - assets/animations/onetouch_logo_light.json
+    - assets/match_info/
 
 
 

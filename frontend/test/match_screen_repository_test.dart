@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
-import 'package:onetouch/features/MatchInfoFeatures.dart';
+import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';

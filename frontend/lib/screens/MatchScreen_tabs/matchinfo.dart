@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
-import 'package:onetouch/features/MatchInfoFeatures.dart';
+import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 
@@ -138,7 +138,9 @@ class MatchInfoTab extends StatelessWidget {
         }
       } else if (code == 'yellowcard') {
         add(event.playerId, LineupEventType.yellowCard, event.minute);
-      } else if (fixtureRedCardEventCodes.contains(code)) {
+      } else if (code == 'yellowredcard') {
+        add(event.playerId, LineupEventType.secondYellowCard, event.minute);
+      } else if (code == 'redcard') {
         add(event.playerId, LineupEventType.redCard, event.minute);
       } else if (code == 'substitution') {
         add(event.playerId, LineupEventType.subIn, event.minute);
