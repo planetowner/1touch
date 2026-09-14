@@ -1,0 +1,21 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/home/home_content_repository.dart';
+import 'package:onetouch/data/home/home_content_repository_provider.dart';
+import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/models/home_content_item.dart';
+import 'package:onetouch/models/match_data.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+part 'lineup_models.dart';
+part 'lineup_pitch.dart';
+part 'match_events_section.dart';
+part 'match_highlights.dart';
+part 'match_score_header.dart';
+part 'momentum_chart.dart';
+part 'player_of_the_match.dart';
+part 'stat_bars_section.dart';
+part 'substitutes_and_coach.dart';

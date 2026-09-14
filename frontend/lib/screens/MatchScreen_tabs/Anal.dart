@@ -6,7 +6,7 @@ import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
-import 'package:onetouch/features/MatchInfoFeatures.dart';
+import 'package:onetouch/features/match_info/match_info_features.dart';
 
 import 'match_event_view_data.dart';
 
