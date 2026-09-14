@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -214,14 +214,30 @@ class PlayerContractOut(BaseModel):
     player_id: int
     player_name: str
     player_image: Optional[str] = None
+    position_group_id: Optional[int] = Field(
+        default=None, description="포지션 그룹이에요. 24=GK, 25=DF, 26=MF, 27=FW예요.",
+    )
     jersey_number: Optional[int] = None
+    # 나이를 계산하지 않고 생년월일로 정렬해요. 내림차순이면 어린 선수부터 나와요.
+    date_of_birth: Optional[date] = Field(
+        default=None, description="나이순 정렬에 쓰는 생년월일이에요. 미제공이면 null이에요.",
+    )
+    estimated_weekly_gross_eur: Optional[int] = Field(
+        default=None, description="선택한 팀·시즌의 추정 세전 주급이에요. 유로 단위이며 미제공이면 null이에요.",
+    )
+    leadership_role: Literal["captain", "vice_captain"] | None = Field(
+        default=None, description="주장은 captain, 부주장은 vice_captain이에요. 지정된 값이 없으면 null이에요.",
+    )
     start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    end_date: Optional[date] = Field(
+        default=None, description="계약 종료일이에요. 현재 시즌에서만 계약순 정렬에 쓰며 과거 시즌이나 미제공이면 null이에요.",
+    )
 
 
 class TeamContractsResponse(BaseModel):
     team_id: int
     season_id: int
+    is_current: bool = Field(description="현재 시즌 여부예요. false이면 계약 종료일 정렬 옵션을 숨겨주세요.")
     players: List[PlayerContractOut]
 
 
