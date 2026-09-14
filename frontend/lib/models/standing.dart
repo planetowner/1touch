@@ -11,7 +11,10 @@ class Standing {
   final StandingPhase phase;
   final String groupName; // empty string when phase == league
   final int teamId;
+  final String? teamName;
+  final String? teamLogo;
   final int position;
+  final int? rankDelta;
   final int matchesPlayed;
   final int won;
   final int draw;
@@ -28,7 +31,10 @@ class Standing {
     required this.phase,
     required this.groupName,
     required this.teamId,
+    this.teamName,
+    this.teamLogo,
     required this.position,
+    this.rankDelta,
     required this.matchesPlayed,
     required this.won,
     required this.draw,
@@ -47,7 +53,10 @@ class Standing {
       phase: _parsePhase(json['phase'] as String),
       groupName: json['group_name'] as String? ?? '',
       teamId: json['team_id'] as int,
+      teamName: json['team_name'] as String?,
+      teamLogo: json['team_logo'] as String?,
       position: json['position'] as int,
+      rankDelta: json['rank_delta'] as int?,
       matchesPlayed: json['matches_played'] as int,
       won: json['won'] as int,
       draw: json['draw'] as int,
