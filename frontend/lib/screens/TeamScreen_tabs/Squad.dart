@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 
-enum SortOption { position, jerseyNumber, age, contractLength }
+enum SortOption { position, jerseyNumber, age, contractLength, wage }
 
 extension SortOptionLabel on SortOption {
   String get label {
@@ -15,6 +15,8 @@ extension SortOptionLabel on SortOption {
         return 'Age';
       case SortOption.contractLength:
         return 'Contract Length';
+      case SortOption.wage:
+        return 'Wage';
     }
   }
 }
@@ -30,6 +32,7 @@ class SquadPlayer {
   final int age;
   final String? imageUrl;
   final int contractEndYear;
+  final int? estimatedWeeklyGrossEur;
 
   const SquadPlayer({
     required this.id,
@@ -40,6 +43,7 @@ class SquadPlayer {
     required this.age,
     this.imageUrl,
     required this.contractEndYear,
+    this.estimatedWeeklyGrossEur,
   });
 
   factory SquadPlayer.fromJson(Map<String, dynamic> json) {
@@ -51,7 +55,8 @@ class SquadPlayer {
         position: _positionFromId(json['position_id'] as int),
         imageUrl: json['image_url'] as String?,
         age: json['age'] as int,
-        contractEndYear: json['contractYear'] as int);
+        contractEndYear: json['contractYear'] as int,
+        estimatedWeeklyGrossEur: json['estimated_weekly_gross_eur'] as int?);
   }
 
   static Position _positionFromId(int id) {
@@ -329,7 +334,19 @@ class _SquadTabState extends State<SquadTab> {
       case SortOption.contractLength:
         result = a.contractEndYear.compareTo(b.contractEndYear);
         break;
+      case SortOption.wage:
+        return _compareNullableWage(
+          a.estimatedWeeklyGrossEur,
+          b.estimatedWeeklyGrossEur,
+        );
     }
+    return _isAscending ? result : -result;
+  }
+
+  int _compareNullableWage(int? a, int? b) {
+    if (a == null) return b == null ? 0 : 1;
+    if (b == null) return -1;
+    final result = a.compareTo(b);
     return _isAscending ? result : -result;
   }
 
