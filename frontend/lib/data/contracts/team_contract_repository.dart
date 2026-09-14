@@ -23,9 +23,15 @@ class TeamContractQuery {
 }
 
 abstract interface class TeamContractRepository {
-  ValueListenable<Map<int, TeamContractRoster>> get cachedRosters;
+  ValueListenable<Map<TeamContractQuery, TeamContractRoster>> get cachedRosters;
 
-  TeamContractRoster? cachedForTeam(int teamId);
+  TeamContractRoster? cachedForTeam(
+    int teamId, {
+    int? seasonId,
+  });
 
-  Future<TeamContractRoster> loadForTeam(int teamId);
+  Future<TeamContractRoster> loadForTeam(
+    int teamId, {
+    int? seasonId,
+  });
 }

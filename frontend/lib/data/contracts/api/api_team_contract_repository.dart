@@ -20,24 +20,40 @@ class ApiTeamContractRepository implements TeamContractRepository {
   final http.Client _client;
   final Uri _apiBaseUri;
   final Map<String, String> _requestHeaders;
-  final ValueNotifier<Map<int, TeamContractRoster>> _cachedRosters =
-      ValueNotifier(const {});
+  final ValueNotifier<Map<TeamContractQuery, TeamContractRoster>>
+      _cachedRosters = ValueNotifier(const {});
 
   @override
-  ValueListenable<Map<int, TeamContractRoster>> get cachedRosters =>
-      _cachedRosters;
+  ValueListenable<Map<TeamContractQuery, TeamContractRoster>>
+      get cachedRosters => _cachedRosters;
 
   @override
-  TeamContractRoster? cachedForTeam(int teamId) => _cachedRosters.value[teamId];
+  TeamContractRoster? cachedForTeam(
+    int teamId, {
+    int? seasonId,
+  }) {
+    return _cachedRosters.value[TeamContractQuery(
+      teamId: teamId,
+      seasonId: seasonId,
+    )];
+  }
 
   @override
-  Future<TeamContractRoster> loadForTeam(int teamId) async {
-    final cached = cachedForTeam(teamId);
+  Future<TeamContractRoster> loadForTeam(
+    int teamId, {
+    int? seasonId,
+  }) async {
+    final query = TeamContractQuery(teamId: teamId, seasonId: seasonId);
+    final cached = _cachedRosters.value[query];
     if (cached != null) return cached;
 
     // The backend's default ordering is ascending by contract end date, with
     // missing end dates last. Screen-specific reordering remains a UI concern.
-    final uri = _apiBaseUri.resolve('teams/$teamId/contracts');
+    final uri = _apiBaseUri.resolve('teams/$teamId/contracts').replace(
+      queryParameters: {
+        if (seasonId != null) 'season_id': '$seasonId',
+      },
+    );
     final response = await _client.get(
       uri,
       headers: {
@@ -65,11 +81,16 @@ class ApiTeamContractRepository implements TeamContractRepository {
         'Expected team_id $teamId but received ${apiResponse.teamId}.',
       );
     }
+    if (seasonId != null && apiResponse.seasonId != seasonId) {
+      throw FormatException(
+        'Expected season_id $seasonId but received ${apiResponse.seasonId}.',
+      );
+    }
 
     final roster = teamContractRosterFromApiResponse(apiResponse);
     _cachedRosters.value = Map.unmodifiable({
       ..._cachedRosters.value,
-      teamId: roster,
+      query: roster,
     });
     return roster;
   }
