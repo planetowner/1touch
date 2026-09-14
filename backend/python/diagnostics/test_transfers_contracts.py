@@ -11,6 +11,9 @@ from datetime import date
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 # 이 테스트는 SQLite와 보관한 원문만 사용해요. 모듈을 읽을 때 운영 DB 풀을 열지 않아요.
 with patch("mysql.connector.pooling.MySQLConnectionPool") as pool_factory:
     pool_factory.return_value.get_connection.side_effect = AssertionError("Operational DB access in isolated tests")
@@ -25,6 +28,7 @@ from one_touch_loader.loaders import player_contracts_loader as contracts
 from one_touch_loader.loaders import team_squad_members_loader as squads
 from one_touch_loader.api.repos import transfers_repo, contracts_repo
 from one_touch_loader.api.routes import teams as routes
+from one_touch_loader.api.deps import get_user_id
 from one_touch_loader.api.schemas.common import TeamContractsResponse
 
 CASES = json.loads((Path(__file__).parent / "fixtures/sportmonks_transfers_contracts_verified.json").read_text(encoding="utf-8"))
@@ -42,14 +46,16 @@ class TransfersContractsTests(unittest.TestCase):
         self.stack = ExitStack()
         self.addCleanup(self.stack.close)
         self.stack.enter_context(redirect_stdout(io.StringIO()))
-        self.sql = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES)
+        self.sql = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
         self.addCleanup(self.sql.close)
         self.sql.execute("PRAGMA foreign_keys=ON")
         self.sql.executescript("""
             CREATE TABLE teams (team_id BIGINT PRIMARY KEY, name TEXT, short_code TEXT, image_path TEXT);
-            CREATE TABLE players (player_id BIGINT PRIMARY KEY, display_name TEXT, image_path TEXT);
+            CREATE TABLE players (player_id BIGINT PRIMARY KEY, display_name TEXT, image_path TEXT, date_of_birth DATE);
             CREATE TABLE seasons (season_id BIGINT PRIMARY KEY, competition_id BIGINT, name TEXT, is_current INT);
-            CREATE TABLE team_squad_members (team_id BIGINT, season_id BIGINT, player_id BIGINT, jersey_number INT);
+            CREATE TABLE team_seasons (team_id BIGINT, season_id BIGINT, PRIMARY KEY (team_id, season_id));
+            CREATE TABLE team_squad_members (team_id BIGINT, season_id BIGINT, player_id BIGINT, jersey_number INT, position_group_id INT, leadership_role TEXT);
+            CREATE TABLE player_wages (team_id BIGINT, season_id BIGINT, player_id BIGINT, estimated_weekly_gross_eur INT, PRIMARY KEY (team_id, season_id, player_id));
             CREATE TABLE team_transfers (id INT);
             CREATE TABLE transfer_windows (id INT);
             INSERT INTO seasons VALUES (28083,8,'2026/2027',1),(25000,8,'2025/2026',0);
@@ -58,11 +64,12 @@ class TransfersContractsTests(unittest.TestCase):
         for name in ("migrate_transfers_contracts_minimal.sql", "create_transfers.sql", "create_player_contracts.sql"):
             self.sql.executescript(sqlite_ddl((folder / name).read_text(encoding="utf-8")))
         for pid in (832, 997, 4313, 163152, 185658, 25162, 11353231):
-            self.sql.execute("INSERT INTO players VALUES (?, ?, NULL)", (pid, f"Existing {pid}"))
+            self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (?, ?, NULL)", (pid, f"Existing {pid}"))
         self.sql.commit()
         self.stack.enter_context(patch.object(db, "get_conn", side_effect=self.connection))
         for repo in (transfers_repo, contracts_repo):
             self.stack.enter_context(patch.object(repo, "fetch_all_dict", side_effect=self.fetch_dicts))
+        self.stack.enter_context(patch.object(contracts_repo, "fetch_one_dict", side_effect=self.fetch_one))
         self.stack.enter_context(patch.object(transfers_repo, "load_senior_team_ids", return_value=SENIOR))
 
     def connection(self):
@@ -84,6 +91,19 @@ class TransfersContractsTests(unittest.TestCase):
     def fetch_dicts(self, sql, args=()):
         cur = self.sql.execute(sql.replace("%s", "?"), args)
         return [dict(zip([c[0] for c in cur.description], row)) for row in cur.fetchall()]
+
+    def fetch_one(self, sql, args=()):
+        rows = self.fetch_dicts(sql, args)
+        return rows[0] if rows else None
+
+    def api_client(self, authenticated=True):
+        app = FastAPI()
+        app.include_router(routes.router, prefix="/v1")
+        if authenticated:
+            app.dependency_overrides[get_user_id] = lambda: 1
+        client = TestClient(app)
+        self.addCleanup(client.close)
+        return client
 
     def store(self, player_id):
         rows = transfers.build_transfer_rows(player_id, CASES["players"][str(player_id)], SENIOR)
@@ -213,7 +233,7 @@ class TransfersContractsTests(unittest.TestCase):
         for key,records in CASES["refresh_current_contracts"].items():
             pid=int(key)
             with self.subTest(player_id=pid):
-                self.sql.execute("INSERT INTO players VALUES (?, ?, NULL)",(pid,f"Player {pid}"))
+                self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (?, ?, NULL)",(pid,f"Player {pid}"))
                 with patch.object(client,"_iter_paginated_data",return_value=iter(payloads[key])):
                     selected=list(client.iter_transfers_by_player(pid))
                 rows=transfers.build_transfer_rows(pid,selected,SENIOR)
@@ -242,7 +262,7 @@ class TransfersContractsTests(unittest.TestCase):
     def test_verified_mata_termination_keeps_the_gap_before_racing_arrival(self):
         case=next(c for c in CASES["web_verified_transfer_choices"] if c["player_id"]==188713)
         client=SportmonksClient.__new__(SportmonksClient)
-        self.sql.execute("INSERT INTO players VALUES (188713,'Jaime Mata',NULL)")
+        self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (188713,'Jaime Mata',NULL)")
         with patch.object(client,"_iter_paginated_data",return_value=iter(case["transfers"])):
             selected=list(client.iter_transfers_by_player(188713))
         transfers.replace_player_transfers(188713,transfers.build_transfer_rows(188713,selected,SENIOR))
@@ -254,7 +274,7 @@ class TransfersContractsTests(unittest.TestCase):
     def test_web_unresolved_source_can_be_stored_without_fabricating_dates(self):
         for pid,payload in CASES["web_unresolved_transfers"].items():
             pid=int(pid)
-            self.sql.execute("INSERT INTO players VALUES (?, ?, NULL)",(pid,f"Player {pid}"))
+            self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (?, ?, NULL)",(pid,f"Player {pid}"))
             rows=transfers.build_transfer_rows(pid,payload,SENIOR)
             transfers.replace_player_transfers(pid,rows)
             stored=self.sql.execute("SELECT transfer_id FROM transfers WHERE player_id=?",(pid,)).fetchall()
@@ -263,7 +283,8 @@ class TransfersContractsTests(unittest.TestCase):
         member=CASES["web_unresolved_contract"]
         contract_rows=contracts.build_contract_rows(member["team_id"],[member],{member["player_id"]})["rows"]
         self.sql.executemany("INSERT INTO player_contracts VALUES (?,?,?,?,?)",contract_rows)
-        self.sql.execute("INSERT INTO team_squad_members VALUES (?,28083,?,NULL)",(member["team_id"],member["player_id"]))
+        self.sql.execute("INSERT INTO team_squad_members (team_id, season_id, player_id, jersey_number) VALUES (?,28083,?,NULL)",(member["team_id"],member["player_id"]))
+        self.sql.execute("INSERT INTO team_seasons VALUES (?,28083)",(member["team_id"],))
         visible=contracts_repo.get_team_contracts(member["team_id"],28083)["players"]
         self.assertEqual(visible[0]["end_date"],date.fromisoformat(member["end"]))
         window={"start_date":date(2026,1,1),"end_date":date(2026,9,1)}
@@ -333,13 +354,130 @@ class TransfersContractsTests(unittest.TestCase):
 
     def test_contract_sort_keeps_db_squad_players_with_missing_dates_last(self):
         self.sql.execute("INSERT INTO teams VALUES (6,'Spurs',NULL,NULL)")
+        self.sql.execute("INSERT INTO team_seasons VALUES (6,28083)")
         for pid in (997,4313,163152):
-            self.sql.execute("INSERT INTO team_squad_members VALUES (6,28083,?,NULL)",(pid,))
+            self.sql.execute("INSERT INTO team_squad_members (team_id, season_id, player_id, jersey_number) VALUES (6,28083,?,NULL)",(pid,))
         self.sql.execute("INSERT INTO player_contracts VALUES (6,997,'2023-08-12','2027-06-30',NULL),(6,4313,NULL,'2029-06-30',NULL)")
         for descending, expected in ((False,[997,4313,163152]),(True,[4313,997,163152])):
             result=contracts_repo.get_team_contracts(6,28083,descending=descending)
             self.assertEqual([x["player_id"] for x in result["players"]],expected)
             TeamContractsResponse.model_validate(result)
+
+    def test_contract_api_returns_squad_fields_without_losing_players_or_mixing_wages(self):
+        self.sql.execute("INSERT INTO teams VALUES (6,'Spurs',NULL,NULL),(18,'Other Team',NULL,NULL)")
+        self.sql.execute("UPDATE players SET date_of_birth='1993-07-28' WHERE player_id=997")
+        self.sql.execute("UPDATE players SET date_of_birth='1992-07-08' WHERE player_id=4313")
+        self.sql.executescript("""
+            INSERT INTO team_seasons VALUES (6,28083),(6,25000),(18,28083);
+            INSERT INTO team_squad_members VALUES
+                (6,28083,997,9,27,'captain'),
+                (6,28083,4313,7,27,'vice_captain'),
+                (6,28083,163152,NULL,NULL,NULL),
+                (6,25000,832,1,24,'captain'),
+                (18,28083,185658,10,27,'captain');
+            INSERT INTO player_contracts VALUES
+                (6,997,'2023-08-12','2027-06-30',NULL),
+                (6,4313,NULL,'2029-06-30',NULL),
+                (18,163152,NULL,'2030-06-30',NULL);
+            INSERT INTO player_wages VALUES
+                (6,28083,997,100000), (6,25000,997,80000),
+                (18,28083,997,200000), (6,25000,4313,90000),
+                (18,28083,163152,120000);
+        """)
+        client = self.api_client()
+        with patch.object(
+            routes, "find_team_current_context", return_value=(8,28083),
+        ) as current_context:
+            response = client.get("/v1/teams/6/contracts")
+            explicit = client.get("/v1/teams/6/contracts?season_id=28083")
+        current_context.assert_called_once_with(6)
+        self.assertEqual(explicit.json(),response.json())
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual((body["team_id"],body["season_id"]),(6,28083))
+        self.assertTrue(body["is_current"])
+        self.assertEqual([row["player_id"] for row in body["players"]],[997,4313,163152])
+        captain, vice_captain, missing = body["players"]
+        self.assertEqual(captain, {
+            "player_id":997, "player_name":"Existing 997", "player_image":None,
+            "position_group_id":27, "jersey_number":9, "date_of_birth":"1993-07-28",
+            "estimated_weekly_gross_eur":100000, "leadership_role":"captain",
+            "start_date":"2023-08-12", "end_date":"2027-06-30",
+        })
+        self.assertEqual(vice_captain["leadership_role"],"vice_captain")
+        self.assertEqual(vice_captain["date_of_birth"],"1992-07-08")
+        self.assertIsNone(vice_captain["estimated_weekly_gross_eur"])
+        for field in ("position_group_id","jersey_number","date_of_birth",
+                      "estimated_weekly_gross_eur","leadership_role","start_date","end_date"):
+            self.assertIsNone(missing[field])
+
+    def test_historical_squad_uses_its_season_and_has_no_contract_dates_or_contract_sort(self):
+        self.sql.executescript("""
+            INSERT INTO teams VALUES (6,'Spurs',NULL,NULL);
+            INSERT INTO team_seasons VALUES (6,28083),(6,25000);
+            INSERT INTO team_squad_members VALUES
+                (6,25000,997,18,25,'vice_captain'), (6,25000,4313,7,27,NULL),
+                (6,28083,997,9,27,'captain'), (6,28083,163152,10,27,NULL);
+            INSERT INTO player_contracts VALUES
+                (6,997,'2023-08-12','2029-06-30',NULL),
+                (6,4313,'2024-07-01','2027-06-30',NULL);
+            INSERT INTO player_wages VALUES
+                (6,25000,997,80000), (6,28083,997,100000);
+        """)
+        client = self.api_client()
+        with patch.object(routes, "find_team_current_context") as current_context:
+            bodies = []
+            for descending in ("false","true"):
+                response = client.get(f"/v1/teams/6/contracts?season_id=25000&descending={descending}")
+                self.assertEqual(response.status_code,200)
+                bodies.append(response.json())
+        current_context.assert_not_called()
+        self.assertEqual(bodies[0],bodies[1])
+        body = bodies[0]
+        self.assertEqual(body["season_id"],25000)
+        self.assertFalse(body["is_current"])
+        self.assertEqual([row["player_id"] for row in body["players"]],[997,4313])
+        player = body["players"][0]
+        self.assertEqual(player["position_group_id"],25)
+        self.assertEqual(player["jersey_number"],18)
+        self.assertEqual(player["leadership_role"],"vice_captain")
+        self.assertEqual(player["estimated_weekly_gross_eur"],80000)
+        for player in body["players"]:
+            self.assertIsNone(player["start_date"])
+            self.assertIsNone(player["end_date"])
+
+    def test_contract_api_validates_team_season_and_preserves_empty_squads(self):
+        self.sql.executescript("""
+            INSERT INTO team_seasons VALUES (6,28083),(6,500);
+            INSERT INTO seasons VALUES (500,24,'2026/2027',1);
+        """)
+        client = self.api_client()
+        for path in ("/v1/teams/99/contracts?season_id=28083",
+                     "/v1/teams/6/contracts?season_id=25000",
+                     "/v1/teams/6/contracts?season_id=500",
+                     "/v1/teams/6/contracts?season_id=999"):
+            with self.subTest(path=path):
+                self.assertEqual(client.get(path).status_code,404)
+        response = client.get("/v1/teams/6/contracts?season_id=28083")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json(),{"team_id":6,"season_id":28083,"is_current":True,"players":[]})
+        for season_id in ("0","-1","invalid"):
+            with self.subTest(season_id=season_id):
+                self.assertEqual(client.get(f"/v1/teams/6/contracts?season_id={season_id}").status_code,422)
+        with patch.object(routes, "find_team_current_context", return_value=None):
+            self.assertEqual(client.get("/v1/teams/6/contracts").status_code,404)
+
+    def test_contract_api_documents_nullable_sort_fields_and_requires_bearer(self):
+        client = self.api_client(authenticated=False)
+        response = client.get("/v1/teams/6/contracts")
+        self.assertEqual(response.status_code,401)
+        self.assertEqual(response.headers["WWW-Authenticate"],"Bearer")
+        schema = client.app.openapi()
+        self.assertEqual(schema["paths"]["/v1/teams/{team_id}/contracts"]["get"]["security"],[{"HTTPBearer":[]}])
+        fields = schema["components"]["schemas"]["PlayerContractOut"]["properties"]
+        for field in ("position_group_id","date_of_birth","estimated_weekly_gross_eur","leadership_role","end_date"):
+            self.assertIn({"type":"null"},fields[field]["anyOf"])
+        self.assertEqual(fields["leadership_role"]["anyOf"][0]["enum"],["captain","vice_captain"])
 
     def test_latest_window_changes_on_opening_day_and_keeps_closed_window(self):
         self.sql.execute("INSERT INTO transfer_windows VALUES (28083,'summer','2026-06-15','2026-09-01'),(28083,'winter','2027-01-01','2027-02-01')")
@@ -405,7 +543,7 @@ class TransfersContractsTests(unittest.TestCase):
         self.sql.execute("INSERT INTO teams VALUES (6,'Spurs',NULL,NULL)")
         self.sql.execute("INSERT INTO player_contracts VALUES (6,997,'2020-01-01','2030-01-01',NULL)")
         source=CASES["contracts"]["6"]
-        self.sql.executemany("INSERT INTO team_squad_members VALUES (6,28083,?,NULL)",[(x["player_id"],) for x in source])
+        self.sql.executemany("INSERT INTO team_squad_members (team_id, season_id, player_id, jersey_number) VALUES (6,28083,?,NULL)",[(x["player_id"],) for x in source])
         self.sql.commit()
         with patch.object(contracts,"load_squad_scope",return_value=[{"team_id":6,"season_id":28083}]),patch.object(contracts,"SportmonksClient") as client:
             client.return_value.get_team_squad.return_value=source
@@ -432,7 +570,7 @@ class TransfersContractsTests(unittest.TestCase):
 
     def test_unavailable_contract_source_preserves_existing_rows_and_continues(self):
         self.sql.execute("INSERT INTO teams VALUES (6,'Spurs',NULL,NULL)")
-        self.sql.executemany("INSERT INTO players VALUES (?, 'Player', NULL)",[(43393,),(47439,)])
+        self.sql.executemany("INSERT INTO players (player_id, display_name, image_path) VALUES (?, 'Player', NULL)",[(43393,),(47439,)])
         self.sql.executemany("INSERT INTO player_contracts VALUES (6,?,'2025-07-01','2027-06-30',NULL)",[(43393,),(47439,)])
         self.sql.commit()
         with patch.object(contracts,"SportmonksClient") as client:
@@ -455,7 +593,7 @@ class TransfersContractsTests(unittest.TestCase):
         source=CASES["contract_after_loan_return"]
         member=source["contract"]
         pid,tid=member["player_id"],member["team_id"]
-        self.sql.execute("INSERT INTO players VALUES (?, 'Franz Stolz', NULL)",(pid,))
+        self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (?, 'Franz Stolz', NULL)",(pid,))
         rows=transfers.build_transfer_rows(pid,source["transfers"],SENIOR|{tid})
         transfers.replace_player_transfers(pid,rows)
         contracts_rows=contracts.build_contract_rows(tid,[member],{pid})["rows"]

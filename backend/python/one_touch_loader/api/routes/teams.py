@@ -40,11 +40,30 @@ router = APIRouter()
 
 
 @router.get("/teams/{team_id}/contracts", response_model=TeamContractsResponse)
-def team_contracts(team_id: int, descending: bool = False, user_id: int = Depends(get_user_id)):
-    context = find_team_current_context(team_id)
-    if context is None:
-        raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
-    return get_team_contracts(team_id, context[1], descending=descending)
+def team_contracts(
+    team_id: int,
+    descending: bool = Query(default=False, description="현재 시즌의 계약 종료일 정렬 방향이에요. 과거 시즌에는 적용하지 않아요."),
+    user_id: int = Depends(get_user_id),
+    season_id: int | None = Query(
+        default=None, gt=0,
+        description="Big 5 정규리그 season_id예요. 생략하면 해당 팀의 현재 시즌을 조회해요.",
+    ),
+):
+    """스쿼드의 이름·사진·포지션·등번호·생년월일·주급·계약 날짜·주장 역할을 함께 조회해요.
+
+    생년월일과 계약 종료일은 정렬용 날짜 그대로 반환해요.
+    현재 시즌은 계약 종료일순으로 정렬하며, 종료일이 없는 선수는 항상 마지막이에요.
+    과거 시즌은 계약 날짜가 null이고 선수 ID순이에요. is_current=false이면 계약 정렬 옵션을 숨겨주세요.
+    """
+    if season_id is None:
+        context = find_team_current_context(team_id)
+        if context is None:
+            raise HTTPException(status_code=404, detail="Current Big 5 team-season not found")
+        season_id = context[1]
+    result = get_team_contracts(team_id, season_id, descending=descending)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Big 5 team-season not found")
+    return result
 
 
 class PutFollowingTeamsBody(BaseModel):
