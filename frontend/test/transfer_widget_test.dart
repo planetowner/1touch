@@ -54,9 +54,10 @@ void main() {
             playerId: 101,
             playerName: 'Incoming Player With A Long Name',
             direction: TransferDirection.incoming,
+            typeId: 219,
             otherTeamId: 10,
             otherTeamName: 'Source Football Club',
-            displayType: '€8.5M',
+            displayType: 'Transfer',
             amount: 8500000,
             transferDate: '2026-01-10',
           ),
@@ -65,10 +66,22 @@ void main() {
             playerId: 102,
             playerName: 'Loan Player',
             direction: TransferDirection.incoming,
+            typeId: 218,
             otherTeamId: 11,
             otherTeamName: 'Loan Source FC',
             displayType: 'Loan',
             transferDate: '2026-01-20',
+          ),
+          TransferEntry(
+            transferId: 4,
+            playerId: 104,
+            playerName: 'Unknown Fee Player',
+            direction: TransferDirection.incoming,
+            typeId: 219,
+            otherTeamId: 12,
+            otherTeamName: 'Unknown Fee FC',
+            displayType: 'Transfer',
+            transferDate: '2026-01-15',
           ),
         ],
         outgoing: const [
@@ -77,6 +90,7 @@ void main() {
             playerId: 103,
             playerName: 'Outgoing Player',
             direction: TransferDirection.outgoing,
+            typeId: 220,
             otherTeamId: 20,
             otherTeamName: 'Destination FC',
             displayType: 'Free Transfer',
@@ -89,9 +103,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Incoming Player With A Long Name'), findsOneWidget);
-    expect(find.text('€8.5M'), findsOneWidget);
+    expect(find.text('€8.5m'), findsOneWidget);
     expect(find.text('Loan'), findsOneWidget);
-    expect(find.text('FROM'), findsNWidgets(2));
+    expect(find.text('Unknown'), findsOneWidget);
+    expect(find.text('FROM'), findsNWidgets(3));
     expect(find.text('Outgoing Player'), findsNothing);
     expect(tester.takeException(), isNull);
 
@@ -173,6 +188,7 @@ void main() {
             playerId: 110,
             playerName: 'Stale Player',
             direction: TransferDirection.incoming,
+            typeId: 219,
           ),
         ],
         outgoing: const [],
@@ -193,6 +209,7 @@ void main() {
             playerId: 120,
             playerName: 'Current Player',
             direction: TransferDirection.incoming,
+            typeId: 219,
           ),
         ],
         outgoing: const [],
