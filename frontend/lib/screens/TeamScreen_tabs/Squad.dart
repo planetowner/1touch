@@ -851,6 +851,16 @@ class _PlayerCard extends StatelessWidget {
                   left: 10,
                   child: _JerseyBadge(number: player.jerseyNumber),
                 ),
+
+                if (player.leadershipRole != null)
+                  Positioned(
+                    left: 12,
+                    bottom: 12,
+                    child: _LeadershipBadge(
+                      playerId: player.id,
+                      role: player.leadershipRole!,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -878,6 +888,50 @@ class _PlayerCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _LeadershipBadge extends StatelessWidget {
+  const _LeadershipBadge({
+    required this.playerId,
+    required this.role,
+  });
+
+  final int playerId;
+  final TeamLeadershipRole role;
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (role) {
+      TeamLeadershipRole.captain => Container(
+          key: ValueKey('squad-leadership-captain-$playerId'),
+          width: 24,
+          height: 18,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border.all(color: AppPalette.white),
+          ),
+          child: const Text(
+            'C',
+            style: TextStyle(
+              color: AppPalette.white,
+              fontSize: 16,
+              height: 1,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      TeamLeadershipRole.viceCaptain => Text(
+          'VC',
+          key: ValueKey('squad-leadership-vice-captain-$playerId'),
+          style: const TextStyle(
+            color: AppPalette.white,
+            fontSize: 16,
+            height: 1,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+    };
   }
 }
 
