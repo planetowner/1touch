@@ -199,25 +199,17 @@ class _StandingState extends State<Standing> {
     }).toList();
 
     final currentIndex = allRows.indexWhere((r) => r['hl'] == true);
-    if (currentIndex == -1) return allRows.take(3).toList();
+    const windowSize = 5;
+    if (currentIndex == -1) return allRows.take(windowSize).toList();
 
-    // Slide the 3-row window so it always shows 3 rows (not just clamps each
-    // edge independently) — otherwise a team near the top/bottom of a
-    // smaller competition (e.g. a 12-team UCL table) gets a shorter window
-    // than a team in the middle of a 20-team domestic league, making the
-    // two cards different heights.
-    const windowSize = 3;
-    var start = currentIndex - 1;
-    var end = start + windowSize;
-    if (start < 0) {
-      end -= start;
-      start = 0;
-    }
-    if (end > allRows.length) {
-      start -= (end - allRows.length);
-      end = allRows.length;
-    }
-    start = start.clamp(0, allRows.length);
+    // Keep the top five fixed while the selected team is ranked 1st–5th.
+    // Below that, center the team between two rows on either side whenever
+    // possible, shifting the final window upward near the bottom of the table.
+    final maxStart =
+        allRows.length > windowSize ? allRows.length - windowSize : 0;
+    var start = currentIndex < windowSize ? 0 : currentIndex - 2;
+    start = start.clamp(0, maxStart);
+    final end = (start + windowSize).clamp(0, allRows.length);
     return allRows.sublist(start, end);
   }
 
@@ -313,11 +305,14 @@ class _StandingState extends State<Standing> {
   Map<int, TableColumnWidth> get _grid => const {
         0: FixedColumnWidth(_rankW), // #
         1: FlexColumnWidth(), // Club
-        2: FixedColumnWidth(_gapW), // gap
+        2: FixedColumnWidth(_gapW), // Club → MP
         3: FixedColumnWidth(_statW), // MP
-        4: FixedColumnWidth(_statW), // W
-        5: FixedColumnWidth(_statW), // D
-        6: FixedColumnWidth(_statW), // L
+        4: FixedColumnWidth(_gapW), // MP → W
+        5: FixedColumnWidth(_statW), // W
+        6: FixedColumnWidth(_gapW), // W → D
+        7: FixedColumnWidth(_statW), // D
+        8: FixedColumnWidth(_gapW), // D → L
+        9: FixedColumnWidth(_statW), // L
       };
 
   Widget _columnsHeader() {
@@ -340,18 +335,24 @@ class _StandingState extends State<Standing> {
                 child: Text("MP",
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
+            const SizedBox.shrink(),
             Align(
-                alignment: Alignment.centerRight,
+                key: const ValueKey('overview-standing-win-header'),
+                alignment: Alignment.center,
                 child: Text("W",
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
+            const SizedBox.shrink(),
             Align(
-                alignment: Alignment.centerRight,
+                key: const ValueKey('overview-standing-draw-header'),
+                alignment: Alignment.center,
                 child: Text("D",
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
+            const SizedBox.shrink(),
             Align(
-                alignment: Alignment.centerRight,
+                key: const ValueKey('overview-standing-loss-header'),
+                alignment: Alignment.center,
                 child: Text("L",
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
@@ -396,24 +397,30 @@ class _StandingState extends State<Standing> {
                   child:
                       Text(r["mp"], style: Heading5.style.copyWith(color: c))),
             ),
+            const SizedBox.shrink(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Align(
-                  alignment: Alignment.centerRight,
+                  key: ValueKey('overview-standing-win-${r["rank"]}'),
+                  alignment: Alignment.center,
                   child:
                       Text(r["w"], style: Heading5.style.copyWith(color: c))),
             ),
+            const SizedBox.shrink(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Align(
-                  alignment: Alignment.centerRight,
+                  key: ValueKey('overview-standing-draw-${r["rank"]}'),
+                  alignment: Alignment.center,
                   child:
                       Text(r["d"], style: Heading5.style.copyWith(color: c))),
             ),
+            const SizedBox.shrink(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Align(
-                  alignment: Alignment.centerRight,
+                  key: ValueKey('overview-standing-loss-${r["rank"]}'),
+                  alignment: Alignment.center,
                   child:
                       Text(r["l"], style: Heading5.style.copyWith(color: c))),
             ),
