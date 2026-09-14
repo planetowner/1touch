@@ -1,81 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/seasons/season_repository_provider.dart';
+import 'package:onetouch/data/teams/mock/team_season_catalog.dart';
+import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
+import 'package:onetouch/models/season.dart';
 
-enum SortOption { position, jerseyNumber, age, contractLength, wage }
-
-extension SortOptionLabel on SortOption {
-  String get label {
-    switch (this) {
-      case SortOption.position:
-        return 'Position';
-      case SortOption.jerseyNumber:
-        return 'Jersey Number';
-      case SortOption.age:
-        return 'Age';
-      case SortOption.contractLength:
-        return 'Contract Length';
-      case SortOption.wage:
-        return 'Wage';
-    }
-  }
-}
-
-enum Position { GK, DF, MF, FW }
-
-class SquadPlayer {
-  final int id;
-  final String name;
-  final String teamLabel;
-  final int? jerseyNumber;
-  final Position position;
-  final int age;
-  final String? imageUrl;
-  final int contractEndYear;
-  final int? estimatedWeeklyGrossEur;
-
-  const SquadPlayer({
-    required this.id,
-    required this.name,
-    required this.teamLabel,
-    this.jerseyNumber,
-    required this.position,
-    required this.age,
-    this.imageUrl,
-    required this.contractEndYear,
-    this.estimatedWeeklyGrossEur,
-  });
-
-  factory SquadPlayer.fromJson(Map<String, dynamic> json) {
-    return SquadPlayer(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        teamLabel: json['team_label'] as String,
-        jerseyNumber: json['jersey_number'] as int?,
-        position: _positionFromId(json['position_id'] as int),
-        imageUrl: json['image_url'] as String?,
-        age: json['age'] as int,
-        contractEndYear: json['contractYear'] as int,
-        estimatedWeeklyGrossEur: json['estimated_weekly_gross_eur'] as int?);
-  }
-
-  static Position _positionFromId(int id) {
-    switch (id) {
-      case 24:
-        return Position.GK;
-      case 25:
-        return Position.DF;
-      case 26:
-        return Position.MF;
-      case 27:
-        return Position.FW;
-      default:
-        return Position.MF;
-    }
-  }
-}
-
-List<SquadPlayer> _mockSquad() => const [
+List<SquadPlayer> _mockSquad() => [
       // Goalkeepers
       SquadPlayer(
           id: 1,
@@ -300,15 +231,18 @@ class _SquadTabState extends State<SquadTab> {
   SortOption _sortOption = SortOption.position;
   bool _isAscending = true;
   bool _isDropdownOpen = false;
+  bool _isSeasonDropdownOpen = false;
+  int? _selectedSeasonId;
 
-  static const _positionOrder = [
+  static const List<Position?> _positionOrder = [
     Position.GK,
     Position.DF,
     Position.MF,
-    Position.FW
+    Position.FW,
+    null,
   ];
 
-  static String _positionLabel(Position pos) {
+  static String _positionLabel(Position? pos) {
     switch (pos) {
       case Position.GK:
         return 'GOALKEEPER';
@@ -318,42 +252,81 @@ class _SquadTabState extends State<SquadTab> {
         return 'MIDFIELDERS';
       case Position.FW:
         return 'ATTACKERS';
+      case null:
+        return 'POSITION UNAVAILABLE';
     }
   }
 
   int _compare(SquadPlayer a, SquadPlayer b) {
-    int result;
-    switch (_sortOption) {
-      case SortOption.position:
-      case SortOption.jerseyNumber:
-        result = (a.jerseyNumber ?? 999).compareTo(b.jerseyNumber ?? 999);
-        break;
-      case SortOption.age:
-        result = a.age.compareTo(b.age);
-        break;
-      case SortOption.contractLength:
-        result = a.contractEndYear.compareTo(b.contractEndYear);
-        break;
-      case SortOption.wage:
-        return _compareNullableWage(
-          a.estimatedWeeklyGrossEur,
-          b.estimatedWeeklyGrossEur,
-        );
-    }
-    return _isAscending ? result : -result;
-  }
-
-  int _compareNullableWage(int? a, int? b) {
-    if (a == null) return b == null ? 0 : 1;
-    if (b == null) return -1;
-    final result = a.compareTo(b);
-    return _isAscending ? result : -result;
+    return compareSquadPlayers(
+      a,
+      b,
+      option: _sortOption,
+      ascending: _isAscending,
+    );
   }
 
   @override
   void initState() {
     super.initState();
+    _selectDefaultSeason();
     _fetchPlayers();
+  }
+
+  @override
+  void didUpdateWidget(SquadTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.team?['id'] != widget.team?['id']) {
+      _selectDefaultSeason();
+    }
+  }
+
+  List<Season> get _availableSeasons {
+    final teamId = widget.team?['id'] as int?;
+    if (teamId == null) return const [];
+    final seasonIds = mockTeamSeasonMemberships
+        .where((membership) => membership.teamId == teamId)
+        .map((membership) => membership.seasonId)
+        .toSet();
+    final seasons = seasonRepository.allSeasons
+        .where((season) => seasonIds.contains(season.seasonId))
+        .toList();
+    seasons.sort((a, b) {
+      if (a.isCurrent != b.isCurrent) return a.isCurrent ? -1 : 1;
+      return b.startingAt.compareTo(a.startingAt);
+    });
+    return seasons;
+  }
+
+  void _selectDefaultSeason() {
+    final seasons = _availableSeasons;
+    _selectedSeasonId = seasons.isEmpty ? null : seasons.first.seasonId;
+  }
+
+  Season? get _selectedSeason {
+    final selectedId = _selectedSeasonId;
+    if (selectedId == null) return null;
+    return seasonRepository.findById(selectedId);
+  }
+
+  bool get _isCurrentSeason => _selectedSeason?.isCurrent ?? true;
+
+  String _seasonLabel(Season season) {
+    final years = season.name.split('/');
+    if (years.length != 2) return season.name;
+    String shortYear(String value) =>
+        value.length > 2 ? value.substring(value.length - 2) : value;
+    return '${shortYear(years[0])}/${shortYear(years[1])}';
+  }
+
+  void _selectSeason(Season season) {
+    setState(() {
+      _selectedSeasonId = season.seasonId;
+      _isSeasonDropdownOpen = false;
+      if (!season.isCurrent && _sortOption == SortOption.contractLength) {
+        _sortOption = SortOption.position;
+      }
+    });
   }
 
   Future<void> _fetchPlayers() async {
@@ -399,7 +372,7 @@ class _SquadTabState extends State<SquadTab> {
 
     // Group & sort
     if (_sortOption == SortOption.position) {
-      final grouped = <Position, List<SquadPlayer>>{};
+      final grouped = <Position?, List<SquadPlayer>>{};
       for (final p in _players) {
         grouped.putIfAbsent(p.position, () => []).add(p);
       }
@@ -410,7 +383,7 @@ class _SquadTabState extends State<SquadTab> {
       return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         children: [
-          _sortDropdown(),
+          _filterRow(),
           ..._positionOrder
               .where((pos) => grouped.containsKey(pos))
               .expand((pos) => [
@@ -426,108 +399,224 @@ class _SquadTabState extends State<SquadTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       children: [
-        IntrinsicWidth(
-          child: _sortDropdown(),
-        ),
+        _filterRow(),
         const SizedBox(height: 24),
         _PlayerGrid(players: sorted),
       ],
     );
   }
 
-  Widget _sortDropdown() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _filterRow() {
     return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () => setState(() => _isDropdownOpen = !_isDropdownOpen),
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      Text(
-                        _sortOption.label.toUpperCase(),
+        _seasonDropdown(),
+        const SizedBox(width: 12),
+        _sortDropdown(),
+      ],
+    );
+  }
+
+  Widget _seasonDropdown() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final seasons = _availableSeasons;
+    final selectedSeason = _selectedSeason;
+    if (selectedSeason == null || seasons.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      key: const ValueKey('squad-season-dropdown'),
+      width: 88,
+      decoration: BoxDecoration(
+        color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GestureDetector(
+            key: const ValueKey('squad-season-trigger'),
+            onTap: () => setState(() {
+              _isSeasonDropdownOpen = !_isSeasonDropdownOpen;
+              _isDropdownOpen = false;
+            }),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _seasonLabel(selectedSeason),
                         style: Body2_b.style,
                       ),
-                      AnimatedRotation(
-                        turns: _isDropdownOpen ? 0.5 : 0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Theme.of(context).colorScheme.onSurface,
-                          size: 24,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  AnimatedRotation(
+                    turns: _isSeasonDropdownOpen ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child: _isDropdownOpen
-                    ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Section 1: Ascending / Descending
-                          _dropdownItem(
-                            label: 'ASCENDING',
-                            selected: _isAscending,
-                            onTap: () => setState(() {
-                              _isAscending = true;
-                              _isDropdownOpen = false;
-                            }),
-                          ),
-                          _dropdownItem(
-                            label: 'DESCENDING',
-                            selected: !_isAscending,
-                            onTap: () => setState(() {
-                              _isAscending = false;
-                              _isDropdownOpen = false;
-                            }),
-                          ),
-
-                          // Divider
-                          Container(
-                            height: 1,
-                            color: AppColors.of(context).divider,
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                          ),
-
-                          // Section 2: Sort fields
-                          ...SortOption.values.map((option) => _dropdownItem(
-                                label: option.label.toUpperCase(),
-                                selected: _sortOption == option,
-                                onTap: () => setState(() {
-                                  _sortOption = option;
-                                  _isDropdownOpen = false;
-                                }),
-                              )),
-
-                          const SizedBox(height: 4),
-                        ],
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
+            ),
           ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: _isSeasonDropdownOpen
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final season in seasons) _seasonDropdownItem(season),
+                      const SizedBox(height: 4),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _seasonDropdownItem(Season season) {
+    final selected = season.seasonId == _selectedSeasonId;
+    return GestureDetector(
+      key: ValueKey('squad-season-option-${season.seasonId}'),
+      onTap: () => _selectSeason(season),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(_seasonLabel(season), style: Body2_b.style),
+              ),
+            ),
+            if (selected)
+              Icon(
+                Icons.check,
+                color: Theme.of(context).colorScheme.onSurface,
+                size: 16,
+              )
+            else
+              const SizedBox(width: 16),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _sortDropdown() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      key: const ValueKey('squad-sort-dropdown'),
+      width: 172,
+      decoration: BoxDecoration(
+        color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() {
+              _isDropdownOpen = !_isDropdownOpen;
+              _isSeasonDropdownOpen = false;
+            }),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _sortOption.label.toUpperCase(),
+                      style: Body2_b.style,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _isDropdownOpen ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      key: const ValueKey('squad-sort-arrow'),
+                      Icons.keyboard_arrow_down,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: _isDropdownOpen
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section 1: Ascending / Descending
+                      _dropdownItem(
+                        label: 'ASCENDING',
+                        selected: _isAscending,
+                        onTap: () => setState(() {
+                          _isAscending = true;
+                          _isDropdownOpen = false;
+                        }),
+                      ),
+                      _dropdownItem(
+                        label: 'DESCENDING',
+                        selected: !_isAscending,
+                        onTap: () => setState(() {
+                          _isAscending = false;
+                          _isDropdownOpen = false;
+                        }),
+                      ),
+
+                      // Divider
+                      Container(
+                        height: 1,
+                        color: AppColors.of(context).divider,
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                      ),
+
+                      // Section 2: Sort fields
+                      ...availableSquadSortOptions(
+                        isCurrent: _isCurrentSeason,
+                      ).map((option) => _dropdownItem(
+                            label: option.label.toUpperCase(),
+                            selected: _sortOption == option,
+                            onTap: () => setState(() {
+                              _sortOption = option;
+                              _isDropdownOpen = false;
+                            }),
+                          )),
+
+                      const SizedBox(height: 4),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -540,17 +629,20 @@ class _SquadTabState extends State<SquadTab> {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: selected ? Body2_b.style : Body2_b.style,
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(label, style: Body2_b.style),
+              ),
             ),
-            const SizedBox(width: 8),
             if (selected)
               Icon(
+                key: ValueKey('squad-sort-selected-icon-$label'),
                 Icons.check,
                 color: Theme.of(context).colorScheme.onSurface,
                 size: 16,
