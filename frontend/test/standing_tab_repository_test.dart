@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
+import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
 
@@ -105,17 +106,151 @@ void main() {
     ]);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('loads xG standings only after the xG table is selected',
+      (tester) async {
+    final xgRepository = _ControlledXgStandingRepository(
+      (_, __) async => [_xgStanding(teamName: 'API Expected United')],
+    );
+
+    await tester.pumpWidget(_app(
+      _successfulStandingRepository(),
+      xgRepository: xgRepository,
+    ));
+    await tester.pump();
+
+    expect(xgRepository.requests, isEmpty);
+
+    await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
+    await tester.pump();
+
+    expect(xgRepository.requests, [(competitionId: 8, seasonId: 25583)]);
+    expect(find.text('API Expected United'), findsOneWidget);
+    expect(find.byKey(const ValueKey('xg-standing-loading')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows cached xG rows while refreshing the selected query',
+      (tester) async {
+    final pending = Completer<List<XgStanding>>();
+    final xgRepository = _ControlledXgStandingRepository(
+      (_, __) => pending.future,
+      cached: [_xgStanding(teamName: 'Cached Expected United')],
+    );
+
+    await tester.pumpWidget(_app(
+      _successfulStandingRepository(),
+      xgRepository: xgRepository,
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
+    await tester.pump();
+
+    expect(find.text('Cached Expected United'), findsOneWidget);
+    expect(find.byKey(const ValueKey('xg-standing-loading')), findsNothing);
+
+    pending.complete([_xgStanding(teamName: 'Fresh Expected United')]);
+    await tester.pump();
+
+    expect(find.text('Fresh Expected United'), findsOneWidget);
+    expect(find.text('Cached Expected United'), findsNothing);
+  });
+
+  testWidgets('shows an xG error and retries the selected query',
+      (tester) async {
+    var shouldFail = true;
+    final xgRepository = _ControlledXgStandingRepository((_, __) async {
+      if (shouldFail) throw StateError('network failed');
+      return const [];
+    });
+
+    await tester.pumpWidget(_app(
+      _successfulStandingRepository(),
+      xgRepository: xgRepository,
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
+    await tester.pump();
+
+    expect(find.text('Unable to load xG standings'), findsOneWidget);
+
+    shouldFail = false;
+    await tester.tap(find.byKey(const ValueKey('xg-standing-retry')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('xg-standing-empty')), findsOneWidget);
+    expect(xgRepository.requests, hasLength(2));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ignores an old xG response after the season changes',
+      (tester) async {
+    final pending = <int, Completer<List<XgStanding>>>{};
+    final xgRepository = _ControlledXgStandingRepository(
+      (_, seasonId) => pending
+          .putIfAbsent(seasonId!, Completer<List<XgStanding>>.new)
+          .future,
+    );
+
+    await tester.pumpWidget(_app(
+      _successfulStandingRepository(),
+      xgRepository: xgRepository,
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
+    await tester.pump();
+
+    final seasonDropdown = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('standing-season-filter')),
+    );
+    seasonDropdown.onChanged!(23614);
+    await tester.pump();
+
+    pending[25583]!.complete([
+      _xgStanding(teamName: 'Stale Expected United'),
+    ]);
+    await tester.pump();
+
+    expect(find.text('Stale Expected United'), findsNothing);
+    expect(find.byKey(const ValueKey('xg-standing-loading')), findsOneWidget);
+
+    pending[23614]!.complete([
+      _xgStanding(
+        seasonId: 23614,
+        teamName: 'Current Expected United',
+      ),
+    ]);
+    await tester.pump();
+
+    expect(find.text('Current Expected United'), findsOneWidget);
+    expect(xgRepository.requests, [
+      (competitionId: 8, seasonId: 25583),
+      (competitionId: 8, seasonId: 23614),
+    ]);
+    expect(tester.takeException(), isNull);
+  });
 }
 
-Widget _app(_ControlledStandingRepository repository) {
+Widget _app(
+  _ControlledStandingRepository repository, {
+  _ControlledXgStandingRepository? xgRepository,
+}) {
   return MaterialApp(
     theme: app_style.whitetheme,
     home: Scaffold(
       body: StandingTab(
         team: const {'id': 9},
         regularStandingRepository: repository,
+        xgStandingRepository: xgRepository,
       ),
     ),
+  );
+}
+
+_ControlledStandingRepository _successfulStandingRepository() {
+  return _ControlledStandingRepository(
+    (_, __) async => [_standing()],
   );
 }
 
@@ -144,6 +279,26 @@ Standing _standing({
   );
 }
 
+XgStanding _xgStanding({
+  int seasonId = 25583,
+  String teamName = 'API Expected United',
+}) {
+  return XgStanding(
+    competitionId: 8,
+    seasonId: seasonId,
+    teamId: 9,
+    teamName: teamName,
+    teamLogo: 'https://example.test/api-expected-united.png',
+    position: 1,
+    matchesPlayed: 3,
+    xg: 8.125,
+    xga: 2.5,
+    xpts: 7.25,
+    provider: 'understat',
+    xptsMethod: 'historical_draw_rate',
+  );
+}
+
 class _ControlledStandingRepository extends MockStandingRepository {
   _ControlledStandingRepository(
     this._loader, {
@@ -166,6 +321,36 @@ class _ControlledStandingRepository extends MockStandingRepository {
 
   @override
   Future<List<Standing>> loadForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) {
+    requests.add((competitionId: competitionId, seasonId: seasonId));
+    return _loader(competitionId, seasonId);
+  }
+}
+
+class _ControlledXgStandingRepository extends MockXgStandingRepository {
+  _ControlledXgStandingRepository(
+    this._loader, {
+    List<XgStanding>? cached,
+  })  : _cached = cached,
+        super(standings: const []);
+
+  final Future<List<XgStanding>> Function(int competitionId, int? seasonId)
+      _loader;
+  final List<XgStanding>? _cached;
+  final requests = <({int competitionId, int? seasonId})>[];
+
+  @override
+  List<XgStanding>? cachedForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) {
+    return _cached;
+  }
+
+  @override
+  Future<List<XgStanding>> loadForCompetition(
     int competitionId, {
     int? seasonId,
   }) {
