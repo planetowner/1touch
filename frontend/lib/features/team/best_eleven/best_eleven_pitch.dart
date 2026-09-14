@@ -1,0 +1,167 @@
+part of 'team_best_eleven_section.dart';
+
+class BestElevenPitch extends StatelessWidget {
+  BestElevenPitch({
+    super.key,
+    required List<BestElevenEntry> players,
+  }) : _players = List.unmodifiable(
+          players.map(
+            (player) => _BestElevenPitchPlayer(
+              slotKey: player.slotKey,
+              playerName: player.playerName,
+            ),
+          ),
+        );
+
+  final List<_BestElevenPitchPlayer> _players;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_players.isEmpty) return const SizedBox.shrink();
+    final appColors = AppColors.of(context);
+    final pitchBackground = Theme.of(context).brightness == Brightness.dark
+        ? AppPalette.lightGrey
+        : appColors.cardBackground;
+
+    final Map<int, List<_BestElevenPitchPlayer>> byRow = {};
+    for (final player in _players) {
+      final parts = player.slotKey.split(':');
+      final row = int.parse(parts[0]);
+      byRow.putIfAbsent(row, () => []).add(player);
+    }
+    for (final list in byRow.values) {
+      list.sort((a, b) {
+        final aColumn = int.parse(a.slotKey.split(':')[1]);
+        final bColumn = int.parse(b.slotKey.split(':')[1]);
+        return aColumn.compareTo(bColumn);
+      });
+    }
+    final rowKeys = byRow.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    return Material(
+      color: pitchBackground,
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(color: pitchBackground),
+        child: Column(
+          children: [
+            CustomPaint(
+              painter: _HalfCirclePainter(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: rowKeys.map((key) {
+                    final rowPlayers = byRow[key]!;
+                    return _BestElevenRow(
+                      players: rowPlayers,
+                      isDefensiveRow: key == rowKeys.last,
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BestElevenRow extends StatelessWidget {
+  const _BestElevenRow({
+    required this.players,
+    this.isDefensiveRow = false,
+  });
+
+  final List<_BestElevenPitchPlayer> players;
+  final bool isDefensiveRow;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget dotWithOffset(int columnIndex) {
+      var topOffset = 0.0;
+      if (isDefensiveRow && players.length == 4) {
+        if (columnIndex == 0 || columnIndex == players.length - 1) {
+          topOffset = -10;
+        }
+      }
+      return Padding(
+        padding: const EdgeInsets.only(top: 0),
+        child: Transform.translate(
+          offset: Offset(0, topOffset),
+          child: _BestElevenPlayerDot(player: players[columnIndex]),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(players.length, dotWithOffset),
+      ),
+    );
+  }
+}
+
+class _BestElevenPlayerDot extends StatelessWidget {
+  const _BestElevenPlayerDot({required this.player});
+
+  final _BestElevenPitchPlayer player;
+
+  @override
+  Widget build(BuildContext context) {
+    final playerName = player.playerName?.trim();
+    final label = playerName == null || playerName.isEmpty
+        ? 'Unknown'
+        : playerName.split(' ').last;
+    final colors = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 62,
+      child: Column(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colors.onSurface,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '##',
+              style: Heading5.style.copyWith(color: colors.onPrimary),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: Eyebrow.style,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BestElevenPitchPlayer {
+  const _BestElevenPitchPlayer({
+    required this.slotKey,
+    required this.playerName,
+  });
+
+  final String slotKey;
+  final String? playerName;
+}
