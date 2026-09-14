@@ -7,6 +7,9 @@ TeamContractRoster teamContractRosterFromApiResponse(
   return TeamContractRoster(
     teamId: response.teamId,
     seasonId: response.seasonId,
+    // The repository currently requests only the current roster. The expanded
+    // response's explicit is_current value is wired in the next transport step.
+    isCurrent: true,
     players: response.players
         .map(
           (player) => TeamPlayerContract(

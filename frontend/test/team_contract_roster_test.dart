@@ -8,6 +8,7 @@ void main() {
 
     expect(roster.teamId, 83);
     expect(roster.seasonId, 25659);
+    expect(roster.isCurrent, isTrue);
     expect(player.playerId, 1001);
     expect(player.playerName, 'Contract Player');
   });
@@ -16,7 +17,11 @@ void main() {
     final player = _roster().players.single;
 
     expect(player.playerImage, isNull);
+    expect(player.positionGroup, isNull);
     expect(player.jerseyNumber, isNull);
+    expect(player.dateOfBirth, isNull);
+    expect(player.estimatedWeeklyGrossEur, isNull);
+    expect(player.leadershipRole, isNull);
     expect(player.startDate, isNull);
     expect(player.endDate, isNull);
   });
@@ -32,6 +37,7 @@ TeamContractRoster _roster() {
   return TeamContractRoster(
     teamId: 83,
     seasonId: 25659,
+    isCurrent: true,
     players: const [
       TeamPlayerContract(
         playerId: 1001,
