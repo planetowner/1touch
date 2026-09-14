@@ -7,16 +7,21 @@ TeamContractRoster teamContractRosterFromApiResponse(
   return TeamContractRoster(
     teamId: response.teamId,
     seasonId: response.seasonId,
-    // The repository currently requests only the current roster. The expanded
-    // response's explicit is_current value is wired in the next transport step.
-    isCurrent: true,
+    isCurrent: response.isCurrent,
     players: response.players
         .map(
           (player) => TeamPlayerContract(
             playerId: player.playerId,
             playerName: player.playerName,
             playerImage: player.playerImage,
+            positionGroup: _positionGroupFromApi(player.positionGroupId),
             jerseyNumber: player.jerseyNumber,
+            dateOfBirth: _dateFromApi(
+              player.dateOfBirth,
+              fieldName: 'date_of_birth',
+            ),
+            estimatedWeeklyGrossEur: player.estimatedWeeklyGrossEur,
+            leadershipRole: _leadershipRoleFromApi(player.leadershipRole),
             startDate: _dateFromApi(
               player.startDate,
               fieldName: 'start_date',
@@ -29,6 +34,23 @@ TeamContractRoster teamContractRosterFromApiResponse(
         )
         .toList(),
   );
+}
+
+TeamPositionGroup? _positionGroupFromApi(int? value) {
+  if (value == null) return null;
+  for (final group in TeamPositionGroup.values) {
+    if (group.apiId == value) return group;
+  }
+  throw FormatException('Unrecognized position_group_id $value.');
+}
+
+TeamLeadershipRole? _leadershipRoleFromApi(String? value) {
+  return switch (value) {
+    null => null,
+    'captain' => TeamLeadershipRole.captain,
+    'vice_captain' => TeamLeadershipRole.viceCaptain,
+    _ => throw FormatException('Unrecognized leadership_role "$value".'),
+  };
 }
 
 DateTime? _dateFromApi(
