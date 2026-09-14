@@ -1,11 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/contracts/team_contract_repository.dart';
+import 'package:onetouch/data/contracts/team_contract_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/teams/mock/team_season_catalog.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
 import 'package:onetouch/models/season.dart';
+import 'package:onetouch/models/team_contract_roster.dart';
 
+// TODO(squad-api): Remove after the API-backed Squad screen is confirmed on
+// device. It is intentionally not used as an error fallback because that would
+// hide authentication, transport, or response-contract failures.
+// ignore: unused_element
 List<SquadPlayer> _mockSquad() => [
       // Goalkeepers
       SquadPlayer(
@@ -218,8 +227,13 @@ List<SquadPlayer> _mockSquad() => [
 
 class SquadTab extends StatefulWidget {
   final Map<String, dynamic>? team;
+  final TeamContractRepository? contractRepository;
 
-  const SquadTab({super.key, required this.team});
+  const SquadTab({
+    super.key,
+    required this.team,
+    this.contractRepository,
+  });
 
   @override
   State<SquadTab> createState() => _SquadTabState();
@@ -233,6 +247,12 @@ class _SquadTabState extends State<SquadTab> {
   bool _isDropdownOpen = false;
   bool _isSeasonDropdownOpen = false;
   int? _selectedSeasonId;
+  bool? _rosterIsCurrent;
+  Object? _loadError;
+  int _loadRequestId = 0;
+
+  TeamContractRepository get _repository =>
+      widget.contractRepository ?? teamContractRepository;
 
   static const List<Position?> _positionOrder = [
     Position.GK,
@@ -270,14 +290,16 @@ class _SquadTabState extends State<SquadTab> {
   void initState() {
     super.initState();
     _selectDefaultSeason();
-    _fetchPlayers();
+    _startRosterLoad(updateState: false);
   }
 
   @override
   void didUpdateWidget(SquadTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.team?['id'] != widget.team?['id']) {
+    if (oldWidget.team?['id'] != widget.team?['id'] ||
+        oldWidget.contractRepository != widget.contractRepository) {
       _selectDefaultSeason();
+      _startRosterLoad();
     }
   }
 
@@ -309,7 +331,8 @@ class _SquadTabState extends State<SquadTab> {
     return seasonRepository.findById(selectedId);
   }
 
-  bool get _isCurrentSeason => _selectedSeason?.isCurrent ?? true;
+  bool get _isCurrentSeason =>
+      _rosterIsCurrent ?? _selectedSeason?.isCurrent ?? true;
 
   String _seasonLabel(Season season) {
     final years = season.name.split('/');
@@ -327,29 +350,93 @@ class _SquadTabState extends State<SquadTab> {
         _sortOption = SortOption.position;
       }
     });
+    _startRosterLoad();
   }
 
-  Future<void> _fetchPlayers() async {
-    // final teamId = widget.team?['id'];
-    // final url = Uri.parse('https://YOUR_HOST/api/teams/$teamId/squad');
-    // final response = await http.get(url);
-    // if (response.statusCode == 200) {
-    //   final data = json.decode(response.body);
-    //   final squadList = data['squads'] as List;
-    //   setState(() {
-    //     _players = squadList
-    //         .map((item) => SquadPlayer.fromJson(item as Map<String, dynamic>))
-    //         .toList();
-    //     _isLoading = false;
-    //   });
-    // }
+  void _startRosterLoad({bool updateState = true}) {
+    final requestId = ++_loadRequestId;
+    final teamId = widget.team?['id'] as int?;
+    final teamName = widget.team?['name'] as String?;
+    final seasonId = _selectedSeasonId;
+    final validTeam = teamId != null && teamName != null && teamName.isNotEmpty;
+    final cached = validTeam
+        ? _repository.cachedForTeam(teamId, seasonId: seasonId)
+        : null;
 
-    await Future.delayed(const Duration(milliseconds: 400)); // simulate network
-    if (!mounted) return;
-    setState(() {
-      _players = _mockSquad();
-      _isLoading = false;
-    });
+    void prepare() {
+      _players = cached == null
+          ? const []
+          : _presentPlayers(cached.players, teamName!, DateTime.now());
+      _rosterIsCurrent = cached?.isCurrent;
+      _isLoading = validTeam && cached == null;
+      _loadError = validTeam
+          ? null
+          : StateError('Squad requires a team id and team name.');
+    }
+
+    if (updateState) {
+      setState(prepare);
+    } else {
+      prepare();
+    }
+
+    if (validTeam) {
+      unawaited(_loadRoster(
+        requestId: requestId,
+        teamId: teamId,
+        teamName: teamName,
+        seasonId: seasonId,
+      ));
+    }
+  }
+
+  Future<void> _loadRoster({
+    required int requestId,
+    required int teamId,
+    required String teamName,
+    required int? seasonId,
+  }) async {
+    try {
+      final roster = await _repository.loadForTeam(
+        teamId,
+        seasonId: seasonId,
+      );
+      if (!mounted || requestId != _loadRequestId) return;
+
+      setState(() {
+        _players = _presentPlayers(roster.players, teamName, DateTime.now());
+        _rosterIsCurrent = roster.isCurrent;
+        _isLoading = false;
+        _loadError = null;
+        if (!roster.isCurrent && _sortOption == SortOption.contractLength) {
+          _sortOption = SortOption.position;
+        }
+      });
+    } on Object catch (error) {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        if (_players.isEmpty) _loadError = error;
+      });
+    }
+  }
+
+  List<SquadPlayer> _presentPlayers(
+    List<TeamPlayerContract> contracts,
+    String teamName,
+    DateTime asOf,
+  ) {
+    return contracts
+        .map((contract) => SquadPlayer.fromContract(
+              contract,
+              teamName: teamName,
+              asOf: asOf,
+            ))
+        .toList(growable: false);
+  }
+
+  void _retryLoad() {
+    _startRosterLoad();
   }
 
   @override
@@ -361,10 +448,32 @@ class _SquadTabState extends State<SquadTab> {
         ),
       );
     }
+    if (_loadError != null && _players.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Unable to load squad',
+              key: const ValueKey('squad-error'),
+              style: Body1.style,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              key: const ValueKey('squad-retry'),
+              onPressed: _retryLoad,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
     if (_players.isEmpty) {
       return Center(
         child: Text(
           'No players found',
+          key: const ValueKey('squad-empty'),
           style: TextStyle(color: AppColors.of(context).mutedForeground),
         ),
       );
