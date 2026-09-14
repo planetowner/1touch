@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 
 class OverviewTab extends StatelessWidget {
   final Map<String, dynamic>? team;
@@ -27,7 +28,10 @@ class OverviewTab extends StatelessWidget {
 
               const SizedBox(height: 32),
               const SectionHeader(title: "BEST XI"),
-              BestXI(teams: team),
+              TeamBestElevenSection(
+                teamId: team?['id'] as int?,
+                variant: TeamBestElevenVariant.overview,
+              ),
 
               const SizedBox(height: 32),
               const SectionHeader(title: "INJURY STATUS"),

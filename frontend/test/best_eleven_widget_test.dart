@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
-import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
-import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
   Widget buildSubject({
@@ -18,8 +17,9 @@ void main() {
       theme: whitetheme,
       home: Scaffold(
         body: SingleChildScrollView(
-          child: BestXI(
-            teams: <String, dynamic>{'id': teamId},
+          child: TeamBestElevenSection(
+            teamId: teamId,
+            variant: TeamBestElevenVariant.overview,
             repository: repository,
           ),
         ),
@@ -35,8 +35,9 @@ void main() {
       theme: whitetheme,
       home: Scaffold(
         body: SingleChildScrollView(
-          child: BestElevenSection(
-            team: teamId == null ? null : <String, dynamic>{'id': teamId},
+          child: TeamBestElevenSection(
+            teamId: teamId,
+            variant: TeamBestElevenVariant.analysis,
             repository: repository,
           ),
         ),
