@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Search.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/data/players/mock_player_repository.dart';
 import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -17,6 +18,22 @@ class _TestCompetitionContextResolver
 
   @override
   TeamCompetitionContext? resolve(int teamId) => contexts[teamId];
+}
+
+class _FailingTeamRepository extends MockTeamRepository {
+  _FailingTeamRepository() : super(teams: const []);
+
+  @override
+  Future<void> initialize() async {
+    throw StateError('Team catalogue unavailable');
+  }
+}
+
+class _ImmediatePlayerRepository extends MockPlayerRepository {
+  _ImmediatePlayerRepository() : super(players: const []);
+
+  @override
+  Future<void> initializeFollowing() async {}
 }
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
@@ -297,6 +314,52 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Opened match 777'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('empty repositories render recents without throwing',
+      (tester) async {
+    _useCompactPhone(tester);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Search(
+          teamRepository: MockTeamRepository(teams: const []),
+          competitionContextResolver: const _TestCompetitionContextResolver({}),
+          fixtureRepository: MockFixtureRepository(fixtures: const []),
+          playerRepository: _ImmediatePlayerRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('search-recents')), findsOneWidget);
+    expect(find.text('RECENTS'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('empty failed initialization shows a retry state',
+      (tester) async {
+    _useCompactPhone(tester);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Search(
+          teamRepository: _FailingTeamRepository(),
+          competitionContextResolver: const _TestCompetitionContextResolver({}),
+          fixtureRepository: MockFixtureRepository(fixtures: const []),
+          playerRepository: _ImmediatePlayerRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('search-load-error')), findsOneWidget);
+    expect(find.text('SEARCH UNAVAILABLE'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
