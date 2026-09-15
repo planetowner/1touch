@@ -14,6 +14,7 @@ import '../models/home_content_item.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // 1. Converted _showSyncDialog to a reusable Widget class
@@ -276,8 +277,7 @@ class FavoriteTeamCard extends StatelessWidget {
               // TEAM HEADER
               GestureDetector(
                 onTap: () {
-                  context.push(
-                      '/team/${team.id}'); // Or use ID if your route expects it
+                  openTeamPage(context, team.id);
                 },
                 child: Row(
                   children: [

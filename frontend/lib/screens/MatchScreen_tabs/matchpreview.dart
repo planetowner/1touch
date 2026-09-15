@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
@@ -231,7 +231,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           // '/match/:matchId'), but '/team/:id' belongs to the bottom-nav
           // shell's own navigator — push() would land there invisibly,
           // behind this screen. go() replaces the location so it surfaces.
-          onTap: () => context.go('/team/$teamId'),
+          onTap: () => openTeamPage(context, teamId),
           child: Image.network(
             logoPath,
             width: 72,
@@ -555,7 +555,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Column(
       children: [
         GestureDetector(
-          onTap: () => context.go('/team/$teamId'),
+          onTap: () => openTeamPage(context, teamId),
           child: Image.network(
             asset,
             width: 48,
