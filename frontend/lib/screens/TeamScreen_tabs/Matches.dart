@@ -37,7 +37,6 @@ class _MatchesTabState extends State<MatchesTab> {
   final Map<_MatchSection, double> _sectionOffsets = {};
 
   int _visibleHeaderCount = 1;
-  bool _headerSyncScheduled = false;
   bool _applyingHeaderCorrection = false;
   double _trailingScrollExtent = 24;
   bool _isLoading = true;
@@ -49,19 +48,19 @@ class _MatchesTabState extends State<MatchesTab> {
   List<Fixture> upcomingMatches = const [];
 
   FixtureRepository get _fixtureRepository =>
-      widget.fixtureRepository ?? fixture_providers.fixtureRepository;
+      widget.fixtureRepository ?? fixture_providers.fixtureDetailRepository;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scheduleHeaderSync);
+    _scrollController.addListener(_syncHeaderStack);
     unawaited(_loadFixtures());
   }
 
   @override
   void dispose() {
     _scrollController
-      ..removeListener(_scheduleHeaderSync)
+      ..removeListener(_syncHeaderStack)
       ..dispose();
     super.dispose();
   }
@@ -155,7 +154,7 @@ class _MatchesTabState extends State<MatchesTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       scrollToLiveSection();
-      _scheduleHeaderSync();
+      _syncHeaderStack();
     });
   }
 
@@ -176,17 +175,12 @@ class _MatchesTabState extends State<MatchesTab> {
     );
   }
 
-  void _scheduleHeaderSync() {
-    if (_headerSyncScheduled || _applyingHeaderCorrection || !mounted) return;
-    _headerSyncScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _headerSyncScheduled = false;
-      _syncHeaderStack();
-    });
-  }
-
   void _syncHeaderStack() {
-    if (!mounted || !_scrollController.hasClients) return;
+    if (!mounted ||
+        _applyingHeaderCorrection ||
+        !_scrollController.hasClients) {
+      return;
+    }
 
     final sections = _sections;
     for (final section in sections) {
@@ -238,7 +232,7 @@ class _MatchesTabState extends State<MatchesTab> {
           _scrollController.jumpTo(correctedOffset);
           _applyingHeaderCorrection = false;
         }
-        _scheduleHeaderSync();
+        _syncHeaderStack();
       });
     }
   }
@@ -320,10 +314,7 @@ class _MatchesTabState extends State<MatchesTab> {
               SizedBox(
                 key: ValueKey('matches-${section.type.name}-header'),
                 height: _MatchSectionHeader.sectionHeight,
-                child: _StackedMatchSectionHeader(
-                  title: section.title,
-                  animate: section.type != _MatchSection.upcoming,
-                ),
+                child: _MatchSectionHeader(title: section.title),
               ),
           ],
         ),
@@ -558,51 +549,6 @@ class _MatchSectionHeader extends StatelessWidget {
           const Spacer(),
           Container(height: 0.7, color: AppColors.of(context).divider),
         ],
-      ),
-    );
-  }
-}
-
-class _StackedMatchSectionHeader extends StatefulWidget {
-  final String title;
-  final bool animate;
-
-  const _StackedMatchSectionHeader({
-    required this.title,
-    required this.animate,
-  });
-
-  @override
-  State<_StackedMatchSectionHeader> createState() =>
-      _StackedMatchSectionHeaderState();
-}
-
-class _StackedMatchSectionHeaderState
-    extends State<_StackedMatchSectionHeader> {
-  bool _visible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _visible = !widget.animate;
-    if (widget.animate) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _visible = true);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSlide(
-      duration: const Duration(milliseconds: 140),
-      curve: Curves.easeOutCubic,
-      offset: _visible ? Offset.zero : const Offset(0, -0.12),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOut,
-        opacity: _visible ? 1 : 0,
-        child: _MatchSectionHeader(title: widget.title),
       ),
     );
   }
