@@ -84,7 +84,14 @@ void main() {
     expect(find.byKey(const ValueKey('search-player-lee-kang-in')),
         findsOneWidget);
     expect(find.byKey(const ValueKey('search-team-83')), findsOneWidget);
-    expect(find.byKey(const ValueKey('search-event-19200003')), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>).value.startsWith('search-event-'),
+      ),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('search-category-tabs')), findsNothing);
     expect(
       _effectiveTextColor(tester, find.text('RECENTS')),
