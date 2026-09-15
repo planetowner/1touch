@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
@@ -61,7 +61,7 @@ class FavoritePlayersSection extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final player = players[index];
                   return GestureDetector(
-                    onTap: () => context.push('/players/${player.id}'),
+                    onTap: () => openPlayerPage(context, player.id),
                     child: Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: SizedBox(
