@@ -286,6 +286,7 @@ void main() {
       ),
     );
     await tester.pump();
+    expect(find.text('@alexkim'), findsOneWidget);
     expect(
       tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
       app_style.AppPalette.lightModeDarkGrey,

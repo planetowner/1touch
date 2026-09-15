@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
@@ -77,7 +78,13 @@ class PostDetailContent extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('User ${post.userId}', style: Body1.style),
+                        Text(
+                          communityUsernameLabel(
+                            username: post.username,
+                            authorDeleted: post.authorDeleted,
+                          ),
+                          style: Body1.style,
+                        ),
                         Text(
                           _timeAgo(post.createdAt),
                           style: Body2.style.copyWith(
