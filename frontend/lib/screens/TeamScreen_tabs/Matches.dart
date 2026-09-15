@@ -446,10 +446,7 @@ class _MatchesTabState extends State<MatchesTab> {
                                 isDimmed: (fixture.homeScore ?? 0) <
                                     (fixture.awayScore ?? 0),
                               ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4),
-                                child: Text(":", style: Heading5.style),
-                              ),
+                              const SizedBox(width: 8),
                               scoreboard(
                                 fixture.awayScore ?? 0,
                                 isDimmed: (fixture.awayScore ?? 0) <
