@@ -44,6 +44,10 @@ PY
 docker build --progress=plain -t "onetouch-api:$release_tag" \
   -f "$release_directory/deploy/vultr/Dockerfile" "$release_directory"
 
+# API를 바꾸기 전에 예약 작업과 같은 일반 사용자로 브라우저 실행을 확인해요.
+docker run --rm --init --user 1001:1001 --entrypoint python "onetouch-api:$release_tag" \
+  -m diagnostics.check_opta_browser
+
 if [[ ! -f "$runtime_directory/.env.production" ]]; then
   # PowerShell은 줄바꿈 전까지 안내를 전달하지 않아, 암호 입력 전에 줄을 마쳐요.
   printf '\nNew API collaboration password:\n' >/dev/tty
@@ -79,7 +83,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -109,6 +113,8 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.servi
 install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.timer" /etc/systemd/system/onetouch-community-cleanup.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.service" /etc/systemd/system/onetouch-fixture-live.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.timer" /etc/systemd/system/onetouch-fixture-live.timer
+install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.service" /etc/systemd/system/onetouch-opta-sync.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.timer" /etc/systemd/system/onetouch-opta-sync.timer
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
 systemctl enable --now onetouch-community-cleanup.timer
@@ -125,8 +131,12 @@ status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}
 curl --fail --silent --show-error --retry 12 --retry-all-errors --retry-delay 5 --max-time 10 \
   'https://1touch.football/' --output "$transfer_directory/served-introduction.html"
 cmp "$runtime_directory/site/index.html" "$transfer_directory/served-introduction.html"
+systemctl enable --now onetouch-opta-sync.timer
+systemctl is-enabled onetouch-opta-sync.timer
+systemctl is-active onetouch-opta-sync.timer
 printf '\n'
 bash compose-production.sh ps
 systemctl list-timers onetouch-db-backup.timer --no-pager
 systemctl list-timers onetouch-community-cleanup.timer --no-pager
+systemctl list-timers onetouch-opta-sync.timer --no-pager
 echo 'Public introduction, HTTPS, protected docs, API/database health and daily SQL backup verified.'
