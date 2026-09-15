@@ -5,6 +5,7 @@ void main() {
   test('parses the GET /v1/posts item contract', () {
     final post = Post.fromJson(const {
       'post_id': 42,
+      'team_id': 83,
       'user_id': 1001,
       'category': 'analysis',
       'title': 'Pressing structure',
@@ -14,6 +15,7 @@ void main() {
     });
 
     expect(post.postId, 42);
+    expect(post.teamId, 83);
     expect(post.userId, 1001);
     expect(post.category, PostCategory.analysis);
     expect(post.title, 'Pressing structure');

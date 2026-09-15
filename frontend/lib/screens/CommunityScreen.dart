@@ -77,8 +77,10 @@ class _CommunityState extends State<Community>
     // parent route hands us a different teamId instead of only on first load.
     if (widget.teamId != oldWidget.teamId) {
       setState(_loadTeam);
+      _loadPosts();
     }
-    if (widget.postRepository != oldWidget.postRepository) {
+    if (widget.teamId == oldWidget.teamId &&
+        widget.postRepository != oldWidget.postRepository) {
       _loadPosts();
     }
   }
@@ -105,6 +107,7 @@ class _CommunityState extends State<Community>
 
     try {
       final posts = await _postRepository.loadPosts(
+        teamId: widget.teamId,
         category: category,
         sort: _selectedPostSort,
       );
@@ -138,7 +141,10 @@ class _CommunityState extends State<Community>
     final created = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => AddPost(postRepository: _postRepository),
+        builder: (context) => AddPost(
+          teamId: widget.teamId,
+          postRepository: _postRepository,
+        ),
       ),
     );
     if (!mounted || created != true) return;

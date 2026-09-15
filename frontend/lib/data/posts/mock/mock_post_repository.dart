@@ -45,6 +45,7 @@ class MockPostRepository implements PostRepository {
     _posts.add(
       Post(
         postId: postId,
+        teamId: input.teamId,
         userId: _currentUserId,
         category: input.category,
         title: input.title,
@@ -58,24 +59,44 @@ class MockPostRepository implements PostRepository {
 
   @override
   Future<List<Post>> loadPosts({
+    required int teamId,
     PostCategory? category,
     PostSort sort = PostSort.newest,
+    PostPeriod period = PostPeriod.allTime,
+    String? timezone,
     int limit = 50,
     int offset = 0,
   }) async {
-    if (limit < 1 || limit > 200) {
-      throw RangeError.range(limit, 1, 200, 'limit');
+    if (teamId < 1) {
+      throw RangeError.value(teamId, 'teamId', 'Must be positive');
+    }
+    if (limit < 1 || limit > 100) {
+      throw RangeError.range(limit, 1, 100, 'limit');
     }
     if (offset < 0) {
       throw RangeError.value(offset, 'offset', 'Must not be negative');
     }
 
+    if (period != PostPeriod.allTime &&
+        (timezone == null || timezone.trim().isEmpty)) {
+      throw ArgumentError.value(
+        timezone,
+        'timezone',
+        'An IANA device timezone is required for a date period',
+      );
+    }
+
     final posts = _posts
-        .where((post) => category == null || post.category == category)
+        .where(
+          (post) =>
+              post.teamId == teamId &&
+              (category == null || post.category == category),
+        )
         .toList();
 
-    // The backend currently maps newest, popular, and best to the same
-    // created_at-descending order until engagement aggregates are available.
+    // The current mock Post model does not expose engagement aggregates yet,
+    // so keep every mock sort deterministic until those response fields are
+    // modeled. The real backend already implements popular and best ordering.
     switch (sort) {
       case PostSort.newest:
       case PostSort.popular:
