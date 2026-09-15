@@ -14,10 +14,10 @@ void main() {
 
   test('wraps the existing community post catalog by default', () async {
     final repository = MockPostRepository();
-    final posts = await repository.loadPosts();
+    final posts = await repository.loadPosts(teamId: 83);
 
-    expect(posts, hasLength(5));
-    expect(posts.first.postId, 4);
+    expect(posts, hasLength(2));
+    expect(posts.first.postId, 1);
   });
 
   test('isolates the temporary mock user identity', () async {
@@ -28,14 +28,16 @@ void main() {
 
     final postId = await repository.createPost(
       const CreatePostInput(
+        teamId: 83,
         category: PostCategory.general,
         title: 'Mock user post',
         body: 'Stored only for this repository instance.',
       ),
     );
-    final post = (await repository.loadPosts()).single;
+    final post = (await repository.loadPosts(teamId: 83)).single;
 
     expect(post.postId, postId);
+    expect(post.teamId, 83);
     expect(post.userId, 42);
   });
 
