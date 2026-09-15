@@ -145,6 +145,63 @@ void main() {
     expect(find.byKey(const ValueKey('matches-empty')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('stacks section headers without delayed entrance animations',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _ControlledFixtureRepository(
+      (_, status, __) async => List.generate(
+        6,
+        (index) => _fixture(status!.index * 100 + index + 1, status),
+      ),
+    );
+
+    await tester.pumpWidget(_app(repository, teamId: 9));
+    await tester.pump();
+    await tester.pump();
+
+    final scroll = tester.widget<CustomScrollView>(
+      find.byKey(const ValueKey('matches-scroll')),
+    );
+    final controller = scroll.controller!;
+
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump();
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('matches-upcoming-header')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-live-header')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('matches-past-header')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('matches-header-stack')),
+        matching: find.byType(AnimatedSlide),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('matches-header-stack')),
+        matching: find.byType(AnimatedOpacity),
+      ),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _app(MockFixtureRepository repository, {required int teamId}) {
