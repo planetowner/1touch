@@ -15,9 +15,10 @@ export 'package:onetouch/features/community/post_composer_widgets.dart'
     show Category;
 
 class AddPost extends StatefulWidget {
+  final int? teamId;
   final PostRepository? postRepository;
 
-  const AddPost({super.key, this.postRepository});
+  const AddPost({super.key, this.teamId, this.postRepository});
 
   @override
   State<AddPost> createState() => _AddPostState();
@@ -107,6 +108,7 @@ class _AddPostState extends State<AddPost> {
     try {
       await _postRepository.createPost(
         CreatePostInput(
+          teamId: widget.teamId ?? FavoriteTeam.id.value,
           category: _mapCategory(),
           title: title,
           body: body,

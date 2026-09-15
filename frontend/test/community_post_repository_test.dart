@@ -31,8 +31,11 @@ void main() {
 
     expect(find.text(_loadedPost.title), findsOneWidget);
     expect(repository.calls, 1);
+    expect(repository.lastTeamId, 9);
     expect(repository.lastCategory, isNull);
     expect(repository.lastSort, PostSort.newest);
+    expect(repository.lastPeriod, PostPeriod.allTime);
+    expect(repository.lastTimezone, isNull);
     expect(repository.lastLimit, 50);
     expect(repository.lastOffset, 0);
     expect(tester.takeException(), isNull);
@@ -184,6 +187,35 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('reloads the feed when the community team changes',
+      (tester) async {
+    _setScreenSize(tester, const Size(393, 852));
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_otherTeamPost]),
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(teamId: 9, postRepository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(teamId: 83, postRepository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.teamIds, [9, 83]);
+    expect(find.text(_otherTeamPost.title), findsOneWidget);
+    expect(find.text(_loadedPost.title), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('creates a post and reloads the repository on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
@@ -283,12 +315,16 @@ class _ScriptedPostRepository implements PostRepository {
   int calls = 0;
   int createCalls = 0;
   CreatePostInput? createdInput;
+  int? lastTeamId;
   PostCategory? lastCategory;
   PostSort? lastSort;
+  PostPeriod? lastPeriod;
+  String? lastTimezone;
   int? lastLimit;
   int? lastOffset;
   final List<PostCategory?> categories = [];
   final List<PostSort> sorts = [];
+  final List<int> teamIds = [];
 
   @override
   Future<int> createPost(CreatePostInput input) {
@@ -303,13 +339,20 @@ class _ScriptedPostRepository implements PostRepository {
 
   @override
   Future<List<Post>> loadPosts({
+    required int teamId,
     PostCategory? category,
     PostSort sort = PostSort.newest,
+    PostPeriod period = PostPeriod.allTime,
+    String? timezone,
     int limit = 50,
     int offset = 0,
   }) {
+    lastTeamId = teamId;
+    teamIds.add(teamId);
     lastCategory = category;
     lastSort = sort;
+    lastPeriod = period;
+    lastTimezone = timezone;
     lastLimit = limit;
     lastOffset = offset;
     categories.add(category);
@@ -325,6 +368,7 @@ class _ScriptedPostRepository implements PostRepository {
 
 const _loadedPost = Post(
   postId: 91,
+  teamId: 9,
   userId: 1001,
   category: PostCategory.general,
   title: 'Repository post',
@@ -334,6 +378,7 @@ const _loadedPost = Post(
 
 const _stalePost = Post(
   postId: 90,
+  teamId: 9,
   userId: 1002,
   category: PostCategory.news,
   title: 'Stale repository post',
@@ -343,9 +388,20 @@ const _stalePost = Post(
 
 const _createdPost = Post(
   postId: 92,
+  teamId: 9,
   userId: 1001,
   category: PostCategory.general,
   title: 'Created post',
   body: 'Created body',
   createdAt: '2026-08-30 10:00:00',
+);
+
+const _otherTeamPost = Post(
+  postId: 93,
+  teamId: 83,
+  userId: 1001,
+  category: PostCategory.general,
+  title: 'Barcelona repository post',
+  body: 'Loaded for a different community.',
+  createdAt: '2026-08-31 10:00:00',
 );

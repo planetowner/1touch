@@ -8,6 +8,7 @@ void postRepositoryContract({
   const posts = [
     Post(
       postId: 1,
+      teamId: 83,
       userId: 101,
       category: PostCategory.general,
       title: 'Older general post',
@@ -16,6 +17,7 @@ void postRepositoryContract({
     ),
     Post(
       postId: 2,
+      teamId: 83,
       userId: 102,
       category: PostCategory.analysis,
       title: 'Newest analysis post',
@@ -24,6 +26,7 @@ void postRepositoryContract({
     ),
     Post(
       postId: 3,
+      teamId: 83,
       userId: 103,
       category: PostCategory.general,
       title: 'Middle general post',
@@ -32,6 +35,7 @@ void postRepositoryContract({
     ),
     Post(
       postId: 4,
+      teamId: 83,
       userId: 104,
       category: PostCategory.news,
       title: 'News post',
@@ -44,7 +48,7 @@ void postRepositoryContract({
     final repository = createRepository(posts);
 
     expect(
-      (await repository.loadPosts()).map((post) => post.postId),
+      (await repository.loadPosts(teamId: 83)).map((post) => post.postId),
       [2, 3, 4, 1],
     );
   });
@@ -53,18 +57,46 @@ void postRepositoryContract({
     final repository = createRepository(posts);
 
     expect(
-      (await repository.loadPosts(category: PostCategory.general))
+      (await repository.loadPosts(
+        teamId: 83,
+        category: PostCategory.general,
+      ))
           .map((post) => post.postId),
       [3, 1],
     );
   });
 
-  test('mirrors the backend placeholder ordering for every sort', () async {
+  test('isolates posts by the required team query', () async {
+    final repository = createRepository([
+      ...posts,
+      const Post(
+        postId: 5,
+        teamId: 9,
+        userId: 105,
+        category: PostCategory.general,
+        title: 'Other team post',
+        body: 'Body 5',
+        createdAt: '2026-08-24 10:00:00',
+      ),
+    ]);
+
+    expect(
+      (await repository.loadPosts(teamId: 9)).map((post) => post.postId),
+      [5],
+    );
+    expect(
+      (await repository.loadPosts(teamId: 83)).map((post) => post.postId),
+      [2, 3, 4, 1],
+    );
+  });
+
+  test('keeps mock ordering deterministic for every sort', () async {
     final repository = createRepository(posts);
 
     for (final sort in PostSort.values) {
       expect(
-        (await repository.loadPosts(sort: sort)).map((post) => post.postId),
+        (await repository.loadPosts(teamId: 83, sort: sort))
+            .map((post) => post.postId),
         [2, 3, 4, 1],
         reason: '$sort should currently use newest-first ordering',
       );
@@ -75,7 +107,7 @@ void postRepositoryContract({
     final repository = createRepository(posts);
 
     expect(
-      (await repository.loadPosts(limit: 2, offset: 1))
+      (await repository.loadPosts(teamId: 83, limit: 2, offset: 1))
           .map((post) => post.postId),
       [3, 4],
     );
@@ -84,14 +116,51 @@ void postRepositoryContract({
   test('rejects values outside the backend pagination bounds', () async {
     final repository = createRepository(posts);
 
-    await expectLater(repository.loadPosts(limit: 0), throwsRangeError);
-    await expectLater(repository.loadPosts(limit: 201), throwsRangeError);
-    await expectLater(repository.loadPosts(offset: -1), throwsRangeError);
+    await expectLater(
+      repository.loadPosts(teamId: 83, limit: 0),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.loadPosts(teamId: 83, limit: 101),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.loadPosts(teamId: 83, offset: -1),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.loadPosts(teamId: 0),
+      throwsRangeError,
+    );
+  });
+
+  test('requires an IANA timezone for a date-bounded period', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.loadPosts(teamId: 83, period: PostPeriod.today),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.loadPosts(
+        teamId: 83,
+        period: PostPeriod.today,
+        timezone: 'America/New_York',
+      ),
+      completes,
+    );
+  });
+
+  test('uses the backend period wire values', () {
+    expect(
+      PostPeriod.values.map((period) => period.apiValue),
+      ['all_time', 'today', 'week', 'month', 'year'],
+    );
   });
 
   test('does not expose a mutable result list', () async {
     final repository = createRepository(posts);
-    final result = await repository.loadPosts();
+    final result = await repository.loadPosts(teamId: 83);
 
     expect(() => result.clear(), throwsUnsupportedError);
   });
@@ -99,6 +168,7 @@ void postRepositoryContract({
   test('creates a post that appears in subsequent loads', () async {
     final repository = createRepository(posts);
     const input = CreatePostInput(
+      teamId: 83,
       category: PostCategory.analysis,
       title: 'Created through repository',
       body: 'Repository creation body',
@@ -106,7 +176,7 @@ void postRepositoryContract({
     );
 
     final postId = await repository.createPost(input);
-    final created = (await repository.loadPosts())
+    final created = (await repository.loadPosts(teamId: 83))
         .singleWhere((post) => post.postId == postId);
 
     expect(created.category, input.category);
@@ -122,6 +192,7 @@ void postRepositoryContract({
     await expectLater(
       repository.createPost(
         const CreatePostInput(
+          teamId: 83,
           category: PostCategory.general,
           title: '',
           body: 'Body',
@@ -132,6 +203,7 @@ void postRepositoryContract({
     await expectLater(
       repository.createPost(
         CreatePostInput(
+          teamId: 83,
           category: PostCategory.general,
           title: 'Title',
           body: ''.padRight(10001, 'x'),
