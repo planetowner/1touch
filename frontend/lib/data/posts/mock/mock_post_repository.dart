@@ -47,6 +47,7 @@ class MockPostRepository implements PostRepository {
         postId: postId,
         teamId: input.teamId,
         userId: _currentUserId,
+        username: _mockUsernameFor(_currentUserId),
         category: input.category,
         title: input.title,
         body: input.body,
@@ -124,4 +125,11 @@ class MockPostRepository implements PostRepository {
     // post-existence check, so the mock deliberately does not invent one.
     _reports.add((postId: postId, userId: _currentUserId, reason: reason));
   }
+}
+
+String _mockUsernameFor(int userId) {
+  for (final user in mockUsers) {
+    if (user.userId == userId) return user.username;
+  }
+  return 'user$userId';
 }
