@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
@@ -263,7 +264,7 @@ class _TeamScreenState extends State<TeamScreen>
                   child: Row(
                     children: [
                       GestureDetector(
-                        onTap: () => context.push('/team/${team!['id']}'),
+                        onTap: () => openTeamPage(context, team!['id'] as int),
                         child: Image.network(
                           team?['logo'],
                           height: 52,

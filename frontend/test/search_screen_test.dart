@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Search.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
 
 class _TestCompetitionContextResolver
@@ -81,7 +84,7 @@ void main() {
     expect(find.byKey(const ValueKey('search-player-lee-kang-in')),
         findsOneWidget);
     expect(find.byKey(const ValueKey('search-team-83')), findsOneWidget);
-    expect(find.byKey(const ValueKey('search-event-83-231')), findsOneWidget);
+    expect(find.byKey(const ValueKey('search-event-19200003')), findsOneWidget);
     expect(find.byKey(const ValueKey('search-category-tabs')), findsNothing);
     expect(
       _effectiveTextColor(tester, find.text('RECENTS')),
@@ -166,7 +169,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('search-tab-events')));
     await tester.pump();
 
-    expect(find.byKey(const ValueKey('search-event-83-231')), findsOneWidget);
+    expect(find.byKey(const ValueKey('search-event-19300014')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -198,7 +201,14 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('search-team-83')), findsNothing);
-    expect(find.byKey(const ValueKey('search-event-83-231')), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>).value.startsWith('search-event-'),
+      ),
+      findsNothing,
+    );
 
     await tester.enterText(
       find.byKey(const ValueKey('global-search-field')),
@@ -208,6 +218,78 @@ void main() {
 
     expect(find.byKey(const ValueKey('search-team-900')), findsOneWidget);
     expect(find.text('Test League 1st'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('event results show fixture scores and open Match Details',
+      (tester) async {
+    _useCompactPhone(tester);
+    final teamRepository = MockTeamRepository(
+      teams: const [
+        Team(teamId: 900, name: 'Codex Athletic', shortCode: 'CDX'),
+        Team(teamId: 901, name: 'Router United', shortCode: 'RTR'),
+      ],
+    );
+    final fixtureRepository = MockFixtureRepository(
+      fixtures: const [
+        Fixture(
+          fixtureId: 777,
+          seasonId: 100,
+          competitionId: 8,
+          homeTeamId: 900,
+          awayTeamId: 901,
+          competitionType: CompetitionType.league,
+          roundName: 'Round 1',
+          status: FixtureStatus.past,
+          startingAt: '2026-09-12T18:00:00Z',
+          homeScore: 2,
+          awayScore: 1,
+        ),
+      ],
+    );
+    const contextResolver = _TestCompetitionContextResolver({});
+    final router = GoRouter(
+      initialLocation: '/search',
+      routes: [
+        GoRoute(
+          path: '/search',
+          builder: (_, __) => Search(
+            teamRepository: teamRepository,
+            competitionContextResolver: contextResolver,
+            fixtureRepository: fixtureRepository,
+          ),
+        ),
+        GoRoute(
+          path: '/match/:id',
+          builder: (_, state) => Text(
+            'Opened match ${state.pathParameters['id']}',
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: app_style.whitetheme,
+        routerConfig: router,
+      ),
+    );
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const ValueKey('global-search-field')),
+      'router',
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('search-event-777')), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('search-event-777')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Opened match 777'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
