@@ -48,7 +48,7 @@ void main() {
       TeamTransferWindow(
         teamId: 9,
         windowKey: '2026 winter',
-        incoming: const [
+        incoming: [
           TransferEntry(
             transferId: 1,
             playerId: 101,
@@ -60,6 +60,8 @@ void main() {
             displayType: 'Transfer',
             amount: 8500000,
             transferDate: '2026-01-10',
+            contractStartDate: DateTime.utc(2026, 1, 10),
+            contractEndDate: DateTime.utc(2030, 6, 30),
           ),
           TransferEntry(
             transferId: 2,
@@ -71,6 +73,7 @@ void main() {
             otherTeamName: 'Loan Source FC',
             displayType: 'Loan',
             transferDate: '2026-01-20',
+            contractStartDate: DateTime.utc(2026, 1, 20),
           ),
           TransferEntry(
             transferId: 4,
@@ -82,6 +85,7 @@ void main() {
             otherTeamName: 'Unknown Fee FC',
             displayType: 'Transfer',
             transferDate: '2026-01-15',
+            contractEndDate: DateTime.utc(2029, 6, 30),
           ),
         ],
         outgoing: const [
@@ -107,6 +111,14 @@ void main() {
     expect(find.text('Loan'), findsOneWidget);
     expect(find.text('Unknown'), findsOneWidget);
     expect(find.text('FROM'), findsNWidgets(3));
+    expect(find.text('DATE'), findsNothing);
+    expect(find.text('Jan 2026 – Jun 2030'), findsOneWidget);
+    expect(find.text('Jan 2026 – -'), findsOneWidget);
+    expect(find.text('- – Jun 2029'), findsOneWidget);
+    expect(
+      find.byTooltip('Complete contract dates are currently unavailable.'),
+      findsNWidgets(2),
+    );
     expect(find.text('Outgoing Player'), findsNothing);
     expect(tester.takeException(), isNull);
 
@@ -117,6 +129,11 @@ void main() {
     expect(find.text('Outgoing Player'), findsOneWidget);
     expect(find.text('Free Transfer'), findsOneWidget);
     expect(find.text('TO'), findsOneWidget);
+    expect(find.text('-'), findsOneWidget);
+    expect(
+      find.byTooltip('Complete contract dates are currently unavailable.'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

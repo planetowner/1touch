@@ -33,6 +33,14 @@ void main() {
     expect(first.windowKey, '2026/2027 summer');
     expect(first.incoming.single.transferId, 1);
     expect(first.outgoing.single.transferId, 2);
+    expect(
+      first.incoming.single.contractStartDate,
+      DateTime.utc(2026, 7, 1),
+    );
+    expect(
+      first.incoming.single.contractEndDate,
+      DateTime.utc(2030, 6, 30),
+    );
     expect(repository.cachedForTeam(83), same(first));
     expect(requestCount, 1);
     expect(
@@ -142,6 +150,29 @@ void main() {
     await expectLater(repository.loadForTeam(83), throwsFormatException);
     expect(repository.cachedWindows.value, isEmpty);
   });
+
+  test('rejects invalid contract dates without caching', () async {
+    final invalidStart = _windowJson();
+    ((invalidStart['transfers_in'] as List).first
+        as Map<String, dynamic>)['contract_start_date'] = '2026-02-30';
+    final invalidEnd = _windowJson();
+    ((invalidEnd['transfers_in'] as List).first
+        as Map<String, dynamic>)['contract_end_date'] = 'June 2030';
+    final responses = [
+      http.Response(jsonEncode(invalidStart), 200),
+      http.Response(jsonEncode(invalidEnd), 200),
+    ];
+    var requestCount = 0;
+    final repository = ApiTransferRepository(
+      client: MockClient((_) async => responses[requestCount++]),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(repository.loadForTeam(83), throwsFormatException);
+    await expectLater(repository.loadForTeam(83), throwsFormatException);
+    expect(repository.cachedWindows.value, isEmpty);
+  });
 }
 
 Map<String, dynamic> _windowJson() => {
@@ -169,6 +200,6 @@ Map<String, dynamic> _transferJson({
       'amount': null,
       'currency': null,
       'transfer_date': '2026-07-01',
-      'contract_start_date': null,
-      'contract_end_date': null,
+      'contract_start_date': '2026-07-01',
+      'contract_end_date': '2030-06-30',
     };
