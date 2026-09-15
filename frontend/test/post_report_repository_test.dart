@@ -118,8 +118,11 @@ class _ReportPostRepository implements PostRepository {
 
   @override
   Future<List<Post>> loadPosts({
+    required int teamId,
     PostCategory? category,
     PostSort sort = PostSort.newest,
+    PostPeriod period = PostPeriod.allTime,
+    String? timezone,
     int limit = 50,
     int offset = 0,
   }) {
@@ -137,6 +140,7 @@ class _ReportPostRepository implements PostRepository {
 
 const _post = Post(
   postId: 91,
+  teamId: 9,
   userId: 1001,
   category: PostCategory.general,
   title: 'Reportable post',
