@@ -3,11 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
-import 'package:onetouch/core/favorite_team.dart';
-import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart'
     show mockUserProfileById;
 import 'package:onetouch/data/players/player_repository_provider.dart';
@@ -15,19 +14,24 @@ import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as profile_provider;
 import 'package:onetouch/data/teams/team_competition_context.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/following_teams_repository.dart';
+import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
+    as following_teams_provider;
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/user_profile.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
     super.key,
     this.repository,
+    this.followingTeamsRepository,
   });
 
   final CurrentUserRepository? repository;
+  final FollowingTeamsRepository? followingTeamsRepository;
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -40,11 +44,17 @@ class _ProfileState extends State<Profile> {
   double _scrollOffset = 0.0;
   Color _teamColor = const Color(0xFFD82457);
   CurrentUserProfile? _profile;
+  List<Team> _followingTeams = const [];
+  int? _favoriteTeamId;
   bool _isLoading = true;
   late UserProfile _placeholderStats;
 
   CurrentUserRepository get _repository =>
       widget.repository ?? profile_provider.currentUserRepository;
+
+  FollowingTeamsRepository get _followingTeamsRepository =>
+      widget.followingTeamsRepository ??
+      following_teams_provider.followingTeamsRepository;
 
   @override
   void initState() {
@@ -59,8 +69,6 @@ class _ProfileState extends State<Profile> {
     // TODO(api-community-profile): Replace these counts when the profile API
     // exposes points, posts, and comments.
     _placeholderStats = mockUserProfileById(_placeholderUserId);
-    currentUserPreferences.favoriteTeamId.addListener(_onPreferencesChanged);
-    currentUserPreferences.followedTeamIds.addListener(_onPreferencesChanged);
     playerRepository.followedPlayerIds.addListener(_onPreferencesChanged);
     _loadProfile();
   }
@@ -75,15 +83,30 @@ class _ProfileState extends State<Profile> {
       setState(() {
         _isLoading = true;
         _profile = null;
+        _followingTeams = const [];
+        _favoriteTeamId = null;
       });
     }
 
     try {
-      final profile = await _repository.load();
+      final results = await Future.wait<Object>([
+        _repository.load(),
+        _followingTeamsRepository.load(),
+      ]);
+      final profile = results[0] as CurrentUserProfile;
+      final followingTeams = results[1] as List<Team>;
+      if (!followingTeams
+          .any((team) => team.teamId == profile.favoriteTeamId)) {
+        throw StateError(
+          'Favorite team ${profile.favoriteTeamId} is missing from followed teams.',
+        );
+      }
       if (!mounted) return;
       final favoriteTeam = teamRepository.findById(profile.favoriteTeamId);
       setState(() {
         _profile = profile;
+        _followingTeams = followingTeams;
+        _favoriteTeamId = profile.favoriteTeamId;
         _isLoading = false;
         if (favoriteTeam != null) {
           _teamColor = Color(favoriteTeam.primaryColor);
@@ -93,6 +116,8 @@ class _ProfileState extends State<Profile> {
       if (!mounted) return;
       setState(() {
         _profile = null;
+        _followingTeams = const [];
+        _favoriteTeamId = null;
         _isLoading = false;
       });
     }
@@ -100,9 +125,6 @@ class _ProfileState extends State<Profile> {
 
   @override
   void dispose() {
-    currentUserPreferences.favoriteTeamId.removeListener(_onPreferencesChanged);
-    currentUserPreferences.followedTeamIds
-        .removeListener(_onPreferencesChanged);
     playerRepository.followedPlayerIds.removeListener(_onPreferencesChanged);
     _scrollController.dispose();
     super.dispose();
@@ -273,14 +295,29 @@ class _ProfileState extends State<Profile> {
                         IconButton(
                           icon: Icon(Icons.border_color,
                               color: colors.onSurface, size: 20),
-                          onPressed: () {
-                            showModalBottomSheet(
+                          onPressed: () async {
+                            final result = await showModalBottomSheet<
+                                FollowingTeamsEditResult>(
                               context: context,
                               isScrollControlled: true,
                               backgroundColor: Colors.transparent,
-                              builder: (context) =>
-                                  const EditFollowingTeamsSheet(),
+                              builder: (context) => EditFollowingTeamsSheet(
+                                repository: _followingTeamsRepository,
+                                initialTeams: _followingTeams,
+                                initialFavoriteTeamId: _favoriteTeamId!,
+                              ),
                             );
+                            if (!mounted || result == null) return;
+                            final favoriteTeam = teamRepository.findById(
+                              result.favoriteTeamId,
+                            );
+                            setState(() {
+                              _followingTeams = result.teams;
+                              _favoriteTeamId = result.favoriteTeamId;
+                              if (favoriteTeam != null) {
+                                _teamColor = Color(favoriteTeam.primaryColor);
+                              }
+                            });
                           },
                         ),
                       ],
@@ -430,70 +467,80 @@ class _ProfileState extends State<Profile> {
   Widget _buildTeamList() {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
-    final teamIds = currentUserPreferences.followedTeamIds.value;
-    final favoriteId = FavoriteTeam.id.value;
+    final teams = _followingTeams;
+    final favoriteId = _favoriteTeamId!;
 
     return SizedBox(
       height: 165,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         scrollDirection: Axis.horizontal,
-        itemCount: teamIds.length,
+        itemCount: teams.length,
         separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
-          final team = teamRepository.requireById(teamIds[index]);
+          final team = teams[index];
           final isFavorite = team.teamId == favoriteId;
           final label = teamCompetitionContextResolver.labelFor(team.teamId);
 
-          return Stack(
-            children: [
-              Container(
-                width: 135,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: appColors.cardBackground,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.network(
-                      team.imagePath ?? '',
-                      height: 80,
-                      width: 80,
-                      errorBuilder: (_, __, ___) =>
-                          const SizedBox(height: 80, width: 80),
+          return Semantics(
+            button: true,
+            label: 'Open ${team.name}',
+            child: GestureDetector(
+              key: ValueKey('profile-following-team-${team.teamId}'),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => openTeamPage(context, team.teamId),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 135,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: appColors.cardBackground,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        team.name,
-                        style: Body1_b.style,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.network(
+                          team.imagePath ?? '',
+                          height: 80,
+                          width: 80,
+                          errorBuilder: (_, __, ___) =>
+                              const SizedBox(height: 80, width: 80),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            team.name,
+                            style: Body1_b.style,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            label,
+                            style: Eyebrow.style,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        label,
-                        style: Eyebrow.style,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
+                  ),
+                  if (isFavorite)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child:
+                          Icon(Icons.star, color: colors.onSurface, size: 18),
                     ),
-                  ],
-                ),
+                ],
               ),
-              if (isFavorite)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Icon(Icons.star, color: colors.onSurface, size: 18),
-                ),
-            ],
+            ),
           );
         },
       ),
