@@ -8,6 +8,7 @@ import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -209,7 +210,7 @@ class MainScreen extends StatelessWidget {
         onTap: (index) {
           // Special case for the 'Team' tab (index 2)
           if (index == 2) {
-            context.go('/team/${getFavoriteTeamName()}');
+            openTeamPage(context, getFavoriteTeamName());
             return; // Exit after handling the special case
           }
 

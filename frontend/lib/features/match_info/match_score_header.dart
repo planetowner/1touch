@@ -132,7 +132,7 @@ class _TeamBlock extends StatelessWidget {
           // '/team/:id' lives inside the bottom-nav shell's own navigator —
           // push() would land there invisibly, behind this screen. go()
           // replaces the location so the shell actually surfaces.
-          onTap: () => context.go('/team/$teamId'),
+          onTap: () => openTeamPage(context, teamId),
           child: Image.network(
             logoAsset,
             width: logoSize,
