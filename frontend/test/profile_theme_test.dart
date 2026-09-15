@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/Profile.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/profile/current_user_repository.dart';
+import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/models/team.dart';
 
 void main() {
   const phoneSizes = [Size(320, 568), Size(430, 932)];
@@ -19,7 +22,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: app_style.whitetheme,
-          home: Profile(repository: _StaticCurrentUserRepository()),
+          home: Profile(
+            repository: _StaticCurrentUserRepository(),
+            followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -79,7 +85,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: Profile(repository: _StaticCurrentUserRepository()),
+        home: Profile(
+          repository: _StaticCurrentUserRepository(),
+          followingTeamsRepository: _StaticFollowingTeamsRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -101,6 +110,27 @@ void main() {
 class _StaticCurrentUserRepository implements CurrentUserRepository {
   @override
   Future<CurrentUserProfile> load() async => _profile;
+}
+
+class _StaticFollowingTeamsRepository implements FollowingTeamsRepository {
+  final ValueNotifier<List<Team>> _cache = ValueNotifier(const []);
+
+  @override
+  ValueListenable<List<Team>> get cachedTeams => _cache;
+
+  @override
+  Future<List<Team>> load() async {
+    const teams = [Team(teamId: 83, name: 'FC Barcelona')];
+    _cache.value = teams;
+    return teams;
+  }
+
+  @override
+  Future<List<Team>> replaceFollowing({
+    required Iterable<int> teamIds,
+    required int favoriteTeamId,
+  }) =>
+      throw UnimplementedError();
 }
 
 final _profile = CurrentUserProfile(
