@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -452,7 +453,7 @@ class _SearchContentState extends State<SearchContent> {
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: () => context.push('/players/${player.id}'),
+      onTap: () => openPlayerPage(context, player.id),
       child: Container(
         key: ValueKey('search-player-${player.id}'),
         constraints: const BoxConstraints(minHeight: 96),
