@@ -1,0 +1,833 @@
+{
+  "competition_id": "4oogyu6o156iphvdvphwpck10",
+  "event_layer": {
+    "height": "549.5999999999999",
+    "width": "838.4"
+  },
+  "events": [
+    {
+      "classes": "Opta-Player Opta-Player-bvw2dsfqohoq9dypgdgt6d1w5 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "50.53204479999995",
+        "251.9234496",
+        "21.7984",
+        "267.88383360000006"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-35",
+      "player_name": "B. Labeau",
+      "team_name": "FC Thun",
+      "time": "4‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-bvw2dsfqohoq9dypgdgt6d1w5 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "50.53204479999995",
+        "251.9234496",
+        "21.7984",
+        "267.88383360000006"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-35",
+      "player_name": "B. Labeau",
+      "team_name": "FC Thun",
+      "time": "4‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-atawelbstg96dp699p8b8e505 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "724.9745407999999",
+        "243.94325759999998",
+        "819.9552",
+        "304.06070400000004"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-95",
+      "player_name": "M. Zajc",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "9‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1v8r5d4v9eh3011wmwhk3v36d Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "756.102656",
+        "229.57891199999997",
+        "819.9552",
+        "220.0026816"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-158",
+      "player_name": "M. Oršić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "14‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-aoik5g61oq5r3lbbe76f9iicq Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "243.68599039999998",
+        "308.31680639999996",
+        "21.7984",
+        "226.91884799999997"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-154",
+      "player_name": "N. Reichmuth",
+      "team_name": "FC Thun",
+      "time": "20‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-9fnlovufzfgm8s2zwb61paehh Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "50.53204479999995",
+        "347.15374080000004",
+        "21.7984",
+        "274.8"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-163",
+      "player_name": "M. Bürki",
+      "team_name": "FC Thun",
+      "time": "22‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-9fnlovufzfgm8s2zwb61paehh Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "50.53204479999995",
+        "347.15374080000004",
+        "21.7984",
+        "274.8"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-163",
+      "player_name": "M. Bürki",
+      "team_name": "FC Thun",
+      "time": "22‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-36vtsnz3ifmeyi6m1katae5pm Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "692.250112",
+        "306.720768",
+        "819.9552",
+        "318.4250496"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-395",
+      "player_name": "M. Valinčić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "35‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-aoik5g61oq5r3lbbe76f9iicq Opta-Away  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "118.37537279999995",
+        "187.5499008",
+        "39.35784960000002",
+        "262.03169280000003"
+      ],
+      "event_type": "Shots on target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-270",
+      "player_name": "N. Reichmuth",
+      "team_name": "FC Thun",
+      "time": "38‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-aoik5g61oq5r3lbbe76f9iicq Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "134.33850879999994",
+        "322.1491392",
+        "111.19196160000003",
+        "314.1689472"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-286",
+      "player_name": "N. Reichmuth",
+      "team_name": "FC Thun",
+      "time": "40‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1v8r5d4v9eh3011wmwhk3v36d Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "593.2786688",
+        "279.5881152",
+        "628.397568",
+        "270.0118848"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-459",
+      "player_name": "M. Oršić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "41‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1ic5mnwhm510mptrxz04zmtm2 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "778.4510464",
+        "317.8930368",
+        "819.9552",
+        "268.9478592"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-467",
+      "player_name": "D. Beljo",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "42‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-81ugn04dq218l3yximasj6kmh Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "701.8279936",
+        "137.00868479999997",
+        "819.9552",
+        "317.361024"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-480",
+      "player_name": "B. Goda",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "43‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1ic5mnwhm510mptrxz04zmtm2 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "746.5247744",
+        "277.460064",
+        "819.9552",
+        "189.677952"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-498",
+      "player_name": "D. Beljo",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "45‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4212luiyivgvje1vm1ojieicq Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "640.36992",
+        "356.7299712",
+        "759.2952832",
+        "290.2283712"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1306",
+      "player_name": "G. Vidović",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "53‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-atawelbstg96dp699p8b8e505 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "621.2141568",
+        "254.05150079999999",
+        "710.6077184",
+        "262.03169280000003"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1330",
+      "player_name": "M. Zajc",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "55‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-12cgiy0t282ywdbr5j78hrxsl Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "760.8915967999999",
+        "304.59271680000006",
+        "768.8731647999999",
+        "299.8046016"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1334",
+      "player_name": "S. McKenna",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "55‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-aoik5g61oq5r3lbbe76f9iicq Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "225.32838399999997",
+        "280.120128",
+        "195.79658239999998",
+        "278.5240896"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-356",
+      "player_name": "N. Reichmuth",
+      "team_name": "FC Thun",
+      "time": "62‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2lfoot1dofj5n9bhrel7k2s4 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "154.29242879999998",
+        "336.5134848",
+        "128.75141120000006",
+        "325.8732288"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-363",
+      "player_name": "V. Matoshi",
+      "team_name": "FC Thun",
+      "time": "62‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-96yikwkvaqoblxfn43f4gswr9 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "669.1035648",
+        "389.7147648",
+        "784.038144",
+        "291.8244096"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-602",
+      "player_name": "J. Mišić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "71‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-96yikwkvaqoblxfn43f4gswr9 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "649.9478016",
+        "380.67054720000004",
+        "819.9552",
+        "337.5775104"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-627",
+      "player_name": "J. Mišić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "72‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1ic5mnwhm510mptrxz04zmtm2 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "759.2952832",
+        "268.9478592",
+        "819.9552",
+        "254.5835136"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-647",
+      "player_name": "D. Beljo",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "74‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1ic5mnwhm510mptrxz04zmtm2 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "759.2952832",
+        "268.9478592",
+        "819.9552",
+        "254.5835136"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-647",
+      "player_name": "D. Beljo",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "74‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2zbhh5sasfhsez0bfa1suk8ic Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "784.8363008",
+        "286.5042816",
+        "819.9552",
+        "252.45546239999996"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-674",
+      "player_name": "L. Kačavenda",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "78‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2zbhh5sasfhsez0bfa1suk8ic Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "784.8363008",
+        "286.5042816",
+        "819.9552",
+        "252.45546239999996"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-674",
+      "player_name": "L. Kačavenda",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "78‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-br127bsi0f5esaofj8qwiwro4 Opta-Home  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "602.8565504",
+        "257.7755904",
+        "815.964416",
+        "278.5240896"
+      ],
+      "event_type": "Shots on target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-702",
+      "player_name": "M. Pérez Vinlöf",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "81‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-5t3gy4g25ny7lrrvfxp7nmhp0 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "673.8925056",
+        "337.0454976",
+        "819.9552",
+        "302.46466560000005"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-739",
+      "player_name": "F. Topić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "84‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1ic5mnwhm510mptrxz04zmtm2 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "711.4058752000001",
+        "303.52869119999997",
+        "725.7726976",
+        "299.8046016"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-787",
+      "player_name": "D. Beljo",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "88‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-atawelbstg96dp699p8b8e505 Opta-Home  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "744.130304",
+        "285.9722688",
+        "805.5883776",
+        "275.8640256"
+      ],
+      "event_type": "Shots on target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-789",
+      "player_name": "M. Zajc",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "88‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-96yikwkvaqoblxfn43f4gswr9 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "650.7459584",
+        "367.90224",
+        "819.9552",
+        "315.2329728"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-795",
+      "player_name": "J. Mišić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "89‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2zbhh5sasfhsez0bfa1suk8ic Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "744.9284607999999",
+        "340.7695872",
+        "748.9192447999999",
+        "329.0653056"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-817",
+      "player_name": "L. Kačavenda",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "90‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-12cgiy0t282ywdbr5j78hrxsl Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "592.480512",
+        "150.30900479999997",
+        "819.9552",
+        "260.9676672"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-841",
+      "player_name": "S. McKenna",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "90‎+‎2‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4jpwo30o4qp53k59oxvuj90k4 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "610.8381184",
+        "288.10032",
+        "710.6077184",
+        "281.7161664"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-895",
+      "player_name": "Sergi Domínguez",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "90‎+‎6‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-atawelbstg96dp699p8b8e505 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "675.4888192000001",
+        "262.5637056",
+        "819.9552",
+        "224.258784"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-944",
+      "player_name": "M. Zajc",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "92‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-36vtsnz3ifmeyi6m1katae5pm Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "756.9008127999999",
+        "331.7253696",
+        "769.6713216",
+        "321.6171264"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-964",
+      "player_name": "M. Valinčić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "94‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1j99x774oc7dpglwcyy6l1fc9 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "736.9468927999999",
+        "187.54990079999996",
+        "749.7174016",
+        "199.7861952"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-978",
+      "player_name": "A. Hoxha",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "96‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-9bc9agusjoz8173beezt6qbdg Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "100.81592320000004",
+        "367.90224",
+        "21.7984",
+        "238.6231296"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-6u0uaryouca843tojxzgwulr2-570",
+      "player_name": "M. Heule",
+      "team_name": "FC Thun",
+      "time": "97‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1j99x774oc7dpglwcyy6l1fc9 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "707.4150912000001",
+        "194.4660672",
+        "819.9552",
+        "383.3306112"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1000",
+      "player_name": "A. Hoxha",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "98‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-atawelbstg96dp699p8b8e505 Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "691.4519552",
+        "276.3960384",
+        "717.7911296",
+        "276.9280512"
+      ],
+      "event_type": "Blocks",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1018",
+      "player_name": "M. Zajc",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "100‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-5t3gy4g25ny7lrrvfxp7nmhp0 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "699.4335232000001",
+        "330.661344",
+        "819.9552",
+        "164.1413376"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1088",
+      "player_name": "F. Topić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "106‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-atawelbstg96dp699p8b8e505 Opta-Home  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "695.4427392",
+        "259.9036416",
+        "803.992064",
+        "273.73597440000003"
+      ],
+      "event_type": "Shots on target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1142",
+      "player_name": "M. Zajc",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "111‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-36vtsnz3ifmeyi6m1katae5pm Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "649.9478016",
+        "351.4098432",
+        "819.9552",
+        "252.98747519999998"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1159",
+      "player_name": "M. Valinčić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "112‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-36vtsnz3ifmeyi6m1katae5pm Opta-Home  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "649.9478016",
+        "351.4098432",
+        "819.9552",
+        "252.98747519999998"
+      ],
+      "event_type": "Goals",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1159",
+      "player_name": "M. Valinčić",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "112‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1ic5mnwhm510mptrxz04zmtm2 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "451.20675839999996",
+        "174.24958079999996",
+        "819.9552",
+        "380.13853439999997"
+      ],
+      "event_type": "Shots off target",
+      "id": "53co7uhx9h3384rrt6uzj5no4-7vyubxg6fnmwwyo2nnyhp6j5d-1215",
+      "player_name": "D. Beljo",
+      "team_name": "GNK Dinamo Zagreb",
+      "time": "120‎+‎4‎'‎"
+    }
+  ],
+  "finished": true,
+  "full_game": true,
+  "match_date": "Tuesday 28 July 2026",
+  "match_id": "53co7uhx9h3384rrt6uzj5no4",
+  "orientation": "horizontal",
+  "season_id": "99jev9kv55deht65t6myggxlg",
+  "selected_events": [
+    "Goals",
+    "Shots on target",
+    "Shots off target",
+    "Blocks"
+  ],
+  "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=4oogyu6o156iphvdvphwpck10&seasonId=99jev9kv55deht65t6myggxlg&matchId=53co7uhx9h3384rrt6uzj5no4",
+  "summary": {
+    "Goals": {
+      "away": 2,
+      "home": 3
+    },
+    "Shots on target": {
+      "away": 3,
+      "home": 6
+    }
+  },
+  "teams": {
+    "away": {
+      "external_team_id": "6u0uaryouca843tojxzgwulr2",
+      "name": "FC Thun",
+      "players": [
+        {
+          "external_player_id": "836aj1bmt4o5mc4wyma06m0kq",
+          "jersey_number": 1,
+          "name": "N. Steffen"
+        },
+        {
+          "external_player_id": "9bc9agusjoz8173beezt6qbdg",
+          "jersey_number": 27,
+          "name": "M. Heule"
+        },
+        {
+          "external_player_id": "9fnlovufzfgm8s2zwb61paehh",
+          "jersey_number": 23,
+          "name": "M. Bürki"
+        },
+        {
+          "external_player_id": "16u4dl7t5ck2yjy1bgo4d2bpx",
+          "jersey_number": 19,
+          "name": "J. Bamert"
+        },
+        {
+          "external_player_id": "84dmxlclmh9hv0ee5dqzqkyne",
+          "jersey_number": 47,
+          "name": "F. Fehr"
+        },
+        {
+          "external_player_id": "2lfoot1dofj5n9bhrel7k2s4",
+          "jersey_number": 78,
+          "name": "V. Matoshi"
+        },
+        {
+          "external_player_id": "539es15hqaq9gnqng4dmdoums",
+          "jersey_number": 13,
+          "name": "N. Zoukit"
+        },
+        {
+          "external_player_id": "b7fv7sx5c8moeoprdplev3koa",
+          "jersey_number": 16,
+          "name": "J. Roth"
+        },
+        {
+          "external_player_id": "aoik5g61oq5r3lbbe76f9iicq",
+          "jersey_number": 70,
+          "name": "N. Reichmuth"
+        },
+        {
+          "external_player_id": "bvw2dsfqohoq9dypgdgt6d1w5",
+          "jersey_number": 96,
+          "name": "B. Labeau"
+        },
+        {
+          "external_player_id": "7wreh7qx16zn2pe44lkf5u87o",
+          "jersey_number": 9,
+          "name": "F. Dursun"
+        },
+        {
+          "external_player_id": "auk14ut8cwaqop549u2zmfgt1",
+          "jersey_number": 5,
+          "name": "N. Bürgy"
+        },
+        {
+          "external_player_id": "64bhnk4lvwp5qrlr4qy9cgmj8",
+          "jersey_number": 37,
+          "name": "L. Dähler"
+        },
+        {
+          "external_player_id": "7t8si63b154j9a09mt3wy21hw",
+          "jersey_number": 33,
+          "name": "M. Gutbub"
+        },
+        {
+          "external_player_id": "7k7ov98sovbpoxhq2cv8yoic5",
+          "jersey_number": 18,
+          "name": "C. Ibayi"
+        },
+        {
+          "external_player_id": "9idaop0my5t0o4vrme7ynofai",
+          "jersey_number": 30,
+          "name": "N. Maier"
+        },
+        {
+          "external_player_id": "2e5japetk410a5spw9pccg6sq",
+          "jersey_number": 11,
+          "name": "L. Stewart"
+        }
+      ]
+    },
+    "home": {
+      "external_team_id": "7vyubxg6fnmwwyo2nnyhp6j5d",
+      "name": "GNK Dinamo Zagreb",
+      "players": [
+        {
+          "external_player_id": "8glds5eomgq4dzlkn4dc1ysb9",
+          "jersey_number": 44,
+          "name": "I. Filipović"
+        },
+        {
+          "external_player_id": "81ugn04dq218l3yximasj6kmh",
+          "jersey_number": 3,
+          "name": "B. Goda"
+        },
+        {
+          "external_player_id": "12cgiy0t282ywdbr5j78hrxsl",
+          "jersey_number": 26,
+          "name": "S. McKenna"
+        },
+        {
+          "external_player_id": "4jpwo30o4qp53k59oxvuj90k4",
+          "jersey_number": 36,
+          "name": "Sergi Domínguez"
+        },
+        {
+          "external_player_id": "36vtsnz3ifmeyi6m1katae5pm",
+          "jersey_number": 25,
+          "name": "M. Valinčić"
+        },
+        {
+          "external_player_id": "96yikwkvaqoblxfn43f4gswr9",
+          "jersey_number": 27,
+          "name": "J. Mišić"
+        },
+        {
+          "external_player_id": "1v8r5d4v9eh3011wmwhk3v36d",
+          "jersey_number": 99,
+          "name": "M. Oršić"
+        },
+        {
+          "external_player_id": "atawelbstg96dp699p8b8e505",
+          "jersey_number": 8,
+          "name": "M. Zajc"
+        },
+        {
+          "external_player_id": "4212luiyivgvje1vm1ojieicq",
+          "jersey_number": 10,
+          "name": "G. Vidović"
+        },
+        {
+          "external_player_id": "90wyta6l6mfp2aa0egoqy5nxm",
+          "jersey_number": 21,
+          "name": "M. Lisica"
+        },
+        {
+          "external_player_id": "1ic5mnwhm510mptrxz04zmtm2",
+          "jersey_number": 9,
+          "name": "D. Beljo"
+        },
+        {
+          "external_player_id": "aa39qmdltst984nw5q0pr8j8q",
+          "jersey_number": 15,
+          "name": "N. Galešić"
+        },
+        {
+          "external_player_id": "1j99x774oc7dpglwcyy6l1fc9",
+          "jersey_number": 11,
+          "name": "A. Hoxha"
+        },
+        {
+          "external_player_id": "2zbhh5sasfhsez0bfa1suk8ic",
+          "jersey_number": 80,
+          "name": "L. Kačavenda"
+        },
+        {
+          "external_player_id": "br127bsi0f5esaofj8qwiwro4",
+          "jersey_number": 22,
+          "name": "M. Pérez Vinlöf"
+        },
+        {
+          "external_player_id": "9jz0dmpw8lnorss1a4qbfanl5",
+          "jersey_number": 6,
+          "name": "S. Radeljić"
+        },
+        {
+          "external_player_id": "5t3gy4g25ny7lrrvfxp7nmhp0",
+          "jersey_number": 30,
+          "name": "F. Topić"
+        }
+      ]
+    }
+  },
+  "checked_at_utc": "2026-09-14T09:01:55.877095+00:00"
+}

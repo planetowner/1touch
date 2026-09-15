@@ -1,0 +1,3184 @@
+[
+  {
+    "raw": {
+      "competition_id": "4c1nfi2j1m731hcay25fcgndq",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-7repqxw3aug2xah0l2w27ls6h Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "736.9468927999999",
+            "172.1215296",
+            "748.121088",
+            "184.357824"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-71",
+          "player_name": "I. Pittas",
+          "team_name": "PFK CSKA Sofia",
+          "time": "7‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-avmg3kgpwdej4epsavjtxiyvo Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "752.9100288",
+            "279.5881152",
+            "819.9552",
+            "272.6719488"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-74",
+          "player_name": "L. Godoy",
+          "team_name": "PFK CSKA Sofia",
+          "time": "8‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7repqxw3aug2xah0l2w27ls6h Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "719.3874432000001",
+            "98.70376320000003",
+            "811.973632",
+            "258.30760319999996"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-89",
+          "player_name": "I. Pittas",
+          "team_name": "PFK CSKA Sofia",
+          "time": "10‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-obyc7da7fzaztqjti91oqtp1 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "131.14588160000002",
+            "366.83821439999997",
+            "102.41223679999995",
+            "341.3016"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-133",
+          "player_name": "A. Zoubir",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "13‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-649anpduq5pwrqbek73wr8n6y Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "240.49336320000003",
+            "259.9036416",
+            "162.27399679999996",
+            "265.2237696"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-170",
+          "player_name": "Pedro Bicalho",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "18‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-9kn7hs1nbc0rcismky05z6zmx Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "744.130304",
+            "184.88983679999996",
+            "758.4971264",
+            "201.91424639999997"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-162",
+          "player_name": "Bruno Jordão",
+          "team_name": "PFK CSKA Sofia",
+          "time": "19‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7repqxw3aug2xah0l2w27ls6h Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "649.9478016",
+            "191.27399039999997",
+            "819.9552",
+            "298.2085632"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-163",
+          "player_name": "I. Pittas",
+          "team_name": "PFK CSKA Sofia",
+          "time": "19‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-61buzozpq09ny7c0op8mj8a95 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "219.74128639999998",
+            "293.420448",
+            "30.578124799999955",
+            "283.3122048"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-199",
+          "player_name": "Kady Borges",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "22‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-avmg3kgpwdej4epsavjtxiyvo Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "742.5339904",
+            "377.4784704",
+            "751.3137152",
+            "366.83821439999997"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-200",
+          "player_name": "L. Godoy",
+          "team_name": "PFK CSKA Sofia",
+          "time": "22‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-a07r604q1pzwqxqh6ci2euggl Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "194.20026879999995",
+            "367.90224",
+            "204.57630720000003",
+            "384.3946368"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-424",
+          "player_name": "M. Janković",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "41‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-61buzozpq09ny7c0op8mj8a95 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "95.22882560000002",
+            "197.12613119999997",
+            "36.96337920000005",
+            "258.30760319999996"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-416",
+          "player_name": "Kady Borges",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "43‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dr2upvki95vzd9pclkjpsjs2d Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "523.0408704",
+            "293.420448",
+            "808.7810048",
+            "278.5240896"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-369",
+          "player_name": "J. Gbamin",
+          "team_name": "PFK CSKA Sofia",
+          "time": "49‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7s9o8unhgvf00mn7vdxeeeq96 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "228.52101120000003",
+            "282.24817920000004",
+            "171.85187839999998",
+            "279.5881152"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-642",
+          "player_name": "E. Cəfərquliyev",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "64‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-1utyorvutnk14hp6dr079t1m2 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "207.76893439999998",
+            "280.120128",
+            "171.85187839999998",
+            "281.7161664"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-654",
+          "player_name": "Z. Sawo",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "65‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-avmg3kgpwdej4epsavjtxiyvo Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "699.4335232000001",
+            "397.162944",
+            "819.9552",
+            "326.4052416"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-476",
+          "player_name": "L. Godoy",
+          "team_name": "PFK CSKA Sofia",
+          "time": "69‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-a9qcjizdvkarl0frwic0bn1ii Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "114.38458879999995",
+            "372.69035520000006",
+            "81.66015999999999",
+            "341.8336128"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-759",
+          "player_name": "R. Cephas",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "74‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-64z85woxiowxzod5e0g0x77x1 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "589.2878847999999",
+            "354.06990720000005",
+            "804.7902207999999",
+            "277.460064"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-531",
+          "player_name": "S. Sensi",
+          "team_name": "PFK CSKA Sofia",
+          "time": "77‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-obyc7da7fzaztqjti91oqtp1 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "195.79658239999998",
+            "227.9828736",
+            "140.72376320000004",
+            "240.219168"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-860",
+          "player_name": "A. Zoubir",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "85‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-649anpduq5pwrqbek73wr8n6y Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "194.99842560000002",
+            "141.2647872",
+            "21.7984",
+            "263.62773119999997"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-865",
+          "player_name": "Pedro Bicalho",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "85‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-649anpduq5pwrqbek73wr8n6y Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "162.27399679999996",
+            "173.18555519999998",
+            "130.34772479999998",
+            "199.78619519999998"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-920",
+          "player_name": "Pedro Bicalho",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "90‎+‎1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-64z85woxiowxzod5e0g0x77x1 Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "721.7819135999999",
+            "326.9372544",
+            "819.9552",
+            "304.59271680000006"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-635",
+          "player_name": "S. Sensi",
+          "team_name": "PFK CSKA Sofia",
+          "time": "90‎+‎2‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-a07r604q1pzwqxqh6ci2euggl Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "268.42885120000005",
+            "197.12613119999997",
+            "227.72285439999996",
+            "213.08651519999998"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-939",
+          "player_name": "M. Janković",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "90‎+‎3‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-a9qcjizdvkarl0frwic0bn1ii Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "85.65094400000001",
+            "368.96626560000004",
+            "74.47674879999997",
+            "351.4098432"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1046",
+          "player_name": "R. Cephas",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "102‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-505oa888m5vi62ez2tsmod6ju Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "87.24725760000003",
+            "280.65214080000004",
+            "69.68780799999999",
+            "275.8640256"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1104",
+          "player_name": "M. Qurbanlı",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "103‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-byaovvyzh22vsvs0iitqeciy1 Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "64.10071039999997",
+            "221.06670719999997",
+            "37.761536",
+            "205.63833599999998"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1118",
+          "player_name": "Joni Montiel",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "103‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-505oa888m5vi62ez2tsmod6ju Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "221.3376",
+            "279.05610240000004",
+            "36.96337920000005",
+            "274.8"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1064",
+          "player_name": "M. Qurbanlı",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "103‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-a9qcjizdvkarl0frwic0bn1ii Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "112.78827520000004",
+            "206.17034879999997",
+            "57.715455999999996",
+            "248.7313728"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1092",
+          "player_name": "R. Cephas",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "105‎+‎1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7repqxw3aug2xah0l2w27ls6h Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "629.9938816",
+            "272.6719488",
+            "649.1496447999999",
+            "272.6719488"
+          ],
+          "event_type": "Blocks",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-770",
+          "player_name": "I. Pittas",
+          "team_name": "PFK CSKA Sofia",
+          "time": "106‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-5l4fkm9a0pvfi9qiy6gipf71m Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "591.6823552000001",
+            "275.33201280000003",
+            "819.9552",
+            "326.4052416"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-3p57ay8255exmoe275uofnle9-774",
+          "player_name": "J. Zwarts",
+          "team_name": "PFK CSKA Sofia",
+          "time": "107‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-byaovvyzh22vsvs0iitqeciy1 Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "252.46571520000003",
+            "359.922048",
+            "21.7984",
+            "276.9280512"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1167",
+          "player_name": "Joni Montiel",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "113‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-9da8hw1pq0bouoowqwzwrp5d6 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "104.00855039999998",
+            "225.85482239999996",
+            "36.165222399999976",
+            "267.3518208"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1195",
+          "player_name": "Č. Makreckis",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "115‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-byaovvyzh22vsvs0iitqeciy1 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "91.23804160000002",
+            "266.2877952",
+            "36.165222399999976",
+            "272.6719488"
+          ],
+          "event_type": "Shots on target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1196",
+          "player_name": "Joni Montiel",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "115‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-a9qcjizdvkarl0frwic0bn1ii Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "124.76062720000004",
+            "353.5378944",
+            "21.7984",
+            "256.7115648"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1214",
+          "player_name": "R. Cephas",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "118‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-35yd2ldlbb3sdcc81wr874pre Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "216.54865920000003",
+            "346.0897152",
+            "21.7984",
+            "223.19475839999998"
+          ],
+          "event_type": "Shots off target",
+          "id": "cgnao8wk5k70nbz7zd6633eac-dz0fc3304a30bzm9lht0bhpqt-1226",
+          "player_name": "J. Mouaddib",
+          "team_name": "Qarabağ Ağdam FK",
+          "time": "119‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Thursday 30 July 2026",
+      "match_id": "cgnao8wk5k70nbz7zd6633eac",
+      "orientation": "horizontal",
+      "season_id": "1rpi0q64a7kut2wiuvecmgbv8",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Shots off target",
+        "Blocks"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=4c1nfi2j1m731hcay25fcgndq&seasonId=1rpi0q64a7kut2wiuvecmgbv8&matchId=cgnao8wk5k70nbz7zd6633eac",
+      "summary": {
+        "Goals": {
+          "away": 0,
+          "home": 0
+        },
+        "Shots on target": {
+          "away": 6,
+          "home": 3
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "dz0fc3304a30bzm9lht0bhpqt",
+          "name": "Qarabağ Ağdam FK",
+          "players": [
+            {
+              "external_player_id": "6r4w05uhnwtloks9o59g6i221",
+              "jersey_number": 99,
+              "name": "M. Kochalski"
+            },
+            {
+              "external_player_id": "7s9o8unhgvf00mn7vdxeeeq96",
+              "jersey_number": 44,
+              "name": "E. Cəfərquliyev"
+            },
+            {
+              "external_player_id": "4kvnu34bu4612x9dppg4fk4fe",
+              "jersey_number": 4,
+              "name": "B. Várkonyi"
+            },
+            {
+              "external_player_id": "73aues52n0vmq59vvvsqrqcid",
+              "jersey_number": 55,
+              "name": "B. Hüseynov"
+            },
+            {
+              "external_player_id": "b7c3s9rkunqkgc3h3u8xbx71l",
+              "jersey_number": 2,
+              "name": "Matheus Silva"
+            },
+            {
+              "external_player_id": "a07r604q1pzwqxqh6ci2euggl",
+              "jersey_number": 8,
+              "name": "M. Janković"
+            },
+            {
+              "external_player_id": "649anpduq5pwrqbek73wr8n6y",
+              "jersey_number": 35,
+              "name": "Pedro Bicalho"
+            },
+            {
+              "external_player_id": "obyc7da7fzaztqjti91oqtp1",
+              "jersey_number": 10,
+              "name": "A. Zoubir"
+            },
+            {
+              "external_player_id": "61buzozpq09ny7c0op8mj8a95",
+              "jersey_number": 20,
+              "name": "Kady Borges"
+            },
+            {
+              "external_player_id": "48xw6q1zl0wws78a4nxfbir55",
+              "jersey_number": 21,
+              "name": "O. Kashchuk"
+            },
+            {
+              "external_player_id": "1utyorvutnk14hp6dr079t1m2",
+              "jersey_number": 11,
+              "name": "Z. Sawo"
+            },
+            {
+              "external_player_id": "a9qcjizdvkarl0frwic0bn1ii",
+              "jersey_number": 29,
+              "name": "R. Cephas"
+            },
+            {
+              "external_player_id": "cmxmyld8l4gjy03zxskyxf5gq",
+              "jersey_number": 5,
+              "name": "Bruno Langa"
+            },
+            {
+              "external_player_id": "9da8hw1pq0bouoowqwzwrp5d6",
+              "jersey_number": 25,
+              "name": "Č. Makreckis"
+            },
+            {
+              "external_player_id": "byaovvyzh22vsvs0iitqeciy1",
+              "jersey_number": 9,
+              "name": "Joni Montiel"
+            },
+            {
+              "external_player_id": "35yd2ldlbb3sdcc81wr874pre",
+              "jersey_number": 7,
+              "name": "J. Mouaddib"
+            },
+            {
+              "external_player_id": "505oa888m5vi62ez2tsmod6ju",
+              "jersey_number": 22,
+              "name": "M. Qurbanlı"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "3p57ay8255exmoe275uofnle9",
+          "name": "PFK CSKA Sofia",
+          "players": [
+            {
+              "external_player_id": "c2mmi2tbnuyu4ea8zyloqsf84",
+              "jersey_number": 21,
+              "name": "F. Lapoukhov"
+            },
+            {
+              "external_player_id": "5967pncdn4eggqm38zjv9v2ay",
+              "jersey_number": 32,
+              "name": "F. Rodríguez"
+            },
+            {
+              "external_player_id": "dr2upvki95vzd9pclkjpsjs2d",
+              "jersey_number": 5,
+              "name": "J. Gbamin"
+            },
+            {
+              "external_player_id": "2qesmc90fr8k87txcoh8izhn8",
+              "jersey_number": 14,
+              "name": "T. Ivanov"
+            },
+            {
+              "external_player_id": "dpcjb50fsv7snckiq51bxnaax",
+              "jersey_number": 17,
+              "name": "Á. Martino"
+            },
+            {
+              "external_player_id": "64z85woxiowxzod5e0g0x77x1",
+              "jersey_number": 8,
+              "name": "S. Sensi"
+            },
+            {
+              "external_player_id": "9kn7hs1nbc0rcismky05z6zmx",
+              "jersey_number": 6,
+              "name": "Bruno Jordão"
+            },
+            {
+              "external_player_id": "aa7j9iapqibvw2xfjpuy4say2",
+              "jersey_number": 2,
+              "name": "Pastor"
+            },
+            {
+              "external_player_id": "7repqxw3aug2xah0l2w27ls6h",
+              "jersey_number": 28,
+              "name": "I. Pittas"
+            },
+            {
+              "external_player_id": "6ehemhaznndl6gynim5ceptrd",
+              "jersey_number": 7,
+              "name": "M. Ebong"
+            },
+            {
+              "external_player_id": "avmg3kgpwdej4epsavjtxiyvo",
+              "jersey_number": 9,
+              "name": "L. Godoy"
+            },
+            {
+              "external_player_id": "51yrztrezcxpkxzco22gywqy2",
+              "jersey_number": 11,
+              "name": "M. Brahimi"
+            },
+            {
+              "external_player_id": "5ifhs7xprkigyxo4upbz67n1m",
+              "jersey_number": 99,
+              "name": "J. Eto'o"
+            },
+            {
+              "external_player_id": "5l4fkm9a0pvfi9qiy6gipf71m",
+              "jersey_number": 10,
+              "name": "J. Zwarts"
+            }
+          ]
+        }
+      },
+      "checked_at_utc": "2026-09-14T10:14:08.760791+00:00"
+    },
+    "match": {
+      "external_fixture_id": "cgnao8wk5k70nbz7zd6633eac",
+      "home_external_team_id": "3p57ay8255exmoe275uofnle9",
+      "away_external_team_id": "dz0fc3304a30bzm9lht0bhpqt",
+      "date": "2026-07-30",
+      "time": "18:00:00Z",
+      "url": "https://theanalyst.com/opta-football-match-centre?competitionId=4c1nfi2j1m731hcay25fcgndq&seasonId=1rpi0q64a7kut2wiuvecmgbv8&matchId=cgnao8wk5k70nbz7zd6633eac"
+    },
+    "fixtures": [
+      {
+        "fixture_id": 19720987,
+        "home_team_id": 392,
+        "away_team_id": 5317,
+        "starting_at": "2026-07-30 18:00:00"
+      }
+    ],
+    "lineups": [
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 3203,
+        "jersey_number": 25,
+        "display_name": "Dimitar Evtimov",
+        "full_name": "Dimitar Ivanov Evtimov"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 32421,
+        "jersey_number": 5,
+        "display_name": "Jean-Philippe Gbamin",
+        "full_name": "Jean-Philippe Gbamin"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 77945,
+        "jersey_number": 28,
+        "display_name": "Ioannis Pittas",
+        "full_name": "Ioannis Pittas"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 130057,
+        "jersey_number": 8,
+        "display_name": "Stefano Sensi",
+        "full_name": "Stefano Sensi"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 163516,
+        "jersey_number": 6,
+        "display_name": "Bruno Jordão",
+        "full_name": "Bruno André Cavaco Jordão"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 334280,
+        "jersey_number": 17,
+        "display_name": "Ángelo Martino",
+        "full_name": "Ángelo Martino"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 1119870,
+        "jersey_number": 7,
+        "display_name": "Maks Ebong",
+        "full_name": "Max Ebong Ngome"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 4545377,
+        "jersey_number": 10,
+        "display_name": "Joël Zwarts",
+        "full_name": "Joël Zwarts"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 8093388,
+        "jersey_number": 11,
+        "display_name": "Mohamed Brahimi",
+        "full_name": "Mohamed Amine Brahimi"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 9939071,
+        "jersey_number": 3,
+        "display_name": "Andrey Yordanov",
+        "full_name": "Andrey Yordanov Yordanov"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 14004586,
+        "jersey_number": 38,
+        "display_name": "Léo Pereira",
+        "full_name": "Leonardo Augusto dos Santos Pereira"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 22136686,
+        "jersey_number": 94,
+        "display_name": "Isaac Solet",
+        "full_name": "Isaac Solet Bomawoko"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 30095970,
+        "jersey_number": 32,
+        "display_name": "Facundo Rodríguez",
+        "full_name": "Facundo Rodríguez"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37296500,
+        "jersey_number": 99,
+        "display_name": "James Eto'o",
+        "full_name": "James Armel Eto'o Eyenga"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37405087,
+        "jersey_number": 2,
+        "display_name": "Pastor",
+        "full_name": "David Samuel Custódio Lima"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37539159,
+        "jersey_number": 9,
+        "display_name": "Leandro Godoy",
+        "full_name": "Santiago Leandro Godoy"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37544496,
+        "jersey_number": 77,
+        "display_name": "Alejandro Piedrahita",
+        "full_name": "Alejandro Piedrahita Díaz"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37578745,
+        "jersey_number": 21,
+        "display_name": "Fedor Lapoukhov",
+        "full_name": "Fedor Lapoukhov"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37609212,
+        "jersey_number": 80,
+        "display_name": "Georgi Chorbadzhiyski",
+        "full_name": "Georgi Brankov Chorbadzhiyski"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37644817,
+        "jersey_number": 14,
+        "display_name": "Teodor Ivanov",
+        "full_name": "Teodor Valentinov Ivanov"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37726042,
+        "jersey_number": 34,
+        "display_name": "Vasil Kaymakanov",
+        "full_name": "Vasil Kaymakanov"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 37757778,
+        "jersey_number": 30,
+        "display_name": "Petko Panayotov",
+        "full_name": "Petko Hristov Panayotov"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 392,
+        "player_id": 38209222,
+        "jersey_number": 91,
+        "display_name": "Alex Tunchev",
+        "full_name": "Alex Alexandrov Tunchev"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 55619,
+        "jersey_number": 55,
+        "display_name": "Badavi Hüseynov",
+        "full_name": "Badavi Hüseynov"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 56098,
+        "jersey_number": 1,
+        "display_name": "Shahrudin Mahammadaliyev",
+        "full_name": "Şahruddin Məhəmmədəliyev"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 57704,
+        "jersey_number": 13,
+        "display_name": "Bahlul Mustafazada",
+        "full_name": "Bəhlul Mustafazadə"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 98777,
+        "jersey_number": 10,
+        "display_name": "Abdellah Zoubir",
+        "full_name": "Abdellah Zoubir"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 177880,
+        "jersey_number": 8,
+        "display_name": "Marko Jankovic",
+        "full_name": "Marko Janković"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 187092,
+        "jersey_number": 9,
+        "display_name": "Joni Montiel",
+        "full_name": "Jonhatan Montiel Caballero"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 220044,
+        "jersey_number": 20,
+        "display_name": "Kady Borges",
+        "full_name": "Kady Iuri Borges Malinowski"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 533080,
+        "jersey_number": 2,
+        "display_name": "Matheus Silva",
+        "full_name": "Matheus de Barros da Silva"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 540185,
+        "jersey_number": 99,
+        "display_name": "Mateusz Kochalski",
+        "full_name": "Mateusz Kochalski"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 1193792,
+        "jersey_number": 23,
+        "display_name": "Martin Zlomislic",
+        "full_name": "Martin Zlomislić"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 4545324,
+        "jersey_number": 21,
+        "display_name": "Oleksiy Kashchuk",
+        "full_name": "Oleksii Kashchuk"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 9302281,
+        "jersey_number": 44,
+        "display_name": "Elvin Cafarquliyev",
+        "full_name": "Elvin Cəfərquliyev"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 9939098,
+        "jersey_number": 22,
+        "display_name": "Musa Qurbanly",
+        "full_name": "Musa Gurbanli"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 21762178,
+        "jersey_number": 25,
+        "display_name": "Cebrail Makreckis",
+        "full_name": "Cebrails Makreckis"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 21773171,
+        "jersey_number": 5,
+        "display_name": "Bruno Langa",
+        "full_name": "Bruno Alberto Langa"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 22144786,
+        "jersey_number": 11,
+        "display_name": "Zakaria Sawo",
+        "full_name": "Zakaria Sawo"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 22536138,
+        "jersey_number": 7,
+        "display_name": "Jaly Mouaddib",
+        "full_name": "Jaly Mouaddib"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 26690615,
+        "jersey_number": 35,
+        "display_name": "Pedro Bicalho",
+        "full_name": "Pedro Henrique Rodrigues Bicalho"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 37328117,
+        "jersey_number": 4,
+        "display_name": "Bence Várkonyi",
+        "full_name": "Bence Várkonyi"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 37634850,
+        "jersey_number": 29,
+        "display_name": "Renaldo Cephas",
+        "full_name": "Renaldo Showayne Cephas"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 37725806,
+        "jersey_number": 32,
+        "display_name": "Hikmat Cabrayilzada",
+        "full_name": "Hikmət Cəbrayılzadə"
+      },
+      {
+        "fixture_id": 19720987,
+        "team_id": 5317,
+        "player_id": 38219545,
+        "jersey_number": 19,
+        "display_name": "Ali Bashirov",
+        "full_name": "Ali Beşirov"
+      }
+    ]
+  },
+  {
+    "raw": {
+      "competition_id": "4c1nfi2j1m731hcay25fcgndq",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-ajo4x6z5r2r4g8daotcqdjl04 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "69.68780799999999",
+            "334.9174464",
+            "41.75232",
+            "311.50888319999996"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-12",
+          "player_name": "B. Mazurek",
+          "team_name": "FC Salzburg",
+          "time": "1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "145.51270399999999",
+            "260.9676672",
+            "131.94403839999998",
+            "266.2877952"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-24",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "2‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dvqog8r05iw9zqr68l4fcnre2 Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "130.34772479999998",
+            "185.4218496",
+            "89.641728",
+            "270.0118848"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-25",
+          "player_name": "N. Veratschnig",
+          "team_name": "FC Salzburg",
+          "time": "2‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-81sfrpdzz1nymxg1b5noo67ai Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "163.07215360000004",
+            "250.859424",
+            "88.84357120000004",
+            "268.9478592"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-26",
+          "player_name": "Y. Vertessen",
+          "team_name": "FC Salzburg",
+          "time": "2‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-8prnx4mwbeu4asvo8jvwc01zo Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "744.130304",
+            "171.58951679999996",
+            "736.148736",
+            "184.88983679999996"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-109",
+          "player_name": "Biel",
+          "team_name": "Pafos FC",
+          "time": "9‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-e5gsmkgu13y4f0abcwmeyjwet Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "750.5155583999999",
+            "168.39744",
+            "801.5975936",
+            "241.2831936"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-110",
+          "player_name": "Pêpê Rodrigues",
+          "team_name": "Pafos FC",
+          "time": "9‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-cg2dpmeot9vtf40lnvg5scxsk Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "313.9237888",
+            "322.1491392",
+            "21.7984",
+            "342.3656256"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-110",
+          "player_name": "S. Kitano",
+          "team_name": "FC Salzburg",
+          "time": "12‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dphjm5otyeb004tqonfbbct90 Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "137.531136",
+            "368.96626560000004",
+            "21.7984",
+            "217.34261759999998"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-136",
+          "player_name": "D. Redzic",
+          "team_name": "FC Salzburg",
+          "time": "14‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7uso425g5dkg9kxwplfuug5jo Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "800.00128",
+            "252.45546239999996",
+            "819.9552",
+            "254.05150079999999"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-184",
+          "player_name": "Lelê",
+          "team_name": "Pafos FC",
+          "time": "15‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7uso425g5dkg9kxwplfuug5jo Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "800.00128",
+            "252.45546239999996",
+            "819.9552",
+            "254.05150079999999"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-184",
+          "player_name": "Lelê",
+          "team_name": "Pafos FC",
+          "time": "15‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-og090mw7ae5fkg397p9g0ru1 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "211.75971839999994",
+            "345.0256896",
+            "36.165222399999976",
+            "277.460064"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-335",
+          "player_name": "D. Schmid",
+          "team_name": "FC Salzburg",
+          "time": "34‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-8prnx4mwbeu4asvo8jvwc01zo Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "710.6077184",
+            "86.46746879999996",
+            "819.9552",
+            "274.8"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-345",
+          "player_name": "Biel",
+          "team_name": "Pafos FC",
+          "time": "37‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-8prnx4mwbeu4asvo8jvwc01zo Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "710.6077184",
+            "86.46746879999996",
+            "819.9552",
+            "274.8"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-345",
+          "player_name": "Biel",
+          "team_name": "Pafos FC",
+          "time": "37‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dphjm5otyeb004tqonfbbct90 Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "194.20026879999995",
+            "148.7129664",
+            "61.70624",
+            "540.8063999999999"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-371",
+          "player_name": "D. Redzic",
+          "team_name": "FC Salzburg",
+          "time": "42‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-81sfrpdzz1nymxg1b5noo67ai Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "107.99933439999998",
+            "318.4250496",
+            "21.7984",
+            "317.361024"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-463",
+          "player_name": "Y. Vertessen",
+          "team_name": "FC Salzburg",
+          "time": "47‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dphjm5otyeb004tqonfbbct90 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "154.29242879999998",
+            "245.0072832",
+            "92.83435520000003",
+            "259.3716288"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-519",
+          "player_name": "D. Redzic",
+          "team_name": "FC Salzburg",
+          "time": "53‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "60.90808320000004",
+            "275.33201280000003",
+            "21.7984",
+            "255.64753919999995"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-538",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "54‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "60.90808320000004",
+            "275.33201280000003",
+            "21.7984",
+            "255.64753919999995"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-538",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "54‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "84.05463039999998",
+            "247.6673472",
+            "74.47674879999997",
+            "255.11552639999996"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-549",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "57‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "113.586432",
+            "274.8",
+            "21.7984",
+            "292.3564224"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-552",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "58‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "113.586432",
+            "274.8",
+            "21.7984",
+            "292.3564224"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-552",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "58‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-ce2pidh4dpd1ccozn2lm3qtw5 Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "669.9017216000001",
+            "280.65214080000004",
+            "759.2952832",
+            "296.08051200000006"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-530",
+          "player_name": "I. Šunjić",
+          "team_name": "Pafos FC",
+          "time": "62‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dtt29qocpooiymw666vz2iwdm Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "209.365248",
+            "306.1887552",
+            "21.7984",
+            "259.3716288"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-604",
+          "player_name": "A. Barry",
+          "team_name": "FC Salzburg",
+          "time": "65‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-ajo4x6z5r2r4g8daotcqdjl04 Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "50.53204479999995",
+            "191.80600319999996",
+            "21.7984",
+            "212.55450239999996"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-637",
+          "player_name": "B. Mazurek",
+          "team_name": "FC Salzburg",
+          "time": "68‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dtu61wukgh3m1jfr1pxadxjis Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "132.74219520000005",
+            "310.44485760000003",
+            "75.27490560000003",
+            "289.16434560000005"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-647",
+          "player_name": "E. Baidoo",
+          "team_name": "FC Salzburg",
+          "time": "70‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "72.08227839999998",
+            "309.9128448",
+            "21.7984",
+            "297.14453760000004"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-648",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "70‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-24vsicnsc44o2mr9jk0qjvb2t Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "72.08227839999998",
+            "309.9128448",
+            "21.7984",
+            "297.14453760000004"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-648",
+          "player_name": "H. Tabaković",
+          "team_name": "FC Salzburg",
+          "time": "70‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7uso425g5dkg9kxwplfuug5jo Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "763.2860672",
+            "248.19935999999998",
+            "815.1662592000001",
+            "268.9478592"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-622",
+          "player_name": "Lelê",
+          "team_name": "Pafos FC",
+          "time": "72‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-8prnx4mwbeu4asvo8jvwc01zo Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "799.2031232",
+            "176.90964479999997",
+            "819.9552",
+            "242.34721919999998"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-623",
+          "player_name": "Biel",
+          "team_name": "Pafos FC",
+          "time": "72‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-d8tcj4alsj46ncv7s47sqwjit Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "697.8372095999999",
+            "392.9068416",
+            "811.1754752",
+            "290.76038400000004"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-658",
+          "player_name": "N. Ngamaleu",
+          "team_name": "Pafos FC",
+          "time": "77‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-evwzikhqpwulci3y20ckeoc15 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "737.7450496",
+            "295.54849920000004",
+            "798.4049663999999",
+            "297.14453760000004"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-659",
+          "player_name": "Anderson Silva",
+          "team_name": "Pafos FC",
+          "time": "77‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-2zdyvjcz5672e6n7cmgo89tcl Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "737.7450496",
+            "298.74057600000003",
+            "760.8915967999999",
+            "305.6567424"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-730",
+          "player_name": "David Goldar",
+          "team_name": "Pafos FC",
+          "time": "78‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-8prnx4mwbeu4asvo8jvwc01zo Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "759.2952832",
+            "197.1261312",
+            "802.3957504",
+            "256.7115648"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-671",
+          "player_name": "Biel",
+          "team_name": "Pafos FC",
+          "time": "78‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-4as71su7n7lm5r2osfz1w8p1x Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "693.0482688",
+            "392.9068416",
+            "742.5339904",
+            "341.3016"
+          ],
+          "event_type": "Blocks",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-688",
+          "player_name": "V. Dragomir",
+          "team_name": "Pafos FC",
+          "time": "79‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7gs7atamb3nkobdf1cebunuvo Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "722.5800704",
+            "402.483072",
+            "819.9552",
+            "257.7755904"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-738",
+          "player_name": "M. Məmmədov",
+          "team_name": "Pafos FC",
+          "time": "84‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7gs7atamb3nkobdf1cebunuvo Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "722.5800704",
+            "402.483072",
+            "819.9552",
+            "257.7755904"
+          ],
+          "event_type": "Goals",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-738",
+          "player_name": "M. Məmmədov",
+          "team_name": "Pafos FC",
+          "time": "84‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7uso425g5dkg9kxwplfuug5jo Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "756.102656",
+            "305.6567424",
+            "819.9552",
+            "374.28639360000005"
+          ],
+          "event_type": "Shots off target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-748",
+          "player_name": "Lelê",
+          "team_name": "Pafos FC",
+          "time": "86‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7uso425g5dkg9kxwplfuug5jo Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "754.5063423999999",
+            "230.6429376",
+            "811.1754752",
+            "259.3716288"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-d6e2elufz1jf4h68k21uahq7d-778",
+          "player_name": "Lelê",
+          "team_name": "Pafos FC",
+          "time": "89‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-2ep16uxfa2j2pqw2ky8rsgo44 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "102.41223679999995",
+            "315.76498560000005",
+            "68.88965120000005",
+            "297.6765504"
+          ],
+          "event_type": "Shots on target",
+          "id": "93ggpyyosibo3lyx6q8cbqxas-bonj6qc7po4anunhydmjmi6g5-777",
+          "player_name": "K. Konaté",
+          "team_name": "FC Salzburg",
+          "time": "90‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Thursday 13 August 2026",
+      "match_id": "93ggpyyosibo3lyx6q8cbqxas",
+      "orientation": "horizontal",
+      "season_id": "1rpi0q64a7kut2wiuvecmgbv8",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Shots off target",
+        "Blocks"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=4c1nfi2j1m731hcay25fcgndq&seasonId=1rpi0q64a7kut2wiuvecmgbv8&matchId=93ggpyyosibo3lyx6q8cbqxas",
+      "summary": {
+        "Goals": {
+          "away": 3,
+          "home": 3
+        },
+        "Shots on target": {
+          "away": 6,
+          "home": 9
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "bonj6qc7po4anunhydmjmi6g5",
+          "name": "FC Salzburg",
+          "players": [
+            {
+              "external_player_id": "3ququf2ubkzj001u1pwxygutw",
+              "jersey_number": 52,
+              "name": "C. Zawieschitzky"
+            },
+            {
+              "external_player_id": "og090mw7ae5fkg397p9g0ru1",
+              "jersey_number": 31,
+              "name": "D. Schmid"
+            },
+            {
+              "external_player_id": "52rchap28rfs3r9xacg42dzbo",
+              "jersey_number": 47,
+              "name": "V. Zabransky"
+            },
+            {
+              "external_player_id": "8s1ggifut0xesv052i43m742y",
+              "jersey_number": 44,
+              "name": "K. Boma"
+            },
+            {
+              "external_player_id": "dvqog8r05iw9zqr68l4fcnre2",
+              "jersey_number": 18,
+              "name": "N. Veratschnig"
+            },
+            {
+              "external_player_id": "ajo4x6z5r2r4g8daotcqdjl04",
+              "jersey_number": 15,
+              "name": "B. Mazurek"
+            },
+            {
+              "external_player_id": "dtt29qocpooiymw666vz2iwdm",
+              "jersey_number": 32,
+              "name": "A. Barry"
+            },
+            {
+              "external_player_id": "dphjm5otyeb004tqonfbbct90",
+              "jersey_number": 23,
+              "name": "D. Redzic"
+            },
+            {
+              "external_player_id": "81sfrpdzz1nymxg1b5noo67ai",
+              "jersey_number": 11,
+              "name": "Y. Vertessen"
+            },
+            {
+              "external_player_id": "cg2dpmeot9vtf40lnvg5scxsk",
+              "jersey_number": 8,
+              "name": "S. Kitano"
+            },
+            {
+              "external_player_id": "24vsicnsc44o2mr9jk0qjvb2t",
+              "jersey_number": 9,
+              "name": "H. Tabaković"
+            },
+            {
+              "external_player_id": "dtu61wukgh3m1jfr1pxadxjis",
+              "jersey_number": 20,
+              "name": "E. Baidoo"
+            },
+            {
+              "external_player_id": "9kd9xpv9glq7whrmztrixu9sk",
+              "jersey_number": 21,
+              "name": "T. Drexler"
+            },
+            {
+              "external_player_id": "2ep16uxfa2j2pqw2ky8rsgo44",
+              "jersey_number": 19,
+              "name": "K. Konaté"
+            },
+            {
+              "external_player_id": "72gykk4phjme27eiribg0xwfe",
+              "jersey_number": 13,
+              "name": "F. Krätzig"
+            },
+            {
+              "external_player_id": "7ql013yybd8u646gtcyvrdw4",
+              "jersey_number": 39,
+              "name": "L. Morgalla"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "d6e2elufz1jf4h68k21uahq7d",
+          "name": "Pafos FC",
+          "players": [
+            {
+              "external_player_id": "d5ecnjd6h89iepxrvrlfn97ft",
+              "jersey_number": 99,
+              "name": "R. Majecki"
+            },
+            {
+              "external_player_id": "acu7qab9ahj23mp51qk0pknp",
+              "jersey_number": 14,
+              "name": "N. Ioannou"
+            },
+            {
+              "external_player_id": "7goksqm8rew8chdswsx5cidhx",
+              "jersey_number": 4,
+              "name": "David Luiz"
+            },
+            {
+              "external_player_id": "2zdyvjcz5672e6n7cmgo89tcl",
+              "jersey_number": 5,
+              "name": "David Goldar"
+            },
+            {
+              "external_player_id": "3ejpzdtnpo1r4yvxcq2e8cqg9",
+              "jersey_number": 7,
+              "name": "Bruno Felipe"
+            },
+            {
+              "external_player_id": "ce2pidh4dpd1ccozn2lm3qtw5",
+              "jersey_number": 26,
+              "name": "I. Šunjić"
+            },
+            {
+              "external_player_id": "8prnx4mwbeu4asvo8jvwc01zo",
+              "jersey_number": 20,
+              "name": "Biel"
+            },
+            {
+              "external_player_id": "e5gsmkgu13y4f0abcwmeyjwet",
+              "jersey_number": 88,
+              "name": "Pêpê Rodrigues"
+            },
+            {
+              "external_player_id": "e6ztipndwfp33c6j7yebsyx91",
+              "jersey_number": 6,
+              "name": "Guga"
+            },
+            {
+              "external_player_id": "4as71su7n7lm5r2osfz1w8p1x",
+              "jersey_number": 30,
+              "name": "V. Dragomir"
+            },
+            {
+              "external_player_id": "7uso425g5dkg9kxwplfuug5jo",
+              "jersey_number": 18,
+              "name": "Lelê"
+            },
+            {
+              "external_player_id": "d8tcj4alsj46ncv7s47sqwjit",
+              "jersey_number": 13,
+              "name": "N. Ngamaleu"
+            },
+            {
+              "external_player_id": "7gs7atamb3nkobdf1cebunuvo",
+              "jersey_number": 47,
+              "name": "M. Məmmədov"
+            },
+            {
+              "external_player_id": "evwzikhqpwulci3y20ckeoc15",
+              "jersey_number": 33,
+              "name": "Anderson Silva"
+            }
+          ]
+        }
+      },
+      "checked_at_utc": "2026-09-13T16:50:39.705628+00:00"
+    },
+    "match": {
+      "external_fixture_id": "93ggpyyosibo3lyx6q8cbqxas",
+      "home_external_team_id": "d6e2elufz1jf4h68k21uahq7d",
+      "away_external_team_id": "bonj6qc7po4anunhydmjmi6g5",
+      "date": "2026-08-13",
+      "time": "17:00:00Z",
+      "url": "https://theanalyst.com/opta-football-match-centre?competitionId=4c1nfi2j1m731hcay25fcgndq&seasonId=1rpi0q64a7kut2wiuvecmgbv8&matchId=93ggpyyosibo3lyx6q8cbqxas"
+    },
+    "fixtures": [
+      {
+        "fixture_id": 19766394,
+        "home_team_id": 8119,
+        "away_team_id": 49,
+        "starting_at": "2026-08-13 17:00:00"
+      }
+    ],
+    "lineups": [
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 197836,
+        "jersey_number": 9,
+        "display_name": "Haris Tabakovic",
+        "full_name": "Haris Tabakovic"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 522612,
+        "jersey_number": 31,
+        "display_name": "Dominik Schmid",
+        "full_name": "Dominik Robin Schmid"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 539707,
+        "jersey_number": 1,
+        "display_name": "Christian Früchtl",
+        "full_name": "Christian Früchtl"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 23697506,
+        "jersey_number": 11,
+        "display_name": "Yorbe Vertessen",
+        "full_name": "Yorbe Vertessen"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 32795612,
+        "jersey_number": 14,
+        "display_name": "Maurits Kjærgaard",
+        "full_name": "Maurits Kjaergaard"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 36084461,
+        "jersey_number": 44,
+        "display_name": "Kévin Boma",
+        "full_name": "Kevin Boma"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37287534,
+        "jersey_number": 32,
+        "display_name": "Abubakr Barry",
+        "full_name": "Abobkar Bari"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37536244,
+        "jersey_number": 18,
+        "display_name": "Nikolas Veratschnig",
+        "full_name": "Nikolas Veratschnig"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37538498,
+        "jersey_number": 13,
+        "display_name": "Frans Krätzig",
+        "full_name": "Frans Krätzig"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37544512,
+        "jersey_number": 8,
+        "display_name": "Sota Kitano",
+        "full_name": "Sota Kitano"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37552077,
+        "jersey_number": 23,
+        "display_name": "Damir Redzic",
+        "full_name": "D. Redzic"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37582096,
+        "jersey_number": 21,
+        "display_name": "Tim Drexler",
+        "full_name": "Tim Drexler"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37583501,
+        "jersey_number": 39,
+        "display_name": "Leandro Morgalla",
+        "full_name": "Leandro Morgalla"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37590696,
+        "jersey_number": 19,
+        "display_name": "Karim Konaté",
+        "full_name": "Karim Konaté"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37608082,
+        "jersey_number": 52,
+        "display_name": "Christian Zawieschitzky",
+        "full_name": "Christian Zawieschitzky"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37660940,
+        "jersey_number": 47,
+        "display_name": "Valentin Zabransky",
+        "full_name": "Valentin Zabransky"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37668386,
+        "jersey_number": 4,
+        "display_name": "John Mellberg",
+        "full_name": "John Olof Mellberg"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37694653,
+        "jersey_number": 33,
+        "display_name": "Aboubacar Camara",
+        "full_name": "Aboubacar Sidiki Camara"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37721100,
+        "jersey_number": 15,
+        "display_name": "Bartosz Mazurek",
+        "full_name": "Bartosz Mazurek"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37761265,
+        "jersey_number": 29,
+        "display_name": "Yerwin Sulbarán",
+        "full_name": "Yerwin Antonio Sulbarán López"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 49,
+        "player_id": 37788798,
+        "jersey_number": 28,
+        "display_name": "Filip Matijasevic",
+        "full_name": "Filip Matijašević"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 1333,
+        "jersey_number": 4,
+        "display_name": "David Luiz",
+        "full_name": "David Luiz Moreira Marinho"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 52860,
+        "jersey_number": 13,
+        "display_name": "Nicolas Moumi Ngamaleu",
+        "full_name": "Nicolas Moumi Ngamaleu"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 54080,
+        "jersey_number": 7,
+        "display_name": "Bruno",
+        "full_name": "Bruno Felipe Souza da Silva"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 74124,
+        "jersey_number": 26,
+        "display_name": "Ivan Šunjić",
+        "full_name": "Ivan Šunjić"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 77816,
+        "jersey_number": 14,
+        "display_name": "Nikolas Ioannou",
+        "full_name": "Nicolas Ioannou"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 156566,
+        "jersey_number": 99,
+        "display_name": "Radoslaw Majecki",
+        "full_name": "Radosław Majecki"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 162706,
+        "jersey_number": 88,
+        "display_name": "Pêpê",
+        "full_name": "Pedro Filipe Figueiredo Rodrigues"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 162872,
+        "jersey_number": 6,
+        "display_name": "Guga",
+        "full_name": "Gonçalo Rosa Gonçalves Pereira Rodrigues"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 165419,
+        "jersey_number": 30,
+        "display_name": "Vlad Dragomir",
+        "full_name": "Vlad Mihai Dragomir"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 187137,
+        "jersey_number": 5,
+        "display_name": "David Goldar",
+        "full_name": "David Goldar Gómez"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 191301,
+        "jersey_number": 12,
+        "display_name": "Ken Sema",
+        "full_name": "Ken Sema"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 463983,
+        "jersey_number": 71,
+        "display_name": "Michalis Papastylianou",
+        "full_name": "Michalis Papastylianou"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 37562171,
+        "jersey_number": 20,
+        "display_name": "Biel",
+        "full_name": "Gabriel Teixeira Aragão"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 37611601,
+        "jersey_number": 18,
+        "display_name": "Lelê",
+        "full_name": "Leanderson da Silva Genesio"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 37628399,
+        "jersey_number": 47,
+        "display_name": "Murad Mammadov",
+        "full_name": "Murad Məmmədov"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 37709960,
+        "jersey_number": 60,
+        "display_name": "Christos Evzona",
+        "full_name": "Christos Efzona"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 37723142,
+        "jersey_number": 42,
+        "display_name": "Georgios Michael",
+        "full_name": "Georgios Michael"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 37723144,
+        "jersey_number": 82,
+        "display_name": "Petros Petrou",
+        "full_name": "Petros Petrou"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 37725888,
+        "jersey_number": 72,
+        "display_name": "Kosmas Ioannou",
+        "full_name": "Kosmas Ioannou"
+      },
+      {
+        "fixture_id": 19766394,
+        "team_id": 8119,
+        "player_id": 38219557,
+        "jersey_number": 61,
+        "display_name": "Melinos Kais",
+        "full_name": "Melinos Kais"
+      }
+    ]
+  },
+  {
+    "raw": {
+      "competition_id": "c7b8o53flg36wbuevfzy3lb10",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-5np1ksd9qkmc511ihzvikhy0a Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "155.09058560000005",
+            "177.44165759999998",
+            "131.14588160000002",
+            "197.12613119999997"
+          ],
+          "event_type": "Blocks",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-53",
+          "player_name": "A. Kadri",
+          "team_name": "KAA Gent",
+          "time": "4‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-4xbvoe0viskrxc7jiyd1iapcl Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "736.148736",
+            "355.13393279999997",
+            "756.102656",
+            "337.0454976"
+          ],
+          "event_type": "Blocks",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-60",
+          "player_name": "M. Boyle",
+          "team_name": "Hibernian FC",
+          "time": "5‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7gik3tsvqcnvjikze1sqj2rfu Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "732.157952",
+            "292.8884352",
+            "819.9552",
+            "202.97827199999998"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-80",
+          "player_name": "J. Mulligan",
+          "team_name": "Hibernian FC",
+          "time": "7‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-wfnh772q3r95omx4rbkret5g Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "84.85278720000005",
+            "288.63233280000003",
+            "86.44910079999995",
+            "61.4628672"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-158",
+          "player_name": "J. Vergara",
+          "team_name": "KAA Gent",
+          "time": "16‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-ay86n2sd0odbxluws2jyx4zkk Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "159.87952639999997",
+            "350.34581760000003",
+            "116.77905920000003",
+            "321.08511360000006"
+          ],
+          "event_type": "Blocks",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-261",
+          "player_name": "M. Sonko",
+          "team_name": "KAA Gent",
+          "time": "23‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-8rsmx7skreq5jt8ckz7a3egic Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "169.457408",
+            "243.94325759999998",
+            "21.7984",
+            "329.5973184"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-289",
+          "player_name": "T. De Vlieger",
+          "team_name": "KAA Gent",
+          "time": "26‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-88llk7uinnhsg3xcipf05d9g4 Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "728.9653248",
+            "207.7663872",
+            "819.9552",
+            "243.94325759999998"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-261",
+          "player_name": "N. Lowe",
+          "team_name": "Hibernian FC",
+          "time": "27‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-a762nd22lh41vq417sdn9c178 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "136.73297920000005",
+            "194.99808",
+            "32.97259520000004",
+            "260.4356544"
+          ],
+          "event_type": "Shots on target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-324",
+          "player_name": "M. Volckaert",
+          "team_name": "KAA Gent",
+          "time": "29‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-wfnh772q3r95omx4rbkret5g Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "78.46753279999996",
+            "299.27258880000005",
+            "26.587340799999957",
+            "282.24817920000004"
+          ],
+          "event_type": "Shots on target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-402",
+          "player_name": "J. Vergara",
+          "team_name": "KAA Gent",
+          "time": "36‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-wfnh772q3r95omx4rbkret5g Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "127.15509760000002",
+            "284.9082432",
+            "21.7984",
+            "286.5042816"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-444",
+          "player_name": "J. Vergara",
+          "team_name": "KAA Gent",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-wfnh772q3r95omx4rbkret5g Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "127.15509760000002",
+            "284.9082432",
+            "21.7984",
+            "286.5042816"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-444",
+          "player_name": "J. Vergara",
+          "team_name": "KAA Gent",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-4xbvoe0viskrxc7jiyd1iapcl Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "736.148736",
+            "149.24497920000002",
+            "808.7810048",
+            "257.7755904"
+          ],
+          "event_type": "Shots on target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-335",
+          "player_name": "M. Boyle",
+          "team_name": "Hibernian FC",
+          "time": "42‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7gik3tsvqcnvjikze1sqj2rfu Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "684.2685439999999",
+            "290.76038400000004",
+            "819.9552",
+            "162.54529920000002"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-338",
+          "player_name": "J. Mulligan",
+          "team_name": "Hibernian FC",
+          "time": "42‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3xs4gkk9je0g3fl24wim4piad Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "753.7081856",
+            "227.45086080000002",
+            "805.5883776",
+            "266.2877952"
+          ],
+          "event_type": "Shots on target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-364",
+          "player_name": "J. Kerr",
+          "team_name": "Hibernian FC",
+          "time": "45‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-culbbgu1o5fdbl3gxz54rbn4l Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "639.5717632",
+            "335.981472",
+            "724.9745407999999",
+            "270.0118848"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-477",
+          "player_name": "F. Passlack",
+          "team_name": "Hibernian FC",
+          "time": "55‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-1cfh2cg8i2f4cqd7fraos96fp Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "700.23168",
+            "262.5637056",
+            "800.00128",
+            "279.5881152"
+          ],
+          "event_type": "Blocks",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-482",
+          "player_name": "J. McGrath",
+          "team_name": "Hibernian FC",
+          "time": "56‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3xs4gkk9je0g3fl24wim4piad Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "787.2307712",
+            "309.380832",
+            "819.9552",
+            "279.5881152"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-486",
+          "player_name": "J. Kerr",
+          "team_name": "Hibernian FC",
+          "time": "56‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3xs4gkk9je0g3fl24wim4piad Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "787.2307712",
+            "309.380832",
+            "819.9552",
+            "279.5881152"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-486",
+          "player_name": "J. Kerr",
+          "team_name": "Hibernian FC",
+          "time": "56‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-4mvqt04u92wsm1p5ja8fpilii Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "202.18183679999993",
+            "237.559104",
+            "21.7984",
+            "297.6765504"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-633",
+          "player_name": "Tiago Araújo",
+          "team_name": "KAA Gent",
+          "time": "65‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-6zo1ykc0n2njq5xnx0tiuluz8 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "96.82513920000004",
+            "371.6263296",
+            "72.88043520000005",
+            "340.2375744"
+          ],
+          "event_type": "Blocks",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-702",
+          "player_name": "E. Seck",
+          "team_name": "KAA Gent",
+          "time": "71‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-2hhatd33vvokrbemn4echivhl Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "618.0215296",
+            "392.9068416",
+            "672.2961919999999",
+            "359.3900352"
+          ],
+          "event_type": "Blocks",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-597",
+          "player_name": "W. O'Hora",
+          "team_name": "Hibernian FC",
+          "time": "72‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7gik3tsvqcnvjikze1sqj2rfu Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "666.7090943999999",
+            "326.4052416",
+            "805.5883776",
+            "287.56830720000005"
+          ],
+          "event_type": "Shots on target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-599",
+          "player_name": "J. Mulligan",
+          "team_name": "Hibernian FC",
+          "time": "72‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-5w0ohhrm0ojscyjh3e0o8ffmd Opta-Away  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "43.34863360000002",
+            "254.05150079999999",
+            "21.7984",
+            "246.0713088"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-828",
+          "player_name": "C. Burgess",
+          "team_name": "KAA Gent",
+          "time": "74‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-culbbgu1o5fdbl3gxz54rbn4l Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "776.056576",
+            "372.1583424",
+            "819.9552",
+            "258.839616"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-627",
+          "player_name": "F. Passlack",
+          "team_name": "Hibernian FC",
+          "time": "77‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-culbbgu1o5fdbl3gxz54rbn4l Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "776.056576",
+            "372.1583424",
+            "819.9552",
+            "258.839616"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-627",
+          "player_name": "F. Passlack",
+          "team_name": "Hibernian FC",
+          "time": "77‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-5w0ohhrm0ojscyjh3e0o8ffmd Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "56.11914239999997",
+            "253.519488",
+            "21.7984",
+            "265.2237696"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-821",
+          "player_name": "C. Burgess",
+          "team_name": "KAA Gent",
+          "time": "84‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-5w0ohhrm0ojscyjh3e0o8ffmd Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "56.11914239999997",
+            "253.519488",
+            "21.7984",
+            "265.2237696"
+          ],
+          "event_type": "Goals",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-821",
+          "player_name": "C. Burgess",
+          "team_name": "KAA Gent",
+          "time": "84‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-944ptuekuetkjifbeaycqcoh5 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "783.2399872000001",
+            "237.559104",
+            "811.1754752",
+            "256.7115648"
+          ],
+          "event_type": "Shots on target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-687",
+          "player_name": "C. Wright",
+          "team_name": "Hibernian FC",
+          "time": "85‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-6zo1ykc0n2njq5xnx0tiuluz8 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "105.60486399999999",
+            "366.83821439999997",
+            "93.63251199999999",
+            "352.47386879999993"
+          ],
+          "event_type": "Blocks",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-850",
+          "player_name": "E. Seck",
+          "team_name": "KAA Gent",
+          "time": "88‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-wfnh772q3r95omx4rbkret5g Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "80.86200320000003",
+            "282.780192",
+            "25.789184000000002",
+            "276.9280512"
+          ],
+          "event_type": "Shots on target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-8y3iucyxguipljcmf87a11bk9-853",
+          "player_name": "J. Vergara",
+          "team_name": "KAA Gent",
+          "time": "89‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-11mfhxezbxlrha648ys9buoes Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "88.0454144",
+            "291.8244096",
+            "21.7984",
+            "295.54849920000004"
+          ],
+          "event_type": "Own goal",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-739",
+          "player_name": "M. Chaiwa",
+          "team_name": "Hibernian FC",
+          "time": "90‎+‎1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-944ptuekuetkjifbeaycqcoh5 Opta-Home  Opta-Negative Opta-JS-Tip",
+          "coords": [
+            "780.8455167999999",
+            "218.938656",
+            "791.2215552",
+            "316.82901119999997"
+          ],
+          "event_type": "Shots off target",
+          "id": "begkrgcg3t5pp99vv2wv16pzo-c9ky1957qli8v2lylfga7io8b-753",
+          "player_name": "C. Wright",
+          "team_name": "Hibernian FC",
+          "time": "90‎+‎3‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Thursday 27 August 2026",
+      "match_id": "begkrgcg3t5pp99vv2wv16pzo",
+      "orientation": "horizontal",
+      "season_id": "acatl9aedc5l4im3r8l890y6s",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Shots off target",
+        "Blocks"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=c7b8o53flg36wbuevfzy3lb10&seasonId=acatl9aedc5l4im3r8l890y6s&matchId=begkrgcg3t5pp99vv2wv16pzo",
+      "summary": {
+        "Goals": {
+          "away": 3,
+          "home": 2
+        },
+        "Shots on target": {
+          "away": 5,
+          "home": 6
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "8y3iucyxguipljcmf87a11bk9",
+          "name": "KAA Gent",
+          "players": [
+            {
+              "external_player_id": "be0ws51ws5cm9wzmcp3ozmklx",
+              "jersey_number": 33,
+              "name": "D. Roef"
+            },
+            {
+              "external_player_id": "1i1xcco82x0ppbac6j5z59x49",
+              "jersey_number": 44,
+              "name": "S. Van der Heyden"
+            },
+            {
+              "external_player_id": "5w0ohhrm0ojscyjh3e0o8ffmd",
+              "jersey_number": 16,
+              "name": "C. Burgess"
+            },
+            {
+              "external_player_id": "2309zjv6facft50slzuqf1hjo",
+              "jersey_number": 5,
+              "name": "E. Ngom"
+            },
+            {
+              "external_player_id": "4mvqt04u92wsm1p5ja8fpilii",
+              "jersey_number": 20,
+              "name": "Tiago Araújo"
+            },
+            {
+              "external_player_id": "3zc219xqywme43v3jdwmv44d0",
+              "jersey_number": 17,
+              "name": "M. Delorge"
+            },
+            {
+              "external_player_id": "8rsmx7skreq5jt8ckz7a3egic",
+              "jersey_number": 27,
+              "name": "T. De Vlieger"
+            },
+            {
+              "external_player_id": "a762nd22lh41vq417sdn9c178",
+              "jersey_number": 57,
+              "name": "M. Volckaert"
+            },
+            {
+              "external_player_id": "ay86n2sd0odbxluws2jyx4zkk",
+              "jersey_number": 11,
+              "name": "M. Sonko"
+            },
+            {
+              "external_player_id": "5np1ksd9qkmc511ihzvikhy0a",
+              "jersey_number": 37,
+              "name": "A. Kadri"
+            },
+            {
+              "external_player_id": "wfnh772q3r95omx4rbkret5g",
+              "jersey_number": 47,
+              "name": "J. Vergara"
+            },
+            {
+              "external_player_id": "9pi6iv3v58tzwbnaojw7udr6d",
+              "jersey_number": 8,
+              "name": "L. Bénes"
+            },
+            {
+              "external_player_id": "6ycq440aqn10ddfnasnlxtogk",
+              "jersey_number": 75,
+              "name": "I. Cisse"
+            },
+            {
+              "external_player_id": "6zo1ykc0n2njq5xnx0tiuluz8",
+              "jersey_number": 59,
+              "name": "E. Seck"
+            },
+            {
+              "external_player_id": "539p63l51lnmgu8wlan6c0mj8",
+              "jersey_number": 14,
+              "name": "K. Wilson"
+            },
+            {
+              "external_player_id": "2jhi0lbbo65dsfv4ho9pmlgix",
+              "jersey_number": 22,
+              "name": "Leonardo Lopes"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "c9ky1957qli8v2lylfga7io8b",
+          "name": "Hibernian FC",
+          "players": [
+            {
+              "external_player_id": "ehu1ythb2pz1hbpi7lneskjpx",
+              "jersey_number": 1,
+              "name": "R. Sallinger"
+            },
+            {
+              "external_player_id": "1kw6qz2pi7wlam068oeirztud",
+              "jersey_number": 21,
+              "name": "J. Obita"
+            },
+            {
+              "external_player_id": "3xs4gkk9je0g3fl24wim4piad",
+              "jersey_number": 6,
+              "name": "J. Kerr"
+            },
+            {
+              "external_player_id": "2hhatd33vvokrbemn4echivhl",
+              "jersey_number": 5,
+              "name": "W. O'Hora"
+            },
+            {
+              "external_player_id": "culbbgu1o5fdbl3gxz54rbn4l",
+              "jersey_number": 25,
+              "name": "F. Passlack"
+            },
+            {
+              "external_player_id": "apgbqplqtvuc1dmdxi5gqhd04",
+              "jersey_number": 3,
+              "name": "A. Mayor"
+            },
+            {
+              "external_player_id": "11mfhxezbxlrha648ys9buoes",
+              "jersey_number": 14,
+              "name": "M. Chaiwa"
+            },
+            {
+              "external_player_id": "7gik3tsvqcnvjikze1sqj2rfu",
+              "jersey_number": 8,
+              "name": "J. Mulligan"
+            },
+            {
+              "external_player_id": "1cfh2cg8i2f4cqd7fraos96fp",
+              "jersey_number": 17,
+              "name": "J. McGrath"
+            },
+            {
+              "external_player_id": "88llk7uinnhsg3xcipf05d9g4",
+              "jersey_number": 9,
+              "name": "N. Lowe"
+            },
+            {
+              "external_player_id": "4xbvoe0viskrxc7jiyd1iapcl",
+              "jersey_number": 10,
+              "name": "M. Boyle"
+            },
+            {
+              "external_player_id": "d5kymt3b15y1chb4hp8pt3w2c",
+              "jersey_number": 27,
+              "name": "K. Megwa"
+            },
+            {
+              "external_player_id": "944ptuekuetkjifbeaycqcoh5",
+              "jersey_number": 23,
+              "name": "C. Wright"
+            },
+            {
+              "external_player_id": "4an8xrcoiz0th7347aradjo5w",
+              "jersey_number": 22,
+              "name": "A. Šuto"
+            }
+          ]
+        }
+      },
+      "checked_at_utc": "2026-09-13T19:12:28.521855+00:00"
+    },
+    "match": {
+      "external_fixture_id": "begkrgcg3t5pp99vv2wv16pzo",
+      "home_external_team_id": "c9ky1957qli8v2lylfga7io8b",
+      "away_external_team_id": "8y3iucyxguipljcmf87a11bk9",
+      "date": "2026-08-27",
+      "time": "19:00:00Z",
+      "url": "https://theanalyst.com/opta-football-match-centre?competitionId=c7b8o53flg36wbuevfzy3lb10&seasonId=acatl9aedc5l4im3r8l890y6s&matchId=begkrgcg3t5pp99vv2wv16pzo"
+    },
+    "fixtures": [
+      {
+        "fixture_id": 19788586,
+        "home_team_id": 66,
+        "away_team_id": 2402,
+        "starting_at": "2026-08-27 19:00:00"
+      }
+    ],
+    "lineups": [
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 807,
+        "jersey_number": 4,
+        "display_name": "Grant Hanley",
+        "full_name": "Grant Hanley"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 2452,
+        "jersey_number": 21,
+        "display_name": "Jordan Obita",
+        "full_name": "Jordan Obita"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 2781,
+        "jersey_number": 11,
+        "display_name": "Joe Newell",
+        "full_name": "Joe Newell"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 6590,
+        "jersey_number": 13,
+        "display_name": "Jordan Smith",
+        "full_name": "Jordan Smith"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 32395,
+        "jersey_number": 25,
+        "display_name": "Felix Passlack",
+        "full_name": "Felix Passlack"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 35708,
+        "jersey_number": 1,
+        "display_name": "Raphael Sallinger",
+        "full_name": "Raphael Sallinger"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 121792,
+        "jersey_number": 17,
+        "display_name": "Jamie McGrath",
+        "full_name": "Jamie McGrath"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 123099,
+        "jersey_number": 5,
+        "display_name": "Warren O'Hora",
+        "full_name": "Warren O'Hora"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 172795,
+        "jersey_number": 10,
+        "display_name": "Martin Boyle",
+        "full_name": "Martin Boyle"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 173154,
+        "jersey_number": 6,
+        "display_name": "Jason Kerr",
+        "full_name": "Jason Kerr"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 175335,
+        "jersey_number": 19,
+        "display_name": "Nicky Cadden",
+        "full_name": "Nicky Cadden"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 1481492,
+        "jersey_number": 23,
+        "display_name": "Callum Wright",
+        "full_name": "Callum Wright"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 2483202,
+        "jersey_number": 15,
+        "display_name": "Jack Iredale",
+        "full_name": "Jack Iredale"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 35683623,
+        "jersey_number": 8,
+        "display_name": "Josh Mulligan",
+        "full_name": "Josh Mulligan"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37554905,
+        "jersey_number": 47,
+        "display_name": "Azeem Abdullah",
+        "full_name": "Azeem Abdullah"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37571435,
+        "jersey_number": 22,
+        "display_name": "Ante Suto",
+        "full_name": "Ante Šuto"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37605120,
+        "jersey_number": 14,
+        "display_name": "Miguel Chaiwa",
+        "full_name": "Miguel Changa Chaiwa"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37614468,
+        "jersey_number": 9,
+        "display_name": "Nathan Lowe",
+        "full_name": "Nathan Lowe"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37648631,
+        "jersey_number": 27,
+        "display_name": "Kanayo Megwa",
+        "full_name": "Kanayochukwu Megwa"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37648632,
+        "jersey_number": 30,
+        "display_name": "Jacob MacIntyre",
+        "full_name": "Jacob MacIntyre"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37649472,
+        "jersey_number": 20,
+        "display_name": "Rudi Molotnikov",
+        "full_name": "Rudi Allan Molotnikov"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37653423,
+        "jersey_number": 3,
+        "display_name": "Adam Mayor",
+        "full_name": "Adam Major"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 66,
+        "player_id": 37658186,
+        "jersey_number": 35,
+        "display_name": "Freddie Owens",
+        "full_name": "Freddie Owens"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 6081,
+        "jersey_number": 16,
+        "display_name": "Christian Burgess",
+        "full_name": "Christian Burgess"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 9523,
+        "jersey_number": 22,
+        "display_name": "Leonardo Lopes",
+        "full_name": "Leonardo da Silva Lopes"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 33598,
+        "jersey_number": 8,
+        "display_name": "László Bénes",
+        "full_name": "László Bénes"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 62118,
+        "jersey_number": 33,
+        "display_name": "Davy Roef",
+        "full_name": "Davy Roef"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 496663,
+        "jersey_number": 44,
+        "display_name": "Siebe Van der Heyden",
+        "full_name": "Siebe Van der Heyden"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 1505502,
+        "jersey_number": 75,
+        "display_name": "Ibrahima Cissé",
+        "full_name": "Ibrahima Cissé"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 23287278,
+        "jersey_number": 3,
+        "display_name": "Maksim Paskotsi",
+        "full_name": "Maksim Paskotši"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37261828,
+        "jersey_number": 37,
+        "display_name": "Abdelkahar Kadri",
+        "full_name": "Abdelhak Kadri"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37317388,
+        "jersey_number": 20,
+        "display_name": "Tiago Araújo",
+        "full_name": "Tiago Filipe Alves Araújo"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37344117,
+        "jersey_number": 10,
+        "display_name": "Aimé Omgba",
+        "full_name": "Aimé Omgba"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37555036,
+        "jersey_number": 17,
+        "display_name": "Mathias Delorge",
+        "full_name": "Mathias Delorge-Knieper"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37559104,
+        "jersey_number": 30,
+        "display_name": "Kjell Peersman",
+        "full_name": "Kjell Peersman"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37585223,
+        "jersey_number": 11,
+        "display_name": "Momodou Sonko",
+        "full_name": "Momodou Lamin Sonko"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37589712,
+        "jersey_number": 57,
+        "display_name": "Matties Volckaert",
+        "full_name": "Matties Volckaert"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37595214,
+        "jersey_number": 5,
+        "display_name": "Mouhamed Ngom",
+        "full_name": "Mouhamed El Bachir Ngom"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37612641,
+        "jersey_number": 14,
+        "display_name": "Kyrell Wilson",
+        "full_name": "Kyrell Wilson"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37651540,
+        "jersey_number": 27,
+        "display_name": "Tibe De Vlieger",
+        "full_name": "Tibe De Vlieger"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37694304,
+        "jersey_number": 56,
+        "display_name": "Mamadou Diallo",
+        "full_name": "Mamadou Aliou Diallo"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37714553,
+        "jersey_number": 39,
+        "display_name": "Abdoul Ayinde",
+        "full_name": "Abdul Rachid Ayindé"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37726622,
+        "jersey_number": 28,
+        "display_name": "Mohammed El Âdfaoui",
+        "full_name": "Mohammed El Âdfaoui"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37737079,
+        "jersey_number": 47,
+        "display_name": "José Mendieta",
+        "full_name": "José Mendieta"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37924102,
+        "jersey_number": 59,
+        "display_name": "El Hadji Seck",
+        "full_name": "El Hadji Seck"
+      },
+      {
+        "fixture_id": 19788586,
+        "team_id": 2402,
+        "player_id": 37924526,
+        "jersey_number": 50,
+        "display_name": "Noa Vandenabeele",
+        "full_name": "Noa Vandenabeele"
+      }
+    ]
+  }
+]

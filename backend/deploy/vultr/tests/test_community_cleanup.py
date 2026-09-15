@@ -14,6 +14,7 @@ class CleanupCommandTests(unittest.TestCase):
         cases = (
             ("cleanup-community.sh", ["community", "cleanup"], [[], ["--check"], ["--apply", "--limit", "1000"]]),
             ("sync-live-fixtures.sh", ["fixtures", "live"], [[], ["--apply"]]),
+            ("sync-opta.sh", ["opta-shots", "sync", "--dataset", "both", "--recent-days", "7", "--refresh-details", "--output-dir", "/app/logs/opta-sync"], [[], ["--check"], ["--apply"]]),
         )
         for script, command, argument_sets in cases:
             with self.subTest(script=script), tempfile.TemporaryDirectory() as directory:

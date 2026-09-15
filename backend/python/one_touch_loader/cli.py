@@ -212,6 +212,16 @@ New database reload order (redesigned commands):
   게시한 글의 첨부와 현재 프로필 사진은 이 기간으로 삭제하지 않습니다.
   python -m one_touch_loader.cli community cleanup --check
   python -m one_touch_loader.cli community cleanup --apply [--limit 100]
+
+23. opta-shots (public Chalkboard; sync defaults to read-only check)
+  python -m one_touch_loader.cli opta-shots sync --dataset analysis [--competition-ids 8 82 301 384 564 2 5 2286] [--season 2026/2027] [--check | --apply]
+  python -m one_touch_loader.cli opta-shots --dataset analysis --url <match_page_url> --output <json_path>
+  python -m one_touch_loader.cli opta-shots sync [--competition-ids 8 82 301 384 564 2 5 2286] [--season 2026/2027] [--check | --apply]
+  python -m one_touch_loader.cli opta-shots sync [--from-date YYYY-MM-DD] [--to-date YYYY-MM-DD] [--limit N] [--refresh]
+  python -m one_touch_loader.cli opta-shots sync --retry-report <previous_report.json> [--check | --apply]
+  python -m one_touch_loader.cli opta-shots sync --dataset analysis --retry-report <previous_report.json> --retry-statuses failed not_finished [--check | --apply]
+  python -m one_touch_loader.cli opta-shots --url <match_page_url> --output <json_path>
+  python -m one_touch_loader.cli opta-shots --snapshot <raw_json_path> --output <json_path>
 """
 
 
@@ -247,6 +257,10 @@ def main():
             cleanup(sys.argv[3:])
         else:
             print(USAGE)
+
+    elif cmd == "opta-shots":
+        from one_touch_loader.loaders.opta_shots_loader import main as opta_shots_main
+        opta_shots_main(sys.argv[2:])
 
     elif cmd == "countries":
         if len(sys.argv) == 3 and sys.argv[2] == "refresh":
