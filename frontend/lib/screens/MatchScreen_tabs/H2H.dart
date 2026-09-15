@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
@@ -274,7 +274,7 @@ class _H2HTabState extends State<H2HTab> {
             child: GestureDetector(
               // Match screen is on the root navigator; '/team/:id' is on the
               // shell's navigator. go() (not push()) so it actually surfaces.
-              onTap: () => context.go('/team/$_againstTeamId'),
+              onTap: () => openTeamPage(context, _againstTeamId),
               child: Image.network(
                 teamRepository.findByIdOrUnknown(_againstTeamId).imagePath ??
                     '',
@@ -455,7 +455,7 @@ class _H2HTabState extends State<H2HTab> {
           Row(
             children: [
               GestureDetector(
-                onTap: () => context.go('/team/$idA'),
+                onTap: () => openTeamPage(context, idA),
                 child: ClipOval(
                   child: Image.network(
                     logoA,
@@ -492,7 +492,7 @@ class _H2HTabState extends State<H2HTab> {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => context.go('/team/$idB'),
+                onTap: () => openTeamPage(context, idB),
                 child: ClipOval(
                   child: Image.network(
                     logoB,

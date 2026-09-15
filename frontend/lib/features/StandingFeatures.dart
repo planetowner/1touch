@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
 
@@ -547,7 +547,7 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: () => context.push('/team/$teamId'),
+                    onTap: () => openTeamPage(context, teamId),
                     child: Image.network(
                       '${team['logo']}',
                       width: 20,

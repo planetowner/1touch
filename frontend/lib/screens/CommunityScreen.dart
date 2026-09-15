@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
@@ -322,7 +323,7 @@ class _CommunityState extends State<Community>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       GestureDetector(
-                        onTap: () => context.push('/team/${team.teamId}'),
+                        onTap: () => openTeamPage(context, team.teamId),
                         child: team.imagePath != null
                             ? Image.network(
                                 team.imagePath!,
