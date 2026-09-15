@@ -12,7 +12,9 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
-import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/players/player_repository.dart';
+import 'package:onetouch/data/players/player_repository_provider.dart'
+    as player_providers;
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
@@ -28,11 +30,13 @@ class Search extends StatelessWidget {
     this.teamRepository,
     this.competitionContextResolver,
     this.fixtureRepository,
+    this.playerRepository,
   });
 
   final TeamRepository? teamRepository;
   final TeamCompetitionContextResolver? competitionContextResolver;
   final FixtureRepository? fixtureRepository;
+  final PlayerRepository? playerRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +50,8 @@ class Search extends StatelessWidget {
               team_providers.teamCompetitionContextResolver,
           fixtureRepository:
               fixtureRepository ?? fixture_providers.fixtureRepository,
+          playerRepository:
+              playerRepository ?? player_providers.playerRepository,
         ),
       ),
     );
@@ -58,11 +64,13 @@ class SearchContent extends StatefulWidget {
     required this.teamRepository,
     required this.competitionContextResolver,
     required this.fixtureRepository,
+    required this.playerRepository,
   });
 
   final TeamRepository teamRepository;
   final TeamCompetitionContextResolver competitionContextResolver;
   final FixtureRepository fixtureRepository;
+  final PlayerRepository playerRepository;
 
   @override
   State<SearchContent> createState() => _SearchContentState();
@@ -71,6 +79,9 @@ class SearchContent extends StatefulWidget {
 class _SearchContentState extends State<SearchContent> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
+  bool _isInitializing = true;
+  Object? _initializationError;
+  int _loadGeneration = 0;
 
   static const _tabs = ['ALL', 'PLAYERS', 'TEAMS', 'EVENTS'];
   bool get _hasQuery => _searchController.text.trim().isNotEmpty;
@@ -82,30 +93,60 @@ class _SearchContentState extends State<SearchContent> {
     widget.fixtureRepository.fixtures.addListener(_onFixturesChanged);
     unawaited(_initializeRepositories());
     currentUserPreferences.followedTeamIds.addListener(_onFollowingChanged);
-    playerRepository.followedPlayerIds.addListener(_onFollowingChanged);
+    widget.playerRepository.followedPlayerIds.addListener(_onFollowingChanged);
   }
 
   @override
   void didUpdateWidget(covariant SearchContent oldWidget) {
     super.didUpdateWidget(oldWidget);
+    var repositoriesChanged = false;
     if (oldWidget.teamRepository != widget.teamRepository) {
       oldWidget.teamRepository.teams.removeListener(_onTeamsChanged);
       widget.teamRepository.teams.addListener(_onTeamsChanged);
-      unawaited(widget.teamRepository.initialize());
+      repositoriesChanged = true;
     }
     if (oldWidget.fixtureRepository != widget.fixtureRepository) {
       oldWidget.fixtureRepository.fixtures.removeListener(_onFixturesChanged);
       widget.fixtureRepository.fixtures.addListener(_onFixturesChanged);
-      unawaited(widget.fixtureRepository.initialize());
+      repositoriesChanged = true;
     }
+    if (oldWidget.playerRepository != widget.playerRepository) {
+      oldWidget.playerRepository.followedPlayerIds
+          .removeListener(_onFollowingChanged);
+      widget.playerRepository.followedPlayerIds
+          .addListener(_onFollowingChanged);
+      repositoriesChanged = true;
+    }
+    if (repositoriesChanged) unawaited(_initializeRepositories());
   }
 
   Future<void> _initializeRepositories() async {
-    await Future.wait([
-      widget.teamRepository.initialize(),
-      widget.fixtureRepository.initialize(),
-    ]);
-    if (mounted) setState(() {});
+    final generation = ++_loadGeneration;
+    if (!_isInitializing || _initializationError != null) {
+      setState(() {
+        _isInitializing = true;
+        _initializationError = null;
+      });
+    }
+
+    try {
+      await Future.wait([
+        widget.teamRepository.initialize(),
+        widget.fixtureRepository.initialize(),
+        widget.playerRepository.initializeFollowing(),
+      ]);
+      if (!mounted || generation != _loadGeneration) return;
+      setState(() {
+        _isInitializing = false;
+        _initializationError = null;
+      });
+    } on Object catch (error) {
+      if (!mounted || generation != _loadGeneration) return;
+      setState(() {
+        _isInitializing = false;
+        _initializationError = error;
+      });
+    }
   }
 
   void _onTeamsChanged() {
@@ -125,7 +166,8 @@ class _SearchContentState extends State<SearchContent> {
     widget.teamRepository.teams.removeListener(_onTeamsChanged);
     widget.fixtureRepository.fixtures.removeListener(_onFixturesChanged);
     currentUserPreferences.followedTeamIds.removeListener(_onFollowingChanged);
-    playerRepository.followedPlayerIds.removeListener(_onFollowingChanged);
+    widget.playerRepository.followedPlayerIds
+        .removeListener(_onFollowingChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -206,16 +248,48 @@ class _SearchContentState extends State<SearchContent> {
             ),
           ),
           Expanded(
-            child: _hasQuery ? _buildSearchResults() : _buildRecents(),
+            child: _buildBody(),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildBody() {
+    if (!_hasSearchableData && _isInitializing) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (!_hasSearchableData && _initializationError != null) {
+      return Center(
+        key: const ValueKey('search-load-error'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'SEARCH UNAVAILABLE',
+              style: Body1_b.style.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: _initializeRepositories,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+    return _hasQuery ? _buildSearchResults() : _buildRecents();
+  }
+
+  bool get _hasSearchableData =>
+      widget.playerRepository.allPlayers.isNotEmpty ||
+      widget.teamRepository.allTeams.isNotEmpty;
+
   Widget _buildRecents() {
-    final recentPlayer = playerRepository.findById('lee-kang-in') ??
-        playerRepository.allPlayers.first;
+    final recentPlayer = widget.playerRepository.findById('lee-kang-in') ??
+        widget.playerRepository.allPlayers.firstOrNull;
     final recentTeam = widget.teamRepository.findById(83);
     final recentEvent = _eventFixtures().firstOrNull;
 
@@ -231,7 +305,7 @@ class _SearchContentState extends State<SearchContent> {
           ),
         ),
         const SizedBox(height: 20),
-        _buildPlayerCard(recentPlayer),
+        if (recentPlayer != null) _buildPlayerCard(recentPlayer),
         if (recentTeam != null) ...[
           const SizedBox(height: 16),
           _buildTeamCard(recentTeam),
@@ -302,7 +376,7 @@ class _SearchContentState extends State<SearchContent> {
 
   Widget _buildSelectedResults() {
     final query = _searchController.text.trim().toLowerCase();
-    final players = playerRepository.search(query).take(12).toList();
+    final players = widget.playerRepository.search(query).take(12).toList();
     final directTeamIds =
         widget.teamRepository.search(query).map((team) => team.teamId).toSet();
     final teams = widget.teamRepository.allTeams
