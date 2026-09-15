@@ -69,9 +69,6 @@ void main() {
           matching: find.byType(Icon),
         ),
       );
-      final favorite = tester.widget<Icon>(
-        find.byKey(const ValueKey('community-favorite-icon')),
-      );
       final brandGradient =
           find.byKey(const ValueKey('community-brand-gradient'));
       final tabBar = tester.widget<TabBar>(find.byType(TabBar));
@@ -91,7 +88,10 @@ void main() {
         ),
         testCase.headerColor,
       );
-      expect(favorite.color, testCase.headerColor);
+      expect(
+        find.byKey(const ValueKey('community-favorite-icon')),
+        findsNothing,
+      );
       expect(tester.getSize(brandGradient).height, 550);
       expect(tabBar.labelColor, testCase.tabColor);
       expect(tabBar.indicatorColor, testCase.tabColor);
