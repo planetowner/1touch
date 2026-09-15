@@ -18,6 +18,7 @@ import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
 import 'package:onetouch/features/player_image.dart';
+import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/team.dart';
 
@@ -314,14 +315,17 @@ class _SearchContentState extends State<SearchContent> {
         })
         .take(12)
         .toList();
-    final events = _eventFixtures().where((fixture) {
-      final home = widget.teamRepository.findById(fixture.homeTeamId);
-      final away = widget.teamRepository.findById(fixture.awayTeamId);
-      if (home == null || away == null) return false;
-      return '${home.name} ${home.shortCode} ${away.name} ${away.shortCode}'
-          .toLowerCase()
-          .contains(query);
-    }).take(12).toList();
+    final events = _eventFixtures()
+        .where((fixture) {
+          final home = widget.teamRepository.findById(fixture.homeTeamId);
+          final away = widget.teamRepository.findById(fixture.awayTeamId);
+          if (home == null || away == null) return false;
+          return '${home.name} ${home.shortCode} ${away.name} ${away.shortCode}'
+              .toLowerCase()
+              .contains(query);
+        })
+        .take(12)
+        .toList();
 
     final children = <Widget>[];
     if (_selectedIndex == 0 || _selectedIndex == 1) {
@@ -475,8 +479,10 @@ class _SearchContentState extends State<SearchContent> {
     if (home == null || away == null) return const SizedBox.shrink();
     final colors = Theme.of(context).colorScheme;
     final kickoff = fixture.kickoff?.toLocal();
-    final date = kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
-    final time = kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
+    final date =
+        kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
+    final time =
+        kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -540,8 +546,8 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   int _compareEventFixtures(Fixture first, Fixture second) {
-    final statusComparison =
-        _eventStatusPriority(first.status) - _eventStatusPriority(second.status);
+    final statusComparison = _eventStatusPriority(first.status) -
+        _eventStatusPriority(second.status);
     if (statusComparison != 0) return statusComparison;
 
     final firstKickoff = first.kickoff;
