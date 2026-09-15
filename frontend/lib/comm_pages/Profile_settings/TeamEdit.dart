@@ -1,11 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
+
+class FollowingTeamsEditResult {
+  const FollowingTeamsEditResult({
+    required this.teams,
+    required this.favoriteTeamId,
+  });
+
+  final List<Team> teams;
+  final int favoriteTeamId;
+}
 
 class _TeamEntry {
   final int teamId;
@@ -29,7 +41,16 @@ _TeamEntry _toEntry(Team t) => _TeamEntry(
     );
 
 class EditFollowingTeamsSheet extends StatefulWidget {
-  const EditFollowingTeamsSheet({super.key});
+  const EditFollowingTeamsSheet({
+    super.key,
+    required this.repository,
+    required this.initialTeams,
+    required this.initialFavoriteTeamId,
+  });
+
+  final FollowingTeamsRepository repository;
+  final List<Team> initialTeams;
+  final int initialFavoriteTeamId;
 
   @override
   State<EditFollowingTeamsSheet> createState() =>
@@ -53,12 +74,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   @override
   void initState() {
     super.initState();
-    _favoriteTeamId = currentUserPreferences.favoriteTeamId.value;
+    _favoriteTeamId = widget.initialFavoriteTeamId;
 
-    _followedTeams = currentUserPreferences.followedTeamIds.value
-        .map((teamId) => teamRepository.requireById(teamId))
-        .map(_toEntry)
-        .toList();
+    _followedTeams = widget.initialTeams.map(_toEntry).toList();
 
     _allTeams = teamRepository.allTeams.map(_toEntry).toList();
 
@@ -129,25 +147,59 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
+    final candidateTeams = List<_TeamEntry>.of(_followedTeams);
     final selectedTeam = _selectedTeam;
     if (selectedTeam != null &&
-        !_followedTeams.any((team) => team.teamId == selectedTeam.teamId)) {
+        !candidateTeams.any((team) => team.teamId == selectedTeam.teamId)) {
       if (_conflictTeam != null) {
-        _followedTeams.removeWhere(
+        candidateTeams.removeWhere(
           (team) => team.teamId == _conflictTeam!.teamId,
         );
       }
-      _followedTeams.add(selectedTeam);
+      candidateTeams.add(selectedTeam);
     }
 
-    final saved = await currentUserPreferences.updateFollowedTeams(
-      _followedTeams.map((team) => team.teamId),
-    );
-    if (!mounted) return;
-    if (saved) {
-      Navigator.of(context).pop(true);
-    } else {
+    final teamIds = candidateTeams.map((team) => team.teamId).toList();
+    final favoriteTeamId =
+        teamIds.contains(_favoriteTeamId) ? _favoriteTeamId! : teamIds.first;
+
+    try {
+      final savedTeams = await widget.repository.replaceFollowing(
+        teamIds: teamIds,
+        favoriteTeamId: favoriteTeamId,
+      );
+
+      // Home and navigation still read the temporary local preference store.
+      // Keep it synchronized only after the backend has accepted the update.
+      unawaited(
+        currentUserPreferences.updateTeamSelection([
+          favoriteTeamId,
+          ...savedTeams
+              .map((team) => team.teamId)
+              .where((teamId) => teamId != favoriteTeamId),
+        ]),
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(
+        FollowingTeamsEditResult(
+          teams: savedTeams,
+          favoriteTeamId: favoriteTeamId,
+        ),
+      );
+    } on FavoriteTeamCooldownException catch (error) {
+      if (!mounted) return;
       setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } on Object {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to update followed teams. Please try again.'),
+        ),
+      );
     }
   }
 

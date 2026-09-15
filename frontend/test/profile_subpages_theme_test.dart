@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/Profile_settings/About.dart';
@@ -10,6 +11,8 @@ import 'package:onetouch/comm_pages/Profile_settings/PreferenceDetails.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/teams/following_teams_repository.dart';
+import 'package:onetouch/models/team.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
   final element = tester.element(finder);
@@ -178,7 +181,11 @@ void main() {
     (
       name: 'following teams',
       key: const ValueKey('profile-team-edit-sheet'),
-      sheet: const EditFollowingTeamsSheet(),
+      sheet: EditFollowingTeamsSheet(
+        repository: _StaticFollowingTeamsRepository(),
+        initialTeams: const [Team(teamId: 83, name: 'FC Barcelona')],
+        initialFavoriteTeamId: 83,
+      ),
     ),
     (
       name: 'following players',
@@ -231,4 +238,21 @@ void main() {
       });
     }
   }
+}
+
+class _StaticFollowingTeamsRepository implements FollowingTeamsRepository {
+  final ValueNotifier<List<Team>> _cache = ValueNotifier(const []);
+
+  @override
+  ValueListenable<List<Team>> get cachedTeams => _cache;
+
+  @override
+  Future<List<Team>> load() async => _cache.value;
+
+  @override
+  Future<List<Team>> replaceFollowing({
+    required Iterable<int> teamIds,
+    required int favoriteTeamId,
+  }) async =>
+      _cache.value;
 }
