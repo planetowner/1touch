@@ -540,15 +540,19 @@ void main() {
       ),
       findsNothing,
     );
-    final headerSlides = tester.widgetList<AnimatedSlide>(
+    expect(
       find.descendant(
         of: find.byKey(const ValueKey('matches-header-stack')),
         matching: find.byType(AnimatedSlide),
       ),
+      findsNothing,
     );
     expect(
-      headerSlides.map((animation) => animation.duration),
-      everyElement(const Duration(milliseconds: 140)),
+      find.descendant(
+        of: find.byKey(const ValueKey('matches-header-stack')),
+        matching: find.byType(AnimatedOpacity),
+      ),
+      findsNothing,
     );
     expect(
       tester.getTopLeft(upcomingHeader).dy,
