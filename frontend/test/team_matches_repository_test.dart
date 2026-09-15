@@ -59,6 +59,7 @@ void main() {
       find.byKey(const ValueKey('matches-inline-past-header')),
       findsOneWidget,
     );
+    expect(find.text(':'), findsNothing);
     final competitionAndRound = find.byKey(
       const ValueKey('match-competition-round-3'),
     );
