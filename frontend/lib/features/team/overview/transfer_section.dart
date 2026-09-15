@@ -80,15 +80,6 @@ class _TransferState extends State<Transfer> {
 
   void _retryLoad() => setState(_startLoad);
 
-  String _formatDate(String? date) {
-    if (date == null || date.isEmpty) return '-';
-    try {
-      return DateFormat('MMM d, yyyy').format(DateTime.parse(date));
-    } on FormatException {
-      return date;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
@@ -183,10 +174,7 @@ class _TransferState extends State<Transfer> {
             child: Text('No transfers', style: Body2.style),
           )
         else
-          ...list.map((t) => TransferTile(
-                transfer: t,
-                dateLabel: _formatDate(t.transferDate),
-              )),
+          ...list.map((transfer) => TransferTile(transfer: transfer)),
 
         const SizedBox(height: 8),
       ],
