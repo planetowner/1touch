@@ -16,6 +16,8 @@ class TransferEntry {
     this.displayType,
     this.amount,
     this.transferDate,
+    this.contractStartDate,
+    this.contractEndDate,
   });
 
   final int transferId;
@@ -29,6 +31,8 @@ class TransferEntry {
   final String? displayType;
   final int? amount;
   final String? transferDate;
+  final DateTime? contractStartDate;
+  final DateTime? contractEndDate;
 }
 
 @immutable
