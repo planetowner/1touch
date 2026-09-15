@@ -2,12 +2,10 @@ part of 'team_screen_features.dart';
 
 class TransferTile extends StatelessWidget {
   final TransferEntry transfer;
-  final String dateLabel;
 
   const TransferTile({
     super.key,
     required this.transfer,
-    required this.dateLabel,
   });
 
   @override
@@ -101,14 +99,13 @@ class TransferTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
 
-                // DATE badge + formatted date, LOAN chip if applicable
+                // Contract range + LOAN chip if applicable
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 8,
                   runSpacing: 4,
                   children: [
-                    Badge(label: 'DATE'),
-                    Text(dateLabel, style: Body1.style),
+                    _contractDate(transfer),
                     if (isLoan) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -144,6 +141,23 @@ class TransferTile extends StatelessWidget {
     // fees indicate confirmed transfer amounts are EUR. Remove this assumption
     // when the backend starts returning authoritative currency metadata.
     return '€${_compactAmount(transfer.amount!)}';
+  }
+
+  static Widget _contractDate(TransferEntry transfer) {
+    final start = transfer.contractStartDate;
+    final end = transfer.contractEndDate;
+    final formatter = DateFormat('MMM yyyy');
+    final label = start == null && end == null
+        ? '-'
+        : '${start == null ? '-' : formatter.format(start)} – '
+            '${end == null ? '-' : formatter.format(end)}';
+    final text = Text(label, style: Body1.style);
+
+    if (start != null && end != null) return text;
+    return Tooltip(
+      message: 'Complete contract dates are currently unavailable.',
+      child: text,
+    );
   }
 
   static String _compactAmount(int amount) {
