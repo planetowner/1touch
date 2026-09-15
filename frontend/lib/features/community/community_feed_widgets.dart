@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
 
 class CommunitySortFilters extends StatelessWidget {
@@ -196,7 +197,13 @@ class _PostCard extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('User ${post.userId}', style: Body1.style),
+                          Text(
+                            communityUsernameLabel(
+                              username: post.username,
+                              authorDeleted: post.authorDeleted,
+                            ),
+                            style: Body1.style,
+                          ),
                           Text(
                             _timeAgo(post.createdAt),
                             style: Body2.style.copyWith(

@@ -30,6 +30,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(_loadedPost.title), findsOneWidget);
+    expect(find.text('@planetowner'), findsOneWidget);
     expect(repository.calls, 1);
     expect(repository.lastTeamId, 9);
     expect(repository.lastCategory, isNull);
@@ -370,6 +371,7 @@ const _loadedPost = Post(
   postId: 91,
   teamId: 9,
   userId: 1001,
+  username: 'planetowner',
   category: PostCategory.general,
   title: 'Repository post',
   body: 'Loaded through the repository.',
