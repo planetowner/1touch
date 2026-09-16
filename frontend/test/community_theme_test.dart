@@ -10,6 +10,7 @@ import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
+import 'support/stub_community_repository.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
   final element = tester.element(finder);
@@ -50,7 +51,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: testCase.theme,
-          home: const Community(teamId: 9),
+          home: const Community(
+            teamId: 9,
+            communityRepository: StubCommunityRepository(),
+          ),
         ),
       );
       await tester.pump();
@@ -143,7 +147,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: const Community(teamId: 9),
+        home: const Community(
+          teamId: 9,
+          communityRepository: StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pump();
@@ -156,7 +163,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: const Community(teamId: 8),
+        home: const Community(
+          teamId: 8,
+          communityRepository: StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pump();
