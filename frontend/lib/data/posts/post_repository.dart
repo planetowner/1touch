@@ -50,4 +50,9 @@ abstract interface class PostRepository {
     required int postId,
     required String reason,
   });
+
+  Future<void> setPostLiked({
+    required int postId,
+    required bool liked,
+  });
 }
