@@ -213,7 +213,7 @@ void postRepositoryContract({
     );
   });
 
-  test('accepts a report at the effective backend storage limit', () async {
+  test('accepts a report at the backend limit', () async {
     final repository = createRepository(posts);
 
     await expectLater(
@@ -225,11 +225,19 @@ void postRepositoryContract({
     );
   });
 
-  test('rejects report reasons outside the effective storage bounds', () async {
+  test('rejects invalid post IDs and reasons outside backend bounds', () async {
     final repository = createRepository(posts);
 
     await expectLater(
+      repository.reportPost(postId: 0, reason: 'Spam'),
+      throwsRangeError,
+    );
+    await expectLater(
       repository.reportPost(postId: posts.first.postId, reason: ''),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.reportPost(postId: posts.first.postId, reason: '   '),
       throwsArgumentError,
     );
     await expectLater(
