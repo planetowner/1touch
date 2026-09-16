@@ -167,12 +167,12 @@ void postRepositoryContract({
 
   test('creates a post that appears in subsequent loads', () async {
     final repository = createRepository(posts);
-    const input = CreatePostInput(
+    final input = CreatePostInput(
       teamId: 83,
       category: PostCategory.analysis,
       title: 'Created through repository',
       body: 'Repository creation body',
-      mediaUrl: 'https://example.com/post.jpg',
+      attachmentIds: const [11, 12],
     );
 
     final postId = await repository.createPost(input);
@@ -182,7 +182,10 @@ void postRepositoryContract({
     expect(created.category, input.category);
     expect(created.title, input.title);
     expect(created.body, input.body);
-    expect(created.mediaUrl, input.mediaUrl);
+    expect(
+      created.attachments.map((attachment) => attachment.attachmentId),
+      input.attachmentIds,
+    );
     expect(DateTime.tryParse(created.createdAt), isNotNull);
   });
 
@@ -191,7 +194,7 @@ void postRepositoryContract({
 
     await expectLater(
       repository.createPost(
-        const CreatePostInput(
+        CreatePostInput(
           teamId: 83,
           category: PostCategory.general,
           title: '',
@@ -207,6 +210,46 @@ void postRepositoryContract({
           category: PostCategory.general,
           title: 'Title',
           body: ''.padRight(10001, 'x'),
+        ),
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('rejects invalid creation team and attachment IDs', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.createPost(
+        CreatePostInput(
+          teamId: 0,
+          category: PostCategory.general,
+          title: 'Title',
+          body: 'Body',
+        ),
+      ),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.createPost(
+        CreatePostInput(
+          teamId: 83,
+          category: PostCategory.general,
+          title: 'Title',
+          body: 'Body',
+          attachmentIds: const [1, 1],
+        ),
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.createPost(
+        CreatePostInput(
+          teamId: 83,
+          category: PostCategory.general,
+          title: 'Title',
+          body: 'Body',
+          attachmentIds: const [0],
         ),
       ),
       throwsArgumentError,

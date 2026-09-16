@@ -27,7 +27,7 @@ void main() {
     );
 
     final postId = await repository.createPost(
-      const CreatePostInput(
+      CreatePostInput(
         teamId: 83,
         category: PostCategory.general,
         title: 'Mock user post',

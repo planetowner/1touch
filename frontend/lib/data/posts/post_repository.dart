@@ -22,15 +22,15 @@ class CreatePostInput {
   final PostCategory category;
   final String title;
   final String body;
-  final String? mediaUrl;
+  final List<int> attachmentIds;
 
-  const CreatePostInput({
+  CreatePostInput({
     required this.teamId,
     required this.category,
     required this.title,
     required this.body,
-    this.mediaUrl,
-  });
+    List<int> attachmentIds = const [],
+  }) : attachmentIds = List.unmodifiable(attachmentIds);
 }
 
 abstract interface class PostRepository {
