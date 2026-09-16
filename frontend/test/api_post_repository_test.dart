@@ -150,6 +150,7 @@ void main() {
   test('rejects HTTP, malformed, mismatched, and invalid attachment responses',
       () async {
     final wrongTeam = _postJson()..['team_id'] = 9;
+    final negativeEngagement = _postJson()..['like_count'] = -1;
     final invalidAttachment = _postJson()
       ..['attachments'] = [
         {
@@ -166,6 +167,10 @@ void main() {
       http.Response(jsonEncode([]), 200),
       http.Response(jsonEncode(_feedJson(limit: 25)), 200),
       http.Response(jsonEncode(_feedJson(items: [wrongTeam])), 200),
+      http.Response(
+        jsonEncode(_feedJson(items: [negativeEngagement])),
+        200,
+      ),
       http.Response(jsonEncode(_feedJson(items: [invalidAttachment])), 200),
     ];
     var index = 0;
