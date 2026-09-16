@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,10 @@ import 'package:onetouch/data/home/home_content_repository_provider.dart'
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
+import 'package:onetouch/data/teams/following_teams_repository.dart';
+import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
+    as following_teams_provider;
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
@@ -20,10 +26,12 @@ class HomeScreen extends StatefulWidget {
     super.key,
     this.repository,
     this.contentRepository,
+    this.followingTeamsRepository,
   });
 
   final HomeRepository? repository;
   final HomeContentRepository? contentRepository;
+  final FollowingTeamsRepository? followingTeamsRepository;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -41,11 +49,15 @@ class _HomeScreenState extends State<HomeScreen> {
   late HomeContent _content;
   int _homeRequestId = 0;
   int _contentRequestId = 0;
+  bool _teamPreferenceRefreshScheduled = false;
 
   HomeRepository get _repository =>
       widget.repository ?? home_provider.homeRepository;
   HomeContentRepository get _contentRepository =>
       widget.contentRepository ?? content_provider.homeContentRepository;
+  FollowingTeamsRepository get _followingTeamsRepository =>
+      widget.followingTeamsRepository ??
+      following_teams_provider.followingTeamsRepository;
 
   @override
   void initState() {
@@ -59,13 +71,21 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       });
 
-    currentUserPreferences.favoriteTeamId.addListener(_onFavoriteTeamChanged);
+    currentUserPreferences.favoriteTeamId
+        .addListener(_onTeamPreferencesChanged);
+    currentUserPreferences.followedTeamIds
+        .addListener(_onTeamPreferencesChanged);
     _loadHome(refreshContent: true);
   }
 
-  void _onFavoriteTeamChanged() {
-    if (!mounted) return;
-    _loadHome(refreshContent: true);
+  void _onTeamPreferencesChanged() {
+    if (!mounted || _teamPreferenceRefreshScheduled) return;
+    _teamPreferenceRefreshScheduled = true;
+    scheduleMicrotask(() {
+      _teamPreferenceRefreshScheduled = false;
+      if (!mounted) return;
+      _loadHome(refreshContent: true);
+    });
   }
 
   Future<void> _loadHome({bool refreshContent = false}) async {
@@ -104,8 +124,26 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _switchFavoriteTeam(int teamId) {
-    currentUserPreferences.setFavoriteTeam(teamId);
+  Future<void> _switchFavoriteTeam(int teamId) async {
+    final homeData = _homeData;
+    if (homeData == null || homeData.favoriteTeam.teamId == teamId) return;
+
+    await _followingTeamsRepository.replaceFollowing(
+      teamIds: homeData.followingTeams.map((team) => team.teamId),
+      favoriteTeamId: teamId,
+    );
+
+    // The backend is authoritative. Notify the rest of the app only after it
+    // accepts the favorite change; local persistence remains best-effort until
+    // authenticated session restoration replaces this compatibility store.
+    unawaited(
+      currentUserPreferences.updateTeamSelection([
+        teamId,
+        ...homeData.followingTeams
+            .map((team) => team.teamId)
+            .where((followedTeamId) => followedTeamId != teamId),
+      ]),
+    );
   }
 
   void _loadCalendarMonth(DateTime month) {
@@ -132,7 +170,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     currentUserPreferences.favoriteTeamId
-        .removeListener(_onFavoriteTeamChanged);
+        .removeListener(_onTeamPreferencesChanged);
+    currentUserPreferences.followedTeamIds
+        .removeListener(_onTeamPreferencesChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -184,7 +224,11 @@ class _HomeScreenState extends State<HomeScreen> {
       lastMatch: homeData.lastMatch,
     );
     final favoriteTeamId = favoriteTeam.id;
-    final teamColor = Color(team.primaryColor);
+    // TeamOut does not expose brand colors yet. Resolve the selected team's
+    // frontend-owned color by ID until the backend adds that field.
+    final teamColor = Color(
+      teamRepository.findById(team.teamId)?.primaryColor ?? team.primaryColor,
+    );
 
     return Scaffold(
       backgroundColor: pageBackground,
