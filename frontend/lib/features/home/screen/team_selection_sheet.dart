@@ -3,7 +3,7 @@ part of 'home_screen_features.dart';
 class TeamSelectionSheet extends StatefulWidget {
   final int initialFavoriteTeamId;
   final List<Team> followingTeams;
-  final void Function(int teamId) onSwitch;
+  final FutureOr<void> Function(int teamId) onSwitch;
 
   const TeamSelectionSheet({
     super.key,
@@ -17,7 +17,7 @@ class TeamSelectionSheet extends StatefulWidget {
     BuildContext context, {
     required int initialFavoriteTeamId,
     required List<Team> followingTeams,
-    required void Function(int teamId) onSwitch,
+    required FutureOr<void> Function(int teamId) onSwitch,
   }) {
     final appColors = AppColors.of(context);
     showModalBottomSheet(
@@ -40,6 +40,7 @@ class TeamSelectionSheet extends StatefulWidget {
 
 class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   late List<Map<String, dynamic>> _followingTeams;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -53,6 +54,35 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
         'isSelected': team.teamId == widget.initialFavoriteTeamId,
       };
     }).toList();
+  }
+
+  Future<void> _switchTeam() async {
+    if (_isSaving) return;
+    final selected = _followingTeams.firstWhere(
+      (team) => team['isSelected'] == true,
+      orElse: () => _followingTeams.first,
+    );
+    setState(() => _isSaving = true);
+
+    try {
+      await widget.onSwitch(selected['id'] as int);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } on FavoriteTeamCooldownException catch (error) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } on Object {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to change favorite team. Please try again.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -110,14 +140,16 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                   trailing: team['isSelected']
                       ? Icon(Icons.check, color: colorScheme.onSurface)
                       : null,
-                  onTap: () {
-                    setState(() {
-                      for (var t in _followingTeams) {
-                        t['isSelected'] = false;
-                      }
-                      team['isSelected'] = true;
-                    });
-                  },
+                  onTap: _isSaving
+                      ? null
+                      : () {
+                          setState(() {
+                            for (var t in _followingTeams) {
+                              t['isSelected'] = false;
+                            }
+                            team['isSelected'] = true;
+                          });
+                        },
                 );
               },
             ),
@@ -126,14 +158,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                final selected = _followingTeams.firstWhere(
-                  (t) => t['isSelected'] == true,
-                  orElse: () => _followingTeams.first,
-                );
-                widget.onSwitch(selected['id'] as int);
-                Navigator.of(context).pop();
-              },
+              onPressed: _isSaving ? null : _switchTeam,
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.onSurface,
                 foregroundColor: colorScheme.onPrimary,
@@ -142,10 +167,20 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(
-                "SWITCH",
-                style: Body2_b.style.copyWith(color: colorScheme.onPrimary),
-              ),
+              child: _isSaving
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
+                    )
+                  : Text(
+                      "SWITCH",
+                      style:
+                          Body2_b.style.copyWith(color: colorScheme.onPrimary),
+                    ),
             ),
           ),
         ],
