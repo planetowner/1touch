@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -10,10 +11,12 @@ class PostDetailContent extends StatelessWidget {
   const PostDetailContent({
     super.key,
     required this.post,
+    required this.communityRepository,
     required this.onReport,
   });
 
   final Post post;
+  final CommunityRepository communityRepository;
   final Future<void> Function(String reason) onReport;
 
   @override
@@ -29,7 +32,11 @@ class PostDetailContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: GestureDetector(
-              onTap: () => showGroundRulesModal(context),
+              onTap: () => showGroundRulesModal(
+                context,
+                teamId: post.teamId,
+                repository: communityRepository,
+              ),
               child: Container(
                 key: const ValueKey('community-detail-ground-rules-card'),
                 padding: const EdgeInsets.symmetric(

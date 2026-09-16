@@ -188,7 +188,11 @@ void main() {
             body: Column(
               children: [
                 TextButton(
-                  onPressed: () => showGroundRulesModal(context),
+                  onPressed: () => showGroundRulesModal(
+                    context,
+                    teamId: 9,
+                    repository: const StubCommunityRepository(),
+                  ),
                   child: const Text('Ground rules'),
                 ),
                 TextButton(
@@ -248,7 +252,11 @@ void main() {
             body: Column(
               children: [
                 TextButton(
-                  onPressed: () => showGroundRulesModal(context),
+                  onPressed: () => showGroundRulesModal(
+                    context,
+                    teamId: 9,
+                    repository: const StubCommunityRepository(),
+                  ),
                   child: const Text('Ground rules'),
                 ),
                 TextButton(
@@ -292,7 +300,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: PostDetailScreen(post: mockPosts.first),
+        home: PostDetailScreen(
+          post: mockPosts.first,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pump();
