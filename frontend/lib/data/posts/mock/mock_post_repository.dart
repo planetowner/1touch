@@ -124,9 +124,8 @@ class MockPostRepository implements PostRepository {
         )
         .toList();
 
-    // The current mock Post model does not expose engagement aggregates yet,
-    // so keep every mock sort deterministic until those response fields are
-    // modeled. The real backend already implements popular and best ordering.
+    // Keep every mock sort deterministic. The real backend calculates popular
+    // and best ordering from engagement and recency signals.
     switch (sort) {
       case PostSort.newest:
       case PostSort.popular:
@@ -157,6 +156,43 @@ class MockPostRepository implements PostRepository {
 
     _reports.add(
       (postId: postId, userId: _currentUserId, reason: normalizedReason),
+    );
+  }
+
+  @override
+  Future<void> setPostLiked({
+    required int postId,
+    required bool liked,
+  }) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final index = _posts.indexWhere((post) => post.postId == postId);
+    if (index < 0) {
+      throw StateError('Post $postId does not exist.');
+    }
+
+    final post = _posts[index];
+    if (post.liked == liked) return;
+    _posts[index] = Post(
+      postId: post.postId,
+      teamId: post.teamId,
+      userId: post.userId,
+      category: post.category,
+      title: post.title,
+      body: post.body,
+      mediaUrl: post.mediaUrl,
+      createdAt: post.createdAt,
+      editedAt: post.editedAt,
+      username: post.username,
+      avatarUrl: post.avatarUrl,
+      authorDeleted: post.authorDeleted,
+      likeCount: liked
+          ? post.likeCount + 1
+          : (post.likeCount > 0 ? post.likeCount - 1 : 0),
+      commentCount: post.commentCount,
+      liked: liked,
+      attachments: post.attachments,
     );
   }
 }
