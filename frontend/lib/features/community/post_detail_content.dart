@@ -12,11 +12,17 @@ class PostDetailContent extends StatelessWidget {
   const PostDetailContent({
     super.key,
     required this.post,
+    required this.liked,
+    required this.likeCount,
+    required this.onLike,
     required this.communityRepository,
     required this.onReport,
   });
 
   final Post post;
+  final bool liked;
+  final int likeCount;
+  final VoidCallback? onLike;
   final CommunityRepository communityRepository;
   final Future<void> Function(String reason) onReport;
 
@@ -115,12 +121,18 @@ class PostDetailContent extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _PostAction(
-                      icon: Icons.thumb_up_alt_outlined,
-                      label: formatCommunityEngagementCount(post.likeCount),
+                      actionKey: const ValueKey(
+                        'community-detail-like-action',
+                      ),
+                      icon: liked
+                          ? Icons.thumb_up_alt
+                          : Icons.thumb_up_alt_outlined,
+                      label: formatCommunityEngagementCount(likeCount),
                       labelKey: const ValueKey(
                         'community-detail-like-count',
                       ),
                       color: colors.onSurface,
+                      onTap: onLike,
                     ),
                     _PostAction(
                       icon: Icons.mode_comment_outlined,
@@ -208,6 +220,7 @@ class _PostAction extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    this.actionKey,
     this.labelKey,
     this.onTap,
   });
@@ -215,6 +228,7 @@ class _PostAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final Key? actionKey;
   final Key? labelKey;
   final VoidCallback? onTap;
 
@@ -222,6 +236,7 @@ class _PostAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
+        key: actionKey,
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Padding(
