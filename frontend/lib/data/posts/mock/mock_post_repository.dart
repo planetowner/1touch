@@ -113,7 +113,12 @@ class MockPostRepository implements PostRepository {
     required int postId,
     required String reason,
   }) async {
-    if (reason.isEmpty || reason.length > maxPostReportReasonLength) {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final normalizedReason = reason.trim();
+    if (normalizedReason.isEmpty ||
+        normalizedReason.length > maxPostReportReasonLength) {
       throw ArgumentError.value(
         reason,
         'reason',
@@ -121,9 +126,9 @@ class MockPostRepository implements PostRepository {
       );
     }
 
-    // The backend currently inserts the supplied path ID without an explicit
-    // post-existence check, so the mock deliberately does not invent one.
-    _reports.add((postId: postId, userId: _currentUserId, reason: reason));
+    _reports.add(
+      (postId: postId, userId: _currentUserId, reason: normalizedReason),
+    );
   }
 }
 

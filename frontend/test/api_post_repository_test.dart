@@ -187,7 +187,84 @@ void main() {
     }
   });
 
-  test('keeps Community mutations disabled in the read-only repository', () {
+  test('reports a post with Bearer authentication', () async {
+    final repository = ApiPostRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/posts/42/report');
+        expect(request.url.queryParameters, isEmpty);
+        expect(request.headers['Accept'], 'application/json');
+        expect(request.headers['Content-Type'], 'application/json');
+        expect(request.headers['Authorization'], 'Bearer session-token');
+        expect(jsonDecode(request.body), {'reason': 'Spam'});
+        return http.Response(jsonEncode({'ok': true}), 200);
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {'Authorization': 'Bearer session-token'},
+    );
+
+    await expectLater(
+      repository.reportPost(postId: 42, reason: '  Spam  '),
+      completes,
+    );
+  });
+
+  test('rejects invalid report values before requesting', () async {
+    var requests = 0;
+    final repository = ApiPostRepository(
+      client: MockClient((_) async {
+        requests++;
+        return http.Response('{}', 200);
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.reportPost(postId: 0, reason: 'Spam'),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.reportPost(postId: 42, reason: '   '),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.reportPost(
+        postId: 42,
+        reason: ''.padRight(maxPostReportReasonLength + 1, 'x'),
+      ),
+      throwsArgumentError,
+    );
+    expect(requests, 0);
+  });
+
+  test('rejects failed and malformed report responses', () async {
+    final responses = [
+      http.Response('Forbidden', 403),
+      http.Response(jsonEncode([]), 200),
+      http.Response(jsonEncode({}), 200),
+      http.Response(jsonEncode({'ok': false}), 200),
+    ];
+    var responseIndex = 0;
+    final repository = ApiPostRepository(
+      client: MockClient((_) async => responses[responseIndex++]),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.reportPost(postId: 42, reason: 'Spam'),
+      throwsA(isA<http.ClientException>()),
+    );
+    for (var index = 1; index < responses.length; index++) {
+      await expectLater(
+        repository.reportPost(postId: 42, reason: 'Spam'),
+        throwsFormatException,
+      );
+    }
+  });
+
+  test('keeps post creation disabled in the API repository', () {
     final repository = ApiPostRepository(
       client: MockClient((_) async => http.Response('{}', 200)),
       apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
@@ -203,10 +280,6 @@ void main() {
           body: 'Body',
         ),
       ),
-      throwsUnsupportedError,
-    );
-    expect(
-      () => repository.reportPost(postId: 42, reason: 'Reason'),
       throwsUnsupportedError,
     );
   });

@@ -14,11 +14,8 @@ extension PostPeriodApiValue on PostPeriod {
       };
 }
 
-// POST /v1/posts/{post_id}/report currently declares a 500-character FastAPI
-// limit, but post_reports.reason is VARCHAR(255) in the MySQL schema. Keep the
-// client/mock contract at the safe storage limit until those backend contracts
-// are aligned; then this constant and its contract tests can be updated.
-const int maxPostReportReasonLength = 255;
+// Matches ReportBody and content_reports.reason in the current backend.
+const int maxPostReportReasonLength = 500;
 
 class CreatePostInput {
   final int teamId;
