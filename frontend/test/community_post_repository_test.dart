@@ -6,6 +6,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
+import 'support/stub_community_repository.dart';
 
 void main() {
   testWidgets('loads posts through the repository on a tall screen',
@@ -17,7 +18,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
 
@@ -52,7 +57,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -81,7 +90,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -117,7 +130,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -168,13 +185,21 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: firstRepository),
+        home: Community(
+          teamId: 9,
+          postRepository: firstRepository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: secondRepository),
+        home: Community(
+          teamId: 9,
+          postRepository: secondRepository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
 
@@ -199,14 +224,22 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 83, postRepository: repository),
+        home: Community(
+          teamId: 83,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -231,7 +264,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -269,7 +306,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

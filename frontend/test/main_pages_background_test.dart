@@ -5,6 +5,7 @@ import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
+import 'support/stub_community_repository.dart';
 import 'package:onetouch/screens/HomeScreen.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
@@ -33,7 +34,10 @@ void main() {
     ),
     (
       name: 'community',
-      screen: const Community(teamId: 9),
+      screen: const Community(
+        teamId: 9,
+        communityRepository: StubCommunityRepository(),
+      ),
       gradientKey: 'community-brand-gradient',
     ),
   ];
