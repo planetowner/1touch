@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
@@ -467,84 +468,91 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       children: [
         const Text("LATEST H2H", style: Body2_b.style),
         const SizedBox(height: 16),
-        Container(
+        GestureDetector(
           key: const ValueKey('match-preview-h2h-card'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.lightGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(24),
+          behavior: HitTestBehavior.opaque,
+          onTap: () => context.push(
+            '/match/${h2h.fixtureId}?status=${h2h.status.name}',
+            extra: h2h,
           ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final homeTeam = _buildSimpleTeamCol(
-                home.shortCode ?? home.name,
-                home.imagePath ?? '',
-                home.teamId,
-              );
-              final awayTeam = _buildSimpleTeamCol(
-                away.shortCode ?? away.name,
-                away.imagePath ?? '',
-                away.teamId,
-              );
-              final homeScore =
-                  _buildScoreBox(h2h.homeScore?.toString() ?? '-');
-              final awayScore =
-                  _buildScoreBox(h2h.awayScore?.toString() ?? '-');
-              final kickoff = Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(date, style: Body2.style, textAlign: TextAlign.center),
-                  Text(time, style: Body2.style, textAlign: TextAlign.center),
-                ],
-              );
-
-              if (constraints.maxWidth < 300) {
-                return Column(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            decoration: BoxDecoration(
+              color: isDark ? AppPalette.lightGrey : AppPalette.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final homeTeam = _buildSimpleTeamCol(
+                  home.shortCode ?? home.name,
+                  home.imagePath ?? '',
+                  home.teamId,
+                );
+                final awayTeam = _buildSimpleTeamCol(
+                  away.shortCode ?? away.name,
+                  away.imagePath ?? '',
+                  away.teamId,
+                );
+                final homeScore =
+                    _buildScoreBox(h2h.homeScore?.toString() ?? '-');
+                final awayScore =
+                    _buildScoreBox(h2h.awayScore?.toString() ?? '-');
+                final kickoff = Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Text(date, style: Body2.style, textAlign: TextAlign.center),
+                    Text(time, style: Body2.style, textAlign: TextAlign.center),
+                  ],
+                );
+
+                if (constraints.maxWidth < 300) {
+                  return Column(
+                    children: [
+                      kickoff,
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: homeTeam),
+                          const SizedBox(width: 8),
+                          homeScore,
+                          const SizedBox(width: 8),
+                          awayScore,
+                          const SizedBox(width: 8),
+                          Expanded(child: awayTeam),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Flexible(child: homeTeam),
+                          const SizedBox(width: 12),
+                          homeScore,
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     kickoff,
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(child: homeTeam),
-                        const SizedBox(width: 8),
-                        homeScore,
-                        const SizedBox(width: 8),
-                        awayScore,
-                        const SizedBox(width: 8),
-                        Expanded(child: awayTeam),
-                      ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          awayScore,
+                          const SizedBox(width: 12),
+                          Flexible(child: awayTeam),
+                        ],
+                      ),
                     ),
                   ],
                 );
-              }
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Flexible(child: homeTeam),
-                        const SizedBox(width: 12),
-                        homeScore,
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  kickoff,
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        awayScore,
-                        const SizedBox(width: 12),
-                        Flexible(child: awayTeam),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+              },
+            ),
           ),
         ),
       ],

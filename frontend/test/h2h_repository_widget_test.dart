@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
@@ -97,6 +98,49 @@ void main() {
     await tester.pump();
     expect(find.text('10'), findsOneWidget);
     expect(find.text('5'), findsNothing);
+  });
+
+  testWidgets('opens the selected head-to-head fixture', (tester) async {
+    await _setSize(tester, const Size(430, 932));
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => [_pastFixture()],
+    );
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => Scaffold(
+            body: H2HTab(
+              fixture: _selectedFixture,
+              fixtureRepository: repository,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/match/:matchId',
+          builder: (_, state) {
+            final fixture = state.extra! as Fixture;
+            return Text(
+              'match-${state.pathParameters['matchId']}-'
+              '${state.uri.queryParameters['status']}-'
+              '${fixture.fixtureId}',
+            );
+          },
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pump();
+
+    final card = find.byKey(const ValueKey('match-h2h-fixture-900'));
+    await tester.ensureVisible(card);
+    await tester.pump();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.text('match-900-past-900'), findsOneWidget);
   });
 }
 

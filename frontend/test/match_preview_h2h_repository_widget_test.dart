@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
@@ -115,6 +116,47 @@ void main() {
 
     expect(find.descendant(of: card, matching: find.text('4')), findsOneWidget);
     expect(find.descendant(of: card, matching: find.text('2')), findsNothing);
+  });
+
+  testWidgets('opens the latest head-to-head fixture', (tester) async {
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => [_pastFixture()],
+    );
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => Scaffold(
+            body: MatchPreviewTab(
+              fixture: _firstSelectedFixture,
+              fixtureRepository: repository,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/match/:matchId',
+          builder: (_, state) {
+            final fixture = state.extra! as Fixture;
+            return Text(
+              'match-${state.pathParameters['matchId']}-'
+              '${state.uri.queryParameters['status']}-'
+              '${fixture.fixtureId}',
+            );
+          },
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pump();
+    final card = find.byKey(const ValueKey('match-preview-h2h-card'));
+    await tester.ensureVisible(card);
+    await tester.pump();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.text('match-900-past-900'), findsOneWidget);
   });
 }
 
