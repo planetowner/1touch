@@ -185,6 +185,43 @@ class ApiPostRepository implements PostRepository {
     }
   }
 
+  @override
+  Future<void> setPostLiked({
+    required int postId,
+    required bool liked,
+  }) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+
+    final uri = _apiBaseUri.resolve('posts/$postId/like');
+    final headers = {
+      'Accept': 'application/json',
+      ..._requestHeaders,
+    };
+    final response = liked
+        ? await _client.put(uri, headers: headers)
+        : await _client.delete(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw http.ClientException(
+        'Post-like update failed with status ${response.statusCode}.',
+        uri,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic> || decoded['ok'] is! bool) {
+      throw const FormatException(
+        'Expected the post-like response to contain boolean "ok".',
+      );
+    }
+    if (decoded['ok'] != true) {
+      throw const FormatException(
+        'Expected the post-like response to return ok=true.',
+      );
+    }
+  }
+
   static void _validateQuery({
     required int teamId,
     required PostPeriod period,

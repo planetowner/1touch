@@ -160,6 +160,11 @@ class _ReportPostRepository implements PostRepository {
     reportedReason = reason;
     return onReport(postId, reason);
   }
+
+  @override
+  Future<void> setPostLiked({required int postId, required bool liked}) {
+    throw UnsupportedError('This test double only scripts reports.');
+  }
 }
 
 const _post = Post(

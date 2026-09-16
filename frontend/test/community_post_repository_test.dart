@@ -411,6 +411,11 @@ class _ScriptedPostRepository implements PostRepository {
   Future<void> reportPost({required int postId, required String reason}) {
     throw UnsupportedError('This test double does not script post reports.');
   }
+
+  @override
+  Future<void> setPostLiked({required int postId, required bool liked}) {
+    throw UnsupportedError('This test double does not script post likes.');
+  }
 }
 
 const _loadedPost = Post(

@@ -407,6 +407,71 @@ void main() {
       );
     }
   });
+
+  test('uses idempotent PUT and DELETE post-like endpoints', () async {
+    var requestIndex = 0;
+    final repository = ApiPostRepository(
+      client: MockClient((request) async {
+        requestIndex++;
+        expect(request.url.path, '/v1/posts/42/like');
+        expect(request.url.queryParameters, isEmpty);
+        expect(request.headers['Accept'], 'application/json');
+        expect(request.headers['Authorization'], 'Bearer session-token');
+        expect(request.method, requestIndex == 1 ? 'PUT' : 'DELETE');
+        return http.Response(jsonEncode({'ok': true}), 200);
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {'Authorization': 'Bearer session-token'},
+    );
+
+    await repository.setPostLiked(postId: 42, liked: true);
+    await repository.setPostLiked(postId: 42, liked: false);
+    expect(requestIndex, 2);
+  });
+
+  test('rejects an invalid post-like ID before requesting', () async {
+    var requests = 0;
+    final repository = ApiPostRepository(
+      client: MockClient((_) async {
+        requests++;
+        return http.Response('{}', 200);
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.setPostLiked(postId: 0, liked: true),
+      throwsRangeError,
+    );
+    expect(requests, 0);
+  });
+
+  test('rejects failed and malformed post-like responses', () async {
+    final responses = [
+      http.Response('Not found', 404),
+      http.Response(jsonEncode([]), 200),
+      http.Response(jsonEncode({}), 200),
+      http.Response(jsonEncode({'ok': false}), 200),
+    ];
+    var responseIndex = 0;
+    final repository = ApiPostRepository(
+      client: MockClient((_) async => responses[responseIndex++]),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.setPostLiked(postId: 42, liked: true),
+      throwsA(isA<http.ClientException>()),
+    );
+    for (var index = 1; index < responses.length; index++) {
+      await expectLater(
+        repository.setPostLiked(postId: 42, liked: true),
+        throwsFormatException,
+      );
+    }
+  });
 }
 
 Map<String, dynamic> _feedJson({
