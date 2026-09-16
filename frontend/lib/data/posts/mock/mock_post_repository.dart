@@ -26,18 +26,38 @@ class MockPostRepository implements PostRepository {
 
   @override
   Future<int> createPost(CreatePostInput input) async {
-    if (input.title.isEmpty || input.title.length > 200) {
+    final title = input.title.trim();
+    if (input.teamId < 1) {
+      throw RangeError.value(input.teamId, 'input.teamId', 'Must be positive');
+    }
+    if (title.isEmpty || title.length > 200) {
       throw ArgumentError.value(
         input.title,
         'input.title',
         'Must contain between 1 and 200 characters',
       );
     }
-    if (input.body.isEmpty || input.body.length > 10000) {
+    if (input.body.length > 10000) {
       throw ArgumentError.value(
         input.body,
         'input.body',
-        'Must contain between 1 and 10000 characters',
+        'Must not exceed 10000 characters',
+      );
+    }
+    if (input.attachmentIds.length > 10) {
+      throw RangeError.range(
+        input.attachmentIds.length,
+        0,
+        10,
+        'input.attachmentIds.length',
+      );
+    }
+    if (input.attachmentIds.any((id) => id < 1) ||
+        input.attachmentIds.length != input.attachmentIds.toSet().length) {
+      throw ArgumentError.value(
+        input.attachmentIds,
+        'input.attachmentIds',
+        'IDs must be unique and positive',
       );
     }
 
@@ -49,9 +69,18 @@ class MockPostRepository implements PostRepository {
         userId: _currentUserId,
         username: _mockUsernameFor(_currentUserId),
         category: input.category,
-        title: input.title,
+        title: title,
         body: input.body,
-        mediaUrl: input.mediaUrl,
+        attachments: input.attachmentIds
+            .asMap()
+            .entries
+            .map(
+              (entry) => PostAttachment(
+                attachmentId: entry.value,
+                position: entry.key,
+              ),
+            )
+            .toList(),
         createdAt: DateTime.now().toIso8601String(),
       ),
     );
