@@ -6,6 +6,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
@@ -255,6 +256,51 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('refreshes engagement after post details closes without loading',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    final refreshedPosts = Completer<List<Post>>();
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+      () => refreshedPosts.future,
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(_loadedPost.title));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('community-detail-like-count')),
+      findsOneWidget,
+    );
+
+    Navigator.of(tester.element(find.byType(PostDetailScreen))).pop();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('community-posts-loading')),
+      findsNothing,
+    );
+    expect(find.text('1,290'), findsOneWidget);
+
+    refreshedPosts.complete(const [_likedPost]);
+    await tester.pumpAndSettle();
+
+    expect(repository.calls, 2);
+    expect(find.text('1,291'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('creates a post and reloads the repository on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
@@ -439,6 +485,20 @@ const _stalePost = Post(
   title: 'Stale repository post',
   body: 'This result should be ignored.',
   createdAt: '2026-08-26 10:00:00',
+);
+
+const _likedPost = Post(
+  postId: 91,
+  teamId: 9,
+  userId: 1001,
+  username: 'planetowner',
+  category: PostCategory.general,
+  title: 'Repository post',
+  body: 'Loaded through the repository.',
+  createdAt: '2026-08-27 10:00:00',
+  likeCount: 1291,
+  commentCount: 12,
+  liked: true,
 );
 
 const _createdPost = Post(

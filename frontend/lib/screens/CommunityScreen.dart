@@ -121,8 +121,9 @@ class _CommunityState extends State<Community>
     }
   }
 
-  Future<void> _loadPosts() async {
+  Future<void> _loadPosts({bool preserveCurrentPosts = false}) async {
     final requestId = ++_postRequestId;
+    final preserveCurrent = preserveCurrentPosts && _posts.isNotEmpty;
     final category = switch (_selectedTabIndex) {
       1 => PostCategory.general,
       2 => PostCategory.analysis,
@@ -130,7 +131,7 @@ class _CommunityState extends State<Community>
       _ => null,
     };
     setState(() {
-      _isLoadingPosts = true;
+      _isLoadingPosts = !preserveCurrent;
       _postLoadError = null;
     });
 
@@ -148,7 +149,7 @@ class _CommunityState extends State<Community>
     } catch (error) {
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
-        _postLoadError = error;
+        _postLoadError = preserveCurrent ? null : error;
         _isLoadingPosts = false;
       });
     }
@@ -264,6 +265,9 @@ class _CommunityState extends State<Community>
               isLoading: _isLoadingPosts,
               loadError: _postLoadError,
               onRetry: _loadPosts,
+              onPostDetailClosed: () => _loadPosts(
+                preserveCurrentPosts: true,
+              ),
               onSortChanged: _selectPostSort,
             ),
           )
