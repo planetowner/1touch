@@ -93,10 +93,35 @@ def _metric(code: str, stats: dict, xg) -> dict:
     return result
 
 
-def build_player_statistics(lineups: list[dict], stat_rows: list[dict], xg_rows: list[dict]) -> list[dict]:
+def _stats_by_player(stat_rows: list[dict]) -> dict:
     by_player = defaultdict(dict)
     for row in stat_rows:
         by_player[(row["team_id"], row["player_id"])][row["stat_type_id"]] = row["value"]
+    return by_player
+
+
+def build_team_touches(team_ids: list[int], lineups: list[dict], stat_rows: list[dict]) -> list[dict]:
+    """출전 선수의 Touches를 기존 팀 statistics 형식으로 합쳐요."""
+    type_id = METRICS["touches"][2][0]
+    by_player = _stats_by_player(stat_rows)
+    values = defaultdict(list)
+    for lineup in lineups:
+        value = by_player[(lineup["team_id"], lineup["player_id"])].get(type_id)
+        # 미출전 벤치는 제외해요. 0분 교체 출전도 Touches가 있으면 합계에 포함해요.
+        if lineup["lineup_type_id"] == 11 or (lineup["minutes_played"] or 0) > 0 or value is not None:
+            values[lineup["team_id"]].append(value)
+    result = []
+    for team_id in team_ids:
+        team_values = values[team_id]
+        # 19134453은 출전 선수 한 명의 Touches가 빠져 있어요. 부분합을 팀 전체 값으로 표시하지 않아요.
+        total = sum(team_values) if team_values and all(v is not None for v in team_values) else None
+        result.append({"team_id": team_id, "stat_type_id": type_id, "stat_code": "touches",
+                       "stat_name": "Touches", "value": total})
+    return result
+
+
+def build_player_statistics(lineups: list[dict], stat_rows: list[dict], xg_rows: list[dict]) -> list[dict]:
+    by_player = _stats_by_player(stat_rows)
     xg_by_player = {row["player_id"]: row["xg"] for row in xg_rows}
     players = []
     for lineup in lineups:

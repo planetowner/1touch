@@ -91,6 +91,44 @@ def _payload() -> dict:
 
 
 class FixtureDetailsLoaderTests(unittest.TestCase):
+    def test_batch_requires_complete_ids_and_uses_existing_corrections(self):
+        client = SportmonksClient.__new__(SportmonksClient)
+        with patch.object(client, "_get", return_value={"data": [{"id": 501}, {"id": 500}]}), \
+             patch.object(client, "correct_fixture_details", side_effect=lambda f: {**f, "corrected": True}):
+            self.assertEqual(client.get_fixture_details_batch([500, 501]), [
+                {"id": 500, "corrected": True}, {"id": 501, "corrected": True},
+            ])
+        with patch.object(client, "_get", return_value={"data": [{"id": 500}]}):
+            with self.assertRaisesRegex(ValueError, "response IDs differ"):
+                client.get_fixture_details_batch([500, 501])
+        with patch.object(client, "_get") as read:
+            for ids in ([], list(range(51))):
+                with self.assertRaises(ValueError):
+                    client.get_fixture_details_batch(ids)
+            read.assert_not_called()
+
+    @patch.object(details, "replace_fixture_detail_rows", return_value=0)
+    @patch.object(details, "SportmonksClient")
+    @patch.object(details, "_load_scope", return_value=list(range(500, 551)))
+    def test_player_backfill_batches_and_replaces_only_player_collections(self, scope, client, write):
+        payload = _payload()
+        payload["lineups"][0]["details"].append({"type_id": 120, "data": {"value": 64}})
+        client.return_value.get_fixture_details_batch.side_effect = lambda ids: [
+            {**payload, "id": fixture_id} for fixture_id in ids
+        ]
+        with patch("builtins.print"):
+            result = details.collect_fixture_details_for_competition_season(
+                "2024/2025", [8], player_stats_only=True,
+            )
+        self.assertEqual([len(call.args[0]) for call in client.return_value.get_fixture_details_batch.call_args_list], [50, 1])
+        self.assertEqual(result["fixtures"], 51)
+        self.assertEqual(result["player_stats"], 51)
+        self.assertEqual(result["events"], 0)
+        self.assertEqual(result["team_stats"], 0)
+        for call in write.call_args_list:
+            self.assertEqual(set(call.args[1]), {"lineups", "player_stats"})
+            self.assertEqual(call.args[1]["player_stats"][0][-1], 64)
+
     def test_andy_substitution_uses_the_verified_gomez_identity(self):
         payload = _payload()
         for index, lineup in enumerate(payload["lineups"]):
@@ -204,11 +242,11 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
         get_fixture: Mock,
         fetch_all_dict: Mock,
     ) -> None:
-        get_fixture.return_value = {"fixture_id": 500}
+        get_fixture.return_value = {"fixture_id": 500, "home_team_id": 10, "away_team_id": 20}
         fetch_all_dict.side_effect = [
             [{"event_id": 900}],
             [{"stat_type_id": 45}],
-            [{"player_id": 100, "team_id": 10, "match_position_id": 25,
+            [{"player_id": 100, "team_id": 10, "lineup_type_id": 11, "match_position_id": 25,
               "minutes_played": 90, "rating": 7.38}],
             [{"team_id": 10, "formation": "4-3-3"}],
             [{"team_id": 10, "coach_id": 700}],
@@ -225,7 +263,11 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
             result = fixtures_repo.get_fixture_detail(500)
 
         self.assertEqual(result["events"], [{"event_id": 900}])
-        self.assertEqual(result["statistics"], [{"stat_type_id": 45}])
+        self.assertEqual(result["statistics"], [
+            {"stat_type_id": 45},
+            {"team_id": 10, "stat_type_id": 120, "stat_code": "touches", "stat_name": "Touches", "value": 64},
+            {"team_id": 20, "stat_type_id": 120, "stat_code": "touches", "stat_name": "Touches", "value": None},
+        ])
         self.assertEqual(result["lineups"][0]["player_id"], 100)
         self.assertEqual(result["formations"][0]["formation"], "4-3-3")
         self.assertEqual(result["coaches"][0]["coach_id"], 700)

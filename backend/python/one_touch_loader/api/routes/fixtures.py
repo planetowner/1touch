@@ -53,6 +53,8 @@ def fixture_detail(fixture_id: int, user_id: int = Depends(get_user_id)):
     pair는 numerator/denominator, percentage는 0~100의 value를 사용해요.
     xG는 Understat, 나머지 선수 지표·평점·POM은 Sportmonks 값이에요.
     팀 DEFENSE는 statistics의 tackles-won·duels-won 횟수를 사용해요. 성공률·승률로 바꾸지 않아요.
+    statistics의 touches는 출전 선수의 Sportmonks Touches 합계예요. 한 명이라도 값이 빠지면 null이에요.
+    Error는 표시 항목에서 제외했어요.
     """
     fx = get_fixture_detail(fixture_id)
     if not fx:
