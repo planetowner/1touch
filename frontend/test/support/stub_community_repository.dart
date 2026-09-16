@@ -13,7 +13,32 @@ class StubCommunityRepository implements CommunityRepository {
   Future<CommunityRules> loadRules({
     required int teamId,
     required CommunityLanguage language,
-  }) {
-    throw UnsupportedError('This stub only provides follower counts.');
-  }
+  }) async =>
+      CommunityRules(
+        language: language,
+        title: 'Community Ground Rules',
+        items: const [
+          CommunityRule(
+            title: 'Talk football, not trash.',
+            body: 'Disagree? Cool. Disrespect? Not here.',
+          ),
+          CommunityRule(
+            title: 'No player hate.',
+            body: 'Critique the play, not the person.',
+          ),
+          CommunityRule(
+            title: 'Respect every team.',
+            body: 'Rivalries are fun — as long as they stay respectful.',
+          ),
+          CommunityRule(
+            title: 'Keep it clean.',
+            body: 'No spam, slurs, or shady links.',
+          ),
+          CommunityRule(
+            title: 'Bring the vibes.',
+            body: 'Celebrate the game and enjoy the banter.',
+          ),
+        ],
+        confirmLabel: 'I UNDERSTAND!',
+      );
 }

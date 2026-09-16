@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/data/community/community_repository.dart';
+import 'package:onetouch/data/community/community_repository_provider.dart'
+    as community_providers;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
@@ -13,11 +16,13 @@ import 'package:onetouch/models/post.dart';
 class PostDetailScreen extends StatefulWidget {
   final Post post;
   final PostRepository? postRepository;
+  final CommunityRepository? communityRepository;
 
   const PostDetailScreen({
     super.key,
     required this.post,
     this.postRepository,
+    this.communityRepository,
   });
 
   @override
@@ -31,6 +36,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
+
+  CommunityRepository get _communityRepository =>
+      widget.communityRepository ?? community_providers.communityRepository;
 
   @override
   void initState() {
@@ -129,6 +137,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
               PostDetailContent(
                 post: post,
+                communityRepository: _communityRepository,
                 onReport: (reason) => _postRepository.reportPost(
                   postId: post.postId,
                   reason: reason,

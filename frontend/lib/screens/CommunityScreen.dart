@@ -256,8 +256,10 @@ class _CommunityState extends State<Community>
               ),
             ],
             body: CommunityPostBody(
+              teamId: widget.teamId,
               posts: _posts,
               postRepository: _postRepository,
+              communityRepository: _communityRepository,
               selectedSort: _selectedPostSort,
               isLoading: _isLoadingPosts,
               loadError: _postLoadError,
