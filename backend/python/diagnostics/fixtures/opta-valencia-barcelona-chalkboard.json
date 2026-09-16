@@ -1,0 +1,679 @@
+{
+  "competition_id": "34pl8szyvrbwcmfkuocjm3r6t",
+  "event_layer": {
+    "height": "549.5999999999999",
+    "width": "838.4"
+  },
+  "events": [
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "52.92651520000004",
+        "194.99808",
+        "21.7984",
+        "281.7161664"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-85",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "6‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "52.92651520000004",
+        "194.99808",
+        "21.7984",
+        "281.7161664"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-85",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "6‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-cjll1xrw3xulnl23c9tlf6rys Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "133.540352",
+        "218.938656",
+        "21.7984",
+        "294.4844736"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-253",
+      "player_name": "Fermín López",
+      "team_name": "FC Barcelona",
+      "time": "22‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-cjll1xrw3xulnl23c9tlf6rys Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "133.540352",
+        "218.938656",
+        "21.7984",
+        "294.4844736"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-253",
+      "player_name": "Fermín López",
+      "team_name": "FC Barcelona",
+      "time": "22‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "182.22791679999995",
+        "159.88523519999998",
+        "31.376281600000024",
+        "261.49968"
+      ],
+      "event_type": "Shots on target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-282",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "25‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4rktv6j9sioe0gmu7jt77fsh5 Opta-Home  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "713.8003456",
+        "298.2085632",
+        "762.4879103999999",
+        "288.10032"
+      ],
+      "event_type": "Shots on target",
+      "id": "7bo96pj9oyip3dktic3qjxono-ba5e91hjacvma2sjvixn00pjo-156",
+      "player_name": "A. Danjuma",
+      "team_name": "Valencia CF",
+      "time": "32‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4rktv6j9sioe0gmu7jt77fsh5 Opta-Home  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "744.130304",
+        "329.5973184",
+        "808.7810048",
+        "326.9372544"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-ba5e91hjacvma2sjvixn00pjo-157",
+      "player_name": "A. Danjuma",
+      "team_name": "Valencia CF",
+      "time": "32‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "114.38458879999995",
+        "235.96306560000002",
+        "21.7984",
+        "235.96306560000002"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-392",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "37‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-cjll1xrw3xulnl23c9tlf6rys Opta-Away  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "92.03619839999998",
+        "225.3228096",
+        "64.89886720000004",
+        "242.34721919999998"
+      ],
+      "event_type": "Shots on target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-423",
+      "player_name": "Fermín López",
+      "team_name": "FC Barcelona",
+      "time": "40‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-1jpq7xvsg1xh51ff03qukrj84 Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "122.36615679999996",
+        "371.0943168",
+        "21.7984",
+        "333.321408"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-449",
+      "player_name": "Xavi Espart",
+      "team_name": "FC Barcelona",
+      "time": "42‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4ftlhtels58lyzfluwofzwxuy Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "139.92560639999996",
+        "247.6673472",
+        "21.7984",
+        "226.91884799999997"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-488",
+      "player_name": "Pedri",
+      "team_name": "FC Barcelona",
+      "time": "45‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4rktv6j9sioe0gmu7jt77fsh5 Opta-Home  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "787.2307712",
+        "200.8502208",
+        "805.5883776",
+        "236.49507839999998"
+      ],
+      "event_type": "Shots on target",
+      "id": "7bo96pj9oyip3dktic3qjxono-ba5e91hjacvma2sjvixn00pjo-277",
+      "player_name": "A. Danjuma",
+      "team_name": "Valencia CF",
+      "time": "45‎+‎4‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "76.87121920000004",
+        "375.35041920000003",
+        "34.56890879999996",
+        "310.44485760000003"
+      ],
+      "event_type": "Shots on target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-549",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "45‎+‎6‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2wl6h1rlrfnn2mr65vuo3t815 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "201.38368000000003",
+        "265.7557824",
+        "128.75141120000006",
+        "262.03169280000003"
+      ],
+      "event_type": "Blocks",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-561",
+      "player_name": "Raphinha",
+      "team_name": "FC Barcelona",
+      "time": "45‎+‎8‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-cjll1xrw3xulnl23c9tlf6rys Opta-Away  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "209.365248",
+        "293.95246080000004",
+        "33.770752",
+        "273.73597440000003"
+      ],
+      "event_type": "Shots on target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-563",
+      "player_name": "Fermín López",
+      "team_name": "FC Barcelona",
+      "time": "45‎+‎8‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-8mjj0wgufggpc1ai2dk21h90p Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "143.1182336",
+        "298.74057600000003",
+        "21.7984",
+        "237.02709119999997"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-620",
+      "player_name": "A. Gordon",
+      "team_name": "FC Barcelona",
+      "time": "48‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2wl6h1rlrfnn2mr65vuo3t815 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "31.376281600000024",
+        "287.56830720000005",
+        "21.7984",
+        "281.7161664"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-628",
+      "player_name": "Raphinha",
+      "team_name": "FC Barcelona",
+      "time": "50‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2wl6h1rlrfnn2mr65vuo3t815 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "31.376281600000024",
+        "287.56830720000005",
+        "21.7984",
+        "281.7161664"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-628",
+      "player_name": "Raphinha",
+      "team_name": "FC Barcelona",
+      "time": "50‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "115.98090239999998",
+        "301.9326528",
+        "99.21960960000003",
+        "297.14453760000004"
+      ],
+      "event_type": "Blocks",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-637",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "51‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-2wl6h1rlrfnn2mr65vuo3t815 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "103.21039360000003",
+        "259.3716288",
+        "75.27490560000003",
+        "271.0759104"
+      ],
+      "event_type": "Blocks",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-651",
+      "player_name": "Raphinha",
+      "team_name": "FC Barcelona",
+      "time": "53‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-dqfk7czrayirrvonirtk2mk15 Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "94.43066879999995",
+        "281.7161664",
+        "21.7984",
+        "269.479872"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-681",
+      "player_name": "Rodri",
+      "team_name": "FC Barcelona",
+      "time": "56‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-8mjj0wgufggpc1ai2dk21h90p Opta-Away  Opta-Positive Opta-JS-Tip",
+      "coords": [
+        "80.06384639999997",
+        "312.040896",
+        "57.715455999999996",
+        "300.8686272"
+      ],
+      "event_type": "Shots on target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-714",
+      "player_name": "A. Gordon",
+      "team_name": "FC Barcelona",
+      "time": "58‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-cjll1xrw3xulnl23c9tlf6rys Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "76.07306239999998",
+        "187.5499008",
+        "21.7984",
+        "309.9128448"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-813",
+      "player_name": "Fermín López",
+      "team_name": "FC Barcelona",
+      "time": "66‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "211.75971839999994",
+        "191.80600319999996",
+        "21.7984",
+        "325.341216"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-857",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "68‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4ftlhtels58lyzfluwofzwxuy Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "139.12744960000003",
+        "232.7709888",
+        "21.7984",
+        "290.2283712"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1002",
+      "player_name": "Pedri",
+      "team_name": "FC Barcelona",
+      "time": "79‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4ftlhtels58lyzfluwofzwxuy Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "139.12744960000003",
+        "232.7709888",
+        "21.7984",
+        "290.2283712"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1002",
+      "player_name": "Pedri",
+      "team_name": "FC Barcelona",
+      "time": "79‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4gq1u1mqg0qzekh1u5djleeax Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "188.6131712",
+        "206.70236160000002",
+        "139.92560639999996",
+        "220.0026816"
+      ],
+      "event_type": "Blocks",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1033",
+      "player_name": "Dani Olmo",
+      "team_name": "FC Barcelona",
+      "time": "83‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-d66tmyj9pt69gub8pcjgo3bh1 Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "119.97168639999997",
+        "323.2131648",
+        "111.19196160000003",
+        "316.82901119999997"
+      ],
+      "event_type": "Blocks",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1037",
+      "player_name": "Gabriel Jesus",
+      "team_name": "FC Barcelona",
+      "time": "83‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "90.43988479999994",
+        "258.839616",
+        "21.7984",
+        "258.839616"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1065",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "84‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Neutral Opta-JS-Tip",
+      "coords": [
+        "90.43988479999994",
+        "258.839616",
+        "21.7984",
+        "258.839616"
+      ],
+      "event_type": "Goals",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1065",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "84‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-d66tmyj9pt69gub8pcjgo3bh1 Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "206.17262079999995",
+        "246.0713088",
+        "21.7984",
+        "318.9570624"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1069",
+      "player_name": "Gabriel Jesus",
+      "team_name": "FC Barcelona",
+      "time": "85‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-4gq1u1mqg0qzekh1u5djleeax Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "121.568",
+        "268.4158464",
+        "102.41223679999995",
+        "286.5042816"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1092",
+      "player_name": "Dani Olmo",
+      "team_name": "FC Barcelona",
+      "time": "87‎'‎"
+    },
+    {
+      "classes": "Opta-Player Opta-Player-abr79wsl0folgkyvl821ggs2c Opta-Away  Opta-Negative Opta-JS-Tip",
+      "coords": [
+        "125.558784",
+        "237.02709119999997",
+        "21.7984",
+        "348.74977920000003"
+      ],
+      "event_type": "Shots off target",
+      "id": "7bo96pj9oyip3dktic3qjxono-agh9ifb2mw3ivjusgedj7c3fe-1198",
+      "player_name": "Lamine Yamal",
+      "team_name": "FC Barcelona",
+      "time": "90‎+‎5‎'‎"
+    }
+  ],
+  "finished": true,
+  "full_game": true,
+  "match_date": "Sunday 6 September 2026",
+  "match_id": "7bo96pj9oyip3dktic3qjxono",
+  "orientation": "horizontal",
+  "season_id": "830epggffy1nfkfyrtpqdwhlg",
+  "selected_events": [
+    "Goals",
+    "Shots on target",
+    "Shots off target",
+    "Blocks"
+  ],
+  "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=34pl8szyvrbwcmfkuocjm3r6t&seasonId=830epggffy1nfkfyrtpqdwhlg&matchId=7bo96pj9oyip3dktic3qjxono",
+  "summary": {
+    "Goals": {
+      "away": 5,
+      "home": 0
+    },
+    "Shots on target": {
+      "away": 10,
+      "home": 2
+    }
+  },
+  "teams": {
+    "away": {
+      "external_team_id": "agh9ifb2mw3ivjusgedj7c3fe",
+      "name": "FC Barcelona",
+      "players": [
+        {
+          "external_player_id": "5f8kjgsaabn2li5r7bvpebbsa",
+          "jersey_number": 1,
+          "name": "Joan García"
+        },
+        {
+          "external_player_id": "1jpq7xvsg1xh51ff03qukrj84",
+          "jersey_number": 12,
+          "name": "Xavi Espart"
+        },
+        {
+          "external_player_id": "6l1y87tlepsvr83d8y2qifeqy",
+          "jersey_number": 18,
+          "name": "Gerard Martín"
+        },
+        {
+          "external_player_id": "bkwxem45cf48k14euwqe7rs44",
+          "jersey_number": 5,
+          "name": "Pau Cubarsí"
+        },
+        {
+          "external_player_id": "4ggz7e009bq3yltc9o6mifbah",
+          "jersey_number": 24,
+          "name": "Eric García"
+        },
+        {
+          "external_player_id": "4ftlhtels58lyzfluwofzwxuy",
+          "jersey_number": 8,
+          "name": "Pedri"
+        },
+        {
+          "external_player_id": "dqfk7czrayirrvonirtk2mk15",
+          "jersey_number": 16,
+          "name": "Rodri"
+        },
+        {
+          "external_player_id": "cjll1xrw3xulnl23c9tlf6rys",
+          "jersey_number": 7,
+          "name": "Fermín López"
+        },
+        {
+          "external_player_id": "8mjj0wgufggpc1ai2dk21h90p",
+          "jersey_number": 17,
+          "name": "A. Gordon"
+        },
+        {
+          "external_player_id": "2wl6h1rlrfnn2mr65vuo3t815",
+          "jersey_number": 11,
+          "name": "Raphinha"
+        },
+        {
+          "external_player_id": "abr79wsl0folgkyvl821ggs2c",
+          "jersey_number": 10,
+          "name": "Lamine Yamal"
+        },
+        {
+          "external_player_id": "ebj6t5jqzixrnww1z7qofznu2",
+          "jersey_number": 14,
+          "name": "K. Adeyemi"
+        },
+        {
+          "external_player_id": "4et6r42e7q2ojgaumwnua2kgk",
+          "jersey_number": 22,
+          "name": "Marc Bernal"
+        },
+        {
+          "external_player_id": "1av9mmv19jwvc4xdr0p9owyxh",
+          "jersey_number": 15,
+          "name": "A. Christensen"
+        },
+        {
+          "external_player_id": "cscn06kwqfzo09h0dc5ybt1pl",
+          "jersey_number": 23,
+          "name": "J. Koundé"
+        },
+        {
+          "external_player_id": "4gq1u1mqg0qzekh1u5djleeax",
+          "jersey_number": 20,
+          "name": "Dani Olmo"
+        },
+        {
+          "external_player_id": "d66tmyj9pt69gub8pcjgo3bh1",
+          "jersey_number": 9,
+          "name": "Gabriel Jesus"
+        }
+      ]
+    },
+    "home": {
+      "external_team_id": "ba5e91hjacvma2sjvixn00pjo",
+      "name": "Valencia CF",
+      "players": [
+        {
+          "external_player_id": "5dfvefxvwj8kixbajluw25mtx",
+          "jersey_number": 1,
+          "name": "S. Dimitrievski"
+        },
+        {
+          "external_player_id": "3702btkgwxf6tq92ouekd7ro5",
+          "jersey_number": 18,
+          "name": "Pepelu"
+        },
+        {
+          "external_player_id": "eucssbf7wamb41y1gixfodivp",
+          "jersey_number": 4,
+          "name": "M. Diakhaby"
+        },
+        {
+          "external_player_id": "2nq5nzq35tfwc7po29dtwqp78",
+          "jersey_number": 22,
+          "name": "Arnau Martínez"
+        },
+        {
+          "external_player_id": "d6kzekcwqw0q8fq6wt6rmyusq",
+          "jersey_number": 21,
+          "name": "Jesús Vázquez"
+        },
+        {
+          "external_player_id": "22dchchxwrsty67ultrs61qz9",
+          "jersey_number": 24,
+          "name": "Pablo Maffeo"
+        },
+        {
+          "external_player_id": "aqqd7tq7z6bj3wn3u3sz3uuqc",
+          "jersey_number": 8,
+          "name": "Javi Guerra"
+        },
+        {
+          "external_player_id": "58omi7lik71h0zl4b8d6rwdt5",
+          "jersey_number": 15,
+          "name": "A. Dieng"
+        },
+        {
+          "external_player_id": "94md3wf5xab5mnj5niiwq33zd",
+          "jersey_number": 23,
+          "name": "F. Ugrinic"
+        },
+        {
+          "external_player_id": "bda9fmdum05xtmj2d8k5dfnkk",
+          "jersey_number": 27,
+          "name": "David Otorbi"
+        },
+        {
+          "external_player_id": "4rktv6j9sioe0gmu7jt77fsh5",
+          "jersey_number": 7,
+          "name": "A. Danjuma"
+        },
+        {
+          "external_player_id": "9g3to6kcpmla26k0dbwuizspg",
+          "jersey_number": 36,
+          "name": "Iker Córdoba"
+        },
+        {
+          "external_player_id": "7yieh5r0uzk6d6x9o060c2bfu",
+          "jersey_number": 9,
+          "name": "Hugo Duro"
+        },
+        {
+          "external_player_id": "dz2rfsmhib89jwilpuub10qcq",
+          "jersey_number": 10,
+          "name": "H. Elliott"
+        },
+        {
+          "external_player_id": "5b1q9bpe23j98eoy4fwi7ld5h",
+          "jersey_number": 14,
+          "name": "José Gayà"
+        },
+        {
+          "external_player_id": "6g4w142avjxqr8ju5tgdskhlg",
+          "jersey_number": 39,
+          "name": "R. Sato"
+        },
+        {
+          "external_player_id": "2u8bekuidiwqz1gvb4vd3uhg",
+          "jersey_number": 5,
+          "name": "César Tárrega"
+        }
+      ]
+    }
+  },
+  "checked_at_utc": "2026-09-13T14:56:52.534455+00:00"
+}

@@ -18,6 +18,10 @@ load_dotenv()
 
 # 공식 명단·다른 경기 응답·선수 단건 프로필로 확인한 라인업 ID만 보정해요.
 SPORTMONKS_LINEUP_PLAYER_ID_OVERRIDES = {
+    # Hibernian–Gent의 47번은 José Mendieta가 아닌 Josué Vergara예요.
+    # UEFA 생일(2007-07-25)·현재 소속·구단의 선발 명단과 39분 골을 대조했어요.
+    # https://www.uefa.com/uefaconferenceleague/clubs/players/250222166--josue-vergara/
+    14674479239: 37765373,
     # Malisheva의 18·33·55번은 UEFA 명단·단건 프로필·현재 소속 ID를 대조했어요.
     # 이름이 비슷한 선수를 찾지 않고, 확인한 예선 네 경기의 null 슬롯만 복원해요.
     # https://www.uefa.com/uefaconferenceleague/clubs/2611789--malisheva/squad/
@@ -184,7 +188,12 @@ SPORTMONKS_EVENT_PLAYER_PROFILE_IDS = {
 
 # 원문과 검증한 경기 기록을 대조해 잘못된 이벤트 필드만 보정해요.
 SPORTMONKS_EVENT_OVERRIDES = {
-    # Rapid 원정의 22번은 다른 세 경기·현재 스쿼드와 같은 Gómez예요. 해당 경기의 다른 ID만 맞춰요.
+    # 같은 경기의 39분 득점도 위 선발 47번으로 연결해요. 도움·시각은 유지해요.
+    # https://website-2021.kaagent.be/nl/team/games/uefa-conference-league-voorrondes/6/hibernian-fc/kaa-gent/live
+    157653838: {"player_id": 37765373, "player_name": "Josué Vergara"},
+    # Rapid전의 22번은 다른 세 경기·현재 스쿼드와 같은 Gómez예요. 해당 경기의 다른 ID만 맞춰요.
+    # 1차전 86분 Andy 교체도 같은 선수예요. 교체 상대를 잘못된 동명이인으로 남기지 않아요.
+    157312532: {"related_player_id": 37718055},
     157351480: {"related_player_id": 37718055},
     157351924: {"related_player_id": 37718055},
     157351961: {"player_id": 37718055},

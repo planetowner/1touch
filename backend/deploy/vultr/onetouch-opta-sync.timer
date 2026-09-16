@@ -1,0 +1,10 @@
+[Unit]
+Description=1Touch hourly completed match data collection
+
+[Timer]
+# 같은 서비스가 실행 중이면 중복 실행하지 않고 다음 정각에 다시 확인해요.
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
