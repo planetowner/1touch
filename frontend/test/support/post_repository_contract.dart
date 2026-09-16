@@ -291,4 +291,30 @@ void postRepositoryContract({
       throwsArgumentError,
     );
   });
+
+  test('sets post likes idempotently and updates the count', () async {
+    final repository = createRepository(posts);
+
+    await repository.setPostLiked(postId: posts.first.postId, liked: true);
+    await repository.setPostLiked(postId: posts.first.postId, liked: true);
+    var updated = (await repository.loadPosts(teamId: posts.first.teamId))
+        .singleWhere((post) => post.postId == posts.first.postId);
+    expect(updated.liked, isTrue);
+    expect(updated.likeCount, posts.first.likeCount + 1);
+
+    await repository.setPostLiked(postId: posts.first.postId, liked: false);
+    updated = (await repository.loadPosts(teamId: posts.first.teamId))
+        .singleWhere((post) => post.postId == posts.first.postId);
+    expect(updated.liked, isFalse);
+    expect(updated.likeCount, posts.first.likeCount);
+  });
+
+  test('rejects an invalid post like ID', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.setPostLiked(postId: 0, liked: true),
+      throwsRangeError,
+    );
+  });
 }
