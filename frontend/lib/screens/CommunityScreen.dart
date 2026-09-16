@@ -3,6 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/data/community/community_repository.dart';
+import 'package:onetouch/data/community/community_repository_provider.dart'
+    as community_providers;
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
@@ -19,11 +22,13 @@ import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 class Community extends StatefulWidget {
   final int teamId;
   final PostRepository? postRepository;
+  final CommunityRepository? communityRepository;
 
   const Community({
     super.key,
     required this.teamId,
     this.postRepository,
+    this.communityRepository,
   });
 
   @override
@@ -40,10 +45,8 @@ class _CommunityState extends State<Community>
 
   late Team _team;
   late bool _isLive;
-  // TODO: Replace this shared UI placeholder with a repository-provided team
-  // follower total when the API exposes an aggregate follower-count field or
-  // endpoint. The current user's followed-team list is not that total.
-  static const int _followerCount = 1;
+  int? _followerCount;
+  int _followerRequestId = 0;
   List<Post> _posts = const [];
   bool _isLoadingPosts = true;
   Object? _postLoadError;
@@ -52,11 +55,15 @@ class _CommunityState extends State<Community>
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
 
+  CommunityRepository get _communityRepository =>
+      widget.communityRepository ?? community_providers.communityRepository;
+
   @override
   void initState() {
     super.initState();
 
     _loadTeam();
+    _loadFollowerCount();
     _loadPosts();
 
     _scrollController = ScrollController()
@@ -77,7 +84,12 @@ class _CommunityState extends State<Community>
     // parent route hands us a different teamId instead of only on first load.
     if (widget.teamId != oldWidget.teamId) {
       setState(_loadTeam);
+      _loadFollowerCount();
       _loadPosts();
+    }
+    if (widget.teamId == oldWidget.teamId &&
+        widget.communityRepository != oldWidget.communityRepository) {
+      _loadFollowerCount();
     }
     if (widget.teamId == oldWidget.teamId &&
         widget.postRepository != oldWidget.postRepository) {
@@ -90,6 +102,23 @@ class _CommunityState extends State<Community>
     _isLive = fixtureRepository
         .forTeam(widget.teamId, status: FixtureStatus.live)
         .isNotEmpty;
+  }
+
+  Future<void> _loadFollowerCount() async {
+    final requestId = ++_followerRequestId;
+    setState(() => _followerCount = null);
+    try {
+      final count = await _communityRepository.loadFollowerCount(
+        teamId: widget.teamId,
+      );
+      if (!mounted || requestId != _followerRequestId) return;
+      setState(() => _followerCount = count);
+    } catch (_) {
+      // Follower totals are supplementary. Keep the label available without
+      // inventing a count when this independent request is unavailable.
+      if (!mounted || requestId != _followerRequestId) return;
+      setState(() => _followerCount = null);
+    }
   }
 
   Future<void> _loadPosts() async {
