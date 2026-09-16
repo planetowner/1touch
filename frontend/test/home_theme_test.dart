@@ -139,6 +139,26 @@ void main() {
         ),
       );
 
+      final leagueLegend = find.text('League');
+      final europeLegend = find.text('Europe');
+      final cupLegend = find.text('Cup');
+      expect(
+        tester
+                .getTopLeft(
+                  find.byKey(const ValueKey('fixture-calendar-legends')),
+                )
+                .dy -
+            tester
+                .getBottomLeft(
+                  find.byKey(const ValueKey('fixture-calendar-card')),
+                )
+                .dy,
+        closeTo(16, 0.1),
+      );
+      expect(tester.getTopLeft(leagueLegend).dy,
+          closeTo(tester.getTopLeft(europeLegend).dy, 0.1));
+      expect(tester.getTopLeft(europeLegend).dy,
+          closeTo(tester.getTopLeft(cupLegend).dy, 0.1));
       expect(tester.takeException(), isNull);
     });
   }
