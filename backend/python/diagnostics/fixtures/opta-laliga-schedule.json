@@ -1,0 +1,3009 @@
+{
+  "attributes": {
+    "feed_resource": "soccerdata",
+    "comp": "34pl8szyvrbwcmfkuocjm3r6t",
+    "tmcl": "830epggffy1nfkfyrtpqdwhlg",
+    "limit": 20,
+    "dateHeadingLevel": 2,
+    "division": "",
+    "ctst": "",
+    "disableConferenceFilter": false
+  },
+  "schedule": {
+    "tournamentCalendar": {
+      "id": "830epggffy1nfkfyrtpqdwhlg",
+      "name": "2026/2027",
+      "startDate": "2026-08-15Z",
+      "endDate": "2027-05-30Z",
+      "lastUpdated": "2026-09-07T21:27:43Z"
+    },
+    "matchDate": [
+      {
+        "date": "2026-08-15Z",
+        "match": [
+          {
+            "id": "6ypvv07mjqz0hg3voh3u7gges",
+            "date": "2026-08-15Z",
+            "time": "17:30:00Z",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "71zqp0xwkbtm50t332jrwt0yc",
+            "date": "2026-08-15Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-16Z",
+        "match": [
+          {
+            "id": "716vp99sj88laxm7ujwt3ua6s",
+            "date": "2026-08-16Z",
+            "time": "15:00:00Z",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "70ecxis8a4v87q3igbbhvxn2s",
+            "date": "2026-08-16Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-17Z",
+        "match": [
+          {
+            "id": "7000rk9jiemwpjw2i9tnpim8k",
+            "date": "2026-08-17Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-19Z",
+        "match": [
+          {
+            "id": "6z77qknhbwckkkciwzs085yj8",
+            "date": "2026-08-19Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-20Z",
+        "match": [
+          {
+            "id": "759wkks5e6lybl2205pedxgd0",
+            "date": "2026-08-20Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-21Z",
+        "match": [
+          {
+            "id": "73csyv3hnitphnyv0z6vgt444",
+            "date": "2026-08-21Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-22Z",
+        "match": [
+          {
+            "id": "72ps1vdo87zlm1ijk9fnyrcic",
+            "date": "2026-08-22Z",
+            "time": "15:00:00Z",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "75lf3n4wfifs1thc01rv7lvkk",
+            "date": "2026-08-22Z",
+            "time": "17:30:00Z",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "73zvl5ha7i4e8lo6sphnf613o",
+            "date": "2026-08-22Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-23Z",
+        "match": [
+          {
+            "id": "731909x80ix52l5w07taqsqac",
+            "date": "2026-08-23Z",
+            "time": "15:00:00Z",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "74bcvvm904qkcuhw7x2eun9jo",
+            "date": "2026-08-23Z",
+            "time": "17:30:00Z",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "73ob0ein8likagvlqcyqf4zys",
+            "date": "2026-08-23Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-24Z",
+        "match": [
+          {
+            "id": "74ycln8d7fq9w6x1kyk1gr504",
+            "date": "2026-08-24Z",
+            "time": "17:30:00Z",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "74mxh8k281gelgxpzaagmamfo",
+            "date": "2026-08-24Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-25Z",
+        "match": [
+          {
+            "id": "72e6g9h1pn6n02wyh6hi1e49g",
+            "date": "2026-08-25Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-26Z",
+        "match": [
+          {
+            "id": "71l2f5qull2yzqxy409ojb2tw",
+            "date": "2026-08-26Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-27Z",
+        "match": [
+          {
+            "id": "6zlh4hhvenk2hv5qtvk7xj0gk",
+            "date": "2026-08-27Z",
+            "time": "18:30:00Z",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "70smcigm7ttqaz8fv6xsf87bo",
+            "date": "2026-08-27Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-28Z",
+        "match": [
+          {
+            "id": "77u4mb46sh7ns37earpemj6l0",
+            "date": "2026-08-28Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "75x10qjvovwfd72z7mr2epzis",
+            "date": "2026-08-28Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-29Z",
+        "match": [
+          {
+            "id": "7772yfcbq8gnhrn7g0wnyx89g",
+            "date": "2026-08-29Z",
+            "time": "15:00:00Z",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "78h1fr7sjsehp4pmrilhe8sus",
+            "date": "2026-08-29Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "78siwc5vq2syzzawbuf8rmsr8",
+            "date": "2026-08-29Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-30Z",
+        "match": [
+          {
+            "id": "785mwo143t78gk066u8t61zx0",
+            "date": "2026-08-30Z",
+            "time": "15:00:00Z",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "76k2ngi7iqgi8sr6aosybmxhw",
+            "date": "2026-08-30Z",
+            "time": "17:30:00Z",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "768jqbm23j1y85s3i6cqgf6dw",
+            "date": "2026-08-30Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          }
+        ]
+      },
+      {
+        "date": "2026-08-31Z",
+        "match": [
+          {
+            "id": "77in9ixt8bcj4kwwmrkaa4bo4",
+            "date": "2026-08-31Z",
+            "time": "17:30:00Z",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "76vl5znn5k0jeok1pf0q0ek9g",
+            "date": "2026-08-31Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-03Z",
+        "match": [
+          {
+            "id": "7if2ke5uop0iqrl0k7fhs7uhg",
+            "date": "2026-09-03Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-04Z",
+        "match": [
+          {
+            "id": "79r3pdqdczg9upc1fvq1gc7pw",
+            "date": "2026-09-04Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-05Z",
+        "match": [
+          {
+            "id": "79fltm4ss43szqmklxaej5las",
+            "date": "2026-09-05Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "7bcv2c591mmfjgb3eb7zt8bo4",
+            "date": "2026-09-05Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "7bztqyscy32p3jj54d8cdfod0",
+            "date": "2026-09-05Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-06Z",
+        "match": [
+          {
+            "id": "7bo96pj9oyip3dktic3qjxono",
+            "date": "2026-09-06Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "793yquimaksgw4jdrh2zme8t0",
+            "date": "2026-09-06Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "7b1ag1hslumljwic0zq1wyln8",
+            "date": "2026-09-06Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "7ae2knrw7whtxapt0yp3drjtg",
+            "date": "2026-09-06Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-07Z",
+        "match": [
+          {
+            "id": "7aptq9m7p1p3ezgnl011sdafo",
+            "date": "2026-09-07Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "7a2nfmhdemats7gw8rjcxitck",
+            "date": "2026-09-07Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-11Z",
+        "match": [
+          {
+            "id": "7evk2x4njlsoc41xku9wqb1g4",
+            "date": "2026-09-11Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-12Z",
+        "match": [
+          {
+            "id": "7dx2nskg4hbq8mxmlmnd3zzmc",
+            "date": "2026-09-12Z",
+            "time": "12:00:00Z",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "7dlj1a0zdfs0qym5r1qlb4ydw",
+            "date": "2026-09-12Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "7cbe27aik9tvmr861bdt3vy8k",
+            "date": "2026-09-12Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "7e8mfgiyksweceq8ay2jma13o",
+            "date": "2026-09-12Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-13Z",
+        "match": [
+          {
+            "id": "7cmu0j20bs5uq4drurx7tsff8",
+            "date": "2026-09-13Z",
+            "time": "12:00:00Z",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "7d9vk5mp7vxxiw1mbw11y7zmc",
+            "date": "2026-09-13Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "7cycuk55rbkzmo9lpoapcevbo",
+            "date": "2026-09-13Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "7ek41pvqbwzxb2vl5c72jxuz8",
+            "date": "2026-09-13Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-14Z",
+        "match": [
+          {
+            "id": "7f76d091bx31rxvo31ss50yz8",
+            "date": "2026-09-14Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-15Z",
+        "match": [
+          {
+            "id": "7i3j8g9tkf9ca32gvij88p6ok",
+            "date": "2026-09-15Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "7fiqgnutaqknkclhourznov10",
+            "date": "2026-09-15Z",
+            "time": "18:00:00Z",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "7gteb2zkg2zc679ruawoh5wr8",
+            "date": "2026-09-15Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-16Z",
+        "match": [
+          {
+            "id": "7fue8swml5ffmdhmfjdm81ixg",
+            "date": "2026-09-16Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "7ghsyv9sqzyummyrnx158a5g4",
+            "date": "2026-09-16Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "7h4zres5o8hqsaici9wxjwx04",
+            "date": "2026-09-16Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "7hgicmswfftkufl1i5nk1gcus",
+            "date": "2026-09-16Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-17Z",
+        "match": [
+          {
+            "id": "7g5z6gdg6ktcxkekczh38uwwk",
+            "date": "2026-09-17Z",
+            "time": "17:00:00Z",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "7hs3px4zghzd1bob0patu7nro",
+            "date": "2026-09-17Z",
+            "time": "19:30:00Z",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-18Z",
+        "match": [
+          {
+            "id": "7k0croppebdsfvmyx7xa4qqs4",
+            "date": "2026-09-18Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-19Z",
+        "match": [
+          {
+            "id": "7knavco2d0xyze03cdx6ty8t0",
+            "date": "2026-09-19Z",
+            "time": "12:00:00Z",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "7iqmutnco5rawtszfkqkj8yz8",
+            "date": "2026-09-19Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "7jdeixosiwffz5qnfi4pspudw",
+            "date": "2026-09-19Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "7kyrc4nfqqhhpuy9qmwezpp1w",
+            "date": "2026-09-19Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-20Z",
+        "match": [
+          {
+            "id": "7kbrrhdylwi77hb0f5lhor09g",
+            "date": "2026-09-20Z",
+            "time": "12:00:00Z",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "7j22qz3t4ws54eotrjesr4jdg",
+            "date": "2026-09-20Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "7jox9lda9iq9hg8127i4eakus",
+            "date": "2026-09-20Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "7llpty4qgs2bsjfh846un8104",
+            "date": "2026-09-20Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "7la6yuf9p9hw8nre121mkq1hw",
+            "date": "2026-09-20Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-09Z",
+        "match": [
+          {
+            "id": "7nijw7p9j2hsasqjqge5ch2c4",
+            "date": "2026-10-09Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-10Z",
+        "match": [
+          {
+            "id": "7o5l7yhtws94ytvamu0c0c26s",
+            "date": "2026-10-10Z",
+            "time": "12:00:00Z",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "7lx31uoluolp2l7vf8u3f0rh0",
+            "date": "2026-10-10Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "7mvgyuyhmjcqkwe1ciojy8qhg",
+            "date": "2026-10-10Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "7oh2rfcpl6bt8lk74vi7eaot0",
+            "date": "2026-10-10Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-11Z",
+        "match": [
+          {
+            "id": "7mjzhwkh9oylolrhkkrazezh0",
+            "date": "2026-10-11Z",
+            "time": "12:00:00Z",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "7osjzy48g8mavxew9ew2xh6vo",
+            "date": "2026-10-11Z",
+            "time": "14:15:00Z",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "7m8k83q6zlxpk45mgxbbzaxas",
+            "date": "2026-10-11Z",
+            "time": "16:30:00Z",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "7nu2v0rjhby880288h6jz2rdg",
+            "date": "2026-10-11Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-12Z",
+        "match": [
+          {
+            "id": "7n6wwp84788l8x8tvhvzro4yc",
+            "date": "2026-10-12Z",
+            "time": "19:00:00Z",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-18Z",
+        "match": [
+          {
+            "id": "7p429rehb54nysid8ng3rzac4",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "7pfnqp68sar2vde6ln5hmcmc4",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "7pr80h6su15w4k6rn5b1ndo2c",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "7q2pazfk53gu3n0v2gh6qu80k",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "7qebyy9jgj199u416kaw9cmj8",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "7qpvy998ttwlaoabtdjqryp04",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "7r1j3u81hxnm5ozrnin6cn3mc",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "7rd18hnvlmxll7j7gck3xm9ec",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "7rok8grdb96ofrabvw5pkyxhw",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "7s04kug0kybntt9030v07ybkk",
+            "date": "2026-10-18Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-25Z",
+        "match": [
+          {
+            "id": "7sbpcvmyv61mng0ccrb4h1iqc",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "7sna3760xlhqy4mxs4yo0d0yc",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "7szx4ihs5ftct6q7e4yln2fis",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "7tberlpxn4c47iiexg6vod9n8",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "7tn0nb7hnkowgdp07ly9ipq1g",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "7tyeiwli9dier0uu9siumlwk4",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "7u9uw61vb3glo7fsjsxt60i6s",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "7ulchlymdkcb8h170y39k5990",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "7uwukg3zb53ece99883tofbx0",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "7v8fz802jgm3efy7fe2pkvok4",
+            "date": "2026-10-25Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-01Z",
+        "match": [
+          {
+            "id": "7vjx3323f0xgdn615ichl67tg",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "7vvef8ekmc9qo5nhh5j41qw44",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "7w6snqarunvcbuxoefo96ffh0",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "7wiaovfa5c5pgpnc8v39f3pck",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "7wtrkje2lkhrvzp9szfb5xkb8",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "7x5hm9gxwtyeuj45od627dams",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "7xgvzvaf5pd0hy3cbjd833384",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "7xsdpd56hmpjyh7tnwzzijg2c",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "7y3pk2xyskrgedhep7yifi61g",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "7yf2udp2ysx6pdj6dqvk1chsk",
+            "date": "2026-11-01Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-08Z",
+        "match": [
+          {
+            "id": "7yqixnu51vdqc6c3pds48v5lg",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "7z1xzbxop724lmq0f804245ck",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "7zdgkspd1t40vfy42cepzw4k4",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "7zovjckjnjlkzk5viwfawfvo4",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "800b3ld9z95er9os82ga0p3is",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "80bw4cn3kcir6joz34mhe3spg",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "80niuxs7ommh1hkkud6ycqfpw",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "80yxs3alzisr1uae1tv1celuc",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "81aczzuvq0utlz0la8huz22vo",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "81lw4j8yzrfoumreiu63ofac4",
+            "date": "2026-11-08Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-22Z",
+        "match": [
+          {
+            "id": "81xbpprcjc9id9n8tygyxavbo",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "828rogo7p3et735q5pmlh2tck",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "82k5i1q9r1t13h6d9s5jwh34k",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "82vk3mqrxovp5nbu31vtpmvis",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "8371uo2o7j0j4yx1kkf9r9yj8",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "83ihhupbrznxj8emnypfelhjo",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "83u0icd3b8doe95t75ypcp1xw",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "845l819xjrwnukitg0q3a8c9g",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "84h4m9b9g3tqib17j8nocr9qs",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "84snfg3o35m7xy7adjsq7mrys",
+            "date": "2026-11-22Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          }
+        ]
+      },
+      {
+        "date": "2026-11-29Z",
+        "match": [
+          {
+            "id": "8546urm1fb3fbinqg9rey93x0",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "85fnbl36hquwode1zd712eb6c",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "85r1f21n2z3fl4jjgg6xct3bo",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "862gtflvz3nj4z7zotu7z1mac",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "86dwa9xjz32hxan7cmjerzb4k",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "86pdcjszp1rw8p2pmxdrxnehg",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "870wpf6zi87cxoeqrqhlbqgpg",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "87chbnhy5fke8c9kcv9s5ekus",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "87nxaklkl2792bg2dubasrhn8",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "87zh6v76e2qi936aoeivfnod0",
+            "date": "2026-11-29Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          }
+        ]
+      },
+      {
+        "date": "2026-12-06Z",
+        "match": [
+          {
+            "id": "88b0djej9uejr5eq9nlwoo1lg",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "88mmeto6ws7bv6ys2ok9ccxsk",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "88y96g5j79u39pdy72if6jc44",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "899teboe6godfwrf7hshk1tzo",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "89ldb64cyvajqwqekq1s60pas",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "89xbfsdapl3wbbjlorhaxhzbo",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "8a8vsrlr6d5gym2m98r1rzrpw",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "8akbdss3jwwkjlg8ihfe1i8t0",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "8avxktdkibtrz3ff239krynf8",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "8b7fzcxho9jrxln5drpsi0aac",
+            "date": "2026-12-06Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          }
+        ]
+      },
+      {
+        "date": "2026-12-13Z",
+        "match": [
+          {
+            "id": "8bj01o3m2w5h9vq26zxkma9sk",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "8bultrfkt0nvwtcslq0w3chec",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "8c68c3s0a9yn2tqwwa4wk2qdw",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "8chr030jyfp2q41d9i44wzl78",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "8ct6z28znod0qcmcwtt2cw55g",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "8d5nqhn5aga7qsrd1zdbk0tn8",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "8dh5buzq1dxf3jvdl3qoli044",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "8dskwn7gakcqy8k519op4pz4k",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "8e420zjntziiu5jbw183rfmdw",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "8efktj2t29kqvjth2b9z6d0k4",
+            "date": "2026-12-13Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          }
+        ]
+      },
+      {
+        "date": "2026-12-20Z",
+        "match": [
+          {
+            "id": "8er2i551wz2o8sg2997wzoopg",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "8f2ndo7yyakubtya5q1a0yuc4",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "8fe2gyctv2a1blaaypy1t24us",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "8fpianwlbsuud7l6iltqyge8k",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "8g137bqmypje9ua5dl29c5qms",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "8gcmyxs0odoopz7pmdwdby3o4",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "8go2ruy63a27ybnvm74pc33tg",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "8gzh5cxduum2agwzcc5q6tjis",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "8hb1zgl3yiseom806javwyal0",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "8hmil9xl18wf7adscnk1h3fh0",
+            "date": "2026-12-20Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          }
+        ]
+      },
+      {
+        "date": "2027-01-03Z",
+        "match": [
+          {
+            "id": "8hy191hlqsxc8182vt6zs1kic",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "8i9iza87fu96vgf4nf0qedfkk",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "8il11qpynwewvb2gh8vgn5ses",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "8iwkvvnkr1g5q659rtevm6yhg",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "8j80ac7d0mg6ise09vyy56zh0",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "8jjhlripyo7zowyotn7yj40es",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "8jv0l9jpje8d5dhwadm9u3j84",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "8k6hydo8ldv6ry1j15ehtke8k",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "8khz2lj52md2spoahdkql4sgk",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "8ktjqdya8mbj61m6p5gmv5ixg",
+            "date": "2027-01-03Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          }
+        ]
+      },
+      {
+        "date": "2027-01-10Z",
+        "match": [
+          {
+            "id": "8l511qx5e3gjna8xgpzw6gxzo",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "8lgi3kd4k1qd4h2v9ptztxs7o",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "8lrtrxfk8lcex676jr2vceql0",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "8m3dj0ozlofbu7l8j26yre8lw",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "8mezskm1zhfwposkg3v517dp0",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "8mqkg1q38jfsnu3o2mayic07o",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "8n23qhmr3mmn83xmr0qxe1ous",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "8ndnj1t5339cgfb0xfzm2kcgk",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "8np6siq2kjjy60jd0vrn5bvo4",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "8o0oazit8hptzyxe4s9vc2j9w",
+            "date": "2027-01-10Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          }
+        ]
+      },
+      {
+        "date": "2027-01-17Z",
+        "match": [
+          {
+            "id": "8ocdlg3pq99wyd74eivlmibro",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "8onzuiiwx8udei3n137szue50",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "8ozit44cfv707siluvq9ujc44",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "8pb2pr3gsmpdevkvjvpmolgd0",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "8pmkgqi8btetqkb1kvo07quxg",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "8py05n855zjhp109uavf4y0b8",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "8qa6hlvsw0kvfixxx6tvdg1sk",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "8qlp4z56b67asbl5le3yyqkus",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "8qx5ok1stiz38y2onnuj8b5sk",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "8r8ox3w4nzstrhkfmnjp0m80k",
+            "date": "2027-01-17Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          }
+        ]
+      },
+      {
+        "date": "2027-01-24Z",
+        "match": [
+          {
+            "id": "8rk6bdmiff0va5glza0fgq4no",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "8rvp2idiaxke6j5wksl4eo0es",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "8s74gcb2qmna4s51wc91bvthw",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "8siqt72mhtjo709g3k57633f8",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "8su6h33cqnyf5s1ghc5y1wdn8",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "8t5nq1fm1w9nktbxfuapz29zo",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "8th9ydm0gnnxdxs84omyzoqac",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "8tspvd5j6xppjsudbehal99n8",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "8u4c00tuismt23svcmfq5zv9w",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "8ufwlt4pnwrojt50s4cc1knpw",
+            "date": "2027-01-24Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          }
+        ]
+      },
+      {
+        "date": "2027-01-31Z",
+        "match": [
+          {
+            "id": "8urf77z99ve75zi2yq5vguyhg",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "8v31inynoarw371ml6kuu2pzo",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "8vehwfc8yrdmgz0ahcggu2bro",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "8vpwvucwgtwo4i3lltyuikvf8",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "8w1fslt4phbkjp1e6qbkscvf8",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "8wdii1uxz173sg5sy08upaas4",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "8woxs1ye5sq3i84xk1wf795as",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "8x0f3me3qwyx3dodzupmahbf8",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "8xbt6wb2yfb1xh024dk9d39xw",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "8xnaoit2tvuaaioc7ou1w2zv8",
+            "date": "2027-01-31Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          }
+        ]
+      },
+      {
+        "date": "2027-02-07Z",
+        "match": [
+          {
+            "id": "8xyrmltu6a7jt95fwjp9l6az8",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "8yaa3x0xb3jke5ntx8irqpa8k",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "8yluqhpei1vpp4uowt2qrjbx0",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "8yxhd2tn3ixzbg299bqz7c1lg",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "8z97v6nm7j5sckq1518i7l72s",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "8zksncr8lur22lwp4z6gvxkpg",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "8zwgt0aershxs6kffs1s8ox78",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "907v4yshlg9hljct0s64h8mqc",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "90jgc1ikn6gfk99ko3nxktb84",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "90v3dghf1ka5p46ek51kt4sgk",
+            "date": "2027-02-07Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          }
+        ]
+      },
+      {
+        "date": "2027-02-14Z",
+        "match": [
+          {
+            "id": "916maceycecxzggmjkrgy21hw",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "91i5rvig52rjckfj2szdv12j8",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "91tokphz6gdhqn6o707yympsk",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "925aejrxa4s00a6uf3hwtsems",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "92hd8hk5s9qtfmtk1epqg2sr8",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "92t2e2r1bxm93d092nv35nwno",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "934inx3ah1mgh9v5tsr8jl34k",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "93g3aezwti4e2416pigrxplhw",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "93rjau2wibbkshw9qryl8vhg4",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "9435pi4xfmqv6bc1jjr4jruhg",
+            "date": "2027-02-14Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          }
+        ]
+      },
+      {
+        "date": "2027-02-21Z",
+        "match": [
+          {
+            "id": "94emiowxq30nbvkbckwljsm50",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "94q822le7933ef13hneign95g",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "951ov4oewk3a67dhqb4hbgt1w",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "95d5ix2rdd0bzdfrvj17vs2dw",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "95oit2piwip1vciro0e2sb8yc",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "96072dw21ii9t8ihz3dugql90",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "96brcv308o2q4b22557ng7fh0",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "96nbpdgn3ihaw4wlwncg8e1as",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "96yu2g3ln2nijd5017o2owil0",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "97ac5tnyi4a3q9iwzhlo85ces",
+            "date": "2027-02-21Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          }
+        ]
+      },
+      {
+        "date": "2027-02-28Z",
+        "match": [
+          {
+            "id": "97ltfrfb8wp018hwumj2idbmc",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "97xg29k0gxbces56xgaj1ej9w",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "988x5vnf84axnoo5uhtzbekgk",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "98kzr3kgyc8300lh1be23ff9w",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "98wlac4ksftinj3hacbsayx3o",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "99814b9zyfj7zbpk4t4u0tkpg",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "99jixcxus43ccwfykfpwqykgk",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "99v310jmqxky5b5s68p49mgic",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "9a6mttwbdq54mjrhbkqgyhkwk",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "9ai69movdqgqwtzaixysbj0us",
+            "date": "2027-02-28Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          }
+        ]
+      },
+      {
+        "date": "2027-03-07Z",
+        "match": [
+          {
+            "id": "9atlrojitswb8vm393xk3lfro",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "9b53wtwl68tu4zj8o3b555lp0",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "9bgni1puksbbbjje0rz7s2g44",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "9bs718rsdk632lbg3ogz6dgd0",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "9c3xo3ihdhenj8pttc1pwc1ec",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "9cfggmm9ju9gjdx2nxywr5i50",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "9cr6gj6z60lhnph4rxqy1u6ms",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "9d2n8pwug0yhdgej6twrumz9w",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "9dea2rvioltuwobrrmis76r6c",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "9dpt4718wr7vzzwfqxzlzupzo",
+            "date": "2027-03-07Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          }
+        ]
+      },
+      {
+        "date": "2027-03-14Z",
+        "match": [
+          {
+            "id": "9e1fuf5swejdaqtnm8l9x5jbo",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "9eczbqkrqh8g1bcebegws5ul0",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "9eoybuvsvy45jjkqx7jbznkes",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "9f0l242rieg6ff77logpb87bo",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "9fc3slzv12guyt3guu2wdbwgk",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "9fnq5buqo5hy4msjbuh7s9zx0",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "9fz6l59qq5cn1o7zgsx6p785w",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "9gas7sawvz2xoktor76p82904",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "9gmbzosoeqryhe88xx7iwiv4k",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "9gxxup3u9rz3odnv3jansfj10",
+            "date": "2027-03-14Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          }
+        ]
+      },
+      {
+        "date": "2027-03-21Z",
+        "match": [
+          {
+            "id": "9h9exhjjtd56093fhhsp8uiok",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "9hl0kncobrxu698n1ds8ciej8",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "9hwh1frereorxz9praw52ds7o",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "9i7zszg3i7fx26sfpa0pk5638",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "9ijissctxy7fwkvjflqf3wvf8",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "9iv0xhi49cb3h3qkj462xbqxg",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "9j6k3nkkdepvzy1ucdq4fp5as",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "9ji0x3ivb6x5efif4bo9g2dqs",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "9jtitj0qvpt07iq63te3nd0d0",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "9k51fhhyy3wqfasj7970ro104",
+            "date": "2027-03-21Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          }
+        ]
+      },
+      {
+        "date": "2027-04-04Z",
+        "match": [
+          {
+            "id": "9kgk59dy7icxuas0oivlr42s4",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "9kspozc87fzt7cfgeyyr5m2ac",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "9l4amvzcg7b7rgkpbbuw6rx1w",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "9lft5rpz5qg2ga92abwscrg2c",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "9lrl1aexd829zcyphljztx990",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "9m36ljvwblzc56xds3qqcwkyc",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "9mekg7k9pjiuowqa8c1fc6ec4",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "9mpymsjeteci8digsv6e98ges",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "9n1ceocxphoan2h9e91giyyok",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "9ncu318vwv8qrdvjma6qby61g",
+            "date": "2027-04-04Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          }
+        ]
+      },
+      {
+        "date": "2027-04-11Z",
+        "match": [
+          {
+            "id": "9noalc2cnlrfgro3o5vm9qgb8",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "9nzrqo1c5jmkr8v9le9zjk55g",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "9ob8katfy34iprm7k2b1ho8ic",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "9oms3mcot1n6byqp1i5yr4hsk",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "9oya59efcgl2xeu2i31mgdrtg",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "9p9pt3ppdm65r6ahl6jn3rcb8",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "9pl5hvyb5lmxuhnag2dw5t8no",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "9pwlvsvm51x3ojnmjxydf7x1w",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "9q820qc2nc0p5encxqxr9wnx0",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "9qjkvf3ujkdihgi0scj3sl5as",
+            "date": "2027-04-11Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          }
+        ]
+      },
+      {
+        "date": "2027-04-18Z",
+        "match": [
+          {
+            "id": "9qvpy5buhr57hf9btg6cgndw4",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "9r76r8h9tv5xucayva80pqrdg",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "9riph17z740zbug8zw5yteo0k",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "9ru74e1se1on0cjntsblf5wd0",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "9s5ol0x0azihytzyumqfb1kpg",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "9sh5gen3h2wjk24cmny3n95as",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "9ssl4eaeo9kcbh2zrn2n9ztp0",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "9t41kisu48rw52lsc0wcpr76c",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "9tfi5tdcudtj4n828nfhp3h1w",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "9tqz2pxjdi6qos6tobcttbvo4",
+            "date": "2027-04-18Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          }
+        ]
+      },
+      {
+        "date": "2027-04-21Z",
+        "match": [
+          {
+            "id": "9u2de75fjb3vlf7u4o7jfgh78",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "9udusw16oz58ujgvzlahpfuok",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "9upbiub7em60i8q1amxq7o3dg",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "9v0sf6tcfdulfiwlhsr02ruok",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "9vcda69l09vjwypihfkzf1afo",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "9vnx7z28lfkuirnry4b6zsf10",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "9vze9a5mgpzpi413tajymkbo4",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "9wat5ubw3hv3ruq0t8pxos26s",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "9wmdq2xxrqlz851zxrnio45qs",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "9wyh5dhvz29nte79k36al01sk",
+            "date": "2027-04-21Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          }
+        ]
+      },
+      {
+        "date": "2027-05-02Z",
+        "match": [
+          {
+            "id": "9x9yebes8ddh76eu6x6dy20pg",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "9xleym4uh1419k9ov8s808aac",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "9xwy0kx95lz9yhjnre8fhwyz8",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "9y8h19mi2klew64nn5myntd04",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "9yk094xhci2mwphrz3uwbuivo",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "9yvgvtusdhfk01m04tqj82dqs",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          },
+          {
+            "id": "9z6zu91s39oxajti3karp4e8k",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "9zikfto49s4a5pphozv3iqgwk",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "9zu738g22v02p20gklkqs4844",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          },
+          {
+            "id": "a05rputzhi5w51iwuung1dzis",
+            "date": "2027-05-02Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          }
+        ]
+      },
+      {
+        "date": "2027-05-09Z",
+        "match": [
+          {
+            "id": "a0h53qglsajqy7vufsuic6rro",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "a0so0x9vy5domhpyotvspw7bo",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "a143oz9oxwoa2smjlzq3f8hlg",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "a1fqubwx2iwnre9h4ka83saac",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "a1r96gmjv97652lhhc9m5mfpw",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "a22v7nhb2tclz3icp06icfwgk",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "a2eamp5jhk1szp8j8r6ciuec4",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "a2prw74h97u90c8b43ai510k4",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "a31stugt4gs31k495x89qmcd0",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "a3d6ia3th55cbunrf98tgllw4",
+            "date": "2027-05-09Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          }
+        ]
+      },
+      {
+        "date": "2027-05-16Z",
+        "match": [
+          {
+            "id": "a3om9as9thych7otdzlnt826s",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "a403ysupodwlgdcqw7ariqdqs",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "a4bmw6x5qx8mpxk4nmjnealn8",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "a4n90s1ar8x80q18qtpzmdmok",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "a4yv85nbuamo0eyt6dize5uz8",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "a5ae70uf26473vozaqystb76c",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "a5lw0hvbt23cqjbpei8fndmhg",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "a5xdhytlziy5nayba3tcwy9sk",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "a68qk0zq1owms021nscaay68k",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "a6k5bfj9g85cx0qdn5xidoxsk",
+            "date": "2027-05-16Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          }
+        ]
+      },
+      {
+        "date": "2027-05-23Z",
+        "match": [
+          {
+            "id": "a6vk3c013i1mimsf8ozdx0phw",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "4dtdjgnpdq9uw4sdutti0vaar",
+            "awayContestantId": "3kq9cckrnlogidldtdie2fkbl"
+          },
+          {
+            "id": "a775nsq5ykgs9r4d1ldpxutjo",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "4ku8o6uf87yd8iecdalipo6wd",
+            "awayContestantId": "3czravw89omgc9o4s0w3l1bg5"
+          },
+          {
+            "id": "a7ikubd0g5ezrdficksq7qn10",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "6f27yvbqcngegwsg2ozxxdj4",
+            "awayContestantId": "63f5h8t5e9qm1fqmvfkb23ghh"
+          },
+          {
+            "id": "a7txktglfzh9z51snqiizc36c",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "1r541mega6d838hi0p44sv0h2",
+            "awayContestantId": "c8llrezkm3b3op4afrou6b487"
+          },
+          {
+            "id": "a85hmrm5pzaqr86bl0ri2a904",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "agh9ifb2mw3ivjusgedj7c3fe",
+            "awayContestantId": "7012hpp3p5vg4fzyn3h0yvf09"
+          },
+          {
+            "id": "a8gzunzcgf15purs7ibcp5v6c",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "bzkwzatvwahmbzok1ymm5vqa1",
+            "awayContestantId": "4grc9qgcvusllap8h5j6gc5h5"
+          },
+          {
+            "id": "a8shf5yrs2160kgswv4komadw",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "3budh3j9xivsid3ptm8ptpy4k",
+            "awayContestantId": "ah8dala7suqqkj04n2l8xz4zd"
+          },
+          {
+            "id": "a94jn0qhss4xn04qlg1hnlkic",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "10eyb18v5puw4ez03ocaug09m",
+            "awayContestantId": "1n1j0wsl763lq7ee1k0c11c02"
+          },
+          {
+            "id": "a9g1u0gfy5lwfu2if5n5k4n4k",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "ba5e91hjacvma2sjvixn00pjo",
+            "awayContestantId": "4yg9ttzw0m51048doksv8uq5r"
+          },
+          {
+            "id": "a9rju82zjx7zcdyotguly8il0",
+            "date": "2027-05-23Z",
+            "time": "",
+            "homeContestantId": "74mcjsm72vr3l9pw2i4qfjchj",
+            "awayContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj"
+          }
+        ]
+      },
+      {
+        "date": "2027-05-30Z",
+        "match": [
+          {
+            "id": "aa2wnf9k73nrz1e8vm5lsnqj8",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "3czravw89omgc9o4s0w3l1bg5",
+            "awayContestantId": "3budh3j9xivsid3ptm8ptpy4k"
+          },
+          {
+            "id": "aaefybe038ohuwabvhjhwiplg",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "ah8dala7suqqkj04n2l8xz4zd",
+            "awayContestantId": "4ku8o6uf87yd8iecdalipo6wd"
+          },
+          {
+            "id": "aapwdy6vtfu7qiyuzjyw5r1n8",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "4yg9ttzw0m51048doksv8uq5r",
+            "awayContestantId": "bzkwzatvwahmbzok1ymm5vqa1"
+          },
+          {
+            "id": "ab1iataajbs7vhhzvkesgqjo4",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "c8llrezkm3b3op4afrou6b487",
+            "awayContestantId": "4dtdjgnpdq9uw4sdutti0vaar"
+          },
+          {
+            "id": "abd1gvq5p1xylommxmv186jv8",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "1n1j0wsl763lq7ee1k0c11c02",
+            "awayContestantId": "agh9ifb2mw3ivjusgedj7c3fe"
+          },
+          {
+            "id": "abomedn9lhngglhwnd9mzkv84",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "4grc9qgcvusllap8h5j6gc5h5",
+            "awayContestantId": "6f27yvbqcngegwsg2ozxxdj4"
+          },
+          {
+            "id": "ac02xt7uxtcizkh7nrdo9sc9g",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "7012hpp3p5vg4fzyn3h0yvf09",
+            "awayContestantId": "10eyb18v5puw4ez03ocaug09m"
+          },
+          {
+            "id": "acbmrkpjuee48ziqqptlndr84",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "2l0ldgiwsgb8d6y3z0sfgjzyj",
+            "awayContestantId": "ba5e91hjacvma2sjvixn00pjo"
+          },
+          {
+            "id": "acn902fny5gtie0pn9upxfa50",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "3kq9cckrnlogidldtdie2fkbl",
+            "awayContestantId": "1r541mega6d838hi0p44sv0h2"
+          },
+          {
+            "id": "acyrb7au9eg8yvlarqwt23f9w",
+            "date": "2027-05-30Z",
+            "time": "",
+            "homeContestantId": "63f5h8t5e9qm1fqmvfkb23ghh",
+            "awayContestantId": "74mcjsm72vr3l9pw2i4qfjchj"
+          }
+        ]
+      }
+    ]
+  },
+  "source_url": "https://theanalyst.com/competition/la-liga/fixtures"
+}

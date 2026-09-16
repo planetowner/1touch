@@ -91,6 +91,18 @@ def _payload() -> dict:
 
 
 class FixtureDetailsLoaderTests(unittest.TestCase):
+    def test_andy_substitution_uses_the_verified_gomez_identity(self):
+        payload = _payload()
+        for index, lineup in enumerate(payload["lineups"]):
+            lineup["id"] = index
+        payload["events"] = [{**payload["events"][0], "id": 157312532, "type_id": 18,
+                              "participant_id": 7058, "player_id": 37591542,
+                              "related_player_id": 37757628, "minute": 86}]
+        client = SportmonksClient.__new__(SportmonksClient)
+        corrected = client.correct_fixture_details(payload)
+        event = _normalize_fixture_details(corrected, 19720965)["events"][0]
+        self.assertEqual(event[4:7], (37591542, 37718055, 86))
+
     def test_normalizes_only_verified_fixture_detail_fields(self) -> None:
         rows = _normalize_fixture_details(
             _payload(),
@@ -321,6 +333,31 @@ class FixtureDetailsStorageTests(unittest.TestCase):
     def tearDown(self):
         self.mock_connection.stop()
         self.connection.close()
+
+    def test_gent_wrong_identity_is_corrected_in_goal_lineup_and_player_stats(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks-gent-vergara.json").read_text(encoding="utf-8"))
+        payload = sample["fixture"]
+        fid = payload["id"]
+        self.connection.execute("INSERT INTO fixtures VALUES (?)", (fid,))
+        self.connection.execute("INSERT INTO teams VALUES (2402)")
+        self.connection.execute("INSERT INTO positions VALUES (151)")
+        self.connection.execute("INSERT INTO players(player_id) VALUES (37317388)")
+        rows = _normalize_fixture_details(payload, fid)
+        selected = {key: rows[key] for key in ("event_types", "events", "lineups", "player_stats")}
+        details.replace_fixture_detail_rows(fid, selected, payload["lineups"])
+        before = self.connection.execute("SELECT lineup_type_id,jersey_number,minutes_played,rating FROM fixture_lineups").fetchall()
+        client = SportmonksClient.__new__(SportmonksClient)
+        with patch.object(client, "_get", return_value={"data": sample["profile"]}):
+            corrected = client.correct_fixture_details(deepcopy(payload))
+        rows = _normalize_fixture_details(corrected, fid)
+        selected = {key: rows[key] for key in ("event_types", "events", "lineups", "player_stats")}
+        self.assertEqual(details.replace_fixture_detail_rows(fid, selected, corrected["lineups"]), 1)
+        self.assertEqual(details.replace_fixture_detail_rows(fid, selected, corrected["lineups"]), 0)
+        self.assertEqual(self.connection.execute("SELECT lineup_type_id,jersey_number,minutes_played,rating FROM fixture_lineups").fetchall(), before)
+        self.assertEqual(self.connection.execute("SELECT player_id FROM fixture_lineups").fetchall(), [(37765373,)])
+        self.assertEqual(self.connection.execute("SELECT player_id,minute,related_player_id FROM fixture_events").fetchall(), [(37765373,39,37317388)])
+        self.assertEqual(self.connection.execute("SELECT DISTINCT player_id FROM fixture_player_stats").fetchall(), [(37765373,)])
+        self.assertEqual(self.connection.execute("SELECT display_name FROM players WHERE player_id=37737079").fetchone(), ("José Mendieta",))
 
     def test_new_player_and_details_store_once_then_existing_profile_is_preserved(self):
         payload = _payload()

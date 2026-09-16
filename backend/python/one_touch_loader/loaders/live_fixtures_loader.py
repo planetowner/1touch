@@ -40,12 +40,16 @@ def normalize_clock(fixture: dict, sampled_at: datetime) -> tuple:
     )
 
 
-def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
-                       sampled_at: datetime) -> None:
+def validate_fixture_participants(fixture: dict, home_team_id: int, away_team_id: int) -> None:
     # ID는 기존 fixtures가 기준이에요. 같은 이름의 다른 팀으로 추정하지 않아요.
     participants = {p["meta"]["location"]: p["id"] for p in fixture["participants"]}
     if participants != {"home": home_team_id, "away": away_team_id}:
         raise ValueError(f"Fixture participants differ: {fixture['id']}")
+
+
+def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
+                       sampled_at: datetime) -> None:
+    validate_fixture_participants(fixture, home_team_id, away_team_id)
     current = _score_pair(fixture, home_team_id, away_team_id, SPORTMONKS_CURRENT_SCORE_TYPE_ID)
     penalties = _score_pair(fixture, home_team_id, away_team_id, SPORTMONKS_PENALTY_SCORE_TYPE_ID)
     rows = _normalize_fixture_details(fixture, fixture["id"])

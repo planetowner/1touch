@@ -1,0 +1,2784 @@
+[
+  {
+    "raw": {
+      "all_players_selected": true,
+      "competition_id": "6by3h89i2eykc341oz7lv1ddd",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-7hugqbtot3c8fmxtfqld9l15g Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "798.4049663999999",
+            "257.7755904",
+            "819.9552",
+            "258.30760319999996"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-117",
+          "player_name": "H. Bolin",
+          "position": [
+            "798.4049663999999",
+            "257.7755904"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "11‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7hugqbtot3c8fmxtfqld9l15g Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "798.4049663999999",
+            "257.7755904",
+            "819.9552",
+            "258.30760319999996"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-117",
+          "player_name": "H. Bolin",
+          "position": [
+            "798.4049663999999",
+            "257.7755904"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "11‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-15iz2a4rfw054ti9gb5q95w16 Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "event_type": "Clearances",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-265",
+          "player_name": "L. Pinckert",
+          "position": [
+            "706.6169344",
+            "281.7161664"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "29‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-15iz2a4rfw054ti9gb5q95w16 Opta-Away  Opta-Highlight Opta-JS-Tip",
+          "coords": [
+            "706.6169344",
+            "281.7161664",
+            "382.5652736",
+            "242.87923199999997"
+          ],
+          "event_type": "Assists",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-265",
+          "player_name": "L. Pinckert",
+          "position": [
+            "706.6169344",
+            "281.7161664"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "29‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-1wnemsdjzdpyhmt2liu05mtxw Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "133.540352",
+            "249.79539839999995",
+            "21.7984",
+            "291.2923968"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-267",
+          "player_name": "D. Mokwa",
+          "position": [
+            "133.540352",
+            "249.79539839999995"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "29‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-1wnemsdjzdpyhmt2liu05mtxw Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "133.540352",
+            "249.79539839999995",
+            "21.7984",
+            "291.2923968"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-267",
+          "player_name": "D. Mokwa",
+          "position": [
+            "133.540352",
+            "249.79539839999995"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "29‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-aukfviev3jufl7zdophhttyqc Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "49.73388800000001",
+            "365.7741888",
+            "29.779968",
+            "308.31680639999996"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-297",
+          "player_name": "F. Onyeka",
+          "position": [
+            "49.73388800000001",
+            "365.7741888"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "35‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7hugqbtot3c8fmxtfqld9l15g Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "712.204032",
+            "264.6917568",
+            "819.9552",
+            "288.63233280000003"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-407",
+          "player_name": "H. Bolin",
+          "position": [
+            "712.204032",
+            "264.6917568"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "44‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7hugqbtot3c8fmxtfqld9l15g Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "712.204032",
+            "264.6917568",
+            "819.9552",
+            "288.63233280000003"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-407",
+          "player_name": "H. Bolin",
+          "position": [
+            "712.204032",
+            "264.6917568"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "44‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-aopmwx748flafzpj58w2afwlx Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "796.8086528",
+            "331.1933568",
+            "819.1570432000001",
+            "291.8244096"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-471",
+          "player_name": "T. Kleindienst",
+          "position": [
+            "796.8086528",
+            "331.1933568"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "49‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3vc4cabxofay0sdv7e1ym663u Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "97.623296",
+            "379.60652160000006",
+            "27.385497600000022",
+            "303.52869119999997"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-453",
+          "player_name": "L. Günther",
+          "position": [
+            "97.623296",
+            "379.60652160000006"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "53‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-43eq31reskwn9veb3vickralm Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "736.9468927999999",
+            "299.27258880000005",
+            "819.9552",
+            "288.10032"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-539",
+          "player_name": "J. Scally",
+          "position": [
+            "736.9468927999999",
+            "299.27258880000005"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "56‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-43eq31reskwn9veb3vickralm Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "736.9468927999999",
+            "299.27258880000005",
+            "819.9552",
+            "288.10032"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-539",
+          "player_name": "J. Scally",
+          "position": [
+            "736.9468927999999",
+            "299.27258880000005"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "56‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3abavmbqh6vt0xgcx6zo4mgru Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "138.32929279999996",
+            "242.87923199999997",
+            "65.697024",
+            "263.0957184"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-500",
+          "player_name": "L. Petkov",
+          "position": [
+            "138.32929279999996",
+            "242.87923199999997"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "60‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3abavmbqh6vt0xgcx6zo4mgru Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "131.94403839999998",
+            "104.55590399999998",
+            "31.376281600000024",
+            "257.7755904"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-556",
+          "player_name": "L. Petkov",
+          "position": [
+            "131.94403839999998",
+            "104.55590399999998"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "66‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjmg2vxyhtkdpkbo0veujl1jo Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "28.981811200000045",
+            "288.10032",
+            "21.7984",
+            "295.54849920000004"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-558",
+          "player_name": "M. Krattenmacher",
+          "position": [
+            "28.981811200000045",
+            "288.10032"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "66‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjmg2vxyhtkdpkbo0veujl1jo Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "28.981811200000045",
+            "288.10032",
+            "21.7984",
+            "295.54849920000004"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-558",
+          "player_name": "M. Krattenmacher",
+          "position": [
+            "28.981811200000045",
+            "288.10032"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "66‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-2t9287y4uvo424uhvwjpn1jx0 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "760.8915967999999",
+            "202.4462592",
+            "811.1754752",
+            "252.45546239999996"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-615",
+          "player_name": "W. Mohya",
+          "position": [
+            "760.8915967999999",
+            "202.4462592"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "68‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7dcl84ahs5b2kjzaipai5ikno Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "183.82423039999998",
+            "395.03489279999997",
+            "21.7984",
+            "295.01648639999996"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-657",
+          "player_name": "F. Keidel",
+          "position": [
+            "183.82423039999998",
+            "395.03489279999997"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "80‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7dcl84ahs5b2kjzaipai5ikno Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "183.82423039999998",
+            "395.03489279999997",
+            "21.7984",
+            "295.01648639999996"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-657",
+          "player_name": "F. Keidel",
+          "position": [
+            "183.82423039999998",
+            "395.03489279999997"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "80‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-70tsvrcmklvp4ecdhxlugf8ix Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "793.6160256000001",
+            "276.9280512",
+            "811.973632",
+            "260.4356544"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-go76xxm0xyfgqt1h6tcrtimm-700",
+          "player_name": "K. Itakura",
+          "position": [
+            "793.6160256000001",
+            "276.9280512"
+          ],
+          "team_name": "Borussia VfL Mönchengladbach",
+          "time": "82‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjmg2vxyhtkdpkbo0veujl1jo Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "194.20026879999995",
+            "332.7893952",
+            "44.14679039999998",
+            "283.3122048"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-693",
+          "player_name": "M. Krattenmacher",
+          "position": [
+            "194.20026879999995",
+            "332.7893952"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "86‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjmg2vxyhtkdpkbo0veujl1jo Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "128.75141120000006",
+            "262.03169280000003",
+            "36.96337920000005",
+            "273.73597440000003"
+          ],
+          "event_type": "Shots on target",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-721",
+          "player_name": "M. Krattenmacher",
+          "position": [
+            "128.75141120000006",
+            "262.03169280000003"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "90‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjmg2vxyhtkdpkbo0veujl1jo Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "138.32929279999996",
+            "297.14453760000004",
+            "21.7984",
+            "258.839616"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-740",
+          "player_name": "M. Krattenmacher",
+          "position": [
+            "138.32929279999996",
+            "297.14453760000004"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "90‎+‎2‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjmg2vxyhtkdpkbo0veujl1jo Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "138.32929279999996",
+            "297.14453760000004",
+            "21.7984",
+            "258.839616"
+          ],
+          "event_type": "Goals",
+          "id": "57l3lp0mp62veh2xaacp24kd0-cig09m7g3wx983agnqgovggoh-740",
+          "player_name": "M. Krattenmacher",
+          "position": [
+            "138.32929279999996",
+            "297.14453760000004"
+          ],
+          "team_name": "SV 07 Elversberg",
+          "time": "90‎+‎2‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Saturday 5 September 2026",
+      "match_id": "57l3lp0mp62veh2xaacp24kd0",
+      "orientation": "horizontal",
+      "season_id": "8h5xijv2u4mlf5028gso6kw7o",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Successful passes",
+        "Key Passes",
+        "Assists",
+        "Tackles won",
+        "Tackles lost",
+        "Defensive blocks",
+        "Interceptions",
+        "Clearances",
+        "Recoveries"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=6by3h89i2eykc341oz7lv1ddd&seasonId=8h5xijv2u4mlf5028gso6kw7o&matchId=57l3lp0mp62veh2xaacp24kd0",
+      "summary": {
+        "Goals": {
+          "away": 4,
+          "home": 3
+        },
+        "Shots on target": {
+          "away": 10,
+          "home": 6
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "cig09m7g3wx983agnqgovggoh",
+          "name": "SV 07 Elversberg",
+          "players": [
+            {
+              "external_player_id": "96n3i00owwpi9l0p5rjduybu2",
+              "jersey_number": 20,
+              "name": "N. Kristof"
+            },
+            {
+              "external_player_id": "3vc4cabxofay0sdv7e1ym663u",
+              "jersey_number": 21,
+              "name": "L. Günther"
+            },
+            {
+              "external_player_id": "bhshqnrzmdjbqhtr8rcy7tca2",
+              "jersey_number": 31,
+              "name": "M. Rohr"
+            },
+            {
+              "external_player_id": "15iz2a4rfw054ti9gb5q95w16",
+              "jersey_number": 19,
+              "name": "L. Pinckert"
+            },
+            {
+              "external_player_id": "ci4pwzieoc94uj3i1371bsatx",
+              "jersey_number": 30,
+              "name": "J. Gyamerah"
+            },
+            {
+              "external_player_id": "d49iskrm33kt3vlxy4q85m0ru",
+              "jersey_number": 8,
+              "name": "Ł. Poręba"
+            },
+            {
+              "external_player_id": "7dcl84ahs5b2kjzaipai5ikno",
+              "jersey_number": 43,
+              "name": "F. Keidel"
+            },
+            {
+              "external_player_id": "3inva12wuqo70czviv1b0us5w",
+              "jersey_number": 39,
+              "name": "C. Campbell"
+            },
+            {
+              "external_player_id": "aukfviev3jufl7zdophhttyqc",
+              "jersey_number": 40,
+              "name": "F. Onyeka"
+            },
+            {
+              "external_player_id": "3abavmbqh6vt0xgcx6zo4mgru",
+              "jersey_number": 25,
+              "name": "L. Petkov"
+            },
+            {
+              "external_player_id": "1wnemsdjzdpyhmt2liu05mtxw",
+              "jersey_number": 42,
+              "name": "D. Mokwa"
+            },
+            {
+              "external_player_id": "7lnq98x95vcb4kp6wpfgwd3v9",
+              "jersey_number": 6,
+              "name": "A. Condé"
+            },
+            {
+              "external_player_id": "ae2b9dyd8ww1gwud1pia4po4q",
+              "jersey_number": 9,
+              "name": "N. Futkeu"
+            },
+            {
+              "external_player_id": "1mml4inucvyomv1dcog3c1pt5",
+              "jersey_number": 2,
+              "name": "N. Mickelson"
+            },
+            {
+              "external_player_id": "bjmg2vxyhtkdpkbo0veujl1jo",
+              "jersey_number": 7,
+              "name": "M. Krattenmacher"
+            },
+            {
+              "external_player_id": "c31an8dixyuvn7k4zwcsf21d6",
+              "jersey_number": 26,
+              "name": "L. Sirch"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "go76xxm0xyfgqt1h6tcrtimm",
+          "name": "Borussia VfL Mönchengladbach",
+          "players": [
+            {
+              "external_player_id": "1ljgis575ujto4361ed15w0r9",
+              "jersey_number": 1,
+              "name": "M. Nicolas"
+            },
+            {
+              "external_player_id": "b5ovydnz8s9gf0nkwofutr7ys",
+              "jersey_number": 26,
+              "name": "L. Ullrich"
+            },
+            {
+              "external_player_id": "7xc0qldxpidl07vij2wgu1sk5",
+              "jersey_number": 4,
+              "name": "K. Diks"
+            },
+            {
+              "external_player_id": "70tsvrcmklvp4ecdhxlugf8ix",
+              "jersey_number": 6,
+              "name": "K. Itakura"
+            },
+            {
+              "external_player_id": "43eq31reskwn9veb3vickralm",
+              "jersey_number": 29,
+              "name": "J. Scally"
+            },
+            {
+              "external_player_id": "8h8r0si3jx6q41d13qknbhdlg",
+              "jersey_number": 34,
+              "name": "M. Nguefack"
+            },
+            {
+              "external_player_id": "7zbu2y3nlj4dyhe1qdj15g3xl",
+              "jersey_number": 16,
+              "name": "P. Sander"
+            },
+            {
+              "external_player_id": "2t9287y4uvo424uhvwjpn1jx0",
+              "jersey_number": 36,
+              "name": "W. Mohya"
+            },
+            {
+              "external_player_id": "7hugqbtot3c8fmxtfqld9l15g",
+              "jersey_number": 38,
+              "name": "H. Bolin"
+            },
+            {
+              "external_player_id": "e0hk5aepnpo7cne006zwahfx1",
+              "jersey_number": 9,
+              "name": "F. Honorat"
+            },
+            {
+              "external_player_id": "aopmwx748flafzpj58w2afwlx",
+              "jersey_number": 11,
+              "name": "T. Kleindienst"
+            },
+            {
+              "external_player_id": "5nbk2xeyrs7pxdye1jtqudhpl",
+              "jersey_number": 25,
+              "name": "R. Hack"
+            },
+            {
+              "external_player_id": "ajvmc6utyh9e2sfsflawsyjca",
+              "jersey_number": 20,
+              "name": "D. Herold"
+            },
+            {
+              "external_player_id": "12aiyv96y3vl94r227c1xnld5",
+              "jersey_number": 19,
+              "name": "N. Kühn"
+            },
+            {
+              "external_player_id": "d9rcjjn5b5tbl2aw9h56ys2l0",
+              "jersey_number": 5,
+              "name": "J. Leszczyński"
+            },
+            {
+              "external_player_id": "hxqybxg5578sgx0gx5qb834l",
+              "jersey_number": 3,
+              "name": "I. Lidberg"
+            }
+          ]
+        }
+      },
+      "dataset": "analysis",
+      "checked_at_utc": "2026-09-14T16:05:18.505013+00:00"
+    },
+    "expected_count": 1,
+    "source_event_count": 798
+  },
+  {
+    "raw": {
+      "all_players_selected": true,
+      "competition_id": "dm5ka0os1e3dxcp3vh05kmp33",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-996i59930r3kd4xk48x9fsp2h Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "733.7542656",
+            "291.8244096",
+            "815.1662592000001",
+            "279.5881152"
+          ],
+          "event_type": "Shots on target",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-70nn27vgkt6l48lvv5e66q7ww-158",
+          "player_name": "M. Talbi",
+          "position": [
+            "733.7542656",
+            "291.8244096"
+          ],
+          "team_name": "FC Lorient",
+          "time": "17‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-vrzye4jqrafujmjw3wakjpxw Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "143.91639039999995",
+            "267.88383360000006",
+            "27.385497600000022",
+            "286.5042816"
+          ],
+          "event_type": "Shots on target",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-4aghw9tyi8ba3ju1ne83gmf9w-289",
+          "player_name": "T. Jørgensen",
+          "position": [
+            "143.91639039999995",
+            "267.88383360000006"
+          ],
+          "team_name": "Toulouse FC",
+          "time": "29‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-37j0zfw9xb9gu2yim0vgjlyqc Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "728.9653248",
+            "328.53329279999997",
+            "819.9552",
+            "295.01648639999996"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-70nn27vgkt6l48lvv5e66q7ww-338",
+          "player_name": "I. Baldé",
+          "position": [
+            "728.9653248",
+            "328.53329279999997"
+          ],
+          "team_name": "FC Lorient",
+          "time": "37‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-37j0zfw9xb9gu2yim0vgjlyqc Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "728.9653248",
+            "328.53329279999997",
+            "819.9552",
+            "295.01648639999996"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-70nn27vgkt6l48lvv5e66q7ww-338",
+          "player_name": "I. Baldé",
+          "position": [
+            "728.9653248",
+            "328.53329279999997"
+          ],
+          "team_name": "FC Lorient",
+          "time": "37‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-avcz4wr4wem1s9vz3y5hl5fdg Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "event_type": "Tackles won",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-70nn27vgkt6l48lvv5e66q7ww-343",
+          "player_name": "P. Katseris",
+          "position": [
+            "722.5800704",
+            "358.8580224"
+          ],
+          "team_name": "FC Lorient",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-avcz4wr4wem1s9vz3y5hl5fdg Opta-Home  Opta-Highlight Opta-JS-Tip",
+          "coords": [
+            "722.5800704",
+            "358.8580224",
+            "722.5800704",
+            "358.8580224"
+          ],
+          "event_type": "Assists",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-70nn27vgkt6l48lvv5e66q7ww-343",
+          "player_name": "P. Katseris",
+          "position": [
+            "722.5800704",
+            "358.8580224"
+          ],
+          "team_name": "FC Lorient",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-jw8lb54ua2iufebwnu8k68t0 Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "702.6261504",
+            "300.3366144",
+            "819.9552",
+            "298.2085632"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-70nn27vgkt6l48lvv5e66q7ww-345",
+          "player_name": "N. Mbamba",
+          "position": [
+            "702.6261504",
+            "300.3366144"
+          ],
+          "team_name": "FC Lorient",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-jw8lb54ua2iufebwnu8k68t0 Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "702.6261504",
+            "300.3366144",
+            "819.9552",
+            "298.2085632"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-70nn27vgkt6l48lvv5e66q7ww-345",
+          "player_name": "N. Mbamba",
+          "position": [
+            "702.6261504",
+            "300.3366144"
+          ],
+          "team_name": "FC Lorient",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3o4tq8qooplx2izq9rucgu7d Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "56.917299200000045",
+            "288.63233280000003",
+            "21.7984",
+            "284.3762304"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-4aghw9tyi8ba3ju1ne83gmf9w-550",
+          "player_name": "C. Tengstedt",
+          "position": [
+            "56.917299200000045",
+            "288.63233280000003"
+          ],
+          "team_name": "Toulouse FC",
+          "time": "48‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3o4tq8qooplx2izq9rucgu7d Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "56.917299200000045",
+            "288.63233280000003",
+            "21.7984",
+            "284.3762304"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-4aghw9tyi8ba3ju1ne83gmf9w-550",
+          "player_name": "C. Tengstedt",
+          "position": [
+            "56.917299200000045",
+            "288.63233280000003"
+          ],
+          "team_name": "Toulouse FC",
+          "time": "48‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-vrzye4jqrafujmjw3wakjpxw Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "134.33850879999994",
+            "275.8640256",
+            "21.7984",
+            "252.45546239999996"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-4aghw9tyi8ba3ju1ne83gmf9w-767",
+          "player_name": "T. Jørgensen",
+          "position": [
+            "134.33850879999994",
+            "275.8640256"
+          ],
+          "team_name": "Toulouse FC",
+          "time": "68‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-vrzye4jqrafujmjw3wakjpxw Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "134.33850879999994",
+            "275.8640256",
+            "21.7984",
+            "252.45546239999996"
+          ],
+          "event_type": "Goals",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-4aghw9tyi8ba3ju1ne83gmf9w-767",
+          "player_name": "T. Jørgensen",
+          "position": [
+            "134.33850879999994",
+            "275.8640256"
+          ],
+          "team_name": "Toulouse FC",
+          "time": "68‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-vrzye4jqrafujmjw3wakjpxw Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "89.641728",
+            "250.32741119999997",
+            "31.376281600000024",
+            "263.0957184"
+          ],
+          "event_type": "Shots on target",
+          "id": "9llwy7dx95i26vr2a3tjf7vh0-4aghw9tyi8ba3ju1ne83gmf9w-891",
+          "player_name": "T. Jørgensen",
+          "position": [
+            "89.641728",
+            "250.32741119999997"
+          ],
+          "team_name": "Toulouse FC",
+          "time": "81‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Saturday 12 September 2026",
+      "match_id": "9llwy7dx95i26vr2a3tjf7vh0",
+      "orientation": "horizontal",
+      "season_id": "bqnc4ccgnrp6pb3bktqet0yz8",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Successful passes",
+        "Key Passes",
+        "Assists",
+        "Tackles won",
+        "Tackles lost",
+        "Defensive blocks",
+        "Interceptions",
+        "Clearances",
+        "Recoveries"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=dm5ka0os1e3dxcp3vh05kmp33&seasonId=bqnc4ccgnrp6pb3bktqet0yz8&matchId=9llwy7dx95i26vr2a3tjf7vh0",
+      "summary": {
+        "Goals": {
+          "away": 2,
+          "home": 2
+        },
+        "Shots on target": {
+          "away": 4,
+          "home": 3
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "4aghw9tyi8ba3ju1ne83gmf9w",
+          "name": "Toulouse FC",
+          "players": [
+            {
+              "external_player_id": "bfqysdqwqe7ssomxy6tf9fpxw",
+              "jersey_number": 60,
+              "name": "M. Niflore"
+            },
+            {
+              "external_player_id": "bdz03qovxerzrv12lgljae1p0",
+              "jersey_number": 12,
+              "name": "C. Tapé"
+            },
+            {
+              "external_player_id": "5enjhxrx2jrjqtgb9wwq0baax",
+              "jersey_number": 3,
+              "name": "M. McKenzie"
+            },
+            {
+              "external_player_id": "8n143iu92sawgz5v8al0gyz2s",
+              "jersey_number": 5,
+              "name": "S. Koumbassa"
+            },
+            {
+              "external_player_id": "4aooo9gmqd70fj330jxb3s4r8",
+              "jersey_number": 22,
+              "name": "R. Messali"
+            },
+            {
+              "external_player_id": "d95i3fwjrk3ti4co645mde76x",
+              "jersey_number": 31,
+              "name": "N. Schmidt"
+            },
+            {
+              "external_player_id": "6vjoq2kgaq2igxoh8cvq0ieax",
+              "jersey_number": 23,
+              "name": "C. Cásseres"
+            },
+            {
+              "external_player_id": "hqovjub7s0u4vxreo51loqok",
+              "jersey_number": 37,
+              "name": "I. Azizi"
+            },
+            {
+              "external_player_id": "vrzye4jqrafujmjw3wakjpxw",
+              "jersey_number": 8,
+              "name": "T. Jørgensen"
+            },
+            {
+              "external_player_id": "1cc4xhk65qvo9h3t7glirqm8k",
+              "jersey_number": 9,
+              "name": "S. Hidalgo"
+            },
+            {
+              "external_player_id": "3nu7bqtarr9yo5abdj3len04q",
+              "jersey_number": 13,
+              "name": "J. Russell-Rowe"
+            },
+            {
+              "external_player_id": "8kc4ody94t1mu45ozb7fayoes",
+              "jersey_number": 94,
+              "name": "I. Diallo"
+            },
+            {
+              "external_player_id": "c7uvrj36f6lhfurysy774ku8k",
+              "jersey_number": 11,
+              "name": "S. Oppong"
+            },
+            {
+              "external_player_id": "7uw88nwfgndw5rwjdf3ok89hw",
+              "jersey_number": 14,
+              "name": "N. Sigur"
+            },
+            {
+              "external_player_id": "3o4tq8qooplx2izq9rucgu7d",
+              "jersey_number": 20,
+              "name": "C. Tengstedt"
+            },
+            {
+              "external_player_id": "9mf9yl7utp4pv5zczlz7t3o5w",
+              "jersey_number": 6,
+              "name": "A. Vossah"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "70nn27vgkt6l48lvv5e66q7ww",
+          "name": "FC Lorient",
+          "players": [
+            {
+              "external_player_id": "6790uxmc1zs4emxtqf7vl6imt",
+              "jersey_number": 38,
+              "name": "Y. Mvogo"
+            },
+            {
+              "external_player_id": "csye3q50ciculdiggvcefx8x6",
+              "jersey_number": 32,
+              "name": "N. Adjei"
+            },
+            {
+              "external_player_id": "996i59930r3kd4xk48x9fsp2h",
+              "jersey_number": 3,
+              "name": "M. Talbi"
+            },
+            {
+              "external_player_id": "dqrtbk6lsscer7078jro6z3hm",
+              "jersey_number": 20,
+              "name": "D. Sylla"
+            },
+            {
+              "external_player_id": "5c2zuz7f53hvqn5be1k2nddsk",
+              "jersey_number": 43,
+              "name": "A. Kouassi"
+            },
+            {
+              "external_player_id": "jw8lb54ua2iufebwnu8k68t0",
+              "jersey_number": 72,
+              "name": "N. Mbamba"
+            },
+            {
+              "external_player_id": "ax69g2ukn2tsaz71n0waf58q2",
+              "jersey_number": 8,
+              "name": "N. Cadiou"
+            },
+            {
+              "external_player_id": "avcz4wr4wem1s9vz3y5hl5fdg",
+              "jersey_number": 77,
+              "name": "P. Katseris"
+            },
+            {
+              "external_player_id": "60no437awq8i5th7nlffh3dn9",
+              "jersey_number": 17,
+              "name": "J. Makengo"
+            },
+            {
+              "external_player_id": "3rzjr8wdopfb1xj0d7sq0vrpw",
+              "jersey_number": 33,
+              "name": "G. Bernardeau"
+            },
+            {
+              "external_player_id": "37j0zfw9xb9gu2yim0vgjlyqc",
+              "jersey_number": 18,
+              "name": "I. Baldé"
+            },
+            {
+              "external_player_id": "5wsz3usdkj01snq28pzpiwb2s",
+              "jersey_number": 62,
+              "name": "A. Avom"
+            },
+            {
+              "external_player_id": "1cmhl6aqp9yml3peme245rb4k",
+              "jersey_number": 42,
+              "name": "M. Koné"
+            },
+            {
+              "external_player_id": "2zvbw080n4yro1phgv39ri3qi",
+              "jersey_number": 11,
+              "name": "T. Le Bris"
+            },
+            {
+              "external_player_id": "73lwz4he5erpp25zi8crjvztg",
+              "jersey_number": 10,
+              "name": "I. Jensen"
+            }
+          ]
+        }
+      },
+      "dataset": "analysis",
+      "checked_at_utc": "2026-09-14T16:12:46.018970+00:00"
+    },
+    "expected_count": 1,
+    "source_event_count": 1164
+  },
+  {
+    "raw": {
+      "all_players_selected": true,
+      "competition_id": "c7b8o53flg36wbuevfzy3lb10",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-f4qcgzveslklfi8601tep77x1 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "742.5339904",
+            "201.3822336",
+            "804.7902207999999",
+            "254.5835136"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-7",
+          "player_name": "J. Brandt",
+          "position": [
+            "742.5339904",
+            "201.3822336"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-47l204bkq2qqjhtazusr0019m Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "758.4971264",
+            "286.5042816",
+            "815.964416",
+            "278.5240896"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-10",
+          "player_name": "Y. Baas",
+          "position": [
+            "758.4971264",
+            "286.5042816"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-47l204bkq2qqjhtazusr0019m Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "790.4233984",
+            "277.9920768",
+            "819.9552",
+            "285.44025600000003"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-11",
+          "player_name": "Y. Baas",
+          "position": [
+            "790.4233984",
+            "277.9920768"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-47l204bkq2qqjhtazusr0019m Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "790.4233984",
+            "277.9920768",
+            "819.9552",
+            "285.44025600000003"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-11",
+          "player_name": "Y. Baas",
+          "position": [
+            "790.4233984",
+            "277.9920768"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7joybllup4h9oe6zfhcepjy6t Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "697.8372095999999",
+            "358.8580224",
+            "807.982848",
+            "296.08051200000006"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-122",
+          "player_name": "S. Berghuis",
+          "position": [
+            "697.8372095999999",
+            "358.8580224"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "9‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-dyurvoycbhux9rm1mpaaegf10 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "680.27776",
+            "152.437056",
+            "800.7994368",
+            "261.49968"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-137",
+          "player_name": "A. Ouazane",
+          "position": [
+            "680.27776",
+            "152.437056"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "11‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-9w8ka8b5aaxqaqlnit33glkb8 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "89.641728",
+            "313.10492160000007",
+            "27.385497600000022",
+            "276.9280512"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-129",
+          "player_name": "F. Surdez",
+          "position": [
+            "89.641728",
+            "313.10492160000007"
+          ],
+          "team_name": "FC Sion",
+          "time": "16‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7p8wvrgk2aucmmrc30uv7j5lg Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "76.07306239999998",
+            "307.25278080000004",
+            "21.7984",
+            "296.08051200000006"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-161",
+          "player_name": "W. Boteli",
+          "position": [
+            "76.07306239999998",
+            "307.25278080000004"
+          ],
+          "team_name": "FC Sion",
+          "time": "18‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7p8wvrgk2aucmmrc30uv7j5lg Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "76.07306239999998",
+            "307.25278080000004",
+            "21.7984",
+            "296.08051200000006"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-161",
+          "player_name": "W. Boteli",
+          "position": [
+            "76.07306239999998",
+            "307.25278080000004"
+          ],
+          "team_name": "FC Sion",
+          "time": "18‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7joybllup4h9oe6zfhcepjy6t Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "716.9929728",
+            "289.6963584",
+            "812.7717888",
+            "278.5240896"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-255",
+          "player_name": "S. Berghuis",
+          "position": [
+            "716.9929728",
+            "289.6963584"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "23‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7p8wvrgk2aucmmrc30uv7j5lg Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "56.11914239999997",
+            "262.5637056",
+            "21.7984",
+            "276.9280512"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-308",
+          "player_name": "W. Boteli",
+          "position": [
+            "56.11914239999997",
+            "262.5637056"
+          ],
+          "team_name": "FC Sion",
+          "time": "36‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7p8wvrgk2aucmmrc30uv7j5lg Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "56.11914239999997",
+            "262.5637056",
+            "21.7984",
+            "276.9280512"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-308",
+          "player_name": "W. Boteli",
+          "position": [
+            "56.11914239999997",
+            "262.5637056"
+          ],
+          "team_name": "FC Sion",
+          "time": "36‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-baakmd4ndnulbl9npvmq90mvp Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "697.0390527999999",
+            "299.27258880000005",
+            "819.9552",
+            "295.01648639999996"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-384",
+          "player_name": "D. Klaassen",
+          "position": [
+            "697.0390527999999",
+            "299.27258880000005"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-baakmd4ndnulbl9npvmq90mvp Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "697.0390527999999",
+            "299.27258880000005",
+            "819.9552",
+            "295.01648639999996"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-384",
+          "player_name": "D. Klaassen",
+          "position": [
+            "697.0390527999999",
+            "299.27258880000005"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "39‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-boehs62sf23wlas5wb4l5s2y Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "792.0197119999999",
+            "345.0256896",
+            "819.9552",
+            "282.780192"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-422",
+          "player_name": "T. Arokodare",
+          "position": [
+            "792.0197119999999",
+            "345.0256896"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "45‎+‎1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-boehs62sf23wlas5wb4l5s2y Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "792.0197119999999",
+            "345.0256896",
+            "819.9552",
+            "282.780192"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-422",
+          "player_name": "T. Arokodare",
+          "position": [
+            "792.0197119999999",
+            "345.0256896"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "45‎+‎1‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-boehs62sf23wlas5wb4l5s2y Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "790.4233984",
+            "224.7907968",
+            "814.3681024",
+            "259.3716288"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-461",
+          "player_name": "T. Arokodare",
+          "position": [
+            "790.4233984",
+            "224.7907968"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "48‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-boehs62sf23wlas5wb4l5s2y Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "786.4326143999999",
+            "258.839616",
+            "819.9552",
+            "261.49968"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-498",
+          "player_name": "T. Arokodare",
+          "position": [
+            "786.4326143999999",
+            "258.839616"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "51‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-boehs62sf23wlas5wb4l5s2y Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "786.4326143999999",
+            "258.839616",
+            "819.9552",
+            "261.49968"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-498",
+          "player_name": "T. Arokodare",
+          "position": [
+            "786.4326143999999",
+            "258.839616"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "51‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7dkhv2l8y6jq20l1dc2ye17je Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "739.3413632",
+            "299.27258880000005",
+            "819.9552",
+            "278.5240896"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-514",
+          "player_name": "O. Edvardsen",
+          "position": [
+            "739.3413632",
+            "299.27258880000005"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "54‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7dkhv2l8y6jq20l1dc2ye17je Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "739.3413632",
+            "299.27258880000005",
+            "819.9552",
+            "278.5240896"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-514",
+          "player_name": "O. Edvardsen",
+          "position": [
+            "739.3413632",
+            "299.27258880000005"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "54‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7dkhv2l8y6jq20l1dc2ye17je Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "758.4971264",
+            "180.63373439999995",
+            "815.1662592000001",
+            "255.64753919999995"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-669",
+          "player_name": "O. Edvardsen",
+          "position": [
+            "758.4971264",
+            "180.63373439999995"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "70‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-4621v1ktz4h1x23o268m5ociy Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "741.7358336",
+            "330.661344",
+            "776.056576",
+            "300.8686272"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-719",
+          "player_name": "Marcos Leonardo",
+          "position": [
+            "741.7358336",
+            "330.661344"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "75‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-1op4tks39vwt6djhzfesy15w4 Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "event_type": "Tackles won",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-761",
+          "player_name": "F. Sylla",
+          "position": [
+            "454.3993856",
+            "190.7419776"
+          ],
+          "team_name": "FC Sion",
+          "time": "90‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-1op4tks39vwt6djhzfesy15w4 Opta-Away  Opta-Highlight Opta-JS-Tip",
+          "coords": [
+            "454.3993856",
+            "190.7419776",
+            "454.3993856",
+            "190.7419776"
+          ],
+          "event_type": "Assists",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-761",
+          "player_name": "F. Sylla",
+          "position": [
+            "454.3993856",
+            "190.7419776"
+          ],
+          "team_name": "FC Sion",
+          "time": "90‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7p8wvrgk2aucmmrc30uv7j5lg Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "130.34772479999998",
+            "234.89903999999999",
+            "21.7984",
+            "293.95246080000004"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-760",
+          "player_name": "W. Boteli",
+          "position": [
+            "130.34772479999998",
+            "234.89903999999999"
+          ],
+          "team_name": "FC Sion",
+          "time": "90‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-7p8wvrgk2aucmmrc30uv7j5lg Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "130.34772479999998",
+            "234.89903999999999",
+            "21.7984",
+            "293.95246080000004"
+          ],
+          "event_type": "Goals",
+          "id": "3o05qpr2ochc99fv5b3o41btg-b9fc1umgats16gk6wr769wh8a-760",
+          "player_name": "W. Boteli",
+          "position": [
+            "130.34772479999998",
+            "234.89903999999999"
+          ],
+          "team_name": "FC Sion",
+          "time": "90‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-4621v1ktz4h1x23o268m5ociy Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "702.6261504",
+            "266.819808",
+            "768.8731647999999",
+            "270.0118848"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-858",
+          "player_name": "Marcos Leonardo",
+          "position": [
+            "702.6261504",
+            "266.819808"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "90‎+‎2‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-8hgpvnzy2mra3ps209tniq7f8 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "679.4796032",
+            "247.13533439999995",
+            "800.7994368",
+            "273.73597440000003"
+          ],
+          "event_type": "Shots on target",
+          "id": "3o05qpr2ochc99fv5b3o41btg-d0zdg647gvgc95xdtk1vpbkys-866",
+          "player_name": "O. Gloukh",
+          "position": [
+            "679.4796032",
+            "247.13533439999995"
+          ],
+          "team_name": "AFC Ajax",
+          "time": "90‎+‎2‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Thursday 27 August 2026",
+      "match_id": "3o05qpr2ochc99fv5b3o41btg",
+      "orientation": "horizontal",
+      "season_id": "acatl9aedc5l4im3r8l890y6s",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Successful passes",
+        "Key Passes",
+        "Assists",
+        "Tackles won",
+        "Tackles lost",
+        "Defensive blocks",
+        "Interceptions",
+        "Clearances",
+        "Recoveries"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=c7b8o53flg36wbuevfzy3lb10&seasonId=acatl9aedc5l4im3r8l890y6s&matchId=3o05qpr2ochc99fv5b3o41btg",
+      "summary": {
+        "Goals": {
+          "away": 3,
+          "home": 5
+        },
+        "Shots on target": {
+          "away": 4,
+          "home": 15
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "b9fc1umgats16gk6wr769wh8a",
+          "name": "FC Sion",
+          "players": [
+            {
+              "external_player_id": "11opu790oivpq9iauocjs4fs9",
+              "jersey_number": 1,
+              "name": "A. Racioppi"
+            },
+            {
+              "external_player_id": "5pcgx1in5lw632e5o8mr7lroq",
+              "jersey_number": 20,
+              "name": "N. Hefti"
+            },
+            {
+              "external_player_id": "blnu4m2eer1y7vscaosgxjkrt",
+              "jersey_number": 17,
+              "name": "J. Kronig"
+            },
+            {
+              "external_player_id": "a7ehmifoznpz11r08q58yzgx6",
+              "jersey_number": 5,
+              "name": "N. Sow"
+            },
+            {
+              "external_player_id": "8sbi9tqi2omhhzvyuhznyprdh",
+              "jersey_number": 14,
+              "name": "N. Lavanchy"
+            },
+            {
+              "external_player_id": "1kcxghu1hmq6wehwllx1hgr56",
+              "jersey_number": 8,
+              "name": "Baltazar Costa"
+            },
+            {
+              "external_player_id": "4i35r57dz3scccjhz3i59l04p",
+              "jersey_number": 88,
+              "name": "A. Kabacalman"
+            },
+            {
+              "external_player_id": "9w8ka8b5aaxqaqlnit33glkb8",
+              "jersey_number": 19,
+              "name": "F. Surdez"
+            },
+            {
+              "external_player_id": "7p8wvrgk2aucmmrc30uv7j5lg",
+              "jersey_number": 13,
+              "name": "W. Boteli"
+            },
+            {
+              "external_player_id": "ge9iggeojluopt0tr9sl2yy2",
+              "jersey_number": 7,
+              "name": "I. Chouaref"
+            },
+            {
+              "external_player_id": "1ae2q6d1nrcaqjzsuf3ecpm95",
+              "jersey_number": 33,
+              "name": "R. Nivokazi"
+            },
+            {
+              "external_player_id": "30hr440bvtm7enhh6umvfvr4k",
+              "jersey_number": 29,
+              "name": "T. Berdayes"
+            },
+            {
+              "external_player_id": "2b2gvp843rc0o66zjrkvho2qx",
+              "jersey_number": 6,
+              "name": "Marquinhos Cipriano"
+            },
+            {
+              "external_player_id": "4kinfnp5n3u0tzvso9gypxgfe",
+              "jersey_number": 9,
+              "name": "J. Lukembila"
+            },
+            {
+              "external_player_id": "5frvf0owdyg0dtc8ckinrf2p6",
+              "jersey_number": 77,
+              "name": "D. Rrudhani"
+            },
+            {
+              "external_player_id": "1op4tks39vwt6djhzfesy15w4",
+              "jersey_number": 37,
+              "name": "F. Sylla"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "d0zdg647gvgc95xdtk1vpbkys",
+          "name": "AFC Ajax",
+          "players": [
+            {
+              "external_player_id": "2e55g4q93y382cg7h0yk5rtud",
+              "jersey_number": 1,
+              "name": "M. ter Stegen"
+            },
+            {
+              "external_player_id": "1o7se1aziz6fpes5hey7yijft",
+              "jersey_number": 12,
+              "name": "Caio Henrique"
+            },
+            {
+              "external_player_id": "47l204bkq2qqjhtazusr0019m",
+              "jersey_number": 15,
+              "name": "Y. Baas"
+            },
+            {
+              "external_player_id": "2wesmq2wuhnuwh2yhgkuaxqfo",
+              "jersey_number": 30,
+              "name": "A. Bouwman"
+            },
+            {
+              "external_player_id": "9tp35qqu1heburu0g5wa6jv56",
+              "jersey_number": 2,
+              "name": "Lucas Rosa"
+            },
+            {
+              "external_player_id": "f4qcgzveslklfi8601tep77x1",
+              "jersey_number": 8,
+              "name": "J. Brandt"
+            },
+            {
+              "external_player_id": "2zkaf848fjcdhuii8783pkm7e",
+              "jersey_number": 6,
+              "name": "Y. Regeer"
+            },
+            {
+              "external_player_id": "baakmd4ndnulbl9npvmq90mvp",
+              "jersey_number": 18,
+              "name": "D. Klaassen"
+            },
+            {
+              "external_player_id": "dyurvoycbhux9rm1mpaaegf10",
+              "jersey_number": 68,
+              "name": "A. Ouazane"
+            },
+            {
+              "external_player_id": "boehs62sf23wlas5wb4l5s2y",
+              "jersey_number": 99,
+              "name": "T. Arokodare"
+            },
+            {
+              "external_player_id": "7joybllup4h9oe6zfhcepjy6t",
+              "jersey_number": 23,
+              "name": "S. Berghuis"
+            },
+            {
+              "external_player_id": "7dkhv2l8y6jq20l1dc2ye17je",
+              "jersey_number": 20,
+              "name": "O. Edvardsen"
+            },
+            {
+              "external_player_id": "8hgpvnzy2mra3ps209tniq7f8",
+              "jersey_number": 10,
+              "name": "O. Gloukh"
+            },
+            {
+              "external_player_id": "1c4fzmrwmlwaqmqomge14rqc4",
+              "jersey_number": 36,
+              "name": "D. Janse"
+            },
+            {
+              "external_player_id": "brfa9yhy2llgt9l75unddogk",
+              "jersey_number": 24,
+              "name": "J. Mokio"
+            },
+            {
+              "external_player_id": "4621v1ktz4h1x23o268m5ociy",
+              "jersey_number": 38,
+              "name": "Marcos Leonardo"
+            }
+          ]
+        }
+      },
+      "dataset": "analysis",
+      "checked_at_utc": "2026-09-14T20:15:25.374967+00:00"
+    },
+    "expected_count": 1,
+    "source_event_count": 1053
+  },
+  {
+    "raw": {
+      "all_players_selected": true,
+      "competition_id": "c7b8o53flg36wbuevfzy3lb10",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-f23e0mo62rmrrjso771t54jro Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "748.9192447999999",
+            "353.5378944",
+            "807.982848",
+            "290.2283712"
+          ],
+          "event_type": "Shots on target",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-83",
+          "player_name": "C. Kostoulas",
+          "position": [
+            "748.9192447999999",
+            "353.5378944"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "5‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjhjz96omjukrg6tj3mny39t6 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "event_type": "Tackles won",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-238",
+          "player_name": "M. De Cuyper",
+          "position": [
+            "591.6823552000001",
+            "105.6199296"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "22‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjhjz96omjukrg6tj3mny39t6 Opta-Home  Opta-Highlight Opta-JS-Tip",
+          "coords": [
+            "591.6823552000001",
+            "105.6199296",
+            "591.6823552000001",
+            "105.6199296"
+          ],
+          "event_type": "Assists",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-238",
+          "player_name": "M. De Cuyper",
+          "position": [
+            "591.6823552000001",
+            "105.6199296"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "22‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-f23e0mo62rmrrjso771t54jro Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "657.1312128",
+            "189.677952",
+            "819.9552",
+            "288.63233280000003"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-240",
+          "player_name": "C. Kostoulas",
+          "position": [
+            "657.1312128",
+            "189.677952"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "22‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-f23e0mo62rmrrjso771t54jro Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "657.1312128",
+            "189.677952",
+            "819.9552",
+            "288.63233280000003"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-240",
+          "player_name": "C. Kostoulas",
+          "position": [
+            "657.1312128",
+            "189.677952"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "22‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-81qmlg0ttijhkywm55ejdr40k Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "746.5247744",
+            "290.2283712",
+            "805.5883776",
+            "276.9280512"
+          ],
+          "event_type": "Shots on target",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-357",
+          "player_name": "L. Vušković",
+          "position": [
+            "746.5247744",
+            "290.2283712"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "33‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjhjz96omjukrg6tj3mny39t6 Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "758.4971264",
+            "237.02709119999997",
+            "819.9552",
+            "291.8244096"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-360",
+          "player_name": "M. De Cuyper",
+          "position": [
+            "758.4971264",
+            "237.02709119999997"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "33‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-bjhjz96omjukrg6tj3mny39t6 Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "758.4971264",
+            "237.02709119999997",
+            "819.9552",
+            "291.8244096"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-360",
+          "player_name": "M. De Cuyper",
+          "position": [
+            "758.4971264",
+            "237.02709119999997"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "33‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-672cwl9zj2d6lce6jda350vvu Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "721.7819135999999",
+            "334.9174464",
+            "819.9552",
+            "266.2877952"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-422",
+          "player_name": "M. Wieffer",
+          "position": [
+            "721.7819135999999",
+            "334.9174464"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "38‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-672cwl9zj2d6lce6jda350vvu Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "721.7819135999999",
+            "334.9174464",
+            "819.9552",
+            "266.2877952"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-422",
+          "player_name": "M. Wieffer",
+          "position": [
+            "721.7819135999999",
+            "334.9174464"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "38‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-192qpmicfd10d7mutv5y762qy Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "613.2325888",
+            "198.7221696",
+            "805.5883776",
+            "264.159744"
+          ],
+          "event_type": "Shots on target",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-902",
+          "player_name": "Y. Ayari",
+          "position": [
+            "613.2325888",
+            "198.7221696"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "71‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-3k6znit6fd9mbfcnphlwyvj6d Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "638.7736064000001",
+            "396.0989184",
+            "797.6068096",
+            "290.2283712"
+          ],
+          "event_type": "Shots on target",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-942",
+          "player_name": "P. Groß",
+          "position": [
+            "638.7736064000001",
+            "396.0989184"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "74‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-d92v6n4pf20eepvli92lqau39 Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "680.27776",
+            "169.46146560000003",
+            "819.9552",
+            "298.74057600000003"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-1068",
+          "player_name": "O. Boscagli",
+          "position": [
+            "680.27776",
+            "169.46146560000003"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "86‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-d92v6n4pf20eepvli92lqau39 Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "680.27776",
+            "169.46146560000003",
+            "819.9552",
+            "298.74057600000003"
+          ],
+          "event_type": "Goals",
+          "id": "8kuunx9cd5ilcduhtrnfjl3x0-e5p0ehyguld7egzhiedpdnc3w-1068",
+          "player_name": "O. Boscagli",
+          "position": [
+            "680.27776",
+            "169.46146560000003"
+          ],
+          "team_name": "Brighton & Hove Albion FC",
+          "time": "86‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Thursday 27 August 2026",
+      "match_id": "8kuunx9cd5ilcduhtrnfjl3x0",
+      "orientation": "horizontal",
+      "season_id": "acatl9aedc5l4im3r8l890y6s",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Successful passes",
+        "Key Passes",
+        "Assists",
+        "Tackles won",
+        "Tackles lost",
+        "Defensive blocks",
+        "Interceptions",
+        "Clearances",
+        "Recoveries"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=c7b8o53flg36wbuevfzy3lb10&seasonId=acatl9aedc5l4im3r8l890y6s&matchId=8kuunx9cd5ilcduhtrnfjl3x0",
+      "summary": {
+        "Goals": {
+          "away": 0,
+          "home": 4
+        },
+        "Shots on target": {
+          "away": 0,
+          "home": 8
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "80hgdmpkvdrhw1ge9nks2kxvy",
+          "name": "Tromsø IL",
+          "players": [
+            {
+              "external_player_id": "451kwpccebq3457c7jw8toz4l",
+              "jersey_number": 1,
+              "name": "J. Haugaard"
+            },
+            {
+              "external_player_id": "67nybn375tyqdqae4m1yk407o",
+              "jersey_number": 3,
+              "name": "M. Tønnessen"
+            },
+            {
+              "external_player_id": "1gwemllvgcore4shqy79qu82y",
+              "jersey_number": 4,
+              "name": "V. Skjærvik"
+            },
+            {
+              "external_player_id": "9nr6anmon9qq8vpk46m5r57v8",
+              "jersey_number": 30,
+              "name": "I. Vådebu"
+            },
+            {
+              "external_player_id": "817yu81bkan5ga820t5uvx05w",
+              "jersey_number": 29,
+              "name": "A. Warneryd"
+            },
+            {
+              "external_player_id": "98dhgp5o0fuvid2ievyr5h7qi",
+              "jersey_number": 17,
+              "name": "I. Dahlqvist"
+            },
+            {
+              "external_player_id": "bhkfv2vks4vjuy7rme0nmdch6",
+              "jersey_number": 8,
+              "name": "J. Grundt"
+            },
+            {
+              "external_player_id": "1qeetk4waatuxev4mqvbxx87p",
+              "jersey_number": 11,
+              "name": "R. Jenssen"
+            },
+            {
+              "external_player_id": "95t0lc2qqgzxp92n1pr62n816",
+              "jersey_number": 5,
+              "name": "D. Edvardsson"
+            },
+            {
+              "external_player_id": "34lcrlx7ddks5ko8s8opi44k4",
+              "jersey_number": 22,
+              "name": "H. Larsen"
+            },
+            {
+              "external_player_id": "eguth2iido7y17nisod5l6e50",
+              "jersey_number": 10,
+              "name": "T. Nyhammer"
+            },
+            {
+              "external_player_id": "4bhecy0vioxwdpmw64uyek3ro",
+              "jersey_number": 37,
+              "name": "S. Innvær"
+            },
+            {
+              "external_player_id": "5xbrybr5fxvg6br9b6tq4a4fd",
+              "jersey_number": 7,
+              "name": "L. Olden Larsen"
+            },
+            {
+              "external_player_id": "3n6cx9whi75ybd9h6pv7i3mga",
+              "jersey_number": 21,
+              "name": "L. Hien"
+            },
+            {
+              "external_player_id": "dq5uoeu7mw2a3uemr95w32k9g",
+              "jersey_number": 20,
+              "name": "Ieltsin Camões"
+            },
+            {
+              "external_player_id": "4v1zs5vyf4m4bbeop3n2msgve",
+              "jersey_number": 25,
+              "name": "C. Øyvann"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "e5p0ehyguld7egzhiedpdnc3w",
+          "name": "Brighton & Hove Albion FC",
+          "players": [
+            {
+              "external_player_id": "3wwi5vf2l1qbz7e5zdjoy8yga",
+              "jersey_number": 1,
+              "name": "B. Verbruggen"
+            },
+            {
+              "external_player_id": "d92v6n4pf20eepvli92lqau39",
+              "jersey_number": 21,
+              "name": "O. Boscagli"
+            },
+            {
+              "external_player_id": "jagvvzc7329tf2c64mnc251",
+              "jersey_number": 5,
+              "name": "L. Dunk"
+            },
+            {
+              "external_player_id": "81qmlg0ttijhkywm55ejdr40k",
+              "jersey_number": 44,
+              "name": "L. Vušković"
+            },
+            {
+              "external_player_id": "672cwl9zj2d6lce6jda350vvu",
+              "jersey_number": 27,
+              "name": "M. Wieffer"
+            },
+            {
+              "external_player_id": "3k6znit6fd9mbfcnphlwyvj6d",
+              "jersey_number": 13,
+              "name": "P. Groß"
+            },
+            {
+              "external_player_id": "192qpmicfd10d7mutv5y762qy",
+              "jersey_number": 26,
+              "name": "Y. Ayari"
+            },
+            {
+              "external_player_id": "cm7l7qimy4iysm1khmpc7u961",
+              "jersey_number": 33,
+              "name": "M. O'Riley"
+            },
+            {
+              "external_player_id": "bjhjz96omjukrg6tj3mny39t6",
+              "jersey_number": 29,
+              "name": "M. De Cuyper"
+            },
+            {
+              "external_player_id": "f23e0mo62rmrrjso771t54jro",
+              "jersey_number": 19,
+              "name": "C. Kostoulas"
+            },
+            {
+              "external_player_id": "bqbt9eix8zlp6rxzxofl6rjmc",
+              "jersey_number": 25,
+              "name": "D. Gómez"
+            },
+            {
+              "external_player_id": "degqtleco9n5tlt0yz3q5t9ii",
+              "jersey_number": 20,
+              "name": "Costinha"
+            },
+            {
+              "external_player_id": "3r9qvhedhr1o6zm6c5l4alkpg",
+              "jersey_number": 15,
+              "name": "I. Osman"
+            },
+            {
+              "external_player_id": "b275i2lg3anqae5lv9gmrzmqx",
+              "jersey_number": 4,
+              "name": "P. Struijk"
+            },
+            {
+              "external_player_id": "1n4yo2riltjwcxdyu20jiaxhw",
+              "jersey_number": 35,
+              "name": "M. Yalcouyé"
+            },
+            {
+              "external_player_id": "9rc52qb9ok79fbfbesv2amuj8",
+              "jersey_number": 36,
+              "name": "Z. Yohanna"
+            }
+          ]
+        }
+      },
+      "dataset": "analysis",
+      "checked_at_utc": "2026-09-14T20:16:24.397845+00:00"
+    },
+    "expected_count": 1,
+    "source_event_count": 1004
+  },
+  {
+    "raw": {
+      "all_players_selected": true,
+      "competition_id": "c7b8o53flg36wbuevfzy3lb10",
+      "event_layer": {
+        "height": "549.5999999999999",
+        "width": "838.4"
+      },
+      "events": [
+        {
+          "classes": "Opta-Player Opta-Player-a2rjxibqk9d2yatzz2dx04nx0 Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "659.5256832",
+            "385.99067520000006",
+            "802.3957504",
+            "276.9280512"
+          ],
+          "event_type": "Shots on target",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-311",
+          "player_name": "D. Seck",
+          "position": [
+            "659.5256832",
+            "385.99067520000006"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "42‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-buglwgk2hthoyqt1ocghya92i Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "133.540352",
+            "263.0957184",
+            "28.981811200000045",
+            "274.8"
+          ],
+          "event_type": "Shots on target",
+          "id": "846oqdw41sb529yvqqdeod79w-1n1j0wsl763lq7ee1k0c11c02-312",
+          "player_name": "Z. Romero",
+          "position": [
+            "133.540352",
+            "263.0957184"
+          ],
+          "team_name": "Getafe CF",
+          "time": "47‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-d89e52u9ocshqj57lm8k9r40k Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "663.5164672000001",
+            "259.3716288",
+            "808.7810048",
+            "270.0118848"
+          ],
+          "event_type": "Shots on target",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-402",
+          "player_name": "I. Miladinović",
+          "position": [
+            "663.5164672000001",
+            "259.3716288"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "47‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-49qtvqh1a3gvmf5syjg0ocjkk Opta-Home  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "event_type": "Tackles won",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-468",
+          "player_name": "S. Nwulu",
+          "position": [
+            "659.5256832",
+            "179.56970879999997"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "53‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-49qtvqh1a3gvmf5syjg0ocjkk Opta-Home  Opta-Highlight Opta-JS-Tip",
+          "coords": [
+            "659.5256832",
+            "179.56970879999997",
+            "659.5256832",
+            "179.56970879999997"
+          ],
+          "event_type": "Assists",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-468",
+          "player_name": "S. Nwulu",
+          "position": [
+            "659.5256832",
+            "179.56970879999997"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "53‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-115kqbrlwsdlm1zj2sm6pcems Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "695.4427392",
+            "163.60932479999994",
+            "819.9552",
+            "299.27258880000005"
+          ],
+          "event_type": "Goals",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-469",
+          "player_name": "Jeh",
+          "position": [
+            "695.4427392",
+            "163.60932479999994"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "53‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-115kqbrlwsdlm1zj2sm6pcems Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "695.4427392",
+            "163.60932479999994",
+            "819.9552",
+            "299.27258880000005"
+          ],
+          "event_type": "Goals",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-469",
+          "player_name": "Jeh",
+          "position": [
+            "695.4427392",
+            "163.60932479999994"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "53‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-b64p21hmhsqgrn6n04mk00zpx Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "136.73297920000005",
+            "168.39744",
+            "46.54126079999996",
+            "250.859424"
+          ],
+          "event_type": "Shots on target",
+          "id": "846oqdw41sb529yvqqdeod79w-1n1j0wsl763lq7ee1k0c11c02-395",
+          "player_name": "E. Ünal",
+          "position": [
+            "136.73297920000005",
+            "168.39744"
+          ],
+          "team_name": "Getafe CF",
+          "time": "55‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-b64p21hmhsqgrn6n04mk00zpx Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "80.06384639999997",
+            "305.1247296",
+            "21.7984",
+            "270.54389760000004"
+          ],
+          "event_type": "Goals",
+          "id": "846oqdw41sb529yvqqdeod79w-1n1j0wsl763lq7ee1k0c11c02-498",
+          "player_name": "E. Ünal",
+          "position": [
+            "80.06384639999997",
+            "305.1247296"
+          ],
+          "team_name": "Getafe CF",
+          "time": "69‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-b64p21hmhsqgrn6n04mk00zpx Opta-Away  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "80.06384639999997",
+            "305.1247296",
+            "21.7984",
+            "270.54389760000004"
+          ],
+          "event_type": "Goals",
+          "id": "846oqdw41sb529yvqqdeod79w-1n1j0wsl763lq7ee1k0c11c02-498",
+          "player_name": "E. Ünal",
+          "position": [
+            "80.06384639999997",
+            "305.1247296"
+          ],
+          "team_name": "Getafe CF",
+          "time": "69‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-5gvrq1nynyzsrykbfj7tvlses Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "793.6160256000001",
+            "277.9920768",
+            "819.9552",
+            "273.2039616"
+          ],
+          "event_type": "Goals",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-652",
+          "player_name": "E. Kojzek",
+          "position": [
+            "793.6160256000001",
+            "277.9920768"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "76‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-5gvrq1nynyzsrykbfj7tvlses Opta-Home  Opta-Neutral Opta-JS-Tip",
+          "coords": [
+            "793.6160256000001",
+            "277.9920768",
+            "819.9552",
+            "273.2039616"
+          ],
+          "event_type": "Goals",
+          "id": "846oqdw41sb529yvqqdeod79w-c0d1qca7kz0fi0ypx7aw4nusc-652",
+          "player_name": "E. Kojzek",
+          "position": [
+            "793.6160256000001",
+            "277.9920768"
+          ],
+          "team_name": "FK Partizan Beograd",
+          "time": "76‎'‎"
+        },
+        {
+          "classes": "Opta-Player Opta-Player-52e2ogoex674bz6pcwluapdxx Opta-Away  Opta-Positive Opta-JS-Tip",
+          "coords": [
+            "175.04450560000004",
+            "281.7161664",
+            "29.779968",
+            "275.8640256"
+          ],
+          "event_type": "Shots on target",
+          "id": "846oqdw41sb529yvqqdeod79w-1n1j0wsl763lq7ee1k0c11c02-601",
+          "player_name": "Borja Mayoral",
+          "position": [
+            "175.04450560000004",
+            "281.7161664"
+          ],
+          "team_name": "Getafe CF",
+          "time": "84‎'‎"
+        }
+      ],
+      "finished": true,
+      "full_game": true,
+      "match_date": "Thursday 27 August 2026",
+      "match_id": "846oqdw41sb529yvqqdeod79w",
+      "orientation": "horizontal",
+      "season_id": "acatl9aedc5l4im3r8l890y6s",
+      "selected_events": [
+        "Goals",
+        "Shots on target",
+        "Successful passes",
+        "Key Passes",
+        "Assists",
+        "Tackles won",
+        "Tackles lost",
+        "Defensive blocks",
+        "Interceptions",
+        "Clearances",
+        "Recoveries"
+      ],
+      "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=c7b8o53flg36wbuevfzy3lb10&seasonId=acatl9aedc5l4im3r8l890y6s&matchId=846oqdw41sb529yvqqdeod79w",
+      "summary": {
+        "Goals": {
+          "away": 1,
+          "home": 2
+        },
+        "Shots on target": {
+          "away": 4,
+          "home": 4
+        }
+      },
+      "teams": {
+        "away": {
+          "external_team_id": "1n1j0wsl763lq7ee1k0c11c02",
+          "name": "Getafe CF",
+          "players": [
+            {
+              "external_player_id": "vota9gwygxp3wc998tl7ldxx",
+              "jersey_number": 13,
+              "name": "David Soria"
+            },
+            {
+              "external_player_id": "buglwgk2hthoyqt1ocghya92i",
+              "jersey_number": 24,
+              "name": "Z. Romero"
+            },
+            {
+              "external_player_id": "9see13i1f0n1ju4uhs8sijutx",
+              "jersey_number": 2,
+              "name": "D. Dakonam"
+            },
+            {
+              "external_player_id": "7czabe5a0l5icdqb74sa9yru2",
+              "jersey_number": 4,
+              "name": "S. Sazonov"
+            },
+            {
+              "external_player_id": "dfjph36vcwfj5cevut4x3vf11",
+              "jersey_number": 22,
+              "name": "J. Mojica"
+            },
+            {
+              "external_player_id": "6wpnjdlg2p8f19y3gjpz1su6t",
+              "jersey_number": 17,
+              "name": "Kiko Femenía"
+            },
+            {
+              "external_player_id": "3aghufhxo2dygj4og46wivfje",
+              "jersey_number": 16,
+              "name": "Francho Serrano"
+            },
+            {
+              "external_player_id": "95uxoznu15m2xywirv43rcmol",
+              "jersey_number": 23,
+              "name": "O. Mangala"
+            },
+            {
+              "external_player_id": "20ebw399jhbq0i5x2eacrrs6i",
+              "jersey_number": 11,
+              "name": "Ramón Terrats"
+            },
+            {
+              "external_player_id": "c68syh6axbkqmcmvrpumqb8mi",
+              "jersey_number": 10,
+              "name": "M. Satriano"
+            },
+            {
+              "external_player_id": "b64p21hmhsqgrn6n04mk00zpx",
+              "jersey_number": 19,
+              "name": "E. Ünal"
+            },
+            {
+              "external_player_id": "5cti09ebqg7or3stoh5k2mo7o",
+              "jersey_number": 3,
+              "name": "Davinchi"
+            },
+            {
+              "external_player_id": "awifojlj7tvikhdfqftwhco44",
+              "jersey_number": 21,
+              "name": "Andrés García"
+            },
+            {
+              "external_player_id": "1riebanoqbl7brs1bm3lkgxlg",
+              "jersey_number": 6,
+              "name": "Mario Martín"
+            },
+            {
+              "external_player_id": "52e2ogoex674bz6pcwluapdxx",
+              "jersey_number": 9,
+              "name": "Borja Mayoral"
+            }
+          ]
+        },
+        "home": {
+          "external_team_id": "c0d1qca7kz0fi0ypx7aw4nusc",
+          "name": "FK Partizan Beograd",
+          "players": [
+            {
+              "external_player_id": "4su5fvpjbsuaen8v7c1593vu1",
+              "jersey_number": 31,
+              "name": "M. Krunić"
+            },
+            {
+              "external_player_id": "49qtvqh1a3gvmf5syjg0ocjkk",
+              "jersey_number": 20,
+              "name": "S. Nwulu"
+            },
+            {
+              "external_player_id": "9tylqkyhp34z6r7py95pp7or8",
+              "jersey_number": 40,
+              "name": "N. Simić"
+            },
+            {
+              "external_player_id": "dmwbhii4pl75ibp3k49z3dskp",
+              "jersey_number": 44,
+              "name": "S. Milić"
+            },
+            {
+              "external_player_id": "7rpkv4tfdw0numvekzf18d82c",
+              "jersey_number": 30,
+              "name": "M. Roganović"
+            },
+            {
+              "external_player_id": "7t2ltk50ams794o3f6doyn6ga",
+              "jersey_number": 11,
+              "name": "M. Vukotić"
+            },
+            {
+              "external_player_id": "baax58gbtxlbuj3duulpms4q1",
+              "jersey_number": 14,
+              "name": "I. Baba"
+            },
+            {
+              "external_player_id": "d89e52u9ocshqj57lm8k9r40k",
+              "jersey_number": 10,
+              "name": "I. Miladinović"
+            },
+            {
+              "external_player_id": "dfnzcdcgl25zxg2glfzh3mfvt",
+              "jersey_number": 27,
+              "name": "N. Čumić"
+            },
+            {
+              "external_player_id": "115kqbrlwsdlm1zj2sm6pcems",
+              "jersey_number": 89,
+              "name": "Jeh"
+            },
+            {
+              "external_player_id": "a2rjxibqk9d2yatzz2dx04nx0",
+              "jersey_number": 19,
+              "name": "D. Seck"
+            },
+            {
+              "external_player_id": "a7uy4gpcruteqevpmmgf8nd3o",
+              "jersey_number": 17,
+              "name": "M. Aleksić"
+            },
+            {
+              "external_player_id": "5gvrq1nynyzsrykbfj7tvlses",
+              "jersey_number": 9,
+              "name": "E. Kojzek"
+            },
+            {
+              "external_player_id": "18607htxxlicutuplkwzbg26s",
+              "jersey_number": 99,
+              "name": "B. Kostić"
+            },
+            {
+              "external_player_id": "5hkkwzs8wgjj94vfe922nvthw",
+              "jersey_number": 5,
+              "name": "M. Milovanović"
+            },
+            {
+              "external_player_id": "7n4feroz4fvbr2k1s7eil1zbo",
+              "jersey_number": 7,
+              "name": "C. Traorè"
+            }
+          ]
+        }
+      },
+      "dataset": "analysis",
+      "checked_at_utc": "2026-09-14T20:17:24.814846+00:00"
+    },
+    "expected_count": 1,
+    "source_event_count": 793
+  }
+]

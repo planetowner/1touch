@@ -1,0 +1,11 @@
+[Unit]
+Description=1Touch completed match shotmaps and analysis
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+UMask=0077
+# 공개 화면을 순서대로 읽는 작업은 기본 시작 제한 90초보다 오래 걸려요.
+TimeoutStartSec=infinity
+ExecStart=/usr/bin/bash /opt/1touch/backend/deploy/vultr/sync-opta.sh --apply
