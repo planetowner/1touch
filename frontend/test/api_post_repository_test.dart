@@ -264,24 +264,143 @@ void main() {
     }
   });
 
-  test('keeps post creation disabled in the API repository', () {
+  test('creates a text post with Bearer authentication', () async {
     final repository = ApiPostRepository(
-      client: MockClient((_) async => http.Response('{}', 200)),
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/posts');
+        expect(request.headers['Accept'], 'application/json');
+        expect(request.headers['Content-Type'], 'application/json');
+        expect(request.headers['Authorization'], 'Bearer session-token');
+        expect(jsonDecode(request.body), {
+          'team_id': 83,
+          'category': 'analysis',
+          'title': 'Title',
+          'body': 'Body',
+          'attachment_ids': [7, 8],
+        });
+        return http.Response(jsonEncode({'post_id': 101}), 201);
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {'Authorization': 'Bearer session-token'},
+    );
+
+    expect(
+      await repository.createPost(
+        CreatePostInput(
+          teamId: 83,
+          category: PostCategory.analysis,
+          title: '  Title  ',
+          body: 'Body',
+          attachmentIds: const [7, 8],
+        ),
+      ),
+      101,
+    );
+  });
+
+  test('rejects invalid creation values before requesting', () async {
+    var requests = 0;
+    final repository = ApiPostRepository(
+      client: MockClient((_) async {
+        requests++;
+        return http.Response('{}', 201);
+      }),
       apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
       requestHeaders: const {},
     );
 
-    expect(
-      () => repository.createPost(
-        const CreatePostInput(
-          teamId: 83,
-          category: PostCategory.general,
-          title: 'Title',
-          body: 'Body',
-        ),
+    final invalidInputs = [
+      CreatePostInput(
+        teamId: 0,
+        category: PostCategory.general,
+        title: 'Title',
+        body: 'Body',
       ),
-      throwsUnsupportedError,
+      CreatePostInput(
+        teamId: 83,
+        category: PostCategory.general,
+        title: '   ',
+        body: 'Body',
+      ),
+      CreatePostInput(
+        teamId: 83,
+        category: PostCategory.general,
+        title: ''.padRight(201, 'x'),
+        body: 'Body',
+      ),
+      CreatePostInput(
+        teamId: 83,
+        category: PostCategory.general,
+        title: 'Title',
+        body: ''.padRight(10001, 'x'),
+      ),
+      CreatePostInput(
+        teamId: 83,
+        category: PostCategory.general,
+        title: 'Title',
+        body: 'Body',
+        attachmentIds: List.generate(11, (index) => index + 1),
+      ),
+      CreatePostInput(
+        teamId: 83,
+        category: PostCategory.general,
+        title: 'Title',
+        body: 'Body',
+        attachmentIds: const [1, 1],
+      ),
+      CreatePostInput(
+        teamId: 83,
+        category: PostCategory.general,
+        title: 'Title',
+        body: 'Body',
+        attachmentIds: const [0],
+      ),
+    ];
+
+    for (final input in invalidInputs) {
+      await expectLater(
+        repository.createPost(input),
+        throwsA(anyOf(isA<ArgumentError>(), isA<RangeError>())),
+      );
+    }
+    expect(requests, 0);
+  });
+
+  test('rejects failed and malformed creation responses', () async {
+    final responses = [
+      http.Response('Bad request', 400),
+      http.Response(jsonEncode({'post_id': 42}), 200),
+      http.Response(jsonEncode([]), 201),
+      http.Response(jsonEncode({}), 201),
+      http.Response(jsonEncode({'post_id': '42'}), 201),
+      http.Response(jsonEncode({'post_id': 0}), 201),
+    ];
+    var responseIndex = 0;
+    final repository = ApiPostRepository(
+      client: MockClient((_) async => responses[responseIndex++]),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
     );
+    final input = CreatePostInput(
+      teamId: 83,
+      category: PostCategory.general,
+      title: 'Title',
+      body: 'Body',
+    );
+
+    for (var index = 0; index < 2; index++) {
+      await expectLater(
+        repository.createPost(input),
+        throwsA(isA<http.ClientException>()),
+      );
+    }
+    for (var index = 2; index < responses.length; index++) {
+      await expectLater(
+        repository.createPost(input),
+        throwsFormatException,
+      );
+    }
   });
 }
 
