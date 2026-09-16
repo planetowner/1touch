@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
@@ -34,9 +35,10 @@ void main() {
     ),
     (
       name: 'community',
-      screen: const Community(
+      screen: Community(
         teamId: 9,
-        communityRepository: StubCommunityRepository(),
+        postRepository: MockPostRepository(),
+        communityRepository: const StubCommunityRepository(),
       ),
       gradientKey: 'community-brand-gradient',
     ),

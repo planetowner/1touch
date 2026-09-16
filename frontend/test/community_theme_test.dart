@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
@@ -51,9 +52,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: testCase.theme,
-          home: const Community(
+          home: Community(
             teamId: 9,
-            communityRepository: StubCommunityRepository(),
+            postRepository: MockPostRepository(),
+            communityRepository: const StubCommunityRepository(),
           ),
         ),
       );
@@ -147,9 +149,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: const Community(
+        home: Community(
           teamId: 9,
-          communityRepository: StubCommunityRepository(),
+          postRepository: MockPostRepository(),
+          communityRepository: const StubCommunityRepository(),
         ),
       ),
     );
@@ -163,9 +166,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: const Community(
+        home: Community(
           teamId: 8,
-          communityRepository: StubCommunityRepository(),
+          postRepository: MockPostRepository(),
+          communityRepository: const StubCommunityRepository(),
         ),
       ),
     );
@@ -302,6 +306,7 @@ void main() {
         theme: app_style.whitetheme,
         home: PostDetailScreen(
           post: mockPosts.first,
+          postRepository: MockPostRepository(),
           communityRepository: const StubCommunityRepository(),
         ),
       ),
@@ -342,7 +347,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: const AddPost(),
+        home: AddPost(postRepository: MockPostRepository()),
       ),
     );
     await tester.pump();
