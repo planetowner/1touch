@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
+import 'package:onetouch/models/community_rules.dart';
 
 void main() {
   testWidgets('shows the repository-provided follower count', (tester) async {
@@ -101,5 +102,13 @@ class _ScriptedCommunityRepository implements CommunityRepository {
   Future<int> loadFollowerCount({required int teamId}) {
     teamIds.add(teamId);
     return _responses[_requestIndex++]();
+  }
+
+  @override
+  Future<CommunityRules> loadRules({
+    required int teamId,
+    required CommunityLanguage language,
+  }) {
+    throw UnsupportedError('This test double only scripts follower counts.');
   }
 }
