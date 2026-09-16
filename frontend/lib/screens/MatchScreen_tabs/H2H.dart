@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -181,16 +182,24 @@ class _H2HTabState extends State<H2HTab> {
                 final competitionAndRound = roundName?.isNotEmpty ?? false
                     ? '$leagueName · $roundName'
                     : leagueName;
-                return _buildPastMatchCard(
-                  home.shortCode ?? home.name,
-                  away.shortCode ?? away.name,
-                  home.imagePath ?? '',
-                  away.imagePath ?? '',
-                  home.teamId,
-                  away.teamId,
-                  f.homeScore?.toString() ?? '-',
-                  f.awayScore?.toString() ?? '-',
-                  competitionAndRound,
+                return GestureDetector(
+                  key: ValueKey('match-h2h-fixture-${f.fixtureId}'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => context.push(
+                    '/match/${f.fixtureId}?status=${f.status.name}',
+                    extra: f,
+                  ),
+                  child: _buildPastMatchCard(
+                    home.shortCode ?? home.name,
+                    away.shortCode ?? away.name,
+                    home.imagePath ?? '',
+                    away.imagePath ?? '',
+                    home.teamId,
+                    away.teamId,
+                    f.homeScore?.toString() ?? '-',
+                    f.awayScore?.toString() ?? '-',
+                    competitionAndRound,
+                  ),
                 );
               }),
           ],
