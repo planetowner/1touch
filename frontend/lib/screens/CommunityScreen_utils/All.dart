@@ -14,6 +14,7 @@ class All extends StatelessWidget {
     required this.postRepository,
     required this.communityRepository,
     required this.selectedSort,
+    required this.onPostDetailClosed,
     required this.onSortChanged,
   });
 
@@ -22,6 +23,7 @@ class All extends StatelessWidget {
   final PostRepository postRepository;
   final CommunityRepository communityRepository;
   final PostSort selectedSort;
+  final Future<void> Function() onPostDetailClosed;
   final ValueChanged<PostSort> onSortChanged;
 
   @override
@@ -52,8 +54,8 @@ class All extends StatelessWidget {
         Expanded(
           child: CommunityPostList(
             posts: posts,
-            onPostTap: (post) {
-              Navigator.push(
+            onPostTap: (post) async {
+              await Navigator.push<void>(
                 context,
                 MaterialPageRoute(
                   builder: (_) => PostDetailScreen(
@@ -63,6 +65,7 @@ class All extends StatelessWidget {
                   ),
                 ),
               );
+              await onPostDetailClosed();
             },
           ),
         ),
