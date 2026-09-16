@@ -36,6 +36,11 @@ void main() {
 
     expect(find.text(_loadedPost.title), findsOneWidget);
     expect(find.text('@planetowner'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-post-91-like-count')),
+      findsOneWidget,
+    );
+    expect(find.text('1,290'), findsOneWidget);
     expect(repository.calls, 1);
     expect(repository.lastTeamId, 9);
     expect(repository.lastCategory, isNull);
@@ -417,6 +422,8 @@ const _loadedPost = Post(
   title: 'Repository post',
   body: 'Loaded through the repository.',
   createdAt: '2026-08-27 10:00:00',
+  likeCount: 1290,
+  commentCount: 12,
 );
 
 const _stalePost = Post(

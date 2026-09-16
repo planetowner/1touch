@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/community_repository.dart';
+import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -113,16 +114,22 @@ class PostDetailContent extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // TODO: Replace sample counts and actions when their API
-                    // contracts become available.
                     _PostAction(
                       icon: Icons.thumb_up_alt_outlined,
-                      label: '1,290',
+                      label: formatCommunityEngagementCount(post.likeCount),
+                      labelKey: const ValueKey(
+                        'community-detail-like-count',
+                      ),
                       color: colors.onSurface,
                     ),
                     _PostAction(
                       icon: Icons.mode_comment_outlined,
-                      label: '12',
+                      label: formatCommunityEngagementCount(
+                        post.commentCount,
+                      ),
+                      labelKey: const ValueKey(
+                        'community-detail-comment-count',
+                      ),
                       color: colors.onSurface,
                     ),
                     _PostAction(
@@ -201,12 +208,14 @@ class _PostAction extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    this.labelKey,
     this.onTap,
   });
 
   final IconData icon;
   final String label;
   final Color color;
+  final Key? labelKey;
   final VoidCallback? onTap;
 
   @override
@@ -224,7 +233,7 @@ class _PostAction extends StatelessWidget {
               children: [
                 Icon(icon, size: 18, color: color),
                 const SizedBox(width: 4),
-                Text(label, style: Body2.style),
+                Text(label, key: labelKey, style: Body2.style),
               ],
             ),
           ),

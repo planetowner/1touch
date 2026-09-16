@@ -27,6 +27,27 @@ void main() {
         ),
       ),
     );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('community-detail-like-count')),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('community-detail-like-count')),
+          )
+          .data,
+      '1,290',
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('community-detail-comment-count')),
+          )
+          .data,
+      '12',
+    );
     await _openReportDialog(tester);
 
     await tester.tap(find.byKey(const ValueKey('community-report-submit')));
@@ -149,4 +170,6 @@ const _post = Post(
   title: 'Reportable post',
   body: 'Post body',
   createdAt: '2026-09-03 10:00:00',
+  likeCount: 1290,
+  commentCount: 12,
 );
