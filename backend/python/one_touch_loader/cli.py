@@ -139,6 +139,7 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli fixture-details fixture <fixture_id>
   python -m one_touch_loader.cli fixture-details all
   python -m one_touch_loader.cli fixture-details <season_name> <competition_id> [competition_id ...]
+  python -m one_touch_loader.cli fixture-details <season_name> --player-stats-only
 
 9. capology-team-slugs
   python -m one_touch_loader.cli capology-team-slugs all
@@ -522,11 +523,16 @@ def main():
             print(USAGE)
 
     elif cmd == "fixture-details":
+        # 같은 시즌·대회 선택 규칙으로 과거 선수 통계만 보충할 수 있어요.
+        player_stats_only = "--player-stats-only" in sys.argv
+        if player_stats_only:
+            sys.argv.remove("--player-stats-only")
+        options = {"player_stats_only": True} if player_stats_only else {}
         if len(sys.argv) == 3 and sys.argv[2] == "all":
-            result = collect_all_fixture_details()
+            result = collect_all_fixture_details(**options)
             print(f"Fixture details all done: {result}")
         elif len(sys.argv) == 4 and sys.argv[2] == "fixture":
-            result = collect_fixture_details(int(sys.argv[3]))
+            result = collect_fixture_details(int(sys.argv[3]), **options)
             print(f"Fixture details fixture done: {result}")
         elif len(sys.argv) >= 3 and sys.argv[2] not in {"all", "fixture"}:
             season_name = sys.argv[2]
@@ -539,6 +545,7 @@ def main():
             result = collect_fixture_details_for_competition_season(
                 season_name,
                 competition_ids,
+                **options,
             )
             print(
                 "Fixture details season done: "
