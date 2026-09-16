@@ -6,11 +6,10 @@ import 'package:onetouch/data/posts/api/api_post_response.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 
-/// Read-only HTTP implementation of `GET /v1/posts`.
+/// HTTP implementation of the connected Community post operations.
 ///
-/// Community mutations remain disabled until their individual API contracts
-/// are connected and tested. This repository is therefore not the active
-/// provider yet.
+/// Post creation remains disabled until its API contract is connected and
+/// tested. This repository is therefore not the active provider yet.
 class ApiPostRepository implements PostRepository {
   ApiPostRepository({
     required http.Client client,
@@ -103,10 +102,51 @@ class ApiPostRepository implements PostRepository {
   }
 
   @override
-  Future<void> reportPost({required int postId, required String reason}) {
-    throw UnsupportedError(
-      'Post reporting is not connected in the read-only API repository.',
+  Future<void> reportPost({
+    required int postId,
+    required String reason,
+  }) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final normalizedReason = reason.trim();
+    if (normalizedReason.isEmpty ||
+        normalizedReason.length > maxPostReportReasonLength) {
+      throw ArgumentError.value(
+        reason,
+        'reason',
+        'Must contain between 1 and $maxPostReportReasonLength characters',
+      );
+    }
+
+    final uri = _apiBaseUri.resolve('posts/$postId/report');
+    final response = await _client.post(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ..._requestHeaders,
+      },
+      body: jsonEncode({'reason': normalizedReason}),
     );
+    if (response.statusCode != 200) {
+      throw http.ClientException(
+        'Post-report request failed with status ${response.statusCode}.',
+        uri,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic> || decoded['ok'] is! bool) {
+      throw const FormatException(
+        'Expected the post-report response to contain boolean "ok".',
+      );
+    }
+    if (decoded['ok'] != true) {
+      throw const FormatException(
+        'Expected the post-report response to return ok=true.',
+      );
+    }
   }
 
   static void _validateQuery({
