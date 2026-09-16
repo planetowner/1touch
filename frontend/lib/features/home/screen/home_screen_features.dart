@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +9,7 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
