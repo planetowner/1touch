@@ -21,7 +21,7 @@ from one_touch_loader.loaders.standings_loader import (
 from one_touch_loader.loaders.xg_standings_loader import build_xg_standings
 from one_touch_loader.loaders.understat_ids_loader import collect_understat_ids
 from one_touch_loader.loaders.understat_loader import collect_understat
-from one_touch_loader.loaders.highlights_loader import refresh_highlights
+from one_touch_loader.loaders.highlights_loader import run_cli as run_highlights_cli
 from one_touch_loader.loaders.injuries_loader import (
     refresh_current_injuries,
     refresh_team_injuries,
@@ -230,6 +230,9 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli probability train --output <model.json> [--apply]
   python -m one_touch_loader.cli probability forecast --model <model.json> --as-of YYYY-MM-DD --output <folder> [--from-start] [--current] [--apply]
   python -m one_touch_loader.cli probability refresh [--check | --apply]
+
+25. highlights (official latest three matches, viewer-country filtering)
+  python -m one_touch_loader.cli highlights refresh [team_id,team_id] [--check | --apply] [--full-scan]
 """
 
 
@@ -412,21 +415,7 @@ def main():
         print(f"{cmd} done: {command(season_name, competition_ids, check=check)}")
 
     elif cmd == "highlights":
-        team_ids = None
-
-        if len(sys.argv) >= 3 and sys.argv[2] == "refresh":
-            if len(sys.argv) == 4:
-                team_ids = _parse_team_ids_csv(sys.argv[3])
-
-            refresh_highlights(team_ids)
-            print("Highlights refresh done.")
-
-        elif len(sys.argv) == 2:
-            refresh_highlights()
-            print("Highlights refresh done.")
-
-        else:
-            print(USAGE)
+        run_highlights_cli(sys.argv[2:] or ["refresh"])
 
     elif cmd == "injuries":
         if len(sys.argv) < 3:
