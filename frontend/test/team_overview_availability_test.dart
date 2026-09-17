@@ -40,7 +40,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('FIXTURE'), findsOneWidget);
-    expect(find.text('BEST XI'), findsOneWidget);
+    expect(find.text('BEST XI'), findsNothing);
     expect(find.text('STANDING'), findsNothing);
     expect(find.text('INJURY STATUS'), findsNothing);
     expect(find.text('TRANSFERS'), findsNothing);
