@@ -163,6 +163,28 @@ void main() {
     expect(find.byKey(const ValueKey('squad-error')), findsNothing);
   });
 
+  testWidgets('does not request a current roster without a known season',
+      (tester) async {
+    final repository = _FakeTeamContractRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: whitetheme,
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 999999, 'name': 'Historical FC'},
+            contractRepository: repository,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.requestedSeasonIds, isEmpty);
+    expect(find.byKey(const ValueKey('squad-empty')), findsOneWidget);
+    expect(find.byKey(const ValueKey('squad-error')), findsNothing);
+  });
+
   testWidgets('shows the exact captain and vice-captain card treatments',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);

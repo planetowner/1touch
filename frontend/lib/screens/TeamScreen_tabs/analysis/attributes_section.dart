@@ -30,7 +30,7 @@ class _AttributesSectionState extends State<AttributesSection> {
   int _requestId = 0;
   int _comparisonRequestId = 0;
 
-  int get _teamId => widget.team?['id'] as int? ?? 83; // default Barcelona
+  int? get _teamId => widget.team?['id'] as int?;
   TeamAttributeRepository get _repository =>
       widget.repository ?? teamAttributeRepository;
 
@@ -57,14 +57,50 @@ class _AttributesSectionState extends State<AttributesSection> {
     final requestId = ++_requestId;
     final teamId = _teamId;
 
+    if (teamId == null) {
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _resetAttributes();
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
-      final all = await _repository.loadForTeam(teamId);
       List<TeamAttributeSeasonOption> options;
       try {
         options = await _repository.loadOptionsForTeam(teamId);
       } on Object {
-        options = const [];
+        // Keep current-team attributes usable during a temporary options
+        // failure. Historical teams require options because their season ID
+        // cannot be inferred safely by the frontend.
+        final all = await _repository.loadForTeam(teamId);
+        if (!mounted || requestId != _requestId || teamId != _teamId) return;
+        setState(() {
+          _applyAttributes(all, const []);
+          _isLoading = false;
+        });
+        return;
       }
+
+      if (!mounted || requestId != _requestId || teamId != _teamId) return;
+
+      if (options.isEmpty) {
+        setState(() {
+          _applyAttributes(const [], options);
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final baseline = options.firstWhere(
+        (option) => option.isCurrent,
+        orElse: () => options.first,
+      );
+      final all = await _repository.loadForTeam(
+        teamId,
+        seasonId: baseline.seasonId,
+      );
       if (!mounted || requestId != _requestId || teamId != _teamId) return;
 
       setState(() {
@@ -88,6 +124,8 @@ class _AttributesSectionState extends State<AttributesSection> {
   Future<void> _loadComparison(int seasonId) async {
     final requestId = ++_comparisonRequestId;
     final teamId = _teamId;
+
+    if (teamId == null) return;
 
     setState(() {
       _selectedComparisonSeasonId = seasonId;

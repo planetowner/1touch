@@ -52,6 +52,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(queries, hasLength(1));
+    expect(queries.single.seasonId, 200);
     expect(queries.single.compareTeamId, 1);
     expect(queries.single.compareSeasonId, 100);
     expect(find.text('24/25 PREV'), findsOneWidget);
@@ -89,6 +90,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(queries, hasLength(2));
+    expect(queries.last.seasonId, 200);
     expect(queries.last.compareTeamId, 2);
     expect(queries.last.compareSeasonId, 200);
     expect(find.text('25/26 BETA'), findsOneWidget);
@@ -192,6 +194,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(optionLoads, 0);
+    expect(
+      find.byKey(const ValueKey('analysis-current-form-empty')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('analysis-form-filter')), findsNothing);
+  });
+
+  testWidgets('does not use another team as the baseline', (tester) async {
+    var comparisonLoads = 0;
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => [
+        _option(
+          teamId: 2,
+          seasonId: 200,
+          seasonName: '2025/26',
+          teamName: 'Beta FC',
+          shortCode: 'BET',
+        ),
+      ],
+      comparisonLoader: (_) async {
+        comparisonLoads += 1;
+        return null;
+      },
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+
+    expect(comparisonLoads, 0);
     expect(
       find.byKey(const ValueKey('analysis-current-form-empty')),
       findsOneWidget,
