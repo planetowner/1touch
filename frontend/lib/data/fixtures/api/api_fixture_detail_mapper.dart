@@ -64,13 +64,14 @@ FixtureDetail fixtureDetailFromApiResponse(
         )
         .toList(growable: false),
     statistics: response.statistics
+        .where((item) => item.value != null)
         .map(
           (item) => FixtureStatistic(
             teamId: item.teamId,
             statTypeId: item.statTypeId,
             statCode: item.statCode,
             statName: item.statName,
-            value: item.value,
+            value: item.value!,
           ),
         )
         .toList(growable: false),

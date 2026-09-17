@@ -293,7 +293,6 @@ class MatchInfoTab extends StatelessWidget {
           if (!isLive) ...[
             const SizedBox(height: 24),
             MatchHighlights(
-              imageAsset: 'assets/highlight1.png',
               homeTeamId: homeTeam.teamId,
               awayTeamId: awayTeam.teamId,
             ),

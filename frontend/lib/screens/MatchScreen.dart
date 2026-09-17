@@ -75,7 +75,7 @@ class _MatchScreenState extends State<MatchScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _hasLoadError = fixture == null;
+        _hasLoadError = true;
       });
     }
   }
