@@ -228,7 +228,9 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           // '/match/:matchId'), but '/team/:id' belongs to the bottom-nav
           // shell's own navigator — push() would land there invisibly,
           // behind this screen. go() replaces the location so it surfaces.
-          onTap: () => openTeamPage(context, teamId),
+          onTap: isTeamPageSupported(teamId)
+              ? () => openTeamPage(context, teamId)
+              : null,
           child: Image.network(
             logoPath,
             width: 72,
@@ -557,7 +559,9 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Column(
       children: [
         GestureDetector(
-          onTap: () => openTeamPage(context, teamId),
+          onTap: isTeamPageSupported(teamId)
+              ? () => openTeamPage(context, teamId)
+              : null,
           child: Image.network(
             asset,
             width: 48,

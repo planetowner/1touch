@@ -212,6 +212,7 @@ class _TeamScreenState extends State<TeamScreen>
       );
     }
 
+    final displayedTeamId = team!['id'] as int;
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     final teamColor = _teamColor;
     final appBarForeground =
@@ -280,7 +281,9 @@ class _TeamScreenState extends State<TeamScreen>
                   child: Row(
                     children: [
                       GestureDetector(
-                        onTap: () => openTeamPage(context, team!['id'] as int),
+                        onTap: isTeamPageSupported(displayedTeamId)
+                            ? () => openTeamPage(context, displayedTeamId)
+                            : null,
                         child: Image.network(
                           team?['logo'],
                           height: 52,

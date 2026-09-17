@@ -117,14 +117,10 @@ final GoRouter _router = GoRouter(
             routes: [
               GoRoute(
                 path: ':id',
+                redirect: (context, state) =>
+                    redirectUnsupportedTeamPath(state.pathParameters['id']),
                 builder: (context, state) {
-                  // 1. Get the ID string (default to "1")
-                  final String idStr = state.pathParameters['id'] ?? '1';
-
-                  // 2. Parse it to an integer
-                  final int teamId = int.tryParse(idStr) ?? 1;
-
-                  // 3. Pass the integer to TeamScreen
+                  final teamId = int.parse(state.pathParameters['id']!);
                   return TeamScreen(teamId: teamId);
                 },
               ),
