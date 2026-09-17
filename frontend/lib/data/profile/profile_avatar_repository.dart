@@ -5,4 +5,6 @@ abstract interface class ProfileAvatarRepository {
     required Uint8List bytes,
     required String filename,
   });
+
+  Future<void> delete();
 }

@@ -136,6 +136,15 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  Future<void> _openProfileEditor(CurrentUserProfile profile) async {
+    final avatarChanged = await context.push<bool>(
+      '/profile/edit',
+      extra: profile,
+    );
+    if (!mounted || avatarChanged != true) return;
+    await _loadProfile();
+  }
+
   @override
   void dispose() {
     playerRepository.followedPlayerIds.removeListener(_onPreferencesChanged);
@@ -386,7 +395,9 @@ class _ProfileState extends State<Profile> {
 
                   _buildSectionLabel("SETTINGS"),
                   const SizedBox(height: 16),
-                  const SettingsList(),
+                  SettingsList(
+                    onPersonalInfo: () => _openProfileEditor(profile),
+                  ),
                   const SizedBox(height: 48),
                 ]),
               ),
@@ -406,9 +417,7 @@ class _ProfileState extends State<Profile> {
       child: Column(
         children: [
           GestureDetector(
-            onTap: () {
-              context.push('/profile/edit');
-            },
+            onTap: () => _openProfileEditor(profile),
             child: CircleAvatar(
               radius: 54,
               backgroundColor: appColors.subtleBackground,
@@ -657,7 +666,12 @@ class _ProfileState extends State<Profile> {
 }
 
 class SettingsList extends StatefulWidget {
-  const SettingsList({super.key});
+  const SettingsList({
+    super.key,
+    required this.onPersonalInfo,
+  });
+
+  final VoidCallback onPersonalInfo;
 
   @override
   State<SettingsList> createState() => _SettingsListState();
@@ -690,9 +704,7 @@ class _SettingsListState extends State<SettingsList> {
         _settingItem(
           icon: Icons.badge_outlined,
           title: 'Personal Info',
-          onTap: () {
-            context.push('/profile/edit');
-          },
+          onTap: widget.onPersonalInfo,
         ),
         _divider(),
         _settingItem(
