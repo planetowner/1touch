@@ -125,13 +125,14 @@ class _TeamScreenState extends State<TeamScreen>
 
   Map<String, dynamic> _teamMap(TeamOverview overview) {
     final leagueName = team_providers.teamCompetitionContextResolver
-            .resolve(overview.id)
-            ?.competitionName ??
-        'League';
+        .resolve(overview.id)
+        ?.competitionName;
     final positionValue = overview.standing?['position'];
-    final position = positionValue is int
-        ? '$leagueName ${ordinal(positionValue)}'
-        : leagueName;
+    final position = leagueName == null
+        ? ''
+        : positionValue is int
+            ? '$leagueName ${ordinal(positionValue)}'
+            : leagueName;
 
     return {
       'id': overview.id,
@@ -303,29 +304,31 @@ class _TeamScreenState extends State<TeamScreen>
                               overflow: TextOverflow
                                   .ellipsis, // Now this will work correctly
                             ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    team!['position'] as String,
-                                    style: Body2.style
-                                        .copyWith(color: appBarForeground),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                            if ((team!['position'] as String).isNotEmpty)
+                              Row(
+                                key: const ValueKey('team-context-label'),
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      team!['position'] as String,
+                                      style: Body2.style
+                                          .copyWith(color: appBarForeground),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                                const Icon(Icons.arrow_drop_up,
-                                    size: 16, color: Colors.green),
-                                Text(
-                                  team!['rankChange'] != 0
-                                      ? ' ${team!['rankChange']}'
-                                      : '',
-                                  style: Eyebrow.style
-                                      .copyWith(color: appBarForeground),
-                                ),
-                              ],
-                            ),
+                                  const Icon(Icons.arrow_drop_up,
+                                      size: 16, color: Colors.green),
+                                  Text(
+                                    team!['rankChange'] != 0
+                                        ? ' ${team!['rankChange']}'
+                                        : '',
+                                    style: Eyebrow.style
+                                        .copyWith(color: appBarForeground),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                       )

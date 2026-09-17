@@ -358,7 +358,13 @@ class _SquadTabState extends State<SquadTab> {
     final teamId = widget.team?['id'] as int?;
     final teamName = widget.team?['name'] as String?;
     final seasonId = _selectedSeasonId;
-    final validTeam = teamId != null && teamName != null && teamName.isNotEmpty;
+    // The API requires an explicit season for teams without a current Big 5
+    // context. Until the backend exposes team-season options, only request a
+    // roster when the frontend has a verified membership season.
+    final validTeam = teamId != null &&
+        teamName != null &&
+        teamName.isNotEmpty &&
+        seasonId != null;
     final cached = validTeam
         ? _repository.cachedForTeam(teamId, seasonId: seasonId)
         : null;
@@ -369,9 +375,7 @@ class _SquadTabState extends State<SquadTab> {
           : _presentPlayers(cached.players, teamName!, DateTime.now());
       _rosterIsCurrent = cached?.isCurrent;
       _isLoading = validTeam && cached == null;
-      _loadError = validTeam
-          ? null
-          : StateError('Squad requires a team id and team name.');
+      _loadError = null;
     }
 
     if (updateState) {
