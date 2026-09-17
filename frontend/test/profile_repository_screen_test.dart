@@ -69,6 +69,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('loads a private avatar with authenticated request headers',
+      (tester) async {
+    final repository = _ControlledCurrentUserRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Profile(
+          repository: repository,
+          followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          avatarRequestHeaders: const {
+            'Authorization': 'Bearer test-session',
+          },
+        ),
+      ),
+    );
+
+    repository.calls.single.complete(
+      _profile(avatarUri: Uri.parse('https://api.example/users/1/avatar')),
+    );
+    await tester.pump();
+
+    final image = tester.widget<Image>(
+      find.byKey(const ValueKey('profile-avatar-network')),
+    );
+    final provider = image.image as NetworkImage;
+    expect(provider.url, 'https://api.example/users/1/avatar');
+    expect(
+      provider.headers,
+      containsPair('Authorization', 'Bearer test-session'),
+    );
+  });
+
   testWidgets('opens the selected following team card', (tester) async {
     final router = GoRouter(
       initialLocation: '/profile',
@@ -113,14 +146,17 @@ Future<void> _setScreenSize(WidgetTester tester, Size size) async {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
-CurrentUserProfile _profile({String? email = 'owner@example.com'}) {
+CurrentUserProfile _profile({
+  String? email = 'owner@example.com',
+  Uri? avatarUri,
+}) {
   return CurrentUserProfile(
     userId: 1,
     username: 'planetowner',
     firstName: 'Planet',
     lastName: 'Owner',
     email: email,
-    avatarUri: null,
+    avatarUri: avatarUri,
     favoriteTeamId: 83,
     createdAt: DateTime.utc(2026),
   );

@@ -17,6 +17,7 @@ import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
     as following_teams_provider;
+import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/current_user_profile.dart';
@@ -28,10 +29,12 @@ class Profile extends StatefulWidget {
     super.key,
     this.repository,
     this.followingTeamsRepository,
+    this.avatarRequestHeaders,
   });
 
   final CurrentUserRepository? repository;
   final FollowingTeamsRepository? followingTeamsRepository;
+  final Map<String, String>? avatarRequestHeaders;
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -55,6 +58,12 @@ class _ProfileState extends State<Profile> {
   FollowingTeamsRepository get _followingTeamsRepository =>
       widget.followingTeamsRepository ??
       following_teams_provider.followingTeamsRepository;
+
+  Map<String, String> get _avatarRequestHeaders =>
+      widget.avatarRequestHeaders ??
+      (widget.repository == null
+          ? profile_provider.currentUserMediaRequestHeaders
+          : const {});
 
   @override
   void initState() {
@@ -94,11 +103,15 @@ class _ProfileState extends State<Profile> {
         _followingTeamsRepository.load(),
       ]);
       final profile = results[0] as CurrentUserProfile;
-      final followingTeams = results[1] as List<Team>;
-      if (!followingTeams
-          .any((team) => team.teamId == profile.favoriteTeamId)) {
+      final followingTeams = (results[1] as List<Team>)
+          .where((team) => teamPageEligibility.supports(team.teamId))
+          .toList(growable: false);
+      if (!teamPageEligibility.supports(profile.favoriteTeamId) ||
+          !followingTeams
+              .any((team) => team.teamId == profile.favoriteTeamId)) {
         throw StateError(
-          'Favorite team ${profile.favoriteTeamId} is missing from followed teams.',
+          'Favorite team ${profile.favoriteTeamId} is not an available '
+          'current Big Five team.',
         );
       }
       if (!mounted) return;
@@ -311,8 +324,17 @@ class _ProfileState extends State<Profile> {
                             final favoriteTeam = teamRepository.findById(
                               result.favoriteTeamId,
                             );
+                            final supportedTeams = result.teams
+                                .where((team) =>
+                                    teamPageEligibility.supports(team.teamId))
+                                .toList(growable: false);
+                            if (!supportedTeams.any((team) =>
+                                team.teamId == result.favoriteTeamId)) {
+                              await _loadProfile();
+                              return;
+                            }
                             setState(() {
-                              _followingTeams = result.teams;
+                              _followingTeams = supportedTeams;
                               _favoriteTeamId = result.favoriteTeamId;
                               if (favoriteTeam != null) {
                                 _teamColor = Color(favoriteTeam.primaryColor);
@@ -390,9 +412,31 @@ class _ProfileState extends State<Profile> {
             child: CircleAvatar(
               radius: 54,
               backgroundColor: appColors.subtleBackground,
-              // TODO(api-profile-avatar): Load profile.avatarUri through an
-              // authenticated image boundary when avatar data is available.
-              backgroundImage: const AssetImage('assets/profileAvatar.png'),
+              child: ClipOval(
+                child: profile.avatarUri == null
+                    ? Image.asset(
+                        'assets/profileAvatar.png',
+                        key: const ValueKey('profile-avatar-fallback'),
+                        width: 108,
+                        height: 108,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.network(
+                        profile.avatarUri.toString(),
+                        key: const ValueKey('profile-avatar-network'),
+                        headers: _avatarRequestHeaders,
+                        width: 108,
+                        height: 108,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'assets/profileAvatar.png',
+                          key: const ValueKey('profile-avatar-fallback'),
+                          width: 108,
+                          height: 108,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -488,7 +532,9 @@ class _ProfileState extends State<Profile> {
             child: GestureDetector(
               key: ValueKey('profile-following-team-${team.teamId}'),
               behavior: HitTestBehavior.opaque,
-              onTap: () => openTeamPage(context, team.teamId),
+              onTap: isTeamPageSupported(team.teamId)
+                  ? () => openTeamPage(context, team.teamId)
+                  : null,
               child: Stack(
                 children: [
                   Container(
