@@ -10,7 +10,7 @@ import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository_provider.dart'
     as team_overview_providers;
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/teams/team_color_palette_2627.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
 import 'package:onetouch/features/helper.dart';
@@ -19,7 +19,6 @@ import '../models/team_overview.dart';
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
-  final TeamRepository? teamRepository;
   final TeamAttributeRepository? teamAttributeRepository;
   final TeamOverviewRepository? teamOverviewRepository;
   final XgStandingRepository? xgStandingRepository;
@@ -27,7 +26,6 @@ class TeamScreen extends StatefulWidget {
   TeamScreen({
     super.key,
     required this.teamId,
-    this.teamRepository,
     this.teamAttributeRepository,
     this.teamOverviewRepository,
     this.xgStandingRepository,
@@ -47,12 +45,9 @@ class _TeamScreenState extends State<TeamScreen>
   bool isLoading = true;
   Object? _loadError;
   int _loadRequestId = 0;
-  Color _teamColor = const Color(0xFFD82457);
+  Color? _teamColor;
   int? _requestedStandingCompetitionId;
   int _standingSelectionRequestId = 0;
-
-  TeamRepository get _teamRepository =>
-      widget.teamRepository ?? team_providers.teamRepository;
 
   TeamOverviewRepository get _teamOverviewRepository =>
       widget.teamOverviewRepository ??
@@ -94,8 +89,7 @@ class _TeamScreenState extends State<TeamScreen>
       team = cached == null ? null : _teamMap(cached);
       isLoading = cached == null;
       _loadError = null;
-      final localTeam = _teamRepository.findById(widget.teamId);
-      _teamColor = Color(localTeam?.primaryColor ?? 0xFFD82457);
+      _teamColor = _brandColorForTeam(cached?.name);
     }
 
     if (updateState) {
@@ -114,6 +108,7 @@ class _TeamScreenState extends State<TeamScreen>
       }
       setState(() {
         team = _teamMap(overview);
+        _teamColor = _brandColorForTeam(overview.name);
         isLoading = false;
         _loadError = null;
       });
@@ -154,6 +149,12 @@ class _TeamScreenState extends State<TeamScreen>
       'last_match': overview.lastMatch,
       'teamObj': overview,
     };
+  }
+
+  Color? _brandColorForTeam(String? teamName) {
+    if (teamName == null) return null;
+    final palette = teamColorPaletteForName(teamName);
+    return palette == null ? null : Color(palette.primary);
   }
 
   void _retryOverviewLoad() {
@@ -211,34 +212,37 @@ class _TeamScreenState extends State<TeamScreen>
     }
 
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
-    const appBarForeground = AppPalette.white;
+    final teamColor = _teamColor;
+    final appBarForeground =
+        teamColor == null ? colors.onSurface : AppPalette.white;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: pageBackground,
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: (1 - opacityFactor),
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: const ValueKey('team-brand-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [_teamColor, pageBackground],
-                    stops: const [0.0, 0.6],
+          if (teamColor != null)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: gradientHeight,
+              child: AnimatedOpacity(
+                opacity: (1 - opacityFactor),
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  key: const ValueKey('team-brand-gradient'),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [teamColor, pageBackground],
+                      stops: const [0.0, 0.6],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -255,18 +259,21 @@ class _TeamScreenState extends State<TeamScreen>
                 snap: true,
                 pinned: false,
                 toolbarHeight: 80,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        _teamColor,
-                        _teamColor.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
+                flexibleSpace: teamColor == null
+                    ? null
+                    : Container(
+                        key: const ValueKey('team-app-bar-gradient'),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              teamColor,
+                              teamColor.withValues(alpha: 0),
+                            ],
+                          ),
+                        ),
+                      ),
                 title: Padding(
                   padding: const EdgeInsets.only(left: 8, top: 30),
                   child: Row(
@@ -331,10 +338,10 @@ class _TeamScreenState extends State<TeamScreen>
                     child: IconButton(
                       key: const Key('team-search-button'),
                       onPressed: () => context.push('/search'),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.search,
                         size: 32,
-                        color: AppPalette.white,
+                        color: appBarForeground,
                       ),
                     ),
                   ),

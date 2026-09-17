@@ -230,6 +230,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('team without a registered palette renders no brand gradients',
+      (tester) async {
+    final overview = testTeamOverview(teamId: 33, name: 'Norwich City');
+    final repository = TestTeamOverviewRepository(initial: {33: overview});
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: TeamScreen(
+          teamId: 33,
+          teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: repository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+    final context = tester.element(find.byType(Scaffold));
+    final expectedForeground = Theme.of(context).colorScheme.onSurface;
+    final searchIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const Key('team-search-button')),
+        matching: find.byType(Icon),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('team-brand-gradient')), findsNothing);
+    expect(find.byKey(const ValueKey('team-app-bar-gradient')), findsNothing);
+    expect(appBar.foregroundColor, expectedForeground);
+    expect(searchIcon.color, expectedForeground);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Team tabs use black foregrounds in light mode', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
