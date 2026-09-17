@@ -49,6 +49,8 @@ class _TeamScreenState extends State<TeamScreen>
   Object? _loadError;
   int _loadRequestId = 0;
   Color _teamColor = const Color(0xFFD82457);
+  int? _requestedStandingCompetitionId;
+  int _standingSelectionRequestId = 0;
 
   TeamRepository get _teamRepository =>
       widget.teamRepository ?? team_providers.teamRepository;
@@ -158,6 +160,14 @@ class _TeamScreenState extends State<TeamScreen>
 
   void _retryOverviewLoad() {
     _startOverviewLoad();
+  }
+
+  void _openStandingCompetition(int competitionId) {
+    setState(() {
+      _requestedStandingCompetitionId = competitionId;
+      _standingSelectionRequestId++;
+    });
+    _tabController.animateTo(2);
   }
 
   @override
@@ -364,11 +374,16 @@ class _TeamScreenState extends State<TeamScreen>
             body: TabBarView(
               controller: _tabController,
               children: [
-                OverviewTab(team: team),
+                OverviewTab(
+                  team: team,
+                  onStandingCompetitionSelected: _openStandingCompetition,
+                ),
                 MatchesTab(team: team),
                 StandingTab(
                   team: team,
                   xgStandingRepository: widget.xgStandingRepository,
+                  requestedCompetitionId: _requestedStandingCompetitionId,
+                  selectionRequestId: _standingSelectionRequestId,
                 ),
                 SquadTab(team: team),
                 AnalysisTab(

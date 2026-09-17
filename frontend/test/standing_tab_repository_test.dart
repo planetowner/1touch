@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
+import 'package:onetouch/features/knockout_bracket.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
 
@@ -271,11 +272,53 @@ void main() {
     ]);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+      'selects the requested overview competition and shows its tournament',
+      (tester) async {
+    final repository = _successfulStandingRepository();
+
+    await tester.pumpWidget(
+      _app(
+        repository,
+        requestedCompetitionId: 8,
+        selectionRequestId: 0,
+      ),
+    );
+    await tester.pump();
+
+    await tester.pumpWidget(
+      _app(
+        repository,
+        requestedCompetitionId: 2,
+        selectionRequestId: 1,
+      ),
+    );
+    await tester.pump();
+
+    final leagueFilter = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('standing-league-filter')),
+    );
+    final seasonFilter = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('standing-season-filter')),
+    );
+
+    expect(leagueFilter.value, 2);
+    expect(seasonFilter.value, 25580);
+    expect(find.byType(KnockoutBracket), findsOneWidget);
+    expect(
+      repository.requests,
+      contains((competitionId: 2, seasonId: 25580)),
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _app(
   _ControlledStandingRepository repository, {
   _ControlledXgStandingRepository? xgRepository,
+  int? requestedCompetitionId,
+  int selectionRequestId = 0,
 }) {
   return MaterialApp(
     theme: app_style.whitetheme,
@@ -284,6 +327,8 @@ Widget _app(
         team: const {'id': 9},
         regularStandingRepository: repository,
         xgStandingRepository: xgRepository,
+        requestedCompetitionId: requestedCompetitionId,
+        selectionRequestId: selectionRequestId,
       ),
     ),
   );
