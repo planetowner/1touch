@@ -40,7 +40,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Injured Player'), findsOneWidget);
+    final jersey = find.byKey(const ValueKey('injury-jersey-1001'));
+    final playerName = find.text('Injured Player');
     expect(find.text('10'), findsOneWidget);
+    expect(
+      tester.getTopLeft(jersey).dx,
+      lessThan(tester.getTopLeft(playerName).dx),
+    );
     expect(find.text('Hamstring • Sep 1, 2026 – Sep 20, 2026'), findsOneWidget);
     expect(find.text('Knock'), findsOneWidget);
     expect(find.textContaining('Back in'), findsNothing);

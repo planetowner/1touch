@@ -133,52 +133,30 @@ class _InjuryStatusState extends State<InjuryStatus> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Player Circle with Placeholder
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // Main player image circle
-              CircleAvatar(
-                radius: 37,
-                backgroundColor: appColors.cardBackground,
-                child: ClipOval(
-                  child:
-                      player.playerImage == null || player.playerImage!.isEmpty
-                          ? Image.asset(
-                              'assets/messi.png',
-                              width: 74,
-                              height: 74,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.network(
-                              player.playerImage!,
-                              width: 74,
-                              height: 74,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Image.asset(
-                                'assets/messi.png',
-                                width: 74,
-                                height: 74,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                ),
-              ),
-
-              // Jersey number in top-left badge
-              Positioned(
-                top: -5, // Slightly overlaps the top edge
-                left: -10, // Slightly overlaps the left edge
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: appColors.subtleBackground,
-                  child: Text(
-                    player.jerseyNumber?.toString() ?? '#',
-                    style: Body2_b.style,
-                  ),
-                ),
-              ),
-            ],
+          CircleAvatar(
+            radius: 37,
+            backgroundColor: appColors.cardBackground,
+            child: ClipOval(
+              child: player.playerImage == null || player.playerImage!.isEmpty
+                  ? Image.asset(
+                      'assets/messi.png',
+                      width: 74,
+                      height: 74,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.network(
+                      player.playerImage!,
+                      width: 74,
+                      height: 74,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        'assets/messi.png',
+                        width: 74,
+                        height: 74,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+            ),
           ),
           const SizedBox(width: 16),
           // Player Info
@@ -186,7 +164,24 @@ class _InjuryStatusState extends State<InjuryStatus> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(player.playerName, style: Body1_b.style),
+                Row(
+                  children: [
+                    Text(
+                      player.jerseyNumber?.toString() ?? '#',
+                      key: ValueKey('injury-jersey-${player.playerId}'),
+                      style: Body1_b.style,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        player.playerName,
+                        style: Body1_b.style,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 ...player.injuries.map(
                   (injury) => Text(
