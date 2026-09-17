@@ -109,10 +109,8 @@ class FavoriteTeamCard extends StatelessWidget {
                   },
                   child: () {
                     final last = team.lastMatch!;
-                    final home =
-                        teamRepository.findByIdOrUnknown(last.homeTeamId);
-                    final away =
-                        teamRepository.findByIdOrUnknown(last.awayTeamId);
+                    final home = fixtureHomeTeam(last, teamRepository);
+                    final away = fixtureAwayTeam(last, teamRepository);
                     final kickoff = last.kickoff;
                     return MatchCard2(
                       date: kickoff == null

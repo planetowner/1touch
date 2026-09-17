@@ -75,10 +75,8 @@ class _FixturesState extends State<Fixtures> {
                       extra: lastMatch,
                     ),
                     child: () {
-                      final home = teamRepository
-                          .findByIdOrUnknown(lastMatch.homeTeamId);
-                      final away = teamRepository
-                          .findByIdOrUnknown(lastMatch.awayTeamId);
+                      final home = fixtureHomeTeam(lastMatch, teamRepository);
+                      final away = fixtureAwayTeam(lastMatch, teamRepository);
                       return MatchCard2(
                         date: _formatMatchDate(lastMatch.kickoff),
                         venue: '',

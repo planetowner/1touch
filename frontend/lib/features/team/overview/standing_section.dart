@@ -70,10 +70,15 @@ class _StandingState extends State<Standing> {
   List<Map<String, dynamic>> _rowsForLeague(int leagueId, int? currentTeamId) {
     final standings = standingRepository.forCompetition(leagueId);
     final allRows = standings.map((s) {
-      final team = teamRepository.findByIdOrUnknown(s.teamId);
+      final repositoryTeam = teamRepository.findById(s.teamId);
+      final responseName = s.teamName?.trim();
+      final displayName = repositoryTeam?.shortCode ??
+          (responseName?.isNotEmpty ?? false ? responseName! : null) ??
+          repositoryTeam?.name ??
+          'Unknown Team';
       return {
         'rank': s.position,
-        'team': team.shortCode ?? team.name,
+        'team': displayName,
         'mp': s.matchesPlayed.toString(),
         'w': s.won.toString(),
         'd': s.draw.toString(),
