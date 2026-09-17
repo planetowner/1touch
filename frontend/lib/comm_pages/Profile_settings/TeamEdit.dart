@@ -6,6 +6,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 
@@ -74,11 +75,20 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   @override
   void initState() {
     super.initState();
-    _favoriteTeamId = widget.initialFavoriteTeamId;
+    _followedTeams = widget.initialTeams
+        .where((team) => teamPageEligibility.supports(team.teamId))
+        .map(_toEntry)
+        .toList();
+    _favoriteTeamId = _followedTeams.any(
+      (team) => team.teamId == widget.initialFavoriteTeamId,
+    )
+        ? widget.initialFavoriteTeamId
+        : _followedTeams.firstOrNull?.teamId;
 
-    _followedTeams = widget.initialTeams.map(_toEntry).toList();
-
-    _allTeams = teamRepository.allTeams.map(_toEntry).toList();
+    _allTeams = teamRepository.allTeams
+        .where((team) => teamPageEligibility.supports(team.teamId))
+        .map(_toEntry)
+        .toList();
 
     _searchController.addListener(_onSearch);
   }
@@ -145,7 +155,6 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
 
   Future<void> _saveChanges() async {
     if (_isSaving) return;
-    setState(() => _isSaving = true);
 
     final candidateTeams = List<_TeamEntry>.of(_followedTeams);
     final selectedTeam = _selectedTeam;
@@ -158,6 +167,15 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       }
       candidateTeams.add(selectedTeam);
     }
+
+    if (candidateTeams.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('At least one team must stay followed.')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
 
     final teamIds = candidateTeams.map((team) => team.teamId).toList();
     final favoriteTeamId =

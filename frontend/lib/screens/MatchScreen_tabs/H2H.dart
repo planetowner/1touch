@@ -286,7 +286,9 @@ class _H2HTabState extends State<H2HTab> {
             child: GestureDetector(
               // Match screen is on the root navigator; '/team/:id' is on the
               // shell's navigator. go() (not push()) so it actually surfaces.
-              onTap: () => openTeamPage(context, _againstTeamId),
+              onTap: isTeamPageSupported(_againstTeamId)
+                  ? () => openTeamPage(context, _againstTeamId)
+                  : null,
               child: Image.network(
                 againstTeam.imagePath ?? '',
                 fit: BoxFit.contain,
@@ -466,7 +468,9 @@ class _H2HTabState extends State<H2HTab> {
           Row(
             children: [
               GestureDetector(
-                onTap: () => openTeamPage(context, idA),
+                onTap: isTeamPageSupported(idA)
+                    ? () => openTeamPage(context, idA)
+                    : null,
                 child: ClipOval(
                   child: Image.network(
                     logoA,
@@ -503,7 +507,9 @@ class _H2HTabState extends State<H2HTab> {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => openTeamPage(context, idB),
+                onTap: isTeamPageSupported(idB)
+                    ? () => openTeamPage(context, idB)
+                    : null,
                 child: ClipOval(
                   child: Image.network(
                     logoB,
