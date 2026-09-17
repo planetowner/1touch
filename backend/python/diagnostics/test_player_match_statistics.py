@@ -15,7 +15,7 @@ from diagnostics import test_fixture_details as existing
 from one_touch_loader.api.deps import get_user_id
 from one_touch_loader.api.routes import fixtures as routes
 from one_touch_loader.core.player_match_metrics import (
-    CATEGORIES, METRICS, STORED_STAT_TYPE_IDS, build_player_statistics, build_team_touches,
+    CATEGORIES, METRICS, STORED_STAT_TYPE_IDS, build_player_statistics, build_team_player_statistics,
 )
 from one_touch_loader.loaders import fixture_details_loader as loader
 
@@ -42,6 +42,11 @@ def output_for(case):
 
 def metrics(player):
     return {metric["code"]: metric for category in player["categories"] for metric in category["metrics"]}
+
+
+def build_team_touches(team_ids, lineups, stats):
+    return [row for row in build_team_player_statistics(team_ids, lineups, stats)
+            if row["stat_type_id"] == 120]
 
 
 class PlayerMetricTests(unittest.TestCase):
@@ -178,6 +183,60 @@ class TeamTouchesTests(unittest.TestCase):
         self.assertIsNone(build_team_touches([10], [], [])[0]["value"])
 
 
+class TeamBlocksTests(unittest.TestCase):
+    @staticmethod
+    def blocks(team_ids, lineups, stats):
+        return {row["team_id"]: row["value"]
+                for row in build_team_player_statistics(team_ids, lineups, stats)
+                if row["stat_type_id"] == 97}
+
+    def test_real_responses_from_1718_to_current_sum_defensive_not_attacking_blocks(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/team_blocks.json").read_text(encoding="utf-8"))
+        expected = {
+            1711181: {13: 5, 1: 4},
+            10420443: {346: 8, 585: None},
+            18220239: {585: None, 267: None},
+            19732687: {9818: 6, 83: 1},
+        }
+        for case in sample["cases"]:
+            with self.subTest(fixture_id=case["fixture_id"]):
+                lineups, stats = normalized_lineup_rows(case)
+                self.assertEqual(self.blocks(case["team_ids"], lineups, stats), expected[case["fixture_id"]])
+
+    def test_recorded_players_only_missing_zero_and_team_identity_stay_distinct(self):
+        lineups = [
+            {"team_id": 10, "player_id": 1, "lineup_type_id": 11, "minutes_played": 90},
+            {"team_id": 10, "player_id": 2, "lineup_type_id": 11, "minutes_played": 90},
+            {"team_id": 10, "player_id": 3, "lineup_type_id": 12, "minutes_played": 0},
+            {"team_id": 10, "player_id": 4, "lineup_type_id": 12, "minutes_played": None},
+            {"team_id": 20, "player_id": 1, "lineup_type_id": 11, "minutes_played": 90},
+        ]
+        stats = [{"team_id": 10, "player_id": 1, "stat_type_id": 97, "value": 2},
+                 {"team_id": 10, "player_id": 3, "stat_type_id": 97, "value": 1},
+                 {"team_id": 10, "player_id": 1, "stat_type_id": 58, "value": 9}]
+        self.assertEqual(self.blocks([10, 20], lineups, stats), {10: 3, 20: None})
+        stats.append({"team_id": 20, "player_id": 1, "stat_type_id": 97, "value": 0})
+        self.assertEqual(self.blocks([10, 20], lineups, stats), {10: 3, 20: 0})
+        self.assertEqual(self.blocks([10], [], []), {10: None})
+        self.assertEqual(self.blocks([10], lineups, []), {10: None})
+
+    def test_http_statistics_exposes_blocks_count_and_missing_value(self):
+        app = FastAPI()
+        app.include_router(routes.router, prefix="/v1")
+        app.dependency_overrides[get_user_id] = lambda: 1
+        lineups = [{"team_id": 10, "player_id": 1, "lineup_type_id": 11, "minutes_played": 90}]
+        stats = [{"team_id": 10, "player_id": 1, "stat_type_id": 97, "value": Decimal("2")}]
+        with patch.object(routes, "get_fixture_detail", return_value={
+            "fixture_id": 500, "statistics": build_team_player_statistics([10, 20], lineups, stats),
+        }):
+            response = TestClient(app).get("/v1/fixtures/500")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([row for row in response.json()["statistics"] if row["stat_type_id"] == 97], [
+            {"team_id": 10, "stat_type_id": 97, "stat_code": "blocked-shots", "stat_name": "Blocks", "value": 2},
+            {"team_id": 20, "stat_type_id": 97, "stat_code": "blocked-shots", "stat_name": "Blocks", "value": None},
+        ])
+
+
 class PlayerMetricStorageTests(unittest.TestCase):
     setUp = existing.FixtureDetailsStorageTests.setUp
     tearDown = existing.FixtureDetailsStorageTests.tearDown
@@ -209,6 +268,20 @@ class PlayerMetricStorageTests(unittest.TestCase):
             loader.replace_fixture_detail_rows(500, rows, payload["lineups"])
         self.assertEqual(self.connection.execute("SELECT * FROM fixture_player_stats").fetchall(), before)
         self.assertEqual(self.connection.execute("SELECT match_position_id FROM fixture_lineups").fetchone(), (25,))
+
+    def test_blocks_are_stored_without_attacking_shots_and_replaced_on_refresh(self):
+        payload = existing._payload()
+        for value in (3, 0, None):
+            payload["lineups"][0]["details"] = [
+                {"type_id": 97, "data": {"value": value}},
+                {"type_id": 58, "data": {"value": 9}},
+            ]
+            for _ in range(2):
+                rows = loader.normalize_fixture_lineups(payload, 500)
+                loader.replace_fixture_detail_rows(500, rows, payload["lineups"])
+            self.assertEqual(self.connection.execute(
+                "SELECT stat_type_id,stat_value FROM fixture_player_stats"
+            ).fetchall(), [(97, value)] if value is not None else [])
 
     def test_real_provider_rows_round_trip_without_losing_values(self):
         for case in SAMPLE["cases"]:
