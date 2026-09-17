@@ -246,7 +246,7 @@ class ApiFixtureStatisticResponse {
   final int statTypeId;
   final String statCode;
   final String statName;
-  final double value;
+  final double? value;
 
   factory ApiFixtureStatisticResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureStatisticResponse(
@@ -254,7 +254,7 @@ class ApiFixtureStatisticResponse {
       statTypeId: _requiredInt(json, 'stat_type_id'),
       statCode: _requiredString(json, 'stat_code'),
       statName: _requiredString(json, 'stat_name'),
-      value: _requiredDouble(json, 'value'),
+      value: _optionalDouble(json, 'value'),
     );
   }
 }

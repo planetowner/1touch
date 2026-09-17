@@ -100,7 +100,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('keeps a route fixture visible when detail is unavailable',
+  testWidgets('shows a retry state when route fixture detail is unavailable',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
     final repository = _ControlledFixtureRepository();
@@ -129,11 +129,8 @@ void main() {
     repository.calls.single.completeError(StateError('no mock detail'));
     await tester.pump();
 
-    expect(find.text('Unable to load match.'), findsNothing);
-    expect(
-      find.byKey(const ValueKey('match-betting-card')),
-      findsOneWidget,
-    );
+    expect(find.text('Unable to load match.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('match-betting-card')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

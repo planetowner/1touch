@@ -132,6 +132,15 @@ void main() {
       );
     });
 
+    test('accepts an unavailable statistic value', () {
+      final json = _detailJson();
+      (json['statistics'] as List).single['value'] = null;
+
+      final response = ApiFixtureDetailResponse.fromJson(json);
+
+      expect(response.statistics.single.value, isNull);
+    });
+
     test('rejects a missing required detail collection', () {
       final json = _detailJson()..remove('pressure');
 

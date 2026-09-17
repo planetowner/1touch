@@ -163,6 +163,35 @@ void main() {
       expect(lineup.rating, isNull);
     });
 
+    test('omits statistics whose values are unavailable', () {
+      final response = _fullResponse();
+      final detail = fixtureDetailFromApiResponse(
+        ApiFixtureDetailResponse(
+          fixture: response.fixture,
+          venueName: response.venueName,
+          expectedGoals: response.expectedGoals,
+          playerExpectedGoals: response.playerExpectedGoals,
+          shots: response.shots,
+          events: response.events,
+          statistics: const [
+            ApiFixtureStatisticResponse(
+              teamId: 8,
+              statTypeId: 97,
+              statCode: 'blocked-shots',
+              statName: 'Blocks',
+              value: null,
+            ),
+          ],
+          lineups: response.lineups,
+          formations: response.formations,
+          coaches: response.coaches,
+          pressure: response.pressure,
+        ),
+      );
+
+      expect(detail.statistics, isEmpty);
+    });
+
     test('returns immutable detail collections', () {
       final detail = fixtureDetailFromApiResponse(_fullResponse());
 
