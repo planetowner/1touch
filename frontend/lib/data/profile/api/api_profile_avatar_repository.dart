@@ -79,6 +79,31 @@ class ApiProfileAvatarRepository implements ProfileAvatarRepository {
     return resolved;
   }
 
+  @override
+  Future<void> delete() async {
+    final uri = _apiBaseUri.resolve('users/me/avatar');
+    final response = await _client.delete(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        ..._requestHeaders,
+      },
+    );
+    if (response.statusCode != 200) {
+      throw http.ClientException(
+        'Avatar deletion failed with status ${response.statusCode}.',
+        uri,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic> || decoded['ok'] != true) {
+      throw const FormatException(
+        'Expected ok=true in the avatar-deletion response.',
+      );
+    }
+  }
+
   static Uri _asDirectoryUri(Uri uri) {
     final value = uri.toString();
     return value.endsWith('/') ? uri : Uri.parse('$value/');
