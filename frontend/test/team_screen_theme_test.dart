@@ -6,6 +6,7 @@ import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repository.dart';
 import 'package:onetouch/models/current_form.dart';
+import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
 import 'support/test_team_overview_repository.dart';
@@ -707,6 +708,37 @@ void main() {
         WrapAlignment.end,
       );
     }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Team header keeps the domestic league for a cup next match',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final cupOverview = testTeamOverview(
+      nextCompetitionId: 27,
+      nextCompetitionType: CompetitionType.cup,
+    );
+    final cupOverviewRepository = TestTeamOverviewRepository(
+      initial: {9: cupOverview},
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: TeamScreen(
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: cupOverviewRepository,
+          xgStandingRepository: xgStandingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Premier League 1st'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
