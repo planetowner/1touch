@@ -259,6 +259,8 @@ void main() {
 
     expect(find.byKey(const ValueKey('team-brand-gradient')), findsNothing);
     expect(find.byKey(const ValueKey('team-app-bar-gradient')), findsNothing);
+    expect(find.byKey(const ValueKey('team-context-label')), findsNothing);
+    expect(find.text('League'), findsNothing);
     expect(appBar.foregroundColor, expectedForeground);
     expect(searchIcon.color, expectedForeground);
     expect(tester.takeException(), isNull);

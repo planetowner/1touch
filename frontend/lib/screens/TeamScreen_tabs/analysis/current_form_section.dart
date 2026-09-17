@@ -21,6 +21,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   bool _isLoading = false;
   bool _loadFailed = false;
   int _loadRequestId = 0;
+  int? _baselineSeasonId;
   int? _selectedFormRound;
 
   CurrentFormRepository get _repository =>
@@ -48,6 +49,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final requestId = ++_loadRequestId;
     final cachedOptions =
         teamId == null ? null : _repository.cachedOptionsFor(teamId);
+    final baselineOption = teamId == null || cachedOptions == null
+        ? null
+        : _baselineOption(cachedOptions, teamId);
     final selectedOption = teamId == null || cachedOptions == null
         ? null
         : _defaultOption(cachedOptions, teamId);
@@ -55,24 +59,37 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         ? null
         : _repository.cachedComparisonFor(
             teamId!,
+            seasonId: baselineOption?.seasonId,
             compareTeamId: selectedOption.teamId,
             compareSeasonId: selectedOption.seasonId,
           );
 
     _options = cachedOptions ?? const [];
+    _baselineSeasonId = baselineOption?.seasonId;
     _selectedOption = selectedOption;
     _comparison = cachedComparison;
     _selectedFormRound = null;
     _loadFailed = false;
     _isLoading = teamId != null &&
         (cachedOptions == null ||
-            (selectedOption != null && cachedComparison == null));
+            (baselineOption != null &&
+                selectedOption != null &&
+                cachedComparison == null));
 
     if (teamId == null) return;
     if (cachedOptions == null) {
       unawaited(_loadOptions(teamId, requestId));
-    } else if (selectedOption != null && cachedComparison == null) {
-      unawaited(_loadComparison(teamId, selectedOption, requestId));
+    } else if (baselineOption != null &&
+        selectedOption != null &&
+        cachedComparison == null) {
+      unawaited(
+        _loadComparison(
+          teamId,
+          baselineOption.seasonId,
+          selectedOption,
+          requestId,
+        ),
+      );
     }
   }
 
@@ -81,23 +98,37 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       final options = await _repository.loadOptions(teamId);
       if (!mounted || requestId != _loadRequestId) return;
 
+      final baselineOption = _baselineOption(options, teamId);
       final selectedOption = _defaultOption(options, teamId);
-      final cachedComparison = selectedOption == null
+      final cachedComparison = baselineOption == null || selectedOption == null
           ? null
           : _repository.cachedComparisonFor(
               teamId,
+              seasonId: baselineOption.seasonId,
               compareTeamId: selectedOption.teamId,
               compareSeasonId: selectedOption.seasonId,
             );
       setState(() {
         _options = options;
+        _baselineSeasonId = baselineOption?.seasonId;
         _selectedOption = selectedOption;
         _comparison = cachedComparison;
-        _isLoading = selectedOption != null && cachedComparison == null;
+        _isLoading = baselineOption != null &&
+            selectedOption != null &&
+            cachedComparison == null;
       });
 
-      if (selectedOption != null && cachedComparison == null) {
-        unawaited(_loadComparison(teamId, selectedOption, requestId));
+      if (baselineOption != null &&
+          selectedOption != null &&
+          cachedComparison == null) {
+        unawaited(
+          _loadComparison(
+            teamId,
+            baselineOption.seasonId,
+            selectedOption,
+            requestId,
+          ),
+        );
       }
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
@@ -110,12 +141,14 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
 
   Future<void> _loadComparison(
     int teamId,
+    int baselineSeasonId,
     CurrentFormOption option,
     int requestId,
   ) async {
     try {
       final comparison = await _repository.loadComparison(
         teamId,
+        seasonId: baselineSeasonId,
         compareTeamId: option.teamId,
         compareSeasonId: option.seasonId,
       );
@@ -137,24 +170,38 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     List<CurrentFormOption> options,
     int teamId,
   ) {
-    if (options.isEmpty) return null;
-
     final sameTeam =
         options.where((option) => option.teamId == teamId).toList();
     // Backend options are newest-first, so the second same-team row is the
     // previous season while the full list remains available for comparison.
     if (sameTeam.length > 1) return sameTeam[1];
     if (sameTeam.isNotEmpty) return sameTeam.first;
-    return options.first;
+    return null;
+  }
+
+  CurrentFormOption? _baselineOption(
+    List<CurrentFormOption> options,
+    int teamId,
+  ) {
+    for (final option in options) {
+      if (option.teamId == teamId) return option;
+    }
+    return null;
   }
 
   void _changeComparison(CurrentFormOption option) {
     final teamId = _teamId;
-    if (teamId == null || identical(option, _selectedOption)) return;
+    final baselineSeasonId = _baselineSeasonId;
+    if (teamId == null ||
+        baselineSeasonId == null ||
+        identical(option, _selectedOption)) {
+      return;
+    }
 
     final requestId = ++_loadRequestId;
     final cached = _repository.cachedComparisonFor(
       teamId,
+      seasonId: baselineSeasonId,
       compareTeamId: option.teamId,
       compareSeasonId: option.seasonId,
     );
@@ -167,7 +214,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     });
 
     if (cached == null) {
-      unawaited(_loadComparison(teamId, option, requestId));
+      unawaited(
+        _loadComparison(teamId, baselineSeasonId, option, requestId),
+      );
     }
   }
 
@@ -176,7 +225,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     if (teamId == null) return;
 
     final option = _selectedOption;
-    if (option == null) {
+    final baselineSeasonId = _baselineSeasonId;
+    if (option == null || baselineSeasonId == null) {
       setState(_startDefaultLoad);
       return;
     }
@@ -186,7 +236,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       _isLoading = true;
       _loadFailed = false;
     });
-    unawaited(_loadComparison(teamId, option, requestId));
+    unawaited(
+      _loadComparison(teamId, baselineSeasonId, option, requestId),
+    );
   }
 
   @override
@@ -198,7 +250,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         children: [
           _AnalysisSectionHeader(
             title: 'CURRENT FORM',
-            trailing: _options.isNotEmpty ? _buildComparisonPicker() : null,
+            trailing: _baselineSeasonId != null && _options.isNotEmpty
+                ? _buildComparisonPicker()
+                : null,
           ),
           const SizedBox(height: 16),
           if (_isLoading)
