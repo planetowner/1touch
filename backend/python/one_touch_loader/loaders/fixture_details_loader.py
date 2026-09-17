@@ -263,6 +263,7 @@ def _collect_fixture_details(
     season_name: Optional[str] = None,
     competition_ids: Optional[List[int]] = None,
     fixture_id: Optional[int] = None,
+    player_stats_only: bool = False,
 ) -> Dict[str, int]:
     scope = _load_scope(season_name, competition_ids, fixture_id)
     client = SportmonksClient()
@@ -270,42 +271,56 @@ def _collect_fixture_details(
         ("fixtures", "events", "team_stats", "lineups", "player_stats", "formations", "fixture_coaches", "pressures", "players"),
         0,
     )
-    for index, fixture_id in enumerate(scope, start=1):
-        payload = client.get_fixture_details(fixture_id)
-        rows = _normalize_fixture_details(payload, fixture_id)
-        event_profiles = {
-            event["verified_player_profile"]["id"]: event["verified_player_profile"]
-            for event in payload["events"]
-            if "verified_player_profile" in event
-        }
-        totals["players"] += replace_fixture_detail_rows(
-            fixture_id, rows, payload["lineups"], event_profiles,
-        )
-        totals["fixtures"] += 1
-        for key in totals:
-            if key not in {"fixtures", "players"}:
-                totals[key] += len(rows[key])
-        # 터미널 로그를 읽는 모니터에 저장 완료 건수를 바로 전달해요.
-        print(
-            f"[fixture-details {index}/{len(scope)}] fixture_id={fixture_id} "
-            f"events={len(rows['events'])} stats={len(rows['team_stats'])} "
-            f"lineups={len(rows['lineups'])} pressure={len(rows['pressures'])} "
-            f"player_stats={len(rows['player_stats'])}",
-            flush=True,
-        )
+    # 과거 선수 통계 보충은 검증한 50경기 묶음 조회로 요청 수를 줄여요.
+    batch_size = 50 if player_stats_only else 1
+    for offset in range(0, len(scope), batch_size):
+        group = scope[offset:offset + batch_size]
+        payloads = (client.get_fixture_details_batch(group) if player_stats_only
+                    else [client.get_fixture_details(group[0])])
+        for payload in payloads:
+            fixture_id = payload["id"]
+            event_profiles = {}
+            if player_stats_only:
+                normalized = normalize_fixture_lineups(payload, fixture_id)
+                # 팀 통계·이벤트·포메이션은 다시 적재하지 않아요. 출전 정보와 선수 통계만 같이 갱신해요.
+                rows = {key: normalized[key] for key in ("lineups", "player_stats")}
+            else:
+                rows = _normalize_fixture_details(payload, fixture_id)
+                event_profiles = {
+                    event["verified_player_profile"]["id"]: event["verified_player_profile"]
+                    for event in payload["events"]
+                    if "verified_player_profile" in event
+                }
+            totals["players"] += replace_fixture_detail_rows(
+                fixture_id, rows, payload["lineups"], event_profiles,
+            )
+            totals["fixtures"] += 1
+            for key in rows:
+                if key in totals:
+                    totals[key] += len(rows[key])
+            # 터미널 로그를 읽는 모니터에 저장 완료 건수를 바로 전달해요.
+            print(
+                f"[fixture-details {totals['fixtures']}/{len(scope)}] fixture_id={fixture_id} "
+                f"events={len(rows.get('events', []))} stats={len(rows.get('team_stats', []))} "
+                f"lineups={len(rows['lineups'])} pressure={len(rows.get('pressures', []))} "
+                f"player_stats={len(rows['player_stats'])}",
+                flush=True,
+            )
     return totals
 
 
-def collect_all_fixture_details() -> Dict[str, int]:
-    return _collect_fixture_details()
+def collect_all_fixture_details(*, player_stats_only: bool = False) -> Dict[str, int]:
+    return _collect_fixture_details(player_stats_only=player_stats_only)
 
 
-def collect_fixture_details(fixture_id: int) -> Dict[str, int]:
-    return _collect_fixture_details(fixture_id=fixture_id)
+def collect_fixture_details(fixture_id: int, *, player_stats_only: bool = False) -> Dict[str, int]:
+    return _collect_fixture_details(fixture_id=fixture_id, player_stats_only=player_stats_only)
 
 
 def collect_fixture_details_for_competition_season(
     season_name: str,
     competition_ids: List[int],
+    *,
+    player_stats_only: bool = False,
 ) -> Dict[str, int]:
-    return _collect_fixture_details(season_name, competition_ids)
+    return _collect_fixture_details(season_name, competition_ids, player_stats_only=player_stats_only)
