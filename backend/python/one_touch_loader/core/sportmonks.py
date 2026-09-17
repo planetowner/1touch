@@ -738,6 +738,20 @@ class SportmonksClient:
         )
         return self.correct_fixture_details(response["data"])
 
+    def get_fixture_details_batch(self, fixture_ids: List[int]) -> List[Dict]:
+        """같은 상세 응답을 한 번에 최대 50경기씩 가져와요."""
+        if not 1 <= len(fixture_ids) <= 50:
+            raise ValueError("Fixture details batch requires 1 to 50 fixture IDs")
+        payloads = self._get(
+            "fixtures/multi/" + ",".join(map(str, fixture_ids)),
+            params={"include": FIXTURE_DETAILS_INCLUDE},
+        )["data"]
+        # 누락 응답을 빈 통계로 저장하지 않도록 요청한 경기 전체를 확인해요.
+        if sorted(f["id"] for f in payloads) != sorted(fixture_ids):
+            raise ValueError("Fixture details batch response IDs differ from requested IDs")
+        by_id = {f["id"]: f for f in payloads}
+        return [self.correct_fixture_details(by_id[fixture_id]) for fixture_id in fixture_ids]
+
     def get_livescores(self) -> List[Dict]:
         # 실제 응답에는 pagination이 없어요. 경기 시작 전·종료 후 15분도 포함해요.
         return self._get("livescores", params={"include": LIVE_FIXTURE_INCLUDE})["data"]
