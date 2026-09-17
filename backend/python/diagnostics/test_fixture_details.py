@@ -414,11 +414,24 @@ class FixtureDetailsStorageTests(unittest.TestCase):
         self.connection.close()
 
     def test_verified_atlantas_duplicate_rolls_back_then_stores_once(self):
-        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_atlantas_duplicate_lineup.json").read_text(encoding="utf-8"))
+        self._assert_verified_duplicate_lineup("sportmonks_atlantas_duplicate_lineup.json", 5681)
+
+    def test_verified_paok_duplicate_rolls_back_then_stores_once(self):
+        self._assert_verified_duplicate_lineup("sportmonks_paok_duplicate_lineup.json", 649)
+
+    def test_verified_crvena_zvezda_duplicate_rolls_back_then_stores_once(self):
+        self._assert_verified_duplicate_lineup("sportmonks_crvena_zvezda_duplicate_lineup.json", 2673)
+
+    def test_verified_paok_basel_duplicate_rolls_back_then_stores_once(self):
+        self._assert_verified_duplicate_lineup("sportmonks_paok_basel_duplicate_lineup.json", 649)
+
+    def _assert_verified_duplicate_lineup(self, sample_name, team_id):
+        sample = json.loads((Path(__file__).parent / "fixtures" / sample_name).read_text(encoding="utf-8"))
         payload = sample["fixture"]
+        verified = sample["verified_lineup"]
         fid = payload["id"]
         self.connection.execute("INSERT INTO fixtures VALUES (?)", (fid,))
-        self.connection.execute("INSERT INTO teams VALUES (5681)")
+        self.connection.execute("INSERT INTO teams VALUES (?)", (team_id,))
         self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
             (lineup["player"]["detailed_position_id"],) for lineup in payload["lineups"]
             if lineup["player"]["detailed_position_id"] is not None
@@ -434,23 +447,26 @@ class FixtureDetailsStorageTests(unittest.TestCase):
         client = SportmonksClient.__new__(SportmonksClient)
         client._get = Mock(return_value={"data": [deepcopy(payload)]})
         corrected = client.get_fixture_details_batch([fid])[0]
-        expected = [row for row in payload["lineups"] if row["id"] != 1051955850]
+        expected = [row for row in payload["lineups"] if row["id"] != verified["removed_lineup_id"]]
         self.assertEqual(corrected["lineups"], expected)
         self.assertEqual(client.correct_fixture_details(deepcopy(corrected)), corrected)
+        # 단건 재개와 묶음 재개가 같은 보정 규칙을 사용해요.
+        client._get = Mock(return_value={"data": deepcopy(payload)})
+        self.assertEqual(client.get_fixture_details(fid), corrected)
         rows = details.normalize_fixture_lineups(corrected, fid)
         rows = {key: rows[key] for key in ("lineups", "player_stats")}
-        # 잘못된 슬롯에 있던 type 88은 저장 대상이 아니며 다른 선수 통계는 모두 보존돼요.
+        # 제외할 슬롯에는 저장할 통계가 없어요. 올바른 슬롯과 다른 선수의 통계는 모두 보존돼요.
         self.assertEqual(rows["player_stats"], raw_rows["player_stats"])
         self.assertEqual(details.replace_fixture_detail_rows(fid, rows, corrected["lineups"]), 18)
         self.assertEqual(details.replace_fixture_detail_rows(fid, rows, corrected["lineups"]), 0)
         self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups").fetchone(), (18,))
         self.assertEqual(self.connection.execute(
-            "SELECT jersey_number FROM fixture_lineups WHERE player_id=463035"
-        ).fetchall(), [(19,)])
+            "SELECT jersey_number FROM fixture_lineups WHERE player_id=?", (verified["player_id"],)
+        ).fetchall(), [(verified["jersey_number"],)])
 
         # 같은 선수라도 검증한 슬롯 ID가 아니면 자동으로 삭제하지 않아요.
         unverified = deepcopy(payload)
-        removed_slot = next(row for row in unverified["lineups"] if row["id"] == 1051955850)
+        removed_slot = next(row for row in unverified["lineups"] if row["id"] == verified["removed_lineup_id"])
         removed_slot["id"] = 998
         self.assertEqual(client.correct_fixture_details(deepcopy(unverified)), unverified)
 
