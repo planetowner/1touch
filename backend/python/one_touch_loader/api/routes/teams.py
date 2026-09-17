@@ -16,6 +16,8 @@ from ..repos.injuries_repo import get_team_injuries
 from ..repos.team_attributes_repo import get_team_attributes, list_team_attribute_seasons
 from ..repos.probability_repo import get_team_probability
 from ..schemas.probability import TeamProbabilityResponse
+from ..schemas.highlights import TeamHighlightsResponse
+from ..repos.highlights_repo import get_team_highlights
 from ..repos.points_pace_repo import (
     build_current_form_comparison,
     get_points_pace_series,
@@ -39,6 +41,23 @@ from ..schemas.common import (
 
 
 router = APIRouter()
+
+
+@router.get("/teams/{team_id}/highlights", response_model=TeamHighlightsResponse)
+def team_highlights(
+    team_id: int,
+    viewer_country: str = Query(pattern="^[A-Za-z]{2}$", description="실제 시청 국가예요. 예: KR, JP, US. 앱 언어로 추정하지 마세요."),
+    user_id: int = Depends(get_user_id),
+):
+    """공식 구단 영상 우선, 없으면 같은 경기의 공식 대회 영상을 반환해요.
+
+    일반 하이라이트를 Extended보다 먼저 골라요. 업로드일이 아닌 경기일 최신순이며,
+    응답마다 시청 국가의 제한을 적용하고 한 경기당 한 영상, 최대 3경기만 반환해요.
+    서버의 예약 수집 결과를 읽으므로 화면을 열 때 YouTube API를 호출하지 않아요.
+    """
+    if get_team(team_id) is None:
+        raise HTTPException(404, "Team not found")
+    return get_team_highlights(team_id, viewer_country)
 
 
 @router.get("/teams/{team_id}/probability", response_model=TeamProbabilityResponse)
