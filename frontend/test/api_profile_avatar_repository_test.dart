@@ -93,4 +93,41 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('deletes the authenticated user avatar', () async {
+    final repository = ApiProfileAvatarRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'DELETE');
+        expect(request.url.path, '/v1/users/me/avatar');
+        expect(request.headers['Accept'], 'application/json');
+        expect(request.headers['Authorization'], 'Bearer session-token');
+        return http.Response(jsonEncode({'ok': true}), 200);
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      requestHeaders: const {
+        'Authorization': 'Bearer session-token',
+      },
+    );
+
+    await repository.delete();
+  });
+
+  test('rejects failed and malformed avatar deletions', () async {
+    final responses = [
+      http.Response('Unauthorized', 401),
+      http.Response(jsonEncode({'ok': false}), 200),
+    ];
+    var requestCount = 0;
+    final repository = ApiProfileAvatarRepository(
+      client: MockClient((_) async => responses[requestCount++]),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.delete(),
+      throwsA(isA<http.ClientException>()),
+    );
+    await expectLater(repository.delete(), throwsFormatException);
+  });
 }
