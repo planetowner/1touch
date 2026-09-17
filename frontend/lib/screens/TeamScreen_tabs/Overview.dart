@@ -28,6 +28,7 @@ class OverviewTab extends StatefulWidget {
 }
 
 class _OverviewTabState extends State<OverviewTab> {
+  bool _showBestElevenSection = true;
   bool _showInjurySection = true;
   bool _showTransferSection = true;
 
@@ -37,9 +38,15 @@ class _OverviewTabState extends State<OverviewTab> {
   void didUpdateWidget(OverviewTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.team?['id'] != _teamId) {
+      _showBestElevenSection = true;
       _showInjurySection = true;
       _showTransferSection = true;
     }
+  }
+
+  void _hideBestElevenSection() {
+    if (!_showBestElevenSection || !mounted) return;
+    setState(() => _showBestElevenSection = false);
   }
 
   void _hideInjurySection() {
@@ -75,13 +82,16 @@ class _OverviewTabState extends State<OverviewTab> {
                 ),
               ],
 
-              const SizedBox(height: 32),
-              const SectionHeader(title: "BEST XI"),
-              TeamBestElevenSection(
-                teamId: _teamId,
-                variant: TeamBestElevenVariant.overview,
-                repository: widget.bestElevenRepository,
-              ),
+              if (_showBestElevenSection) ...[
+                const SizedBox(height: 32),
+                const SectionHeader(title: "BEST XI"),
+                TeamBestElevenSection(
+                  teamId: _teamId,
+                  variant: TeamBestElevenVariant.overview,
+                  repository: widget.bestElevenRepository,
+                  onUnavailable: _hideBestElevenSection,
+                ),
+              ],
 
               if (_showInjurySection) ...[
                 const SizedBox(height: 32),
