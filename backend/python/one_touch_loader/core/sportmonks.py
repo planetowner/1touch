@@ -356,6 +356,12 @@ SPORTMONKS_EVENT_OVERRIDES = {
     150424045: {"player_id": None, "coach_id": 455848},
 }
 
+# Kairat–Atlantas(1818704)의 Filipavičius는 UEFA 명단에서 19번 후보 한 명이에요.
+# 19번(6955683516)을 남기고 같은 선수로 잘못 추가된 26번 슬롯만 제외해요.
+# https://www.uefa.com/uefaeuropaleague/match/2021717--kairat-almaty-vs-atlantas/lineups/
+SPORTMONKS_DUPLICATE_LINEUP_IDS = {1051955850}
+
+
 # 공식 기록·공급자 해설로 중복을 확인한 이벤트 ID만 제외해요.
 SPORTMONKS_DUPLICATE_EVENT_IDS = {
     # Kluivert의 -4분 퇴장은 해설 4840734와 일치하는 85분 이벤트 78696510과 중복돼요.
@@ -777,6 +783,10 @@ class SportmonksClient:
         return self._correct_lineup_players(fixture)
 
     def _correct_lineup_players(self, fixture: Dict) -> Dict:
+        fixture["lineups"] = [
+            lineup for lineup in fixture["lineups"]
+            if lineup["id"] not in SPORTMONKS_DUPLICATE_LINEUP_IDS
+        ]
         for lineup in fixture["lineups"]:
             profile = SPORTMONKS_LINEUP_PLAYER_PROFILE_OVERRIDES.get(lineup["id"])
             if profile is not None:

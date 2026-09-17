@@ -264,8 +264,16 @@ def _collect_fixture_details(
     competition_ids: Optional[List[int]] = None,
     fixture_id: Optional[int] = None,
     player_stats_only: bool = False,
+    from_fixture_id: Optional[int] = None,
 ) -> Dict[str, int]:
     scope = _load_scope(season_name, competition_ids, fixture_id)
+    if from_fixture_id is not None:
+        if from_fixture_id not in scope:
+            raise ValueError(f"Resume fixture {from_fixture_id} is not in the selected fixture-details scope")
+        # 경기 ID의 크기가 아니라 기존 대회·시각 정렬에서 실패한 경기부터 이어가요.
+        start = scope.index(from_fixture_id)
+        scope = scope[start:]
+        print(f"Resume fixture-details: skipped={start} remaining={len(scope)} from_fixture_id={from_fixture_id}", flush=True)
     client = SportmonksClient()
     totals = dict.fromkeys(
         ("fixtures", "events", "team_stats", "lineups", "player_stats", "formations", "fixture_coaches", "pressures", "players"),
@@ -309,12 +317,12 @@ def _collect_fixture_details(
     return totals
 
 
-def collect_all_fixture_details(*, player_stats_only: bool = False) -> Dict[str, int]:
-    return _collect_fixture_details(player_stats_only=player_stats_only)
+def collect_all_fixture_details(*, player_stats_only: bool = False, from_fixture_id: Optional[int] = None) -> Dict[str, int]:
+    return _collect_fixture_details(player_stats_only=player_stats_only, from_fixture_id=from_fixture_id)
 
 
-def collect_fixture_details(fixture_id: int, *, player_stats_only: bool = False) -> Dict[str, int]:
-    return _collect_fixture_details(fixture_id=fixture_id, player_stats_only=player_stats_only)
+def collect_fixture_details(fixture_id: int, *, player_stats_only: bool = False, from_fixture_id: Optional[int] = None) -> Dict[str, int]:
+    return _collect_fixture_details(fixture_id=fixture_id, player_stats_only=player_stats_only, from_fixture_id=from_fixture_id)
 
 
 def collect_fixture_details_for_competition_season(
@@ -322,5 +330,6 @@ def collect_fixture_details_for_competition_season(
     competition_ids: List[int],
     *,
     player_stats_only: bool = False,
+    from_fixture_id: Optional[int] = None,
 ) -> Dict[str, int]:
-    return _collect_fixture_details(season_name, competition_ids, player_stats_only=player_stats_only)
+    return _collect_fixture_details(season_name, competition_ids, player_stats_only=player_stats_only, from_fixture_id=from_fixture_id)

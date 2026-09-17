@@ -91,6 +91,40 @@ def _payload() -> dict:
 
 
 class FixtureDetailsLoaderTests(unittest.TestCase):
+    def test_resume_starts_at_fixture_in_scope_order_for_both_fetch_modes(self):
+        # 대회·시각 순서는 ID 오름차순과 달라요. 실패한 경기 자체도 다시 처리해야 해요.
+        scope = [11974939, 1818704, 1818000]
+        for player_stats_only in (False, True):
+            with self.subTest(player_stats_only=player_stats_only), \
+                 patch.object(details, "_load_scope", return_value=scope), \
+                 patch.object(details, "SportmonksClient") as client, \
+                 patch.object(details, "replace_fixture_detail_rows", return_value=0) as write, \
+                 patch("builtins.print"):
+                client.return_value.get_fixture_details.side_effect = lambda fid: {**_payload(), "id": fid}
+                client.return_value.get_fixture_details_batch.side_effect = lambda ids: [
+                    {**_payload(), "id": fid} for fid in ids
+                ]
+                result = details.collect_fixture_details_for_competition_season(
+                    "2017/2018", [5], player_stats_only=player_stats_only, from_fixture_id=1818704,
+                )
+                self.assertEqual(result["fixtures"], 2)
+                self.assertEqual([call.args[0] for call in write.call_args_list], scope[1:])
+                if player_stats_only:
+                    client.return_value.get_fixture_details_batch.assert_called_once_with(scope[1:])
+                    client.return_value.get_fixture_details.assert_not_called()
+                else:
+                    self.assertEqual([call.args[0] for call in client.return_value.get_fixture_details.call_args_list], scope[1:])
+                    client.return_value.get_fixture_details_batch.assert_not_called()
+
+    def test_resume_outside_scope_fails_before_provider_requests_or_writes(self):
+        with patch.object(details, "_load_scope", return_value=[500]), \
+             patch.object(details, "SportmonksClient") as client, \
+             patch.object(details, "replace_fixture_detail_rows") as write:
+            with self.assertRaisesRegex(ValueError, "not in the selected"):
+                details.collect_fixture_details_for_competition_season("2017/2018", [5], from_fixture_id=1818704)
+            client.assert_not_called()
+            write.assert_not_called()
+
     def test_batch_requires_complete_ids_and_uses_existing_corrections(self):
         client = SportmonksClient.__new__(SportmonksClient)
         with patch.object(client, "_get", return_value={"data": [{"id": 501}, {"id": 500}]}), \
@@ -378,6 +412,47 @@ class FixtureDetailsStorageTests(unittest.TestCase):
     def tearDown(self):
         self.mock_connection.stop()
         self.connection.close()
+
+    def test_verified_atlantas_duplicate_rolls_back_then_stores_once(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_atlantas_duplicate_lineup.json").read_text(encoding="utf-8"))
+        payload = sample["fixture"]
+        fid = payload["id"]
+        self.connection.execute("INSERT INTO fixtures VALUES (?)", (fid,))
+        self.connection.execute("INSERT INTO teams VALUES (5681)")
+        self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
+            (lineup["player"]["detailed_position_id"],) for lineup in payload["lineups"]
+            if lineup["player"]["detailed_position_id"] is not None
+        })
+        self.connection.commit()
+        raw_rows = details.normalize_fixture_lineups(payload, fid)
+        raw_rows = {key: raw_rows[key] for key in ("lineups", "player_stats")}
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "UNIQUE constraint failed"):
+            details.replace_fixture_detail_rows(fid, raw_rows, payload["lineups"])
+        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM players").fetchone(), (0,))
+        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups").fetchone(), (0,))
+
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._get = Mock(return_value={"data": [deepcopy(payload)]})
+        corrected = client.get_fixture_details_batch([fid])[0]
+        expected = [row for row in payload["lineups"] if row["id"] != 1051955850]
+        self.assertEqual(corrected["lineups"], expected)
+        self.assertEqual(client.correct_fixture_details(deepcopy(corrected)), corrected)
+        rows = details.normalize_fixture_lineups(corrected, fid)
+        rows = {key: rows[key] for key in ("lineups", "player_stats")}
+        # 잘못된 슬롯에 있던 type 88은 저장 대상이 아니며 다른 선수 통계는 모두 보존돼요.
+        self.assertEqual(rows["player_stats"], raw_rows["player_stats"])
+        self.assertEqual(details.replace_fixture_detail_rows(fid, rows, corrected["lineups"]), 18)
+        self.assertEqual(details.replace_fixture_detail_rows(fid, rows, corrected["lineups"]), 0)
+        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups").fetchone(), (18,))
+        self.assertEqual(self.connection.execute(
+            "SELECT jersey_number FROM fixture_lineups WHERE player_id=463035"
+        ).fetchall(), [(19,)])
+
+        # 같은 선수라도 검증한 슬롯 ID가 아니면 자동으로 삭제하지 않아요.
+        unverified = deepcopy(payload)
+        removed_slot = next(row for row in unverified["lineups"] if row["id"] == 1051955850)
+        removed_slot["id"] = 998
+        self.assertEqual(client.correct_fixture_details(deepcopy(unverified)), unverified)
 
     def test_gent_wrong_identity_is_corrected_in_goal_lineup_and_player_stats(self):
         sample = json.loads((Path(__file__).parent / "fixtures/sportmonks-gent-vergara.json").read_text(encoding="utf-8"))
