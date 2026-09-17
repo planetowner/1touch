@@ -8,7 +8,7 @@ import 'package:onetouch/data/competitions/competition_repository_provider.dart'
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
@@ -173,8 +173,8 @@ class _H2HTabState extends State<H2HTab> {
               )
             else
               ..._h2hMatches.map((f) {
-                final home = teamRepository.findByIdOrUnknown(f.homeTeamId);
-                final away = teamRepository.findByIdOrUnknown(f.awayTeamId);
+                final home = fixtureHomeTeam(f, teamRepository);
+                final away = fixtureAwayTeam(f, teamRepository);
                 final leagueName =
                     competitionRepository.findById(f.competitionId)?.name ??
                         'Unknown';
@@ -213,6 +213,9 @@ class _H2HTabState extends State<H2HTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
+    final againstTeam = _againstTeamId == widget.fixture.homeTeamId
+        ? fixtureHomeTeam(widget.fixture, teamRepository)
+        : fixtureAwayTeam(widget.fixture, teamRepository);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -285,8 +288,7 @@ class _H2HTabState extends State<H2HTab> {
               // shell's navigator. go() (not push()) so it actually surfaces.
               onTap: () => openTeamPage(context, _againstTeamId),
               child: Image.network(
-                teamRepository.findByIdOrUnknown(_againstTeamId).imagePath ??
-                    '',
+                againstTeam.imagePath ?? '',
                 fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) =>
                     teamLogoFallback(_againstTeamId, size: 40),

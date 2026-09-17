@@ -26,8 +26,4 @@ extension TeamRepositoryFallback on TeamRepository {
     }
     return team;
   }
-
-  Team findByIdOrUnknown(int teamId) {
-    return findById(teamId) ?? Team(teamId: teamId, name: 'Unknown Team');
-  }
 }

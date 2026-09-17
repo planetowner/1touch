@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
@@ -118,8 +118,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildScoreHeader() {
-    final home = teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
-    final away = teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
+    final home = fixtureHomeTeam(widget.fixture, teamRepository);
+    final away = fixtureAwayTeam(widget.fixture, teamRepository);
 
     return MatchScoreHeader(
       homeLogoAsset: home.imagePath ?? '',
