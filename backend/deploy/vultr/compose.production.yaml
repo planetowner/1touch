@@ -18,6 +18,7 @@ services:
     stop_grace_period: 30s
     environment:
       API_CORS_ORIGINS: ${API_CORS_ORIGINS:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
       AUTH_CODE_SECRET: ${AUTH_CODE_SECRET:-}
       SES_SMTP_HOST: ${SES_SMTP_HOST:-}
       SES_SMTP_USERNAME: ${SES_SMTP_USERNAME:-}

@@ -83,7 +83,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh sync-probability.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh sync-probability.sh sync-highlights.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -95,6 +95,7 @@ ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh config -
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps proxy caddy validate --config /etc/caddy/Caddyfile
 # Probability 적재는 별도 명령으로 끝내고, 배포는 실제 저장 자료의 조회만 확인해요.
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_probability
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_highlights
 bash backup-db.sh
 install -d -m 755 -o 1001 -g 1001 /opt/1touch/backend/logs
 
@@ -119,6 +120,8 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.service" /etc
 install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.timer" /etc/systemd/system/onetouch-opta-sync.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.service" /etc/systemd/system/onetouch-probability-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.timer" /etc/systemd/system/onetouch-probability-sync.timer
+install -m 644 "$release_directory/deploy/vultr/onetouch-highlights-sync.service" /etc/systemd/system/onetouch-highlights-sync.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-highlights-sync.timer" /etc/systemd/system/onetouch-highlights-sync.timer
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
 systemctl enable --now onetouch-community-cleanup.timer
@@ -144,10 +147,14 @@ systemctl is-active onetouch-opta-sync.timer
 systemctl enable --now onetouch-probability-sync.timer
 systemctl is-enabled onetouch-probability-sync.timer
 systemctl is-active onetouch-probability-sync.timer
+systemctl enable --now onetouch-highlights-sync.timer
+systemctl is-enabled onetouch-highlights-sync.timer
+systemctl is-active onetouch-highlights-sync.timer
 printf '\n'
 bash compose-production.sh ps
 systemctl list-timers onetouch-db-backup.timer --no-pager
 systemctl list-timers onetouch-community-cleanup.timer --no-pager
 systemctl list-timers onetouch-opta-sync.timer --no-pager
 systemctl list-timers onetouch-probability-sync.timer --no-pager
+systemctl list-timers onetouch-highlights-sync.timer --no-pager
 echo 'Public introduction, HTTPS, protected docs, API/database health and daily SQL backup verified.'
