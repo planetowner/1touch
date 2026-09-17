@@ -140,6 +140,7 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli fixture-details all
   python -m one_touch_loader.cli fixture-details <season_name> <competition_id> [competition_id ...]
   python -m one_touch_loader.cli fixture-details <season_name> --player-stats-only
+  python -m one_touch_loader.cli fixture-details <season_name> --player-stats-only --from-fixture <fixture_id>
 
 9. capology-team-slugs
   python -m one_touch_loader.cli capology-team-slugs all
@@ -528,6 +529,12 @@ def main():
         if player_stats_only:
             sys.argv.remove("--player-stats-only")
         options = {"player_stats_only": True} if player_stats_only else {}
+        if "--from-fixture" in sys.argv:
+            index = sys.argv.index("--from-fixture")
+            if index + 1 >= len(sys.argv):
+                raise ValueError("--from-fixture requires a fixture ID")
+            options["from_fixture_id"] = int(sys.argv[index + 1])
+            del sys.argv[index:index + 2]
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_fixture_details(**options)
             print(f"Fixture details all done: {result}")

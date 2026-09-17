@@ -164,6 +164,21 @@ class FixtureNormalizationTests(unittest.TestCase):
         self.assertIsNone(_normalize_fixture(fixture, 2001, 8))
 
 class FixtureCliTests(unittest.TestCase):
+    def test_details_resume_option_keeps_season_and_competitions(self):
+        with patch("sys.argv", ["cli", "fixture-details", "2017/2018", "8", "5", "--from-fixture", "1818704", "--player-stats-only"]), \
+                patch.object(cli, "collect_fixture_details_for_competition_season", return_value={}) as collect, \
+                redirect_stdout(io.StringIO()):
+            cli.main()
+        collect.assert_called_once_with("2017/2018", [8, 5], player_stats_only=True, from_fixture_id=1818704)
+
+    def test_details_resume_missing_or_invalid_id_does_not_start_collection(self):
+        for option in (["--from-fixture"], ["--from-fixture", "invalid"]):
+            with self.subTest(option=option), patch("sys.argv", ["cli", "fixture-details", "2017/2018", *option]), \
+                    patch.object(cli, "collect_fixture_details_for_competition_season") as collect:
+                with self.assertRaises(ValueError):
+                    cli.main()
+                collect.assert_not_called()
+
     def test_live_requires_apply_flag_to_write(self) -> None:
         for arguments, expected in ((["live"], False), (["live", "--apply"], True)):
             with self.subTest(arguments=arguments), patch("sys.argv", ["cli", "fixtures", *arguments]), \
