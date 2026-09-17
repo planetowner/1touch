@@ -312,6 +312,31 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('does not invent a default league for an unsupported team',
+      (tester) async {
+    final repository = _successfulStandingRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: StandingTab(
+            team: const {'id': 999999},
+            regularStandingRepository: repository,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.requests, isEmpty);
+    expect(
+      find.byKey(const ValueKey('standing-unavailable')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('standing-filter-row')), findsNothing);
+  });
 }
 
 Widget _app(

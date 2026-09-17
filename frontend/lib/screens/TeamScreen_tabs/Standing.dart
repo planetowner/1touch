@@ -61,6 +61,7 @@ class _StandingTabState extends State<StandingTab> {
   StandingView _selectedView = StandingView.standing;
 
   bool get _xgAvailable => _big5LeagueIds.contains(selectedLeagueId);
+  bool get _hasStandingContext => _validLeagueIds.isNotEmpty;
 
   StandingRepository get _regularStandingRepository =>
       widget.regularStandingRepository ?? apiStandingRepository;
@@ -217,7 +218,7 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   void _startXgLoad({bool updateState = true}) {
-    if (!_xgAvailable) {
+    if (!_hasStandingContext || !_xgAvailable) {
       if (updateState) {
         setState(_resetXgState);
       } else {
@@ -313,6 +314,24 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   void _startStandingLoad({bool updateState = true}) {
+    if (!_hasStandingContext) {
+      final requestId = ++_standingRequestId;
+
+      void applyUnavailableState() {
+        if (requestId != _standingRequestId) return;
+        standings = const [];
+        _isStandingLoading = false;
+        _standingLoadError = null;
+      }
+
+      if (updateState) {
+        setState(applyUnavailableState);
+      } else {
+        applyUnavailableState();
+      }
+      return;
+    }
+
     final competitionId = selectedLeagueId;
     final seasonId = selectedSeasonId;
     final requestId = ++_standingRequestId;
@@ -377,6 +396,15 @@ class _StandingTabState extends State<StandingTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_hasStandingContext) {
+      return const Center(
+        child: Text(
+          'No standings available',
+          key: ValueKey('standing-unavailable'),
+        ),
+      );
+    }
+
     return CustomScrollView(
       slivers: [
         SliverList(
