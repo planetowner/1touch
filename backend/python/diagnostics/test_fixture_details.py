@@ -251,7 +251,8 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
             [{"team_id": 10, "formation": "4-3-3"}],
             [{"team_id": 10, "coach_id": 700}],
             [{"team_id": 10, "minute": 1, "pressure": 12.5}],
-            [{"team_id": 10, "player_id": 100, "stat_type_id": 120, "value": 64}],
+            [{"team_id": 10, "player_id": 100, "stat_type_id": 120, "value": 64},
+             {"team_id": 10, "player_id": 100, "stat_type_id": 97, "value": 3}],
         ]
 
         with (
@@ -267,6 +268,8 @@ class FixtureDetailsRepositoryTests(unittest.TestCase):
             {"stat_type_id": 45},
             {"team_id": 10, "stat_type_id": 120, "stat_code": "touches", "stat_name": "Touches", "value": 64},
             {"team_id": 20, "stat_type_id": 120, "stat_code": "touches", "stat_name": "Touches", "value": None},
+            {"team_id": 10, "stat_type_id": 97, "stat_code": "blocked-shots", "stat_name": "Blocks", "value": 3},
+            {"team_id": 20, "stat_type_id": 97, "stat_code": "blocked-shots", "stat_name": "Blocks", "value": None},
         ])
         self.assertEqual(result["lineups"][0]["player_id"], 100)
         self.assertEqual(result["formations"][0]["formation"], "4-3-3")

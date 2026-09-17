@@ -69,9 +69,16 @@ CATEGORIES = {
     ),
 }
 
+# Touches는 출전 선수 모두의 값이 필요하지만, 블록은 기록된 선수만 응답에 나와요.
+# 97은 상대 슈팅을 막은 횟수예요. 우리 슈팅이 막힌 58과 바꾸어 쓰지 않아요.
+TEAM_TOTALS = {
+    120: ("touches", "Touches", True),
+    97: ("blocked-shots", "Blocks", False),
+}
+
 STORED_STAT_TYPE_IDS = frozenset(
     type_id for _, _, type_ids in METRICS.values() for type_id in type_ids
-) | {MAN_OF_MATCH_TYPE_ID}
+) | {MAN_OF_MATCH_TYPE_ID} | frozenset(TEAM_TOTALS)
 
 
 def _metric(code: str, stats: dict, xg) -> dict:
@@ -100,23 +107,25 @@ def _stats_by_player(stat_rows: list[dict]) -> dict:
     return by_player
 
 
-def build_team_touches(team_ids: list[int], lineups: list[dict], stat_rows: list[dict]) -> list[dict]:
-    """출전 선수의 Touches를 기존 팀 statistics 형식으로 합쳐요."""
-    type_id = METRICS["touches"][2][0]
+def build_team_player_statistics(team_ids: list[int], lineups: list[dict], stat_rows: list[dict]) -> list[dict]:
+    """선수 통계를 공급자의 기록 방식에 맞춰 팀 statistics로 합쳐요."""
     by_player = _stats_by_player(stat_rows)
-    values = defaultdict(list)
-    for lineup in lineups:
-        value = by_player[(lineup["team_id"], lineup["player_id"])].get(type_id)
-        # 미출전 벤치는 제외해요. 0분 교체 출전도 Touches가 있으면 합계에 포함해요.
-        if lineup["lineup_type_id"] == 11 or (lineup["minutes_played"] or 0) > 0 or value is not None:
-            values[lineup["team_id"]].append(value)
     result = []
-    for team_id in team_ids:
-        team_values = values[team_id]
-        # 19134453은 출전 선수 한 명의 Touches가 빠져 있어요. 부분합을 팀 전체 값으로 표시하지 않아요.
-        total = sum(team_values) if team_values and all(v is not None for v in team_values) else None
-        result.append({"team_id": team_id, "stat_type_id": type_id, "stat_code": "touches",
-                       "stat_name": "Touches", "value": total})
+    for type_id, (code, name, require_all_players) in TEAM_TOTALS.items():
+        values = defaultdict(list)
+        for lineup in lineups:
+            value = by_player[(lineup["team_id"], lineup["player_id"])].get(type_id)
+            # 미출전 벤치는 제외하고, 0분 교체 선수도 기록이 있으면 포함해요.
+            if lineup["lineup_type_id"] == 11 or (lineup["minutes_played"] or 0) > 0 or value is not None:
+                if require_all_players or value is not None:
+                    values[lineup["team_id"]].append(value)
+        for team_id in team_ids:
+            team_values = values[team_id]
+            # 19134453처럼 Touches가 일부 빠지면 부분합을 표시하지 않아요.
+            # 블록도 기록 자체가 없으면 미수집·미제공과 0을 구분할 수 없어 null로 남겨요.
+            total = sum(team_values) if team_values and all(v is not None for v in team_values) else None
+            result.append({"team_id": team_id, "stat_type_id": type_id, "stat_code": code,
+                           "stat_name": name, "value": total})
     return result
 
 
