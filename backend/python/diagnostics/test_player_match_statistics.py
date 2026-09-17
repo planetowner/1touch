@@ -15,7 +15,7 @@ from diagnostics import test_fixture_details as existing
 from one_touch_loader.api.deps import get_user_id
 from one_touch_loader.api.routes import fixtures as routes
 from one_touch_loader.core.player_match_metrics import (
-    CATEGORIES, METRICS, STORED_STAT_TYPE_IDS, build_player_statistics,
+    CATEGORIES, METRICS, STORED_STAT_TYPE_IDS, build_player_statistics, build_team_touches,
 )
 from one_touch_loader.loaders import fixture_details_loader as loader
 
@@ -23,13 +23,18 @@ from one_touch_loader.loaders import fixture_details_loader as loader
 SAMPLE = json.loads((Path(__file__).parent / "fixtures/player_match_statistics.json").read_text(encoding="utf-8"))
 
 
-def output_for(case):
+def normalized_lineup_rows(case):
     rows = loader.normalize_fixture_lineups({"lineups": case["lineups"], "formations": []}, case["fixture_id"])
     lineups = [dict(zip(("fixture_id", "team_id", "player_id", "lineup_type_id", "formation_field",
                         "jersey_number", "minutes_played", "rating", "match_position_id"), row))
                for row in rows["lineups"]]
     stats = [dict(zip(("fixture_id", "team_id", "player_id", "stat_type_id", "value"), row))
              for row in rows["player_stats"]]
+    return lineups, stats
+
+
+def output_for(case):
+    lineups, stats = normalized_lineup_rows(case)
     xg_rows = [{**row, "xg": Decimal(row["xg"])} for row in SAMPLE["xg_rows"]
                if row["fixture_id"] == case["fixture_id"]]
     return build_player_statistics(lineups, stats, xg_rows)
@@ -134,6 +139,43 @@ class PlayerMetricTests(unittest.TestCase):
             response = client.get("/v1/fixtures/19427163")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(metrics(response.json()["player_statistics"][2])["xg"]["value"], 0.172853)
+
+
+class TeamTouchesTests(unittest.TestCase):
+    def test_actual_historical_responses_complete_partial_and_absent(self):
+        cases = json.loads((Path(__file__).parent / "fixtures/team_touches.json").read_text(encoding="utf-8"))["cases"]
+        expected = {
+            1710802: {42: None, 19: None},
+            19154545: {3321: 792, 683: 644},
+            # 1분 출전한 37259158의 값이 없으므로 다른 선수의 부분합 580을 반환하지 않아요.
+            19134453: {11: None, 14: 679},
+        }
+        for case in cases:
+            with self.subTest(fixture_id=case["fixture_id"]):
+                lineups, stats = normalized_lineup_rows(case)
+                result = build_team_touches(case["team_ids"], lineups, stats)
+                self.assertEqual({r["team_id"]: r["value"] for r in result}, expected[case["fixture_id"]])
+
+    def test_zero_unused_bench_and_zero_minute_substitute(self):
+        lineups = [
+            {"team_id": 10, "player_id": 1, "lineup_type_id": 11, "minutes_played": 90},
+            {"team_id": 10, "player_id": 2, "lineup_type_id": 12, "minutes_played": None},
+            {"team_id": 10, "player_id": 3, "lineup_type_id": 12, "minutes_played": 0},
+        ]
+        stats = [{"team_id": 10, "player_id": 1, "stat_type_id": 120, "value": 0}]
+        self.assertEqual(build_team_touches([10], lineups, stats)[0]["value"], 0)
+        stats.append({"team_id": 10, "player_id": 3, "stat_type_id": 120, "value": 2})
+        self.assertEqual(build_team_touches([10], lineups, stats)[0]["value"], 2)
+        lineups[1]["minutes_played"] = 1
+        self.assertIsNone(build_team_touches([10], lineups, stats)[0]["value"])
+
+    def test_values_belong_to_team_and_empty_lineups_do_not_mean_zero(self):
+        lineups = [{"team_id": team, "player_id": 1, "lineup_type_id": 11, "minutes_played": 90}
+                   for team in (10, 20)]
+        stats = [{"team_id": 10, "player_id": 1, "stat_type_id": 120, "value": 25}]
+        result = build_team_touches([10, 20], lineups, stats)
+        self.assertEqual([r["value"] for r in result], [25, None])
+        self.assertIsNone(build_team_touches([10], [], [])[0]["value"])
 
 
 class PlayerMetricStorageTests(unittest.TestCase):
