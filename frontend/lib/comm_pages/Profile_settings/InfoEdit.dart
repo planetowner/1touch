@@ -375,11 +375,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   name: 'Apple',
                   status: 'Not Connected'),
               _divider(),
-              _buildSocialRow(
-                  iconPath: 'assets/facebook.svg',
-                  name: 'Facebook',
-                  status: 'Not Connected'),
-              _divider(),
 
               const SizedBox(height: 48),
 

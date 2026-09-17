@@ -80,7 +80,6 @@ flutter:
     - assets/app_logo.svg
     - assets/messi.png
     - assets/google.svg
-    - assets/facebook.svg
     - assets/apple.svg
     - assets/HeungminSon.png
     - assets/addpost_icon.svg
