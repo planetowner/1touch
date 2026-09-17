@@ -89,4 +89,28 @@ void main() {
       expect(firstValue.alignment, Alignment.center);
     }
   });
+
+  testWidgets('reports the competition selected from an overview card',
+      (tester) async {
+    int? selectedCompetitionId;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Standing(
+            teams: const <String, dynamic>{'id': 9},
+            onCompetitionSelected: (competitionId) {
+              selectedCompetitionId = competitionId;
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('overview-standing-card-8')),
+    );
+
+    expect(selectedCompetitionId, 8);
+  });
 }
