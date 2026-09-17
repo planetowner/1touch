@@ -272,6 +272,51 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Favorite team header keeps the domestic league for a cup match',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const cupMatch = Fixture(
+      fixtureId: 4,
+      seasonId: 1,
+      competitionId: 27,
+      homeTeamId: 9,
+      awayTeamId: 19,
+      competitionType: CompetitionType.cup,
+      roundName: null,
+      status: FixtureStatus.upcoming,
+      startingAt: '2026-09-17 18:30:00',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: FavoriteTeamCard(
+              team: TeamOverview(
+                id: 9,
+                name: 'Manchester City',
+                shortName: 'MCI',
+                imagePath: 'https://example.com/manchester-city.png',
+                standing: const {'position': 1},
+                nextMatch: cupMatch,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Premier League 1st'), findsOneWidget);
+    expect(find.text('Carabao Cup (EFL Cup)'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Team selection uses the current competition context label',
       (tester) async {
     tester.view.physicalSize = const Size(320, 568);

@@ -9,13 +9,12 @@ class FavoriteTeamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
     final match = team.liveMatch ?? team.nextMatch;
-    final leagueId = match?.competitionId ?? team.lastMatch?.competitionId;
-    final leagueName = leagueId == null
-        ? ''
-        : competitionRepository.findById(leagueId)?.name ?? '';
-    final rank = leagueId != null
-        ? standingRepository.findForTeam(leagueId, team.id)?.position
-        : null;
+    final competitionContext = teamCompetitionContextResolver.resolve(team.id);
+    final leagueName = competitionContext?.competitionName ?? '';
+    final standingPosition = team.standing?['position'];
+    final rank = standingPosition is int
+        ? standingPosition
+        : competitionContext?.currentPosition;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
