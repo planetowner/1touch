@@ -109,6 +109,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+      'shows API team identity for an opponent outside the mock catalog',
+      (tester) async {
+    final repository = _ControlledFixtureRepository(
+      (_, status, __) async => status == FixtureStatus.upcoming
+          ? [
+              Fixture(
+                fixtureId: 33,
+                competitionId: 24,
+                seasonId: 25583,
+                competitionType: CompetitionType.cup,
+                homeTeamId: 9,
+                awayTeamId: 33,
+                homeTeamName: 'Manchester City',
+                awayTeamName: 'Norwich City',
+                awayTeamLogo: 'https://cdn.example/norwich.png',
+                status: FixtureStatus.upcoming,
+                roundName: 'Third Round',
+                startingAt: '2026-09-17 18:30:00',
+              ),
+            ]
+          : const [],
+    );
+
+    await tester.pumpWidget(_app(repository, teamId: 9));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Norwich City'), findsOneWidget);
+    expect(find.text('Unknown Team'), findsNothing);
+  });
+
   testWidgets('ignores an old response after switching teams', (tester) async {
     final pending = <(int, FixtureStatus), Completer<List<Fixture>>>{};
     final repository = _ControlledFixtureRepository(

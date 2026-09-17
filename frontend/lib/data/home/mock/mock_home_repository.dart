@@ -72,7 +72,7 @@ class MockHomeRepository implements HomeRepository {
             : fixture.homeTeamId;
         return HomeCalendarFixture(
           fixture: fixture,
-          opponent: _teamRepository.findByIdOrUnknown(opponentTeamId),
+          opponent: _teamRepository.requireById(opponentTeamId),
         );
       }),
     );

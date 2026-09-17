@@ -8,8 +8,8 @@ import 'package:onetouch/data/competitions/competition_repository_provider.dart'
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/betting_widgets.dart';
@@ -108,10 +108,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   }
 
   void _openBettingModal() {
-    final homeTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
-    final awayTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
+    final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
+    final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
 
     showModalBottomSheet(
       context: context,
@@ -130,10 +128,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
   @override
   Widget build(BuildContext context) {
-    final homeTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
-    final awayTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
+    final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
+    final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
 
     return SingleChildScrollView(
       child: Column(
@@ -173,8 +169,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
   Widget _buildHeader() {
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final home = teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
-    final away = teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
+    final home = fixtureHomeTeam(widget.fixture, teamRepository);
+    final away = fixtureAwayTeam(widget.fixture, teamRepository);
     final kickoff = widget.fixture.kickoff?.toLocal();
     final date =
         kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
@@ -347,8 +343,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             Expanded(
               child: _buildLegendDot(
                 const Color(0xFFE8434A),
-                teamRepository
-                    .findByIdOrUnknown(widget.fixture.homeTeamId)
+                fixtureHomeTeam(widget.fixture, teamRepository)
                     .name
                     .toUpperCase(),
               ),
@@ -357,8 +352,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             Expanded(
               child: _buildLegendDot(
                 foreground,
-                teamRepository
-                    .findByIdOrUnknown(widget.fixture.awayTeamId)
+                fixtureAwayTeam(widget.fixture, teamRepository)
                     .name
                     .toUpperCase(),
               ),
@@ -455,8 +449,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       );
     }
 
-    final home = teamRepository.findByIdOrUnknown(h2h.homeTeamId);
-    final away = teamRepository.findByIdOrUnknown(h2h.awayTeamId);
+    final home = fixtureHomeTeam(h2h, teamRepository);
+    final away = fixtureAwayTeam(h2h, teamRepository);
     final kickoff = h2h.kickoff?.toLocal();
     final date =
         kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
@@ -620,17 +614,22 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final visibleStandings = [...leaders, ...featured];
     final dividerIndex = featured.isEmpty ? -1 : leaders.length;
     final rows = visibleStandings.map((standing) {
-      final team = teamRepository.findByIdOrUnknown(standing.teamId);
+      final repositoryTeam = teamRepository.findById(standing.teamId);
+      final responseName = standing.teamName?.trim();
+      final displayName = repositoryTeam?.shortCode ??
+          (responseName?.isNotEmpty ?? false ? responseName! : null) ??
+          repositoryTeam?.name ??
+          'Unknown Team';
       return _StandingRow(
         pos: standing.position,
-        name: team.shortCode ?? team.name,
-        teamId: team.teamId,
-        logoUrl: team.imagePath,
+        name: displayName,
+        teamId: standing.teamId,
+        logoUrl: standing.teamLogo ?? repositoryTeam?.imagePath,
         mp: standing.matchesPlayed.toString(),
         w: standing.won.toString(),
         d: standing.draw.toString(),
         l: standing.lost.toString(),
-        highlight: matchTeamIds.contains(team.teamId),
+        highlight: matchTeamIds.contains(standing.teamId),
       );
     }).toList();
 

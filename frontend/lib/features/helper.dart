@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 
@@ -139,8 +139,8 @@ class MatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (match == null) return const SizedBox.shrink();
 
-    final homeTeam = teamRepository.findByIdOrUnknown(match!.homeTeamId);
-    final awayTeam = teamRepository.findByIdOrUnknown(match!.awayTeamId);
+    final homeTeam = fixtureHomeTeam(match!, teamRepository);
+    final awayTeam = fixtureAwayTeam(match!, teamRepository);
 
     return Container(
       key: const ValueKey('match-card-surface'),
