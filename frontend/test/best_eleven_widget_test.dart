@@ -12,6 +12,7 @@ void main() {
   Widget buildSubject({
     required int teamId,
     required BestElevenRepository repository,
+    VoidCallback? onUnavailable,
   }) {
     return MaterialApp(
       theme: whitetheme,
@@ -21,6 +22,7 @@ void main() {
             teamId: teamId,
             variant: TeamBestElevenVariant.overview,
             repository: repository,
+            onUnavailable: onUnavailable,
           ),
         ),
       ),
@@ -96,6 +98,29 @@ void main() {
 
     expect(find.byKey(const ValueKey('best-eleven-empty')), findsOneWidget);
     expect(find.text('No best eleven available'), findsOneWidget);
+  });
+
+  testWidgets('reports and hides unavailable overview content when requested',
+      (tester) async {
+    var unavailableCalls = 0;
+    final repository = _TestBestElevenRepository((_) async => null);
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      buildSubject(
+        teamId: 9,
+        repository: repository,
+        onUnavailable: () => unavailableCalls += 1,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(unavailableCalls, 1);
+    expect(
+      find.byKey(const ValueKey('best-eleven-unavailable')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('best-eleven-empty')), findsNothing);
   });
 
   testWidgets('shows an error and retries the repository request',
