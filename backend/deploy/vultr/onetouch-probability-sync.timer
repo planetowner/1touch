@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh 1Touch league probabilities every hour
+
+[Timer]
+# 같은 작업이 아직 실행 중이면 겹쳐 실행하지 않아요.
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -224,6 +224,12 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli opta-shots sync --dataset analysis --retry-report <previous_report.json> --retry-statuses failed not_finished [--check | --apply]
   python -m one_touch_loader.cli opta-shots --url <match_page_url> --output <json_path>
   python -m one_touch_loader.cli opta-shots --snapshot <raw_json_path> --output <json_path>
+
+24. probability (DB writes require --apply; defaults to --check)
+  python -m one_touch_loader.cli probability sync-elo --mapping-file <verified_mapping.json> [--apply]
+  python -m one_touch_loader.cli probability train --output <model.json> [--apply]
+  python -m one_touch_loader.cli probability forecast --model <model.json> --as-of YYYY-MM-DD --output <folder> [--from-start] [--current] [--apply]
+  python -m one_touch_loader.cli probability refresh [--check | --apply]
 """
 
 
@@ -259,6 +265,10 @@ def main():
             cleanup(sys.argv[3:])
         else:
             print(USAGE)
+
+    elif cmd == "probability":
+        from one_touch_loader.loaders.probability_loader import main as probability_main
+        probability_main(sys.argv[2:])
 
     elif cmd == "opta-shots":
         from one_touch_loader.loaders.opta_shots_loader import main as opta_shots_main
