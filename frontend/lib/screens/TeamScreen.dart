@@ -5,7 +5,6 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
@@ -130,11 +129,10 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   Map<String, dynamic> _teamMap(TeamOverview overview) {
-    final leagueId =
-        overview.nextMatch?.competitionId ?? overview.lastMatch?.competitionId;
-    final leagueName = leagueId == null
-        ? 'League'
-        : competitionRepository.findById(leagueId)?.name ?? 'League';
+    final leagueName = team_providers.teamCompetitionContextResolver
+            .resolve(overview.id)
+            ?.competitionName ??
+        'League';
     final positionValue = overview.standing?['position'];
     final position = positionValue is int
         ? '$leagueName ${ordinal(positionValue)}'

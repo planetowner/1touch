@@ -40,6 +40,8 @@ class TestTeamOverviewRepository implements TeamOverviewRepository {
 TeamOverview testTeamOverview({
   int teamId = 9,
   String name = 'Manchester City',
+  int nextCompetitionId = 8,
+  CompetitionType nextCompetitionType = CompetitionType.league,
 }) {
   return TeamOverview(
     id: teamId,
@@ -63,10 +65,10 @@ TeamOverview testTeamOverview({
     nextMatch: Fixture(
       fixtureId: 1001,
       seasonId: 25583,
-      competitionId: 8,
+      competitionId: nextCompetitionId,
       homeTeamId: teamId,
       awayTeamId: 19,
-      competitionType: CompetitionType.league,
+      competitionType: nextCompetitionType,
       roundName: '4',
       status: FixtureStatus.upcoming,
       startingAt: '2026-09-20T15:00:00.000Z',
