@@ -118,6 +118,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _buildTextField(
                 label: "Name",
                 controller: nameController,
+                fieldKey: const ValueKey('profile-real-name-field'),
+                readOnly: true,
               ),
               const SizedBox(height: 24),
               _buildTextField(
@@ -220,16 +222,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
+    Key? fieldKey,
     bool isPassword = false,
     bool isObscure = false,
+    bool readOnly = false,
     VoidCallback? onSuffixTap,
     TextInputType? keyboardType,
   }) {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     return TextField(
+      key: fieldKey,
       controller: controller,
       obscureText: isPassword && isObscure,
+      readOnly: readOnly,
+      enableInteractiveSelection: !readOnly,
+      showCursor: !readOnly,
       keyboardType: keyboardType,
       style: Body1.style.copyWith(color: colors.onSurface),
       cursorColor: colors.onSurface,
@@ -239,21 +247,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         labelStyle: Body1.style,
         floatingLabelStyle:
             Body1.style.copyWith(color: appColors.mutedForeground),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  isObscure
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  color: colors.onSurface,
-                  size: 20,
-                ),
-                onPressed: onSuffixTap,
+        suffixIcon: readOnly
+            ? Icon(
+                Icons.lock_outline,
+                color: appColors.mutedForeground,
+                size: 20,
               )
-            : IconButton(
-                icon: Icon(Icons.cancel, color: colors.onSurface, size: 20),
-                onPressed: () => controller.clear(),
-              ),
+            : isPassword
+                ? IconButton(
+                    icon: Icon(
+                      isObscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: colors.onSurface,
+                      size: 20,
+                    ),
+                    onPressed: onSuffixTap,
+                  )
+                : IconButton(
+                    icon: Icon(Icons.cancel, color: colors.onSurface, size: 20),
+                    onPressed: () => controller.clear(),
+                  ),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: appColors.divider),
         ),
