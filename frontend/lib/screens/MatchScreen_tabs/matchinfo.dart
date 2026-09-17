@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -246,8 +246,8 @@ class MatchInfoTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final homeTeam = teamRepository.findByIdOrUnknown(fixture.homeTeamId);
-    final awayTeam = teamRepository.findByIdOrUnknown(fixture.awayTeamId);
+    final homeTeam = fixtureHomeTeam(fixture, teamRepository);
+    final awayTeam = fixtureAwayTeam(fixture, teamRepository);
     final homeScore = fixture.homeScore?.toString() ?? '#';
     final awayScore = fixture.awayScore?.toString() ?? '#';
     final coachNamesByTeam = {

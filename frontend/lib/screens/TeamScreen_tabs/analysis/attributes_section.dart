@@ -247,7 +247,7 @@ class _AttributesSectionState extends State<AttributesSection> {
                   _legendDot(
                     Theme.of(context).colorScheme.onSurface,
                     '${_compactSeasonLabel(_comparisonScores!.seasonLabel)} '
-                    '${teamRepository.findByIdOrUnknown(_comparisonScores!.teamId).name.toUpperCase()}',
+                    '${(teamRepository.findById(_comparisonScores!.teamId)?.name ?? 'Unknown Team').toUpperCase()}',
                   ),
               ],
             ),
