@@ -12,6 +12,7 @@ import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/injuries/team_injury_repository_provider.dart';
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
