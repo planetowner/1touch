@@ -1,14 +1,12 @@
 part of 'match_info_features.dart';
 
 class MatchHighlights extends StatefulWidget {
-  final String imageAsset;
   final int homeTeamId;
   final int awayTeamId;
   final HomeContentRepository? repository;
 
   const MatchHighlights({
     super.key,
-    required this.imageAsset,
     required this.homeTeamId,
     required this.awayTeamId,
     this.repository,
@@ -111,19 +109,25 @@ class _MatchHighlightsState extends State<MatchHighlights> {
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) {
           _handleImageError();
-          return _fallbackImage();
+          return _unavailablePlaceholder();
         },
       );
     }
-    return _fallbackImage();
+    return _unavailablePlaceholder();
   }
 
-  Widget _fallbackImage() {
-    return Image.asset(
-      widget.imageAsset,
+  Widget _unavailablePlaceholder() {
+    return Container(
       width: double.infinity,
       height: 194,
-      fit: BoxFit.cover,
+      alignment: Alignment.center,
+      color: AppColors.of(context).cardBackground,
+      child: Text(
+        'HIGHLIGHTS UNAVAILABLE',
+        style: Body2_b.style.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
     );
   }
 }
