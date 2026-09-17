@@ -19,12 +19,16 @@ class StandingTab extends StatefulWidget {
   final Map<String, dynamic>? team;
   final StandingRepository? regularStandingRepository;
   final XgStandingRepository? xgStandingRepository;
+  final int? requestedCompetitionId;
+  final int selectionRequestId;
 
   const StandingTab({
     super.key,
     required this.team,
     this.regularStandingRepository,
     this.xgStandingRepository,
+    this.requestedCompetitionId,
+    this.selectionRequestId = 0,
   });
 
   @override
@@ -81,6 +85,7 @@ class _StandingTabState extends State<StandingTab> {
     super.initState();
 
     _setDefaultLeagueAndSeason();
+    _applyRequestedCompetition(widget.requestedCompetitionId);
     _startStandingLoad(updateState: false);
 
     _horizontalScrollController.addListener(_handleHorizontalScroll);
@@ -92,10 +97,11 @@ class _StandingTabState extends State<StandingTab> {
     // This tab's State is reused across team switches (the Team-tab branch
     // stays alive in the bottom-nav shell), so redo the team-based setup
     // instead of only doing it once in initState.
-    if (widget.team?['id'] != oldWidget.team?['id'] ||
+    final dependenciesChanged = widget.team?['id'] != oldWidget.team?['id'] ||
         widget.regularStandingRepository !=
             oldWidget.regularStandingRepository ||
-        widget.xgStandingRepository != oldWidget.xgStandingRepository) {
+        widget.xgStandingRepository != oldWidget.xgStandingRepository;
+    if (dependenciesChanged) {
       _setDefaultLeagueAndSeason();
       if (_selectedView == StandingView.xgTable && _xgAvailable) {
         _startXgLoad();
@@ -103,6 +109,14 @@ class _StandingTabState extends State<StandingTab> {
         _resetXgState();
       }
       _startStandingLoad();
+      return;
+    }
+
+    if (widget.selectionRequestId != oldWidget.selectionRequestId) {
+      final competitionId = widget.requestedCompetitionId;
+      if (competitionId != null) {
+        _selectOverviewCompetition(competitionId);
+      }
     }
   }
 
@@ -131,6 +145,32 @@ class _StandingTabState extends State<StandingTab> {
 
     selectedLeagueId = leagueId;
     selectedSeasonId = seasonId;
+  }
+
+  bool _applyRequestedCompetition(int? competitionId) {
+    if (competitionId == null || !_validLeagueIds.contains(competitionId)) {
+      return false;
+    }
+    final seasons = seasonRepository.forCompetition(competitionId);
+    if (seasons.isEmpty) return false;
+
+    final season =
+        seasonRepository.currentForCompetition(competitionId) ?? seasons.first;
+    selectedLeagueId = competitionId;
+    selectedSeasonId = season.seasonId;
+    _selectedView = StandingView.standing;
+    return true;
+  }
+
+  void _selectOverviewCompetition(int competitionId) {
+    if (!_validLeagueIds.contains(competitionId) ||
+        seasonRepository.forCompetition(competitionId).isEmpty) {
+      return;
+    }
+
+    setState(() => _applyRequestedCompetition(competitionId));
+    _resetXgState();
+    _startStandingLoad();
   }
 
   @override

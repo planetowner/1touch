@@ -6,8 +6,13 @@ import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart
 
 class OverviewTab extends StatelessWidget {
   final Map<String, dynamic>? team;
+  final ValueChanged<int>? onStandingCompetitionSelected;
 
-  const OverviewTab({super.key, required this.team});
+  const OverviewTab({
+    super.key,
+    required this.team,
+    this.onStandingCompetitionSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +29,10 @@ class OverviewTab extends StatelessWidget {
 
               const SizedBox(height: 32),
               const SectionHeader(title: "STANDING"),
-              Standing(teams: team),
+              Standing(
+                teams: team,
+                onCompetitionSelected: onStandingCompetitionSelected,
+              ),
 
               const SizedBox(height: 32),
               const SectionHeader(title: "BEST XI"),

@@ -1,8 +1,14 @@
 part of 'team_screen_features.dart';
 
 class Standing extends StatefulWidget {
-  const Standing({super.key, this.teams});
+  const Standing({
+    super.key,
+    this.teams,
+    this.onCompetitionSelected,
+  });
+
   final teams;
+  final ValueChanged<int>? onCompetitionSelected;
 
   @override
   _StandingState createState() => _StandingState();
@@ -114,65 +120,70 @@ class _StandingState extends State<Standing> {
         elevation: 5,
         borderRadius: BorderRadius.circular(20),
         clipBehavior: Clip.antiAlias,
-        child: Container(
-          key: ValueKey('overview-standing-card-$leagueId'),
-          width: 345,
-          decoration: BoxDecoration(color: bodyBackground),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // header block
-              Container(
-                key: ValueKey('overview-standing-header-$leagueId'),
-                color: headerBackground,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      height: 24,
-                    ),
-                    // league title line
-                    Row(
-                      children: [
-                        Image.network(
-                          league?.imagePath ?? '',
-                          width: 24,
-                          height: 24,
-                          errorBuilder: (_, __, ___) =>
-                              competitionLogoFallback(leagueId, size: 24),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            league?.name ?? 'Unknown',
-                            style: Heading4.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+        child: InkWell(
+          onTap: widget.onCompetitionSelected == null
+              ? null
+              : () => widget.onCompetitionSelected!(leagueId),
+          child: Container(
+            key: ValueKey('overview-standing-card-$leagueId'),
+            width: 345,
+            decoration: BoxDecoration(color: bodyBackground),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // header block
+                Container(
+                  key: ValueKey('overview-standing-header-$leagueId'),
+                  color: headerBackground,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 24,
+                      ),
+                      // league title line
+                      Row(
+                        children: [
+                          Image.network(
+                            league?.imagePath ?? '',
+                            width: 24,
+                            height: 24,
+                            errorBuilder: (_, __, ___) =>
+                                competitionLogoFallback(leagueId, size: 24),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // columns header line (uses same table grid as body)
-                    _columnsHeader(),
-                    SizedBox(
-                      height: 12,
-                    ),
-                  ],
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              league?.name ?? 'Unknown',
+                              style: Heading4.style,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // columns header line (uses same table grid as body)
+                      _columnsHeader(),
+                      SizedBox(
+                        height: 12,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              // divider
-              Container(height: 1, color: appColors.divider),
+                // divider
+                Container(height: 1, color: appColors.divider),
 
-              // body rows table (aligned with header)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                child: _rowsTable(rows),
-              ),
-            ],
+                // body rows table (aligned with header)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  child: _rowsTable(rows),
+                ),
+              ],
+            ),
           ),
         ),
       ),
