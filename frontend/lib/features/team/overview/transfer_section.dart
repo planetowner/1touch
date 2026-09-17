@@ -5,10 +5,12 @@ class Transfer extends StatefulWidget {
     super.key,
     this.teams,
     this.repository,
+    this.onUnavailable,
   });
 
   final teams;
   final TransferRepository? repository;
+  final VoidCallback? onUnavailable;
 
   @override
   State<Transfer> createState() => _TransferState();
@@ -19,6 +21,7 @@ class _TransferState extends State<Transfer> {
   TeamTransferWindow? _window;
   bool _isLoading = false;
   bool _loadFailed = false;
+  bool _isUnavailable = false;
   int _loadRequestId = 0;
 
   TransferRepository get _repository => widget.repository ?? transferRepository;
@@ -55,6 +58,7 @@ class _TransferState extends State<Transfer> {
     _window = cached;
     _isLoading = teamId != null && cached == null;
     _loadFailed = false;
+    _isUnavailable = false;
 
     if (_isLoading) {
       unawaited(_loadTransfers(teamId!, requestId));
@@ -69,6 +73,13 @@ class _TransferState extends State<Transfer> {
         _window = window;
         _isLoading = false;
       });
+    } on TeamFeatureUnavailableException {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _isUnavailable = true;
+      });
+      widget.onUnavailable?.call();
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
@@ -82,6 +93,11 @@ class _TransferState extends State<Transfer> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isUnavailable) {
+      return const SizedBox.shrink(
+        key: ValueKey('transfer-unavailable'),
+      );
+    }
     final appColors = AppColors.of(context);
     final incoming = _window?.incoming ?? const <TransferEntry>[];
     final outgoing = _window?.outgoing ?? const <TransferEntry>[];

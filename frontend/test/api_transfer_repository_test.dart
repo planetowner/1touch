@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/api/api_transfer_repository.dart';
 
 void main() {
@@ -102,9 +103,22 @@ void main() {
     expect(repository.cachedWindows.value, hasLength(2));
   });
 
-  test('surfaces unavailable, authentication, and server failures', () async {
+  test('maps not found to an unavailable team feature', () async {
+    final repository = ApiTransferRepository(
+      client: MockClient((_) async => http.Response('Not found', 404)),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.loadForTeam(83),
+      throwsA(isA<TeamFeatureUnavailableException>()),
+    );
+    expect(repository.cachedWindows.value, isEmpty);
+  });
+
+  test('surfaces authentication and server failures', () async {
     final responses = [
-      http.Response('Not found', 404),
       http.Response('Unauthorized', 401),
       http.Response('Server error', 500),
     ];

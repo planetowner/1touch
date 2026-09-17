@@ -5,10 +5,12 @@ class InjuryStatus extends StatefulWidget {
     super.key,
     this.teams,
     this.repository,
+    this.onUnavailable,
   });
 
   final Object? teams;
   final TeamInjuryRepository? repository;
+  final VoidCallback? onUnavailable;
 
   @override
   State<InjuryStatus> createState() => _InjuryStatusState();
@@ -18,6 +20,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
   TeamInjuryReport? _report;
   bool _isLoading = false;
   bool _loadFailed = false;
+  bool _isUnavailable = false;
   int _loadRequestId = 0;
 
   TeamInjuryRepository get _repository =>
@@ -55,6 +58,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
     _report = cached;
     _isLoading = teamId != null && cached == null;
     _loadFailed = false;
+    _isUnavailable = false;
 
     if (_isLoading) {
       unawaited(_loadInjuries(teamId!, requestId));
@@ -69,6 +73,13 @@ class _InjuryStatusState extends State<InjuryStatus> {
         _report = report;
         _isLoading = false;
       });
+    } on TeamFeatureUnavailableException {
+      if (!mounted || requestId != _loadRequestId) return;
+      setState(() {
+        _isLoading = false;
+        _isUnavailable = true;
+      });
+      widget.onUnavailable?.call();
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
@@ -82,6 +93,11 @@ class _InjuryStatusState extends State<InjuryStatus> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isUnavailable) {
+      return const SizedBox.shrink(
+        key: ValueKey('injury-unavailable'),
+      );
+    }
     final players = _report?.players ?? const <InjuredTeamPlayer>[];
 
     return Container(
