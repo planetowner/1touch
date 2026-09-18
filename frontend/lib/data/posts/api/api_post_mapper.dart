@@ -22,6 +22,11 @@ Post postFromApiResponse(ApiPostResponse response, {required Uri apiBaseUri}) {
       'Expected author_deleted to match nullable user_id.',
     );
   }
+  if (response.likeCount < 0 || response.commentCount < 0) {
+    throw const FormatException(
+      'Expected non-negative post engagement counts.',
+    );
+  }
 
   final attachments = response.attachments
       .map(

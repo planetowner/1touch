@@ -18,10 +18,10 @@ class PlayerMatchStatSection {
 
 class PlayerMatchStatData {
   final String name;
-  final int jerseyNumber;
+  final int? jerseyNumber;
   final List<String> positions;
   final String club;
-  final String nationality;
+  final String? nationality;
   final String? flagEmoji;
   final String? playerImageUrl;
   final String? playerImageAsset;
@@ -69,6 +69,7 @@ class PlayerMatchStatSheet extends StatelessWidget {
       snapSizes: const [0.78, 0.95],
       builder: (_, scrollController) {
         return ClipRRect(
+          key: const ValueKey('player-match-stat-sheet'),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: Column(
             children: [
@@ -127,26 +128,32 @@ class _Header extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      // TODO: navigate to full player profile
-                    },
-                    child: Row(
-                      children: [
-                        Text(
-                          player.name,
-                          style: Heading2.style.copyWith(color: Colors.white),
-                        ),
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: Colors.white70,
-                          size: 20,
-                        ),
-                      ],
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        // TODO: navigate to full player profile
+                      },
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              player.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  Heading2.style.copyWith(color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: Colors.white70,
+                            size: 20,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   _HeaderIconBtn(
                     icon: Icons.star_border_rounded,
                     onTap: () {
@@ -178,7 +185,7 @@ class _Header extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${player.jerseyNumber}',
+                          player.jerseyNumber?.toString() ?? '—',
                           style: const TextStyle(
                             fontSize: 72,
                             fontWeight: FontWeight.w800,
@@ -197,10 +204,11 @@ class _Header extends StatelessWidget {
                           style: Body1.style.copyWith(color: Colors.white70),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          '${player.nationality}${player.flagEmoji != null ? ' ${player.flagEmoji}' : ''}',
-                          style: Body1.style.copyWith(color: Colors.white70),
-                        ),
+                        if (player.nationality != null)
+                          Text(
+                            '${player.nationality}${player.flagEmoji != null ? ' ${player.flagEmoji}' : ''}',
+                            style: Body1.style.copyWith(color: Colors.white70),
+                          ),
                       ],
                     ),
                   ),

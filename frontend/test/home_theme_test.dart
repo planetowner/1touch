@@ -139,6 +139,26 @@ void main() {
         ),
       );
 
+      final leagueLegend = find.text('League');
+      final europeLegend = find.text('Europe');
+      final cupLegend = find.text('Cup');
+      expect(
+        tester
+                .getTopLeft(
+                  find.byKey(const ValueKey('fixture-calendar-legends')),
+                )
+                .dy -
+            tester
+                .getBottomLeft(
+                  find.byKey(const ValueKey('fixture-calendar-card')),
+                )
+                .dy,
+        closeTo(16, 0.1),
+      );
+      expect(tester.getTopLeft(leagueLegend).dy,
+          closeTo(tester.getTopLeft(europeLegend).dy, 0.1));
+      expect(tester.getTopLeft(europeLegend).dy,
+          closeTo(tester.getTopLeft(cupLegend).dy, 0.1));
       expect(tester.takeException(), isNull);
     });
   }
@@ -249,6 +269,51 @@ void main() {
     expect(displayedMatch.match?.fixtureId, liveMatch.fixtureId);
     expect(find.text('LIVE MATCH'), findsOneWidget);
     expect(find.text('NEXT MATCH'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Favorite team header keeps the domestic league for a cup match',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const cupMatch = Fixture(
+      fixtureId: 4,
+      seasonId: 1,
+      competitionId: 27,
+      homeTeamId: 9,
+      awayTeamId: 19,
+      competitionType: CompetitionType.cup,
+      roundName: null,
+      status: FixtureStatus.upcoming,
+      startingAt: '2026-09-17 18:30:00',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: FavoriteTeamCard(
+              team: TeamOverview(
+                id: 9,
+                name: 'Manchester City',
+                shortName: 'MCI',
+                imagePath: 'https://example.com/manchester-city.png',
+                standing: const {'position': 1},
+                nextMatch: cupMatch,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Premier League 1st'), findsOneWidget);
+    expect(find.text('Carabao Cup (EFL Cup)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

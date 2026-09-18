@@ -6,6 +6,8 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'support/stub_community_repository.dart';
 
 void main() {
   testWidgets('loads posts through the repository on a tall screen',
@@ -17,7 +19,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
 
@@ -31,6 +37,11 @@ void main() {
 
     expect(find.text(_loadedPost.title), findsOneWidget);
     expect(find.text('@planetowner'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-post-91-like-count')),
+      findsOneWidget,
+    );
+    expect(find.text('1,290'), findsOneWidget);
     expect(repository.calls, 1);
     expect(repository.lastTeamId, 9);
     expect(repository.lastCategory, isNull);
@@ -52,7 +63,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -81,7 +96,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -117,7 +136,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -168,13 +191,21 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: firstRepository),
+        home: Community(
+          teamId: 9,
+          postRepository: firstRepository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: secondRepository),
+        home: Community(
+          teamId: 9,
+          postRepository: secondRepository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
 
@@ -199,14 +230,22 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 83, postRepository: repository),
+        home: Community(
+          teamId: 83,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -214,6 +253,51 @@ void main() {
     expect(repository.teamIds, [9, 83]);
     expect(find.text(_otherTeamPost.title), findsOneWidget);
     expect(find.text(_loadedPost.title), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('refreshes engagement after post details closes without loading',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    final refreshedPosts = Completer<List<Post>>();
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+      () => refreshedPosts.future,
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(_loadedPost.title));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('community-detail-like-count')),
+      findsOneWidget,
+    );
+
+    Navigator.of(tester.element(find.byType(PostDetailScreen))).pop();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('community-posts-loading')),
+      findsNothing,
+    );
+    expect(find.text('1,290'), findsOneWidget);
+
+    refreshedPosts.complete(const [_likedPost]);
+    await tester.pumpAndSettle();
+
+    expect(repository.calls, 2);
+    expect(find.text('1,291'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -231,7 +315,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -269,7 +357,11 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
-        home: Community(teamId: 9, postRepository: repository),
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -365,6 +457,11 @@ class _ScriptedPostRepository implements PostRepository {
   Future<void> reportPost({required int postId, required String reason}) {
     throw UnsupportedError('This test double does not script post reports.');
   }
+
+  @override
+  Future<void> setPostLiked({required int postId, required bool liked}) {
+    throw UnsupportedError('This test double does not script post likes.');
+  }
 }
 
 const _loadedPost = Post(
@@ -376,6 +473,8 @@ const _loadedPost = Post(
   title: 'Repository post',
   body: 'Loaded through the repository.',
   createdAt: '2026-08-27 10:00:00',
+  likeCount: 1290,
+  commentCount: 12,
 );
 
 const _stalePost = Post(
@@ -386,6 +485,20 @@ const _stalePost = Post(
   title: 'Stale repository post',
   body: 'This result should be ignored.',
   createdAt: '2026-08-26 10:00:00',
+);
+
+const _likedPost = Post(
+  postId: 91,
+  teamId: 9,
+  userId: 1001,
+  username: 'planetowner',
+  category: PostCategory.general,
+  title: 'Repository post',
+  body: 'Loaded through the repository.',
+  createdAt: '2026-08-27 10:00:00',
+  likeCount: 1291,
+  commentCount: 12,
+  liked: true,
 );
 
 const _createdPost = Post(

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:onetouch/data/transfers/api/api_transfer_mapper.dart';
 import 'package:onetouch/data/transfers/api/api_transfer_response.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
+import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 
 /// HTTP implementation of `GET /v1/teams/{team_id}/transfers`.
@@ -43,6 +44,12 @@ class ApiTransferRepository implements TransferRepository {
         ..._requestHeaders,
       },
     );
+    if (response.statusCode == 404) {
+      throw TeamFeatureUnavailableException(
+        teamId: teamId,
+        feature: 'Transfers',
+      );
+    }
     if (response.statusCode != 200) {
       throw http.ClientException(
         'Transfers request failed with status ${response.statusCode}.',

@@ -1,6 +1,12 @@
-import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
+import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_config.dart';
+import 'package:onetouch/data/posts/api/api_post_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 
-// TODO(posts): Replace this mock-backed provider with the Bearer-authenticated
-// API implementation after its response mapper is connected.
-final PostRepository postRepository = MockPostRepository();
+final ApiConfig _apiConfig = ApiConfig.fromEnvironment();
+
+final PostRepository postRepository = ApiPostRepository(
+  client: http.Client(),
+  apiBaseUri: _apiConfig.baseUri,
+  requestHeaders: _apiConfig.requestHeaders,
+);
