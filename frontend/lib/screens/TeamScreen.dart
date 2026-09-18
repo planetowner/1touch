@@ -11,6 +11,7 @@ import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository_provider.dart'
     as team_overview_providers;
+import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/teams/team_color_palette_2627.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
@@ -22,6 +23,7 @@ class TeamScreen extends StatefulWidget {
   final int teamId;
   final TeamAttributeRepository? teamAttributeRepository;
   final TeamOverviewRepository? teamOverviewRepository;
+  final TeamProbabilityRepository? teamProbabilityRepository;
   final StandingRepository? standingRepository;
   final XgStandingRepository? xgStandingRepository;
 
@@ -30,6 +32,7 @@ class TeamScreen extends StatefulWidget {
     required this.teamId,
     this.teamAttributeRepository,
     this.teamOverviewRepository,
+    this.teamProbabilityRepository,
     this.standingRepository,
     this.xgStandingRepository,
   });
@@ -419,6 +422,7 @@ class _TeamScreenState extends State<TeamScreen>
                 AnalysisTab(
                   team: team,
                   repository: widget.teamAttributeRepository,
+                  probabilityRepository: widget.teamProbabilityRepository,
                 ),
               ],
             ),
