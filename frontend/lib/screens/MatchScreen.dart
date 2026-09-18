@@ -6,6 +6,8 @@ import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
+import 'package:onetouch/data/betting/betting_repository.dart';
+import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 
 import '../core/stylesheet_dark.dart';
@@ -15,6 +17,7 @@ class MatchScreen extends StatefulWidget {
   final String matchStatus;
   final Fixture? initialFixture;
   final FixtureRepository? repository;
+  final BettingRepository? bettingRepository;
 
   const MatchScreen({
     super.key,
@@ -22,6 +25,7 @@ class MatchScreen extends StatefulWidget {
     required this.matchStatus,
     this.initialFixture,
     this.repository,
+    this.bettingRepository,
   });
 
   @override
@@ -36,6 +40,7 @@ class _MatchScreenState extends State<MatchScreen> {
   int? _fixtureId;
   bool _isLoading = false;
   bool _hasLoadError = false;
+  BettingController? _betting;
 
   FixtureRepository get _repository =>
       widget.repository ?? fixture_provider.fixtureDetailRepository;
@@ -46,6 +51,11 @@ class _MatchScreenState extends State<MatchScreen> {
 
     _fixtureId = int.tryParse(widget.matchId);
     if (_fixtureId != null) {
+      // 두 탭이 같은 잔액·참여 내역을 공유해 변경 직후에도 비율이 일치해요.
+      _betting = BettingController(
+        fixtureId: _fixtureId!,
+        repository: widget.bettingRepository,
+      )..load();
       final initialFixture = widget.initialFixture;
       fixture = initialFixture?.fixtureId == _fixtureId ? initialFixture : null;
       _isLoading = fixture == null;
@@ -78,6 +88,12 @@ class _MatchScreenState extends State<MatchScreen> {
         _hasLoadError = fixture == null;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _betting?.dispose();
+    super.dispose();
   }
 
   void _retryLoad() {
@@ -130,16 +146,17 @@ class _MatchScreenState extends State<MatchScreen> {
                 },
                 icon: Icon(Icons.search, size: 28, color: foreground),
               ),
-              SizedBox(
-                width: 8,
-              ),
+              SizedBox(width: 8),
               IconButton(
                 padding: EdgeInsets.only(right: 24),
                 onPressed: () {
                   context.push('/profile');
                 },
-                icon: Icon(Icons.account_circle_outlined,
-                    size: 28, color: foreground),
+                icon: Icon(
+                  Icons.account_circle_outlined,
+                  size: 28,
+                  color: foreground,
+                ),
               ),
             ],
           ),
@@ -254,21 +271,18 @@ class _MatchScreenState extends State<MatchScreen> {
         return MatchPreviewTab(
           fixture: fixture!,
           fixtureRepository: _repository,
+          bettingController: _betting!,
         );
       case 'HEAD TO HEAD':
         return H2HTab(
           fixture: fixture!,
           fixtureRepository: _repository,
+          bettingController: _betting!,
         );
       case 'ANALYSIS':
-        return AnalysisTab(
-          fixture: fixture!,
-          detail: _fixtureDetail,
-        );
+        return AnalysisTab(fixture: fixture!, detail: _fixtureDetail);
       case 'LIVE CHAT':
-        return LiveChatTab(
-          matchId: fixture!.fixtureId,
-        );
+        return LiveChatTab(matchId: fixture!.fixtureId);
       default:
         return const SizedBox.shrink();
     }

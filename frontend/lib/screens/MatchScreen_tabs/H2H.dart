@@ -11,14 +11,18 @@ import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/betting/betting_controller.dart';
+import 'package:onetouch/features/betting_widgets.dart';
 
 class H2HTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
+  final BettingController bettingController;
 
   const H2HTab({
     super.key,
     required this.fixture,
+    required this.bettingController,
     this.fixtureRepository,
   });
 
@@ -66,10 +70,7 @@ class _H2HTabState extends State<H2HTab> {
     });
 
     try {
-      final loaded = await repository.loadHeadToHead(
-        fixtureId,
-        limit: limit,
-      );
+      final loaded = await repository.loadHeadToHead(fixtureId, limit: limit);
       if (!mounted || requestId != _latestRequestId) return;
       setState(() {
         _h2hMatches = loaded;
@@ -283,7 +284,7 @@ class _H2HTabState extends State<H2HTab> {
                     teamLogoFallback(_againstTeamId, size: 40),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -328,120 +329,26 @@ class _H2HTabState extends State<H2HTab> {
     );
   }
 
-  Widget _buildBetsCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'BETS',
-          style: Body2_b.style,
-        ),
-        const SizedBox(height: 16),
-        Container(
-          key: const ValueKey('match-h2h-bets-card'),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.lightGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // EXPERT row
-              Row(
-                children: [
-                  const Text('EXPERT', style: Body2_b.style),
-                  const SizedBox(width: 6),
-                  Icon(Icons.help_outline, color: foreground, size: 16),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildBar(
-                values: [60, 20, 20],
-                showCheckOnFirst: false,
-              ),
-              const SizedBox(height: 20),
-              // USER row
-              const Text('USER', style: Body2_b.style),
-              const SizedBox(height: 12),
-              _buildBar(
-                values: [60, 30, 10],
-                showCheckOnFirst: true,
-              ),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget _buildBar(
-      {required List<int> values, required bool showCheckOnFirst}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final segments = [
-      (values[0], false),
-      (values[1], false),
-      (values[2], true),
-    ];
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Row(
-        children: List.generate(segments.length, (i) {
-          final (value, isWhite) = segments[i];
-          return Expanded(
-            flex: value,
-            child: Container(
-              height: 36,
-              decoration: BoxDecoration(
-                color: isWhite
-                    ? (isDark ? Colors.white : AppPalette.lightGreyBox)
-                    : i == 0
-                        ? const Color(0xFFFF5B5B)
-                        : (isDark ? AppPalette.darkGrey : AppPalette.black),
-              ),
-              alignment: Alignment.center,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$value%',
-                      style: Body2_b.style.copyWith(
-                        color: isWhite ? AppPalette.black : AppPalette.white,
-                      ),
-                    ),
-                    if (i == 0 && showCheckOnFirst) ...[
-                      const SizedBox(width: 2),
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
+  Widget _buildBetsCard() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('BETS', style: Body2_b.style),
+          const SizedBox(height: 16),
+          BettingParticipationCard(controller: widget.bettingController),
+        ],
+      );
 
   Widget _buildPastMatchCard(
-      String teamA,
-      String teamB,
-      String logoA,
-      String logoB,
-      int idA,
-      int idB,
-      String homeScore,
-      String awayScore,
-      String league) {
+    String teamA,
+    String teamB,
+    String logoA,
+    String logoB,
+    int idA,
+    int idB,
+    String homeScore,
+    String awayScore,
+    String league,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),

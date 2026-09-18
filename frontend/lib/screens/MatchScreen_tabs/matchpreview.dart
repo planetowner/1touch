@@ -12,6 +12,7 @@ import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/betting_widgets.dart';
+import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -42,10 +43,12 @@ class _StandingRow {
 class MatchPreviewTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
+  final BettingController bettingController;
 
   const MatchPreviewTab({
     super.key,
     required this.fixture,
+    required this.bettingController,
     this.fixtureRepository,
   });
 
@@ -54,8 +57,6 @@ class MatchPreviewTab extends StatefulWidget {
 }
 
 class _MatchPreviewTabState extends State<MatchPreviewTab> {
-  // Hardcoded for UI demo
-  final int userBalance = 1200;
   Fixture? _latestH2H;
   bool _isLatestH2HLoading = true;
   bool _hasLatestH2HError = false;
@@ -106,33 +107,14 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     }
   }
 
-  void _openBettingModal() {
-    final homeTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
-    final awayTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        // Using the widget from the new file
-        return BettingFlowModal(
-          userBalance: userBalance,
-          homeTeam: homeTeam,
-          awayTeam: awayTeam,
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final homeTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
-    final awayTeam =
-        teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
+    final homeTeam = teamRepository.findByIdOrUnknown(
+      widget.fixture.homeTeamId,
+    );
+    final awayTeam = teamRepository.findByIdOrUnknown(
+      widget.fixture.awayTeamId,
+    );
 
     return SingleChildScrollView(
       child: Column(
@@ -143,17 +125,13 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           const SizedBox(height: 48),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 0),
-            child: Text(
-              "BET",
-              style: Body2_b.style,
-            ),
+            child: Text("BET", style: Body2_b.style),
           ),
           const SizedBox(height: 16),
 
           // Using the extracted widget from the new file
           MatchBettingSection(
-            userBalance: userBalance,
-            onPlaceBet: _openBettingModal,
+            controller: widget.bettingController,
             homeTeam: homeTeam,
             awayTeam: awayTeam,
           ),
@@ -486,10 +464,12 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 away.imagePath ?? '',
                 away.teamId,
               );
-              final homeScore =
-                  _buildScoreBox(h2h.homeScore?.toString() ?? '-');
-              final awayScore =
-                  _buildScoreBox(h2h.awayScore?.toString() ?? '-');
+              final homeScore = _buildScoreBox(
+                h2h.homeScore?.toString() ?? '-',
+              );
+              final awayScore = _buildScoreBox(
+                h2h.awayScore?.toString() ?? '-',
+              );
               final kickoff = Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -582,8 +562,9 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-          color: isDark ? Colors.black : AppPalette.lightGreyBox,
-          borderRadius: BorderRadius.circular(4)),
+        color: isDark ? Colors.black : AppPalette.lightGreyBox,
+        borderRadius: BorderRadius.circular(4),
+      ),
       child: Text(text, style: Heading3.style.copyWith(color: foreground)),
     );
   }
@@ -594,20 +575,20 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final appColors = AppColors.of(context);
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final league = competitionRepository.findById(widget.fixture.competitionId);
-    final standings =
-        standingRepository.forCompetition(widget.fixture.competitionId);
+    final standings = standingRepository.forCompetition(
+      widget.fixture.competitionId,
+    );
     if (standings.isEmpty) return const SizedBox.shrink();
 
-    final matchTeamIds = {
-      widget.fixture.homeTeamId,
-      widget.fixture.awayTeamId,
-    };
+    final matchTeamIds = {widget.fixture.homeTeamId, widget.fixture.awayTeamId};
     final leaders = standings.take(5).toList();
     final leaderIds = leaders.map((standing) => standing.teamId).toSet();
     final featured = standings
-        .where((standing) =>
-            matchTeamIds.contains(standing.teamId) &&
-            !leaderIds.contains(standing.teamId))
+        .where(
+          (standing) =>
+              matchTeamIds.contains(standing.teamId) &&
+              !leaderIds.contains(standing.teamId),
+        )
         .toList();
     final visibleStandings = [...leaders, ...featured];
     final dividerIndex = featured.isEmpty ? -1 : leaders.length;
@@ -675,14 +656,22 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 children: [
                   SizedBox(
                     width: 32,
-                    child: Text('#',
-                        style: TextStyle(
-                            color: appColors.mutedForeground, fontSize: 13)),
+                    child: Text(
+                      '#',
+                      style: TextStyle(
+                        color: appColors.mutedForeground,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                   Expanded(
-                    child: Text('Club',
-                        style: TextStyle(
-                            color: appColors.mutedForeground, fontSize: 13)),
+                    child: Text(
+                      'Club',
+                      style: TextStyle(
+                        color: appColors.mutedForeground,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                   ..._colLabel('MP'),
                   ..._colLabel('W'),
@@ -699,8 +688,9 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         Container(
           decoration: BoxDecoration(
             color: surface,
-            borderRadius:
-                const BorderRadius.vertical(bottom: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
           ),
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
           child: Column(
@@ -765,13 +755,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       child: Row(
         children: [
           // Position
-          SizedBox(
-            width: 28,
-            child: Text(
-              '${row.pos}',
-              style: mutedStyle,
-            ),
-          ),
+          SizedBox(width: 28, child: Text('${row.pos}', style: mutedStyle)),
           // Logo + name
           Expanded(
             child: Row(
@@ -795,11 +779,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           for (final val in [row.mp, row.w, row.d, row.l])
             SizedBox(
               width: 32,
-              child: Text(
-                val,
-                textAlign: TextAlign.center,
-                style: mutedStyle,
-              ),
+              child: Text(val, textAlign: TextAlign.center, style: mutedStyle),
             ),
         ],
       ),
