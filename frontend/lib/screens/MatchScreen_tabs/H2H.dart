@@ -41,7 +41,19 @@ class _H2HTabState extends State<H2HTab> {
   @override
   void initState() {
     super.initState();
+    currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
     _loadHeadToHead();
+  }
+
+  @override
+  void dispose() {
+    currentUserPreferences.favoriteTeamId
+        .removeListener(_handleFavoriteChanged);
+    super.dispose();
+  }
+
+  void _handleFavoriteChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -85,32 +97,35 @@ class _H2HTabState extends State<H2HTab> {
     }
   }
 
-  // "AGAINST" means the opponent of the team the user actually follows, not
-  // just whichever side happens to be away. If neither team in this fixture
-  // is followed, there's no "my team" to take the perspective of, so it
-  // falls back to the away team (i.e. against the home team).
+  int get _perspectiveTeamId {
+    final favoriteId = currentUserPreferences.favoriteTeamId.value;
+    if (favoriteId == widget.fixture.homeTeamId ||
+        favoriteId == widget.fixture.awayTeamId) {
+      return favoriteId;
+    }
+    return widget.fixture.homeTeamId;
+  }
+
   int get _againstTeamId {
-    final homeId = widget.fixture.homeTeamId;
-    final awayId = widget.fixture.awayTeamId;
-    final following = currentUserPreferences.followedTeamIds.value;
-    if (following.contains(homeId)) return awayId;
-    if (following.contains(awayId)) return homeId;
-    return awayId;
+    return _perspectiveTeamId == widget.fixture.homeTeamId
+        ? widget.fixture.awayTeamId
+        : widget.fixture.homeTeamId;
   }
 
   @override
   Widget build(BuildContext context) {
-    final homeId = widget.fixture.homeTeamId;
+    final perspectiveTeamId = _perspectiveTeamId;
 
-    // WDL from home team's perspective
+    // WDL from the user's favorite-team perspective when it is participating.
     int wins = 0, draws = 0, losses = 0;
     for (final f in _h2hMatches) {
       final hs = f.homeScore ?? 0;
       final as_ = f.awayScore ?? 0;
-      final homeIsOurHome = f.homeTeamId == homeId;
+      final perspectiveIsHome = f.homeTeamId == perspectiveTeamId;
       if (hs == as_) {
         draws++;
-      } else if ((hs > as_ && homeIsOurHome) || (as_ > hs && !homeIsOurHome)) {
+      } else if ((hs > as_ && perspectiveIsHome) ||
+          (as_ > hs && !perspectiveIsHome)) {
         wins++;
       } else {
         losses++;
@@ -277,6 +292,7 @@ class _H2HTabState extends State<H2HTab> {
           const Text('AGAINST', style: Body2_b.style),
           const SizedBox(width: 8),
           Container(
+            key: ValueKey('match-h2h-against-team-$_againstTeamId'),
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
@@ -314,15 +330,19 @@ class _H2HTabState extends State<H2HTab> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildWDLStat('$wins', 'Win'),
-          _buildWDLStat('$draws', 'Draw'),
-          _buildWDLStat('$losses', 'Lose'),
+          _buildWDLStat('$wins', 'Win', valueKey: 'match-h2h-win-value'),
+          _buildWDLStat('$draws', 'Draw', valueKey: 'match-h2h-draw-value'),
+          _buildWDLStat('$losses', 'Lose', valueKey: 'match-h2h-loss-value'),
         ],
       ),
     );
   }
 
-  Widget _buildWDLStat(String value, String label) {
+  Widget _buildWDLStat(
+    String value,
+    String label, {
+    required String valueKey,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
@@ -333,7 +353,11 @@ class _H2HTabState extends State<H2HTab> {
             color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(value, style: Heading2.style.copyWith(color: foreground)),
+          child: Text(
+            value,
+            key: ValueKey(valueKey),
+            style: Heading2.style.copyWith(color: foreground),
+          ),
         ),
         const SizedBox(height: 4),
         Text(label, style: Body1.style),
