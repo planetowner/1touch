@@ -35,9 +35,6 @@ dependencies:
   table_calendar: ^3.0.9
   flutter_svg: ^2.0.9
   fl_chart: ^0.70.0
-  flutter_chat_ui: ^1.6.4
-  flutter_chat_types: ^3.5.1
-  uuid: ^4.0.0
   http: ^1.6.0
   web_socket_channel: ^3.0.3
   xml: ^6.6.1
@@ -45,7 +42,6 @@ dependencies:
   video_player: ^2.8.0
   lottie: ^3.5.1
   image_picker: ^1.1.2
-  firebase_core: ^3.0.0
   google_sign_in: ^7.2.0
 
 
