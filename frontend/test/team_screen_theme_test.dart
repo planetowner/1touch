@@ -777,4 +777,73 @@ void main() {
     expect(find.text('Premier League 1st'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final scenario in <({
+    String name,
+    int? rankDelta,
+    IconData? icon,
+    Color? color,
+    String? value,
+  })>[
+    (
+      name: 'upward movement',
+      rankDelta: 2,
+      icon: Icons.arrow_drop_up,
+      color: Colors.green,
+      value: '2',
+    ),
+    (
+      name: 'downward movement',
+      rankDelta: -3,
+      icon: Icons.arrow_drop_down,
+      color: Colors.red,
+      value: '3',
+    ),
+    (
+      name: 'unchanged position',
+      rankDelta: 0,
+      icon: null,
+      color: null,
+      value: null,
+    ),
+    (
+      name: 'unavailable movement',
+      rankDelta: null,
+      icon: null,
+      color: null,
+      value: null,
+    ),
+  ]) {
+    testWidgets('Team header renders ${scenario.name}', (tester) async {
+      final overview = testTeamOverview(rankDelta: scenario.rankDelta);
+      final repository = TestTeamOverviewRepository(initial: {9: overview});
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: app_style.whitetheme,
+          home: TeamScreen(
+            teamId: 9,
+            teamAttributeRepository: teamAttributeRepository,
+            teamOverviewRepository: repository,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final iconFinder = find.byKey(const ValueKey('team-rank-change-icon'));
+      final valueFinder = find.byKey(const ValueKey('team-rank-change-value'));
+      if (scenario.icon == null) {
+        expect(iconFinder, findsNothing);
+        expect(valueFinder, findsNothing);
+      } else {
+        final icon = tester.widget<Icon>(iconFinder);
+        final value = tester.widget<Text>(valueFinder);
+        expect(icon.icon, scenario.icon);
+        expect(icon.color, scenario.color);
+        expect(value.data, scenario.value);
+        expect(value.style?.color, scenario.color);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
