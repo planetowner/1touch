@@ -39,6 +39,18 @@ class _StandingTabState extends State<StandingTab> {
   // xG standings are only available for Big 5 leagues
   static const _big5LeagueIds = {8, 82, 301, 384, 564};
 
+  // TODO(standing-seasons): Replace these verified current-season options
+  // with the shared backend season-options response when that endpoint is
+  // available. Keeping them local prevents a Standing-only workaround from
+  // changing season selection in Squad, Analysis, or other features.
+  static const _currentBig5Seasons = <int, _StandingSeasonOption>{
+    8: _StandingSeasonOption(28083, '2026/2027'),
+    82: _StandingSeasonOption(28321, '2026/2027'),
+    301: _StandingSeasonOption(28082, '2026/2027'),
+    384: _StandingSeasonOption(27895, '2026/2027'),
+    564: _StandingSeasonOption(27965, '2026/2027'),
+  };
+
   int selectedLeagueId = 8;
   int selectedSeasonId = 23614;
   bool isScrolledToEnd = false;
@@ -140,9 +152,7 @@ class _StandingTabState extends State<StandingTab> {
         ? _validLeagueIds.first
         : competitionRepository.allCompetitions.first.competitionId;
 
-    final seasonId = (seasonRepository.currentForCompetition(leagueId) ??
-            seasonRepository.allSeasons.first)
-        .seasonId;
+    final seasonId = _defaultSeasonForCompetition(leagueId).seasonId;
 
     selectedLeagueId = leagueId;
     selectedSeasonId = seasonId;
@@ -152,11 +162,10 @@ class _StandingTabState extends State<StandingTab> {
     if (competitionId == null || !_validLeagueIds.contains(competitionId)) {
       return false;
     }
-    final seasons = seasonRepository.forCompetition(competitionId);
+    final seasons = _seasonOptionsForCompetition(competitionId);
     if (seasons.isEmpty) return false;
 
-    final season =
-        seasonRepository.currentForCompetition(competitionId) ?? seasons.first;
+    final season = _defaultSeasonForCompetition(competitionId);
     selectedLeagueId = competitionId;
     selectedSeasonId = season.seasonId;
     _selectedView = StandingView.standing;
@@ -165,7 +174,7 @@ class _StandingTabState extends State<StandingTab> {
 
   void _selectOverviewCompetition(int competitionId) {
     if (!_validLeagueIds.contains(competitionId) ||
-        seasonRepository.forCompetition(competitionId).isEmpty) {
+        _seasonOptionsForCompetition(competitionId).isEmpty) {
       return;
     }
 
@@ -579,8 +588,7 @@ class _StandingTabState extends State<StandingTab> {
           style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (val) {
             if (val == null) return;
-            final season = seasonRepository.currentForCompetition(val) ??
-                seasonRepository.forCompetition(val).first;
+            final season = _defaultSeasonForCompetition(val);
             setState(() {
               selectedLeagueId = val;
               selectedSeasonId = season.seasonId;
@@ -617,7 +625,7 @@ class _StandingTabState extends State<StandingTab> {
   Widget _buildSeasonDropdown() {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
-    final seasons = seasonRepository.forCompetition(selectedLeagueId);
+    final seasons = _seasonOptionsForCompetition(selectedLeagueId);
 
     return Container(
       key: const ValueKey('standing-season-filter-shell'),
@@ -663,4 +671,43 @@ class _StandingTabState extends State<StandingTab> {
       ),
     );
   }
+
+  _StandingSeasonOption _defaultSeasonForCompetition(int competitionId) {
+    final current = _currentBig5Seasons[competitionId];
+    if (current != null) return current;
+
+    final catalogCurrent =
+        seasonRepository.currentForCompetition(competitionId);
+    if (catalogCurrent != null) {
+      return _StandingSeasonOption(
+          catalogCurrent.seasonId, catalogCurrent.name);
+    }
+
+    final options = _seasonOptionsForCompetition(competitionId);
+    if (options.isNotEmpty) return options.first;
+
+    final fallback = seasonRepository.allSeasons.first;
+    return _StandingSeasonOption(fallback.seasonId, fallback.name);
+  }
+
+  List<_StandingSeasonOption> _seasonOptionsForCompetition(int competitionId) {
+    final current = _currentBig5Seasons[competitionId];
+    final options = <_StandingSeasonOption>[
+      if (current != null) current,
+      ...seasonRepository.forCompetition(competitionId).map(
+            (season) => _StandingSeasonOption(season.seasonId, season.name),
+          ),
+    ];
+    final seen = <int>{};
+    return List.unmodifiable(
+      options.where((option) => seen.add(option.seasonId)),
+    );
+  }
+}
+
+class _StandingSeasonOption {
+  const _StandingSeasonOption(this.seasonId, this.name);
+
+  final int seasonId;
+  final String name;
 }
