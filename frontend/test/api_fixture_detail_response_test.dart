@@ -30,6 +30,14 @@ void main() {
       expect(statistic.statCode, 'ball-possession');
       expect(statistic.value, 63);
 
+      final playerStatistic = response.playerStatistics.single;
+      expect(playerStatistic.playerId, 101);
+      expect(playerStatistic.positionGroup, 'FW');
+      expect(playerStatistic.isManOfMatch, isTrue);
+      expect(playerStatistic.categories.single.label, 'Finish');
+      expect(playerStatistic.categories.single.metrics.first.value, 2);
+      expect(playerStatistic.categories.single.metrics.last.value, 0.6);
+
       final lineup = response.lineups.single;
       expect(lineup.playerName, 'Home Player');
       expect(lineup.positionId, 24);
@@ -52,6 +60,7 @@ void main() {
           shots: const [],
           events: const [],
           statistics: const [],
+          playerStatistics: const [],
           lineups: const [],
           formations: const [],
           coaches: const [],
@@ -65,6 +74,7 @@ void main() {
       expect(response.shots, isEmpty);
       expect(response.events, isEmpty);
       expect(response.statistics, isEmpty);
+      expect(response.playerStatistics, isEmpty);
       expect(response.lineups, isEmpty);
       expect(response.formations, isEmpty);
       expect(response.coaches, isEmpty);
@@ -245,6 +255,41 @@ Map<String, dynamic> _detailJson({
       'value': 63,
     },
   ],
+  List<Object?> playerStatistics = const [
+    {
+      'team_id': 8,
+      'player_id': 101,
+      'match_position_id': 27,
+      'position_group': 'FW',
+      'minutes_played': 90,
+      'rating': 8.4,
+      'is_man_of_match': true,
+      'categories': [
+        {
+          'code': 'finish',
+          'label': 'Finish',
+          'metrics': [
+            {
+              'code': 'goals',
+              'label': 'Goals',
+              'kind': 'count',
+              'source': 'sportmonks',
+              'stat_type_ids': [52],
+              'value': 2,
+            },
+            {
+              'code': 'xg',
+              'label': 'xG',
+              'kind': 'decimal',
+              'source': 'understat',
+              'stat_type_ids': [],
+              'value': 0.6,
+            },
+          ],
+        },
+      ],
+    },
+  ],
   List<Object?> lineups = const [
     {
       'team_id': 8,
@@ -305,6 +350,7 @@ Map<String, dynamic> _detailJson({
     'shots': _copyEntries(shots),
     'events': _copyEntries(events),
     'statistics': _copyEntries(statistics),
+    'player_statistics': _copyEntries(playerStatistics),
     'lineups': _copyEntries(lineups),
     'formations': _copyEntries(formations),
     'coaches': _copyEntries(coaches),

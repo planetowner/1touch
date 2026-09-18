@@ -187,6 +187,10 @@ class _PlayerDot extends StatelessWidget {
     final badgeLeft = badges == null ? 0.0 : (32 - badges.width) / 2;
     final minuteLeft = badges == null ? 40.0 : badgeLeft + badges.width + 4;
     return GestureDetector(
+      key: ValueKey(
+        'match-lineup-player-${player.teamId}-${player.playerId}',
+      ),
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,

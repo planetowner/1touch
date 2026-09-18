@@ -60,6 +60,18 @@ void main() {
       expect(statistic.statName, 'Shots On Target');
       expect(statistic.value, 7.0);
 
+      final playerStatistic = detail.playerStatistics.single;
+      expect(playerStatistic.teamId, 8);
+      expect(playerStatistic.playerId, 101);
+      expect(playerStatistic.positionGroup, 'FW');
+      expect(playerStatistic.rating, 8.4);
+      expect(playerStatistic.isManOfMatch, isTrue);
+      final finish = playerStatistic.categories.single;
+      expect(finish.code, 'finish');
+      expect(finish.metrics.first.code, 'goals');
+      expect(finish.metrics.first.statTypeIds, [52]);
+      expect(finish.metrics.first.value, 1);
+
       final lineup = detail.lineups.single;
       expect(lineup.teamId, 8);
       expect(lineup.playerId, 101);
@@ -140,6 +152,7 @@ void main() {
       expect(detail.playerExpectedGoals, isEmpty);
       expect(detail.shots, isEmpty);
       expect(detail.statistics, isEmpty);
+      expect(detail.playerStatistics, isEmpty);
       expect(detail.formations, isEmpty);
       expect(detail.coaches, isEmpty);
       expect(detail.pressure, isEmpty);
@@ -263,6 +276,35 @@ ApiFixtureDetailResponse _fullResponse() {
         statCode: 'shots-on-target',
         statName: 'Shots On Target',
         value: 7,
+      ),
+    ],
+    playerStatistics: [
+      ApiFixturePlayerStatisticResponse(
+        teamId: 8,
+        playerId: 101,
+        matchPositionId: 27,
+        positionGroup: 'FW',
+        minutesPlayed: 90,
+        rating: 8.4,
+        isManOfMatch: true,
+        categories: [
+          ApiFixturePlayerStatCategoryResponse(
+            code: 'finish',
+            label: 'Finish',
+            metrics: [
+              ApiFixturePlayerStatMetricResponse(
+                code: 'goals',
+                label: 'Goals',
+                kind: 'count',
+                source: 'sportmonks',
+                statTypeIds: const [52],
+                value: 1,
+                numerator: null,
+                denominator: null,
+              ),
+            ],
+          ),
+        ],
       ),
     ],
     lineups: const [
