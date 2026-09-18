@@ -12,9 +12,10 @@ import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/standings/standing_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
+import 'package:onetouch/features/team/attributes/match_attribute_comparison.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/helper.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 class _StandingRow {
   final int pos;
@@ -43,11 +44,13 @@ class _StandingRow {
 class MatchPreviewTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
+  final TeamAttributeRepository? attributeRepository;
 
   const MatchPreviewTab({
     super.key,
     required this.fixture,
     this.fixtureRepository,
+    this.attributeRepository,
   });
 
   @override
@@ -156,7 +159,13 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           ),
 
           const SizedBox(height: 48),
-          _buildRadarChart(),
+          MatchAttributeComparison(
+            homeTeamId: widget.fixture.homeTeamId,
+            awayTeamId: widget.fixture.awayTeamId,
+            homeTeamName: homeTeam.name,
+            awayTeamName: awayTeam.name,
+            repository: widget.attributeRepository,
+          ),
           const SizedBox(height: 48),
           _buildLatestH2H(),
           const SizedBox(height: 48),
@@ -246,143 +255,6 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRadarChart() {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-
-    return Column(
-      children: [
-        SizedBox(
-          height: 260,
-          child: RadarChart(
-            RadarChartData(
-              radarShape: RadarShape.polygon,
-              tickCount: 4,
-
-              // Grid rings
-              gridBorderData: BorderSide(
-                color: foreground.withValues(alpha: 0.30),
-                width: 1,
-              ),
-              // Outermost ring
-              radarBorderData: BorderSide(
-                color: foreground.withValues(alpha: 0.30),
-                width: 1,
-              ),
-              // Tick rings (same as grid)
-              tickBorderData: BorderSide(
-                color: foreground.withValues(alpha: 0.30),
-                width: 1,
-              ),
-
-              // Hide tick value labels on each ring
-              ticksTextStyle: const TextStyle(
-                color: Colors.transparent,
-                fontSize: 0,
-              ),
-
-              // Axis labels
-              getTitle: (index, angle) {
-                const labels = [
-                  'Attack',
-                  'Progression',
-                  'Pressure',
-                  'Dominance',
-                  'Defense',
-                  'Possession',
-                ];
-                return RadarChartTitle(
-                  text: labels[index],
-                  angle: 0, // keep all labels upright
-                );
-              },
-              titleTextStyle: Eyebrow.style.copyWith(color: foreground),
-              titlePositionPercentageOffset: 0.15,
-
-              dataSets: [
-                // Home team
-                RadarDataSet(
-                  fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
-                  borderColor: const Color(0xFFE8434A),
-                  borderWidth: 2,
-                  entryRadius: 3,
-                  dataEntries: const [
-                    RadarEntry(value: 85), // Attack
-                    RadarEntry(value: 75), // Progression
-                    RadarEntry(value: 55), // Pressure
-                    RadarEntry(value: 70), // Dominance
-                    RadarEntry(value: 80), // Defense
-                    RadarEntry(value: 65), // Possession
-                  ],
-                ),
-                // Away team
-                RadarDataSet(
-                  fillColor: foreground.withValues(alpha: 0.1),
-                  borderColor: foreground.withValues(alpha: 0.85),
-                  borderWidth: 2,
-                  entryRadius: 3,
-                  dataEntries: const [
-                    RadarEntry(value: 55),
-                    RadarEntry(value: 60),
-                    RadarEntry(value: 75),
-                    RadarEntry(value: 50),
-                    RadarEntry(value: 60),
-                    RadarEntry(value: 72),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        // Legend
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: _buildLegendDot(
-                const Color(0xFFE8434A),
-                fixtureHomeTeam(widget.fixture, teamRepository)
-                    .name
-                    .toUpperCase(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildLegendDot(
-                foreground,
-                fixtureAwayTeam(widget.fixture, teamRepository)
-                    .name
-                    .toUpperCase(),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLegendDot(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(
-            label,
-            style: Body2_b.style,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
         ),
       ],
     );
