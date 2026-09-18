@@ -15,6 +15,7 @@ import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as current_user_provider;
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/fixture_chat_message.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
 
 class LiveChatTab extends StatefulWidget {
   final int matchId;
@@ -250,10 +251,14 @@ class _LiveChatTabState extends State<LiveChatTab> {
   }
 
   Future<void> _reportMessage(FixtureChatMessage msg) async {
-    // TODO(chat-report): Connect POST /chat/messages/{message_id}/report.
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message reported.')),
+    await showReportDialog(
+      context,
+      targetLabel: 'message',
+      onSubmit: (reason) => _repository.reportMessage(
+        messageId: msg.messageId,
+        reason: reason,
+      ),
     );
   }
 

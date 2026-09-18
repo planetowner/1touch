@@ -5,6 +5,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 Future<void> showReportDialog(
   BuildContext context, {
   required Future<void> Function(String reason) onSubmit,
+  String targetLabel = 'post',
 }) async {
   final parentContext = context;
   final List<String> reasons = [
@@ -66,7 +67,7 @@ Future<void> showReportDialog(
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            "Tell us why you would like to report this post!",
+                            'Tell us why you would like to report this $targetLabel!',
                             style: Body2.style
                                 .copyWith(color: appColors.mutedForeground),
                           ),

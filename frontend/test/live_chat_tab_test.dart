@@ -110,6 +110,42 @@ void main() {
     );
     expect(find.text('Retry'), findsOneWidget);
   });
+
+  testWidgets('reports another user message through the repository',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _ChatRepository([
+      _message(messageId: 11, userId: 8),
+    ]);
+
+    await tester.pumpWidget(
+      _app(
+        repository: repository,
+        socket: _ChatSocket(session: _ChatSession()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('History message 11'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Report'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Tell us why you would like to report this message!'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Spam'));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('community-report-submit')));
+    await tester.pumpAndSettle();
+
+    expect(repository.reports, [(messageId: 11, reason: 'Spam')]);
+    expect(find.text('Thanks for your report!'), findsOneWidget);
+  });
 }
 
 Widget _app({
@@ -147,6 +183,7 @@ class _ChatRepository implements ChatRepository {
       : cachedHistories = ValueNotifier({42: List.unmodifiable(history)});
 
   final List<FixtureChatMessage> history;
+  final List<({int messageId, String reason})> reports = [];
 
   @override
   final ValueNotifier<Map<int, List<FixtureChatMessage>>> cachedHistories;
@@ -163,6 +200,14 @@ class _ChatRepository implements ChatRepository {
     int limit = 50,
   }) async =>
       List.unmodifiable(history);
+
+  @override
+  Future<void> reportMessage({
+    required int messageId,
+    required String reason,
+  }) async {
+    reports.add((messageId: messageId, reason: reason));
+  }
 }
 
 class _ChatSocket implements ChatSocket {
