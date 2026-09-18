@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/features/KaneRest.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
@@ -21,6 +22,81 @@ class MatchInfoTab extends StatelessWidget {
   });
 
   bool get isLive => matchStatus == 'live';
+
+  String _formatMetricNumber(double value) {
+    if (value == value.roundToDouble()) return value.toInt().toString();
+    return value
+        .toStringAsFixed(2)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+  }
+
+  String? _metricValue(FixturePlayerStatMetric metric) {
+    if (metric.kind == 'pair') {
+      final numerator = metric.numerator;
+      final denominator = metric.denominator;
+      if (numerator == null || denominator == null) return null;
+      return '${_formatMetricNumber(numerator)} / '
+          '${_formatMetricNumber(denominator)}';
+    }
+    final value = metric.value;
+    if (value == null) return null;
+    final formatted = _formatMetricNumber(value);
+    return metric.kind == 'percentage' ? '$formatted%' : formatted;
+  }
+
+  PlayerMatchStatData? _playerMatchStats(LineupPlayer player) {
+    final playerStatistic = detail?.playerStatistics
+        .where(
+          (statistic) =>
+              statistic.teamId == player.teamId &&
+              statistic.playerId == player.playerId,
+        )
+        .firstOrNull;
+    final lineup = detail?.lineups
+        .where(
+          (entry) =>
+              entry.teamId == player.teamId &&
+              entry.playerId == player.playerId,
+        )
+        .firstOrNull;
+    if (playerStatistic == null || lineup == null) return null;
+
+    final sections = <PlayerMatchStatSection>[
+      for (final category in playerStatistic.categories)
+        if (category.metrics.map(_metricValue).whereType<String>().isNotEmpty)
+          PlayerMatchStatSection(
+            category: category.label.toUpperCase(),
+            rows: [
+              for (final metric in category.metrics)
+                if (_metricValue(metric) case final value?)
+                  PlayerMatchStatRow(label: metric.label, value: value),
+            ],
+          ),
+    ];
+    if (sections.isEmpty) return null;
+
+    final team = player.teamId == fixture.homeTeamId
+        ? fixtureHomeTeam(fixture, teamRepository)
+        : fixtureAwayTeam(fixture, teamRepository);
+    return PlayerMatchStatData(
+      name: lineup.playerName,
+      jerseyNumber: lineup.jerseyNumber,
+      positions: [
+        if (playerStatistic.positionGroup != null)
+          playerStatistic.positionGroup!,
+      ],
+      club: team.name,
+      nationality: null,
+      playerImageUrl: lineup.playerImage,
+      sections: sections,
+    );
+  }
+
+  void _openPlayerMatchStats(BuildContext context, LineupPlayer player) {
+    final stats = _playerMatchStats(player);
+    if (stats != null) showPlayerMatchStatSheet(context, stats);
+  }
 
   static const _statDefinitions =
       <({String code, String label, bool isPercent})>[
@@ -186,6 +262,8 @@ class MatchInfoTab extends StatelessWidget {
               (a, b) => a.slot.compareTo(b.slot),
             )))
             LineupPlayer(
+              teamId: item.entry.teamId,
+              playerId: item.entry.playerId,
               number: item.entry.jerseyNumber,
               name: item.entry.playerName,
               events: eventsByPlayer[item.entry.playerId] ?? const [],
@@ -312,6 +390,9 @@ class MatchInfoTab extends StatelessWidget {
             LineupPitch(
               awayRows: awayLineupRows,
               homeRows: homeLineupRows,
+              onPlayerTap: detail?.playerStatistics.isEmpty ?? true
+                  ? null
+                  : _openPlayerMatchStats,
               homeFormation: _formation(fixture.homeTeamId),
               awayFormation: _formation(fixture.awayTeamId),
             ),
