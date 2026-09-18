@@ -91,6 +91,9 @@ from one_touch_loader.loaders.team_attribute_scores_loader import (
 from one_touch_loader.loaders.team_attribute_refresh_loader import (
     refresh_current_team_attributes,
 )
+from one_touch_loader.loaders.player_rating_rankings_loader import (
+    freeze_player_rating_reference, build_player_rating_scores,
+)
 
 
 # 새 DB 재적재용으로 다시 만든 명령만 의존 순서대로 적어요.
@@ -233,6 +236,12 @@ New database reload order (redesigned commands):
 
 25. highlights (official latest three matches, viewer-country filtering)
   python -m one_touch_loader.cli highlights refresh [team_id,team_id] [--check | --apply] [--full-scan]
+
+26. player-rankings (Sportmonks ratings, at least 10 rated matches)
+  리그별 2020/21~2024/25 기준 표본은 처음 한 번만 저장해요. 재실행해도 기준은 유지해요.
+  python -m one_touch_loader.cli player-rankings freeze-reference <competition_id>
+  경기 평점 적재 후 시즌 점수를 갱신해요. 기준 표본은 다시 계산하지 않아요.
+  python -m one_touch_loader.cli player-rankings build-scores <season_id>
 """
 
 
@@ -781,6 +790,20 @@ def main():
             refresh_fixture_team_stats_for_current_seasons(only_status=only_status)
             print(f"Team-stats current done: status={only_status}")
 
+        else:
+            print(USAGE)
+
+    elif cmd == "player-rankings":
+        if len(sys.argv) != 4:
+            print(USAGE)
+            return
+        sub = sys.argv[2]
+        if sub == "freeze-reference":
+            count = freeze_player_rating_reference(int(sys.argv[3]))
+            print(f"Player-rankings fixed reference: samples={count}")
+        elif sub == "build-scores":
+            count = build_player_rating_scores(int(sys.argv[3]))
+            print(f"Player-rankings scores updated: players={count}")
         else:
             print(USAGE)
 
