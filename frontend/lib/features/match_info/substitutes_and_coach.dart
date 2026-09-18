@@ -5,6 +5,7 @@ class SubstitutesAndCoach extends StatelessWidget {
   final List<Substitute> subsB;
   final String coachA;
   final String coachB;
+  final void Function(BuildContext context, Substitute player)? onPlayerTap;
 
   const SubstitutesAndCoach({
     super.key,
@@ -12,6 +13,7 @@ class SubstitutesAndCoach extends StatelessWidget {
     required this.subsB,
     required this.coachA,
     required this.coachB,
+    this.onPlayerTap,
   });
 
   @override
@@ -26,8 +28,20 @@ class SubstitutesAndCoach extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _SubList(subs: subsA, alignEnd: false)),
-              Expanded(child: _SubList(subs: subsB, alignEnd: true)),
+              Expanded(
+                child: _SubList(
+                  subs: subsA,
+                  alignEnd: false,
+                  onPlayerTap: onPlayerTap,
+                ),
+              ),
+              Expanded(
+                child: _SubList(
+                  subs: subsB,
+                  alignEnd: true,
+                  onPlayerTap: onPlayerTap,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -49,8 +63,13 @@ class SubstitutesAndCoach extends StatelessWidget {
 class _SubList extends StatelessWidget {
   final List<Substitute> subs;
   final bool alignEnd;
+  final void Function(BuildContext context, Substitute player)? onPlayerTap;
 
-  const _SubList({required this.subs, required this.alignEnd});
+  const _SubList({
+    required this.subs,
+    required this.alignEnd,
+    required this.onPlayerTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -84,12 +103,19 @@ class _SubList extends StatelessWidget {
             ),
         ];
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            mainAxisAlignment:
-                alignEnd ? MainAxisAlignment.end : MainAxisAlignment.start,
-            children: children,
+        return GestureDetector(
+          key: ValueKey(
+            'match-substitute-player-${sub.teamId}-${sub.playerId}',
+          ),
+          behavior: HitTestBehavior.opaque,
+          onTap: onPlayerTap == null ? null : () => onPlayerTap!(context, sub),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              mainAxisAlignment:
+                  alignEnd ? MainAxisAlignment.end : MainAxisAlignment.start,
+              children: children,
+            ),
           ),
         );
       }).toList(),
