@@ -42,6 +42,7 @@ TeamOverview testTeamOverview({
   String name = 'Manchester City',
   int nextCompetitionId = 8,
   CompetitionType nextCompetitionType = CompetitionType.league,
+  int? rankDelta = 0,
 }) {
   return TeamOverview(
     id: teamId,
@@ -50,7 +51,7 @@ TeamOverview testTeamOverview({
     imagePath: 'https://cdn.example/$teamId.png',
     standing: {
       'position': 1,
-      'rank_delta': 0,
+      'rank_delta': rankDelta,
       'team_id': teamId,
       'matches_played': 3,
       'won': 3,

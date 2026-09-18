@@ -3,6 +3,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
@@ -12,6 +13,7 @@ class OverviewTab extends StatefulWidget {
   final ValueChanged<int>? onStandingCompetitionSelected;
   final BestElevenRepository? bestElevenRepository;
   final TeamInjuryRepository? injuryRepository;
+  final StandingRepository? standingRepository;
   final TransferRepository? transferRepository;
 
   const OverviewTab({
@@ -20,6 +22,7 @@ class OverviewTab extends StatefulWidget {
     this.onStandingCompetitionSelected,
     this.bestElevenRepository,
     this.injuryRepository,
+    this.standingRepository,
     this.transferRepository,
   });
 
@@ -79,6 +82,7 @@ class _OverviewTabState extends State<OverviewTab> {
                 Standing(
                   teams: widget.team,
                   onCompetitionSelected: widget.onStandingCompetitionSelected,
+                  repository: widget.standingRepository,
                 ),
               ],
 

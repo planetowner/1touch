@@ -63,14 +63,23 @@ class _StandingState extends State<Standing> {
   void _startLoad({bool updateState = true}) {
     final competitionId = _domesticCompetitionId;
     final requestId = ++_requestId;
-    final cached = competitionId == null
-        ? null
-        : _repository.cachedForCompetition(competitionId);
+    StandingRepository? repository;
+    List<standing_model.Standing>? cached;
+    Object? repositoryError;
+    if (competitionId != null) {
+      try {
+        repository = _repository;
+        cached = repository.cachedForCompetition(competitionId);
+      } on Object catch (error) {
+        repositoryError = error;
+      }
+    }
 
     void prepare() {
       _standings = cached ?? const [];
-      _isLoading = competitionId != null && cached == null;
-      _loadError = null;
+      _isLoading =
+          competitionId != null && cached == null && repositoryError == null;
+      _loadError = repositoryError;
     }
 
     if (updateState) {
@@ -79,16 +88,22 @@ class _StandingState extends State<Standing> {
       prepare();
     }
 
-    if (competitionId != null) {
-      unawaited(_loadCurrentTable(competitionId, requestId));
+    if (competitionId != null && repository != null) {
+      unawaited(
+        _loadCurrentTable(competitionId, requestId, repository),
+      );
     }
   }
 
-  Future<void> _loadCurrentTable(int competitionId, int requestId) async {
+  Future<void> _loadCurrentTable(
+    int competitionId,
+    int requestId,
+    StandingRepository repository,
+  ) async {
     try {
       // Deliberately omit seasonId. The backend resolves the current season,
       // so Overview cannot become stale when the season rolls over.
-      final rows = await _repository.loadForCompetition(competitionId);
+      final rows = await repository.loadForCompetition(competitionId);
       if (!mounted ||
           requestId != _requestId ||
           competitionId != _domesticCompetitionId) {
