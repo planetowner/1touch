@@ -123,49 +123,21 @@ def collect_candidates(clubs, catalog, matches, youtube, *, since=None, saved_id
 
 
 def save_candidates(clubs, candidates, checked_at):
-    # 3개로 잘라 저장하면 국가 제한을 적용할 때 대안이 사라져요. 검증한 후보를 함께 저장해요.
+    from ..core.highlight_storage import write_candidates
     with transaction() as connection:
         with connection.cursor() as cursor:
-            for club in clubs:
-                team_id = club["team_id"]
-                cursor.execute("""INSERT INTO team_youtube_sources
-                    (team_id,team_name,channel_id,channel_url,source_mode,max_candidate_items,is_active,created_at,updated_at)
-                    VALUES (%s,%s,%s,%s,'verified_matches',50,1,%s,%s)
-                    ON DUPLICATE KEY UPDATE team_name=VALUES(team_name),channel_id=VALUES(channel_id),
-                      channel_url=VALUES(channel_url),source_mode=VALUES(source_mode),
-                      include_title_keywords=NULL,exclude_title_keywords=NULL,is_active=1,updated_at=VALUES(updated_at)""",
-                    (team_id, club["team_name"], club["channel_id"], club["channel_url"], checked_at, checked_at))
-                cursor.execute("UPDATE team_youtube_playlists SET is_active=0 WHERE team_id=%s", (team_id,))
-                for playlist in club["playlists"]:
-                    cursor.execute("""INSERT INTO team_youtube_playlists
-                        (team_id,playlist_name,playlist_id,playlist_url,is_active,created_at,updated_at)
-                        VALUES (%s,%s,%s,%s,1,UTC_TIMESTAMP(),UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE
-                        playlist_name=VALUES(playlist_name),playlist_url=VALUES(playlist_url),is_active=1,updated_at=UTC_TIMESTAMP()""",
-                        (team_id, playlist["name"], playlist["playlist_id"], f"https://www.youtube.com/playlist?list={playlist['playlist_id']}"))
-                cursor.execute("DELETE FROM team_highlights_cache WHERE team_id=%s", (team_id,))
-                rows = []
-                for rank, video in enumerate(candidates[team_id], 1):
-                    metadata = {key: video[key] for key in ("channel_id", "channel_name", "duration_seconds", "region_restriction", "embeddable", "is_extended")}
-                    rows.append((team_id, video["video_id"], video["video_url"], video["title"], video["thumbnail_url"],
-                                 utc_datetime(video["published_at"]).replace(tzinfo=None), video["source_type"], video["channel_id"], rank,
-                                 video["match"]["match_key"], json.dumps(video["match"], ensure_ascii=False), json.dumps(metadata, ensure_ascii=False),
-                                 checked_at, checked_at))
-                if rows:
-                    cursor.executemany("""INSERT INTO team_highlights_cache
-                        (team_id,video_id,video_url,title,thumbnail_url,published_at,source_type,source_ref,rank_order,
-                         match_key,match_data,video_data,created_at,updated_at)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", rows)
+            write_candidates(cursor, [c["team_id"] for c in clubs], candidates, checked_at)
 
 
 def load_saved_sources(clubs):
     placeholders = ",".join("%s" for _ in clubs)
     params = tuple(c["team_id"] for c in clubs)
-    previous = fetch_all(f"""SELECT team_id,updated_at FROM team_youtube_sources
-        WHERE source_mode='verified_matches' AND team_id IN ({placeholders})""", params)
+    previous = fetch_all(f"""SELECT team_id,checked_at FROM team_highlight_sync
+        WHERE team_id IN ({placeholders})""", params)
     if len(previous) != len(clubs):
         return None, {}
-    saved = fetch_all(f"""SELECT source_ref,video_id FROM team_highlights_cache
-        WHERE team_id IN ({placeholders}) AND match_key IS NOT NULL""", params)
+    saved = fetch_all(f"""SELECT v.channel_id,v.video_id FROM team_highlights th
+        JOIN highlight_videos v ON v.video_id=th.video_id WHERE th.team_id IN ({placeholders})""", params)
     ids = {}
     for channel_id, video_id in saved:
         ids.setdefault(channel_id, set()).add(video_id)

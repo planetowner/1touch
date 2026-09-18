@@ -12,12 +12,13 @@ def get_analysis(fixture_id: int) -> dict:
     # 경기 포지션이 없는 기존 적재분은 선수의 기본 그룹으로 골키퍼 여부만 확인해요.
     # 완료 표시·이벤트·포지션을 한 쿼리로 읽어 서로 다른 갱신 시점의 값이 섞이지 않게 해요.
     rows = fetch_all_dict("""
-        SELECT m.source_url,m.collected_at,m.home_count,m.away_count,
+        SELECT src.source_url,m.collected_at,
                f.home_team_id,f.away_team_id,
                e.external_event_id,e.team_id,e.player_id,p.display_name AS player_name,
                e.minute,e.extra_minute,e.kinds,e.start_x,e.start_y,e.end_x,e.end_y,
                COALESCE(fl.match_position_id,pos.position_group_id) AS position_group_id
         FROM fixture_opta_analyses m JOIN fixtures f ON f.fixture_id=m.fixture_id
+        JOIN fixture_opta_sources src ON src.fixture_id=m.fixture_id
         LEFT JOIN fixture_opta_events e ON e.fixture_id=m.fixture_id
         LEFT JOIN players p ON p.player_id=e.player_id
         LEFT JOIN fixture_lineups fl ON fl.fixture_id=e.fixture_id

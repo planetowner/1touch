@@ -182,9 +182,10 @@ class HighlightAPITests(unittest.TestCase):
         values = [candidate("a", 1), candidate("b", 3), candidate("c", 5), candidate("new", 8)]
         rows = []
         for v in values:
-            rows.append({**v, "match_data": json.dumps(v["match"]),
-                         "video_data": json.dumps({k: v[k] for k in ("channel_id", "channel_name", "duration_seconds", "region_restriction", "embeddable", "is_extended")}),
-                         "updated_at": datetime(2026, 9, 17)})
+            rows.append({**v, 'fixture_id':None,'match_key':v['match']['match_key'],
+                         'external_record':json.dumps({k:val for k,val in v['match'].items() if k not in ('score','penalty_shootout')}),
+                         'starting_at':v['match']['starting_at'], 'region_restriction':json.dumps(v['region_restriction']),
+                         'checked_at':datetime(2026,9,17)})
         with patch.object(highlights_repo, "fetch_all_dict", return_value=rows):
             response = TeamHighlightsResponse.model_validate(highlights_repo.get_team_highlights(68, "kr"))
         self.assertEqual([v.video_id for v in response.items], ["new", "c", "b"])
@@ -202,6 +203,8 @@ class HighlightAPITests(unittest.TestCase):
             self.assertEqual(response.status_code, 200, response.text)
             self.assertNotIn("region_restriction", response.json()["items"][0])
             self.assertNotIn("description", response.json()["items"][0])
+            self.assertNotIn("score", response.json()["items"][0]["match"])
+            self.assertNotIn("penalty_shootout", response.json()["items"][0]["match"])
 
 
 if __name__ == "__main__":

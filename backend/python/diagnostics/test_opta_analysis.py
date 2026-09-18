@@ -205,8 +205,8 @@ class AnalysisStorageTests(unittest.TestCase):
             CREATE TABLE fixture_lineups(fixture_id INTEGER,team_id INTEGER,player_id INTEGER,
               match_position_id INTEGER,PRIMARY KEY(fixture_id,player_id));
             CREATE TABLE fixture_opta_analyses(fixture_id INTEGER PRIMARY KEY REFERENCES fixtures,
-              external_fixture_id TEXT UNIQUE,external_competition_id TEXT,external_season_id TEXT,
-              source_url TEXT,home_count INTEGER,away_count INTEGER,collected_at TEXT);
+              collected_at TEXT);
+            CREATE TABLE fixture_opta_sources(fixture_id INTEGER PRIMARY KEY REFERENCES fixtures,source_url TEXT);
             CREATE TABLE fixture_opta_events(external_event_id TEXT PRIMARY KEY,
               fixture_id INTEGER REFERENCES fixture_opta_analyses,team_id INTEGER REFERENCES teams,
               player_id INTEGER REFERENCES players,minute INTEGER,extra_minute INTEGER,kinds TEXT,

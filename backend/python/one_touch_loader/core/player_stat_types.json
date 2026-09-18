@@ -1,0 +1,137 @@
+[
+  {
+    "id": 42,
+    "code": "shots-total",
+    "name": "Shots Total"
+  },
+  {
+    "id": 52,
+    "code": "goals",
+    "name": "Goals"
+  },
+  {
+    "id": 56,
+    "code": "fouls",
+    "name": "Fouls"
+  },
+  {
+    "id": 57,
+    "code": "saves",
+    "name": "Saves"
+  },
+  {
+    "id": 78,
+    "code": "tackles",
+    "name": "Tackles"
+  },
+  {
+    "id": 79,
+    "code": "assists",
+    "name": "Assists"
+  },
+  {
+    "id": 80,
+    "code": "passes",
+    "name": "Passes"
+  },
+  {
+    "id": 96,
+    "code": "fouls-drawn",
+    "name": "Fouls Drawn"
+  },
+  {
+    "id": 97,
+    "code": "blocked-shots",
+    "name": "Blocked Shots"
+  },
+  {
+    "id": 100,
+    "code": "interceptions",
+    "name": "Interceptions"
+  },
+  {
+    "id": 101,
+    "code": "clearances",
+    "name": "Clearances"
+  },
+  {
+    "id": 105,
+    "code": "total-duels",
+    "name": "Total Duels"
+  },
+  {
+    "id": 106,
+    "code": "duels-won",
+    "name": "Duels Won"
+  },
+  {
+    "id": 107,
+    "code": "aeriels-won",
+    "name": "Aerials Won"
+  },
+  {
+    "id": 108,
+    "code": "dribble-attempts",
+    "name": "Dribble Attempts"
+  },
+  {
+    "id": 109,
+    "code": "successful-dribbles",
+    "name": "Successful Dribbles"
+  },
+  {
+    "id": 110,
+    "code": "dribbled-past",
+    "name": "Dribbled Past"
+  },
+  {
+    "id": 116,
+    "code": "accurate-passes",
+    "name": "Accurate Passes"
+  },
+  {
+    "id": 117,
+    "code": "key-passes",
+    "name": "Key Passes"
+  },
+  {
+    "id": 120,
+    "code": "touches",
+    "name": "Touches"
+  },
+  {
+    "id": 122,
+    "code": "long-balls",
+    "name": "Long Balls"
+  },
+  {
+    "id": 123,
+    "code": "long-balls-won",
+    "name": "Long Balls Won"
+  },
+  {
+    "id": 1490,
+    "code": "man-of-match",
+    "name": "Man of Match"
+  },
+  {
+    "id": 1535,
+    "code": "goalkeeper-goals-conceded",
+    "name": "Goalkeeper Goals Conceded"
+  },
+  {
+    "id": 27269,
+    "code": "passes-in-final-third",
+    "name": "Passes In Final Third"
+  },
+  {
+    "id": 27271,
+    "code": "ball-recovery",
+    "name": "Ball Recovery"
+  },
+  {
+    "id": 27273,
+    "code": "possession-lost",
+    "name": "Possession Lost"
+  }
+]
