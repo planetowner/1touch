@@ -264,7 +264,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             decoration: BoxDecoration(
-              color: AppColors.of(context).subtleBackground,
+              color: AppColors.of(context).cardBackground,
               borderRadius: BorderRadius.circular(24),
             ),
             child: _buildRadarChart(),
