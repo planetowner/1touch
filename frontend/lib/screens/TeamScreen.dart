@@ -5,6 +5,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
@@ -21,6 +22,7 @@ class TeamScreen extends StatefulWidget {
   final int teamId;
   final TeamAttributeRepository? teamAttributeRepository;
   final TeamOverviewRepository? teamOverviewRepository;
+  final StandingRepository? standingRepository;
   final XgStandingRepository? xgStandingRepository;
 
   TeamScreen({
@@ -28,6 +30,7 @@ class TeamScreen extends StatefulWidget {
     required this.teamId,
     this.teamAttributeRepository,
     this.teamOverviewRepository,
+    this.standingRepository,
     this.xgStandingRepository,
   });
 
@@ -128,6 +131,7 @@ class _TeamScreenState extends State<TeamScreen>
         .resolve(overview.id)
         ?.competitionName;
     final positionValue = overview.standing?['position'];
+    final rankDeltaValue = overview.standing?['rank_delta'];
     final position = leagueName == null
         ? ''
         : positionValue is int
@@ -141,10 +145,7 @@ class _TeamScreenState extends State<TeamScreen>
       'image_path': overview.imagePath,
       'position': position,
       'logo': overview.imagePath,
-      // TODO(team-overview): The current design always renders an upward green
-      // arrow. Connect the signed API rank_delta when that indicator supports
-      // upward, downward, and unchanged states.
-      'rankChange': 0,
+      'rankChange': rankDeltaValue is int ? rankDeltaValue : null,
       'standing': overview.standing,
       'next_match': overview.nextMatch,
       'last_match': overview.lastMatch,
@@ -321,15 +322,31 @@ class _TeamScreenState extends State<TeamScreen>
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const Icon(Icons.arrow_drop_up,
-                                      size: 16, color: Colors.green),
-                                  Text(
-                                    team!['rankChange'] != 0
-                                        ? ' ${team!['rankChange']}'
-                                        : '',
-                                    style: Eyebrow.style
-                                        .copyWith(color: appBarForeground),
-                                  ),
+                                  if (team!['rankChange'] case final int delta
+                                      when delta != 0) ...[
+                                    Icon(
+                                      delta > 0
+                                          ? Icons.arrow_drop_up
+                                          : Icons.arrow_drop_down,
+                                      key: const ValueKey(
+                                        'team-rank-change-icon',
+                                      ),
+                                      size: 16,
+                                      color:
+                                          delta > 0 ? Colors.green : Colors.red,
+                                    ),
+                                    Text(
+                                      '${delta.abs()}',
+                                      key: const ValueKey(
+                                        'team-rank-change-value',
+                                      ),
+                                      style: Eyebrow.style.copyWith(
+                                        color: delta > 0
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                           ],
@@ -388,10 +405,12 @@ class _TeamScreenState extends State<TeamScreen>
                 OverviewTab(
                   team: team,
                   onStandingCompetitionSelected: _openStandingCompetition,
+                  standingRepository: widget.standingRepository,
                 ),
                 MatchesTab(team: team),
                 StandingTab(
                   team: team,
+                  regularStandingRepository: widget.standingRepository,
                   xgStandingRepository: widget.xgStandingRepository,
                   requestedCompetitionId: _requestedStandingCompetitionId,
                   selectionRequestId: _standingSelectionRequestId,
