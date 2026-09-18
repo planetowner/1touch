@@ -1,4 +1,4 @@
-"""Probability 신규 테이블을 만들고 타입·키를 확인해요. --apply는 직접 실행해주세요."""
+"""Probability의 최초 설치용이에요. 관계 분리 후 점검은 migrate_recent_relations --verify를 써요."""
 
 from __future__ import annotations
 

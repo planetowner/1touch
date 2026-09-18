@@ -50,6 +50,9 @@ class ProbabilityStorageTests(unittest.TestCase):
             CREATE TABLE probability_runs (
                 run_id TEXT PRIMARY KEY,model_id TEXT NOT NULL REFERENCES probability_models(model_id),
                 season_id INTEGER,as_of TEXT,payload TEXT NOT NULL);
+            CREATE TABLE teams (team_id INTEGER PRIMARY KEY);
+            CREATE TABLE fixtures (fixture_id INTEGER PRIMARY KEY);
+            CREATE TABLE probability_team_results (run_id TEXT REFERENCES probability_runs(run_id),team_id INTEGER REFERENCES teams(team_id),next_fixture_id INTEGER REFERENCES fixtures(fixture_id),payload TEXT,PRIMARY KEY(run_id,team_id));
         """)
         @contextmanager
         def transaction():
@@ -74,11 +77,39 @@ class ProbabilityStorageTests(unittest.TestCase):
         self.assertNotEqual(first, second)
         self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM probability_models").fetchone()[0], 1)
         self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM probability_runs").fetchone()[0], 2)
-        self.assertEqual(json.loads(self.connection.execute("SELECT payload FROM probability_runs WHERE run_id=?", (first,)).fetchone()[0]), run)
+        from one_touch_loader.core.probability_storage import split_run
+        self.assertEqual(json.loads(self.connection.execute("SELECT payload FROM probability_runs WHERE run_id=?", (first,)).fetchone()[0]), split_run(run)[0])
 
     def test_cannot_publish_run_without_model(self):
         with self.assertRaises(sqlite3.IntegrityError):
             loader.store_run({"model_id": "unknown", "season_id": 1, "as_of": "2026-09-17T00:00:00Z"})
+        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM probability_runs").fetchone()[0], 0)
+
+    def test_display_changes_and_team_order_do_not_duplicate_forecast(self):
+        loader.store_model({"model_id": "known"})
+        self.connection.executemany("INSERT INTO teams VALUES (?)", [(1,), (2,)])
+        self.connection.execute("INSERT INTO fixtures VALUES (10)")
+        self.connection.commit()
+        run = {"model_id": "known", "season_id": 1, "as_of": "2026-09-17T00:00:00Z",
+               "teams": {"1": {"team_name": "Old", "elo": 2000, "cards": [{"old": True}],
+                       "what_if": {"fixture": {"fixture_id": 10, "probabilities": [0.4, 0.3, 0.3]}, "scenarios": []}},
+                         "2": {"team_name": "Other", "elo": 1900}}}
+        first = loader.store_run(run)
+        run["teams"]["1"].update(team_name="New", cards=[])
+        run["teams"] = dict(reversed(list(run["teams"].items())))
+        self.assertEqual(first, loader.store_run(run))
+        payload = json.loads(self.connection.execute(
+            "SELECT payload FROM probability_team_results WHERE team_id=1").fetchone()[0])
+        self.assertNotIn("cards", payload)
+        self.assertNotIn("team_name", payload)
+        self.assertNotIn("fixture", payload["what_if"])
+        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM probability_team_results").fetchone()[0], 2)
+
+    def test_unknown_team_rolls_back_whole_run(self):
+        loader.store_model({"model_id": "known"})
+        with self.assertRaises(sqlite3.IntegrityError):
+            loader.store_run({"model_id": "known", "season_id": 1, "as_of": "2026-09-17T00:00:00Z",
+                              "teams": {"999": {"elo": 1900}}})
         self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM probability_runs").fetchone()[0], 0)
 
     def test_daily_and_current_runs_roll_back_together(self):

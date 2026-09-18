@@ -10,7 +10,8 @@ from pathlib import Path
 from one_touch_loader.core.db import DB_CONFIG, get_conn
 
 
-def run_migration(*, name: str, tables: tuple[str, ...], sql_paths: tuple[Path, ...], verify_schema):
+def run_migration(*, name: str, tables: tuple[str, ...], sql_paths: tuple[Path, ...], verify_schema,
+                  migrate_data=None, finalize_sql_paths: tuple[Path, ...] = ()):
     # 기존 Best Eleven과 부상 변경은 대상만 다르고 실행 순서는 같아요.
     verify_schema(before=True)
     root = Path(__file__).resolve().parents[2]
@@ -38,6 +39,16 @@ def run_migration(*, name: str, tables: tuple[str, ...], sql_paths: tuple[Path, 
                     if statement.strip():
                         cursor.execute(statement)
         conn.commit()
+        if migrate_data is not None:
+            # 관계를 옮기는 변경은 데이터 검증을 통과해야 기존 컬럼을 없앨 수 있어요.
+            migrate_data(conn)
+        if finalize_sql_paths:
+            with conn.cursor() as cursor:
+                for path in finalize_sql_paths:
+                    for statement in path.read_text(encoding="utf-8").split(";"):
+                        if statement.strip():
+                            cursor.execute(statement)
+            conn.commit()
     verify_schema(before=False)
     print(f"{name} migration completed.")
     print(f"Backup retained at: {backup}")

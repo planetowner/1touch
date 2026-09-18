@@ -17,8 +17,6 @@ class HighlightMatch(BaseModel):
     starting_at: datetime
     home: HighlightTeam
     away: HighlightTeam
-    score: list[int] = Field(min_length=2, max_length=2)
-    penalty_shootout: bool
     record_source: str
     record_url: str
 

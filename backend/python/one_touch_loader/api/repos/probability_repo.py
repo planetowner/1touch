@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import json
 
 from ..db import fetch_all_dict, fetch_one_dict
 from ...core.probability_forecast import select_cards
-
-
-def _json(value):
-    return json.loads(value) if isinstance(value, (str, bytes)) else value
+from ...core.probability_storage import load_run
+from ...core.db_json import decoded
 
 
 def _history_point(snapshot, entry):
@@ -26,37 +23,30 @@ def get_team_probability(team_id: int, season_id: int) -> dict | None:
         """, (season_id,))
     if selected is None:
         return None
-    latest = fetch_one_dict("""
-        SELECT r.model_id,
-               JSON_SET(r.payload,'$.teams',JSON_OBJECT(%s,JSON_EXTRACT(r.payload,%s))) AS payload,
-               UNIX_TIMESTAMP(r.created_at) AS created_epoch,
-               JSON_OBJECT('method',JSON_EXTRACT(m.payload,'$.method'),
-                           'validation',JSON_EXTRACT(m.payload,'$.validation')) AS model_payload
-        FROM probability_runs r JOIN probability_models m ON m.model_id=r.model_id
-        WHERE r.run_id=%s
-        """, (str(team_id), f'$.teams."{team_id}"', selected["run_id"]))
-    if latest is None:
-        return None
-    run = _json(latest["payload"])
-    model = _json(latest["model_payload"])
-    team = run["teams"].get(str(team_id))
+    run = load_run(fetch_all_dict, selected["run_id"], team_id)
+    team = run["teams"].get(str(team_id)) if run else None
     if team is None:
         return None
-    history_rows = fetch_all_dict("""
-        SELECT JSON_OBJECT('as_of',JSON_EXTRACT(r.payload,'$.as_of'),
-                           'history_kind',JSON_EXTRACT(r.payload,'$.history_kind'),
-                           'teams',JSON_OBJECT(%s,JSON_EXTRACT(r.payload,%s))) AS payload
-        FROM probability_runs r JOIN (
+    latest = fetch_one_dict("""SELECT r.model_id,UNIX_TIMESTAMP(r.created_at) AS created_epoch,
+        JSON_OBJECT('method',JSON_EXTRACT(m.payload,'$.method'),
+                    'validation',JSON_EXTRACT(m.payload,'$.validation')) AS model_payload
+        FROM probability_runs r JOIN probability_models m ON m.model_id=r.model_id WHERE r.run_id=%s""",
+        (selected["run_id"],))
+    model = decoded(latest["model_payload"])
+    history_rows = fetch_all_dict("""SELECT r.as_of,r.payload,tr.payload AS team_payload FROM probability_runs r
+        JOIN probability_team_results tr ON tr.run_id=r.run_id AND tr.team_id=%s JOIN (
             SELECT run_id,ROW_NUMBER() OVER (PARTITION BY as_of ORDER BY created_at DESC,run_id DESC) AS version
             FROM probability_runs WHERE season_id=%s AND model_id=%s AND DATE(as_of)<=%s
               AND TIME(as_of)=TIME('00:00:00')
-        ) snapshots ON snapshots.run_id=r.run_id WHERE version=1
-        """, (str(team_id), f'$.teams."{team_id}"', season_id, latest["model_id"], run["as_of"][:10]))
+        ) snapshots ON snapshots.run_id=r.run_id WHERE version=1 ORDER BY r.as_of""",
+        (team_id, season_id, latest["model_id"], run["as_of"][:10]))
     history, previous = [], None
-    for snapshot in sorted((_json(row["payload"]) for row in history_rows), key=lambda row: row["as_of"]):
-        entry = snapshot["teams"].get(str(team_id))
-        if entry is None:
-            continue
+    for row in history_rows:
+        stamp = row["as_of"]
+        if isinstance(stamp, str):
+            stamp = datetime.fromisoformat(stamp.replace('Z', '+00:00'))
+        snapshot = {**decoded(row["payload"]), "as_of": stamp.replace(tzinfo=timezone.utc).isoformat().replace('+00:00', 'Z')}
+        entry = decoded(row["team_payload"])
         history.append(_history_point(snapshot, entry))
         if snapshot["as_of"][:10] == team["previous_fixture_date"]:
             previous = entry
