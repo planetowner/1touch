@@ -44,8 +44,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('API Player'), findsOneWidget);
-    expect(repository.requestedSeasonIds, [25659]);
-    expect(find.text('25/26'), findsOneWidget);
+    expect(repository.requestedSeasonIds, [27965]);
+    expect(find.text('26/27'), findsOneWidget);
     await tester.tap(find.text('POSITION'));
     await tester.pumpAndSettle();
 
@@ -103,13 +103,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('squad-season-trigger')));
     await tester.pumpAndSettle();
     expect(find.text('24/25'), findsOneWidget);
+    expect(find.text('25/26'), findsOneWidget);
 
     await tester.tap(
       find.byKey(const ValueKey('squad-season-option-23621')),
     );
     await tester.pumpAndSettle();
     expect(find.text('24/25'), findsOneWidget);
-    expect(repository.requestedSeasonIds, [25659, 23621]);
+    expect(repository.requestedSeasonIds, [27965, 23621]);
 
     await tester.tap(find.byKey(const ValueKey('squad-sort-arrow')));
     await tester.pumpAndSettle();
@@ -140,7 +141,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('API Player'), findsOneWidget);
-    expect(repository.requestedSeasonIds, [25659, 25659]);
+    expect(repository.requestedSeasonIds, [27965, 27965]);
   });
 
   testWidgets('shows the empty state for an empty API roster', (tester) async {
@@ -259,8 +260,8 @@ class _FakeTeamContractRepository implements TeamContractRepository {
     }
     final roster = TeamContractRoster(
       teamId: teamId,
-      seasonId: seasonId ?? 25659,
-      isCurrent: seasonId != 23621,
+      seasonId: seasonId ?? 27965,
+      isCurrent: seasonId == 27965,
       players: returnEmpty
           ? const []
           : [

@@ -678,6 +678,18 @@ const mockTeams = <Team>[
       shortCode: 'SHU',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/teams/21/21.png',
       primaryColor: 0xFFEE2737),
+  // Additional 2026/27 Big Five participants.
+  Team(teamId: 117, name: "Coventry City"),
+  Team(teamId: 22, name: "Hull City"),
+  Team(teamId: 3588, name: "Elversberg"),
+  Team(teamId: 2642, name: "Paderborn"),
+  Team(teamId: 67, name: "Schalke 04"),
+  Team(teamId: 7758, name: "Le Mans"),
+  Team(teamId: 7047, name: "Troyes"),
+  Team(teamId: 4070, name: "Frosinone"),
+  Team(teamId: 429, name: "Deportivo A Coruña"),
+  Team(teamId: 126, name: "Málaga"),
+  Team(teamId: 9818, name: "Racing Santander"),
 ];
 
 Team mockTeamById(int id) => mockTeams.firstWhere((t) => t.teamId == id);
