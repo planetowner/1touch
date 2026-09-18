@@ -69,49 +69,65 @@ class MatchEventsSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          ..._buildSection(goalRows),
-          ..._buildSection(redCardRows),
+          if (goalRows.isNotEmpty) _buildSection(goalRows, 'goal'),
+          if (redCardRows.isNotEmpty) _buildSection(redCardRows, 'redCard'),
         ],
       ),
     );
   }
 
-  // Renders one section's rows with a single center icon, shown only
-  // alongside the first row — the rest of the section's rows leave that
-  // center slot empty rather than repeating the icon.
-  List<Widget> _buildSection(List<_GroupedMatchEvent> rows) {
-    return List.generate(rows.length, (i) {
-      final row = rows[i];
-      final isHome = row.team == 'home';
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: isHome
-                  ? _EventRowContent(row: row, alignRight: false)
-                  : const SizedBox.shrink(),
-            ),
-            SizedBox(
-              width: 20,
-              child: i == 0 ? Center(child: _eventTypeIcon(row.type)) : null,
-            ),
-            Expanded(
-              child: !isHome
-                  ? _EventRowContent(row: row, alignRight: true)
-                  : const SizedBox.shrink(),
-            ),
-          ],
+  // Each team owns an independent chronological column. An event from one
+  // team therefore never inserts an empty row into the other team's list.
+  Widget _buildSection(List<_GroupedMatchEvent> rows, String type) {
+    final homeRows = rows.where((row) => row.team == 'home');
+    final awayRows = rows.where((row) => row.team == 'away');
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            key: ValueKey('match-events-home-$type'),
+            children: [
+              for (final row in homeRows)
+                _EventRowContent(
+                  key: ValueKey('match-event-home-$type-${row.player}'),
+                  row: row,
+                  alignRight: false,
+                ),
+            ],
+          ),
         ),
-      );
-    });
+        SizedBox(
+          width: 20,
+          child: Center(child: _eventTypeIcon(type)),
+        ),
+        Expanded(
+          child: Column(
+            key: ValueKey('match-events-away-$type'),
+            children: [
+              for (final row in awayRows)
+                _EventRowContent(
+                  key: ValueKey('match-event-away-$type-${row.player}'),
+                  row: row,
+                  alignRight: true,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
 class _EventRowContent extends StatelessWidget {
   final _GroupedMatchEvent row;
   final bool alignRight;
-  const _EventRowContent({required this.row, required this.alignRight});
+  const _EventRowContent({
+    super.key,
+    required this.row,
+    required this.alignRight,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -136,10 +152,13 @@ class _EventRowContent extends StatelessWidget {
         ? [nameText, const SizedBox(width: 6), minuteText]
         : [minuteText, const SizedBox(width: 6), nameText];
 
-    return Row(
-      mainAxisAlignment:
-          alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: children,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment:
+            alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: children,
+      ),
     );
   }
 }
