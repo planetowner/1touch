@@ -15,6 +15,11 @@ void main() {
     25651: 301,
     25659: 564,
     25533: 384,
+    28083: 8,
+    28321: 82,
+    28082: 301,
+    27895: 384,
+    27965: 564,
   };
   const expectedTeamCounts = <int, int>{
     23614: 20,
@@ -27,10 +32,15 @@ void main() {
     25651: 18,
     25659: 20,
     25533: 20,
+    28083: 20,
+    28321: 18,
+    28082: 18,
+    27895: 20,
+    27965: 20,
   };
 
-  test('contains both complete Big Five seasons', () {
-    expect(mockTeamSeasonMemberships, hasLength(192));
+  test('contains three complete Big Five seasons', () {
+    expect(mockTeamSeasonMemberships, hasLength(288));
 
     for (final entry in expectedTeamCounts.entries) {
       final memberships = mockTeamMembershipsForSeason(entry.key);
@@ -59,7 +69,7 @@ void main() {
     };
 
     expect(teamIds, hasLength(mockTeams.length));
-    expect(mockTeams, hasLength(111));
+    expect(mockTeams, hasLength(122));
 
     for (final membership in mockTeamSeasonMemberships) {
       expect(teamIds, contains(membership.teamId));
@@ -71,9 +81,20 @@ void main() {
     }
   });
 
-  test('marks only 2025/26 domestic seasons as current', () {
-    const currentSeasonIds = {25583, 25646, 25651, 25659, 25533};
-    const previousSeasonIds = {23614, 23744, 23643, 23621, 23746};
+  test('marks only 2026/27 domestic seasons as current', () {
+    const currentSeasonIds = {28083, 28321, 28082, 27965, 27895};
+    const previousSeasonIds = {
+      23614,
+      23744,
+      23643,
+      23621,
+      23746,
+      25583,
+      25646,
+      25651,
+      25659,
+      25533
+    };
 
     for (final seasonId in currentSeasonIds) {
       expect(mockSeasons.singleWhere((s) => s.seasonId == seasonId).isCurrent,
