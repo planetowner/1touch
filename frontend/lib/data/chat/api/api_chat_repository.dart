@@ -92,6 +92,47 @@ class ApiChatRepository implements ChatRepository {
     return List.unmodifiable(page);
   }
 
+  @override
+  Future<void> reportMessage({
+    required int messageId,
+    required String reason,
+  }) async {
+    if (messageId < 1) {
+      throw RangeError.value(messageId, 'messageId', 'Must be positive');
+    }
+    final normalizedReason = reason.trim();
+    if (normalizedReason.isEmpty ||
+        normalizedReason.length > maxChatReportReasonLength) {
+      throw ArgumentError.value(
+        reason,
+        'reason',
+        'Must contain between 1 and $maxChatReportReasonLength characters',
+      );
+    }
+    final uri = _apiBaseUri.resolve('chat/messages/$messageId/report');
+    final response = await _client.post(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ..._requestHeaders,
+      },
+      body: jsonEncode({'reason': normalizedReason}),
+    );
+    if (response.statusCode != 200) {
+      throw http.ClientException(
+        'Chat-message report failed with status ${response.statusCode}.',
+        uri,
+      );
+    }
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic> || decoded['ok'] != true) {
+      throw const FormatException(
+        'Expected the chat-message report response to return ok=true.',
+      );
+    }
+  }
+
   void _verifyIncreasingIds(List<FixtureChatMessage> messages) {
     for (var index = 1; index < messages.length; index++) {
       if (messages[index - 1].messageId >= messages[index].messageId) {
