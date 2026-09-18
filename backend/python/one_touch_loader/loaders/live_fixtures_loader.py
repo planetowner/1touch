@@ -7,6 +7,7 @@ from ..core.db import fetch_all, transaction
 from ..core.fixture_states import LIVE_STATE_IDS
 from ..core.sportmonks import SportmonksClient
 from .fixture_details_loader import _normalize_fixture_details, write_fixture_detail_rows
+from . import player_rating_rankings_loader as player_rankings
 from .fixtures_loader import (
     SPORTMONKS_CURRENT_SCORE_TYPE_ID, SPORTMONKS_PENALTY_SCORE_TYPE_ID,
     SQL_UPSERT_FIXTURE_STATE, _score_pair,
@@ -58,12 +59,15 @@ def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
         for e in fixture["events"] if "verified_player_profile" in e
     }
     with transaction() as connection:
-        with connection.cursor() as cursor:
-            state = fixture["state"]
-            cursor.executemany(SQL_UPSERT_FIXTURE_STATE, [(state["id"], state["state"], state["name"])])
-            write_fixture_detail_rows(cursor, fixture["id"], rows, fixture["lineups"], profiles)
-            cursor.execute(SQL_UPDATE_LIVE_FIXTURE, (fixture["state_id"], *current, *penalties, fixture["id"]))
-            cursor.execute(SQL_UPSERT_CLOCK, normalize_clock(fixture, sampled_at))
+        with player_rankings.refresh_player_ratings_after_fixture(
+            connection, fixture["id"], state_id=fixture["state_id"],
+        ):
+            with connection.cursor() as cursor:
+                state = fixture["state"]
+                cursor.executemany(SQL_UPSERT_FIXTURE_STATE, [(state["id"], state["state"], state["name"])])
+                write_fixture_detail_rows(cursor, fixture["id"], rows, fixture["lineups"], profiles)
+                cursor.execute(SQL_UPDATE_LIVE_FIXTURE, (fixture["state_id"], *current, *penalties, fixture["id"]))
+                cursor.execute(SQL_UPSERT_CLOCK, normalize_clock(fixture, sampled_at))
 
 
 def refresh_live_fixtures(*, apply: bool = False) -> dict:

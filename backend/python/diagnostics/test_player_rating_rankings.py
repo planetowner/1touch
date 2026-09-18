@@ -73,10 +73,10 @@ class PlayerRatingRankingsTests(unittest.TestCase):
                 start_season_name TEXT, end_season_name TEXT, minimum_rated_matches INTEGER,
                 frozen_at TEXT DEFAULT CURRENT_TIMESTAMP);
             CREATE TABLE player_rating_reference_samples (competition_id INTEGER, season_id INTEGER,
-                player_id INTEGER, rated_matches INTEGER, rating_sum NUMERIC,
+                player_id INTEGER, rated_matches INTEGER CHECK(rated_matches >= 10), rating_sum NUMERIC,
                 PRIMARY KEY (competition_id, season_id, player_id));
             CREATE TABLE player_rating_scores (competition_id INTEGER, season_id INTEGER, player_id INTEGER,
-                rated_matches INTEGER, rating_sum NUMERIC, percentile_score NUMERIC,
+                rated_matches INTEGER CHECK(rated_matches >= 1), rating_sum NUMERIC, percentile_score NUMERIC,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (season_id, player_id));
             INSERT INTO competitions VALUES (8,'league'), (564,'league'), (999,'domestic_cup');
             INSERT INTO rounds VALUES (1,'1'), (2,'Play-offs');
@@ -137,6 +137,58 @@ class PlayerRatingRankingsTests(unittest.TestCase):
 
     def freeze(self):
         self.assertEqual(loader.freeze_player_rating_reference(8), 10)
+
+    def add_scheduled_rounds(self, season_id, *, total_rounds=38, completed_rounds=0):
+        # 기존 경기의 1라운드에 나머지 일정을 더해, 시즌 중반 전후를 실제 상태로 재현해요.
+        fixtures = {}
+        for number in range(2, total_rounds + 1):
+            round_id = season_id * 100 + number
+            self.db.execute("INSERT INTO rounds VALUES (?,?)", (round_id, str(number)))
+            self.sequence += 1
+            self.db.execute("INSERT INTO fixtures (fixture_id,stage_id,round_id,state_id) VALUES (?,?,?,?)",
+                            (self.sequence, season_id, round_id, 5 if number <= completed_rounds else 1))
+            fixtures[number] = self.sequence
+        return fixtures
+
+    def test_early_season_includes_one_rating_without_changing_historical_reference(self):
+        self.freeze()
+        reference = self.fetch_all("SELECT * FROM player_rating_reference_samples")
+        self.add_matches(self.target, 3, count=1, rating=7)
+        self.add_matches(self.target, 4, count=1, rating=None)
+        self.add_matches(self.target, 5, count=1, minutes=0)
+        self.add_matches(self.target, 6, count=1, state=2)
+        self.add_scheduled_rounds(self.target)
+        self.assertEqual(loader.build_player_rating_scores(self.target), 1)
+        client, _ = self.client()
+        data = client.get(f"/v1/players/rankings?season_id={self.target}").json()
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["items"][0]["rated_matches"], 1)
+        self.assertEqual(data["items"][0]["display_score"], 50)
+        self.assertEqual(data["reference"]["minimum_rated_matches"], 10)
+        self.assertEqual(reference, self.fetch_all("SELECT * FROM player_rating_reference_samples"))
+
+    def test_half_of_rounds_restores_standard_minimum_and_rebuilds_entire_season(self):
+        self.freeze()
+        self.add_matches(self.target, 3, count=1)
+        self.add_matches(self.target, 4, count=10)
+        schedule = self.add_scheduled_rounds(self.target, completed_rounds=18)
+        self.assertEqual(loader.build_player_rating_scores(self.target), 2)
+        # 19라운드 경기가 연기되면 완료 라운드는 여전히 18개예요.
+        self.db.execute("UPDATE fixtures SET state_id=10 WHERE fixture_id=?", (schedule[19],))
+        self.assertEqual(loader.build_player_rating_scores(self.target), 2)
+        self.db.execute("UPDATE fixtures SET state_id=5 WHERE fixture_id=?", (schedule[19],))
+        self.assertEqual(loader.build_player_rating_scores(self.target), 1)
+        self.assertEqual(self.fetch_one("SELECT player_id FROM player_rating_scores")["player_id"], 4)
+
+    def test_odd_round_count_rounds_up_and_nonregular_round_does_not_affect_cutoff(self):
+        self.add_matches(self.target, 3, count=1)
+        self.add_matches(self.target, 3, count=1, round_id=2)
+        schedule = self.add_scheduled_rounds(self.target, total_rounds=5, completed_rounds=2)
+        with self.cursor() as cur:
+            self.assertEqual(loader.minimum_rated_matches_for_season(cur, self.target, 10), 1)
+        self.db.execute("UPDATE fixtures SET state_id=5 WHERE fixture_id=?", (schedule[3],))
+        with self.cursor() as cur:
+            self.assertEqual(loader.minimum_rated_matches_for_season(cur, self.target, 10), 10)
 
     def test_shared_aggregation_excludes_missing_ratings_unplayed_unfinished_and_nonleague_rounds(self):
         self.add_matches(self.target, 3, count=9)

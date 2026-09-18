@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS player_rating_scores (
     percentile_score DECIMAL(13,10) NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (season_id, player_id),
-    CONSTRAINT chk_player_rating_score_matches CHECK (rated_matches >= 10),
+    -- 중반 전에는 1경기부터 저장해요. 중반 이후의 10경기 조건은 시즌 계산에서 적용해요.
+    CONSTRAINT chk_player_rating_score_matches CHECK (rated_matches >= 1),
     CONSTRAINT chk_player_rating_score_range CHECK (percentile_score BETWEEN 0 AND 100),
     CONSTRAINT fk_player_rating_score_reference FOREIGN KEY (competition_id)
         REFERENCES player_rating_references (competition_id) ON DELETE RESTRICT ON UPDATE CASCADE,

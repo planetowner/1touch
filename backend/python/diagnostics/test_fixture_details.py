@@ -370,6 +370,12 @@ class _SqliteConnection:
 
 class FixtureDetailsStorageTests(unittest.TestCase):
     def setUp(self):
+        # 이 테스트는 경기 상세 저장을 검증해요. 실제 랭킹 연동은 test_player_rating_refresh에서 확인해요.
+        from contextlib import nullcontext
+        ranking_refresh = patch.object(details.player_rankings, "refresh_player_ratings_after_fixture",
+                                       side_effect=lambda *args, **kwargs: nullcontext())
+        ranking_refresh.start()
+        self.addCleanup(ranking_refresh.stop)
         # 운영 DB 대신 메모리 안에서 실제 INSERT·DELETE·FK·rollback을 확인해요.
         self.connection = sqlite3.connect(":memory:")
         self.connection.execute("PRAGMA foreign_keys = ON")
