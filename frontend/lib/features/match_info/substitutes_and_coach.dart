@@ -73,7 +73,6 @@ class _SubList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment:
           alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -86,7 +85,7 @@ class _SubList extends StatelessWidget {
             ),
           if (sub.subIn) ...[
             const SizedBox(width: 4),
-            Icon(Icons.arrow_circle_left, size: 20, color: foreground),
+            const MatchEventIcon(type: LineupEventType.subIn),
           ],
           if (sub.minute != null) ...[
             const SizedBox(width: 4),
@@ -94,7 +93,7 @@ class _SubList extends StatelessWidget {
           ],
           if (sub.goal) ...[
             const SizedBox(width: 4),
-            Icon(Icons.sports_soccer, size: 20, color: foreground),
+            const MatchEventIcon(type: LineupEventType.goal),
           ],
           if (alignEnd)
             Flexible(
