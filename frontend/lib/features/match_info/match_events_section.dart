@@ -33,26 +33,9 @@ List<_GroupedMatchEvent> _groupMatchEvents(List<Map<String, dynamic>> events) {
 // A goal/red-card icon, shared by one whole section of rows rather than
 // repeated per row — there's one ball icon for the goals section and one
 // card icon for the red-cards section, not one per scorer.
-Widget _eventTypeIcon(String type) {
-  if (type == 'redCard') {
-    return Container(
-      width: 9,
-      height: 13,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8000A),
-        borderRadius: BorderRadius.circular(2),
-      ),
+Widget _eventTypeIcon(String type) => MatchEventIcon(
+      type: type == 'redCard' ? LineupEventType.redCard : LineupEventType.goal,
     );
-  }
-  return Container(
-    width: 16,
-    height: 16,
-    alignment: Alignment.center,
-    decoration:
-        const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-    child: const Icon(Icons.sports_soccer, size: 12, color: Colors.black),
-  );
-}
 
 class MatchEventsSection extends StatelessWidget {
   final List<Map<String, dynamic>> events;
