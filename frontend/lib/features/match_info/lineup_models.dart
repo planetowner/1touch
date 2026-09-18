@@ -18,10 +18,14 @@ class LineupEvent {
 }
 
 class LineupPlayer {
+  final int teamId;
+  final int playerId;
   final int? number;
   final String name;
   final List<LineupEvent> events;
   const LineupPlayer({
+    required this.teamId,
+    required this.playerId,
     required this.number,
     required this.name,
     this.events = const [],

@@ -59,8 +59,8 @@ void main() {
                 children: [
                   MatchBettingSection(
                     controller: controller,
-                    homeTeam: teams.findByIdOrUnknown(6),
-                    awayTeam: teams.findByIdOrUnknown(14),
+                    homeTeam: teams.requireById(6),
+                    awayTeam: teams.requireById(14),
                   ),
                   BettingParticipationCard(controller: controller),
                 ],

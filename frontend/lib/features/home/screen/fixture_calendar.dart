@@ -118,11 +118,12 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
       children: [
         // Calendar container
         Container(
+          key: const ValueKey('fixture-calendar-card'),
           decoration: BoxDecoration(
             color: appColors.cardBackground,
             borderRadius: BorderRadius.circular(28),
           ),
-          margin: const EdgeInsets.all(24),
+          margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -183,16 +184,22 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 
         // Legend outside the calendar
         Container(
-          padding: const EdgeInsets.all(24),
-          child: Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 16,
-            runSpacing: 8,
-            children: [
-              _buildLegendDot(Colors.red, 'League'),
-              _buildLegendDot(Colors.blue, 'Europe'),
-              _buildLegendDot(Colors.green, 'Cup'),
-            ],
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          alignment: Alignment.centerRight,
+          child: FittedBox(
+            key: const ValueKey('fixture-calendar-legends'),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildLegendDot(Colors.red, 'League'),
+                const SizedBox(width: 16),
+                _buildLegendDot(Colors.blue, 'Europe'),
+                const SizedBox(width: 16),
+                _buildLegendDot(Colors.green, 'Cup'),
+              ],
+            ),
           ),
         ),
       ],
@@ -201,6 +208,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 
   Widget _buildLegendDot(Color color, String label) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 16,

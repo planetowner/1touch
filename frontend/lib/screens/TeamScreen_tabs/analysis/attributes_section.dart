@@ -30,7 +30,7 @@ class _AttributesSectionState extends State<AttributesSection> {
   int _requestId = 0;
   int _comparisonRequestId = 0;
 
-  int get _teamId => widget.team?['id'] as int? ?? 83; // default Barcelona
+  int? get _teamId => widget.team?['id'] as int?;
   TeamAttributeRepository get _repository =>
       widget.repository ?? teamAttributeRepository;
 
@@ -57,18 +57,20 @@ class _AttributesSectionState extends State<AttributesSection> {
     final requestId = ++_requestId;
     final teamId = _teamId;
 
-    try {
-      final all = await _repository.loadForTeam(teamId);
-      List<TeamAttributeSeasonOption> options;
-      try {
-        options = await _repository.loadOptionsForTeam(teamId);
-      } on Object {
-        options = const [];
-      }
-      if (!mounted || requestId != _requestId || teamId != _teamId) return;
-
+    if (teamId == null) {
+      if (!mounted || requestId != _requestId) return;
       setState(() {
-        _applyAttributes(all, options);
+        _resetAttributes();
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final baseline = await loadTeamAttributeBaseline(_repository, teamId);
+      if (!mounted || requestId != _requestId || teamId != _teamId) return;
+      setState(() {
+        _applyAttributes(baseline.scores, baseline.options);
         _isLoading = false;
       });
     } on Object {
@@ -88,6 +90,8 @@ class _AttributesSectionState extends State<AttributesSection> {
   Future<void> _loadComparison(int seasonId) async {
     final requestId = ++_comparisonRequestId;
     final teamId = _teamId;
+
+    if (teamId == null) return;
 
     setState(() {
       _selectedComparisonSeasonId = seasonId;
@@ -226,10 +230,13 @@ class _AttributesSectionState extends State<AttributesSection> {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             decoration: BoxDecoration(
-              color: AppColors.of(context).subtleBackground,
+              color: AppColors.of(context).cardBackground,
               borderRadius: BorderRadius.circular(24),
             ),
-            child: _buildRadarChart(),
+            child: TeamAttributeRadar(
+              scores: _myScores!,
+              comparisonScores: _comparisonScores,
+            ),
           ),
 
           //   Legend
@@ -247,7 +254,7 @@ class _AttributesSectionState extends State<AttributesSection> {
                   _legendDot(
                     Theme.of(context).colorScheme.onSurface,
                     '${_compactSeasonLabel(_comparisonScores!.seasonLabel)} '
-                    '${teamRepository.findByIdOrUnknown(_comparisonScores!.teamId).name.toUpperCase()}',
+                    '${(teamRepository.findById(_comparisonScores!.teamId)?.name ?? 'Unknown Team').toUpperCase()}',
                   ),
               ],
             ),
@@ -319,89 +326,6 @@ class _AttributesSectionState extends State<AttributesSection> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  //   Radar chart
-
-  // Fixed frame for the radar's scale. fl_chart derives the chart's center and
-  // radius from the min/max value across ALL datasets, so without a pinned
-  // range MY TEAM's polygon would rescale (and visibly change shape) every time
-  // a different comparison season is picked. Anchoring the floor/ceiling keeps
-  // MY TEAM identical no matter what it's compared to. Attribute values are
-  // clamped to 5-95, so 0..100 gives clean headroom and aligns with tickCount.
-  static const double _radarFloor = 0;
-  static const double _radarCeil = 100;
-
-  Widget _buildRadarChart() {
-    final appColors = AppColors.of(context);
-    final comparisonColor = Theme.of(context).colorScheme.onSurface;
-    return SizedBox(
-      height: 260,
-      child: RadarChart(
-        RadarChartData(
-          radarShape: RadarShape.polygon,
-          tickCount: 4,
-          gridBorderData: BorderSide(color: appColors.divider, width: 1),
-          radarBorderData: BorderSide(color: appColors.divider, width: 1),
-          tickBorderData: BorderSide(color: appColors.divider, width: 1),
-          ticksTextStyle:
-              const TextStyle(color: Colors.transparent, fontSize: 0),
-          getTitle: (index, _) {
-            final label = teamAttributeLabels[index];
-            final moveOutward = label == 'Progression' || label == 'Possession';
-            return RadarChartTitle(
-              text: label,
-              angle: 0,
-              positionPercentageOffset: moveOutward ? 0.3 : null,
-            );
-          },
-          titleTextStyle: Eyebrow.style,
-          titlePositionPercentageOffset: 0.15,
-          dataSets: [
-            // MY TEAM — red
-            RadarDataSet(
-              fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
-              borderColor: const Color(0xFFE8434A),
-              borderWidth: 2,
-              entryRadius: 0,
-              dataEntries: _myScores!.radarValues
-                  .map((v) => RadarEntry(value: v))
-                  .toList(),
-            ),
-            // Comparison — white outline
-            if (_comparisonScores != null)
-              RadarDataSet(
-                fillColor: comparisonColor.withValues(alpha: 0.1),
-                borderColor: comparisonColor.withValues(alpha: 0.85),
-                borderWidth: 2,
-                entryRadius: 0,
-                dataEntries: _comparisonScores!.radarValues
-                    .map((v) => RadarEntry(value: v))
-                    .toList(),
-              ),
-            // Invisible anchor — pins the scale to a fixed [floor, ceil] range
-            // so the visible polygons never rescale between comparisons.
-            _scaleAnchorDataSet(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Fully transparent dataset carrying one floor value and the rest at the
-  // ceiling, so both minEntry and maxEntry across the chart stay constant.
-  RadarDataSet _scaleAnchorDataSet() {
-    final count = _myScores!.radarValues.length;
-    return RadarDataSet(
-      fillColor: Colors.transparent,
-      borderColor: Colors.transparent,
-      borderWidth: 0,
-      entryRadius: 0,
-      dataEntries: List.generate(
-        count,
-        (i) => RadarEntry(value: i == 0 ? _radarFloor : _radarCeil),
       ),
     );
   }

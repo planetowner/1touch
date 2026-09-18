@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
+import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
 
@@ -224,8 +225,6 @@ class _PostCard extends StatelessWidget {
                     style: Body2.style,
                   ),
                   const SizedBox(height: 8),
-                  // TODO: Replace with repository data when like counts are
-                  // exposed by the API.
                   Row(
                     children: [
                       Icon(
@@ -234,7 +233,13 @@ class _PostCard extends StatelessWidget {
                         size: 16,
                       ),
                       const SizedBox(width: 6),
-                      Text('—', style: Body2.style),
+                      Text(
+                        formatCommunityEngagementCount(post.likeCount),
+                        key: ValueKey(
+                          'community-post-${post.postId}-like-count',
+                        ),
+                        style: Body2.style,
+                      ),
                     ],
                   ),
                 ],

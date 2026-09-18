@@ -10,7 +10,7 @@ import 'package:onetouch/data/competitions/competition_repository_provider.dart'
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
@@ -367,8 +367,8 @@ class _MatchesTabState extends State<MatchesTab> {
         ? AppPalette.lightGrey
         : AppPalette.lightGreyBox;
     final isUpcoming = fixture.status == FixtureStatus.upcoming;
-    final home = teamRepository.findByIdOrUnknown(fixture.homeTeamId);
-    final away = teamRepository.findByIdOrUnknown(fixture.awayTeamId);
+    final home = fixtureHomeTeam(fixture, teamRepository);
+    final away = fixtureAwayTeam(fixture, teamRepository);
     final leagueName =
         competitionRepository.findById(fixture.competitionId)?.name ??
             'Unknown';

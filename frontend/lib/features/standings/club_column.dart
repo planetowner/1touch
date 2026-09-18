@@ -91,7 +91,9 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: () => openTeamPage(context, teamId),
+                    onTap: isTeamPageSupported(teamId)
+                        ? () => openTeamPage(context, teamId)
+                        : null,
                     child: Image.network(
                       '${team['logo']}',
                       width: 20,

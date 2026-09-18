@@ -208,6 +208,8 @@ void main() {
     const contextResolver = _TestCompetitionContextResolver({
       900: TeamCompetitionContext(
         teamId: 900,
+        seasonId: 25646,
+        competitionId: 8,
         competitionName: 'Test League',
         currentPosition: 1,
       ),

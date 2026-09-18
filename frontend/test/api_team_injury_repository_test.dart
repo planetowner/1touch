@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/data/injuries/api/api_team_injury_repository.dart';
+import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 
 void main() {
   test('requests, maps, and caches the current team injury report', () async {
@@ -74,9 +75,22 @@ void main() {
     expect(repository.cachedReports.value, hasLength(2));
   });
 
-  test('surfaces unavailable, authentication, and server failures', () async {
+  test('maps not found to an unavailable team feature', () async {
+    final repository = ApiTeamInjuryRepository(
+      client: MockClient((_) async => http.Response('Not found', 404)),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.loadForTeam(83),
+      throwsA(isA<TeamFeatureUnavailableException>()),
+    );
+    expect(repository.cachedReports.value, isEmpty);
+  });
+
+  test('surfaces authentication and server failures', () async {
     final responses = [
-      http.Response('Not found', 404),
       http.Response('Unauthorized', 401),
       http.Response('Server error', 500),
     ];

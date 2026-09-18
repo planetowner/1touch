@@ -45,7 +45,9 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   @override
   void initState() {
     super.initState();
-    _followingTeams = widget.followingTeams.map((team) {
+    _followingTeams = widget.followingTeams
+        .where((team) => teamPageEligibility.supports(team.teamId))
+        .map((team) {
       return <String, dynamic>{
         'id': team.teamId,
         'name': team.name,
@@ -57,7 +59,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
   }
 
   Future<void> _switchTeam() async {
-    if (_isSaving) return;
+    if (_isSaving || _followingTeams.isEmpty) return;
     final selected = _followingTeams.firstWhere(
       (team) => team['isSelected'] == true,
       orElse: () => _followingTeams.first,
@@ -158,7 +160,8 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _isSaving ? null : _switchTeam,
+              onPressed:
+                  _isSaving || _followingTeams.isEmpty ? null : _switchTeam,
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.onSurface,
                 foregroundColor: colorScheme.onPrimary,

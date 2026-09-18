@@ -187,6 +187,10 @@ class _PlayerDot extends StatelessWidget {
     final badgeLeft = badges == null ? 0.0 : (32 - badges.width) / 2;
     final minuteLeft = badges == null ? 40.0 : badgeLeft + badges.width + 4;
     return GestureDetector(
+      key: ValueKey(
+        'match-lineup-player-${player.teamId}-${player.playerId}',
+      ),
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -380,114 +384,19 @@ class _EventBadges extends StatelessWidget {
   }
 
   Widget _iconFor(LineupEvent event) {
-    switch (event.type) {
-      case LineupEventType.yellowCard:
-        return SizedBox.square(
-          dimension: _badgeSize,
-          child: Center(
-            child: Container(
-              width: 7,
-              height: 10,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFCC00),
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-          ),
-        );
-      case LineupEventType.secondYellowCard:
-      case LineupEventType.redCard:
-        return SizedBox.square(
-          dimension: _badgeSize,
-          child: Center(
-            child: Container(
-              width: 7,
-              height: 10,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8000A),
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-          ),
-        );
-      case LineupEventType.goal:
-        return SvgPicture.asset(
-          'assets/match_info/soccer_ball.svg',
-          key: const ValueKey('lineup-goal-icon'),
-          width: _badgeSize,
-          height: _badgeSize,
-        );
-      case LineupEventType.assist:
-        return Container(
-          key: const ValueKey('lineup-assist-icon'),
-          width: _badgeSize,
-          height: _badgeSize,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Text(
-            'A',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 8,
-              fontWeight: FontWeight.w800,
-              height: 1,
-            ),
-          ),
-        );
-      case LineupEventType.subIn:
-        return Container(
-          key: const ValueKey('lineup-sub-in-icon'),
-          width: _badgeSize,
-          height: _badgeSize,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
-          ),
-          child: const Icon(
-            Icons.arrow_back_rounded,
-            size: 9,
-            color: Color(0xFF20B972),
-          ),
-        );
-      case LineupEventType.subOut:
-        return Container(
-          key: const ValueKey('lineup-sub-out-icon'),
-          width: _badgeSize,
-          height: _badgeSize,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
-          ),
-          child: const Icon(
-            Icons.arrow_forward_rounded,
-            size: 9,
-            color: Color(0xFFFF4F5E),
-          ),
-        );
-      case LineupEventType.injury:
-        return Container(
-          key: const ValueKey('lineup-injury-icon'),
-          width: _badgeSize,
-          height: _badgeSize,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
-          ),
-          child: const Icon(
-            Icons.add,
-            size: 10,
-            color: Color(0xFFFF4F5E),
-          ),
-        );
-    }
+    final key = switch (event.type) {
+      LineupEventType.goal => 'lineup-goal-icon',
+      LineupEventType.assist => 'lineup-assist-icon',
+      LineupEventType.subIn => 'lineup-sub-in-icon',
+      LineupEventType.subOut => 'lineup-sub-out-icon',
+      LineupEventType.injury => 'lineup-injury-icon',
+      _ => null,
+    };
+    return MatchEventIcon(
+      key: key == null ? null : ValueKey(key),
+      type: event.type,
+      size: _badgeSize,
+    );
   }
 }
 

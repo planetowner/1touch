@@ -99,7 +99,7 @@ class CommunityTeamHeader extends StatelessWidget {
 
   final Team team;
   final bool isLive;
-  final int followerCount;
+  final int? followerCount;
   final VoidCallback onTeamTap;
 
   @override
@@ -231,7 +231,8 @@ class CommunityPostTabHeader extends StatelessWidget {
   }
 }
 
-String _formatFollowers(int count) {
+String _formatFollowers(int? count) {
+  if (count == null) return 'Followers';
   if (count >= 1000000) {
     return '${(count / 1000000).toStringAsFixed(1)}M Followers';
   }

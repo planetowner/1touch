@@ -17,6 +17,7 @@ import 'package:onetouch/data/players/player_repository.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart'
     as player_providers;
 import 'package:onetouch/data/teams/team_competition_context.dart';
+import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
@@ -86,6 +87,8 @@ class _SearchContentState extends State<SearchContent> {
 
   static const _tabs = ['ALL', 'PLAYERS', 'TEAMS', 'EVENTS'];
   bool get _hasQuery => _searchController.text.trim().isNotEmpty;
+  TeamPageEligibility get _teamPageEligibility =>
+      TeamPageEligibility(widget.competitionContextResolver);
 
   @override
   void initState() {
@@ -286,7 +289,8 @@ class _SearchContentState extends State<SearchContent> {
 
   bool get _hasSearchableData =>
       widget.playerRepository.allPlayers.isNotEmpty ||
-      widget.teamRepository.allTeams.isNotEmpty;
+      widget.teamRepository.allTeams
+          .any((team) => _teamPageEligibility.supports(team.teamId));
 
   Widget _buildRecents() {
     final recentPlayer = widget.playerRepository.findById('lee-kang-in') ??
@@ -307,7 +311,8 @@ class _SearchContentState extends State<SearchContent> {
         ),
         const SizedBox(height: 20),
         if (recentPlayer != null) _buildPlayerCard(recentPlayer),
-        if (recentTeam != null) ...[
+        if (recentTeam != null &&
+            _teamPageEligibility.supports(recentTeam.teamId)) ...[
           const SizedBox(height: 16),
           _buildTeamCard(recentTeam),
         ],
@@ -382,6 +387,7 @@ class _SearchContentState extends State<SearchContent> {
         widget.teamRepository.search(query).map((team) => team.teamId).toSet();
     final teams = widget.teamRepository.allTeams
         .where((team) {
+          if (!_teamPageEligibility.supports(team.teamId)) return false;
           final contextLabel = widget.competitionContextResolver
               .labelFor(team.teamId)
               .toLowerCase();
@@ -501,7 +507,9 @@ class _SearchContentState extends State<SearchContent> {
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: () => openTeamPage(context, team.teamId),
+      onTap: isTeamPageSupported(team.teamId)
+          ? () => openTeamPage(context, team.teamId)
+          : null,
       child: Container(
         key: ValueKey('search-team-${team.teamId}'),
         constraints: const BoxConstraints(minHeight: 112),

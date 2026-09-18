@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/models/standing.dart' as standing_model;
 
 void main() {
   Widget subject(int teamId) {
     return MaterialApp(
       home: Scaffold(
-        body: Standing(teams: <String, dynamic>{'id': teamId}),
+        body: Standing(
+          teams: <String, dynamic>{'id': teamId},
+          repository: MockStandingRepository(),
+        ),
       ),
     );
   }
@@ -89,4 +94,60 @@ void main() {
       expect(firstValue.alignment, Alignment.center);
     }
   });
+
+  testWidgets('reports the competition selected from an overview card',
+      (tester) async {
+    int? selectedCompetitionId;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Standing(
+            teams: const <String, dynamic>{'id': 9},
+            repository: MockStandingRepository(),
+            onCompetitionSelected: (competitionId) {
+              selectedCompetitionId = competitionId;
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('overview-standing-card-8')),
+    );
+
+    expect(selectedCompetitionId, 8);
+  });
+
+  testWidgets('requests the backend-defined current domestic season',
+      (tester) async {
+    final repository = _RecordingStandingRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Standing(
+            teams: const <String, dynamic>{'id': 9},
+            repository: repository,
+          ),
+        ),
+      ),
+    );
+
+    expect(repository.requests, [(competitionId: 8, seasonId: null)]);
+  });
+}
+
+class _RecordingStandingRepository extends MockStandingRepository {
+  final List<({int competitionId, int? seasonId})> requests = [];
+
+  @override
+  Future<List<standing_model.Standing>> loadForCompetition(
+    int competitionId, {
+    int? seasonId,
+  }) {
+    requests.add((competitionId: competitionId, seasonId: seasonId));
+    return super.loadForCompetition(competitionId, seasonId: seasonId);
+  }
 }

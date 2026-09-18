@@ -60,11 +60,11 @@ void main() {
         tester.widget<Divider>(find.byType(Divider)).color,
         app_style.AppPalette.lightGrey,
       );
+      expect(find.text('Continue with Facebook'), findsNothing);
 
       for (final label in [
         'Continue with Google',
         'Continue with Apple',
-        'Continue with Facebook',
       ]) {
         final socialButtonFinder = find.ancestor(
           of: find.text(label),

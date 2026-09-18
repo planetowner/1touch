@@ -6,6 +6,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'support/stub_community_repository.dart';
 
 void main() {
   testWidgets('submits the selected report reason on a tall screen',
@@ -22,8 +23,30 @@ void main() {
         home: PostDetailScreen(
           post: _post,
           postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
         ),
       ),
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('community-detail-like-count')),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('community-detail-like-count')),
+          )
+          .data,
+      '1,290',
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('community-detail-comment-count')),
+          )
+          .data,
+      '12',
     );
     await _openReportDialog(tester);
 
@@ -63,6 +86,7 @@ void main() {
         home: PostDetailScreen(
           post: _post,
           postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
         ),
       ),
     );
@@ -136,6 +160,11 @@ class _ReportPostRepository implements PostRepository {
     reportedReason = reason;
     return onReport(postId, reason);
   }
+
+  @override
+  Future<void> setPostLiked({required int postId, required bool liked}) {
+    throw UnsupportedError('This test double only scripts reports.');
+  }
 }
 
 const _post = Post(
@@ -146,4 +175,6 @@ const _post = Post(
   title: 'Reportable post',
   body: 'Post body',
   createdAt: '2026-09-03 10:00:00',
+  likeCount: 1290,
+  commentCount: 12,
 );

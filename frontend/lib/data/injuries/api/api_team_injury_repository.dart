@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:onetouch/data/injuries/api/api_team_injury_mapper.dart';
 import 'package:onetouch/data/injuries/api/api_team_injury_response.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
+import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/models/team_injury_report.dart';
 
 /// HTTP implementation of `GET /v1/teams/{team_id}/injuries`.
@@ -43,6 +44,12 @@ class ApiTeamInjuryRepository implements TeamInjuryRepository {
         ..._requestHeaders,
       },
     );
+    if (response.statusCode == 404) {
+      throw TeamFeatureUnavailableException(
+        teamId: teamId,
+        feature: 'Injuries',
+      );
+    }
     if (response.statusCode != 200) {
       throw http.ClientException(
         'Team injuries request failed with status ${response.statusCode}.',

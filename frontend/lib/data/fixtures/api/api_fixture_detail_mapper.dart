@@ -64,13 +64,49 @@ FixtureDetail fixtureDetailFromApiResponse(
         )
         .toList(growable: false),
     statistics: response.statistics
+        .where((item) => item.value != null)
         .map(
           (item) => FixtureStatistic(
             teamId: item.teamId,
             statTypeId: item.statTypeId,
             statCode: item.statCode,
             statName: item.statName,
-            value: item.value,
+            value: item.value!,
+          ),
+        )
+        .toList(growable: false),
+    playerStatistics: response.playerStatistics
+        .map(
+          (player) => FixturePlayerStatistic(
+            teamId: player.teamId,
+            playerId: player.playerId,
+            matchPositionId: player.matchPositionId,
+            positionGroup: player.positionGroup,
+            minutesPlayed: player.minutesPlayed,
+            rating: player.rating,
+            isManOfMatch: player.isManOfMatch,
+            categories: player.categories
+                .map(
+                  (category) => FixturePlayerStatCategory(
+                    code: category.code,
+                    label: category.label,
+                    metrics: category.metrics
+                        .map(
+                          (metric) => FixturePlayerStatMetric(
+                            code: metric.code,
+                            label: metric.label,
+                            kind: metric.kind,
+                            source: metric.source,
+                            statTypeIds: metric.statTypeIds,
+                            value: metric.value,
+                            numerator: metric.numerator,
+                            denominator: metric.denominator,
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                )
+                .toList(growable: false),
           ),
         )
         .toList(growable: false),

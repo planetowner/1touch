@@ -40,6 +40,9 @@ class TestTeamOverviewRepository implements TeamOverviewRepository {
 TeamOverview testTeamOverview({
   int teamId = 9,
   String name = 'Manchester City',
+  int nextCompetitionId = 8,
+  CompetitionType nextCompetitionType = CompetitionType.league,
+  int? rankDelta = 0,
 }) {
   return TeamOverview(
     id: teamId,
@@ -48,7 +51,7 @@ TeamOverview testTeamOverview({
     imagePath: 'https://cdn.example/$teamId.png',
     standing: {
       'position': 1,
-      'rank_delta': 0,
+      'rank_delta': rankDelta,
       'team_id': teamId,
       'matches_played': 3,
       'won': 3,
@@ -63,10 +66,10 @@ TeamOverview testTeamOverview({
     nextMatch: Fixture(
       fixtureId: 1001,
       seasonId: 25583,
-      competitionId: 8,
+      competitionId: nextCompetitionId,
       homeTeamId: teamId,
       awayTeamId: 19,
-      competitionType: CompetitionType.league,
+      competitionType: nextCompetitionType,
       roundName: '4',
       status: FixtureStatus.upcoming,
       startingAt: '2026-09-20T15:00:00.000Z',

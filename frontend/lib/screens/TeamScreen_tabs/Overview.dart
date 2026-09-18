@@ -1,17 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
+import 'package:onetouch/data/injuries/team_injury_repository.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
+import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 
-class OverviewTab extends StatelessWidget {
+class OverviewTab extends StatefulWidget {
   final Map<String, dynamic>? team;
+  final ValueChanged<int>? onStandingCompetitionSelected;
+  final BestElevenRepository? bestElevenRepository;
+  final TeamInjuryRepository? injuryRepository;
+  final StandingRepository? standingRepository;
+  final TransferRepository? transferRepository;
 
-  const OverviewTab({super.key, required this.team});
+  const OverviewTab({
+    super.key,
+    required this.team,
+    this.onStandingCompetitionSelected,
+    this.bestElevenRepository,
+    this.injuryRepository,
+    this.standingRepository,
+    this.transferRepository,
+  });
+
+  @override
+  State<OverviewTab> createState() => _OverviewTabState();
+}
+
+class _OverviewTabState extends State<OverviewTab> {
+  bool _showBestElevenSection = true;
+  bool _showInjurySection = true;
+  bool _showTransferSection = true;
+
+  int? get _teamId => widget.team?['id'] as int?;
+
+  @override
+  void didUpdateWidget(OverviewTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.team?['id'] != _teamId) {
+      _showBestElevenSection = true;
+      _showInjurySection = true;
+      _showTransferSection = true;
+    }
+  }
+
+  void _hideBestElevenSection() {
+    if (!_showBestElevenSection || !mounted) return;
+    setState(() => _showBestElevenSection = false);
+  }
+
+  void _hideInjurySection() {
+    if (!_showInjurySection || !mounted) return;
+    setState(() => _showInjurySection = false);
+  }
+
+  void _hideTransferSection() {
+    if (!_showTransferSection || !mounted) return;
+    setState(() => _showTransferSection = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     final isLight = Theme.of(context).brightness == Brightness.light;
+    final hasStanding = widget.team?['standing'] != null;
     return CustomScrollView(
       slivers: [
         SliverList(
@@ -20,26 +74,48 @@ class OverviewTab extends StatelessWidget {
               const SizedBox(height: 24),
               const SectionHeader(title: "FIXTURE"),
               // Pass the whole team map
-              Fixtures(teams: team),
+              Fixtures(teams: widget.team),
 
-              const SizedBox(height: 32),
-              const SectionHeader(title: "STANDING"),
-              Standing(teams: team),
+              if (hasStanding) ...[
+                const SizedBox(height: 32),
+                const SectionHeader(title: "STANDING"),
+                Standing(
+                  teams: widget.team,
+                  onCompetitionSelected: widget.onStandingCompetitionSelected,
+                  repository: widget.standingRepository,
+                ),
+              ],
 
-              const SizedBox(height: 32),
-              const SectionHeader(title: "BEST XI"),
-              TeamBestElevenSection(
-                teamId: team?['id'] as int?,
-                variant: TeamBestElevenVariant.overview,
-              ),
+              if (_showBestElevenSection) ...[
+                const SizedBox(height: 32),
+                const SectionHeader(title: "BEST XI"),
+                TeamBestElevenSection(
+                  teamId: _teamId,
+                  variant: TeamBestElevenVariant.overview,
+                  repository: widget.bestElevenRepository,
+                  onUnavailable: _hideBestElevenSection,
+                ),
+              ],
 
-              const SizedBox(height: 32),
-              const SectionHeader(title: "INJURY STATUS"),
-              InjuryStatus(teams: team),
+              if (_showInjurySection) ...[
+                const SizedBox(height: 32),
+                const SectionHeader(title: "INJURY STATUS"),
+                InjuryStatus(
+                  teams: widget.team,
+                  repository: widget.injuryRepository,
+                  onUnavailable: _hideInjurySection,
+                ),
+              ],
 
-              const SizedBox(height: 20),
-              const SectionHeader(title: "TRANSFERS"),
-              Transfer(teams: team),
+              if (_showTransferSection) ...[
+                const SizedBox(height: 20),
+                const SectionHeader(title: "TRANSFERS"),
+                Transfer(
+                  teams: widget.team,
+                  repository: widget.transferRepository,
+                  onUnavailable: _hideTransferSection,
+                ),
+              ],
 
               Padding(
                 padding: const EdgeInsets.all(24),
