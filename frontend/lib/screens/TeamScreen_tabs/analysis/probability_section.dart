@@ -172,48 +172,38 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
 
     return Container(
       key: ValueKey('team-probability-card-${card.event}'),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.of(context).subtleBackground,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(_eventTitle(card.event), style: Body1.style),
           const SizedBox(height: 36),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                flex: 2,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        '${(card.probability * 100).round()}',
-                        key: ValueKey(
-                          'team-probability-value-${card.event}',
-                        ),
-                        style: Heading1.style,
-                      ),
-                      Text('%', style: Heading4.style),
-                    ],
-                  ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  '${(card.probability * 100).round()}',
+                  key: ValueKey('team-probability-value-${card.event}'),
+                  style: Heading1.style,
                 ),
-              ),
-              if (showDelta) ...[
-                const SizedBox(width: 4),
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      children: [
-                        Icon(
+                Text('%', style: Heading4.style),
+                if (showDelta) ...[
+                  const SizedBox(width: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      IgnoreBaseline(
+                        child: Icon(
                           isUp ? Icons.arrow_drop_up : Icons.arrow_drop_down,
                           key: ValueKey(
                             'team-probability-delta-icon-${card.event}',
@@ -221,19 +211,17 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
                           color: isUp ? Colors.blueAccent : Colors.redAccent,
                           size: 24,
                         ),
-                        Text(
-                          _formatDelta(delta.abs()),
-                          key: ValueKey(
-                            'team-probability-delta-${card.event}',
-                          ),
-                          style: Heading5.style,
-                        ),
-                      ],
-                    ),
+                      ),
+                      Text(
+                        _formatDelta(delta.abs()),
+                        key: ValueKey('team-probability-delta-${card.event}'),
+                        style: Heading5.style,
+                      ),
+                    ],
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ],
       ),
