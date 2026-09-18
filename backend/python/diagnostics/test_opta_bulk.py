@@ -239,12 +239,12 @@ class StorageTests(unittest.TestCase):
         self.conn = sqlite3.connect(":memory:")
         self.conn.execute("PRAGMA foreign_keys=ON")
         self.conn.executescript("""
-            CREATE TABLE fixtures(fixture_id INTEGER PRIMARY KEY);
+            CREATE TABLE fixtures(fixture_id INTEGER PRIMARY KEY,home_team_id INTEGER,away_team_id INTEGER);
             CREATE TABLE teams(team_id INTEGER PRIMARY KEY);
             CREATE TABLE players(player_id INTEGER PRIMARY KEY,display_name TEXT);
             CREATE TABLE fixture_opta_shotmaps(fixture_id INTEGER PRIMARY KEY REFERENCES fixtures,
-              external_fixture_id TEXT UNIQUE,external_competition_id TEXT,external_season_id TEXT,
-              source_url TEXT,home_count INTEGER,away_count INTEGER,collected_at TEXT);
+              collected_at TEXT);
+            CREATE TABLE fixture_opta_sources(fixture_id INTEGER PRIMARY KEY REFERENCES fixtures,source_url TEXT);
             CREATE TABLE fixture_opta_shots(external_event_id TEXT PRIMARY KEY,
               fixture_id INTEGER REFERENCES fixture_opta_shotmaps,team_id INTEGER REFERENCES teams,
               player_id INTEGER REFERENCES players,minute INTEGER,extra_minute INTEGER,result TEXT,
@@ -257,7 +257,7 @@ class StorageTests(unittest.TestCase):
         self.plan = plan_for(self.case)
         self.result = normalize_chalkboard(self.case["raw"])
         self.fixture_id = self.plan["fixture"]["fixture_id"]
-        self.conn.execute("INSERT INTO fixtures VALUES (?)", (self.fixture_id,))
+        self.conn.execute("INSERT INTO fixtures VALUES (?,?,?)", (self.fixture_id,self.plan['fixture']['home_team_id'],self.plan['fixture']['away_team_id']))
         for kind in ("team", "player"):
             for internal in set(self.plan["mappings"][kind].values()):
                 sql = "INSERT INTO teams VALUES (?)" if kind == "team" else "INSERT INTO players(player_id) VALUES (?)"
@@ -281,7 +281,7 @@ class StorageTests(unittest.TestCase):
         result = {**self.result, "shots": [], "counts": {"home": 0, "away": 0}}
         self.save(result)
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM fixture_opta_shots").fetchone()[0], 0)
-        self.assertEqual(self.conn.execute("SELECT home_count,away_count FROM fixture_opta_shotmaps").fetchone(), (0, 0))
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM fixture_opta_shotmaps").fetchone()[0], 1)
 
     def test_failed_replacement_rolls_back_summary_and_existing_shots(self):
         self.save()

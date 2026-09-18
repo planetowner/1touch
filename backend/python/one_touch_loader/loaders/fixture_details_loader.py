@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
+import json
+from pathlib import Path
 
 from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
@@ -10,6 +12,10 @@ from ..core.player_match_metrics import STORED_STAT_TYPE_IDS
 from .players_loader import insert_missing_player_profiles
 from .team_squad_members_loader import SPORTMONKS_DUPLICATE_PLAYER_IDS
 
+
+# 2026-09-17 Sportmonks Core /types에서 확인한 코드예요. 팀·선수 통계가 같은 사전을 써요.
+PLAYER_STAT_TYPES = {row['id']: (row['id'],row['code'],row['name']) for row in
+    json.loads((Path(__file__).resolve().parents[1] / 'core/player_stat_types.json').read_text(encoding='utf-8'))}
 
 SPORTMONKS_RATING_TYPE_ID = 118
 SPORTMONKS_MINUTES_PLAYED_TYPE_ID = 119
@@ -219,6 +225,10 @@ def write_fixture_detail_rows(
     ):
         if rows.get(key):
             cursor.executemany(statement, rows[key])
+
+    if rows.get('player_stats'):
+        type_ids = sorted({row[3] for row in rows['player_stats']})
+        cursor.executemany(SQL_UPSERT_STAT_TYPE, [PLAYER_STAT_TYPES[type_id] for type_id in type_ids])
 
     # 빈 응답도 교체해야 VAR 취소처럼 공급자가 삭제한 기존 행이 남지 않아요.
     for key, table, statement in (
