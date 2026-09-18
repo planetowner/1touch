@@ -1,0 +1,10 @@
+[Unit]
+Description=Settle completed or refunded point bets every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Persistent=true
+Unit=onetouch-betting-sync.service
+
+[Install]
+WantedBy=timers.target
