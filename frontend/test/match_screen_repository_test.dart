@@ -379,6 +379,50 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('opens player match statistics from a substitute row',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final detail = _detail(
+      lineups: _lineups,
+      events: _matchEvents,
+      playerStatistics: [_homeSubstituteStatistics],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: MatchInfoTab(
+            fixture: _fixture,
+            matchStatus: 'past',
+            detail: detail,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final substitute = find.byKey(
+      ValueKey(
+        'match-substitute-player-${_fixture.homeTeamId}-104',
+      ),
+    );
+    await tester.ensureVisible(substitute);
+    await tester.pumpAndSettle();
+    await tester.tap(substitute);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('player-match-stat-sheet')),
+      findsOneWidget,
+    );
+    expect(find.text('Home Substitute'), findsWidgets);
+    expect(find.text('PASSING'), findsOneWidget);
+    expect(find.text('Accurate passes'), findsOneWidget);
+    expect(find.text('12 / 15'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('uses neutral labels and omits incomplete detail statistics',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
@@ -618,6 +662,34 @@ final FixturePlayerStatistic _homeStarterStatistics = FixturePlayerStatistic(
           value: null,
           numerator: null,
           denominator: null,
+        ),
+      ],
+    ),
+  ],
+);
+
+final FixturePlayerStatistic _homeSubstituteStatistics = FixturePlayerStatistic(
+  teamId: _fixture.homeTeamId,
+  playerId: 104,
+  matchPositionId: 27,
+  positionGroup: 'FW',
+  minutesPlayed: 10,
+  rating: 6.7,
+  isManOfMatch: false,
+  categories: [
+    FixturePlayerStatCategory(
+      code: 'passing',
+      label: 'Passing',
+      metrics: [
+        FixturePlayerStatMetric(
+          code: 'accurate-passes',
+          label: 'Accurate passes',
+          kind: 'pair',
+          source: 'sportmonks',
+          statTypeIds: const [80, 81],
+          value: null,
+          numerator: 12,
+          denominator: 15,
         ),
       ],
     ),
