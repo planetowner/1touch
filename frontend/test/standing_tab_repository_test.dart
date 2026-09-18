@@ -26,7 +26,16 @@ void main() {
     await tester.pumpWidget(_app(repository));
 
     expect(find.byKey(const ValueKey('standing-loading')), findsOneWidget);
-    expect(repository.requests, [(competitionId: 8, seasonId: 25583)]);
+    expect(repository.requests, [(competitionId: 8, seasonId: 28083)]);
+
+    final seasonDropdown = tester.widget<DropdownButton<int>>(
+      find.byKey(const ValueKey('standing-season-filter')),
+    );
+    expect(seasonDropdown.value, 28083);
+    expect(
+      seasonDropdown.items!.map((item) => item.value),
+      [28083, 25583, 23614],
+    );
 
     await tester.pump();
 
@@ -116,7 +125,7 @@ void main() {
     seasonDropdown.onChanged!(23614);
     await tester.pump();
 
-    pending[25583]!.complete([_standing(teamName: 'Stale United')]);
+    pending[28083]!.complete([_standing(teamName: 'Stale United')]);
     await tester.pump();
 
     expect(find.text('Stale United'), findsNothing);
@@ -134,7 +143,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Current United'), findsOneWidget);
     expect(repository.requests, [
-      (competitionId: 8, seasonId: 25583),
+      (competitionId: 8, seasonId: 28083),
       (competitionId: 8, seasonId: 23614),
     ]);
     expect(tester.takeException(), isNull);
@@ -157,7 +166,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
     await tester.pump();
 
-    expect(xgRepository.requests, [(competitionId: 8, seasonId: 25583)]);
+    expect(xgRepository.requests, [(competitionId: 8, seasonId: 28083)]);
     expect(find.text('MCI'), findsOneWidget);
     expect(find.text('API Expected United'), findsNothing);
     await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
@@ -247,7 +256,7 @@ void main() {
     seasonDropdown.onChanged!(23614);
     await tester.pump();
 
-    pending[25583]!.complete([
+    pending[28083]!.complete([
       _xgStanding(teamName: 'Stale Expected United'),
     ]);
     await tester.pump();
@@ -267,7 +276,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Current Expected United'), findsOneWidget);
     expect(xgRepository.requests, [
-      (competitionId: 8, seasonId: 25583),
+      (competitionId: 8, seasonId: 28083),
       (competitionId: 8, seasonId: 23614),
     ]);
     expect(tester.takeException(), isNull);

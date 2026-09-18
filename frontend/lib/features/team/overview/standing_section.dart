@@ -5,13 +5,15 @@ class Standing extends StatefulWidget {
     super.key,
     this.teams,
     this.onCompetitionSelected,
+    this.repository,
   });
 
   final teams;
   final ValueChanged<int>? onCompetitionSelected;
+  final StandingRepository? repository;
 
   @override
-  _StandingState createState() => _StandingState();
+  State<Standing> createState() => _StandingState();
 }
 
 class _StandingState extends State<Standing> {
@@ -20,56 +22,135 @@ class _StandingState extends State<Standing> {
   static const double _gapW = 16;
   static const double _statW = 28;
 
+  List<standing_model.Standing> _standings = const [];
+  bool _isLoading = false;
+  Object? _loadError;
+  int _requestId = 0;
+
+  StandingRepository get _repository =>
+      widget.repository ?? apiStandingRepository;
+
+  int? get _teamId {
+    if (widget.teams case final Map<String, dynamic> teams) {
+      return teams['id'] as int?;
+    }
+    return null;
+  }
+
+  int? get _domesticCompetitionId {
+    final teamId = _teamId;
+    if (teamId == null) return null;
+    return teamCompetitionContextResolver.resolve(teamId)?.competitionId;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startLoad(updateState: false);
+  }
+
+  @override
+  void didUpdateWidget(covariant Standing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldTeamId = oldWidget.teams is Map<String, dynamic>
+        ? (oldWidget.teams as Map<String, dynamic>)['id'] as int?
+        : null;
+    if (oldTeamId != _teamId || oldWidget.repository != widget.repository) {
+      _startLoad();
+    }
+  }
+
+  void _startLoad({bool updateState = true}) {
+    final competitionId = _domesticCompetitionId;
+    final requestId = ++_requestId;
+    final cached = competitionId == null
+        ? null
+        : _repository.cachedForCompetition(competitionId);
+
+    void prepare() {
+      _standings = cached ?? const [];
+      _isLoading = competitionId != null && cached == null;
+      _loadError = null;
+    }
+
+    if (updateState) {
+      setState(prepare);
+    } else {
+      prepare();
+    }
+
+    if (competitionId != null) {
+      unawaited(_loadCurrentTable(competitionId, requestId));
+    }
+  }
+
+  Future<void> _loadCurrentTable(int competitionId, int requestId) async {
+    try {
+      // Deliberately omit seasonId. The backend resolves the current season,
+      // so Overview cannot become stale when the season rolls over.
+      final rows = await _repository.loadForCompetition(competitionId);
+      if (!mounted ||
+          requestId != _requestId ||
+          competitionId != _domesticCompetitionId) {
+        return;
+      }
+      setState(() {
+        _standings = rows;
+        _isLoading = false;
+        _loadError = null;
+      });
+    } on Object catch (error) {
+      if (!mounted ||
+          requestId != _requestId ||
+          competitionId != _domesticCompetitionId) {
+        return;
+      }
+      setState(() {
+        _isLoading = false;
+        _loadError = error;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    int? currentTeamId;
-    if (widget.teams is Map<String, dynamic>) {
-      currentTeamId = (widget.teams as Map<String, dynamic>)['id'] as int?;
+    final currentTeamId = _teamId;
+    final leagueId = _domesticCompetitionId;
+    if (currentTeamId == null || leagueId == null) {
+      return const SizedBox.shrink();
     }
-    if (currentTeamId == null) return const SizedBox.shrink();
-
-    // Every competition this team currently has fixtures in — domestic
-    // league first, then UCL/Europa if they've qualified for one. Each gets
-    // its own card; swipe sideways to see the next, same as team picking.
-    final domesticCompetitionIds = competitionRepository.domesticCompetitions
-        .map((competition) => competition.competitionId)
-        .toSet();
-    final leagueIds = fixtureRepository
-        .forTeam(currentTeamId)
-        .map((f) => f.competitionId)
-        .toSet()
-        .where((id) => standingRepository.forCompetition(id).isNotEmpty)
-        .toList()
-      ..sort((a, b) {
-        final aIsDomestic = domesticCompetitionIds.contains(a);
-        final bIsDomestic = domesticCompetitionIds.contains(b);
-        if (aIsDomestic != bIsDomestic) return aIsDomestic ? -1 : 1;
-        return a.compareTo(b);
-      });
-
-    if (leagueIds.isEmpty) return const SizedBox.shrink();
-
-    return SizedBox(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (int i = 0; i < leagueIds.length; i++)
-              _buildStandingCard(
-                leagueIds[i],
-                rows: _rowsForLeague(leagueIds[i], currentTeamId),
-                isFirst: i == 0,
-                isLast: i == leagueIds.length - 1,
-              ),
-          ],
+    if (_isLoading && _standings.isEmpty) {
+      return const Padding(
+        key: ValueKey('overview-standing-loading'),
+        padding: EdgeInsets.symmetric(vertical: 48),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_loadError != null && _standings.isEmpty) {
+      return Padding(
+        key: const ValueKey('overview-standing-error'),
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: TextButton(
+            key: const ValueKey('overview-standing-retry'),
+            onPressed: _startLoad,
+            child: const Text('Retry standings'),
+          ),
         ),
-      ),
+      );
+    }
+    if (_standings.isEmpty) return const SizedBox.shrink();
+
+    return _buildStandingCard(
+      leagueId,
+      rows: _rowsForLeague(currentTeamId),
+      isFirst: true,
+      isLast: true,
     );
   }
 
-  List<Map<String, dynamic>> _rowsForLeague(int leagueId, int? currentTeamId) {
-    final standings = standingRepository.forCompetition(leagueId);
-    final allRows = standings.map((s) {
+  List<Map<String, dynamic>> _rowsForLeague(int currentTeamId) {
+    final allRows = _standings.map((s) {
       final repositoryTeam = teamRepository.findById(s.teamId);
       final responseName = s.teamName?.trim();
       final displayName = repositoryTeam?.shortCode ??
