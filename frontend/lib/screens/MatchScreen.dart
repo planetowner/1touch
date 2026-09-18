@@ -4,6 +4,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
+import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
@@ -15,6 +16,7 @@ class MatchScreen extends StatefulWidget {
   final String matchStatus;
   final Fixture? initialFixture;
   final FixtureRepository? repository;
+  final MatchAnalysisRepository? analysisRepository;
 
   const MatchScreen({
     super.key,
@@ -22,6 +24,7 @@ class MatchScreen extends StatefulWidget {
     required this.matchStatus,
     this.initialFixture,
     this.repository,
+    this.analysisRepository,
   });
 
   @override
@@ -264,6 +267,7 @@ class _MatchScreenState extends State<MatchScreen> {
         return AnalysisTab(
           fixture: fixture!,
           detail: _fixtureDetail,
+          repository: widget.analysisRepository,
         );
       case 'LIVE CHAT':
         return LiveChatTab(

@@ -490,8 +490,20 @@ void main() {
     );
     expect(find.text('Lewandowski'), findsNothing);
     expect(find.byKey(const ValueKey('match-analysis-xg')), findsOneWidget);
-    expect(find.text('1.23'), findsOneWidget);
-    expect(find.text('0.57'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('match-analysis-xg')),
+        matching: find.text('1.23'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('match-analysis-xg')),
+        matching: find.text('0.57'),
+      ),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
