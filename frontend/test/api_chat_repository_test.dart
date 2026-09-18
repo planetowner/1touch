@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/data/chat/api/api_chat_repository.dart';
+import 'package:onetouch/data/chat/chat_repository.dart';
 
 void main() {
   test('loads authenticated history and maps nullable author metadata',
@@ -152,6 +153,67 @@ void main() {
       throwsFormatException,
     );
     expect(repository.cachedHistoryForFixture(42), isEmpty);
+  });
+
+  test('reports a chat message with the authenticated normalized reason',
+      () async {
+    final repository = ApiChatRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/chat/messages/11/report');
+        expect(request.headers['Authorization'], 'Bearer test-session');
+        expect(request.headers['Accept'], 'application/json');
+        expect(request.headers['Content-Type'], 'application/json');
+        expect(jsonDecode(request.body), {'reason': 'Spam'});
+        return http.Response(jsonEncode({'ok': true}), 200);
+      }),
+      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
+      requestHeaders: const {'Authorization': 'Bearer test-session'},
+    );
+
+    await repository.reportMessage(messageId: 11, reason: '  Spam  ');
+  });
+
+  test('validates report input and rejects failed or malformed responses',
+      () async {
+    var requestCount = 0;
+    final repository = ApiChatRepository(
+      client: MockClient((_) async {
+        requestCount++;
+        return switch (requestCount) {
+          1 => http.Response('Unavailable', 503),
+          _ => http.Response(jsonEncode({'ok': false}), 200),
+        };
+      }),
+      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
+      requestHeaders: const {},
+    );
+
+    await expectLater(
+      repository.reportMessage(messageId: 0, reason: 'Spam'),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.reportMessage(messageId: 11, reason: '   '),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.reportMessage(
+        messageId: 11,
+        reason: 'x' * (maxChatReportReasonLength + 1),
+      ),
+      throwsArgumentError,
+    );
+    expect(requestCount, 0);
+
+    await expectLater(
+      repository.reportMessage(messageId: 11, reason: 'Spam'),
+      throwsA(isA<http.ClientException>()),
+    );
+    await expectLater(
+      repository.reportMessage(messageId: 11, reason: 'Spam'),
+      throwsFormatException,
+    );
   });
 }
 
