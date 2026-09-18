@@ -176,12 +176,18 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
     final time =
         kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
+    final round = widget.fixture.roundName?.trim();
+    final roundLabel = round == null || round.isEmpty
+        ? 'Round TBD'
+        : int.tryParse(round) != null
+            ? 'Round $round'
+            : round;
 
     return Row(
       children: [
         Expanded(
           child: _buildTeamBlock(
-            home.shortCode ?? home.name,
+            home.name,
             home.imagePath ?? '',
             home.teamId,
           ),
@@ -190,28 +196,23 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           width: 104,
           child: Column(
             children: [
-              Text(date, style: Body2.style, textAlign: TextAlign.center),
-              Text(time, style: Body2.style),
+              Text(roundLabel,
+                  style: Body2_b.style, textAlign: TextAlign.center),
               const SizedBox(height: 8),
-              Opacity(
-                opacity: 0.30,
-                child: Container(
-                  width: 24,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(width: 1, color: foreground),
-                    ),
-                  ),
-                ),
+              Container(
+                width: 24,
+                height: 1,
+                color: foreground,
               ),
               const SizedBox(height: 8),
-              Text('Venue Name', style: Body2.style),
+              Text(date, style: Body2_b.style, textAlign: TextAlign.center),
+              Text(time, style: Body2_b.style),
             ],
           ),
         ),
         Expanded(
           child: _buildTeamBlock(
-            away.shortCode ?? away.name,
+            away.name,
             away.imagePath ?? '',
             away.teamId,
           ),
@@ -243,7 +244,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           name,
           style: Body1.style,
           textAlign: TextAlign.center,
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
       ],
