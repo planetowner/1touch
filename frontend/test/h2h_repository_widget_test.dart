@@ -1,14 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'support/fake_betting_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
 
 void main() {
-  testWidgets('loads the selected H2H limit on a compact screen',
-      (tester) async {
+  testWidgets('loads the selected H2H limit on a compact screen', (
+    tester,
+  ) async {
     await _setSize(tester, const Size(320, 568));
     final second = Completer<List<Fixture>>();
     final repository = _RecordingFixtureRepository(
@@ -17,9 +19,7 @@ void main() {
           : Future.value([_pastFixture(homeScore: limit)]),
     );
 
-    await tester.pumpWidget(
-      _testApp(repository: repository),
-    );
+    await tester.pumpWidget(_testApp(repository: repository));
     await tester.pump();
 
     expect(repository.requests, [(fixtureId: 1001, limit: 5)]);
@@ -52,9 +52,7 @@ void main() {
       },
     );
 
-    await tester.pumpWidget(
-      _testApp(repository: repository),
-    );
+    await tester.pumpWidget(_testApp(repository: repository));
     await tester.pump();
 
     expect(find.byKey(const ValueKey('match-h2h-error')), findsOneWidget);
@@ -70,8 +68,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ignores a stale result after the selected limit changes',
-      (tester) async {
+  testWidgets('ignores a stale result after the selected limit changes', (
+    tester,
+  ) async {
     await _setSize(tester, const Size(320, 568));
     final first = Completer<List<Fixture>>();
     final second = Completer<List<Fixture>>();
@@ -79,9 +78,7 @@ void main() {
       loader: (_, limit) => limit == 5 ? first.future : second.future,
     );
 
-    await tester.pumpWidget(
-      _testApp(repository: repository),
-    );
+    await tester.pumpWidget(_testApp(repository: repository));
 
     final dropdown = tester.widget<DropdownButton<int>>(
       find.byType(DropdownButton<int>),
@@ -106,9 +103,12 @@ Future<void> _setSize(WidgetTester tester, Size size) async {
 }
 
 Widget _testApp({required _RecordingFixtureRepository repository}) {
+  final betting = fakeBettingController(_selectedFixture.fixtureId);
+  addTearDown(betting.dispose);
   return MaterialApp(
     home: Scaffold(
       body: H2HTab(
+        bettingController: betting,
         fixture: _selectedFixture,
         fixtureRepository: repository,
       ),
@@ -145,9 +145,7 @@ Fixture _pastFixture({int homeScore = 2}) {
 }
 
 typedef _HeadToHeadLoader = Future<List<Fixture>> Function(
-  int fixtureId,
-  int limit,
-);
+    int fixtureId, int limit);
 
 class _RecordingFixtureRepository extends MockFixtureRepository {
   _RecordingFixtureRepository({required this.loader})
@@ -157,10 +155,7 @@ class _RecordingFixtureRepository extends MockFixtureRepository {
   final List<({int fixtureId, int limit})> requests = [];
 
   @override
-  Future<List<Fixture>> loadHeadToHead(
-    int fixtureId, {
-    int limit = 10,
-  }) {
+  Future<List<Fixture>> loadHeadToHead(int fixtureId, {int limit = 10}) {
     requests.add((fixtureId: fixtureId, limit: limit));
     return loader(fixtureId, limit);
   }

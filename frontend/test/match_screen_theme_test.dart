@@ -4,6 +4,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
+import 'support/fake_betting_repository.dart';
 
 void main() {
   Future<void> pumpMatch(
@@ -53,6 +54,7 @@ void main() {
           matchStatus: matchStatus,
           initialFixture: fixture,
           repository: repository,
+          bettingRepository: FakeBettingRepository(),
         ),
       ),
     );
@@ -121,8 +123,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('past match tabs use light cards on a tall phone',
-      (tester) async {
+  testWidgets('past match tabs use light cards on a tall phone', (
+    tester,
+  ) async {
     await pumpMatch(
       tester,
       theme: app_style.whitetheme,
@@ -162,8 +165,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('dark match surfaces retain their existing palette',
-      (tester) async {
+  testWidgets('dark match surfaces retain their existing palette', (
+    tester,
+  ) async {
     await pumpMatch(
       tester,
       theme: app_style.darktheme,
