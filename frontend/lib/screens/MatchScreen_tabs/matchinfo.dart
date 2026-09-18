@@ -45,22 +45,24 @@ class MatchInfoTab extends StatelessWidget {
     return metric.kind == 'percentage' ? '$formatted%' : formatted;
   }
 
-  PlayerMatchStatData? _playerMatchStats(LineupPlayer player) {
+  PlayerMatchStatData? _playerMatchStats({
+    required int teamId,
+    required int playerId,
+    required String fallbackName,
+    int? fallbackJerseyNumber,
+  }) {
     final playerStatistic = detail?.playerStatistics
         .where(
           (statistic) =>
-              statistic.teamId == player.teamId &&
-              statistic.playerId == player.playerId,
+              statistic.teamId == teamId && statistic.playerId == playerId,
         )
         .firstOrNull;
     final lineup = detail?.lineups
         .where(
-          (entry) =>
-              entry.teamId == player.teamId &&
-              entry.playerId == player.playerId,
+          (entry) => entry.teamId == teamId && entry.playerId == playerId,
         )
         .firstOrNull;
-    if (playerStatistic == null || lineup == null) return null;
+    if (playerStatistic == null) return null;
 
     final sections = <PlayerMatchStatSection>[
       for (final category in playerStatistic.categories)
@@ -76,25 +78,40 @@ class MatchInfoTab extends StatelessWidget {
     ];
     if (sections.isEmpty) return null;
 
-    final team = player.teamId == fixture.homeTeamId
+    final team = teamId == fixture.homeTeamId
         ? fixtureHomeTeam(fixture, teamRepository)
         : fixtureAwayTeam(fixture, teamRepository);
     return PlayerMatchStatData(
-      name: lineup.playerName,
-      jerseyNumber: lineup.jerseyNumber,
+      name: lineup?.playerName ?? fallbackName,
+      jerseyNumber: lineup?.jerseyNumber ?? fallbackJerseyNumber,
       positions: [
         if (playerStatistic.positionGroup != null)
           playerStatistic.positionGroup!,
       ],
       club: team.name,
       nationality: null,
-      playerImageUrl: lineup.playerImage,
+      playerImageUrl: lineup?.playerImage,
       sections: sections,
     );
   }
 
   void _openPlayerMatchStats(BuildContext context, LineupPlayer player) {
-    final stats = _playerMatchStats(player);
+    final stats = _playerMatchStats(
+      teamId: player.teamId,
+      playerId: player.playerId,
+      fallbackName: player.name,
+      fallbackJerseyNumber: player.number,
+    );
+    if (stats != null) showPlayerMatchStatSheet(context, stats);
+  }
+
+  void _openSubstituteMatchStats(BuildContext context, Substitute player) {
+    final stats = _playerMatchStats(
+      teamId: player.teamId,
+      playerId: player.playerId,
+      fallbackName: player.name,
+      fallbackJerseyNumber: player.jerseyNumber,
+    );
     if (stats != null) showPlayerMatchStatSheet(context, stats);
   }
 
@@ -298,6 +315,9 @@ class MatchInfoTab extends StatelessWidget {
       }
       final substitution = substitutionsByPlayer[entry.playerId];
       result[entry.playerId] = Substitute(
+        teamId: entry.teamId,
+        playerId: entry.playerId,
+        jerseyNumber: entry.jerseyNumber,
         name: entry.playerName,
         minute: substitution?.minute,
         subIn: substitution != null,
@@ -308,6 +328,9 @@ class MatchInfoTab extends StatelessWidget {
       final event = entry.value;
       if (result.containsKey(entry.key) || event.playerName == null) continue;
       result[entry.key] = Substitute(
+        teamId: teamId,
+        playerId: entry.key,
+        jerseyNumber: null,
         name: event.playerName!,
         minute: event.minute,
         subIn: true,
@@ -403,6 +426,9 @@ class MatchInfoTab extends StatelessWidget {
             subsB: awaySubstitutes,
             coachA: coachNamesByTeam[fixture.homeTeamId] ?? '—',
             coachB: coachNamesByTeam[fixture.awayTeamId] ?? '—',
+            onPlayerTap: detail?.playerStatistics.isEmpty ?? true
+                ? null
+                : _openSubstituteMatchStats,
           ),
           const SizedBox(height: 100),
         ],
