@@ -11,6 +11,7 @@ import 'package:onetouch/models/match_data.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 part 'lineup_models.dart';
+part 'match_event_icon.dart';
 part 'lineup_pitch.dart';
 part 'match_events_section.dart';
 part 'match_highlights.dart';
