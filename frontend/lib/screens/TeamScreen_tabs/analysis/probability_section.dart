@@ -174,7 +174,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
       key: ValueKey('team-probability-card-${card.event}'),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.of(context).subtleBackground,
+        color: AppColors.of(context).cardBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
