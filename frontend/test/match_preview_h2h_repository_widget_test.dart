@@ -1,14 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'support/fake_betting_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
 
 void main() {
-  testWidgets('loads the latest H2H fixture on a compact screen',
-      (tester) async {
+  testWidgets('loads the latest H2H fixture on a compact screen', (
+    tester,
+  ) async {
     await _setSize(tester, const Size(320, 568));
     final result = Completer<List<Fixture>>();
     final repository = _RecordingFixtureRepository(
@@ -35,8 +37,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shows an empty state when there are no previous meetings',
-      (tester) async {
+  testWidgets('shows an empty state when there are no previous meetings', (
+    tester,
+  ) async {
     final repository = _RecordingFixtureRepository(
       loader: (_, __) async => const [],
     );
@@ -89,8 +92,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ignores an older result after the selected fixture changes',
-      (tester) async {
+  testWidgets('ignores an older result after the selected fixture changes', (
+    tester,
+  ) async {
     final first = Completer<List<Fixture>>();
     final second = Completer<List<Fixture>>();
     final repository = _RecordingFixtureRepository(
@@ -127,9 +131,12 @@ Widget _testApp({
   required Fixture fixture,
   required _RecordingFixtureRepository repository,
 }) {
+  final betting = fakeBettingController(fixture.fixtureId);
+  addTearDown(betting.dispose);
   return MaterialApp(
     home: Scaffold(
       body: MatchPreviewTab(
+        bettingController: betting,
         fixture: fixture,
         fixtureRepository: repository,
       ),
@@ -178,25 +185,17 @@ Fixture _pastFixture({int homeScore = 1}) {
 }
 
 typedef _HeadToHeadLoader = Future<List<Fixture>> Function(
-  int fixtureId,
-  int limit,
-);
+    int fixtureId, int limit);
 
 class _RecordingFixtureRepository extends MockFixtureRepository {
   _RecordingFixtureRepository({required this.loader})
-      : super(fixtures: const [
-          _firstSelectedFixture,
-          _secondSelectedFixture,
-        ]);
+      : super(fixtures: const [_firstSelectedFixture, _secondSelectedFixture]);
 
   final _HeadToHeadLoader loader;
   final List<({int fixtureId, int limit})> requests = [];
 
   @override
-  Future<List<Fixture>> loadHeadToHead(
-    int fixtureId, {
-    int limit = 10,
-  }) {
+  Future<List<Fixture>> loadHeadToHead(int fixtureId, {int limit = 10}) {
     requests.add((fixtureId: fixtureId, limit: limit));
     return loader(fixtureId, limit);
   }
