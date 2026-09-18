@@ -36,7 +36,10 @@ class MatchScoreHeader extends StatelessWidget {
     final away = int.tryParse(awayScore);
     final homeDimmed = home != null && away != null && home < away;
     final awayDimmed = home != null && away != null && away < home;
-    final visibleRoundLabel = roundLabel?.trim();
+    final round = roundLabel?.trim();
+    final visibleRoundLabel = round != null && int.tryParse(round) != null
+        ? 'Round $round'
+        : round;
 
     return LayoutBuilder(
       builder: (context, constraints) {
