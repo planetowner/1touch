@@ -24,9 +24,16 @@ def fixture_analysis(fixture_id: int, user_id: int = Depends(get_user_id)):
     attack에는 어시스트를 제외한 key_passes와 completed_passes_into_final_third가 있어요.
     progression은 성공 패스에 105×68m·골문 거리 감소 30/15/10m 기준을 적용해요.
     channels는 공격 방향 기준 도착 위치의 좌·중·우예요. 전진 패스가 없으면 비율은 null이에요.
-    defensive_activity.actions는 수비 행동 지도와 필터에 써요. 같은 팀 events의 ID로 선수·시간을 연결해요.
+    defensive_activity.actions는 골키퍼를 제외한 필드 선수 Recovery 지도예요.
+    같은 팀 events의 ID로 선수·시간을 연결하며, 태클·가로채기·블록·걷어내기는 지도에서 제외해요.
+    포지션은 경기 명단을 우선 쓰고, 비어 있으면 저장된 선수의 기본 포지션 그룹을 써요.
     average_regain_x는 양 팀 모두 오른쪽 공격으로 맞춘 0~100 평균 회수 위치선이에요.
-    high_regains는 상대 진영 Recoveries 수이며 높이(m)는 표준 105m 경기장 환산값이에요.
+    average_regain_height_m는 우리 골라인부터 표준 105m 경기장으로 환산한 평균 거리예요.
+    halves는 own(우리 진영 x<50)·opponent(상대 진영 x>=50)의 회수 횟수와 비중이에요.
+    비중의 분모는 해당 팀 필드 선수의 전체 Recovery이며, high_regains는 opponent 횟수와 같아요.
+    회수가 0개면 평균·비중은 null이에요. 포지션 미확인 회수가 있으면 complete=false이고,
+    missing_position_count에 누락 수를 주며 팀 전체 회수 횟수·평균·비중은 null로 반환해요.
+    이 경우 actions와 action_count는 필드 선수로 확인된 점만 나타내요.
     실제 압박·수비 라인·주행거리·초 단위 회복 시간·Carry는 제공하지 않아요.
     available=false이면 아직 수집하지 않았어요. 유효슈팅 지도는 /shotmap에서 조회해요.
     """
@@ -54,6 +61,8 @@ def fixture_detail(fixture_id: int, user_id: int = Depends(get_user_id)):
     xG는 Understat, 나머지 선수 지표·평점·POM은 Sportmonks 값이에요.
     팀 DEFENSE는 statistics의 tackles-won·duels-won 횟수를 사용해요. 성공률·승률로 바꾸지 않아요.
     statistics의 touches는 출전 선수의 Sportmonks Touches 합계예요. 한 명이라도 값이 빠지면 null이에요.
+    blocked-shots(97)는 기록된 선수의 수비 블록 합계예요. 공격 통계 shots-blocked(58)와 달라요.
+    블록 기록이 전혀 없으면 미수집·미제공과 0을 구분할 수 없어 null로 반환해요.
     Error는 표시 항목에서 제외했어요.
     """
     fx = get_fixture_detail(fixture_id)

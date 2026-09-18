@@ -356,6 +356,23 @@ SPORTMONKS_EVENT_OVERRIDES = {
     150424045: {"player_id": None, "coach_id": 455848},
 }
 
+# 공식 명단에서 잘못 추가된 것으로 확인한 슬롯만 제외해요.
+SPORTMONKS_DUPLICATE_LINEUP_IDS = {
+    # Kairat–Atlantas(1818704)의 Filipavičius는 19번(6955683516) 한 명이에요. 중복된 26번만 제외해요.
+    # https://www.uefa.com/uefaeuropaleague/match/2021717--kairat-almaty-vs-atlantas/lineups/
+    1051955850,
+    # PAOK–Olimpik Donetsk(3239881)의 Koulouris는 후보 20번(4414061)이에요. 중복된 24번만 제외해요.
+    # https://www.uefa.com/uefaeuropaleague/match/2021932--paok-vs-olimpik-donetsk/lineups/
+    6942876784,
+    # Crvena Zvezda–Spartaks(10336108)의 Jevtović는 후보 26번(6911344591)이에요. 중복된 33번만 제외해요.
+    # https://www.uefa.com/uefachampionsleague/match/2024621--crvena-zvezda-vs-spartaks-jurmala/lineups/
+    3742326449,
+    # PAOK–Basel(10336081)의 Warda는 교체 출전한 74번(5269236)이에요. 중복된 24번만 제외해요.
+    # https://www.uefa.com/uefachampionsleague/match/2024635--paok-vs-basel/lineups/
+    6911426630,
+}
+
+
 # 공식 기록·공급자 해설로 중복을 확인한 이벤트 ID만 제외해요.
 SPORTMONKS_DUPLICATE_EVENT_IDS = {
     # Kluivert의 -4분 퇴장은 해설 4840734와 일치하는 85분 이벤트 78696510과 중복돼요.
@@ -777,6 +794,10 @@ class SportmonksClient:
         return self._correct_lineup_players(fixture)
 
     def _correct_lineup_players(self, fixture: Dict) -> Dict:
+        fixture["lineups"] = [
+            lineup for lineup in fixture["lineups"]
+            if lineup["id"] not in SPORTMONKS_DUPLICATE_LINEUP_IDS
+        ]
         for lineup in fixture["lineups"]:
             profile = SPORTMONKS_LINEUP_PLAYER_PROFILE_OVERRIDES.get(lineup["id"])
             if profile is not None:

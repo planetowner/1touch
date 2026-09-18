@@ -36,7 +36,7 @@ saved = dotenv_values('/settings/.env.production', interpolate=False)
 if not selected or any(saved.get(key) != value for key, value in selected.items()):
     raise SystemExit(f'{service} settings were not saved correctly.')
 print(f'Server {service} settings verified: values={len(selected)}')
-print('Saved settings checked only. Real social sign-in has not been tested.')
+print('Saved settings checked only. The external service has not been tested.')
 print('No database changes. The running API has not been restarted.')
 PY
     echo "Server settings backup retained: $transfer_directory/before.env.production"

@@ -8,7 +8,7 @@ from ...core.fixture_states import (
     screen_status_for_state_id,
     state_ids_for_screen_status,
 )
-from ...core.player_match_metrics import build_player_statistics, build_team_touches
+from ...core.player_match_metrics import build_player_statistics, build_team_player_statistics
 from ..db import fetch_all_dict, fetch_one_dict
 from .fixture_clock_repo import get_fixture_clock
 from .expected_goals_repo import (
@@ -195,7 +195,7 @@ def get_fixture_detail(fixture_id: int) -> Optional[Dict[str, Any]]:
     fixture["player_statistics"] = build_player_statistics(
         fixture["lineups"], player_stat_rows, fixture["player_expected_goals"],
     )
-    fixture["statistics"].extend(build_team_touches(
+    fixture["statistics"].extend(build_team_player_statistics(
         [fixture["home_team_id"], fixture["away_team_id"]], fixture["lineups"], player_stat_rows,
     ))
     return fixture

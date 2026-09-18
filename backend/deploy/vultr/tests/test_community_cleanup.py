@@ -14,6 +14,8 @@ class CleanupCommandTests(unittest.TestCase):
         cases = (
             ("cleanup-community.sh", ["community", "cleanup"], [[], ["--check"], ["--apply", "--limit", "1000"]]),
             ("sync-live-fixtures.sh", ["fixtures", "live"], [[], ["--apply"]]),
+            ("sync-probability.sh", ["probability", "refresh"], [[], ["--check"], ["--apply"]]),
+            ("sync-highlights.sh", ["highlights", "refresh", "--report-dir", "/app/logs/highlights-sync"], [[], ["--check"], ["--apply"]]),
             ("sync-opta.sh", ["opta-shots", "sync", "--dataset", "both", "--recent-days", "7", "--refresh-details", "--output-dir", "/app/logs/opta-sync"], [[], ["--check"], ["--apply"]]),
         )
         for script, command, argument_sets in cases:
