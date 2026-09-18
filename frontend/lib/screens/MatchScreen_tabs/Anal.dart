@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
+import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
+import 'package:onetouch/data/match_analysis/match_analysis_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
+import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
 import 'match_event_view_data.dart';
@@ -13,11 +17,13 @@ import 'match_event_view_data.dart';
 class AnalysisTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureDetail? detail;
+  final MatchAnalysisRepository? repository;
 
   const AnalysisTab({
     super.key,
     required this.fixture,
     this.detail,
+    this.repository,
   });
 
   @override
@@ -25,59 +31,98 @@ class AnalysisTab extends StatefulWidget {
 }
 
 class _AnalysisTabState extends State<AnalysisTab> {
-  bool showFCB = true; // default view
+  bool showHome = true;
   bool get isLive => false;
+  MatchTacticalAnalysis? _analysis;
+  MatchShotMap? _shotMap;
+  bool _isLoading = false;
+  Object? _loadError;
+  int _requestId = 0;
 
-  //   Shot map: normalized (0..1) origin of each shot. y=0 is the halfway
-  // line edge of the diagram, y=1 is the goal line — matches FCB's 10
-  // shots / GIR's 6 shots already shown in the stat rows below.
-  static const List<Offset> _shotsFcb = [
-    Offset(0.50, 0.06),
-    Offset(0.36, 0.18),
-    Offset(0.64, 0.16),
-    Offset(0.28, 0.34),
-    Offset(0.72, 0.32),
-    Offset(0.46, 0.38),
-    Offset(0.58, 0.42),
-    Offset(0.40, 0.55),
-    Offset(0.60, 0.52),
-    Offset(0.50, 0.62),
-  ];
-  static const List<Offset> _shotsGir = [
-    Offset(0.46, 0.14),
-    Offset(0.32, 0.30),
-    Offset(0.66, 0.26),
-    Offset(0.52, 0.42),
-    Offset(0.40, 0.56),
-    Offset(0.58, 0.50),
-  ];
+  MatchAnalysisRepository get _repository =>
+      widget.repository ?? matchAnalysisRepository;
 
-  //   Progression: % of progressive actions through each lane (top/middle/
-  // bottom thirds of the pitch, attacking left → right).
-  static const List<double> _progressionFcb = [22, 33, 45];
-  static const List<double> _progressionGir = [40, 35, 25];
+  MatchTeamTacticalAnalysis? get _homeAnalysis => _analysis?.home;
+  MatchTeamTacticalAnalysis? get _awayAnalysis => _analysis?.away;
+  MatchTeamTacticalAnalysis? get _selectedAnalysis =>
+      showHome ? _homeAnalysis : _awayAnalysis;
 
-  //   Pressure: normalized (0..1) location of each pressure/duel event.
-  // FCB presses high up the pitch (small x = near GIR's goal); GIR sits in
-  // a deeper block (large x = near their own goal) — same two vertical
-  // press-trigger bands for both, just where the action actually happens.
-  static const List<double> _pressureBands = [0.32, 0.68];
-  static const List<Offset> _pressureFcb = [
-    Offset(0.30, 0.20),
-    Offset(0.68, 0.24),
-    Offset(0.50, 0.32),
-    Offset(0.22, 0.45),
-    Offset(0.78, 0.48),
-    Offset(0.50, 0.55),
-  ];
-  static const List<Offset> _pressureGir = [
-    Offset(0.32, 0.78),
-    Offset(0.70, 0.74),
-    Offset(0.50, 0.68),
-    Offset(0.24, 0.55),
-    Offset(0.76, 0.52),
-    Offset(0.50, 0.45),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _startLoad(updateState: false);
+  }
+
+  @override
+  void didUpdateWidget(covariant AnalysisTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.fixture.fixtureId != widget.fixture.fixtureId ||
+        oldWidget.repository != widget.repository) {
+      showHome = true;
+      _startLoad();
+    }
+  }
+
+  void _startLoad({bool updateState = true}) {
+    final fixtureId = widget.fixture.fixtureId;
+    final requestId = ++_requestId;
+    MatchAnalysisRepository? repository;
+    Object? repositoryError;
+    try {
+      repository = _repository;
+    } on Object catch (error) {
+      repositoryError = error;
+    }
+    final cachedAnalysis = repository?.cachedAnalysisForFixture(fixtureId);
+    final cachedShotMap = repository?.cachedShotMapForFixture(fixtureId);
+
+    void prepare() {
+      _analysis = cachedAnalysis;
+      _shotMap = cachedShotMap;
+      _isLoading = repositoryError == null &&
+          (cachedAnalysis == null || cachedShotMap == null);
+      _loadError = repositoryError;
+    }
+
+    if (updateState) {
+      setState(prepare);
+    } else {
+      prepare();
+    }
+    if (repository != null) {
+      unawaited(_load(fixtureId, requestId, repository));
+    }
+  }
+
+  Future<void> _load(
+    int fixtureId,
+    int requestId,
+    MatchAnalysisRepository repository,
+  ) async {
+    try {
+      final results = await Future.wait<Object>([
+        repository.loadAnalysis(fixtureId),
+        repository.loadShotMap(fixtureId),
+      ]);
+      if (!mounted ||
+          requestId != _requestId ||
+          fixtureId != widget.fixture.fixtureId) {
+        return;
+      }
+      setState(() {
+        _analysis = results[0] as MatchTacticalAnalysis;
+        _shotMap = results[1] as MatchShotMap;
+        _isLoading = false;
+        _loadError = null;
+      });
+    } on Object catch (error) {
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _isLoading = false;
+        _loadError = error;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +131,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
       homeTeamId: widget.fixture.homeTeamId,
       awayTeamId: widget.fixture.awayTeamId,
     );
+    final momentumValues = _momentumValues();
+    final tacticalAvailable = _analysis?.available == true;
+    final shotMapAvailable = _shotMap?.available == true;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,23 +147,92 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
           if (widget.detail?.expectedGoals case final expectedGoals?)
             _buildXGSection(expectedGoals),
-          const SizedBox(height: 48),
-          const MomentumChart(),
-          const SizedBox(height: 48),
-          _buildAttackBlock(),
-          const SizedBox(height: 48),
-          _buildPossessionBlock(),
-          const SizedBox(height: 48),
-          _buildProgressionBlock(),
-          const SizedBox(height: 48),
-          _buildPressureBlock(),
-          const SizedBox(height: 48),
-          _buildDefenseBlock(),
+          if (momentumValues.isNotEmpty) ...[
+            const SizedBox(height: 48),
+            MomentumChart(values: momentumValues),
+          ],
+          if (_isLoading) ...[
+            const SizedBox(height: 48),
+            const Center(child: CircularProgressIndicator()),
+          ] else if (_loadError != null) ...[
+            const SizedBox(height: 48),
+            _buildLoadError(),
+          ] else ...[
+            if (tacticalAvailable || shotMapAvailable) ...[
+              const SizedBox(height: 48),
+              _buildAttackBlock(),
+            ],
+            if (_possessionRows().isNotEmpty) ...[
+              const SizedBox(height: 48),
+              _buildPossessionBlock(),
+            ],
+            if (tacticalAvailable) ...[
+              const SizedBox(height: 48),
+              _buildProgressionBlock(),
+              const SizedBox(height: 48),
+              _buildDefensiveActivityBlock(),
+            ],
+            if (!tacticalAvailable && !shotMapAvailable) ...[
+              const SizedBox(height: 48),
+              _buildUnavailableNotice(),
+            ],
+          ],
+          if (_defenseRows().isNotEmpty ||
+              widget.detail?.expectedGoals != null ||
+              widget.fixture.homeScore != null ||
+              widget.fixture.awayScore != null) ...[
+            const SizedBox(height: 48),
+            _buildDefenseBlock(),
+          ],
           const SizedBox(height: 140),
         ],
       ),
     );
   }
+
+  List<double> _momentumValues() {
+    final points = (widget.detail?.pressure ?? const <FixturePressurePoint>[])
+        .where(
+          (point) =>
+              point.minute >= 0 &&
+              point.minute <= 90 &&
+              (point.teamId == widget.fixture.homeTeamId ||
+                  point.teamId == widget.fixture.awayTeamId),
+        )
+        .toList(growable: false);
+    if (points.length < 2) return const [];
+    final values = List<double>.filled(91, 0);
+    for (final point in points) {
+      values[point.minute] +=
+          point.pressure * (point.teamId == widget.fixture.homeTeamId ? 1 : -1);
+    }
+    return values;
+  }
+
+  Widget _buildLoadError() => Center(
+        child: Column(
+          children: [
+            const Text('Match analysis could not be loaded.'),
+            TextButton(onPressed: _startLoad, child: const Text('Retry')),
+          ],
+        ),
+      );
+
+  Widget _buildUnavailableNotice() => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppPalette.darkGrey
+              : AppPalette.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Text(
+          'Tactical analysis is unavailable for this match.',
+          textAlign: TextAlign.center,
+          style: Body1.style,
+        ),
+      );
 
   Widget _buildScoreHeader() {
     final home = fixtureHomeTeam(widget.fixture, teamRepository);
@@ -189,12 +306,57 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  static const Color _fcbColor = Color(0xFFD82457);
+  static const Color _homeColor = Color(0xFFFF5B5B);
+
+  String get _homeCode {
+    final team = fixtureHomeTeam(widget.fixture, teamRepository);
+    return team.shortCode?.trim().isNotEmpty == true
+        ? team.shortCode!
+        : _shortName(team.name);
+  }
+
+  String get _awayCode {
+    final team = fixtureAwayTeam(widget.fixture, teamRepository);
+    return team.shortCode?.trim().isNotEmpty == true
+        ? team.shortCode!
+        : _shortName(team.name);
+  }
+
+  String _shortName(String name) =>
+      name.length <= 8 ? name : name.substring(0, 8);
+
+  List<MatchShot> get _selectedShots => (_shotMap?.shots ?? const <MatchShot>[])
+      .where(
+        (shot) =>
+            shot.teamId ==
+            (showHome ? widget.fixture.homeTeamId : widget.fixture.awayTeamId),
+      )
+      .toList(growable: false);
+
+  List<ShotMapPlot> get _selectedShotPlots => [
+        for (final shot in _selectedShots)
+          ShotMapPlot(
+            start: _halfPitchPoint(shot.start, isHome: showHome),
+            end: _halfPitchPoint(shot.end, isHome: showHome),
+            isGoal: shot.result.toLowerCase() == 'goal',
+          ),
+      ];
+
+  Offset _halfPitchPoint(TacticalPitchPoint point, {required bool isHome}) {
+    final depth = isHome ? (point.x - 50) / 50 : (50 - point.x) / 50;
+    return Offset(
+      (point.y / 100).clamp(0.0, 1.0),
+      depth.clamp(0.0, 1.0),
+    );
+  }
 
   Widget _buildAttackBlock() {
-    final selectedTeam = showFCB ? 'FCB' : 'GIR';
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final homeShots = _shotMap?.homeCount;
+    final awayShots = _shotMap?.awayCount;
+    final homeGoals = _goalCount(widget.fixture.homeTeamId);
+    final awayGoals = _goalCount(widget.fixture.awayTeamId);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -213,24 +375,30 @@ class _AnalysisTabState extends State<AnalysisTab> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                // Toggle button styled like your IN/OUT toggle
                 _buildTeamToggle(),
                 const SizedBox(height: 24),
-                // Shot map
-                ShotMapDiagram(
-                  shots: showFCB ? _shotsFcb : _shotsGir,
-                  color: showFCB ? _fcbColor : foreground,
-                  lineColor: foreground.withValues(alpha: 0.30),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Stats (stats don't change — only color)
-                _buildStatRow("Shots", "10", "6", selectedTeam),
-                _buildStatRow("Shots on Target", "6", "2", selectedTeam),
-                _buildStatRow("Key Passes", "7", "3", selectedTeam),
-                _buildStatRow(
-                    "Passes into Penalty Area", "25", "11", selectedTeam),
+                if (_shotMap?.available == true) ...[
+                  ShotMapDiagram(
+                    shots: _selectedShotPlots,
+                    color: showHome ? _homeColor : foreground,
+                    lineColor: foreground.withValues(alpha: 0.30),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildStatRow('Goals', homeGoals, awayGoals),
+                  _buildStatRow('Shots on Target', homeShots, awayShots),
+                ],
+                if (_analysis?.available == true) ...[
+                  _buildStatRow(
+                    'Key Passes',
+                    _homeAnalysis?.attack.keyPasses,
+                    _awayAnalysis?.attack.keyPasses,
+                  ),
+                  _buildStatRow(
+                    'Passes into Final Third',
+                    _homeAnalysis?.attack.completedPassesIntoFinalThird,
+                    _awayAnalysis?.attack.completedPassesIntoFinalThird,
+                  ),
+                ],
               ],
             ),
           ),
@@ -240,8 +408,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildPossessionBlock() {
-    final selectedTeam = showFCB ? 'FCB' : 'GIR';
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final rows = _possessionRows();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
@@ -257,11 +425,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
             child: Column(
               children: [
-                _buildTeamToggle(), // Reuse the same toggle widget
+                _buildTeamToggle(),
                 const SizedBox(height: 24),
-                _buildStatRow("Ball Possession", "63%", "37%", selectedTeam),
-                _buildStatRow("Pass Accuracy", "89%", "83%", selectedTeam),
-                _buildStatRow("Touches", "690", "503", selectedTeam),
+                for (final row in rows)
+                  _buildStatRow(
+                    row.label,
+                    row.home,
+                    row.away,
+                    suffix: row.isPercent ? '%' : '',
+                  ),
               ],
             ),
           ),
@@ -271,9 +443,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildProgressionBlock() {
-    final selectedTeam = showFCB ? 'FCB' : 'GIR';
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final selected = _selectedAnalysis?.progression;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -290,16 +462,27 @@ class _AnalysisTabState extends State<AnalysisTab> {
               _buildTeamToggle(),
               const SizedBox(height: 24),
               ProgressionDiagram(
-                lanePercents: showFCB ? _progressionFcb : _progressionGir,
-                color: showFCB ? _fcbColor : foreground,
+                lanePercents: _channelPercentages(selected),
+                color: showHome ? _homeColor : foreground,
                 lineColor: foreground.withValues(alpha: 0.30),
                 labelColor: foreground,
               ),
               const SizedBox(height: 24),
-              _buildStatRow("Progressive Passes", "51", "27", selectedTeam),
               _buildStatRow(
-                  "Carries into Final Third", "13", "5", selectedTeam),
-              _buildStatRow("Crosses", "22", "9", selectedTeam),
+                'Completed Passes',
+                _homeAnalysis?.progression.completedPasses,
+                _awayAnalysis?.progression.completedPasses,
+              ),
+              _buildStatRow(
+                'Progressive Passes',
+                _homeAnalysis?.progression.progressivePasses,
+                _awayAnalysis?.progression.progressivePasses,
+              ),
+              _buildStatRow(
+                'Passes into Final Third',
+                _homeAnalysis?.attack.completedPassesIntoFinalThird,
+                _awayAnalysis?.attack.completedPassesIntoFinalThird,
+              ),
             ],
           ),
         ),
@@ -307,14 +490,19 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _buildPressureBlock() {
-    final selectedTeam = showFCB ? 'FCB' : 'GIR';
+  Widget _buildDefensiveActivityBlock() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final selected = _selectedAnalysis?.defensiveActivity;
+    final events = [
+      for (final action in selected?.actions ?? const <TacticalPitchPoint>[])
+        Offset(action.x / 100, action.y / 100),
+    ];
+    final average = selected?.averageRegainX;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("PRESSURE", style: Body2_b.style),
+        const Text('DEFENSIVE ACTIVITY', style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(24),
@@ -326,17 +514,44 @@ class _AnalysisTabState extends State<AnalysisTab> {
             children: [
               _buildTeamToggle(),
               const SizedBox(height: 24),
-              PressureDiagram(
-                events: showFCB ? _pressureFcb : _pressureGir,
-                bands: _pressureBands,
+              DefensiveActivityDiagram(
+                events: events,
+                bands: average == null ? const [] : [average / 100],
                 lineColor: foreground.withValues(alpha: 0.30),
                 dotColor: foreground,
               ),
               const SizedBox(height: 24),
-              _buildStatRow("Pressures", "123", "98", selectedTeam),
-              _buildStatRow("Successful Pressures", "75", "56", selectedTeam),
-              _buildStatRow("Blocks", "21", "17", selectedTeam),
-              _buildStatRow("Clearances", "15", "19", selectedTeam),
+              _buildStatRow(
+                'Recoveries',
+                _homeAnalysis?.defensiveActivity.recoveries,
+                _awayAnalysis?.defensiveActivity.recoveries,
+              ),
+              _buildStatRow(
+                'High Regains',
+                _homeAnalysis?.defensiveActivity.highRegains,
+                _awayAnalysis?.defensiveActivity.highRegains,
+              ),
+              _buildStatRow(
+                'Average Regain Height',
+                _homeAnalysis?.defensiveActivity.averageRegainHeightMetres,
+                _awayAnalysis?.defensiveActivity.averageRegainHeightMetres,
+                suffix: 'm',
+              ),
+              _buildStatRow(
+                'Opponent Half',
+                _homeAnalysis?.defensiveActivity.opponentHalfPercentage,
+                _awayAnalysis?.defensiveActivity.opponentHalfPercentage,
+                suffix: '%',
+              ),
+              if (selected?.complete == false) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Position data incomplete (${selected?.missingPositionCount ?? 0} missing)',
+                  style: Body2.style.copyWith(
+                    color: AppColors.of(context).mutedForeground,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -355,11 +570,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
       children: [
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => showFCB = true),
+            onTap: () => setState(() => showHome = true),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: showFCB ? selectedSurface : unselectedSurface,
+                color: showHome ? selectedSurface : unselectedSurface,
                 border: Border.all(
                   color: isDark
                       ? AppPalette.lightGrey
@@ -372,9 +587,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
               ),
               alignment: Alignment.center,
               child: Text(
-                "FCB",
+                _homeCode,
                 style: Body2_b.style.copyWith(
-                  color: showFCB ? selectedForeground : foreground,
+                  color: showHome ? selectedForeground : foreground,
                 ),
               ),
             ),
@@ -382,11 +597,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
         ),
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => showFCB = false),
+            onTap: () => setState(() => showHome = false),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: !showFCB ? selectedSurface : unselectedSurface,
+                color: !showHome ? selectedSurface : unselectedSurface,
                 border: Border.all(
                   color: isDark
                       ? AppPalette.lightGrey
@@ -399,9 +614,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
               ),
               alignment: Alignment.center,
               child: Text(
-                "GIR",
+                _awayCode,
                 style: Body2_b.style.copyWith(
-                  color: !showFCB ? selectedForeground : foreground,
+                  color: !showHome ? selectedForeground : foreground,
                 ),
               ),
             ),
@@ -412,7 +627,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildStatRow(
-      String label, String fcb, String grn, String selectedTeam) {
+    String label,
+    num? home,
+    num? away, {
+    String suffix = '',
+  }) {
     final foreground = Theme.of(context).colorScheme.onSurface;
     final mutedForeground = AppColors.of(context).mutedForeground;
     return Padding(
@@ -423,9 +642,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
           SizedBox(
             width: 40,
             child: Text(
-              fcb,
+              _formatNumber(home, suffix: suffix),
               style: Heading5.style.copyWith(
-                color: selectedTeam == 'FCB' ? foreground : mutedForeground,
+                color: showHome ? foreground : mutedForeground,
               ),
             ),
           ),
@@ -439,9 +658,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
           SizedBox(
             width: 40,
             child: Text(
-              grn,
+              _formatNumber(away, suffix: suffix),
               style: Heading5.style.copyWith(
-                color: selectedTeam == 'GIR' ? foreground : mutedForeground,
+                color: !showHome ? foreground : mutedForeground,
               ),
               textAlign: TextAlign.right,
             ),
@@ -453,7 +672,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildDefenseBlock() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final mutedForeground = AppColors.of(context).mutedForeground;
+    final rows = _defenseRows();
+    final expectedGoals = widget.detail?.expectedGoals;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
@@ -469,54 +689,117 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
             child: Column(
               children: [
-                // GA Row
-                _statBoxRow(leftValue: "2", label: "GA", rightValue: "1"),
-                const SizedBox(height: 16),
-                // xGA Row
-                _statBoxRow(leftValue: "0.8", label: "xGA", rightValue: "2.5"),
-                const SizedBox(height: 24),
-
-                // Stat rows
-                ...[
-                  ["10", "6", "Tackles (Success Rate)"],
-                  ["6", "2", "Interceptions"],
-                  ["7", "3", "Blocks"],
-                  ["7", "3", "Duels (Win Rate)"],
-                  ["7", "3", "Error"],
-                ].map((row) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 40,
-                            child: Text(row[0], style: Heading5.style),
-                          ),
-                          Expanded(
-                            child: Text(
-                              row[2],
-                              style: Body1.style,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 40,
-                            child: Text(
-                              row[1],
-                              style: Heading5.style
-                                  .copyWith(color: mutedForeground),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
+                if (widget.fixture.homeScore != null ||
+                    widget.fixture.awayScore != null) ...[
+                  _statBoxRow(
+                    leftValue: _formatNumber(widget.fixture.awayScore),
+                    label: 'GA',
+                    rightValue: _formatNumber(widget.fixture.homeScore),
+                  ),
+                ],
+                if (expectedGoals != null) ...[
+                  if (widget.fixture.homeScore != null ||
+                      widget.fixture.awayScore != null)
+                    const SizedBox(height: 16),
+                  _statBoxRow(
+                    leftValue: _formatNumber(expectedGoals.homeXga),
+                    label: 'xGA',
+                    rightValue: _formatNumber(expectedGoals.awayXga),
+                  ),
+                ],
+                if (rows.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  for (final row in rows)
+                    _buildStatRow(row.label, row.home, row.away),
+                ],
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  int _goalCount(int teamId) => (_shotMap?.shots ?? const <MatchShot>[])
+      .where(
+        (shot) => shot.teamId == teamId && shot.result.toLowerCase() == 'goal',
+      )
+      .length;
+
+  List<double> _channelPercentages(MatchProgressionMetrics? progression) {
+    if (progression == null) return const [0, 0, 0];
+    final byChannel = {
+      for (final channel in progression.channels)
+        channel.channel: channel.percentage ?? 0,
+    };
+    return [
+      byChannel['left'] ?? 0,
+      byChannel['center'] ?? 0,
+      byChannel['right'] ?? 0,
+    ];
+  }
+
+  List<({String label, num home, num away, bool isPercent})> _possessionRows() {
+    const definitions = [
+      (code: 'ball-possession', label: 'Ball Possession', isPercent: true),
+      (
+        code: 'successful-passes-percentage',
+        label: 'Pass Accuracy',
+        isPercent: true,
+      ),
+      (code: 'touches', label: 'Touches', isPercent: false),
+    ];
+    return [
+      for (final definition in definitions)
+        if (_pairedStatistic(definition.code)
+            case final ({double home, double away}) pair)
+          (
+            label: definition.label,
+            home: pair.home,
+            away: pair.away,
+            isPercent: definition.isPercent,
+          ),
+    ];
+  }
+
+  List<({String label, num home, num away})> _defenseRows() {
+    const definitions = [
+      (code: 'tackles-won', label: 'Tackles Won'),
+      (code: 'interceptions', label: 'Interceptions'),
+      (code: 'blocked-shots', label: 'Blocks'),
+      (code: 'duels-won', label: 'Duels Won'),
+      (code: 'clearances', label: 'Clearances'),
+    ];
+    return [
+      for (final definition in definitions)
+        if (_pairedStatistic(definition.code)
+            case final ({double home, double away}) pair)
+          (label: definition.label, home: pair.home, away: pair.away),
+    ];
+  }
+
+  ({double home, double away})? _pairedStatistic(String code) {
+    final values = <int, double>{};
+    for (final stat
+        in widget.detail?.statistics ?? const <FixtureStatistic>[]) {
+      if (stat.statCode == code) values[stat.teamId] = stat.value;
+    }
+    final home = values[widget.fixture.homeTeamId];
+    final away = values[widget.fixture.awayTeamId];
+    if (home == null || away == null) return null;
+    return (home: home, away: away);
+  }
+
+  String _formatNumber(num? value, {String suffix = ''}) {
+    if (value == null) return '—';
+    final number = value.toDouble();
+    final text = number == number.roundToDouble()
+        ? number.toInt().toString()
+        : number
+            .toStringAsFixed(2)
+            .replaceFirst(RegExp(r'0+$'), '')
+            .replaceFirst(RegExp(r'\.$'), '');
+    return '$text$suffix';
   }
 
   Widget _statBoxRow({
@@ -571,10 +854,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 }
 
-//   Tactical diagram painters
-// All three draw onto a normalized 0..1 coordinate space mapped to the
-// painter's actual size, so they scale cleanly with whatever box they're
-// given (an AspectRatio at the call site).
+// Tactical diagram painters use normalized 0..1 coordinates so they scale
+// with the available card width.
 
 Paint _pitchLinePaint(Color color) => Paint()
   ..color = color
@@ -600,10 +881,21 @@ void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
   }
 }
 
-// Half-pitch shot map: goal along the bottom edge, shots fan in via dotted
-// lines converging on the goal mouth.
+class ShotMapPlot {
+  const ShotMapPlot({
+    required this.start,
+    required this.end,
+    required this.isGoal,
+  });
+
+  final Offset start;
+  final Offset end;
+  final bool isGoal;
+}
+
+// Half-pitch shot map: goal along the bottom edge.
 class ShotMapDiagram extends StatelessWidget {
-  final List<Offset> shots;
+  final List<ShotMapPlot> shots;
   final Color color;
   final Color lineColor;
   const ShotMapDiagram({
@@ -623,7 +915,7 @@ class ShotMapDiagram extends StatelessWidget {
 }
 
 class _ShotMapPainter extends CustomPainter {
-  final List<Offset> shots;
+  final List<ShotMapPlot> shots;
   final Color color;
   final Color lineColor;
   const _ShotMapPainter(this.shots, this.color, this.lineColor);
@@ -669,16 +961,27 @@ class _ShotMapPainter extends CustomPainter {
       line,
     );
 
-    final goalMouth = Offset(size.width / 2, size.height);
     final dashPaint = Paint()
       ..color = color.withValues(alpha: 0.5)
       ..strokeWidth = 1;
     final dotPaint = Paint()..color = color;
+    final goalPaint = Paint()..color = const Color(0xFFFF5B5B);
 
     for (final shot in shots) {
-      final p = Offset(shot.dx * size.width, shot.dy * size.height);
-      _drawDashedLine(canvas, p, goalMouth, dashPaint);
-      canvas.drawCircle(p, 4, dotPaint);
+      final start = Offset(
+        shot.start.dx * size.width,
+        shot.start.dy * size.height,
+      );
+      final end = Offset(
+        shot.end.dx * size.width,
+        shot.end.dy * size.height,
+      );
+      _drawDashedLine(canvas, start, end, dashPaint);
+      canvas.drawCircle(
+        start,
+        shot.isGoal ? 5 : 4,
+        shot.isGoal ? goalPaint : dotPaint,
+      );
     }
   }
 
@@ -816,14 +1119,14 @@ class _ProgressionPainter extends CustomPainter {
       oldDelegate.labelColor != labelColor;
 }
 
-// Full-pitch pressure diagram: two vertical press-trigger bands plus dots
-// for where the team's duels/recoveries actually happened.
-class PressureDiagram extends StatelessWidget {
+// Full-pitch recovery diagram: a vertical average-regain band plus dots for
+// verified outfield Recovery events.
+class DefensiveActivityDiagram extends StatelessWidget {
   final List<Offset> events;
   final List<double> bands;
   final Color lineColor;
   final Color dotColor;
-  const PressureDiagram({
+  const DefensiveActivityDiagram({
     super.key,
     required this.events,
     required this.bands,
@@ -836,18 +1139,23 @@ class PressureDiagram extends StatelessWidget {
     return AspectRatio(
       aspectRatio: 1.6,
       child: CustomPaint(
-        painter: _PressurePainter(events, bands, lineColor, dotColor),
+        painter: _DefensiveActivityPainter(
+          events,
+          bands,
+          lineColor,
+          dotColor,
+        ),
       ),
     );
   }
 }
 
-class _PressurePainter extends CustomPainter {
+class _DefensiveActivityPainter extends CustomPainter {
   final List<Offset> events;
   final List<double> bands;
   final Color lineColor;
   final Color dotColor;
-  const _PressurePainter(
+  const _DefensiveActivityPainter(
     this.events,
     this.bands,
     this.lineColor,
@@ -891,7 +1199,7 @@ class _PressurePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _PressurePainter oldDelegate) =>
+  bool shouldRepaint(covariant _DefensiveActivityPainter oldDelegate) =>
       oldDelegate.events != events ||
       oldDelegate.bands != bands ||
       oldDelegate.lineColor != lineColor ||
