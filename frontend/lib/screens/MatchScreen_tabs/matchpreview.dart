@@ -9,7 +9,9 @@ import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
-import 'package:onetouch/data/standings/standing_repository_provider.dart';
+import 'package:onetouch/data/standings/api_standing_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
+import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
@@ -45,12 +47,14 @@ class MatchPreviewTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
   final TeamAttributeRepository? attributeRepository;
+  final StandingRepository? standingRepository;
 
   const MatchPreviewTab({
     super.key,
     required this.fixture,
     this.fixtureRepository,
     this.attributeRepository,
+    this.standingRepository,
   });
 
   @override
@@ -64,6 +68,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   bool _isLatestH2HLoading = true;
   bool _hasLatestH2HError = false;
   int _latestH2HRequestId = 0;
+  List<Standing> _currentStandings = const [];
+  bool _standingsLoading = true;
+  bool _standingsFailed = false;
+  int _standingsRequestId = 0;
 
   FixtureRepository get _fixtureRepository =>
       widget.fixtureRepository ?? fixture_providers.fixtureRepository;
@@ -72,11 +80,16 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   void initState() {
     super.initState();
     _loadLatestHeadToHead();
+    _loadCurrentStandings();
   }
 
   @override
   void didUpdateWidget(MatchPreviewTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.fixture.competitionId != oldWidget.fixture.competitionId ||
+        widget.standingRepository != oldWidget.standingRepository) {
+      _loadCurrentStandings();
+    }
     if (widget.fixture.fixtureId != oldWidget.fixture.fixtureId ||
         widget.fixtureRepository != oldWidget.fixtureRepository) {
       _loadLatestHeadToHead();
@@ -106,6 +119,32 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       setState(() {
         _hasLatestH2HError = true;
         _isLatestH2HLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadCurrentStandings() async {
+    final requestId = ++_standingsRequestId;
+    setState(() {
+      _currentStandings = const [];
+      _standingsLoading = true;
+      _standingsFailed = false;
+    });
+    try {
+      final repository = widget.standingRepository ?? apiStandingRepository;
+      // Omitting seasonId lets the API select the competition's current season.
+      final rows =
+          await repository.loadForCompetition(widget.fixture.competitionId);
+      if (!mounted || requestId != _standingsRequestId) return;
+      setState(() {
+        _currentStandings = rows;
+        _standingsLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _standingsRequestId) return;
+      setState(() {
+        _standingsLoading = false;
+        _standingsFailed = true;
       });
     }
   }
@@ -473,9 +512,25 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final appColors = AppColors.of(context);
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final league = competitionRepository.findById(widget.fixture.competitionId);
-    final standings =
-        standingRepository.forCompetition(widget.fixture.competitionId);
-    if (standings.isEmpty) return const SizedBox.shrink();
+    final standings = _currentStandings;
+    if (_standingsLoading || _standingsFailed || standings.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('STANDING', style: Body2_b.style),
+          const SizedBox(height: 16),
+          if (_standingsLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_standingsFailed)
+            TextButton(
+              onPressed: _loadCurrentStandings,
+              child: const Text('순위표를 불러오지 못했어요. 다시 시도'),
+            )
+          else
+            const Center(child: Text('아직 준비중이에요ㅠㅠ')),
+        ],
+      );
+    }
 
     final matchTeamIds = {
       widget.fixture.homeTeamId,

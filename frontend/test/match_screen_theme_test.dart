@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
 
@@ -53,6 +54,7 @@ void main() {
           matchStatus: matchStatus,
           initialFixture: fixture,
           repository: repository,
+          standingRepository: MockStandingRepository(),
         ),
       ),
     );
