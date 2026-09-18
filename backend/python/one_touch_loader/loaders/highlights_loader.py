@@ -1,485 +1,188 @@
+"""공식 영상의 경기별 후보를 저장해요. 국가별 최근 3개 선정은 조회할 때 해요."""
 from __future__ import annotations
 
-import html
+from collections import Counter
+from datetime import date, datetime, timedelta, timezone
+import json
 import os
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple
-
+from pathlib import Path
 import requests
 
-from one_touch_loader.core.db import execute, fetch_all, transaction
-
-
-# =========================================================
-# 상수
-# =========================================================
-
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-
-YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3"
-HTTP_TIMEOUT_SECONDS = 30
-
-# team_youtube_sources 스키마를 확인한 결과 두 값만 있고, 둘 다 NOT NULL이에요.
-VALID_SOURCE_MODES = frozenset({"playlists", "channel_rules"})
-
-# YouTube API v3 playlistItems 응답을 확인했어요. 모든 영상에는 default, medium,
-# high가 있고 HD 원본에만 standard와 maxres가 있어요. API가 준 썸네일 가운데
-# 해상도가 가장 높은 것을 우선해요.
-THUMBNAIL_PRIORITY: Tuple[str, ...] = ("maxres", "standard", "high", "medium", "default")
-
-# YouTube API 시각은 "2026-06-19T14:00:30Z" 같은 RFC 3339 UTC 형식이에요.
-YOUTUBE_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-
-TOP_N_HIGHLIGHTS = 3
-
-
-# =========================================================
-# 값을 엄격하게 확인하는 도우미
-# =========================================================
-
-def _require_int(value, field_name: str) -> int:
-    if type(value) is not int:
-        raise ValueError(f"Missing or invalid integer field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_non_empty_str(value, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Missing or invalid string field: {field_name}={value!r}")
-
-    return value.strip()
-
-
-def _require_optional_str(value, field_name: str) -> Optional[str]:
-    if value is None:
-        return None
-
-    if not isinstance(value, str):
-        raise ValueError(f"Invalid optional string field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_dict(value, field_name: str) -> Dict:
-    if not isinstance(value, dict):
-        raise ValueError(f"Missing or invalid object field: {field_name}={value!r}")
-
-    return value
-
-
-def _require_source_mode(value: str) -> str:
-    if value not in VALID_SOURCE_MODES:
-        raise ValueError(
-            f"Unsupported source_mode {value!r}. "
-            f"Expected one of {sorted(VALID_SOURCE_MODES)}."
-        )
-
-    return value
-
-
-def _parse_youtube_datetime(value: str) -> datetime:
-    return datetime.strptime(value, YOUTUBE_DATETIME_FORMAT)
-
-
-def _normalize_text(value: str) -> str:
-    return html.unescape(value).strip()
-
-
-def _split_keywords_csv(value: Optional[str]) -> List[str]:
-    if value is None:
-        return []
-
-    return [token.strip().lower() for token in value.split(",") if token.strip()]
-
-
-# =========================================================
-# DB 조회
-# =========================================================
-
-def _load_team_sources(team_ids: Optional[List[int]]) -> List[Dict]:
-    sql = """
-    SELECT
-        team_id, team_name, channel_id, channel_url, source_mode,
-        include_title_keywords, exclude_title_keywords,
-        max_candidate_items
-    FROM team_youtube_sources
-    WHERE is_active = 1
-    """
-
-    params: Tuple = ()
-
-    if team_ids:
-        placeholders = ",".join(["%s"] * len(team_ids))
-        sql += f" AND team_id IN ({placeholders})"
-        params = tuple(team_ids)
-
-    sql += " ORDER BY team_id"
-
-    rows = fetch_all(sql, params)
-    sources: List[Dict] = []
-
-    for row in rows:
-        sources.append(
-            {
-                "team_id": _require_int(row[0], "team_youtube_sources.team_id"),
-                "team_name": _require_non_empty_str(row[1], "team_youtube_sources.team_name"),
-                "channel_id": _require_non_empty_str(row[2], "team_youtube_sources.channel_id"),
-                "channel_url": _require_optional_str(row[3], "team_youtube_sources.channel_url"),
-                "source_mode": _require_source_mode(
-                    _require_non_empty_str(row[4], "team_youtube_sources.source_mode")
-                ),
-                "include_title_keywords": _split_keywords_csv(row[5]),
-                "exclude_title_keywords": _split_keywords_csv(row[6]),
-                "max_candidate_items": _require_int(
-                    row[7],
-                    "team_youtube_sources.max_candidate_items",
-                ),
-            }
-        )
-
-    return sources
-
-
-def _load_team_playlists(team_id: int) -> List[Dict]:
-    rows = fetch_all(
-        """
-        SELECT playlist_name, playlist_id, playlist_url
-        FROM team_youtube_playlists
-        WHERE team_id = %s
-          AND is_active = 1
-        ORDER BY id
-        """,
-        (team_id,),
-    )
-
-    playlists: List[Dict] = []
-
-    for row in rows:
-        playlists.append(
-            {
-                "playlist_name": _require_optional_str(
-                    row[0],
-                    "team_youtube_playlists.playlist_name",
-                ),
-                "playlist_id": _require_non_empty_str(
-                    row[1],
-                    "team_youtube_playlists.playlist_id",
-                ),
-                "playlist_url": _require_optional_str(
-                    row[2],
-                    "team_youtube_playlists.playlist_url",
-                ),
-            }
-        )
-
-    return playlists
-
-
-# =========================================================
-# YouTube API 호출
-# =========================================================
-
-def _yt_get(path: str, params: Dict) -> Dict:
-    if not YOUTUBE_API_KEY:
-        raise RuntimeError("YOUTUBE_API_KEY is missing")
-
-    full_params = {"key": YOUTUBE_API_KEY, **params}
-    response = requests.get(
-        f"{YOUTUBE_API_BASE}/{path}",
-        params=full_params,
-        timeout=HTTP_TIMEOUT_SECONDS,
-    )
-    response.raise_for_status()
-
-    return response.json()
-
-
-def _fetch_uploads_playlist_id(channel_id: str) -> str:
-    data = _yt_get(
-        "channels",
-        {"part": "contentDetails", "id": channel_id},
-    )
-
-    return _require_non_empty_str(
-        data["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"],
-        "channels.contentDetails.relatedPlaylists.uploads",
-    )
-
-
-def _fetch_playlist_items(playlist_id: str, max_results: int) -> List[Dict]:
-    data = _yt_get(
-        "playlistItems",
-        {
-            "part": "snippet,contentDetails",
-            "playlistId": playlist_id,
-            "maxResults": max_results,
-        },
-    )
-
-    return data["items"]
-
-
-# =========================================================
-# 후보 만들기
-# =========================================================
-
-def _pick_thumbnail_url(thumbnails: Dict) -> str:
-    """API가 반환한 썸네일 가운데 해상도가 가장 높은 URL을 골라요.
-
-    v3 API에서 'default'는 항상 오는 것을 확인했어요. 따라서 반복문은 최소한
-    default 크기를 찾아요.
-    """
-    for size in THUMBNAIL_PRIORITY:
-        if size in thumbnails:
-            return _require_non_empty_str(
-                thumbnails[size]["url"],
-                f"thumbnails.{size}.url",
-            )
-
-
-def _build_candidate_from_playlist_item(
-    item: Dict,
-    *,
-    source_type: str,
-    source_ref: str,
-) -> Optional[Dict]:
-    """
-    YouTube playlistItems 응답 항목 하나를 하이라이트 후보로 만들어요.
-
-    비공개·삭제 영상은 None을 반환하고 건너뛰어요. 하이라이트로 쓸 수 없고,
-    API도 아래 필드를 주지 않기 때문이에요. 제목은 "Private video" 또는
-    "Deleted video"로 와요.
-
-    v3 API(part=snippet,contentDetails)에서 확인한 규칙이에요.
-      - 재생 가능한 영상에는 snippet.resourceId.videoId와 contentDetails.videoId가
-        모두 있고 값도 같아요. 삭제 영상에는 없어요.
-      - snippet.publishedAt은 항목이 재생목록에 추가된 시각이에요.
-      - contentDetails.videoPublishedAt은 영상이 YouTube에 올라온 시각이에요.
-        채널이 재생목록에 다시 넣은 시각보다 영상의 최신성이 중요하므로 이 값을 써요.
-        비공개·삭제 영상에는 없어요.
-      - snippet.thumbnails에는 최소한 default, medium, high가 있어요.
-        API가 준 값 가운데 해상도가 가장 높은 것을 골라요.
-    """
-    snippet = _require_dict(item["snippet"], "playlistItem.snippet")
-    content = _require_dict(item["contentDetails"], "playlistItem.contentDetails")
-
-    # 비공개·삭제 영상에는 videoId나 videoPublishedAt이 없을 수 있어요.
-    # 어느 재생목록에든 생길 수 있으므로 오류를 내지 않고 해당 영상만 건너뛰어요.
-    video_id = content.get("videoId")
-    published_at_raw = content.get("videoPublishedAt")
-    if not video_id or not published_at_raw:
-        return None
-
-    video_id = _require_non_empty_str(video_id, "contentDetails.videoId")
-
-    published_at_dt = _parse_youtube_datetime(
-        _require_non_empty_str(
-            published_at_raw,
-            "contentDetails.videoPublishedAt",
-        )
-    )
-
-    title = _normalize_text(snippet["title"])
-    thumbnails = _require_dict(snippet["thumbnails"], "snippet.thumbnails")
-
-    return {
-        "video_id": video_id,
-        "video_url": f"https://www.youtube.com/watch?v={video_id}",
-        "title": title,
-        "thumbnail_url": _pick_thumbnail_url(thumbnails),
-        "published_at_dt": published_at_dt,
-        "source_type": source_type,
-        "source_ref": source_ref,
-    }
-
-
-def _dedupe_by_video_id(candidates: List[Dict]) -> List[Dict]:
-    seen: set = set()
-    result: List[Dict] = []
-
-    for candidate in candidates:
-        video_id = candidate["video_id"]
-
-        if video_id in seen:
-            continue
-
-        seen.add(video_id)
-        result.append(candidate)
-
-    return result
-
-
-# =========================================================
-# 팀별 후보 수집
-# =========================================================
-
-def _collect_playlist_candidates(team_cfg: Dict) -> List[Dict]:
-    playlists = _load_team_playlists(team_cfg["team_id"])
-    max_items = team_cfg["max_candidate_items"]
-    candidates: List[Dict] = []
-
-    for playlist in playlists:
-        playlist_id = playlist["playlist_id"]
-        items = _fetch_playlist_items(playlist_id, max_results=max_items)
-
-        for item in items:
-            candidate = _build_candidate_from_playlist_item(
-                item,
-                source_type="playlist",
-                source_ref=playlist_id,
-            )
-            if candidate is not None:
-                candidates.append(candidate)
-
-    return _dedupe_by_video_id(candidates)
-
-
-def _collect_channel_rule_candidates(team_cfg: Dict) -> List[Dict]:
-    channel_id = team_cfg["channel_id"]
-    max_items = team_cfg["max_candidate_items"]
-
-    uploads_playlist_id = _fetch_uploads_playlist_id(channel_id)
-    items = _fetch_playlist_items(uploads_playlist_id, max_results=max_items)
-
-    candidates: List[Dict] = []
-
-    for item in items:
-        candidate = _build_candidate_from_playlist_item(
-            item,
-            source_type="channel_uploads",
-            source_ref=uploads_playlist_id,
-        )
-        if candidate is not None:
-            candidates.append(candidate)
-
-    return _dedupe_by_video_id(candidates)
-
-
-# =========================================================
-# 필터링과 정렬
-# =========================================================
-
-def _passes_keyword_filters(candidate: Dict, team_cfg: Dict) -> bool:
-    title_lower = candidate["title"].lower()
-    includes = team_cfg["include_title_keywords"]
-    excludes = team_cfg["exclude_title_keywords"]
-
-    if includes and not any(kw in title_lower for kw in includes):
-        return False
-
-    if excludes and any(kw in title_lower for kw in excludes):
-        return False
-
-    return True
-
-
-def _sort_candidates_latest_first(candidates: List[Dict]) -> List[Dict]:
-    return sorted(candidates, key=lambda c: c["published_at_dt"], reverse=True)
-
-
-# =========================================================
-# 저장
-# =========================================================
-
-def _replace_team_highlights(team_id: int, top: List[Dict]) -> None:
-    """한 팀의 캐시 행을 한 트랜잭션에서 바꿔요.
-
-    DELETE와 executemany(INSERT)를 한 트랜잭션에서 실행해요. 쓰는 중에 실패하면
-    이전 캐시를 그대로 두고, 성공하면 새 캐시 전체를 커밋해요.
-    """
-    insert_rows = [
-        (
-            team_id,
-            candidate["video_id"],
-            candidate["video_url"],
-            candidate["title"],
-            candidate["thumbnail_url"],
-            candidate["published_at_dt"].strftime("%Y-%m-%d %H:%M:%S"),
-            candidate["source_type"],
-            candidate["source_ref"],
-            rank_order,
-        )
-        for rank_order, candidate in enumerate(top, start=1)
-    ]
-
-    with transaction() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "DELETE FROM team_highlights_cache WHERE team_id = %s",
-                (team_id,),
-            )
-
-            if insert_rows:
-                cur.executemany(
-                    """
-                    INSERT INTO team_highlights_cache (
-                        team_id, video_id, video_url, title, thumbnail_url,
-                        published_at, source_type, source_ref, rank_order,
-                        created_at, updated_at
-                    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())
-                    """,
-                    insert_rows,
-                )
-
-
-# =========================================================
-# 외부에서 쓰는 함수
-# =========================================================
-
-def refresh_highlights(team_ids: Optional[List[int]] = None) -> None:
-    if not YOUTUBE_API_KEY:
-        raise RuntimeError("YOUTUBE_API_KEY is missing")
-
-    team_sources = _load_team_sources(team_ids)
-
-    for team_cfg in team_sources:
-        team_id = team_cfg["team_id"]
-        team_name = team_cfg["team_name"]
-        source_mode = team_cfg["source_mode"]
-
-        print(f"[highlights] processing team={team_name!r} source_mode={source_mode!r}")
-
-        if source_mode == "playlists":
-            candidates = _collect_playlist_candidates(team_cfg)
-        else:
-            candidates = _collect_channel_rule_candidates(team_cfg)
-
-        if not candidates:
-            print(f"  [highlights] no candidates collected; clearing cache")
-            execute(
-                "DELETE FROM team_highlights_cache WHERE team_id = %s",
-                (team_id,),
-            )
-            continue
-
-        filtered = [c for c in candidates if _passes_keyword_filters(c, team_cfg)]
-        filtered = _sort_candidates_latest_first(filtered)
-
-        print(
-            f"  [highlights] collected={len(candidates)} filtered={len(filtered)}"
-        )
-
-        if not filtered:
-            for c in candidates[:10]:
-                print(
-                    f"    rejected: {c['title']!r} "
-                    f"({c['published_at_dt'].isoformat()})"
-                )
-            execute(
-                "DELETE FROM team_highlights_cache WHERE team_id = %s",
-                (team_id,),
-            )
-            continue
-
-        top = filtered[:TOP_N_HIGHLIGHTS]
-        _replace_team_highlights(team_id, top)
-
-        for rank_order, candidate in enumerate(top, start=1):
-            print(
-                f"  [highlights] saved rank {rank_order}: "
-                f"{candidate['title']!r} "
-                f"({candidate['published_at_dt'].isoformat()}, {candidate['source_type']})"
-            )
-
-    print("[highlights] refresh done")
+from one_touch_loader.core.db import fetch_all, transaction
+from one_touch_loader.core.highlight_fixtures import from_dfb_html, from_sportmonks
+from one_touch_loader.core.highlights import load_catalog, match_video, normalize_video, select_latest_matches, utc_datetime
+from one_touch_loader.core.sportmonks import SportmonksClient
+
+
+class YouTubeClient:
+    def __init__(self):
+        self.key = os.environ.get("YOUTUBE_API_KEY")
+        if not self.key:
+            raise RuntimeError("YOUTUBE_API_KEY is missing")
+
+    def get(self, endpoint, **params):
+        try:
+            response = requests.get(f"https://www.googleapis.com/youtube/v3/{endpoint}",
+                                    params={"key": self.key, **params}, timeout=30)
+        except requests.RequestException:
+            # 요청 URL과 함께 비밀키가 오류에 출력되지 않게 해요.
+            raise RuntimeError(f"YouTube {endpoint} request failed") from None
+        if response.status_code != 200:
+            raise RuntimeError(f"YouTube {endpoint}: HTTP {response.status_code}")
+        return response.json()
+
+    def playlist(self, playlist_id, since, *, uploads=False):
+        result, token = [], None
+        while True:
+            page = self.get("playlistItems", part="snippet,contentDetails", playlistId=playlist_id,
+                            maxResults=50, **({"pageToken": token} if token else {}))
+            items = page["items"]
+            result.extend(i for i in items if i["contentDetails"].get("videoPublishedAt", "") >= since)
+            token = page.get("nextPageToken")
+            if not token:
+                return result
+            # 업로드 목록은 최신순이에요. 구단이 정렬하는 일반 재생목록은 끝까지 읽어요.
+            if uploads and items and all(i["contentDetails"].get("videoPublishedAt", "9999") < since for i in items):
+                return result
+
+    def videos(self, video_ids):
+        result = []
+        ids = sorted(set(video_ids))
+        for start in range(0, len(ids), 50):
+            page = self.get("videos", part="snippet,contentDetails,status,player", maxWidth=640,
+                            id=",".join(ids[start:start + 50]))
+            for item in page["items"]:
+                video = normalize_video(item)
+                if video is not None:
+                    result.append(video)
+        return result
+
+
+def collect_matches(clubs, catalog, to_date):
+    client = SportmonksClient()
+    since = date.fromisoformat(catalog["from_date"])
+    matches = {}
+    for index, club in enumerate(clubs, 1):
+        for fixture in client.iter_team_fixtures_between_dates(
+                club["team_id"], since, to_date, "participants;state;scores;league"):
+            match = from_sportmonks(fixture, catalog["season_name"])
+            if match:
+                matches[match["match_key"]] = match
+        print(f"[highlights fixtures {index}/{len(clubs)}] {club['team_name']}", flush=True)
+    if any(club["league_id"] == 82 for club in clubs):
+        for source in catalog["external_fixture_sources"]:
+            response = requests.get(source["url"], timeout=30)
+            response.raise_for_status()
+            for match in from_dfb_html(response.text, source, catalog["dfb_team_names"]):
+                if since <= utc_datetime(match["starting_at"]).date() <= to_date:
+                    matches[match["match_key"]] = match
+    team_ids = {club["team_id"] for club in clubs}
+    return [m for m in matches.values() if team_ids & {m["home"].get("team_id"), m["away"].get("team_id")}]
+
+
+def collect_candidates(clubs, catalog, matches, youtube, *, since=None, saved_ids=None):
+    since = since or catalog["from_date"]
+    saved_ids = saved_ids or {}
+    competition_keys = {m["competition_key"] for m in matches}
+    sources = [*clubs, *(s for s in catalog["competitions"] if competition_keys & set(s["competition_keys"]))]
+    items_by_channel, highlights_by_channel = {}, {}
+    for index, source in enumerate(sources, 1):
+        items = youtube.playlist(source["uploads_playlist_id"], since, uploads=True)
+        # 지난번에 경기 영상으로 확인한 ID도 메타데이터를 다시 읽어 삭제·국가 제한을 반영해요.
+        highlight_ids = set(saved_ids.get(source["channel_id"], []))
+        for playlist in source["playlists"]:
+            # 나중에 재생목록에 추가된 기존 영상도 있어요. 목록은 시즌 범위를 다시 대조해요.
+            extra = youtube.playlist(playlist["playlist_id"], catalog["from_date"])
+            items.extend(extra)
+            highlight_ids.update(v["contentDetails"]["videoId"] for v in extra)
+        items_by_channel[source["channel_id"]] = {v["contentDetails"]["videoId"] for v in items} | highlight_ids
+        highlights_by_channel[source["channel_id"]] = highlight_ids
+        print(f"[highlights channels {index}/{len(sources)}] {source['channel_name']}", flush=True)
+    ids = set().union(*items_by_channel.values()) if sources else set()
+    by_channel = {}
+    for video in youtube.videos(ids):
+        by_channel.setdefault(video["channel_id"], []).append(video)
+    candidates = {club["team_id"]: {} for club in clubs}
+    reasons, ambiguous = Counter(), []
+    for source in sources:
+        for video in by_channel.get(source["channel_id"], []):
+            match, reason = match_video(video, matches, source, catalog["aliases"],
+                                        highlights_by_channel[source["channel_id"]])
+            reasons[reason] += 1
+            if reason == "ambiguous_match":
+                ambiguous.append({"video_id": video["video_id"], "title": video["title"]})
+            if not match:
+                continue
+            target_ids = [source["team_id"]] if source["kind"] == "club" else [match["home"].get("team_id"), match["away"].get("team_id")]
+            value = {**video, "match": match, "source_type": source["kind"]}
+            value.pop("description")
+            for team_id in target_ids:
+                if team_id in candidates:
+                    candidates[team_id][video["video_id"]] = value
+    return {key: list(value.values()) for key, value in candidates.items()}, dict(reasons), ambiguous
+
+
+def save_candidates(clubs, candidates, checked_at):
+    from ..core.highlight_storage import write_candidates
+    with transaction() as connection:
+        with connection.cursor() as cursor:
+            write_candidates(cursor, [c["team_id"] for c in clubs], candidates, checked_at)
+
+
+def load_saved_sources(clubs):
+    placeholders = ",".join("%s" for _ in clubs)
+    params = tuple(c["team_id"] for c in clubs)
+    previous = fetch_all(f"""SELECT team_id,checked_at FROM team_highlight_sync
+        WHERE team_id IN ({placeholders})""", params)
+    if len(previous) != len(clubs):
+        return None, {}
+    saved = fetch_all(f"""SELECT v.channel_id,v.video_id FROM team_highlights th
+        JOIN highlight_videos v ON v.video_id=th.video_id WHERE th.team_id IN ({placeholders})""", params)
+    ids = {}
+    for channel_id, video_id in saved:
+        ids.setdefault(channel_id, set()).add(video_id)
+    # 업로드 시점에는 경기 결과·영상 처리가 늦을 수 있어 최근 7일을 다시 대조해요.
+    since = (min(utc_datetime(row[1]) for row in previous) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return since, ids
+
+
+def refresh_highlights(team_ids=None, *, apply=False, report_dir=None, full_scan=False):
+    catalog = load_catalog()
+    clubs = [c for c in catalog["clubs"] if not team_ids or c["team_id"] in team_ids]
+    if team_ids and set(team_ids) != {c["team_id"] for c in clubs}:
+        raise ValueError("Team is not in the verified 2026/27 Big Five source catalog")
+    # 시작 시각을 저장해야 수집 중 올라온 영상도 다음 실행에서 빠짐없이 다시 확인해요.
+    checked_at = datetime.now(timezone.utc)
+    since, saved_ids = (None, {}) if full_scan else load_saved_sources(clubs)
+    matches = collect_matches(clubs, catalog, checked_at.date())
+    candidates, reasons, ambiguous = collect_candidates(clubs, catalog, matches, YouTubeClient(), since=since, saved_ids=saved_ids)
+    report = {"checked_at": checked_at.isoformat(), "apply": apply, "reasons": reasons,
+              "ambiguous_excluded": ambiguous, "teams": []}
+    for club in clubs:
+        team_id = club["team_id"]
+        report["teams"].append({"team_id": team_id, "team_name": club["team_name"],
+                                "candidates": candidates[team_id], "regions": {
+                                    country: select_latest_matches(candidates[team_id], country) for country in ("KR", "JP", "US", "GB")}})
+    folder = Path(report_dir) if report_dir else Path(__file__).resolve().parents[3] / "logs/highlights" / checked_at.strftime("%Y%m%dT%H%M%S%fZ")
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    if apply:
+        save_candidates(clubs, candidates, checked_at.replace(tzinfo=None))
+    print(f"Highlights: teams={len(clubs)}, candidates={sum(map(len, candidates.values()))}, apply={apply}")
+    print(f"Report: {folder / 'report.json'}")
+    return report
+
+
+def run_cli(arguments):
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=["refresh"])
+    parser.add_argument("team_ids", nargs="?", help="comma-separated team IDs; omit for all 96")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--apply", action="store_true", help="save verified candidates and sources")
+    mode.add_argument("--check", action="store_true", help="read sources and create a local report only (default)")
+    parser.add_argument("--report-dir")
+    parser.add_argument("--full-scan", action="store_true", help="rescan the season instead of only new uploads and saved candidates")
+    args = parser.parse_args(arguments)
+    ids = [int(value) for value in args.team_ids.split(",")] if args.team_ids else None
+    return refresh_highlights(ids, apply=args.apply, report_dir=args.report_dir, full_scan=args.full_scan)

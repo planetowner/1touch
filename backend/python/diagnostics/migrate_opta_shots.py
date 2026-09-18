@@ -1,4 +1,4 @@
-"""--apply를 직접 실행하면 외부 ID 백업 후 Opta 슈팅 테이블 두 개를 추가해요."""
+"""Opta의 최초 설치용이에요. 관계 분리 후 점검은 migrate_recent_relations --verify를 써요."""
 
 from __future__ import annotations
 

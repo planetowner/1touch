@@ -21,7 +21,7 @@ from one_touch_loader.loaders.standings_loader import (
 from one_touch_loader.loaders.xg_standings_loader import build_xg_standings
 from one_touch_loader.loaders.understat_ids_loader import collect_understat_ids
 from one_touch_loader.loaders.understat_loader import collect_understat
-from one_touch_loader.loaders.highlights_loader import refresh_highlights
+from one_touch_loader.loaders.highlights_loader import run_cli as run_highlights_cli
 from one_touch_loader.loaders.injuries_loader import (
     refresh_current_injuries,
     refresh_team_injuries,
@@ -140,6 +140,7 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli fixture-details all
   python -m one_touch_loader.cli fixture-details <season_name> <competition_id> [competition_id ...]
   python -m one_touch_loader.cli fixture-details <season_name> --player-stats-only
+  python -m one_touch_loader.cli fixture-details <season_name> --player-stats-only --from-fixture <fixture_id>
 
 9. capology-team-slugs
   python -m one_touch_loader.cli capology-team-slugs all
@@ -223,6 +224,15 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli opta-shots sync --dataset analysis --retry-report <previous_report.json> --retry-statuses failed not_finished [--check | --apply]
   python -m one_touch_loader.cli opta-shots --url <match_page_url> --output <json_path>
   python -m one_touch_loader.cli opta-shots --snapshot <raw_json_path> --output <json_path>
+
+24. probability (DB writes require --apply; defaults to --check)
+  python -m one_touch_loader.cli probability sync-elo --mapping-file <verified_mapping.json> [--apply]
+  python -m one_touch_loader.cli probability train --output <model.json> [--apply]
+  python -m one_touch_loader.cli probability forecast --model <model.json> --as-of YYYY-MM-DD --output <folder> [--from-start] [--current] [--apply]
+  python -m one_touch_loader.cli probability refresh [--check | --apply]
+
+25. highlights (official latest three matches, viewer-country filtering)
+  python -m one_touch_loader.cli highlights refresh [team_id,team_id] [--check | --apply] [--full-scan]
 """
 
 
@@ -258,6 +268,10 @@ def main():
             cleanup(sys.argv[3:])
         else:
             print(USAGE)
+
+    elif cmd == "probability":
+        from one_touch_loader.loaders.probability_loader import main as probability_main
+        probability_main(sys.argv[2:])
 
     elif cmd == "opta-shots":
         from one_touch_loader.loaders.opta_shots_loader import main as opta_shots_main
@@ -401,21 +415,7 @@ def main():
         print(f"{cmd} done: {command(season_name, competition_ids, check=check)}")
 
     elif cmd == "highlights":
-        team_ids = None
-
-        if len(sys.argv) >= 3 and sys.argv[2] == "refresh":
-            if len(sys.argv) == 4:
-                team_ids = _parse_team_ids_csv(sys.argv[3])
-
-            refresh_highlights(team_ids)
-            print("Highlights refresh done.")
-
-        elif len(sys.argv) == 2:
-            refresh_highlights()
-            print("Highlights refresh done.")
-
-        else:
-            print(USAGE)
+        run_highlights_cli(sys.argv[2:] or ["refresh"])
 
     elif cmd == "injuries":
         if len(sys.argv) < 3:
@@ -528,6 +528,12 @@ def main():
         if player_stats_only:
             sys.argv.remove("--player-stats-only")
         options = {"player_stats_only": True} if player_stats_only else {}
+        if "--from-fixture" in sys.argv:
+            index = sys.argv.index("--from-fixture")
+            if index + 1 >= len(sys.argv):
+                raise ValueError("--from-fixture requires a fixture ID")
+            options["from_fixture_id"] = int(sys.argv[index + 1])
+            del sys.argv[index:index + 2]
         if len(sys.argv) == 3 and sys.argv[2] == "all":
             result = collect_all_fixture_details(**options)
             print(f"Fixture details all done: {result}")

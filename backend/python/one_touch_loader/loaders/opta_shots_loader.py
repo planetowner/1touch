@@ -119,7 +119,8 @@ def sync_matches(args) -> dict:
             WHERE table_schema=DATABASE() AND table_name=%s""", (metadata_table,))[0][0]
         if not check and not exists:
             raise ValueError(f"먼저 python -m diagnostics.migrate_opta_{kind} --apply를 실행해 주세요.")
-        saved = fetch_all(f"SELECT external_fixture_id,fixture_id FROM {metadata_table}") if exists else []
+        saved = fetch_all(f'''SELECT x.external_fixture_id,m.fixture_id FROM {metadata_table} m
+            JOIN fixture_external_ids x ON x.fixture_id=m.fixture_id AND x.provider='opta' ''') if exists else []
         stored_by_dataset[kind] = {row[0] for row in saved}
         fixture_ids_by_dataset[kind] = {row[1] for row in saved}
     stored = set.intersection(*stored_by_dataset.values())

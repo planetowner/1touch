@@ -1,0 +1,1044 @@
+{
+  "source": "Sportmonks fixture 10336081, retrieved 2026-09-17",
+  "verified_source": "https://www.uefa.com/uefachampionsleague/match/2024635--paok-vs-basel/lineups/",
+  "verified_lineup": {
+    "player_id": 109405,
+    "jersey_number": 74,
+    "kept_lineup_id": 5269236,
+    "removed_lineup_id": 6911426630
+  },
+  "fixture": {
+    "id": 10336081,
+    "lineups": [
+      {
+        "id": 5269066,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 333870,
+        "team_id": 649,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Rodrigo Rey",
+        "jersey_number": 1,
+        "details": [
+          {
+            "id": 199246612,
+            "fixture_id": 10336081,
+            "player_id": 333870,
+            "team_id": 649,
+            "lineup_id": 5269066,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 333870,
+          "sport_id": 1,
+          "country_id": 44,
+          "nationality_id": 44,
+          "city_id": 48634,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "R. Rey",
+          "firstname": "Rodrigo Francisco Jesús",
+          "lastname": "Rey",
+          "name": "Rodrigo Francisco Jesús Rey",
+          "display_name": "Rodrigo Rey",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/14/333870.png",
+          "height": 190,
+          "weight": 76,
+          "date_of_birth": "1991-03-08",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268619,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 109196,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Léo Matos",
+        "jersey_number": 3,
+        "details": [
+          {
+            "id": 199246610,
+            "fixture_id": 10336081,
+            "player_id": 109196,
+            "team_id": 649,
+            "lineup_id": 5268619,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246618,
+            "fixture_id": 10336081,
+            "player_id": 109196,
+            "team_id": 649,
+            "lineup_id": 5268619,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 109196,
+          "sport_id": 1,
+          "country_id": 5,
+          "nationality_id": 5,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 25,
+          "common_name": "L. de Matos Cruz",
+          "firstname": "Leonardo",
+          "lastname": "de Matos Cruz",
+          "name": "Leonardo de Matos Cruz",
+          "display_name": "Léo Matos",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/12/109196.png",
+          "height": 184,
+          "weight": 81,
+          "date_of_birth": "1986-04-02",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268674,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 109195,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Fernando Varela",
+        "jersey_number": 5,
+        "details": [
+          {
+            "id": 199246627,
+            "fixture_id": 10336081,
+            "player_id": 109195,
+            "team_id": 649,
+            "lineup_id": 5268674,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246631,
+            "fixture_id": 10336081,
+            "player_id": 109195,
+            "team_id": 649,
+            "lineup_id": 5268674,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 109195,
+          "sport_id": 1,
+          "country_id": 20,
+          "nationality_id": 772,
+          "city_id": 15596,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "F. Lopes dos Santos Varela",
+          "firstname": "Fernando",
+          "lastname": "Lopes dos Santos Varela",
+          "name": "Fernando Lopes dos Santos Varela",
+          "display_name": "Fernando Lopes dos Santos Varela",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/11/109195.png",
+          "height": 185,
+          "weight": 88,
+          "date_of_birth": "1987-11-26",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269098,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 129266,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Omar El Kaddouri",
+        "jersey_number": 7,
+        "details": [
+          {
+            "id": 199246640,
+            "fixture_id": 10336081,
+            "player_id": 129266,
+            "team_id": 649,
+            "lineup_id": 5269098,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 331222061,
+            "fixture_id": 10336081,
+            "player_id": 129266,
+            "team_id": 649,
+            "lineup_id": 5269098,
+            "type_id": 119,
+            "data": {
+              "value": 18
+            }
+          }
+        ],
+        "player": {
+          "id": 129266,
+          "sport_id": 1,
+          "country_id": 556,
+          "nationality_id": 1424,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 150,
+          "type_id": 26,
+          "common_name": "O. El Kaddouri",
+          "firstname": "Omar",
+          "lastname": "El Kaddouri",
+          "name": "Omar El Kaddouri",
+          "display_name": "Omar El Kaddouri",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/18/129266.png",
+          "height": 185,
+          "weight": 82,
+          "date_of_birth": "1990-08-21",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268711,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 169386,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Maurício",
+        "jersey_number": 8,
+        "details": [
+          {
+            "id": 199246653,
+            "fixture_id": 10336081,
+            "player_id": 169386,
+            "team_id": 649,
+            "lineup_id": 5268711,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246657,
+            "fixture_id": 10336081,
+            "player_id": 169386,
+            "team_id": 649,
+            "lineup_id": 5268711,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 169386,
+          "sport_id": 1,
+          "country_id": 5,
+          "nationality_id": 5,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "M. da Silveira Júnior",
+          "firstname": "Maurício José",
+          "lastname": "da Silveira Júnior",
+          "name": "Maurício José da Silveira Júnior",
+          "display_name": "Maurício",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/10/169386.png",
+          "height": 180,
+          "weight": 78,
+          "date_of_birth": "1988-10-21",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268749,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 7638,
+        "team_id": 649,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Aleksandar Prijovic",
+        "jersey_number": 9,
+        "details": [
+          {
+            "id": 199246663,
+            "fixture_id": 10336081,
+            "player_id": 7638,
+            "team_id": 649,
+            "lineup_id": 5268749,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 262900375,
+            "fixture_id": 10336081,
+            "player_id": 7638,
+            "team_id": 649,
+            "lineup_id": 5268749,
+            "type_id": 52,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246667,
+            "fixture_id": 10336081,
+            "player_id": 7638,
+            "team_id": 649,
+            "lineup_id": 5268749,
+            "type_id": 119,
+            "data": {
+              "value": 83
+            }
+          }
+        ],
+        "player": {
+          "id": 7638,
+          "sport_id": 1,
+          "country_id": 62,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 151,
+          "type_id": 27,
+          "common_name": "A. Prijović",
+          "firstname": "Aleksandar",
+          "lastname": "Prijović",
+          "name": "Aleksandar Prijović",
+          "display_name": "Aleksandar Prijović",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/7638.png",
+          "height": 191,
+          "weight": 88,
+          "date_of_birth": "1990-04-21",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268792,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 108293,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Dimitrios Pelkas",
+        "jersey_number": 10,
+        "details": [
+          {
+            "id": 199246675,
+            "fixture_id": 10336081,
+            "player_id": 108293,
+            "team_id": 649,
+            "lineup_id": 5268792,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246679,
+            "fixture_id": 10336081,
+            "player_id": 108293,
+            "team_id": 649,
+            "lineup_id": 5268792,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 108293,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 31869,
+          "position_id": 26,
+          "detailed_position_id": 150,
+          "type_id": 26,
+          "common_name": "D. Pelkas",
+          "firstname": "Dimitris",
+          "lastname": "Pelkas",
+          "name": "Dimitris Pelkas",
+          "display_name": "Dimitrios Pelkas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/5/108293.png",
+          "height": 177,
+          "weight": 73,
+          "date_of_birth": "1993-10-26",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269134,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 109692,
+        "team_id": 649,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Lazaros Lamprou",
+        "jersey_number": 11,
+        "details": [
+          {
+            "id": 199246688,
+            "fixture_id": 10336081,
+            "player_id": 109692,
+            "team_id": 649,
+            "lineup_id": 5269134,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 109692,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 43238,
+          "position_id": 27,
+          "detailed_position_id": 152,
+          "type_id": 27,
+          "common_name": "L. Lamprou",
+          "firstname": "Lazaros",
+          "lastname": "Lamprou",
+          "name": "Lazaros Lamprou",
+          "display_name": "Lazaros Lamprou",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/109692.png",
+          "height": 183,
+          "weight": 74,
+          "date_of_birth": "1997-12-19",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268815,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 4353,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "José Crespo",
+        "jersey_number": 15,
+        "details": [
+          {
+            "id": 199246699,
+            "fixture_id": 10336081,
+            "player_id": 4353,
+            "team_id": 649,
+            "lineup_id": 5268815,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246703,
+            "fixture_id": 10336081,
+            "player_id": 4353,
+            "team_id": 649,
+            "lineup_id": 5268815,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 4353,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": 32,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "J. Crespo Rincón",
+          "firstname": "José Ángel",
+          "lastname": "Crespo Rincón",
+          "name": "José Ángel Crespo Rincón",
+          "display_name": "José Ángel Crespo",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/1/4353.png",
+          "height": 185,
+          "weight": 73,
+          "date_of_birth": "1987-02-09",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268837,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 109204,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Dimitrios Limnios",
+        "jersey_number": 18,
+        "details": [
+          {
+            "id": 199246711,
+            "fixture_id": 10336081,
+            "player_id": 109204,
+            "team_id": 649,
+            "lineup_id": 5268837,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 331222059,
+            "fixture_id": 10336081,
+            "player_id": 109204,
+            "team_id": 649,
+            "lineup_id": 5268837,
+            "type_id": 79,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246714,
+            "fixture_id": 10336081,
+            "player_id": 109204,
+            "team_id": 649,
+            "lineup_id": 5268837,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 109204,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 95793,
+          "position_id": 27,
+          "detailed_position_id": 156,
+          "type_id": 27,
+          "common_name": "D. Limnios",
+          "firstname": "Dimitris",
+          "lastname": "Limnios",
+          "name": "Dimitris Limnios",
+          "display_name": "Dimitrios Limnios",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/20/109204.png",
+          "height": 178,
+          "weight": 71,
+          "date_of_birth": "1998-05-27",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268860,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 31648,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Vieirinha",
+        "jersey_number": 20,
+        "details": [
+          {
+            "id": 199246723,
+            "fixture_id": 10336081,
+            "player_id": 31648,
+            "team_id": 649,
+            "lineup_id": 5268860,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246727,
+            "fixture_id": 10336081,
+            "player_id": 31648,
+            "team_id": 649,
+            "lineup_id": 5268860,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 31648,
+          "sport_id": 1,
+          "country_id": 20,
+          "nationality_id": 20,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 26,
+          "common_name": "A. Vieira Freitas",
+          "firstname": "Adelino André",
+          "lastname": "Vieira Freitas",
+          "name": "Adelino André Vieira Freitas",
+          "display_name": "Vieirinha",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/0/31648.png",
+          "height": 172,
+          "weight": 70,
+          "date_of_birth": "1986-01-24",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 6911426630,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 109405,
+        "team_id": 649,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Amr Warda",
+        "jersey_number": 24,
+        "details": [],
+        "player": {
+          "id": 109405,
+          "sport_id": 1,
+          "country_id": 886,
+          "nationality_id": 886,
+          "city_id": 1623,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "A. Warda",
+          "firstname": "Amr Medhat",
+          "lastname": "Warda",
+          "name": "Amr Medhat Warda",
+          "display_name": "Amr Warda",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/29/109405.png",
+          "height": 176,
+          "weight": 70,
+          "date_of_birth": "1993-09-17",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269160,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 109416,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Y. Shakhov",
+        "jersey_number": 28,
+        "details": [
+          {
+            "id": 199246734,
+            "fixture_id": 10336081,
+            "player_id": 109416,
+            "team_id": 649,
+            "lineup_id": 5269160,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 109416,
+          "sport_id": 1,
+          "country_id": 86,
+          "nationality_id": 86,
+          "city_id": 23640,
+          "position_id": 26,
+          "detailed_position_id": 153,
+          "type_id": 26,
+          "common_name": "E. Shakhov",
+          "firstname": "Evgeniy",
+          "lastname": "Shakhov",
+          "name": "Evgeniy Shakhov",
+          "display_name": "Evgen Shakhov",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/8/109416.png",
+          "height": 189,
+          "weight": 81,
+          "date_of_birth": "1990-11-30",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268877,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 108504,
+        "team_id": 649,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Alexandros Paschalakis",
+        "jersey_number": 31,
+        "details": [
+          {
+            "id": 199246745,
+            "fixture_id": 10336081,
+            "player_id": 108504,
+            "team_id": 649,
+            "lineup_id": 5268877,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246749,
+            "fixture_id": 10336081,
+            "player_id": 108504,
+            "team_id": 649,
+            "lineup_id": 5268877,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 619262708,
+            "fixture_id": 10336081,
+            "player_id": 108504,
+            "team_id": 649,
+            "lineup_id": 5268877,
+            "type_id": 1535,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 108504,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "A. Paschalakis",
+          "firstname": "Alexandros",
+          "lastname": "Paschalakis",
+          "name": "Alexandros Paschalakis",
+          "display_name": "Alexandros Paschalakis",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/24/108504.png",
+          "height": 197,
+          "weight": 92,
+          "date_of_birth": "1989-07-28",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269191,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 204833,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Evgeniy Khacheridi",
+        "jersey_number": 34,
+        "details": [
+          {
+            "id": 199246756,
+            "fixture_id": 10336081,
+            "player_id": 204833,
+            "team_id": 649,
+            "lineup_id": 5269191,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 204833,
+          "sport_id": 1,
+          "country_id": 86,
+          "nationality_id": 86,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "Y. Khacheridi",
+          "firstname": "Yevhen",
+          "lastname": "Khacheridi",
+          "name": "Yevhen Khacheridi",
+          "display_name": "Evgeniy Khacheridi",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/1/204833.png",
+          "height": 198,
+          "weight": 85,
+          "date_of_birth": "1987-07-28",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269216,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 108160,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Stelios Kitsiou",
+        "jersey_number": 70,
+        "details": [
+          {
+            "id": 199246766,
+            "fixture_id": 10336081,
+            "player_id": 108160,
+            "team_id": 649,
+            "lineup_id": 5269216,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 108160,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 89847,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 25,
+          "common_name": "S. Kitsiou",
+          "firstname": "Stelios",
+          "lastname": "Kitsiou",
+          "name": "Stelios Kitsiou",
+          "display_name": "Stelios Kitsiou",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/0/108160.png",
+          "height": 173,
+          "weight": 70,
+          "date_of_birth": "1993-09-28",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269236,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 109405,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Amr Warda",
+        "jersey_number": 74,
+        "details": [
+          {
+            "id": 331222058,
+            "fixture_id": 10336081,
+            "player_id": 109405,
+            "team_id": 649,
+            "lineup_id": 5269236,
+            "type_id": 119,
+            "data": {
+              "value": 7
+            }
+          }
+        ],
+        "player": {
+          "id": 109405,
+          "sport_id": 1,
+          "country_id": 886,
+          "nationality_id": 886,
+          "city_id": 1623,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "A. Warda",
+          "firstname": "Amr Medhat",
+          "lastname": "Warda",
+          "name": "Amr Medhat Warda",
+          "display_name": "Amr Warda",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/29/109405.png",
+          "height": 176,
+          "weight": 70,
+          "date_of_birth": "1993-09-17",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268908,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 1270,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "José Alberto Cañas",
+        "jersey_number": 87,
+        "details": [
+          {
+            "id": 199246787,
+            "fixture_id": 10336081,
+            "player_id": 1270,
+            "team_id": 649,
+            "lineup_id": 5268908,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 262900411,
+            "fixture_id": 10336081,
+            "player_id": 1270,
+            "team_id": 649,
+            "lineup_id": 5268908,
+            "type_id": 52,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199246789,
+            "fixture_id": 10336081,
+            "player_id": 1270,
+            "team_id": 649,
+            "lineup_id": 5268908,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 1270,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": 32,
+          "city_id": 41480,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "J. Cañas Ruiz Herrera",
+          "firstname": "José Alberto",
+          "lastname": "Cañas Ruiz Herrera",
+          "name": "José Alberto Cañas Ruiz Herrera",
+          "display_name": "José Alberto Cañas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/1270.png",
+          "height": 178,
+          "weight": 69,
+          "date_of_birth": "1987-05-27",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268944,
+        "sport_id": 1,
+        "fixture_id": 10336081,
+        "player_id": 221524,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Léo Jabá",
+        "jersey_number": 98,
+        "details": [
+          {
+            "id": 199246802,
+            "fixture_id": 10336081,
+            "player_id": 221524,
+            "team_id": 649,
+            "lineup_id": 5268944,
+            "type_id": 119,
+            "data": {
+              "value": 72
+            }
+          }
+        ],
+        "player": {
+          "id": 221524,
+          "sport_id": 1,
+          "country_id": 5,
+          "nationality_id": 5,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 156,
+          "type_id": 27,
+          "common_name": "L. Rodrigues Lima",
+          "firstname": "Leonardo",
+          "lastname": "Rodrigues Lima",
+          "name": "Leonardo Rodrigues Lima",
+          "display_name": "Léo Jabá",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/20/221524.png",
+          "height": 178,
+          "weight": 75,
+          "date_of_birth": "1998-08-02",
+          "gender": "male"
+        }
+      }
+    ],
+    "events": [],
+    "formations": []
+  }
+}

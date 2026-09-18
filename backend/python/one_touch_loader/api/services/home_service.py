@@ -5,12 +5,14 @@ from typing import Any, Dict, Optional
 from ..repos.users_repo import get_favorite_team_id
 from ..repos.teams_repo import get_teams, list_following_team_ids
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
+from ..repos.highlights_repo import get_team_highlights
 
 
 def build_home_payload(
     user_id: int,
     start_date: Optional[str],
     end_date: Optional[str],
+    viewer_country: str | None = None,
 ) -> Dict[str, Any]:
     following_ids = list_following_team_ids(user_id)
     following_teams = get_teams(following_ids)
@@ -52,4 +54,5 @@ def build_home_payload(
         "next_match": next_match,
         "last_match": last_match,
         "calendar": calendar,
+        "highlights": get_team_highlights(favorite_team_id, viewer_country) if favorite_team_id and viewer_country else None,
     }
