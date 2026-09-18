@@ -1,4 +1,4 @@
-"""경기별 하이라이트 캐시를 확인해요. --apply를 직접 실행하면 백업 후 반영해요."""
+"""이전 캐시 구조의 최초 설치용이에요. 현재 점검은 migrate_recent_relations --verify를 써요."""
 from pathlib import Path
 import argparse
 from one_touch_loader.core.db import fetch_all

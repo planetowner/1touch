@@ -61,8 +61,8 @@ def read_teams():
 
 def read_histories():
     histories = defaultdict(list)
-    for row in _fetch("SELECT team_id,rating_date,elo,segment_id FROM clubelo_ratings ORDER BY team_id,rating_date"):
-        histories[row["team_id"]].append({"date": str(row["rating_date"]), "elo": row["elo"], "segment_id": row["segment_id"]})
+    for row in _fetch("SELECT team_id,rating_date,elo FROM clubelo_ratings ORDER BY team_id,rating_date"):
+        histories[row["team_id"]].append({"date": str(row["rating_date"]), "elo": row["elo"]})
     return dict(histories)
 
 
@@ -104,8 +104,7 @@ def collect_elo(mapping, *, cache_dir=None):
                 fetched_at = datetime.now(timezone.utc).replace(tzinfo=None)
             source_hash = hashlib.sha256(html.encode()).hexdigest()
             for point in parse_history(html):
-                rows.append((team_id, point["date"], point["elo"], point["segment_id"],
-                             f"https://clubelo.com/{slug}", source_hash, fetched_at))
+                rows.append((team_id, point["date"], point["elo"], source_hash, fetched_at))
             if i % 10 == 0 or i == len(mapping):
                 print(f"ClubElo checked {i}/{len(mapping)} teams", flush=True)
     finally:
@@ -120,10 +119,11 @@ def save_elo(mapping, rows):
             cursor.execute("""INSERT INTO team_external_ids (team_id,provider,external_team_id)
                               VALUES (%s,'clubelo',%s) ON DUPLICATE KEY UPDATE external_team_id=VALUES(external_team_id)""",
                            (team_id, slug))
-        cursor.executemany("""INSERT INTO clubelo_ratings
-            (team_id,rating_date,elo,segment_id,source_url,source_sha256,fetched_at) VALUES (%s,%s,%s,%s,%s,%s,%s)
-            ON DUPLICATE KEY UPDATE elo=VALUES(elo),segment_id=VALUES(segment_id),source_url=VALUES(source_url),
-            source_sha256=VALUES(source_sha256),fetched_at=VALUES(fetched_at)""", rows)
+        cursor.executemany("""INSERT INTO clubelo_ratings (team_id,rating_date,elo) VALUES (%s,%s,%s)
+            ON DUPLICATE KEY UPDATE elo=VALUES(elo)""", [row[:3] for row in rows])
+        sources = {row[0]: (row[0], row[3], row[4]) for row in rows}
+        cursor.executemany("""INSERT INTO clubelo_sources (team_id,source_sha256,fetched_at) VALUES (%s,%s,%s)
+            ON DUPLICATE KEY UPDATE source_sha256=VALUES(source_sha256),fetched_at=VALUES(fetched_at)""", list(sources.values()))
 
 
 def input_fingerprint(fixtures, team_elos):
@@ -150,7 +150,8 @@ def latest_run(season_id):
                          ORDER BY as_of DESC,created_at DESC,run_id DESC LIMIT 1""", (season_id,))
     if not selected:
         return None
-    return json.loads(_fetch("SELECT payload FROM probability_runs WHERE run_id=%s", (selected[0]["run_id"],))[0]["payload"])
+    from ..core.probability_storage import load_run
+    return load_run(_fetch, selected[0]["run_id"])
 
 
 def refresh_league(*, competition_id, season_id, teams, fixtures, histories, model_report,
@@ -188,8 +189,8 @@ def refresh(*, apply, simulations=100000, seed=20260917, cache_dir=None):
         raise ValueError("Verified ClubElo mappings are required for every current team")
     rows = collect_elo(mapping, cache_dir=cache_dir)
     histories = {t: {p["date"]: p for p in history} for t, history in read_histories().items()}
-    for t, day, elo, segment, *_ in rows:
-        histories.setdefault(t, {})[str(day)] = {"date": str(day), "elo": elo, "segment_id": segment}
+    for t, day, elo, *_ in rows:
+        histories.setdefault(t, {})[str(day)] = {"date": str(day), "elo": elo}
     histories = {t: sorted(points.values(), key=lambda p: p["date"]) for t, points in histories.items()}
     if apply:
         save_elo(mapping, rows)
@@ -226,15 +227,21 @@ def store_run(run):
 
 def store_runs(runs):
     from ..core.db import transaction
+    from ..core.probability_storage import split_run
     identifiers = []
     with transaction() as connection, connection.cursor() as cursor:
         for run in runs:
-            serialized = _dump(run)
-            run_id = hashlib.sha256(serialized.encode()).hexdigest()
+            metadata, teams = split_run(run)
+            # 이름·화면 카드 변경은 새 계산이 아니에요. 실제 입력·결과로 실행을 식별해요.
+            run_id = hashlib.sha256(_dump([run['model_id'],run['season_id'],run['as_of'],metadata,teams]).encode()).hexdigest()
             cursor.execute("""INSERT INTO probability_runs (run_id,model_id,season_id,as_of,payload)
                 VALUES (%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE run_id=VALUES(run_id)""",
                 (run_id, run["model_id"], run["season_id"],
-                 datetime.fromisoformat(run["as_of"].replace("Z", "+00:00")).astimezone(timezone.utc).replace(tzinfo=None), serialized))
+                  datetime.fromisoformat(run["as_of"].replace("Z", "+00:00")).astimezone(timezone.utc).replace(tzinfo=None), _dump(metadata)))
+            for team_id, fixture_id, payload in teams:
+                cursor.execute('''INSERT INTO probability_team_results (run_id,team_id,next_fixture_id,payload)
+                    VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE run_id=VALUES(run_id)''',
+                    (run_id, team_id, fixture_id, _dump(payload)))
             identifiers.append(run_id)
     return identifiers
 
