@@ -1,0 +1,1816 @@
+{
+  "verified_at": "2026-09-17T20:06:37.164637+00:00",
+  "season_name": "2026/2027",
+  "from_date": "2026-07-01",
+  "clubs": [
+    {
+      "kind": "club",
+      "team_id": 52,
+      "team_name": "AFC Bournemouth",
+      "league_id": 8,
+      "channel_id": "UCeOCuVSSweaEj6oVtJZEKQw",
+      "channel_name": "AFC Bournemouth",
+      "channel_url": "https://www.youtube.com/@afcbournemouth",
+      "uploads_playlist_id": "UUeOCuVSSweaEj6oVtJZEKQw",
+      "playlists": [
+        {
+          "playlist_id": "PLPlwOqFzLvaI",
+          "name": "Highlights 2026/27"
+        }
+      ],
+      "score_title": true
+    },
+    {
+      "kind": "club",
+      "team_id": 19,
+      "team_name": "Arsenal",
+      "league_id": 8,
+      "channel_id": "UCpryVRk_VDudG8SHXgWcG0w",
+      "channel_name": "Arsenal",
+      "channel_url": "https://www.youtube.com/@arsenal",
+      "uploads_playlist_id": "UUpryVRk_VDudG8SHXgWcG0w",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 15,
+      "team_name": "Aston Villa",
+      "league_id": 8,
+      "channel_id": "UCICNP0mvtr0prFwGUQIABfQ",
+      "channel_name": "Aston Villa Football Club",
+      "channel_url": "https://www.youtube.com/@avfcofficial",
+      "uploads_playlist_id": "UUICNP0mvtr0prFwGUQIABfQ",
+      "playlists": [
+        {
+          "playlist_id": "PLGPfiCpt0uLw",
+          "name": "⭐️ 2026/27 Match Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 236,
+      "team_name": "Brentford",
+      "league_id": 8,
+      "channel_id": "UCAalMUm3LIf504ItA3rqfug",
+      "channel_name": "Brentford Football Club",
+      "channel_url": "https://www.youtube.com/@brentfordfc",
+      "uploads_playlist_id": "UUAalMUm3LIf504ItA3rqfug",
+      "playlists": [
+        {
+          "playlist_id": "PLOgEJiz3jFuc",
+          "name": "2026/27 Match Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 78,
+      "team_name": "Brighton & Hove Albion",
+      "league_id": 8,
+      "channel_id": "UCf-cpC9WAdOsas19JHipukA",
+      "channel_name": "Official Brighton & Hove Albion FC",
+      "channel_url": "https://www.youtube.com/@officialbhafc",
+      "uploads_playlist_id": "UUf-cpC9WAdOsas19JHipukA",
+      "playlists": [
+        {
+          "playlist_id": "PLU4NF13Grb9HXwr0ijDpE1G7gxdbRuOWO",
+          "name": "Match Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 18,
+      "team_name": "Chelsea",
+      "league_id": 8,
+      "channel_id": "UCU2PacFf99vhb3hNiYDmxww",
+      "channel_name": "Chelsea Football Club",
+      "channel_url": "https://www.youtube.com/@chelseafc",
+      "uploads_playlist_id": "UUU2PacFf99vhb3hNiYDmxww",
+      "playlists": [
+        {
+          "playlist_id": "PLJjmPrAHzguI",
+          "name": "Extended Highlights | Chelsea FC | 2026/27"
+        },
+        {
+          "playlist_id": "PLQJ5kGscknok",
+          "name": "2-min Premier League Highlights | CFC 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 117,
+      "team_name": "Coventry City",
+      "league_id": 8,
+      "channel_id": "UCch_NWdo3JWKngAyO9XlycA",
+      "channel_name": "Coventry City FC",
+      "channel_url": "https://www.youtube.com/@coventrycityfc",
+      "uploads_playlist_id": "UUch_NWdo3JWKngAyO9XlycA",
+      "playlists": [
+        {
+          "playlist_id": "PLAvGAXWJ0Ics",
+          "name": "2026/27 Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 51,
+      "team_name": "Crystal Palace",
+      "league_id": 8,
+      "channel_id": "UCWB9N0012fG6bGyj486Qxmg",
+      "channel_name": "Crystal Palace FC",
+      "channel_url": "https://www.youtube.com/@officialcpfc",
+      "uploads_playlist_id": "UUWB9N0012fG6bGyj486Qxmg",
+      "playlists": [
+        {
+          "playlist_id": "PLHBVKJay5Fic",
+          "name": "26/27 Match Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 13,
+      "team_name": "Everton",
+      "league_id": 8,
+      "channel_id": "UCtK4QAczAN2mt2ow_jlGinQ",
+      "channel_name": "Everton Football Club",
+      "channel_url": "https://www.youtube.com/@everton",
+      "uploads_playlist_id": "UUtK4QAczAN2mt2ow_jlGinQ",
+      "playlists": [
+        {
+          "playlist_id": "PLH7KWX7yGaY8",
+          "name": "2026/27 HIGHLIGHTS ⚽️"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 11,
+      "team_name": "Fulham",
+      "league_id": 8,
+      "channel_id": "UC2VLfz92cTT8jHIFOecC-LA",
+      "channel_name": "Fulham Football Club",
+      "channel_url": "https://www.youtube.com/@fulhamfc",
+      "uploads_playlist_id": "UU2VLfz92cTT8jHIFOecC-LA",
+      "playlists": [
+        {
+          "playlist_id": "PLC0R5rEVwLV8",
+          "name": "Match Highlights 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 22,
+      "team_name": "Hull City",
+      "league_id": 8,
+      "channel_id": "UC8MRV5E-Bi5qWomGjOF0ZQg",
+      "channel_name": "Hull City",
+      "channel_url": "https://www.youtube.com/@hullcityofficial",
+      "uploads_playlist_id": "UU8MRV5E-Bi5qWomGjOF0ZQg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 116,
+      "team_name": "Ipswich Town",
+      "league_id": 8,
+      "channel_id": "UCjNwxJec96lMWgCXjEDhXgQ",
+      "channel_name": "Ipswich Town FC",
+      "channel_url": "https://www.youtube.com/@ipswichtown",
+      "uploads_playlist_id": "UUjNwxJec96lMWgCXjEDhXgQ",
+      "playlists": [
+        {
+          "playlist_id": "PLLtzmE1XLPvU",
+          "name": "2026/27 HIGHLIGHTS"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 71,
+      "team_name": "Leeds United",
+      "league_id": 8,
+      "channel_id": "UCyQcJHDN4uYfPa1DHzKVSnw",
+      "channel_name": "Leeds United Official",
+      "channel_url": "https://www.youtube.com/@leedsunited",
+      "uploads_playlist_id": "UUyQcJHDN4uYfPa1DHzKVSnw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 8,
+      "team_name": "Liverpool",
+      "league_id": 8,
+      "channel_id": "UC9LQwHZoucFT94I2h6JOcjw",
+      "channel_name": "Liverpool FC",
+      "channel_url": "https://www.youtube.com/@liverpoolfc",
+      "uploads_playlist_id": "UU9LQwHZoucFT94I2h6JOcjw",
+      "playlists": [
+        {
+          "playlist_id": "PLQDgxUUzWcNk",
+          "name": "Highlights 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 9,
+      "team_name": "Manchester City",
+      "league_id": 8,
+      "channel_id": "UCkzCjdRMrW2vXLx8mvPVLdQ",
+      "channel_name": "Man City",
+      "channel_url": "https://www.youtube.com/@mancity",
+      "uploads_playlist_id": "UUkzCjdRMrW2vXLx8mvPVLdQ",
+      "playlists": [
+        {
+          "playlist_id": "PLJ7zFS-ntztM",
+          "name": "HIGHLIGHTS 26/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 14,
+      "team_name": "Manchester United",
+      "league_id": 8,
+      "channel_id": "UC6yW44UGJJBvYTlfC7CRg2Q",
+      "channel_name": "Manchester United",
+      "channel_url": "https://www.youtube.com/@manutd",
+      "uploads_playlist_id": "UU6yW44UGJJBvYTlfC7CRg2Q",
+      "playlists": [
+        {
+          "playlist_id": "PLQ5VvmbadZas",
+          "name": "Men's First Team Highlights 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 20,
+      "team_name": "Newcastle United",
+      "league_id": 8,
+      "channel_id": "UCywGl_BPp9QhD0uAcP2HsJw",
+      "channel_name": "Newcastle United",
+      "channel_url": "https://www.youtube.com/@nufc",
+      "uploads_playlist_id": "UUywGl_BPp9QhD0uAcP2HsJw",
+      "playlists": [
+        {
+          "playlist_id": "PLQFmzfY1YAHA",
+          "name": "2026/27 Match Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 63,
+      "team_name": "Nottingham Forest",
+      "league_id": 8,
+      "channel_id": "UCyAxjuAr8f_BFDGCO3Htbxw",
+      "channel_name": "Nottingham Forest FC ",
+      "channel_url": "https://www.youtube.com/@nottinghamforestfc",
+      "uploads_playlist_id": "UUyAxjuAr8f_BFDGCO3Htbxw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3,
+      "team_name": "Sunderland",
+      "league_id": 8,
+      "channel_id": "UCrw-7k6yJc0EMJdf-0BAkoQ",
+      "channel_name": "Sunderland AFC",
+      "channel_url": "https://www.youtube.com/@sunderlandafc",
+      "uploads_playlist_id": "UUrw-7k6yJc0EMJdf-0BAkoQ",
+      "playlists": [
+        {
+          "playlist_id": "PLuRgWp9ON5vr9yIJna4WeCeQSm4dTGhFl",
+          "name": "Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 6,
+      "team_name": "Tottenham Hotspur",
+      "league_id": 8,
+      "channel_id": "UCEg25rdRZXg32iwai6N6l0w",
+      "channel_name": "Tottenham Hotspur",
+      "channel_url": "https://www.youtube.com/@tottenhamhotspur",
+      "uploads_playlist_id": "UUEg25rdRZXg32iwai6N6l0w",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3321,
+      "team_name": "Bayer 04 Leverkusen",
+      "league_id": 82,
+      "channel_id": "UCSMZmPVql528Cph9WPvt0GA",
+      "channel_name": "Bayer 04 Leverkusen",
+      "channel_url": "https://www.youtube.com/@bayerleverkusen",
+      "uploads_playlist_id": "UUSMZmPVql528Cph9WPvt0GA",
+      "playlists": [
+        {
+          "playlist_id": "PLV_5-ZCqIGjs",
+          "name": "Highlights 2026/27 | Bayer 04 Leverkusen"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 68,
+      "team_name": "Borussia Dortmund",
+      "league_id": 82,
+      "channel_id": "UCK8rTVgp3-MebXkmeJcQb1Q",
+      "channel_name": "Borussia Dortmund",
+      "channel_url": "https://www.youtube.com/@bvb",
+      "uploads_playlist_id": "UUK8rTVgp3-MebXkmeJcQb1Q",
+      "playlists": [
+        {
+          "playlist_id": "PLKtPkvpDHmtLeIDnRIla903fJkK7y4ZuE",
+          "name": "BVB | Matchday-Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 683,
+      "team_name": "Borussia Mönchengladbach",
+      "league_id": 82,
+      "channel_id": "UCcAV1UxgHz4czIBJp9zwNyg",
+      "channel_name": "Borussia Mönchengladbach",
+      "channel_url": "https://www.youtube.com/@borussiamonchengladbach",
+      "uploads_playlist_id": "UUcAV1UxgHz4czIBJp9zwNyg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 366,
+      "team_name": "Eintracht Frankfurt",
+      "league_id": 82,
+      "channel_id": "UCDFp4bscTFm8hYxCBx-tIXg",
+      "channel_name": "Eintracht Frankfurt",
+      "channel_url": "https://www.youtube.com/@eintracht",
+      "uploads_playlist_id": "UUDFp4bscTFm8hYxCBx-tIXg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3588,
+      "team_name": "Elversberg",
+      "league_id": 82,
+      "channel_id": "UCCKh_CjS8h8LoisKS-AIehQ",
+      "channel_name": "SV Elversberg",
+      "channel_url": "https://www.youtube.com/@sv07elversberg",
+      "uploads_playlist_id": "UUCKh_CjS8h8LoisKS-AIehQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 90,
+      "team_name": "FC Augsburg",
+      "league_id": 82,
+      "channel_id": "UCMH-8bjKSpk1eNVwN2U8VLA",
+      "channel_name": "FC Augsburg",
+      "channel_url": "https://www.youtube.com/@fcaugsburg",
+      "uploads_playlist_id": "UUMH-8bjKSpk1eNVwN2U8VLA",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 503,
+      "team_name": "FC Bayern München",
+      "league_id": 82,
+      "channel_id": "UCZkcxFIsqW5htimoUQKA0iA",
+      "channel_name": "FC Bayern München",
+      "channel_url": "https://www.youtube.com/@fcbayern",
+      "uploads_playlist_id": "UUZkcxFIsqW5htimoUQKA0iA",
+      "playlists": [
+        {
+          "playlist_id": "PL0EWD0WqYDFvH4vzuX9qSUQqK_mLGaS6D",
+          "name": "FC Bayern | Highlights"
+        },
+        {
+          "playlist_id": "PLOvSG-oqVf4E",
+          "name": "FC Bayern | Highlights 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3320,
+      "team_name": "FC Köln",
+      "league_id": 82,
+      "channel_id": "UCQZhvmm636X6I5rrnLFBp1w",
+      "channel_name": "1. FC Köln",
+      "channel_url": "https://www.youtube.com/@fckoeln",
+      "uploads_playlist_id": "UUQZhvmm636X6I5rrnLFBp1w",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 1079,
+      "team_name": "FC Union Berlin",
+      "league_id": 82,
+      "channel_id": "UCexHeD0RsxZFZoKLhhR_IUQ",
+      "channel_name": "1. FC Union Berlin",
+      "channel_url": "https://www.youtube.com/@1fcunionberlin",
+      "uploads_playlist_id": "UUexHeD0RsxZFZoKLhhR_IUQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 794,
+      "team_name": "FSV Mainz 05",
+      "league_id": 82,
+      "channel_id": "UCMT1hwsDgOEMhS2dIfD3e6A",
+      "channel_name": "1. FSV Mainz 05",
+      "channel_url": "https://www.youtube.com/@1fsvmainz05",
+      "uploads_playlist_id": "UUMT1hwsDgOEMhS2dIfD3e6A",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 2708,
+      "team_name": "Hamburger SV",
+      "league_id": 82,
+      "channel_id": "UCUegZz1N_lW_5mKORkYykCw",
+      "channel_name": "HSV",
+      "channel_url": "https://www.youtube.com/@hsv",
+      "uploads_playlist_id": "UUUegZz1N_lW_5mKORkYykCw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 2642,
+      "team_name": "Paderborn",
+      "league_id": 82,
+      "channel_id": "UC-7BCMDgIT65THho_ZBXtTw",
+      "channel_name": "SC Paderborn 07 TV (official)",
+      "channel_url": "https://www.youtube.com/@scpaderborn07",
+      "uploads_playlist_id": "UU-7BCMDgIT65THho_ZBXtTw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 277,
+      "team_name": "RB Leipzig",
+      "league_id": 82,
+      "channel_id": "UCkZwB4IGoNBvRmVT2gaO4XA",
+      "channel_name": "RB Leipzig",
+      "channel_url": "https://www.youtube.com/@rbleipzig",
+      "uploads_playlist_id": "UUkZwB4IGoNBvRmVT2gaO4XA",
+      "playlists": [
+        {
+          "playlist_id": "PLPmuYyxN9AUI",
+          "name": "Bundesliga Highlights 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3543,
+      "team_name": "SC Freiburg",
+      "league_id": 82,
+      "channel_id": "UC_atVJpGbIdjIa9OC6E3yJA",
+      "channel_name": "SC Freiburg",
+      "channel_url": "https://www.youtube.com/@scfreiburg",
+      "uploads_playlist_id": "UU_atVJpGbIdjIa9OC6E3yJA",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 67,
+      "team_name": "Schalke 04",
+      "league_id": 82,
+      "channel_id": "UCEa_Oh2Ut2G05AGue5QNUzA",
+      "channel_name": "FC Schalke 04",
+      "channel_url": "https://www.youtube.com/@s04",
+      "uploads_playlist_id": "UUEa_Oh2Ut2G05AGue5QNUzA",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 2726,
+      "team_name": "TSG Hoffenheim",
+      "league_id": 82,
+      "channel_id": "UCYnzpk_ECf4E2QWc9DBWjBQ",
+      "channel_name": "TSG Hoffenheim",
+      "channel_url": "https://www.youtube.com/@tsghoffenheim1899",
+      "uploads_playlist_id": "UUYnzpk_ECf4E2QWc9DBWjBQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3319,
+      "team_name": "VfB Stuttgart",
+      "league_id": 82,
+      "channel_id": "UCNjHTx_URHNiZvjW-uzIf4Q",
+      "channel_name": "VfB Stuttgart 1893",
+      "channel_url": "https://www.youtube.com/@vfb",
+      "uploads_playlist_id": "UUNjHTx_URHNiZvjW-uzIf4Q",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 82,
+      "team_name": "Werder Bremen",
+      "league_id": 82,
+      "channel_id": "UCdjedrfgyFQEkqbkq1DJf3w",
+      "channel_name": "Werder Bremen",
+      "channel_url": "https://www.youtube.com/@werderbremen",
+      "uploads_playlist_id": "UUdjedrfgyFQEkqbkq1DJf3w",
+      "playlists": [
+        {
+          "playlist_id": "PL-FPR9vTc7PR9v9V1kziQ1ELTzwybzryG",
+          "name": "HIGHLIGHTS"
+        }
+      ],
+      "score_title": true
+    },
+    {
+      "kind": "club",
+      "team_id": 776,
+      "team_name": "Angers SCO",
+      "league_id": 301,
+      "channel_id": "UC_tAu9uLd6s4zHYHg4UY07g",
+      "channel_name": "Angers SCO",
+      "channel_url": "https://www.youtube.com/@angersscoytb",
+      "uploads_playlist_id": "UU_tAu9uLd6s4zHYHg4UY07g",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3682,
+      "team_name": "Auxerre",
+      "league_id": 301,
+      "channel_id": "UCSbKMu2GkvGa5-_K90SciAw",
+      "channel_name": "AJ Auxerre",
+      "channel_url": "https://www.youtube.com/@ajauxerre403",
+      "uploads_playlist_id": "UUSbKMu2GkvGa5-_K90SciAw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 266,
+      "team_name": "Brest",
+      "league_id": 301,
+      "channel_id": "UC0IUjVIiL24hZx73DahzITA",
+      "channel_name": "Stade Brestois 29",
+      "channel_url": "https://www.youtube.com/@sb29officiel",
+      "uploads_playlist_id": "UU0IUjVIiL24hZx73DahzITA",
+      "playlists": [],
+      "score_title": true
+    },
+    {
+      "kind": "club",
+      "team_id": 1055,
+      "team_name": "Le Havre",
+      "league_id": 301,
+      "channel_id": "UC-nrAHj3e6bywZ1SIr5UUOQ",
+      "channel_name": "HavreAthleticClub",
+      "channel_url": "https://www.youtube.com/@havreathleticclub",
+      "uploads_playlist_id": "UU-nrAHj3e6bywZ1SIr5UUOQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 7758,
+      "team_name": "Le Mans",
+      "league_id": 301,
+      "channel_id": "UC1UmC2TO8fLtvUOj1iAAOIw",
+      "channel_name": "LE MANS FC",
+      "channel_url": "https://www.youtube.com/@le_mans_fc",
+      "uploads_playlist_id": "UU1UmC2TO8fLtvUOj1iAAOIw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 271,
+      "team_name": "Lens",
+      "league_id": 301,
+      "channel_id": "UCE-f1Taamum6q2S-Ve4koSw",
+      "channel_name": "RCLens",
+      "channel_url": "https://www.youtube.com/@rclens",
+      "uploads_playlist_id": "UUE-f1Taamum6q2S-Ve4koSw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 9257,
+      "team_name": "Lorient",
+      "league_id": 301,
+      "channel_id": "UC1LeTxFgKYwMeQjRjLyGRTQ",
+      "channel_name": "FC Lorient",
+      "channel_url": "https://www.youtube.com/@fclorientofficiel",
+      "uploads_playlist_id": "UU1LeTxFgKYwMeQjRjLyGRTQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 690,
+      "team_name": "LOSC Lille",
+      "league_id": 301,
+      "channel_id": "UCae9u1pNGzaklyZC8OKkeCQ",
+      "channel_name": "LOSC",
+      "channel_url": "https://www.youtube.com/@losc",
+      "uploads_playlist_id": "UUae9u1pNGzaklyZC8OKkeCQ",
+      "playlists": [
+        {
+          "playlist_id": "PLLvUwmv4TkXI",
+          "name": "2026-2027 I Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 6789,
+      "team_name": "Monaco",
+      "league_id": 301,
+      "channel_id": "UCHy548EHHX9f-ETJlm18Jiw",
+      "channel_name": "AS MONACO",
+      "channel_url": "https://www.youtube.com/@asmonaco",
+      "uploads_playlist_id": "UUHy548EHHX9f-ETJlm18Jiw",
+      "playlists": [
+        {
+          "playlist_id": "PLP0W41ENQfsINJYuFYxJFryqYkluIBvyJ",
+          "name": "Highlights 🎞️"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 450,
+      "team_name": "Nice",
+      "league_id": 301,
+      "channel_id": "UCAvm8jHWe-8K2kZK-7ynIHA",
+      "channel_name": "OGC Nice",
+      "channel_url": "https://www.youtube.com/@ogcnice",
+      "uploads_playlist_id": "UUAvm8jHWe-8K2kZK-7ynIHA",
+      "playlists": [
+        {
+          "playlist_id": "PLDkam-qHDBlQ",
+          "name": "26/27 : Résumés de match"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 79,
+      "team_name": "Olympique Lyonnais",
+      "league_id": 301,
+      "channel_id": "UCzHCZXmqIdjqRnpdp0l_T6g",
+      "channel_name": "Olympique Lyonnais",
+      "channel_url": "https://www.youtube.com/@olympiquelyonnais",
+      "uploads_playlist_id": "UUzHCZXmqIdjqRnpdp0l_T6g",
+      "playlists": [],
+      "score_title": true
+    },
+    {
+      "kind": "club",
+      "team_id": 44,
+      "team_name": "Olympique Marseille",
+      "league_id": 301,
+      "channel_id": "UCoKweTwEeA-D9vuSVw_Z_DQ",
+      "channel_name": "OM",
+      "channel_url": "https://www.youtube.com/@om_officiel",
+      "uploads_playlist_id": "UUoKweTwEeA-D9vuSVw_Z_DQ",
+      "playlists": [
+        {
+          "playlist_id": "PLyiKqCdZAGdrOsm8JGFvbC-HkDTbepQVO",
+          "name": "⚽️ RÉSUMÉ DE MATCH"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 4508,
+      "team_name": "Paris",
+      "league_id": 301,
+      "channel_id": "UCYh5fX_dsAbmpoh5Ihee45A",
+      "channel_name": "Paris FC",
+      "channel_url": "https://www.youtube.com/@parisfc",
+      "uploads_playlist_id": "UUYh5fX_dsAbmpoh5Ihee45A",
+      "playlists": [
+        {
+          "playlist_id": "PLF4-yHimQcPU",
+          "name": "⚽️ Les résumés M 26/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 591,
+      "team_name": "Paris Saint Germain",
+      "league_id": 301,
+      "channel_id": "UCt9a_qP9CqHCNwilf-iULag",
+      "channel_name": "PSG - Paris Saint-Germain",
+      "channel_url": "https://www.youtube.com/@psg",
+      "uploads_playlist_id": "UUt9a_qP9CqHCNwilf-iULag",
+      "playlists": [
+        {
+          "playlist_id": "PLqukgIMf7RbYN6GD9TE0GV7OoaCHhRZ-r",
+          "name": "HIGHLIGHTS"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 598,
+      "team_name": "Rennes",
+      "league_id": 301,
+      "channel_id": "UC96bdUrtQVEqx_OmKwFAgXg",
+      "channel_name": "Stade Rennais F.C. - Officiel",
+      "channel_url": "https://www.youtube.com/@staderennaisfcofficiel",
+      "uploads_playlist_id": "UU96bdUrtQVEqx_OmKwFAgXg",
+      "playlists": [
+        {
+          "playlist_id": "PLHVmPzdSM8UO_EUT7nxsbLV-DEFVeBcWf",
+          "name": "RESUMES"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 686,
+      "team_name": "Strasbourg",
+      "league_id": 301,
+      "channel_id": "UCfxu0LuxvMKtHjPX9faYVpg",
+      "channel_name": "Racing Club de Strasbourg Alsace",
+      "channel_url": "https://www.youtube.com/@rcstrasbourgalsacefr",
+      "uploads_playlist_id": "UUfxu0LuxvMKtHjPX9faYVpg",
+      "playlists": [
+        {
+          "playlist_id": "PLIoOyEjRn18Q",
+          "name": "Résumé des matches 📺"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 289,
+      "team_name": "Toulouse",
+      "league_id": 301,
+      "channel_id": "UCYXs6c0q6Fdlltd5SyrQnjw",
+      "channel_name": "Toulouse Football Club",
+      "channel_url": "https://www.youtube.com/@toulousefc",
+      "uploads_playlist_id": "UUYXs6c0q6Fdlltd5SyrQnjw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 7047,
+      "team_name": "Troyes",
+      "league_id": 301,
+      "channel_id": "UCAJoyOQBOoLikYtP75cwzqQ",
+      "channel_name": "ESTAC Troyes",
+      "channel_url": "https://www.youtube.com/@estac",
+      "uploads_playlist_id": "UUAJoyOQBOoLikYtP75cwzqQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 113,
+      "team_name": "AC Milan",
+      "league_id": 384,
+      "channel_id": "UCKcx1uK38H4AOkmfv4ywlrg",
+      "channel_name": "AC Milan",
+      "channel_url": "https://www.youtube.com/@acmilan",
+      "uploads_playlist_id": "UUKcx1uK38H4AOkmfv4ywlrg",
+      "playlists": [
+        {
+          "playlist_id": "PLOzHOZ4Qr3hs",
+          "name": "Extended Highlights | 2026/27"
+        },
+        {
+          "playlist_id": "PLW7Xs51ob1LI",
+          "name": "Highlights 2026/27 | Men's First Team"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 708,
+      "team_name": "Atalanta",
+      "league_id": 384,
+      "channel_id": "UC0R-isVeRhMDe3vFTWP5Spg",
+      "channel_name": "Atalanta Bergamasca Calcio",
+      "channel_url": "https://www.youtube.com/@atalantabc",
+      "uploads_playlist_id": "UU0R-isVeRhMDe3vFTWP5Spg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 8513,
+      "team_name": "Bologna",
+      "league_id": 384,
+      "channel_id": "UCaUywe79ysewBvPXljIZ__w",
+      "channel_name": "Bologna FC 1909",
+      "channel_url": "https://www.youtube.com/@siamobolognatv",
+      "uploads_playlist_id": "UUaUywe79ysewBvPXljIZ__w",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 585,
+      "team_name": "Cagliari",
+      "league_id": 384,
+      "channel_id": "UCKPvGWyCL62gKy-i_Fz_CJA",
+      "channel_name": "Cagliari Calcio",
+      "channel_url": "https://www.youtube.com/@cagliaricalciotv",
+      "uploads_playlist_id": "UUKPvGWyCL62gKy-i_Fz_CJA",
+      "playlists": [
+        {
+          "playlist_id": "PLUB_ttZnepZA",
+          "name": "⚽️ - HIGHLIGHTS 26/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 268,
+      "team_name": "Como",
+      "league_id": 384,
+      "channel_id": "UCCSgBfz78cc9JmIN7a7MCSg",
+      "channel_name": "Como 1907",
+      "channel_url": "https://www.youtube.com/@comofootball",
+      "uploads_playlist_id": "UUCSgBfz78cc9JmIN7a7MCSg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 109,
+      "team_name": "Fiorentina",
+      "league_id": 384,
+      "channel_id": "UC9nwpWq73kl4e2a51d1aCog",
+      "channel_name": "ACF Fiorentina",
+      "channel_url": "https://www.youtube.com/@fiorentinaofficial",
+      "uploads_playlist_id": "UU9nwpWq73kl4e2a51d1aCog",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 4070,
+      "team_name": "Frosinone",
+      "league_id": 384,
+      "channel_id": "UC-lahCu_0mqWm8ZlUzhK4Wg",
+      "channel_name": "Frosinone Calcio",
+      "channel_url": "https://www.youtube.com/@frosinonecalcio1928",
+      "uploads_playlist_id": "UU-lahCu_0mqWm8ZlUzhK4Wg",
+      "playlists": [],
+      "score_title": true
+    },
+    {
+      "kind": "club",
+      "team_id": 102,
+      "team_name": "Genoa",
+      "league_id": 384,
+      "channel_id": "UCcFYiZvNtDbvVak3wEj3usA",
+      "channel_name": "Genoa Cfc - Official",
+      "channel_url": "https://www.youtube.com/@genoacfcofficial",
+      "uploads_playlist_id": "UUcFYiZvNtDbvVak3wEj3usA",
+      "playlists": [
+        {
+          "playlist_id": "PLT6eyIFw3V0M",
+          "name": "HIGHLIGHTS 2026/27📹"
+        },
+        {
+          "playlist_id": "PL_nuaYj2IT5PSM2umw1eEd0H6m2dyrBwL",
+          "name": "HIGHLIGHTS COLLECTION ⚽"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 2930,
+      "team_name": "Inter",
+      "league_id": 384,
+      "channel_id": "UCvXzEblUa0cfny4HAJ_ZOWw",
+      "channel_name": "Inter",
+      "channel_url": "https://www.youtube.com/@inter",
+      "uploads_playlist_id": "UUvXzEblUa0cfny4HAJ_ZOWw",
+      "playlists": [
+        {
+          "playlist_id": "PLdwU7tWGjpdU",
+          "name": "SERIE A 2026/27 | HIGHLIGHTS 🇮🇹"
+        },
+        {
+          "playlist_id": "PLe0G3MGKWRHo",
+          "name": "SERIE A 2026/27 | HIGHLIGHTS 🇬🇧"
+        },
+        {
+          "playlist_id": "PLT_p53qElCWs",
+          "name": "SERIE A 2026/27 | EXTENDED HIGHLIGHTS ⚫️🔵"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 625,
+      "team_name": "Juventus",
+      "league_id": 384,
+      "channel_id": "UCLzKhsxrExAC6yAdtZ-BOWw",
+      "channel_name": "Juventus",
+      "channel_url": "https://www.youtube.com/@juventus",
+      "uploads_playlist_id": "UULzKhsxrExAC6yAdtZ-BOWw",
+      "playlists": [
+        {
+          "playlist_id": "PLVuEWoNX08GA",
+          "name": "JUVENTUS FIRST TEAM HIGHLIGHTS | 2026/27 SEASON 🤍​🖤​"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 43,
+      "team_name": "Lazio",
+      "league_id": 384,
+      "channel_id": "UCVtDCsB0UlIkDn2kjsva3WA",
+      "channel_name": "S.S. Lazio",
+      "channel_url": "https://www.youtube.com/@officialsslazio",
+      "uploads_playlist_id": "UUVtDCsB0UlIkDn2kjsva3WA",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 7790,
+      "team_name": "Lecce",
+      "league_id": 384,
+      "channel_id": "UCzc84VvVxLbeCQ2wYXV0VOg",
+      "channel_name": "U.S. Lecce",
+      "channel_url": "https://www.youtube.com/@uslecceofficial",
+      "uploads_playlist_id": "UUzc84VvVxLbeCQ2wYXV0VOg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 1628,
+      "team_name": "Monza",
+      "league_id": 384,
+      "channel_id": "UCgFNZmFK4tLKPpXpvJGS9dQ",
+      "channel_name": "AC Monza",
+      "channel_url": "https://www.youtube.com/@acmonzaofficial",
+      "uploads_playlist_id": "UUgFNZmFK4tLKPpXpvJGS9dQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 597,
+      "team_name": "Napoli",
+      "league_id": 384,
+      "channel_id": "UCTnCzHi0P6MH83er5OfZbzQ",
+      "channel_name": "SSCNapoli",
+      "channel_url": "https://www.youtube.com/@sscnapoli",
+      "uploads_playlist_id": "UUTnCzHi0P6MH83er5OfZbzQ",
+      "playlists": [
+        {
+          "playlist_id": "PLWjET76DqlAk",
+          "name": "SSCN | Highlights Serie A 26/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 398,
+      "team_name": "Parma",
+      "league_id": 384,
+      "channel_id": "UCXKXzx4PG8dcqExNJ5npUkg",
+      "channel_name": "Parma Calcio 1913",
+      "channel_url": "https://www.youtube.com/@parmacalcio1913",
+      "uploads_playlist_id": "UUXKXzx4PG8dcqExNJ5npUkg",
+      "playlists": [
+        {
+          "playlist_id": "PLdHZ8BUFYJf0",
+          "name": "Highlights 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 37,
+      "team_name": "Roma",
+      "league_id": 384,
+      "channel_id": "UCLttSYJ6kPtlcurY96kXkQw",
+      "channel_name": "AS Roma",
+      "channel_url": "https://www.youtube.com/@asroma",
+      "uploads_playlist_id": "UULttSYJ6kPtlcurY96kXkQw",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 2714,
+      "team_name": "Sassuolo",
+      "league_id": 384,
+      "channel_id": "UCok6j2Pw2VsM-QYP_bmwU6g",
+      "channel_name": "U.S. Sassuolo Calcio",
+      "channel_url": "https://www.youtube.com/@sassuolocalcio",
+      "uploads_playlist_id": "UUok6j2Pw2VsM-QYP_bmwU6g",
+      "playlists": [
+        {
+          "playlist_id": "PLBpSYbkM1oco",
+          "name": "Highlights 26/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 613,
+      "team_name": "Torino",
+      "league_id": 384,
+      "channel_id": "UCD-Q9QNPEmhrxyZb2yn3juA",
+      "channel_name": "Torino FC",
+      "channel_url": "https://www.youtube.com/@torinofcofficial",
+      "uploads_playlist_id": "UUD-Q9QNPEmhrxyZb2yn3juA",
+      "playlists": [
+        {
+          "playlist_id": "PLCKvwHjpihwk",
+          "name": "HIGHLIGHTS | SERIE A ENILIVE 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 346,
+      "team_name": "Udinese",
+      "league_id": 384,
+      "channel_id": "UCbz89vmhZ0uerNuVKxur9lA",
+      "channel_name": "Udinese Calcio",
+      "channel_url": "https://www.youtube.com/@udinesecalcio",
+      "uploads_playlist_id": "UUbz89vmhZ0uerNuVKxur9lA",
+      "playlists": [
+        {
+          "playlist_id": "PLR4ti4eDvMxM",
+          "name": "Highlights Coppa Italia 2026/27"
+        },
+        {
+          "playlist_id": "PLRmeYM4cN6CU",
+          "name": "Highlights Serie A 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 267,
+      "team_name": "Venezia",
+      "league_id": 384,
+      "channel_id": "UCnEHLZTZugy5GHk8yhTH1JA",
+      "channel_name": "Venezia FC",
+      "channel_url": "https://www.youtube.com/@veneziafootballclub",
+      "uploads_playlist_id": "UUnEHLZTZugy5GHk8yhTH1JA",
+      "playlists": [],
+      "score_title": true
+    },
+    {
+      "kind": "club",
+      "team_id": 13258,
+      "team_name": "Athletic Club",
+      "league_id": 564,
+      "channel_id": "UCUiLE_NqFKarAXFhhmXiIFA",
+      "channel_name": "Athletic Club",
+      "channel_url": "https://www.youtube.com/@athleticclubtv",
+      "uploads_playlist_id": "UUUiLE_NqFKarAXFhhmXiIFA",
+      "playlists": [
+        {
+          "playlist_id": "PLUxhVtgmdpW4",
+          "name": "⚽ LALIGA EA SPORTS 2026-27 I Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 7980,
+      "team_name": "Atlético de Madrid",
+      "league_id": 564,
+      "channel_id": "UCuzKFwdh7z2GHcIOX_tXgxA",
+      "channel_name": "Atlético de Madrid",
+      "channel_url": "https://www.youtube.com/@atleticodemadrid",
+      "uploads_playlist_id": "UUuzKFwdh7z2GHcIOX_tXgxA",
+      "playlists": [
+        {
+          "playlist_id": "PLem6BBedbLfKM0e7sGS-iBisJor-t9smo",
+          "name": "Highlights | Resúmenes"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 36,
+      "team_name": "Celta de Vigo",
+      "league_id": 564,
+      "channel_id": "UCCJLVZYqRb_85b2Flpg04cg",
+      "channel_name": "RC Celta",
+      "channel_url": "https://www.youtube.com/@rccelta",
+      "uploads_playlist_id": "UUCJLVZYqRb_85b2Flpg04cg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 429,
+      "team_name": "Deportivo A Coruña",
+      "league_id": 564,
+      "channel_id": "UCY2s1XaPzO60Hu6M_YZCTgA",
+      "channel_name": "RC Deportivo",
+      "channel_url": "https://www.youtube.com/@rcdeportivo",
+      "uploads_playlist_id": "UUY2s1XaPzO60Hu6M_YZCTgA",
+      "playlists": [
+        {
+          "playlist_id": "PL0TKNgQwIViVZz5ApbTocJdZijvEbzjlB",
+          "name": "Resúmenes de Partidos"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 2975,
+      "team_name": "Deportivo Alavés",
+      "league_id": 564,
+      "channel_id": "UC5yHOZPDde9RWodH5bn4QgA",
+      "channel_name": "Deportivo Alavés",
+      "channel_url": "https://www.youtube.com/@deportivoalaves1921",
+      "uploads_playlist_id": "UU5yHOZPDde9RWodH5bn4QgA",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 1099,
+      "team_name": "Elche",
+      "league_id": 564,
+      "channel_id": "UCeY_BssoWHlT-juP90UcZZg",
+      "channel_name": "Elche Club de Fútbol 💚🌴",
+      "channel_url": "https://www.youtube.com/@elchec.f.",
+      "uploads_playlist_id": "UUeY_BssoWHlT-juP90UcZZg",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 528,
+      "team_name": "Espanyol",
+      "league_id": 564,
+      "channel_id": "UClywhnD01yUU5kO6OgAeHUQ",
+      "channel_name": "RCD Espanyol de Barcelona",
+      "channel_url": "https://www.youtube.com/@rcdespanyol",
+      "uploads_playlist_id": "UUlywhnD01yUU5kO6OgAeHUQ",
+      "playlists": [
+        {
+          "playlist_id": "PLU56Va0-yL3s",
+          "name": "⚽ HIGHLIGHTS LALIGA 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 83,
+      "team_name": "FC Barcelona",
+      "league_id": 564,
+      "channel_id": "UC14UlmYlSNiQCBe9Eookf_A",
+      "channel_name": "FC Barcelona",
+      "channel_url": "https://www.youtube.com/@fcbarcelona",
+      "uploads_playlist_id": "UU14UlmYlSNiQCBe9Eookf_A",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 106,
+      "team_name": "Getafe",
+      "league_id": 564,
+      "channel_id": "UC34fUqq4rxJc0cj5Hart0zQ",
+      "channel_name": "Getafe C.F.",
+      "channel_url": "https://www.youtube.com/@getafecfmedia",
+      "uploads_playlist_id": "UU34fUqq4rxJc0cj5Hart0zQ",
+      "playlists": [
+        {
+          "playlist_id": "PLMDgZ6g6EOD4",
+          "name": "RESÚMENES LA LIGA 2026/2027"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3457,
+      "team_name": "Levante",
+      "league_id": 564,
+      "channel_id": "UCvOegN2N1FGPPv4xBNN2F9A",
+      "channel_name": "Levante UD",
+      "channel_url": "https://www.youtube.com/@levanteud",
+      "uploads_playlist_id": "UUvOegN2N1FGPPv4xBNN2F9A",
+      "playlists": [
+        {
+          "playlist_id": "PLLgi2kJW_l88",
+          "name": "HIGHLIGHTS 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 126,
+      "team_name": "Málaga",
+      "league_id": 564,
+      "channel_id": "UCo_PhWZulZooYfQRo00vU-Q",
+      "channel_name": "Málaga CF",
+      "channel_url": "https://www.youtube.com/@malagacf",
+      "uploads_playlist_id": "UUo_PhWZulZooYfQRo00vU-Q",
+      "playlists": [
+        {
+          "playlist_id": "PLCfrqy46RbeI",
+          "name": "RESÚMENES | LaLiga EA Sports 26/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 459,
+      "team_name": "Osasuna",
+      "league_id": 564,
+      "channel_id": "UC2JTagDPIChbcEeiLjypuYA",
+      "channel_name": "Club Atlético Osasuna",
+      "channel_url": "https://www.youtube.com/@caosasunatv",
+      "uploads_playlist_id": "UU2JTagDPIChbcEeiLjypuYA",
+      "playlists": [
+        {
+          "playlist_id": "PLADVgF5CJn8Q",
+          "name": "Resúmenes Temporada 2026/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 9818,
+      "team_name": "Racing Santander",
+      "league_id": 564,
+      "channel_id": "UCPkCdE745MkHLx8YWOwi8ew",
+      "channel_name": "Real Racing Club",
+      "channel_url": "https://www.youtube.com/@rracingclub",
+      "uploads_playlist_id": "UUPkCdE745MkHLx8YWOwi8ew",
+      "playlists": [
+        {
+          "playlist_id": "PLbQ-wqt-0U-Q",
+          "name": "Resúmenes de Real Racing Club LaLiga EA Sport ı Temporada 26-27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 377,
+      "team_name": "Rayo Vallecano",
+      "league_id": 564,
+      "channel_id": "UCUTkI-vFAO7BjfpqIDFO8rQ",
+      "channel_name": "Rayo Vallecano de Madrid",
+      "channel_url": "https://www.youtube.com/@rayovallecanotv",
+      "uploads_playlist_id": "UUUTkI-vFAO7BjfpqIDFO8rQ",
+      "playlists": [],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 485,
+      "team_name": "Real Betis",
+      "league_id": 564,
+      "channel_id": "UCeB7JZwcar2fVoK2w2f9OwA",
+      "channel_name": "Real Betis Balompié",
+      "channel_url": "https://www.youtube.com/@realbetis",
+      "uploads_playlist_id": "UUeB7JZwcar2fVoK2w2f9OwA",
+      "playlists": [
+        {
+          "playlist_id": "PLIUkqrTWoxnHctbWGCPUHf8tPxsVDYj6X",
+          "name": "HIGHLIGHTS 📼"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 3468,
+      "team_name": "Real Madrid",
+      "league_id": 564,
+      "channel_id": "UCWV3obpZVGgJ3j9FVhEjF2Q",
+      "channel_name": "Real Madrid",
+      "channel_url": "https://www.youtube.com/@realmadrid",
+      "uploads_playlist_id": "UUWV3obpZVGgJ3j9FVhEjF2Q",
+      "playlists": [
+        {
+          "playlist_id": "PLOtrYwr96giM",
+          "name": "HIGHLIGHTS 26/27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 594,
+      "team_name": "Real Sociedad",
+      "league_id": 564,
+      "channel_id": "UCfeqewEKWQ8CXY8OiXoMxxw",
+      "channel_name": "Real Sociedad TV",
+      "channel_url": "https://www.youtube.com/@realsociedadtv",
+      "uploads_playlist_id": "UUfeqewEKWQ8CXY8OiXoMxxw",
+      "playlists": [
+        {
+          "playlist_id": "PLRLStvPEzrUM",
+          "name": "🎥 HIGHLIGHTS | Temporada 26-27"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 676,
+      "team_name": "Sevilla",
+      "league_id": 564,
+      "channel_id": "UCLy9lmj_0cqffXUzbGHNmYA",
+      "channel_name": "Sevilla FC",
+      "channel_url": "https://www.youtube.com/@sevillafc",
+      "uploads_playlist_id": "UULy9lmj_0cqffXUzbGHNmYA",
+      "playlists": [
+        {
+          "playlist_id": "PLveIlh3v_0OXiLqdHHuuV0INtgTxe5hhj",
+          "name": "LaLiga Highlights"
+        }
+      ],
+      "score_title": false
+    },
+    {
+      "kind": "club",
+      "team_id": 214,
+      "team_name": "Valencia",
+      "league_id": 564,
+      "channel_id": "UCgvyo5x49J8ht5H9imKfxMQ",
+      "channel_name": "Valencia CF",
+      "channel_url": "https://www.youtube.com/@valenciacf",
+      "uploads_playlist_id": "UUgvyo5x49J8ht5H9imKfxMQ",
+      "playlists": [],
+      "score_title": true
+    },
+    {
+      "kind": "club",
+      "team_id": 3477,
+      "team_name": "Villarreal",
+      "league_id": 564,
+      "channel_id": "UC0MLWyQ0L7uEZY8wbkDSTkw",
+      "channel_name": "Villarreal CF",
+      "channel_url": "https://www.youtube.com/@villarrealcf",
+      "uploads_playlist_id": "UU0MLWyQ0L7uEZY8wbkDSTkw",
+      "playlists": [
+        {
+          "playlist_id": "PLFgwV0psy3mk",
+          "name": "RESUMENES LALIGA 26/27 🍿⚽"
+        }
+      ],
+      "score_title": false
+    }
+  ],
+  "competitions": [
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "sportmonks:82",
+        "dfb-supercup"
+      ],
+      "channel_id": "UC6UL29enLNe4mqwTfAyeNuw",
+      "channel_name": "Bundesliga",
+      "channel_url": "https://www.youtube.com/@bundesliga",
+      "uploads_playlist_id": "UU6UL29enLNe4mqwTfAyeNuw",
+      "playlists": [],
+      "title_patterns": []
+    },
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "sportmonks:27"
+      ],
+      "channel_id": "UCCmo_NIuQR5eU4AvBa6sEQQ",
+      "channel_name": "EFL",
+      "channel_url": "https://www.youtube.com/@theefl",
+      "uploads_playlist_id": "UUCmo_NIuQR5eU4AvBa6sEQQ",
+      "playlists": [],
+      "title_patterns": []
+    },
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "dfb-pokal"
+      ],
+      "channel_id": "UC7am34-1rGU_ky1vWYnoOJQ",
+      "channel_name": "German Football",
+      "channel_url": "https://www.youtube.com/@germanfootball",
+      "uploads_playlist_id": "UU7am34-1rGU_ky1vWYnoOJQ",
+      "playlists": [],
+      "title_patterns": []
+    },
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "sportmonks:564"
+      ],
+      "channel_id": "UCTv-XvfzLX3i4IGWAm4sbmA",
+      "channel_name": "LALIGA EA SPORTS",
+      "channel_url": "https://www.youtube.com/@laliga",
+      "uploads_playlist_id": "UUTv-XvfzLX3i4IGWAm4sbmA",
+      "playlists": [],
+      "title_patterns": []
+    },
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "sportmonks:301"
+      ],
+      "channel_id": "UCQsH5XtIc9hONE1BQjucM0g",
+      "channel_name": "Ligue 1 McDonald’s",
+      "channel_url": "https://www.youtube.com/@ligue1",
+      "uploads_playlist_id": "UUQsH5XtIc9hONE1BQjucM0g",
+      "playlists": [],
+      "title_patterns": [
+        "week \\d+ ligue 1"
+      ]
+    },
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "sportmonks:8"
+      ],
+      "channel_id": "UCG5qGWdu8nIRZqJ_GgDwQ-w",
+      "channel_name": "Premier League",
+      "channel_url": "https://www.youtube.com/@premierleague",
+      "uploads_playlist_id": "UUG5qGWdu8nIRZqJ_GgDwQ-w",
+      "playlists": [],
+      "title_patterns": []
+    },
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "sportmonks:384",
+        "sportmonks:390"
+      ],
+      "channel_id": "UCBJeMCIeLQos7wacox4hmLQ",
+      "channel_name": "Serie A",
+      "channel_url": "https://www.youtube.com/@seriea",
+      "uploads_playlist_id": "UUBJeMCIeLQos7wacox4hmLQ",
+      "playlists": [],
+      "title_patterns": []
+    },
+    {
+      "kind": "competition",
+      "competition_keys": [
+        "sportmonks:2",
+        "sportmonks:5",
+        "sportmonks:2286",
+        "sportmonks:1328"
+      ],
+      "channel_id": "UCyGa1YEx9ST66rYrJTGIKOw",
+      "channel_name": "UEFA",
+      "channel_url": "https://www.youtube.com/@uefa",
+      "uploads_playlist_id": "UUyGa1YEx9ST66rYrJTGIKOw",
+      "playlists": [],
+      "title_patterns": []
+    }
+  ],
+  "aliases": {
+    "1": [
+      "West Ham"
+    ],
+    "29": [
+      "Wolves"
+    ],
+    "42": [
+      "Leicester"
+    ],
+    "99": [
+      "Preston"
+    ],
+    "115": [
+      "Luton"
+    ],
+    "10": [
+      "West Brom"
+    ],
+    "110": [
+      "Plymouth"
+    ],
+    "33": [
+      "Norwich"
+    ],
+    "12": [
+      "Birmingham"
+    ],
+    "26": [
+      "Stoke"
+    ],
+    "216": [
+      "Slavia Prague"
+    ],
+    "2727": [
+      "Sparta Prague"
+    ],
+    "368": [
+      "Omonia"
+    ],
+    "2417": [
+      "Slovan"
+    ],
+    "1668": [
+      "Bodo Glimt"
+    ],
+    "249160": [
+      "Padova"
+    ],
+    "52": [
+      "Bournemouth"
+    ],
+    "15": [
+      "Villa"
+    ],
+    "78": [
+      "Brighton"
+    ],
+    "117": [
+      "Coventry"
+    ],
+    "51": [
+      "Palace"
+    ],
+    "22": [
+      "Hull"
+    ],
+    "116": [
+      "Ipswich"
+    ],
+    "71": [
+      "Leeds",
+      "Leeds Utd"
+    ],
+    "9": [
+      "Man City"
+    ],
+    "14": [
+      "Man United",
+      "Man Utd"
+    ],
+    "20": [
+      "Newcastle"
+    ],
+    "63": [
+      "Forest",
+      "Nottm Forest"
+    ],
+    "6": [
+      "Tottenham",
+      "Spurs"
+    ],
+    "3321": [
+      "Leverkusen",
+      "Bayer 04"
+    ],
+    "68": [
+      "Dortmund",
+      "BVB"
+    ],
+    "683": [
+      "Gladbach",
+      "Monchengladbach"
+    ],
+    "366": [
+      "Frankfurt"
+    ],
+    "503": [
+      "Bayern"
+    ],
+    "3320": [
+      "Koln",
+      "Cologne"
+    ],
+    "1079": [
+      "Union Berlin"
+    ],
+    "794": [
+      "Mainz"
+    ],
+    "2708": [
+      "Hamburg",
+      "HSV"
+    ],
+    "277": [
+      "Leipzig"
+    ],
+    "3543": [
+      "Freiburg"
+    ],
+    "67": [
+      "Schalke"
+    ],
+    "2726": [
+      "Hoffenheim"
+    ],
+    "3319": [
+      "Stuttgart"
+    ],
+    "82": [
+      "Werder"
+    ],
+    "776": [
+      "Angers",
+      "angevin"
+    ],
+    "266": [
+      "Stade Brestois"
+    ],
+    "1055": [
+      "HAC",
+      "Havre AC"
+    ],
+    "7758": [
+      "Le Mans"
+    ],
+    "690": [
+      "Lille",
+      "LOSC"
+    ],
+    "6789": [
+      "Monaco"
+    ],
+    "598": [
+      "Stade Rennais"
+    ],
+    "79": [
+      "Lyon",
+      "OL"
+    ],
+    "44": [
+      "Marseille",
+      "OM"
+    ],
+    "4508": [
+      "Paris FC"
+    ],
+    "591": [
+      "PSG",
+      "Paris Saint-Germain"
+    ],
+    "113": [
+      "Milan"
+    ],
+    "2930": [
+      "Internazionale"
+    ],
+    "13258": [
+      "Athletic",
+      "Athletic Club"
+    ],
+    "7980": [
+      "Atletico",
+      "Atleti"
+    ],
+    "36": [
+      "Celta"
+    ],
+    "429": [
+      "Deportivo",
+      "Depor",
+      "RC Deportivo"
+    ],
+    "2975": [
+      "Alaves"
+    ],
+    "83": [
+      "Barcelona",
+      "Barca"
+    ],
+    "485": [
+      "Betis"
+    ],
+    "377": [
+      "Rayo"
+    ],
+    "594": [
+      "Real Sociedad"
+    ],
+    "9818": [
+      "Racing"
+    ],
+    "214": [
+      "Valencia"
+    ],
+    "Hamburg-Eimsbütteler- Ballspiel-Club": [
+      "Hamburg-Eimsbütteler BC",
+      "HEBC"
+    ]
+  },
+  "dfb_team_names": {
+    "Bayer Leverkusen": 3321,
+    "Borussia Dortmund": 68,
+    "Borussia Mönchengladbach": 683,
+    "Eintracht Frankfurt": 366,
+    "SV Elversberg": 3588,
+    "FC Augsburg": 90,
+    "FC Bayern München": 503,
+    "1. FC Köln": 3320,
+    "1. FC Union Berlin": 1079,
+    "1. FSV Mainz 05": 794,
+    "Hamburger SV": 2708,
+    "SC Paderborn 07": 2642,
+    "RB Leipzig": 277,
+    "SC Freiburg": 3543,
+    "FC Schalke 04": 67,
+    "TSG Hoffenheim": 2726,
+    "VfB Stuttgart": 3319,
+    "Werder Bremen": 82
+  },
+  "external_fixture_sources": [
+    {
+      "competition_key": "dfb-pokal",
+      "competition_name": "DFB-Pokal",
+      "season_name": "2026/2027",
+      "url": "https://datencenter.dfb.de/competitions/dfb-pokal/seasons/2026-27"
+    },
+    {
+      "competition_key": "dfb-supercup",
+      "competition_name": "Franz Beckenbauer Supercup",
+      "season_name": "2026/2027",
+      "url": "https://datencenter.dfb.de/competitions/franz-beckenbauer-supercup/seasons/2026"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
+from .highlights import TeamHighlightsResponse
 
 
 class TeamOut(BaseModel):
@@ -249,3 +250,4 @@ class HomeResponse(BaseModel):
     last_match: Optional[FixtureOut] = None
 
     calendar: List[FixtureOut] = []
+    highlights: TeamHighlightsResponse | None = Field(default=None, description="대표팀의 최근 하이라이트예요. viewer_country를 보내지 않거나 대표팀이 없으면 null이에요.")

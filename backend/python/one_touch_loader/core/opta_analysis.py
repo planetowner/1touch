@@ -8,16 +8,17 @@ from math import hypot
 from .opta_chalkboard import (
     event_identity, normalize_chalkboard, normalize_point, source_metadata, validate_snapshot,
 )
+from .player_match_metrics import POSITION_GROUPS
 
 
+RECOVERY_KIND = "recovery"
 ANALYSIS_EVENTS = {
     "Successful passes": "completed_pass", "Key Passes": "key_pass", "Assists": "assist",
     "Tackles won": "tackle_won", "Tackles lost": "tackle_lost",
     "Defensive blocks": "block", "Interceptions": "interception",
-    "Clearances": "clearance", "Recoveries": "recovery",
+    "Clearances": "clearance", "Recoveries": RECOVERY_KIND,
 }
 PASS_KINDS = {"completed_pass", "key_pass", "assist"}
-DEFENSIVE_KINDS = tuple(k for k in ANALYSIS_EVENTS.values() if k not in PASS_KINDS)
 PITCH_LENGTH_M, PITCH_WIDTH_M = 105.0, 68.0
 PROGRESSION_METHOD = {
     "provider": "1touch", "version": "goal_distance_30_15_10_v1",
@@ -122,20 +123,33 @@ def passing_metrics(events: list[dict], side: str) -> dict:
 
 
 def defensive_metrics(events: list[dict], side: str) -> dict:
-    actions, recoveries = [], []
+    actions, missing_position_count = [], 0
     for event in events:
-        kinds = [kind for kind in event["kinds"] if kind in DEFENSIVE_KINDS]
-        if not kinds:
+        if RECOVERY_KIND not in event["kinds"]:
+            continue
+        position_group = POSITION_GROUPS.get(event.get("position_group_id"))
+        if position_group == "GK":
+            continue
+        if position_group is None:
+            missing_position_count += 1
             continue
         position = attacking_point(event["start"], side)
-        actions.append({"external_event_id": event["external_event_id"], "kinds": kinds,
+        actions.append({"external_event_id": event["external_event_id"], "kinds": [RECOVERY_KIND],
                         "attacking_position": position})
-        if "recovery" in kinds:
-            recoveries.append(position)
-    # 태클 성공에는 공이 아웃된 상황도 있어요. 점유 회수로 판정된 Recoveries만 집계해요.
-    mean_x = sum(p["x"] for p in recoveries) / len(recoveries) if recoveries else None
-    return {"action_count": len(actions), "actions": actions,
-            "recoveries": len(recoveries), "high_regains": sum(p["x"] >= 50 for p in recoveries),
+    complete = missing_position_count == 0
+    total = len(actions)
+    # 골키퍼 여부가 비어 있는 실제 경기들이 있어요. 확인된 점은 주되 부분합을 팀 전체로 표시하지 않아요.
+    count = total if complete else None
+    high_regains = sum(a["attacking_position"]["x"] >= 50 for a in actions) if complete else None
+    mean_x = sum(a["attacking_position"]["x"] for a in actions) / total if complete and total else None
+    halves = [{"half": half, "count": value,
+               "percentage": round(100 * value / total, 2) if complete and total else None}
+              for half, value in (("own", total - high_regains if complete else None),
+                                  ("opponent", high_regains))]
+    # 지도·평균선·진영 비중은 모두 같은 필드 선수 Recovery만 써요. 태클 등 다른 행동은 섞지 않아요.
+    return {"complete": complete, "missing_position_count": missing_position_count,
+            "action_count": total, "actions": actions,
+            "recoveries": count, "high_regains": high_regains, "halves": halves,
             "average_regain_x": round(mean_x, 6) if mean_x is not None else None,
             "average_regain_height_m": round(mean_x * PITCH_LENGTH_M / 100, 2) if mean_x is not None else None}
 

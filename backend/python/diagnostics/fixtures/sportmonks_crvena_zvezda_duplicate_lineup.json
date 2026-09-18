@@ -1,0 +1,886 @@
+{
+  "source": "Sportmonks fixture 10336108, retrieved 2026-09-17",
+  "verified_source": "https://www.uefa.com/uefachampionsleague/match/2024621--crvena-zvezda-vs-spartaks-jurmala/lineups/",
+  "verified_lineup": {
+    "player_id": 151561,
+    "jersey_number": 26,
+    "kept_lineup_id": 6911344591,
+    "removed_lineup_id": 3742326449
+  },
+  "fixture": {
+    "id": 10336108,
+    "lineups": [
+      {
+        "id": 5269204,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 177792,
+        "team_id": 2673,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Zoran Popovic",
+        "jersey_number": 1,
+        "details": [],
+        "player": {
+          "id": 177792,
+          "sport_id": 1,
+          "country_id": 266,
+          "nationality_id": 296,
+          "city_id": 66622,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "Z. Popović",
+          "firstname": "Zoran",
+          "lastname": "Popović",
+          "name": "Zoran Popović",
+          "display_name": "Zoran Popovic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/0/177792.png",
+          "height": 188,
+          "weight": 81,
+          "date_of_birth": "1988-05-28",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268514,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 170182,
+        "team_id": 2673,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Branko Jovicic",
+        "jersey_number": 3,
+        "details": [
+          {
+            "id": 199248956,
+            "fixture_id": 10336108,
+            "player_id": 170182,
+            "team_id": 2673,
+            "lineup_id": 5268514,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 170182,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "B. Jovičić",
+          "firstname": "Branko",
+          "lastname": "Jovičić",
+          "name": "Branko Jovičić",
+          "display_name": "B. Jovičić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/6/170182.png",
+          "height": 179,
+          "weight": 74,
+          "date_of_birth": "1993-03-18",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268558,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 35077,
+        "team_id": 2673,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Milos Degenek",
+        "jersey_number": 5,
+        "details": [
+          {
+            "id": 199248969,
+            "fixture_id": 10336108,
+            "player_id": 35077,
+            "team_id": 2673,
+            "lineup_id": 5268558,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 35077,
+          "sport_id": 1,
+          "country_id": 266,
+          "nationality_id": 98,
+          "city_id": 45210,
+          "position_id": 25,
+          "detailed_position_id": 148,
+          "type_id": 25,
+          "common_name": "M. Degenek",
+          "firstname": "Miloš",
+          "lastname": "Degenek",
+          "name": "Miloš Degenek",
+          "display_name": "Milos Degenek",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/5/35077.png",
+          "height": 187,
+          "weight": 83,
+          "date_of_birth": "1994-04-28",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268603,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 129086,
+        "team_id": 2673,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Nenad Krsticic",
+        "jersey_number": 7,
+        "details": [
+          {
+            "id": 262900955,
+            "fixture_id": 10336108,
+            "player_id": 129086,
+            "team_id": 2673,
+            "lineup_id": 5268603,
+            "type_id": 52,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199248982,
+            "fixture_id": 10336108,
+            "player_id": 129086,
+            "team_id": 2673,
+            "lineup_id": 5268603,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 129086,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "N. Krstičić",
+          "firstname": "Nenad",
+          "lastname": "Krstičić",
+          "name": "Nenad Krstičić",
+          "display_name": "Nenad Krstičić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/30/129086.png",
+          "height": 182,
+          "weight": 75,
+          "date_of_birth": "1990-07-03",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269225,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 25275,
+        "team_id": 2673,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Dejan Meleg",
+        "jersey_number": 8,
+        "details": [
+          {
+            "id": 331222022,
+            "fixture_id": 10336108,
+            "player_id": 25275,
+            "team_id": 2673,
+            "lineup_id": 5269225,
+            "type_id": 79,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199248995,
+            "fixture_id": 10336108,
+            "player_id": 25275,
+            "team_id": 2673,
+            "lineup_id": 5269225,
+            "type_id": 119,
+            "data": {
+              "value": 18
+            }
+          }
+        ],
+        "player": {
+          "id": 25275,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 150,
+          "type_id": 26,
+          "common_name": "D. Meleg",
+          "firstname": "Dejan",
+          "lastname": "Meleg",
+          "name": "Dejan Meleg",
+          "display_name": "Dejan Meleg",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/27/25275.png",
+          "height": 176,
+          "weight": null,
+          "date_of_birth": "1994-10-01",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269244,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 178036,
+        "team_id": 2673,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "M. Pavkov",
+        "jersey_number": 9,
+        "details": [
+          {
+            "id": 331222021,
+            "fixture_id": 10336108,
+            "player_id": 178036,
+            "team_id": 2673,
+            "lineup_id": 5269244,
+            "type_id": 79,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199249008,
+            "fixture_id": 10336108,
+            "player_id": 178036,
+            "team_id": 2673,
+            "lineup_id": 5269244,
+            "type_id": 119,
+            "data": {
+              "value": 30
+            }
+          }
+        ],
+        "player": {
+          "id": 178036,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": 63648,
+          "position_id": 27,
+          "detailed_position_id": 151,
+          "type_id": 27,
+          "common_name": "M. Pavkov",
+          "firstname": "Milan",
+          "lastname": "Pavkov",
+          "name": "Milan Pavkov",
+          "display_name": "Milan Pavkov",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/20/178036.png",
+          "height": 193,
+          "weight": 73,
+          "date_of_birth": "1994-02-09",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268631,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 24540,
+        "team_id": 2673,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Lorenzo Ebecilio",
+        "jersey_number": 11,
+        "details": [
+          {
+            "id": 199249021,
+            "fixture_id": 10336108,
+            "player_id": 24540,
+            "team_id": 2673,
+            "lineup_id": 5268631,
+            "type_id": 119,
+            "data": {
+              "value": 72
+            }
+          }
+        ],
+        "player": {
+          "id": 24540,
+          "sport_id": 1,
+          "country_id": 38,
+          "nationality_id": 38,
+          "city_id": 38494,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "L. Ebecilio",
+          "firstname": "Lorenzo Leroy",
+          "lastname": "Ebecilio",
+          "name": "Lorenzo Leroy Ebecilio",
+          "display_name": "Lorenzo Ebecilio",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/24540.png",
+          "height": 176,
+          "weight": 79,
+          "date_of_birth": "1991-09-24",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269262,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 177822,
+        "team_id": 2673,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Srdjan Babic",
+        "jersey_number": 15,
+        "details": [],
+        "player": {
+          "id": 177822,
+          "sport_id": 1,
+          "country_id": 507,
+          "nationality_id": 296,
+          "city_id": 6371,
+          "position_id": 25,
+          "detailed_position_id": 148,
+          "type_id": 25,
+          "common_name": "S. Babić",
+          "firstname": "Srđan",
+          "lastname": "Babić",
+          "name": "Srđan Babić",
+          "display_name": "Srdjan Babic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/30/177822.png",
+          "height": 195,
+          "weight": 96,
+          "date_of_birth": "1996-04-22",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268664,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 176811,
+        "team_id": 2673,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Nemanja Milic",
+        "jersey_number": 16,
+        "details": [
+          {
+            "id": 199249044,
+            "fixture_id": 10336108,
+            "player_id": 176811,
+            "team_id": 2673,
+            "lineup_id": 5268664,
+            "type_id": 119,
+            "data": {
+              "value": 60
+            }
+          }
+        ],
+        "player": {
+          "id": 176811,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": 84664,
+          "position_id": 27,
+          "detailed_position_id": null,
+          "type_id": 27,
+          "common_name": "N. Milić",
+          "firstname": "Nemanja",
+          "lastname": "Milić",
+          "name": "Nemanja Milić",
+          "display_name": "Nemanja Milić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/11/176811.png",
+          "height": 186,
+          "weight": 82,
+          "date_of_birth": "1990-05-25",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268701,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 169972,
+        "team_id": 2673,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Milan Rodic",
+        "jersey_number": 23,
+        "details": [
+          {
+            "id": 199249054,
+            "fixture_id": 10336108,
+            "player_id": 169972,
+            "team_id": 2673,
+            "lineup_id": 5268701,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 169972,
+          "sport_id": 1,
+          "country_id": 507,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 155,
+          "type_id": 25,
+          "common_name": "M. Rodić",
+          "firstname": "Milan",
+          "lastname": "Rodić",
+          "name": "Milan Rodić",
+          "display_name": "Milan Rodić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/20/169972.png",
+          "height": 186,
+          "weight": 82,
+          "date_of_birth": "1991-04-02",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 6911344591,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 151561,
+        "team_id": 2673,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "M. Jevtović",
+        "jersey_number": 26,
+        "details": [],
+        "player": {
+          "id": 151561,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 152,
+          "type_id": 26,
+          "common_name": "M. Jevtović",
+          "firstname": "Milan",
+          "lastname": "Jevtović",
+          "name": "Milan Jevtović",
+          "display_name": "Milan Jevtović",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/151561.png",
+          "height": 184,
+          "weight": 77,
+          "date_of_birth": "1993-06-13",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269309,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 177805,
+        "team_id": 2673,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Dusan Jovancic",
+        "jersey_number": 29,
+        "details": [
+          {
+            "id": 199249075,
+            "fixture_id": 10336108,
+            "player_id": 177805,
+            "team_id": 2673,
+            "lineup_id": 5269309,
+            "type_id": 119,
+            "data": {
+              "value": 5
+            }
+          }
+        ],
+        "player": {
+          "id": 177805,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "D. Jovančić",
+          "firstname": "Dušan",
+          "lastname": "Jovančić",
+          "name": "Dušan Jovančić",
+          "display_name": "Dusan Jovancic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/13/177805.png",
+          "height": 186,
+          "weight": 75,
+          "date_of_birth": "1990-10-19",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268737,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 35187,
+        "team_id": 2673,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Filip Stojkovic",
+        "jersey_number": 30,
+        "details": [
+          {
+            "id": 199249086,
+            "fixture_id": 10336108,
+            "player_id": 35187,
+            "team_id": 2673,
+            "lineup_id": 5268737,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 35187,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 998,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 25,
+          "common_name": "F. Stojković",
+          "firstname": "Filip",
+          "lastname": "Stojković",
+          "name": "Filip Stojković",
+          "display_name": "Filip Stojkovic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/19/35187.png",
+          "height": 174,
+          "weight": 76,
+          "date_of_birth": "1993-01-22",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268770,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 100668,
+        "team_id": 2673,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "El Fardou Ben",
+        "jersey_number": 31,
+        "details": [
+          {
+            "id": 262900933,
+            "fixture_id": 10336108,
+            "player_id": 100668,
+            "team_id": 2673,
+            "lineup_id": 5268770,
+            "type_id": 52,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199249097,
+            "fixture_id": 10336108,
+            "player_id": 100668,
+            "team_id": 2673,
+            "lineup_id": 5268770,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 100668,
+          "sport_id": 1,
+          "country_id": 364678,
+          "nationality_id": 364678,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 163,
+          "type_id": 27,
+          "common_name": "E. Ben Nabouhane",
+          "firstname": "El Fardou Mohamed",
+          "lastname": "Ben Nabouhane",
+          "name": "El Fardou Mohamed Ben Nabouhane",
+          "display_name": "El Fardou Ben",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/100668.png",
+          "height": 174,
+          "weight": 71,
+          "date_of_birth": "1989-06-10",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 3742326449,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 151561,
+        "team_id": 2673,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "M. Jevtović",
+        "jersey_number": 33,
+        "details": [],
+        "player": {
+          "id": 151561,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 152,
+          "type_id": 26,
+          "common_name": "M. Jevtović",
+          "firstname": "Milan",
+          "lastname": "Jevtović",
+          "name": "Milan Jevtović",
+          "display_name": "Milan Jevtović",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/151561.png",
+          "height": 184,
+          "weight": 77,
+          "date_of_birth": "1993-06-13",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268800,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 177983,
+        "team_id": 2673,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Nemanja Radonjić",
+        "jersey_number": 49,
+        "details": [
+          {
+            "id": 199249108,
+            "fixture_id": 10336108,
+            "player_id": 177983,
+            "team_id": 2673,
+            "lineup_id": 5268800,
+            "type_id": 119,
+            "data": {
+              "value": 85
+            }
+          }
+        ],
+        "player": {
+          "id": 177983,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 152,
+          "type_id": 27,
+          "common_name": "N. Radonjić",
+          "firstname": "Nemanja",
+          "lastname": "Radonjić",
+          "name": "Nemanja Radonjić",
+          "display_name": "Nemanja Radonjić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/31/177983.png",
+          "height": 185,
+          "weight": 78,
+          "date_of_birth": "1996-02-15",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5269335,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 177791,
+        "team_id": 2673,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Marko Gobeljic",
+        "jersey_number": 77,
+        "details": [],
+        "player": {
+          "id": 177791,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": 46056,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 25,
+          "common_name": "M. Gobeljić",
+          "firstname": "Marko",
+          "lastname": "Gobeljić",
+          "name": "Marko Gobeljić",
+          "display_name": "Marko Gobeljić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/31/177791.png",
+          "height": 185,
+          "weight": 70,
+          "date_of_birth": "1992-09-13",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268831,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 70729,
+        "team_id": 2673,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Milan Borjan",
+        "jersey_number": 82,
+        "details": [
+          {
+            "id": 199249128,
+            "fixture_id": 10336108,
+            "player_id": 70729,
+            "team_id": 2673,
+            "lineup_id": 5268831,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 199249130,
+            "fixture_id": 10336108,
+            "player_id": 70729,
+            "team_id": 2673,
+            "lineup_id": 5268831,
+            "type_id": 84,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 70729,
+          "sport_id": 1,
+          "country_id": 266,
+          "nationality_id": 1004,
+          "city_id": 45210,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "M. Borjan",
+          "firstname": "Milan",
+          "lastname": "Borjan",
+          "name": "Milan Borjan",
+          "display_name": "Milan Borjan ",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/70729.png",
+          "height": 196,
+          "weight": 80,
+          "date_of_birth": "1987-10-23",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5268847,
+        "sport_id": 1,
+        "fixture_id": 10336108,
+        "player_id": 6436,
+        "team_id": 2673,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Vujadin Savić",
+        "jersey_number": 90,
+        "details": [
+          {
+            "id": 199249140,
+            "fixture_id": 10336108,
+            "player_id": 6436,
+            "team_id": 2673,
+            "lineup_id": 5268847,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 6436,
+          "sport_id": 1,
+          "country_id": 296,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "V. Savić",
+          "firstname": "Vujadin",
+          "lastname": "Savić",
+          "name": "Vujadin Savić",
+          "display_name": "Vujadin Savić",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/4/6436.png",
+          "height": 194,
+          "weight": 83,
+          "date_of_birth": "1990-07-01",
+          "gender": "male"
+        }
+      }
+    ],
+    "events": [],
+    "formations": []
+  }
+}

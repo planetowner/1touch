@@ -129,15 +129,11 @@ def replace_match(cursor, result: dict, plan: dict, known: dict, collected_at: s
             cursor.executemany(f"INSERT INTO {entity}_external_ids ({entity}_id,provider,external_{entity}_id) "
                                "VALUES (%s,'opta',%s)", additions)
     sampled = datetime.fromisoformat(collected_at).astimezone(timezone.utc).replace(tzinfo=None)
-    cursor.execute(f"""
-        INSERT INTO {metadata_table}
-          (fixture_id,external_fixture_id,external_competition_id,external_season_id,source_url,
-           home_count,away_count,collected_at)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-        ON DUPLICATE KEY UPDATE source_url=VALUES(source_url),home_count=VALUES(home_count),
-          away_count=VALUES(away_count),collected_at=VALUES(collected_at)
-    """, (fixture_id, result["external_fixture_id"], result["external_competition_id"],
-          result["external_season_id"], result["source_url"], result["counts"]["home"], result["counts"]["away"], sampled))
+    cursor.execute('''INSERT INTO fixture_opta_sources (fixture_id,source_url) VALUES (%s,%s)
+        ON DUPLICATE KEY UPDATE source_url=VALUES(source_url)''', (fixture_id, result['source_url']))
+    # 외부 경기 ID는 fixture_external_ids, 공통 출처는 fixture_opta_sources에 한 번만 있어요.
+    cursor.execute(f'''INSERT INTO {metadata_table} (fixture_id,collected_at) VALUES (%s,%s)
+        ON DUPLICATE KEY UPDATE collected_at=VALUES(collected_at)''', (fixture_id, sampled))
     cursor.execute(f"DELETE FROM {events_table} WHERE fixture_id=%s", (fixture_id,))
     if rows:
         cursor.executemany(f"""INSERT INTO {events_table}

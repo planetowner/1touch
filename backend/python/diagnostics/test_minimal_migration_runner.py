@@ -65,6 +65,18 @@ class MigrationRunnerTests(unittest.TestCase):
         self.assertEqual(len(list((self.root / "logs/database-backups").glob("*/before_test.sql"))), 1)
         self.conn.close.assert_called_once()
 
+    def test_failed_data_conversion_does_not_remove_old_columns(self):
+        final = self.root / "final.sql"
+        final.write_text("DROP TABLE old_copy;", encoding="utf-8")
+        convert = MagicMock(side_effect=ValueError("data differs"))
+        with self.assertRaisesRegex(ValueError, "data differs"):
+            runner.run_migration(name="test", tables=("team_player_injuries",),
+                sql_paths=(self.ddl,), verify_schema=self.verify, migrate_data=convert,
+                finalize_sql_paths=(final,))
+        convert.assert_called_once_with(self.conn)
+        self.assertFalse(any("DROP" in str(event) for event in self.events))
+        self.verify.assert_called_once_with(before=True)
+
 
 if __name__ == "__main__":
     unittest.main()

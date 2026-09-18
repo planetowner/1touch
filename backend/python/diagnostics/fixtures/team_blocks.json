@@ -1,0 +1,2922 @@
+{
+  "source": "Sportmonks fixtures statistics.type;lineups.details",
+  "checked_at": "2026-09-17T12:45:42.069659+00:00",
+  "cases": [
+    {
+      "fixture_id": 1711181,
+      "team_ids": [
+        13,
+        1
+      ],
+      "lineups": [
+        {
+          "player_id": 1261,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 3,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 88
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 237,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 5,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1139,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 7,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1243,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 8,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 746,
+          "team_id": 1,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 9,
+          "position_id": 27,
+          "details": []
+        },
+        {
+          "player_id": 1452,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 10,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 86
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1251,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 13,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1517,
+          "team_id": 1,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 14,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 4
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 156,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 16,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 736,
+          "team_id": 1,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 17,
+          "position_id": 27,
+          "details": []
+        },
+        {
+          "player_id": 130198,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 18,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 538,
+          "team_id": 1,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 19,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1416,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 21,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 275,
+          "team_id": 1,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 25,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 1941,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 26,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 21
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 596,
+          "team_id": 1,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 27,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 4947,
+          "team_id": 1,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 31,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 69
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 5273,
+          "team_id": 1,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 41,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1826,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 1,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 967,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 2,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 390,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 3,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 881,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 4,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 97,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 32,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 6,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1123,
+          "team_id": 13,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 7,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 7
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 53,
+          "team_id": 13,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 11,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 29
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 45863,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 14,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 61
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1370,
+          "team_id": 13,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 15,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 1030,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 17,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 4607,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 19,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 24594,
+          "team_id": 13,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 20,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 44
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 764,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 23,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1691,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 25,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 46
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1706,
+          "team_id": 13,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 26,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 83
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1692,
+          "team_id": 13,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 30,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 1011,
+          "team_id": 13,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 33,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 5013,
+          "team_id": 13,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 43,
+          "position_id": 25,
+          "details": []
+        }
+      ]
+    },
+    {
+      "fixture_id": 10420443,
+      "team_ids": [
+        346,
+        585
+      ],
+      "lineups": [
+        {
+          "player_id": 333616,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 1,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129790,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 3,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 25160,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 5,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 128574,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 8,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 82
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1872748,
+          "team_id": 346,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 14,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129885,
+          "team_id": 346,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 15,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 13
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 25647,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 18,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 5150,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 20,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 333416,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 23,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 77
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 13477,
+          "team_id": 346,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 24,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 8
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129730,
+          "team_id": 346,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 27,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 129512,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 38,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 88
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 31627578,
+          "team_id": 346,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 41,
+          "position_id": 27,
+          "details": []
+        },
+        {
+          "player_id": 80331,
+          "team_id": 346,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 72,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 129446,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 77,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 62977,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 87,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 131053,
+          "team_id": 346,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 88,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 62901,
+          "team_id": 346,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 91,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129442,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 1,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 73607,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 6,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 82
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 127849,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 8,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 132004,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 9,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129664,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 10,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 128755,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 12,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 93995,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 14,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 22
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 1906,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 15,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 131869,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 16,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 11322428,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 17,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 130117,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 18,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 130041,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 19,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 127790,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 20,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 14
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129431,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 21,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 52794,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 22,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 130042,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 27,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 129583,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 28,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129187,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 29,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 68
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129576,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 30,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 70038,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 32,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 14
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 204569,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": null,
+          "jersey_number": 33,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 76
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 132827,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 56,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 60371,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 77,
+          "position_id": 27,
+          "details": []
+        }
+      ]
+    },
+    {
+      "fixture_id": 18220239,
+      "team_ids": [
+        585,
+        267
+      ],
+      "lineups": [
+        {
+          "player_id": 2958,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "1:1",
+          "jersey_number": 1,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 27081112,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 8,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 16
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 369136,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 16,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 35
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 26895,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "4:2",
+          "jersey_number": 17,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 73
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 53961,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 19,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 601,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 20,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 524645,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "4:1",
+          "jersey_number": 21,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 74
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37632320,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 25,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37533888,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 26,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 17
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 12371875,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 27,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 1491407,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "2:1",
+          "jersey_number": 30,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129936,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "2:2",
+          "jersey_number": 31,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 131845,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "2:3",
+          "jersey_number": 32,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 182950,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "3:2",
+          "jersey_number": 33,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 55
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 31238781,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 34,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 80601,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "3:1",
+          "jersey_number": 37,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 3
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37609628,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 40,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 125381,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "3:4",
+          "jersey_number": 42,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 89
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 12542,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "3:3",
+          "jersey_number": 44,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37632321,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 46,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 24935,
+          "team_id": 267,
+          "type_id": 11,
+          "formation_field": "3:5",
+          "jersey_number": 55,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 34872866,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 58,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 35305715,
+          "team_id": 267,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 69,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 131869,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 1,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 129860,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 3,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 129665,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 4,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 73858,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 6,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 56
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 64202,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 8,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 32
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129453,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 9,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 10
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129664,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "4:2",
+          "jersey_number": 10,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 8417828,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "3:1",
+          "jersey_number": 12,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 130042,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "3:4",
+          "jersey_number": 14,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 58
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 608287,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "2:1",
+          "jersey_number": 15,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 23596,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 16,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 260860,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "3:2",
+          "jersey_number": 18,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 25606,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 20,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 10
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 52794,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "3:5",
+          "jersey_number": 22,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 34
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129568,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "2:2",
+          "jersey_number": 23,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 57
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 5283409,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 25,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 129447,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "3:3",
+          "jersey_number": 27,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 80
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129583,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "1:1",
+          "jersey_number": 28,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 129576,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "4:1",
+          "jersey_number": 30,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 80
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 130040,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 31,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 1452150,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 40,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 37391070,
+          "team_id": 585,
+          "type_id": 11,
+          "formation_field": "2:3",
+          "jersey_number": 44,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 34874535,
+          "team_id": 585,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 66,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 33
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fixture_id": 19732687,
+      "team_ids": [
+        9818,
+        83
+      ],
+      "lineups": [
+        {
+          "player_id": 16475841,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "1:1",
+          "jersey_number": 1,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 46
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 13
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 160956,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "2:4",
+          "jersey_number": 2,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 78
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 78
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37316480,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 3,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 12
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 19
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37656790,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 5,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 37459030,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 6,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 29
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 29
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37596363,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 7,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 37288001,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "3:3",
+          "jersey_number": 8,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 61
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 56
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 5329,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 9,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 10
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 21
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37656179,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "4:1",
+          "jersey_number": 10,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 84
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 160258,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "4:2",
+          "jersey_number": 11,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 32
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 69
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37719662,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 12,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 805,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 13,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 44
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 7
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 15040126,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "4:3",
+          "jersey_number": 14,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 74
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 4460,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "2:2",
+          "jersey_number": 15,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 66
+              }
+            },
+            {
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 186910,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "3:2",
+          "jersey_number": 16,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 61
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 69
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 9611543,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 17,
+          "position_id": 27,
+          "details": []
+        },
+        {
+          "player_id": 37357510,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "2:3",
+          "jersey_number": 18,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 78
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 74060,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "3:1",
+          "jersey_number": 20,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 82
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37710798,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 22,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 21
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 29
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 337394,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 23,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 4545389,
+          "team_id": 83,
+          "type_id": 11,
+          "formation_field": "2:1",
+          "jersey_number": 24,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 98
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 73721,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 25,
+          "position_id": 24,
+          "details": []
+        },
+        {
+          "player_id": 37913575,
+          "team_id": 83,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 29,
+          "position_id": 27,
+          "details": []
+        },
+        {
+          "player_id": 37316661,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 2,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 186983,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "2:1",
+          "jersey_number": 3,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 34
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 537231,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "2:4",
+          "jersey_number": 4,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 54
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 25169144,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 5,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 9641315,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "4:1",
+          "jersey_number": 6,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 40
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 78
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 5283531,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 7,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 12
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 31625663,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "5:1",
+          "jersey_number": 9,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 59
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 22
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 533882,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 10,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 31
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 13
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 187160,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "5:2",
+          "jersey_number": 12,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 59
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 12
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 25922183,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "1:1",
+          "jersey_number": 13,
+          "position_id": 24,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 38
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37592183,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "4:2",
+          "jersey_number": 14,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 120,
+              "data": {
+                "value": 30
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37722328,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 15,
+          "position_id": 27,
+          "details": []
+        },
+        {
+          "player_id": 37543638,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "2:2",
+          "jersey_number": 16,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 86
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 43
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37756111,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 17,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 2
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37565251,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "3:1",
+          "jersey_number": 18,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 51
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37718995,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 19,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 31
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 12
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 185400,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "4:3",
+          "jersey_number": 20,
+          "position_id": 26,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 54
+              }
+            },
+            {
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37739178,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 21,
+          "position_id": 27,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 31
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 11
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 37691579,
+          "team_id": 9818,
+          "type_id": 11,
+          "formation_field": "2:3",
+          "jersey_number": 22,
+          "position_id": 25,
+          "details": [
+            {
+              "type_id": 119,
+              "data": {
+                "value": 59
+              }
+            },
+            {
+              "type_id": 120,
+              "data": {
+                "value": 23
+              }
+            }
+          ]
+        },
+        {
+          "player_id": 21427729,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 23,
+          "position_id": 26,
+          "details": []
+        },
+        {
+          "player_id": 37590934,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 24,
+          "position_id": 25,
+          "details": []
+        },
+        {
+          "player_id": 37773103,
+          "team_id": 9818,
+          "type_id": 12,
+          "formation_field": null,
+          "jersey_number": 31,
+          "position_id": 24,
+          "details": []
+        }
+      ]
+    }
+  ]
+}
