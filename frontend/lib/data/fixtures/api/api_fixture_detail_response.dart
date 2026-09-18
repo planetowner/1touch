@@ -14,6 +14,7 @@ class ApiFixtureDetailResponse {
     required List<ApiFixtureShotResponse> shots,
     required List<ApiFixtureEventResponse> events,
     required List<ApiFixtureStatisticResponse> statistics,
+    List<ApiFixturePlayerStatisticResponse> playerStatistics = const [],
     required List<ApiFixtureLineupResponse> lineups,
     required List<ApiFixtureFormationResponse> formations,
     required List<ApiFixtureCoachResponse> coaches,
@@ -22,6 +23,7 @@ class ApiFixtureDetailResponse {
         shots = List.unmodifiable(shots),
         events = List.unmodifiable(events),
         statistics = List.unmodifiable(statistics),
+        playerStatistics = List.unmodifiable(playerStatistics),
         lineups = List.unmodifiable(lineups),
         formations = List.unmodifiable(formations),
         coaches = List.unmodifiable(coaches),
@@ -34,6 +36,7 @@ class ApiFixtureDetailResponse {
   final List<ApiFixtureShotResponse> shots;
   final List<ApiFixtureEventResponse> events;
   final List<ApiFixtureStatisticResponse> statistics;
+  final List<ApiFixturePlayerStatisticResponse> playerStatistics;
   final List<ApiFixtureLineupResponse> lineups;
   final List<ApiFixtureFormationResponse> formations;
   final List<ApiFixtureCoachResponse> coaches;
@@ -67,6 +70,11 @@ class ApiFixtureDetailResponse {
         json,
         'statistics',
         ApiFixtureStatisticResponse.fromJson,
+      ),
+      playerStatistics: _objectList(
+        json,
+        'player_statistics',
+        ApiFixturePlayerStatisticResponse.fromJson,
       ),
       lineups: _objectList(
         json,
@@ -246,7 +254,7 @@ class ApiFixtureStatisticResponse {
   final int statTypeId;
   final String statCode;
   final String statName;
-  final double value;
+  final double? value;
 
   factory ApiFixtureStatisticResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureStatisticResponse(
@@ -254,7 +262,111 @@ class ApiFixtureStatisticResponse {
       statTypeId: _requiredInt(json, 'stat_type_id'),
       statCode: _requiredString(json, 'stat_code'),
       statName: _requiredString(json, 'stat_name'),
-      value: _requiredDouble(json, 'value'),
+      value: _optionalDouble(json, 'value'),
+    );
+  }
+}
+
+class ApiFixturePlayerStatisticResponse {
+  ApiFixturePlayerStatisticResponse({
+    required this.teamId,
+    required this.playerId,
+    required this.matchPositionId,
+    required this.positionGroup,
+    required this.minutesPlayed,
+    required this.rating,
+    required this.isManOfMatch,
+    required List<ApiFixturePlayerStatCategoryResponse> categories,
+  }) : categories = List.unmodifiable(categories);
+
+  final int teamId;
+  final int playerId;
+  final int? matchPositionId;
+  final String? positionGroup;
+  final int? minutesPlayed;
+  final double? rating;
+  final bool? isManOfMatch;
+  final List<ApiFixturePlayerStatCategoryResponse> categories;
+
+  factory ApiFixturePlayerStatisticResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return ApiFixturePlayerStatisticResponse(
+      teamId: _requiredInt(json, 'team_id'),
+      playerId: _requiredInt(json, 'player_id'),
+      matchPositionId: _optionalInt(json, 'match_position_id'),
+      positionGroup: _optionalString(json, 'position_group'),
+      minutesPlayed: _optionalInt(json, 'minutes_played'),
+      rating: _optionalDouble(json, 'rating'),
+      isManOfMatch: _optionalBool(json, 'is_man_of_match'),
+      categories: _objectList(
+        json,
+        'categories',
+        ApiFixturePlayerStatCategoryResponse.fromJson,
+      ),
+    );
+  }
+}
+
+class ApiFixturePlayerStatCategoryResponse {
+  ApiFixturePlayerStatCategoryResponse({
+    required this.code,
+    required this.label,
+    required List<ApiFixturePlayerStatMetricResponse> metrics,
+  }) : metrics = List.unmodifiable(metrics);
+
+  final String code;
+  final String label;
+  final List<ApiFixturePlayerStatMetricResponse> metrics;
+
+  factory ApiFixturePlayerStatCategoryResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return ApiFixturePlayerStatCategoryResponse(
+      code: _requiredString(json, 'code'),
+      label: _requiredString(json, 'label'),
+      metrics: _objectList(
+        json,
+        'metrics',
+        ApiFixturePlayerStatMetricResponse.fromJson,
+      ),
+    );
+  }
+}
+
+class ApiFixturePlayerStatMetricResponse {
+  ApiFixturePlayerStatMetricResponse({
+    required this.code,
+    required this.label,
+    required this.kind,
+    required this.source,
+    required List<int> statTypeIds,
+    required this.value,
+    required this.numerator,
+    required this.denominator,
+  }) : statTypeIds = List.unmodifiable(statTypeIds);
+
+  final String code;
+  final String label;
+  final String kind;
+  final String source;
+  final List<int> statTypeIds;
+  final double? value;
+  final double? numerator;
+  final double? denominator;
+
+  factory ApiFixturePlayerStatMetricResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return ApiFixturePlayerStatMetricResponse(
+      code: _requiredString(json, 'code'),
+      label: _requiredString(json, 'label'),
+      kind: _requiredString(json, 'kind'),
+      source: _requiredString(json, 'source'),
+      statTypeIds: _requiredIntList(json, 'stat_type_ids'),
+      value: _optionalDouble(json, 'value'),
+      numerator: _optionalDouble(json, 'numerator'),
+      denominator: _optionalDouble(json, 'denominator'),
     );
   }
 }
@@ -386,6 +498,14 @@ List<T> _objectList<T>(
     }
     return parse(item);
   }).toList(growable: false);
+}
+
+List<int> _requiredIntList(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is! List || value.any((item) => item is! int)) {
+    throw FormatException('Expected required integer list field "$key".');
+  }
+  return List<int>.unmodifiable(value.cast<int>());
 }
 
 int _requiredInt(Map<String, dynamic> json, String key) {

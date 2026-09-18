@@ -26,18 +26,38 @@ class MockPostRepository implements PostRepository {
 
   @override
   Future<int> createPost(CreatePostInput input) async {
-    if (input.title.isEmpty || input.title.length > 200) {
+    final title = input.title.trim();
+    if (input.teamId < 1) {
+      throw RangeError.value(input.teamId, 'input.teamId', 'Must be positive');
+    }
+    if (title.isEmpty || title.length > 200) {
       throw ArgumentError.value(
         input.title,
         'input.title',
         'Must contain between 1 and 200 characters',
       );
     }
-    if (input.body.isEmpty || input.body.length > 10000) {
+    if (input.body.length > 10000) {
       throw ArgumentError.value(
         input.body,
         'input.body',
-        'Must contain between 1 and 10000 characters',
+        'Must not exceed 10000 characters',
+      );
+    }
+    if (input.attachmentIds.length > 10) {
+      throw RangeError.range(
+        input.attachmentIds.length,
+        0,
+        10,
+        'input.attachmentIds.length',
+      );
+    }
+    if (input.attachmentIds.any((id) => id < 1) ||
+        input.attachmentIds.length != input.attachmentIds.toSet().length) {
+      throw ArgumentError.value(
+        input.attachmentIds,
+        'input.attachmentIds',
+        'IDs must be unique and positive',
       );
     }
 
@@ -49,9 +69,18 @@ class MockPostRepository implements PostRepository {
         userId: _currentUserId,
         username: _mockUsernameFor(_currentUserId),
         category: input.category,
-        title: input.title,
+        title: title,
         body: input.body,
-        mediaUrl: input.mediaUrl,
+        attachments: input.attachmentIds
+            .asMap()
+            .entries
+            .map(
+              (entry) => PostAttachment(
+                attachmentId: entry.value,
+                position: entry.key,
+              ),
+            )
+            .toList(),
         createdAt: DateTime.now().toIso8601String(),
       ),
     );
@@ -95,9 +124,8 @@ class MockPostRepository implements PostRepository {
         )
         .toList();
 
-    // The current mock Post model does not expose engagement aggregates yet,
-    // so keep every mock sort deterministic until those response fields are
-    // modeled. The real backend already implements popular and best ordering.
+    // Keep every mock sort deterministic. The real backend calculates popular
+    // and best ordering from engagement and recency signals.
     switch (sort) {
       case PostSort.newest:
       case PostSort.popular:
@@ -113,7 +141,12 @@ class MockPostRepository implements PostRepository {
     required int postId,
     required String reason,
   }) async {
-    if (reason.isEmpty || reason.length > maxPostReportReasonLength) {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final normalizedReason = reason.trim();
+    if (normalizedReason.isEmpty ||
+        normalizedReason.length > maxPostReportReasonLength) {
       throw ArgumentError.value(
         reason,
         'reason',
@@ -121,9 +154,46 @@ class MockPostRepository implements PostRepository {
       );
     }
 
-    // The backend currently inserts the supplied path ID without an explicit
-    // post-existence check, so the mock deliberately does not invent one.
-    _reports.add((postId: postId, userId: _currentUserId, reason: reason));
+    _reports.add(
+      (postId: postId, userId: _currentUserId, reason: normalizedReason),
+    );
+  }
+
+  @override
+  Future<void> setPostLiked({
+    required int postId,
+    required bool liked,
+  }) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    final index = _posts.indexWhere((post) => post.postId == postId);
+    if (index < 0) {
+      throw StateError('Post $postId does not exist.');
+    }
+
+    final post = _posts[index];
+    if (post.liked == liked) return;
+    _posts[index] = Post(
+      postId: post.postId,
+      teamId: post.teamId,
+      userId: post.userId,
+      category: post.category,
+      title: post.title,
+      body: post.body,
+      mediaUrl: post.mediaUrl,
+      createdAt: post.createdAt,
+      editedAt: post.editedAt,
+      username: post.username,
+      avatarUrl: post.avatarUrl,
+      authorDeleted: post.authorDeleted,
+      likeCount: liked
+          ? post.likeCount + 1
+          : (post.likeCount > 0 ? post.likeCount - 1 : 0),
+      commentCount: post.commentCount,
+      liked: liked,
+      attachments: post.attachments,
+    );
   }
 }
 

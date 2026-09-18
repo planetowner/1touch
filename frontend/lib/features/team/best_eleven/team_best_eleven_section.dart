@@ -19,11 +19,13 @@ class TeamBestElevenSection extends StatefulWidget {
     required this.teamId,
     required this.variant,
     this.repository,
+    this.onUnavailable,
   });
 
   final int? teamId;
   final TeamBestElevenVariant variant;
   final BestElevenRepository? repository;
+  final VoidCallback? onUnavailable;
 
   @override
   State<TeamBestElevenSection> createState() => _TeamBestElevenSectionState();
@@ -35,6 +37,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
   String? _selectedFormation;
   bool _isLoading = false;
   bool _loadFailed = false;
+  bool _isUnavailable = false;
   int _loadRequestId = 0;
 
   BestElevenRepository get _repository =>
@@ -66,6 +69,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
     _selectedFormation = cached?.formation;
     _isLoading = teamId != null && cached == null;
     _loadFailed = false;
+    _isUnavailable = false;
 
     if (_isLoading) {
       unawaited(_loadLineup(teamId!, requestId));
@@ -83,6 +87,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
         formation: formation,
       );
       if (!mounted || requestId != _loadRequestId) return;
+      final isUnavailable = lineup == null && widget.onUnavailable != null;
       setState(() {
         _lineup = lineup;
         if (lineup != null) {
@@ -90,7 +95,9 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
           _selectedFormation = lineup.formation;
         }
         _isLoading = false;
+        _isUnavailable = isUnavailable;
       });
+      if (isUnavailable) widget.onUnavailable?.call();
     } on Object {
       if (!mounted || requestId != _loadRequestId) return;
       setState(() {
@@ -142,6 +149,12 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
 
   Widget _buildOverview() {
     if (widget.teamId == null) return const SizedBox.shrink();
+
+    if (_isUnavailable) {
+      return const SizedBox.shrink(
+        key: ValueKey('best-eleven-unavailable'),
+      );
+    }
 
     if (_isLoading) {
       return const Padding(

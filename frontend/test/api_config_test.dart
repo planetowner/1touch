@@ -13,6 +13,7 @@ void main() {
       expect(config.requestHeaders, {
         'Authorization': 'Bearer session-token',
       });
+      expect(config.sessionToken, 'session-token');
     });
 
     test('preserves an existing trailing slash and trims input', () {
@@ -32,6 +33,7 @@ void main() {
 
       expect(config.baseUri, Uri.parse('https://api.1touch.football/v1/'));
       expect(config.requestHeaders, isEmpty);
+      expect(config.sessionToken, isNull);
     });
 
     test('rejects missing configuration values', () {

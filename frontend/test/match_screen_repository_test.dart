@@ -100,7 +100,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('keeps a route fixture visible when detail is unavailable',
+  testWidgets('shows a retry state when route fixture detail is unavailable',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
     final repository = _ControlledFixtureRepository();
@@ -129,11 +129,8 @@ void main() {
     repository.calls.single.completeError(StateError('no mock detail'));
     await tester.pump();
 
-    expect(find.text('Unable to load match.'), findsNothing);
-    expect(
-      find.byKey(const ValueKey('match-betting-card')),
-      findsOneWidget,
-    );
+    expect(find.text('Unable to load match.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('match-betting-card')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -336,6 +333,96 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('opens player match statistics from a past-match lineup',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final detail = _detail(
+      lineups: _lineups,
+      playerStatistics: [_homeStarterStatistics],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: MatchInfoTab(
+            fixture: _fixture,
+            matchStatus: 'past',
+            detail: detail,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final player = find.byKey(
+      ValueKey(
+        'match-lineup-player-${_fixture.homeTeamId}-101',
+      ),
+    );
+    await tester.ensureVisible(player);
+    await tester.pumpAndSettle();
+    await tester.tap(player);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('player-match-stat-sheet')),
+      findsOneWidget,
+    );
+    expect(find.text('Home Starter'), findsWidgets);
+    expect(find.text('FINISH'), findsOneWidget);
+    expect(find.text('Goals'), findsOneWidget);
+    expect(find.text('1'), findsWidgets);
+    expect(find.text('xG'), findsOneWidget);
+    expect(find.text('0.52'), findsOneWidget);
+    expect(find.text('Unavailable metric'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('opens player match statistics from a substitute row',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final detail = _detail(
+      lineups: _lineups,
+      events: _matchEvents,
+      playerStatistics: [_homeSubstituteStatistics],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: MatchInfoTab(
+            fixture: _fixture,
+            matchStatus: 'past',
+            detail: detail,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final substitute = find.byKey(
+      ValueKey(
+        'match-substitute-player-${_fixture.homeTeamId}-104',
+      ),
+    );
+    await tester.ensureVisible(substitute);
+    await tester.pumpAndSettle();
+    await tester.tap(substitute);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('player-match-stat-sheet')),
+      findsOneWidget,
+    );
+    expect(find.text('Home Substitute'), findsWidgets);
+    expect(find.text('PASSING'), findsOneWidget);
+    expect(find.text('Accurate passes'), findsOneWidget);
+    expect(find.text('12 / 15'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('uses neutral labels and omits incomplete detail statistics',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
@@ -447,8 +534,20 @@ void main() {
     );
     expect(find.text('Lewandowski'), findsNothing);
     expect(find.byKey(const ValueKey('match-analysis-xg')), findsOneWidget);
-    expect(find.text('1.23'), findsOneWidget);
-    expect(find.text('0.57'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('match-analysis-xg')),
+        matching: find.text('1.23'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('match-analysis-xg')),
+        matching: find.text('0.57'),
+      ),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -499,6 +598,7 @@ FixtureDetail _detail({
   FixtureExpectedGoals? expectedGoals,
   List<FixtureCoach> coaches = const [],
   List<FixtureStatistic> statistics = const [],
+  List<FixturePlayerStatistic> playerStatistics = const [],
   List<FixtureEvent> events = const [],
   List<FixtureLineupEntry> lineups = const [],
   List<FixtureFormation> formations = const [],
@@ -512,12 +612,89 @@ FixtureDetail _detail({
     shots: const [],
     events: events,
     statistics: statistics,
+    playerStatistics: playerStatistics,
     lineups: lineups,
     formations: formations,
     coaches: coaches,
     pressure: pressure,
   );
 }
+
+final FixturePlayerStatistic _homeStarterStatistics = FixturePlayerStatistic(
+  teamId: _fixture.homeTeamId,
+  playerId: 101,
+  matchPositionId: 27,
+  positionGroup: 'FW',
+  minutesPlayed: 90,
+  rating: 8.4,
+  isManOfMatch: false,
+  categories: [
+    FixturePlayerStatCategory(
+      code: 'finish',
+      label: 'Finish',
+      metrics: [
+        FixturePlayerStatMetric(
+          code: 'goals',
+          label: 'Goals',
+          kind: 'count',
+          source: 'sportmonks',
+          statTypeIds: [52],
+          value: 1,
+          numerator: null,
+          denominator: null,
+        ),
+        FixturePlayerStatMetric(
+          code: 'xg',
+          label: 'xG',
+          kind: 'decimal',
+          source: 'understat',
+          statTypeIds: const [],
+          value: 0.518846,
+          numerator: null,
+          denominator: null,
+        ),
+        FixturePlayerStatMetric(
+          code: 'unavailable',
+          label: 'Unavailable metric',
+          kind: 'count',
+          source: 'sportmonks',
+          statTypeIds: const [],
+          value: null,
+          numerator: null,
+          denominator: null,
+        ),
+      ],
+    ),
+  ],
+);
+
+final FixturePlayerStatistic _homeSubstituteStatistics = FixturePlayerStatistic(
+  teamId: _fixture.homeTeamId,
+  playerId: 104,
+  matchPositionId: 27,
+  positionGroup: 'FW',
+  minutesPlayed: 10,
+  rating: 6.7,
+  isManOfMatch: false,
+  categories: [
+    FixturePlayerStatCategory(
+      code: 'passing',
+      label: 'Passing',
+      metrics: [
+        FixturePlayerStatMetric(
+          code: 'accurate-passes',
+          label: 'Accurate passes',
+          kind: 'pair',
+          source: 'sportmonks',
+          statTypeIds: const [80, 81],
+          value: null,
+          numerator: 12,
+          denominator: 15,
+        ),
+      ],
+    ),
+  ],
+);
 
 final List<FixtureEvent> _matchEvents = [
   FixtureEvent(

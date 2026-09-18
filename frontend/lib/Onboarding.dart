@@ -187,14 +187,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               foregroundColor: socialButtonForeground,
                               onTap: proceed,
                             ),
-                            const SizedBox(height: 16),
-                            socialBtn(
-                              icon: SvgPicture.asset('assets/facebook.svg'),
-                              label: 'Continue with Facebook',
-                              backgroundColor: socialButtonBackground,
-                              foregroundColor: socialButtonForeground,
-                              onTap: proceed,
-                            ),
                             const SizedBox(height: 12),
                             const Divider(
                               color: AppPalette.lightGrey,

@@ -9,13 +9,12 @@ class FavoriteTeamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
     final match = team.liveMatch ?? team.nextMatch;
-    final leagueId = match?.competitionId ?? team.lastMatch?.competitionId;
-    final leagueName = leagueId == null
-        ? ''
-        : competitionRepository.findById(leagueId)?.name ?? '';
-    final rank = leagueId != null
-        ? standingRepository.findForTeam(leagueId, team.id)?.position
-        : null;
+    final competitionContext = teamCompetitionContextResolver.resolve(team.id);
+    final leagueName = competitionContext?.competitionName ?? '';
+    final standingPosition = team.standing?['position'];
+    final rank = standingPosition is int
+        ? standingPosition
+        : competitionContext?.currentPosition;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -36,9 +35,9 @@ class FavoriteTeamCard extends StatelessWidget {
             children: [
               // TEAM HEADER
               GestureDetector(
-                onTap: () {
-                  openTeamPage(context, team.id);
-                },
+                onTap: isTeamPageSupported(team.id)
+                    ? () => openTeamPage(context, team.id)
+                    : null,
                 child: Row(
                   children: [
                     const SizedBox(width: 24),
@@ -110,10 +109,8 @@ class FavoriteTeamCard extends StatelessWidget {
                   },
                   child: () {
                     final last = team.lastMatch!;
-                    final home =
-                        teamRepository.findByIdOrUnknown(last.homeTeamId);
-                    final away =
-                        teamRepository.findByIdOrUnknown(last.awayTeamId);
+                    final home = fixtureHomeTeam(last, teamRepository);
+                    final away = fixtureAwayTeam(last, teamRepository);
                     final kickoff = last.kickoff;
                     return MatchCard2(
                       date: kickoff == null

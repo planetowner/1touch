@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/community/community_repository.dart';
+import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -10,10 +12,18 @@ class PostDetailContent extends StatelessWidget {
   const PostDetailContent({
     super.key,
     required this.post,
+    required this.liked,
+    required this.likeCount,
+    required this.onLike,
+    required this.communityRepository,
     required this.onReport,
   });
 
   final Post post;
+  final bool liked;
+  final int likeCount;
+  final VoidCallback? onLike;
+  final CommunityRepository communityRepository;
   final Future<void> Function(String reason) onReport;
 
   @override
@@ -29,7 +39,11 @@ class PostDetailContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: GestureDetector(
-              onTap: () => showGroundRulesModal(context),
+              onTap: () => showGroundRulesModal(
+                context,
+                teamId: post.teamId,
+                repository: communityRepository,
+              ),
               child: Container(
                 key: const ValueKey('community-detail-ground-rules-card'),
                 padding: const EdgeInsets.symmetric(
@@ -106,16 +120,28 @@ class PostDetailContent extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // TODO: Replace sample counts and actions when their API
-                    // contracts become available.
                     _PostAction(
-                      icon: Icons.thumb_up_alt_outlined,
-                      label: '1,290',
+                      actionKey: const ValueKey(
+                        'community-detail-like-action',
+                      ),
+                      icon: liked
+                          ? Icons.thumb_up_alt
+                          : Icons.thumb_up_alt_outlined,
+                      label: formatCommunityEngagementCount(likeCount),
+                      labelKey: const ValueKey(
+                        'community-detail-like-count',
+                      ),
                       color: colors.onSurface,
+                      onTap: onLike,
                     ),
                     _PostAction(
                       icon: Icons.mode_comment_outlined,
-                      label: '12',
+                      label: formatCommunityEngagementCount(
+                        post.commentCount,
+                      ),
+                      labelKey: const ValueKey(
+                        'community-detail-comment-count',
+                      ),
                       color: colors.onSurface,
                     ),
                     _PostAction(
@@ -194,18 +220,23 @@ class _PostAction extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    this.actionKey,
+    this.labelKey,
     this.onTap,
   });
 
   final IconData icon;
   final String label;
   final Color color;
+  final Key? actionKey;
+  final Key? labelKey;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
+        key: actionKey,
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Padding(
@@ -217,7 +248,7 @@ class _PostAction extends StatelessWidget {
               children: [
                 Icon(icon, size: 18, color: color),
                 const SizedBox(width: 4),
-                Text(label, style: Body2.style),
+                Text(label, key: labelKey, style: Body2.style),
               ],
             ),
           ),

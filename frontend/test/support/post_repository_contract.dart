@@ -167,12 +167,12 @@ void postRepositoryContract({
 
   test('creates a post that appears in subsequent loads', () async {
     final repository = createRepository(posts);
-    const input = CreatePostInput(
+    final input = CreatePostInput(
       teamId: 83,
       category: PostCategory.analysis,
       title: 'Created through repository',
       body: 'Repository creation body',
-      mediaUrl: 'https://example.com/post.jpg',
+      attachmentIds: const [11, 12],
     );
 
     final postId = await repository.createPost(input);
@@ -182,7 +182,10 @@ void postRepositoryContract({
     expect(created.category, input.category);
     expect(created.title, input.title);
     expect(created.body, input.body);
-    expect(created.mediaUrl, input.mediaUrl);
+    expect(
+      created.attachments.map((attachment) => attachment.attachmentId),
+      input.attachmentIds,
+    );
     expect(DateTime.tryParse(created.createdAt), isNotNull);
   });
 
@@ -191,7 +194,7 @@ void postRepositoryContract({
 
     await expectLater(
       repository.createPost(
-        const CreatePostInput(
+        CreatePostInput(
           teamId: 83,
           category: PostCategory.general,
           title: '',
@@ -213,7 +216,47 @@ void postRepositoryContract({
     );
   });
 
-  test('accepts a report at the effective backend storage limit', () async {
+  test('rejects invalid creation team and attachment IDs', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.createPost(
+        CreatePostInput(
+          teamId: 0,
+          category: PostCategory.general,
+          title: 'Title',
+          body: 'Body',
+        ),
+      ),
+      throwsRangeError,
+    );
+    await expectLater(
+      repository.createPost(
+        CreatePostInput(
+          teamId: 83,
+          category: PostCategory.general,
+          title: 'Title',
+          body: 'Body',
+          attachmentIds: const [1, 1],
+        ),
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.createPost(
+        CreatePostInput(
+          teamId: 83,
+          category: PostCategory.general,
+          title: 'Title',
+          body: 'Body',
+          attachmentIds: const [0],
+        ),
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('accepts a report at the backend limit', () async {
     final repository = createRepository(posts);
 
     await expectLater(
@@ -225,11 +268,19 @@ void postRepositoryContract({
     );
   });
 
-  test('rejects report reasons outside the effective storage bounds', () async {
+  test('rejects invalid post IDs and reasons outside backend bounds', () async {
     final repository = createRepository(posts);
 
     await expectLater(
+      repository.reportPost(postId: 0, reason: 'Spam'),
+      throwsRangeError,
+    );
+    await expectLater(
       repository.reportPost(postId: posts.first.postId, reason: ''),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.reportPost(postId: posts.first.postId, reason: '   '),
       throwsArgumentError,
     );
     await expectLater(
@@ -238,6 +289,32 @@ void postRepositoryContract({
         reason: ''.padRight(maxPostReportReasonLength + 1, 'x'),
       ),
       throwsArgumentError,
+    );
+  });
+
+  test('sets post likes idempotently and updates the count', () async {
+    final repository = createRepository(posts);
+
+    await repository.setPostLiked(postId: posts.first.postId, liked: true);
+    await repository.setPostLiked(postId: posts.first.postId, liked: true);
+    var updated = (await repository.loadPosts(teamId: posts.first.teamId))
+        .singleWhere((post) => post.postId == posts.first.postId);
+    expect(updated.liked, isTrue);
+    expect(updated.likeCount, posts.first.likeCount + 1);
+
+    await repository.setPostLiked(postId: posts.first.postId, liked: false);
+    updated = (await repository.loadPosts(teamId: posts.first.teamId))
+        .singleWhere((post) => post.postId == posts.first.postId);
+    expect(updated.liked, isFalse);
+    expect(updated.likeCount, posts.first.likeCount);
+  });
+
+  test('rejects an invalid post like ID', () async {
+    final repository = createRepository(posts);
+
+    await expectLater(
+      repository.setPostLiked(postId: 0, liked: true),
+      throwsRangeError,
     );
   });
 }

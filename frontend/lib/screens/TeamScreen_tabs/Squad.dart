@@ -358,7 +358,13 @@ class _SquadTabState extends State<SquadTab> {
     final teamId = widget.team?['id'] as int?;
     final teamName = widget.team?['name'] as String?;
     final seasonId = _selectedSeasonId;
-    final validTeam = teamId != null && teamName != null && teamName.isNotEmpty;
+    // The API requires an explicit season for teams without a current Big 5
+    // context. Until the backend exposes team-season options, only request a
+    // roster when the frontend has a verified membership season.
+    final validTeam = teamId != null &&
+        teamName != null &&
+        teamName.isNotEmpty &&
+        seasonId != null;
     final cached = validTeam
         ? _repository.cachedForTeam(teamId, seasonId: seasonId)
         : null;
@@ -369,9 +375,7 @@ class _SquadTabState extends State<SquadTab> {
           : _presentPlayers(cached.players, teamName!, DateTime.now());
       _rosterIsCurrent = cached?.isCurrent;
       _isLoading = validTeam && cached == null;
-      _loadError = validTeam
-          ? null
-          : StateError('Squad requires a team id and team name.');
+      _loadError = null;
     }
 
     if (updateState) {
@@ -794,7 +798,7 @@ class _PlayerGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.79,
+        childAspectRatio: 330 / 420,
       ),
       itemBuilder: (context, index) => _PlayerCard(player: players[index]),
     );
@@ -815,42 +819,49 @@ class _PlayerCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
+            flex: 4,
             child: Stack(
               children: [
                 // Background + image fills entire area
                 Container(
                   width: double.infinity,
-                  color: appColors.subtleBackground,
+                  color: appColors.cardBackground,
                 ),
 
                 // Playerimage
                 Positioned(
-                  right: 0,
-                  top: 0,
+                  right: 10,
+                  left: 50,
+                  top: 20,
                   bottom: 0,
                   child: player.imageUrl != null
                       ? Image.network(
                           player.imageUrl!,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
+                          alignment: Alignment.bottomCenter,
                           errorBuilder: (_, __, ___) => Image.asset(
-                            'assets/HeungminSon.png',
-                            fit: BoxFit.cover,
-                            width: 104,
+                            'assets/player_comparison/player_placeholder.png',
+                            fit: BoxFit.contain,
+                            alignment: Alignment.bottomCenter,
                           ),
                         )
                       : Image.asset(
-                          'assets/HeungminSon.png',
-                          fit: BoxFit.cover,
-                          width: 104,
+                          'assets/player_comparison/player_placeholder.png',
+                          fit: BoxFit.contain,
+                          alignment: Alignment.bottomCenter,
                         ),
                 ),
 
-                // Jersey badge — top-left overlay
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: _JerseyBadge(number: player.jerseyNumber),
-                ),
+                if (player.jerseyNumber != null)
+                  Positioned(
+                    top: 14,
+                    left: 12,
+                    child: Text(
+                      '${player.jerseyNumber}',
+                      key: ValueKey('squad-jersey-number-${player.id}'),
+                      style: Heading2.style,
+                    ),
+                  ),
 
                 if (player.leadershipRole != null)
                   Positioned(
@@ -864,25 +875,32 @@ class _PlayerCard extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            width: double.infinity,
-            color: appColors.subtleBackground,
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  player.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Heading5.style,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  player.teamLabel,
-                  style: Body2.style,
-                ),
-              ],
+          Expanded(
+            flex: 3,
+            child: Container(
+              width: double.infinity,
+              color: appColors.subtleBackground,
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      player.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Heading5.style,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    player.teamLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Body2.style,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -932,32 +950,5 @@ class _LeadershipBadge extends StatelessWidget {
           ),
         ),
     };
-  }
-}
-
-class _JerseyBadge extends StatelessWidget {
-  final int? number;
-
-  const _JerseyBadge({this.number});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          number != null ? '#${number!}' : '##',
-          style: Heading2.style,
-        ),
-        // Row(
-        //   mainAxisSize: MainAxisSize.min,
-        //   children: [
-        //     const Icon(Icons.arrow_drop_down, color: Color(0xFFE8003D), size: 24),
-        //     Text('#', style: Body2_b.style),
-        //   ],
-        // ),
-      ],
-    );
   }
 }

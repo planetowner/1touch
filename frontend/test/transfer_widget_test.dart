@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
@@ -12,6 +13,7 @@ void main() {
   Widget buildSubject({
     required int teamId,
     required TransferRepository repository,
+    VoidCallback? onUnavailable,
   }) {
     return MaterialApp(
       theme: whitetheme,
@@ -20,6 +22,7 @@ void main() {
           child: Transfer(
             teams: <String, dynamic>{'id': teamId},
             repository: repository,
+            onUnavailable: onUnavailable,
           ),
         ),
       ),
@@ -154,6 +157,30 @@ void main() {
 
     expect(find.byKey(const ValueKey('transfer-empty')), findsOneWidget);
     expect(find.text('No transfers'), findsOneWidget);
+  });
+
+  testWidgets('reports and hides an unavailable feature', (tester) async {
+    var unavailableCalls = 0;
+    final repository = _TestTransferRepository(
+      (teamId) async => throw TeamFeatureUnavailableException(
+        teamId: teamId,
+        feature: 'Transfers',
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      buildSubject(
+        teamId: 9,
+        repository: repository,
+        onUnavailable: () => unavailableCalls += 1,
+      ),
+    );
+    await tester.pump();
+
+    expect(unavailableCalls, 1);
+    expect(find.byKey(const ValueKey('transfer-unavailable')), findsOneWidget);
+    expect(find.byKey(const ValueKey('transfer-error')), findsNothing);
   });
 
   testWidgets('shows an error and retries the repository request',

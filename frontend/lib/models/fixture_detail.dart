@@ -11,6 +11,7 @@ class FixtureDetail {
     required List<FixtureShot> shots,
     required List<FixtureEvent> events,
     required List<FixtureStatistic> statistics,
+    List<FixturePlayerStatistic> playerStatistics = const [],
     required List<FixtureLineupEntry> lineups,
     required List<FixtureFormation> formations,
     required List<FixtureCoach> coaches,
@@ -19,6 +20,7 @@ class FixtureDetail {
         shots = List.unmodifiable(shots),
         events = List.unmodifiable(events),
         statistics = List.unmodifiable(statistics),
+        playerStatistics = List.unmodifiable(playerStatistics),
         lineups = List.unmodifiable(lineups),
         formations = List.unmodifiable(formations),
         coaches = List.unmodifiable(coaches),
@@ -31,6 +33,7 @@ class FixtureDetail {
   final List<FixtureShot> shots;
   final List<FixtureEvent> events;
   final List<FixtureStatistic> statistics;
+  final List<FixturePlayerStatistic> playerStatistics;
   final List<FixtureLineupEntry> lineups;
   final List<FixtureFormation> formations;
   final List<FixtureCoach> coaches;
@@ -142,6 +145,65 @@ class FixtureStatistic {
   final String statCode;
   final String statName;
   final double value;
+}
+
+@immutable
+class FixturePlayerStatistic {
+  FixturePlayerStatistic({
+    required this.teamId,
+    required this.playerId,
+    required this.matchPositionId,
+    required this.positionGroup,
+    required this.minutesPlayed,
+    required this.rating,
+    required this.isManOfMatch,
+    required List<FixturePlayerStatCategory> categories,
+  }) : categories = List.unmodifiable(categories);
+
+  final int teamId;
+  final int playerId;
+  final int? matchPositionId;
+  final String? positionGroup;
+  final int? minutesPlayed;
+  final double? rating;
+  final bool? isManOfMatch;
+  final List<FixturePlayerStatCategory> categories;
+}
+
+@immutable
+class FixturePlayerStatCategory {
+  FixturePlayerStatCategory({
+    required this.code,
+    required this.label,
+    required List<FixturePlayerStatMetric> metrics,
+  }) : metrics = List.unmodifiable(metrics);
+
+  final String code;
+  final String label;
+  final List<FixturePlayerStatMetric> metrics;
+}
+
+@immutable
+class FixturePlayerStatMetric {
+  FixturePlayerStatMetric({
+    required this.code,
+    required this.label,
+    required this.kind,
+    required this.source,
+    required List<int> statTypeIds,
+    required this.value,
+    required this.numerator,
+    required this.denominator,
+  }) : statTypeIds = List.unmodifiable(statTypeIds);
+
+  final String code;
+  final String label;
+  final String kind;
+  final String source;
+  final List<int> statTypeIds;
+  final double? value;
+  final double? numerator;
+  final double? denominator;
 }
 
 @immutable

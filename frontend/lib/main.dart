@@ -12,6 +12,7 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/current_user_profile.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens
@@ -117,14 +118,10 @@ final GoRouter _router = GoRouter(
             routes: [
               GoRoute(
                 path: ':id',
+                redirect: (context, state) =>
+                    redirectUnsupportedTeamPath(state.pathParameters['id']),
                 builder: (context, state) {
-                  // 1. Get the ID string (default to "1")
-                  final String idStr = state.pathParameters['id'] ?? '1';
-
-                  // 2. Parse it to an integer
-                  final int teamId = int.tryParse(idStr) ?? 1;
-
-                  // 3. Pass the integer to TeamScreen
+                  final teamId = int.parse(state.pathParameters['id']!);
                   return TeamScreen(teamId: teamId);
                 },
               ),
@@ -163,7 +160,14 @@ final GoRouter _router = GoRouter(
         path: '/notifications',
         builder: (c, s) => const NotificationInboxPage()),
     GoRoute(path: '/profile', builder: (c, s) => Profile()),
-    GoRoute(path: '/profile/edit', builder: (c, s) => EditProfileScreen()),
+    GoRoute(
+      path: '/profile/edit',
+      builder: (c, s) => EditProfileScreen(
+        profile: s.extra is CurrentUserProfile
+            ? s.extra as CurrentUserProfile
+            : null,
+      ),
+    ),
     GoRoute(
         path: '/profile/notification',
         builder: (c, s) => NotificationListPage()),

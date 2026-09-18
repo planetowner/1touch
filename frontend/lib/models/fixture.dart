@@ -15,6 +15,10 @@ class Fixture {
   final int competitionId;
   final int homeTeamId;
   final int awayTeamId;
+  final String? homeTeamName;
+  final String? awayTeamName;
+  final String? homeTeamLogo;
+  final String? awayTeamLogo;
   final CompetitionType competitionType;
   final String? roundName;
   final int? stageTypeId;
@@ -37,6 +41,10 @@ class Fixture {
     required this.competitionId,
     required this.homeTeamId,
     required this.awayTeamId,
+    this.homeTeamName,
+    this.awayTeamName,
+    this.homeTeamLogo,
+    this.awayTeamLogo,
     required this.competitionType,
     required this.roundName,
     this.stageTypeId,
@@ -63,6 +71,10 @@ class Fixture {
       competitionId: json['competition_id'] as int,
       homeTeamId: json['home_team_id'] as int,
       awayTeamId: json['away_team_id'] as int,
+      homeTeamName: json['home_team_name'] as String?,
+      awayTeamName: json['away_team_name'] as String?,
+      homeTeamLogo: json['home_team_logo'] as String?,
+      awayTeamLogo: json['away_team_logo'] as String?,
       competitionType:
           _parseCompetitionType(json['competition_type'] as String),
       roundName: json['round_name'] as String?,

@@ -38,6 +38,10 @@ void main() {
       expect(fixture.competitionId, 8);
       expect(fixture.homeTeamId, 8);
       expect(fixture.awayTeamId, 19);
+      expect(fixture.homeTeamName, 'Liverpool');
+      expect(fixture.awayTeamName, 'Arsenal');
+      expect(fixture.homeTeamLogo, 'https://cdn.example/liverpool.png');
+      expect(fixture.awayTeamLogo, isNull);
       expect(fixture.roundName, '3');
       expect(fixture.stageId, 77432101);
       expect(fixture.groupId, 42);
