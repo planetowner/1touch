@@ -1,11 +1,34 @@
+import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/data/profile/current_user_repository_provider.dart'
+    as current_user_provider;
+import 'package:onetouch/data/profile/profile_avatar_repository.dart';
+import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
+    as avatar_provider;
+import 'package:onetouch/models/current_user_profile.dart';
+
+typedef AvatarImagePicker = Future<XFile?> Function();
+
+enum _AvatarAction { choosePhoto, removePhoto }
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key});
+  const EditProfileScreen({
+    super.key,
+    this.profile,
+    this.avatarRepository,
+    this.pickAvatar,
+    this.avatarRequestHeaders,
+  });
+
+  final CurrentUserProfile? profile;
+  final ProfileAvatarRepository? avatarRepository;
+  final AvatarImagePicker? pickAvatar;
+  final Map<String, String>? avatarRequestHeaders;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -19,16 +42,173 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   bool isPasswordVisible = false;
+  bool _isAvatarSaving = false;
+
+  ProfileAvatarRepository get _avatarRepository =>
+      widget.avatarRepository ?? avatar_provider.profileAvatarRepository;
+
+  Map<String, String> get _avatarRequestHeaders =>
+      widget.avatarRequestHeaders ??
+      (widget.avatarRepository == null
+          ? current_user_provider.currentUserMediaRequestHeaders
+          : const {});
 
   @override
   void initState() {
     super.initState();
     final user = mockUserById(_currentUserId);
-    nameController = TextEditingController(text: user.displayName);
-    usernameController = TextEditingController(text: user.username);
-    emailController = TextEditingController(text: user.email);
+    final profile = widget.profile;
+    nameController = TextEditingController(
+      text: profile?.displayName ?? user.displayName,
+    );
+    usernameController = TextEditingController(
+      text: profile?.username ?? user.username,
+    );
+    emailController = TextEditingController(
+      text: profile?.email ?? user.email,
+    );
     passwordController = TextEditingController(text: '••••••••');
   }
+
+  Future<XFile?> _pickAvatar() =>
+      widget.pickAvatar?.call() ??
+      ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 90,
+        requestFullMetadata: false,
+      );
+
+  Future<void> _showAvatarActions() async {
+    if (_isAvatarSaving) return;
+    final action = await _showPlatformAvatarActions();
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case _AvatarAction.choosePhoto:
+        await _chooseAndUploadAvatar();
+        break;
+      case _AvatarAction.removePhoto:
+        await _removeAvatar();
+        break;
+    }
+  }
+
+  Future<_AvatarAction?> _showPlatformAvatarActions() {
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      return showCupertinoModalPopup<_AvatarAction>(
+        context: context,
+        useRootNavigator: true,
+        builder: (context) => CupertinoActionSheet(
+          actions: [
+            CupertinoActionSheetAction(
+              key: const ValueKey('profile-avatar-choose-photo'),
+              onPressed: () => Navigator.of(context).pop(
+                _AvatarAction.choosePhoto,
+              ),
+              child: const Text('Choose from Photos'),
+            ),
+            if (widget.profile?.avatarUri != null)
+              CupertinoActionSheetAction(
+                key: const ValueKey('profile-avatar-remove-photo'),
+                isDestructiveAction: true,
+                onPressed: () => Navigator.of(context).pop(
+                  _AvatarAction.removePhoto,
+                ),
+                child: const Text('Remove Photo'),
+              ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            key: const ValueKey('profile-avatar-cancel'),
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ),
+      );
+    }
+
+    return showModalBottomSheet<_AvatarAction>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const ValueKey('profile-avatar-choose-photo'),
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from Gallery'),
+              onTap: () => Navigator.of(context).pop(
+                _AvatarAction.choosePhoto,
+              ),
+            ),
+            if (widget.profile?.avatarUri != null)
+              ListTile(
+                key: const ValueKey('profile-avatar-remove-photo'),
+                leading: const Icon(Icons.delete_outline),
+                title: const Text('Remove Photo'),
+                onTap: () => Navigator.of(context).pop(
+                  _AvatarAction.removePhoto,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _chooseAndUploadAvatar() async {
+    final file = await _pickAvatar();
+    if (!mounted || file == null) return;
+
+    setState(() => _isAvatarSaving = true);
+    try {
+      final filename = file.name.trim().isEmpty ? 'profile-avatar' : file.name;
+      final avatarUri = await _avatarRepository.upload(
+        bytes: await file.readAsBytes(),
+        filename: filename,
+      );
+      await _evictAvatar(avatarUri);
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } on Object {
+      if (!mounted) return;
+      setState(() => _isAvatarSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to update profile photo. Please try again.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeAvatar() async {
+    setState(() => _isAvatarSaving = true);
+    try {
+      await _avatarRepository.delete();
+      final avatarUri = widget.profile?.avatarUri;
+      if (avatarUri != null) await _evictAvatar(avatarUri);
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } on Object {
+      if (!mounted) return;
+      setState(() => _isAvatarSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to remove profile photo. Please try again.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _evictAvatar(Uri uri) => NetworkImage(
+        uri.toString(),
+        headers: _avatarRequestHeaders,
+      ).evict();
 
   @override
   void dispose() {
@@ -76,28 +256,61 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     CircleAvatar(
                       radius: 54,
                       backgroundColor: appColors.subtleBackground,
-                      backgroundImage:
-                          const AssetImage('assets/profileAvatar.png'),
+                      child: ClipOval(
+                        child: widget.profile?.avatarUri == null
+                            ? Image.asset(
+                                'assets/profileAvatar.png',
+                                width: 108,
+                                height: 108,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                widget.profile!.avatarUri.toString(),
+                                headers: _avatarRequestHeaders,
+                                width: 108,
+                                height: 108,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Image.asset(
+                                  'assets/profileAvatar.png',
+                                  width: 108,
+                                  height: 108,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                      ),
                     ),
                     Positioned(
                       bottom: -4,
                       right: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppPalette.lightGrey
-                              : AppPalette.lightGreyBox,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: appColors.pageBackground,
-                            width: 2,
+                      child: GestureDetector(
+                        key: const ValueKey('profile-avatar-action'),
+                        onTap: _isAvatarSaving ? null : _showAvatarActions,
+                        child: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppPalette.lightGrey
+                                : AppPalette.lightGreyBox,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: appColors.pageBackground,
+                              width: 2,
+                            ),
                           ),
-                        ),
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: colors.onSurface,
-                          size: 18,
+                          child: _isAvatarSaving
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.onSurface,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.camera_alt,
+                                  color: colors.onSurface,
+                                  size: 18,
+                                ),
                         ),
                       ),
                     ),
@@ -118,6 +331,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _buildTextField(
                 label: "Name",
                 controller: nameController,
+                fieldKey: const ValueKey('profile-real-name-field'),
+                readOnly: true,
               ),
               const SizedBox(height: 24),
               _buildTextField(
@@ -158,11 +373,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _buildSocialRow(
                   iconPath: 'assets/apple.svg',
                   name: 'Apple',
-                  status: 'Not Connected'),
-              _divider(),
-              _buildSocialRow(
-                  iconPath: 'assets/facebook.svg',
-                  name: 'Facebook',
                   status: 'Not Connected'),
               _divider(),
 
@@ -220,16 +430,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
+    Key? fieldKey,
     bool isPassword = false,
     bool isObscure = false,
+    bool readOnly = false,
     VoidCallback? onSuffixTap,
     TextInputType? keyboardType,
   }) {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     return TextField(
+      key: fieldKey,
       controller: controller,
       obscureText: isPassword && isObscure,
+      readOnly: readOnly,
+      enableInteractiveSelection: !readOnly,
+      showCursor: !readOnly,
       keyboardType: keyboardType,
       style: Body1.style.copyWith(color: colors.onSurface),
       cursorColor: colors.onSurface,
@@ -239,21 +455,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         labelStyle: Body1.style,
         floatingLabelStyle:
             Body1.style.copyWith(color: appColors.mutedForeground),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  isObscure
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  color: colors.onSurface,
-                  size: 20,
-                ),
-                onPressed: onSuffixTap,
+        suffixIcon: readOnly
+            ? Icon(
+                Icons.lock_outline,
+                color: appColors.mutedForeground,
+                size: 20,
               )
-            : IconButton(
-                icon: Icon(Icons.cancel, color: colors.onSurface, size: 20),
-                onPressed: () => controller.clear(),
-              ),
+            : isPassword
+                ? IconButton(
+                    icon: Icon(
+                      isObscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: colors.onSurface,
+                      size: 20,
+                    ),
+                    onPressed: onSuffixTap,
+                  )
+                : IconButton(
+                    icon: Icon(Icons.cancel, color: colors.onSurface, size: 20),
+                    onPressed: () => controller.clear(),
+                  ),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: appColors.divider),
         ),

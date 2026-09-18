@@ -10,7 +10,15 @@ void main() {
           child: LineupPitch(
             awayRows: const [],
             homeRows: [
-              [LineupPlayer(number: 10, name: 'Yamal', events: events)],
+              [
+                LineupPlayer(
+                  teamId: 83,
+                  playerId: 1,
+                  number: 10,
+                  name: 'Yamal',
+                  events: events,
+                ),
+              ],
             ],
           ),
         ),

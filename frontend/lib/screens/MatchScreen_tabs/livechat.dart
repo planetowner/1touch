@@ -2,17 +2,34 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
-import 'package:onetouch/models/chat_message.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/data/chat/chat_repository.dart';
+import 'package:onetouch/data/chat/chat_repository_provider.dart'
+    as chat_repository_provider;
+import 'package:onetouch/data/chat/chat_socket.dart';
+import 'package:onetouch/data/chat/chat_socket_provider.dart'
+    as chat_socket_provider;
+import 'package:onetouch/data/profile/current_user_repository.dart';
+import 'package:onetouch/data/profile/current_user_repository_provider.dart'
+    as current_user_provider;
+import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/models/fixture_chat_message.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
 
 class LiveChatTab extends StatefulWidget {
   final int matchId;
+  final ChatRepository? repository;
+  final ChatSocket? socket;
+  final CurrentUserRepository? currentUserRepository;
 
-  const LiveChatTab({super.key, required this.matchId});
+  const LiveChatTab({
+    super.key,
+    required this.matchId,
+    this.repository,
+    this.socket,
+    this.currentUserRepository,
+  });
 
   @override
   State<LiveChatTab> createState() => _LiveChatTabState();
@@ -22,15 +39,23 @@ class _LiveChatTabState extends State<LiveChatTab> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<ChatMessage> _messages = [];
-
-  User? _firebaseUser;
-  String _myUsername = '';
+  final List<FixtureChatMessage> _messages = [];
+  ChatSocketSession? _socketSession;
+  StreamSubscription<FixtureChatMessage>? _messagesSub;
+  int? _currentUserId;
   bool _isInitialized = false;
   String? _initError;
+  int _requestId = 0;
+  bool _isClosing = false;
 
-  late DatabaseReference _messagesRef;
-  StreamSubscription<DatabaseEvent>? _messagesSub;
+  ChatRepository get _repository =>
+      widget.repository ?? chat_repository_provider.chatRepository;
+
+  ChatSocket get _socket => widget.socket ?? chat_socket_provider.chatSocket;
+
+  CurrentUserRepository get _currentUserRepository =>
+      widget.currentUserRepository ??
+      current_user_provider.currentUserRepository;
 
   @override
   void initState() {
@@ -38,63 +63,127 @@ class _LiveChatTabState extends State<LiveChatTab> {
     _initChat();
   }
 
-  Future<void> _initChat() async {
-    try {
-      // Anonymous Firebase Auth
-      final auth = FirebaseAuth.instance;
-      if (auth.currentUser == null) {
-        await auth.signInAnonymously();
-      }
-      _firebaseUser = auth.currentUser;
-
-      // Assign username
-      _myUsername = await _fetchUsername();
-
-      // Setup RTDB listener
-      _messagesRef =
-          FirebaseDatabase.instance.ref('chats/${widget.matchId}/messages');
-
-      // Only replay the most recent messages, and keep the subscription
-      // handle so it can be cancelled when this tab is disposed.
-      _messagesSub = _messagesRef.limitToLast(50).onChildAdded.listen((event) {
-        final data = event.snapshot.value as Map<dynamic, dynamic>?;
-        if (data == null) return;
-        final msg = ChatMessage.fromSnapshot(event.snapshot.key ?? '', data);
-        if (mounted) {
-          setState(() => _messages.add(msg));
-          _scrollToBottom();
-        }
-      });
-
-      if (mounted) {
-        setState(() => _isInitialized = true);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _initError = e.toString());
-      }
+  @override
+  void didUpdateWidget(covariant LiveChatTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.matchId != widget.matchId ||
+        oldWidget.repository != widget.repository ||
+        oldWidget.socket != widget.socket ||
+        oldWidget.currentUserRepository != widget.currentUserRepository) {
+      unawaited(_restartChat());
     }
   }
 
-  void _retryInit() {
+  Future<void> _restartChat() async {
+    await _closeChat();
+    if (!mounted) return;
+    setState(() {
+      _messages.clear();
+      _currentUserId = null;
+      _isInitialized = false;
+      _initError = null;
+    });
+    await _initChat();
+  }
+
+  Future<void> _initChat() async {
+    final requestId = ++_requestId;
+    _isClosing = false;
+    try {
+      final session = await _socket.connect(widget.matchId);
+      if (!mounted || requestId != _requestId) {
+        await session.close();
+        return;
+      }
+      _socketSession = session;
+      _messagesSub = session.messages.listen(
+        _receiveLiveMessage,
+        onError: _handleSocketError,
+        onDone: _handleSocketDone,
+      );
+
+      final results = await Future.wait<Object>([
+        _repository.loadHistory(fixtureId: widget.matchId),
+        _currentUserRepository.load(),
+      ]);
+      if (!mounted || requestId != _requestId) return;
+      final history = results[0] as List<FixtureChatMessage>;
+      final currentUser = results[1] as CurrentUserProfile;
+      setState(() {
+        _mergeMessages(history);
+        _currentUserId = currentUser.userId;
+        _isInitialized = true;
+        _initError = null;
+      });
+      _scrollToBottom();
+    } on Object catch (error) {
+      if (!mounted || requestId != _requestId) return;
+      await _closeChat(invalidateRequest: false);
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _isInitialized = false;
+        _initError = _friendlyError(error);
+      });
+    }
+  }
+
+  Future<void> _retryInit() async {
+    await _closeChat();
+    if (!mounted) return;
     setState(() {
       _initError = null;
       _isInitialized = false;
     });
-    _initChat();
+    await _initChat();
   }
 
-  Future<String> _fetchUsername() async {
-    // TODO: replace with real backend call → GET /players/random
-    // final name = await ApiService.instance.getRandomPlayerName();
-    // final number = Random().nextInt(9000) + 1000;
-    // return '${name}_$number';
+  void _receiveLiveMessage(FixtureChatMessage message) {
+    if (!mounted) return;
+    setState(() => _mergeMessages([message]));
+    _scrollToBottom();
+  }
 
-    final players = playerRepository.allPlayers;
-    final player = players[DateTime.now().millisecond % players.length];
-    final name = player.fullName.split(' ').last;
-    final number = (DateTime.now().microsecond % 9000) + 1000;
-    return '${name}_$number';
+  void _mergeMessages(Iterable<FixtureChatMessage> incoming) {
+    final byId = {
+      for (final message in _messages) message.messageId: message,
+      for (final message in incoming) message.messageId: message,
+    };
+    _messages
+      ..clear()
+      ..addAll(byId.values)
+      ..sort((left, right) => left.messageId.compareTo(right.messageId));
+  }
+
+  void _handleSocketError(Object error) {
+    if (!mounted || _isClosing) return;
+    _requestId++;
+    setState(() => _initError = _friendlyError(error));
+  }
+
+  void _handleSocketDone() {
+    if (!mounted || _isClosing || _initError != null) return;
+    _requestId++;
+    setState(() => _initError = 'Chat disconnected. Please try again.');
+  }
+
+  String _friendlyError(Object error) {
+    if (error is ChatSocketException) {
+      if (error.isUnauthorized) {
+        return 'Your session expired. Please sign in again.';
+      }
+      if (error.isForbidden) {
+        return 'Chat is only available to supporters of the participating teams.';
+      }
+      return error.message;
+    }
+    final text = error.toString();
+    if (text.contains('status 401')) {
+      return 'Your session expired. Please sign in again.';
+    }
+    if (text.contains('status 403')) {
+      return 'Chat is only available to supporters of the participating teams.';
+    }
+    return 'Please check your connection and try again.';
   }
 
   void _scrollToBottom() {
@@ -111,20 +200,22 @@ class _LiveChatTabState extends State<LiveChatTab> {
 
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
-    if (text.isEmpty || _firebaseUser == null) return;
-    _controller.clear();
-
-    await _messagesRef.push().set({
-      'userId': _firebaseUser!.uid,
-      'username': _myUsername,
-      'text': text,
-      'timestamp': ServerValue.timestamp,
-    });
+    final session = _socketSession;
+    if (text.isEmpty || session == null || !_isInitialized) return;
+    try {
+      await session.send(text);
+      _controller.clear();
+    } on Object catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_friendlyError(error))),
+      );
+    }
   }
 
   void _showContextMenu(
-      BuildContext context, Offset position, ChatMessage msg) {
-    final isMe = msg.userId == _firebaseUser?.uid;
+      BuildContext context, Offset position, FixtureChatMessage msg) {
+    final isMe = msg.userId == _currentUserId;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     showMenu(
@@ -159,26 +250,37 @@ class _LiveChatTabState extends State<LiveChatTab> {
     );
   }
 
-  Future<void> _reportMessage(ChatMessage msg) async {
-    // TODO: POST /reports
-    // await ApiService.instance.reportMessage(
-    //   reporterUserId: _firebaseUser!.uid,
-    //   reportedUserId: msg.userId,
-    //   matchId: widget.matchId,
-    //   messageId: msg.messageId,
-    // );
+  Future<void> _reportMessage(FixtureChatMessage msg) async {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message reported.')),
+    await showReportDialog(
+      context,
+      targetLabel: 'message',
+      onSubmit: (reason) => _repository.reportMessage(
+        messageId: msg.messageId,
+        reason: reason,
+      ),
     );
   }
 
   @override
   void dispose() {
-    _messagesSub?.cancel();
+    unawaited(_closeChat());
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _closeChat({bool invalidateRequest = true}) async {
+    if (invalidateRequest) _requestId++;
+    _isClosing = true;
+    final subscription = _messagesSub;
+    final session = _socketSession;
+    _messagesSub = null;
+    _socketSession = null;
+    final cleanup = <Future<void>>[];
+    if (subscription != null) cleanup.add(subscription.cancel());
+    if (session != null) cleanup.add(session.close());
+    await Future.wait(cleanup);
   }
 
   @override
@@ -245,7 +347,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final msg = _messages[index];
-                      final isMe = msg.userId == _firebaseUser?.uid;
+                      final isMe = msg.userId == _currentUserId;
                       final prevMsg = index > 0 ? _messages[index - 1] : null;
                       final showHeader =
                           prevMsg == null || prevMsg.username != msg.username;
@@ -330,7 +432,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
     );
   }
 
-  Widget _buildOtherMessage(ChatMessage msg, bool showHeader) {
+  Widget _buildOtherMessage(FixtureChatMessage msg, bool showHeader) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,11 +440,11 @@ class _LiveChatTabState extends State<LiveChatTab> {
         if (showHeader) ...[
           Row(
             children: [
-              Text(msg.username, style: Body2_b.style),
+              Text(msg.displayUsername, style: Body2_b.style),
               const SizedBox(width: 8),
               Opacity(
                 opacity: 0.5,
-                child: Text(msg.timeString, style: Eyebrow.style),
+                child: Text(_timeString(msg), style: Eyebrow.style),
               ),
             ],
           ),
@@ -360,7 +462,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
     );
   }
 
-  Widget _buildMyMessage(ChatMessage msg, bool showHeader) {
+  Widget _buildMyMessage(FixtureChatMessage msg, bool showHeader) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -371,10 +473,10 @@ class _LiveChatTabState extends State<LiveChatTab> {
             children: [
               Opacity(
                 opacity: 0.5,
-                child: Text(msg.timeString, style: Eyebrow.style),
+                child: Text(_timeString(msg), style: Eyebrow.style),
               ),
               const SizedBox(width: 8),
-              Text(msg.username, style: Body2_b.style),
+              Text(msg.displayUsername, style: Body2_b.style),
             ],
           ),
           const SizedBox(height: 6),
@@ -389,5 +491,14 @@ class _LiveChatTabState extends State<LiveChatTab> {
         ),
       ],
     );
+  }
+
+  String _timeString(FixtureChatMessage message) {
+    final local = message.createdAt.toLocal();
+    final minute = local.minute.toString().padLeft(2, '0');
+    final period = local.hour >= 12 ? 'PM' : 'AM';
+    final hour =
+        local.hour > 12 ? local.hour - 12 : (local.hour == 0 ? 12 : local.hour);
+    return '$hour:$minute $period';
   }
 }

@@ -7,10 +7,12 @@ class ApiConfig {
   ApiConfig._({
     required this.baseUri,
     required this.requestHeaders,
+    required this.sessionToken,
   });
 
   final Uri baseUri;
   final Map<String, String> requestHeaders;
+  final String? sessionToken;
 
   /// Temporary API smoke-test bypass while startup authentication is mocked.
   /// Remove this flag when the real authenticated session controls routing.
@@ -36,6 +38,7 @@ class ApiConfig {
     return ApiConfig._(
       baseUri: _parseBaseUri(baseUri),
       requestHeaders: const {},
+      sessionToken: null,
     );
   }
 
@@ -54,6 +57,7 @@ class ApiConfig {
       requestHeaders: Map.unmodifiable({
         'Authorization': 'Bearer $normalizedToken',
       }),
+      sessionToken: normalizedToken,
     );
   }
 

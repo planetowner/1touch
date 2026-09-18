@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/data/community/community_repository.dart';
+import 'package:onetouch/data/community/community_repository_provider.dart'
+    as community_providers;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
@@ -13,11 +16,13 @@ import 'package:onetouch/models/post.dart';
 class PostDetailScreen extends StatefulWidget {
   final Post post;
   final PostRepository? postRepository;
+  final CommunityRepository? communityRepository;
 
   const PostDetailScreen({
     super.key,
     required this.post,
     this.postRepository,
+    this.communityRepository,
   });
 
   @override
@@ -28,19 +33,81 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // 1. Add Scroll Controller and Offset variable
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
+  late bool _liked;
+  late int _likeCount;
+  bool _isUpdatingLike = false;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
 
+  CommunityRepository get _communityRepository =>
+      widget.communityRepository ?? community_providers.communityRepository;
+
   @override
   void initState() {
     super.initState();
+    _syncEngagementFromPost();
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
           _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
         });
       });
+  }
+
+  @override
+  void didUpdateWidget(PostDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.post.postId != oldWidget.post.postId) {
+      _syncEngagementFromPost();
+      _isUpdatingLike = false;
+    }
+  }
+
+  void _syncEngagementFromPost() {
+    _liked = widget.post.liked;
+    _likeCount = widget.post.likeCount;
+  }
+
+  Future<void> _togglePostLike() async {
+    if (_isUpdatingLike) return;
+
+    final previousLiked = _liked;
+    final previousCount = _likeCount;
+    final nextLiked = !previousLiked;
+    setState(() {
+      _isUpdatingLike = true;
+      _liked = nextLiked;
+      _likeCount = nextLiked
+          ? previousCount + 1
+          : (previousCount > 0 ? previousCount - 1 : 0);
+    });
+
+    var failed = false;
+    try {
+      await _postRepository.setPostLiked(
+        postId: widget.post.postId,
+        liked: nextLiked,
+      );
+    } catch (_) {
+      failed = true;
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _isUpdatingLike = false;
+      if (failed) {
+        _liked = previousLiked;
+        _likeCount = previousCount;
+      }
+    });
+    if (failed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to update like. Please try again.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -129,6 +196,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
               PostDetailContent(
                 post: post,
+                liked: _liked,
+                likeCount: _likeCount,
+                onLike: _isUpdatingLike ? null : _togglePostLike,
+                communityRepository: _communityRepository,
                 onReport: (reason) => _postRepository.reportPost(
                   postId: post.postId,
                   reason: reason,

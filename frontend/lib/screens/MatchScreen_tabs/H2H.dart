@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -7,7 +8,7 @@ import 'package:onetouch/data/competitions/competition_repository_provider.dart'
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
@@ -44,7 +45,19 @@ class _H2HTabState extends State<H2HTab> {
   @override
   void initState() {
     super.initState();
+    currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
     _loadHeadToHead();
+  }
+
+  @override
+  void dispose() {
+    currentUserPreferences.favoriteTeamId
+        .removeListener(_handleFavoriteChanged);
+    super.dispose();
+  }
+
+  void _handleFavoriteChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -85,32 +98,35 @@ class _H2HTabState extends State<H2HTab> {
     }
   }
 
-  // "AGAINST" means the opponent of the team the user actually follows, not
-  // just whichever side happens to be away. If neither team in this fixture
-  // is followed, there's no "my team" to take the perspective of, so it
-  // falls back to the away team (i.e. against the home team).
+  int get _perspectiveTeamId {
+    final favoriteId = currentUserPreferences.favoriteTeamId.value;
+    if (favoriteId == widget.fixture.homeTeamId ||
+        favoriteId == widget.fixture.awayTeamId) {
+      return favoriteId;
+    }
+    return widget.fixture.homeTeamId;
+  }
+
   int get _againstTeamId {
-    final homeId = widget.fixture.homeTeamId;
-    final awayId = widget.fixture.awayTeamId;
-    final following = currentUserPreferences.followedTeamIds.value;
-    if (following.contains(homeId)) return awayId;
-    if (following.contains(awayId)) return homeId;
-    return awayId;
+    return _perspectiveTeamId == widget.fixture.homeTeamId
+        ? widget.fixture.awayTeamId
+        : widget.fixture.homeTeamId;
   }
 
   @override
   Widget build(BuildContext context) {
-    final homeId = widget.fixture.homeTeamId;
+    final perspectiveTeamId = _perspectiveTeamId;
 
-    // WDL from home team's perspective
+    // WDL from the user's favorite-team perspective when it is participating.
     int wins = 0, draws = 0, losses = 0;
     for (final f in _h2hMatches) {
       final hs = f.homeScore ?? 0;
       final as_ = f.awayScore ?? 0;
-      final homeIsOurHome = f.homeTeamId == homeId;
+      final perspectiveIsHome = f.homeTeamId == perspectiveTeamId;
       if (hs == as_) {
         draws++;
-      } else if ((hs > as_ && homeIsOurHome) || (as_ > hs && !homeIsOurHome)) {
+      } else if ((hs > as_ && perspectiveIsHome) ||
+          (as_ > hs && !perspectiveIsHome)) {
         wins++;
       } else {
         losses++;
@@ -173,8 +189,8 @@ class _H2HTabState extends State<H2HTab> {
               )
             else
               ..._h2hMatches.map((f) {
-                final home = teamRepository.findByIdOrUnknown(f.homeTeamId);
-                final away = teamRepository.findByIdOrUnknown(f.awayTeamId);
+                final home = fixtureHomeTeam(f, teamRepository);
+                final away = fixtureAwayTeam(f, teamRepository);
                 final leagueName =
                     competitionRepository.findById(f.competitionId)?.name ??
                         'Unknown';
@@ -182,16 +198,24 @@ class _H2HTabState extends State<H2HTab> {
                 final competitionAndRound = roundName?.isNotEmpty ?? false
                     ? '$leagueName · $roundName'
                     : leagueName;
-                return _buildPastMatchCard(
-                  home.shortCode ?? home.name,
-                  away.shortCode ?? away.name,
-                  home.imagePath ?? '',
-                  away.imagePath ?? '',
-                  home.teamId,
-                  away.teamId,
-                  f.homeScore?.toString() ?? '-',
-                  f.awayScore?.toString() ?? '-',
-                  competitionAndRound,
+                return GestureDetector(
+                  key: ValueKey('match-h2h-fixture-${f.fixtureId}'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => context.push(
+                    '/match/${f.fixtureId}?status=${f.status.name}',
+                    extra: f,
+                  ),
+                  child: _buildPastMatchCard(
+                    home.shortCode ?? home.name,
+                    away.shortCode ?? away.name,
+                    home.imagePath ?? '',
+                    away.imagePath ?? '',
+                    home.teamId,
+                    away.teamId,
+                    f.homeScore?.toString() ?? '-',
+                    f.awayScore?.toString() ?? '-',
+                    competitionAndRound,
+                  ),
                 );
               }),
           ],
@@ -205,6 +229,9 @@ class _H2HTabState extends State<H2HTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
+    final againstTeam = _againstTeamId == widget.fixture.homeTeamId
+        ? fixtureHomeTeam(widget.fixture, teamRepository)
+        : fixtureAwayTeam(widget.fixture, teamRepository);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -266,6 +293,7 @@ class _H2HTabState extends State<H2HTab> {
           const Text('AGAINST', style: Body2_b.style),
           const SizedBox(width: 8),
           Container(
+            key: ValueKey('match-h2h-against-team-$_againstTeamId'),
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
@@ -275,10 +303,11 @@ class _H2HTabState extends State<H2HTab> {
             child: GestureDetector(
               // Match screen is on the root navigator; '/team/:id' is on the
               // shell's navigator. go() (not push()) so it actually surfaces.
-              onTap: () => openTeamPage(context, _againstTeamId),
+              onTap: isTeamPageSupported(_againstTeamId)
+                  ? () => openTeamPage(context, _againstTeamId)
+                  : null,
               child: Image.network(
-                teamRepository.findByIdOrUnknown(_againstTeamId).imagePath ??
-                    '',
+                againstTeam.imagePath ?? '',
                 fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) =>
                     teamLogoFallback(_againstTeamId, size: 40),
@@ -302,15 +331,19 @@ class _H2HTabState extends State<H2HTab> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildWDLStat('$wins', 'Win'),
-          _buildWDLStat('$draws', 'Draw'),
-          _buildWDLStat('$losses', 'Lose'),
+          _buildWDLStat('$wins', 'Win', valueKey: 'match-h2h-win-value'),
+          _buildWDLStat('$draws', 'Draw', valueKey: 'match-h2h-draw-value'),
+          _buildWDLStat('$losses', 'Lose', valueKey: 'match-h2h-loss-value'),
         ],
       ),
     );
   }
 
-  Widget _buildWDLStat(String value, String label) {
+  Widget _buildWDLStat(
+    String value,
+    String label, {
+    required String valueKey,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     return Column(
@@ -321,7 +354,11 @@ class _H2HTabState extends State<H2HTab> {
             color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(value, style: Heading2.style.copyWith(color: foreground)),
+          child: Text(
+            value,
+            key: ValueKey(valueKey),
+            style: Heading2.style.copyWith(color: foreground),
+          ),
         ),
         const SizedBox(height: 4),
         Text(label, style: Body1.style),
@@ -362,7 +399,9 @@ class _H2HTabState extends State<H2HTab> {
           Row(
             children: [
               GestureDetector(
-                onTap: () => openTeamPage(context, idA),
+                onTap: isTeamPageSupported(idA)
+                    ? () => openTeamPage(context, idA)
+                    : null,
                 child: ClipOval(
                   child: Image.network(
                     logoA,
@@ -399,7 +438,9 @@ class _H2HTabState extends State<H2HTab> {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => openTeamPage(context, idB),
+                onTap: isTeamPageSupported(idB)
+                    ? () => openTeamPage(context, idB)
+                    : null,
                 child: ClipOval(
                   child: Image.network(
                     logoB,

@@ -108,12 +108,18 @@ class MatchData {
 }
 
 class Substitute {
+  final int teamId;
+  final int playerId;
+  final int? jerseyNumber;
   final String name;
   final int? minute;
   final bool goal;
   final bool subIn;
 
   Substitute({
+    required this.teamId,
+    required this.playerId,
+    required this.jerseyNumber,
     required this.name,
     this.minute,
     this.goal = false,

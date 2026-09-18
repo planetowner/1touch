@@ -5,13 +5,14 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/data/competitions/competition_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository_provider.dart'
     as team_overview_providers;
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/team_probability/team_probability_repository.dart';
+import 'package:onetouch/data/teams/team_color_palette_2627.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
 import 'package:onetouch/features/helper.dart';
@@ -20,17 +21,19 @@ import '../models/team_overview.dart';
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
-  final TeamRepository? teamRepository;
   final TeamAttributeRepository? teamAttributeRepository;
   final TeamOverviewRepository? teamOverviewRepository;
+  final TeamProbabilityRepository? teamProbabilityRepository;
+  final StandingRepository? standingRepository;
   final XgStandingRepository? xgStandingRepository;
 
   TeamScreen({
     super.key,
     required this.teamId,
-    this.teamRepository,
     this.teamAttributeRepository,
     this.teamOverviewRepository,
+    this.teamProbabilityRepository,
+    this.standingRepository,
     this.xgStandingRepository,
   });
 
@@ -48,10 +51,9 @@ class _TeamScreenState extends State<TeamScreen>
   bool isLoading = true;
   Object? _loadError;
   int _loadRequestId = 0;
-  Color _teamColor = const Color(0xFFD82457);
-
-  TeamRepository get _teamRepository =>
-      widget.teamRepository ?? team_providers.teamRepository;
+  Color? _teamColor;
+  int? _requestedStandingCompetitionId;
+  int _standingSelectionRequestId = 0;
 
   TeamOverviewRepository get _teamOverviewRepository =>
       widget.teamOverviewRepository ??
@@ -93,8 +95,7 @@ class _TeamScreenState extends State<TeamScreen>
       team = cached == null ? null : _teamMap(cached);
       isLoading = cached == null;
       _loadError = null;
-      final localTeam = _teamRepository.findById(widget.teamId);
-      _teamColor = Color(localTeam?.primaryColor ?? 0xFFD82457);
+      _teamColor = _brandColorForTeam(cached?.name);
     }
 
     if (updateState) {
@@ -113,6 +114,7 @@ class _TeamScreenState extends State<TeamScreen>
       }
       setState(() {
         team = _teamMap(overview);
+        _teamColor = _brandColorForTeam(overview.name);
         isLoading = false;
         _loadError = null;
       });
@@ -128,15 +130,16 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   Map<String, dynamic> _teamMap(TeamOverview overview) {
-    final leagueId =
-        overview.nextMatch?.competitionId ?? overview.lastMatch?.competitionId;
-    final leagueName = leagueId == null
-        ? 'League'
-        : competitionRepository.findById(leagueId)?.name ?? 'League';
+    final leagueName = team_providers.teamCompetitionContextResolver
+        .resolve(overview.id)
+        ?.competitionName;
     final positionValue = overview.standing?['position'];
-    final position = positionValue is int
-        ? '$leagueName ${ordinal(positionValue)}'
-        : leagueName;
+    final rankDeltaValue = overview.standing?['rank_delta'];
+    final position = leagueName == null
+        ? ''
+        : positionValue is int
+            ? '$leagueName ${ordinal(positionValue)}'
+            : leagueName;
 
     return {
       'id': overview.id,
@@ -145,10 +148,7 @@ class _TeamScreenState extends State<TeamScreen>
       'image_path': overview.imagePath,
       'position': position,
       'logo': overview.imagePath,
-      // TODO(team-overview): The current design always renders an upward green
-      // arrow. Connect the signed API rank_delta when that indicator supports
-      // upward, downward, and unchanged states.
-      'rankChange': 0,
+      'rankChange': rankDeltaValue is int ? rankDeltaValue : null,
       'standing': overview.standing,
       'next_match': overview.nextMatch,
       'last_match': overview.lastMatch,
@@ -156,8 +156,22 @@ class _TeamScreenState extends State<TeamScreen>
     };
   }
 
+  Color? _brandColorForTeam(String? teamName) {
+    if (teamName == null) return null;
+    final palette = teamColorPaletteForName(teamName);
+    return palette == null ? null : Color(palette.primary);
+  }
+
   void _retryOverviewLoad() {
     _startOverviewLoad();
+  }
+
+  void _openStandingCompetition(int competitionId) {
+    setState(() {
+      _requestedStandingCompetitionId = competitionId;
+      _standingSelectionRequestId++;
+    });
+    _tabController.animateTo(2);
   }
 
   @override
@@ -202,35 +216,39 @@ class _TeamScreenState extends State<TeamScreen>
       );
     }
 
+    final displayedTeamId = team!['id'] as int;
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
-    const appBarForeground = AppPalette.white;
+    final teamColor = _teamColor;
+    final appBarForeground =
+        teamColor == null ? colors.onSurface : AppPalette.white;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: pageBackground,
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: (1 - opacityFactor),
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: const ValueKey('team-brand-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [_teamColor, pageBackground],
-                    stops: const [0.0, 0.6],
+          if (teamColor != null)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: gradientHeight,
+              child: AnimatedOpacity(
+                opacity: (1 - opacityFactor),
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  key: const ValueKey('team-brand-gradient'),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [teamColor, pageBackground],
+                      stops: const [0.0, 0.6],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -247,24 +265,29 @@ class _TeamScreenState extends State<TeamScreen>
                 snap: true,
                 pinned: false,
                 toolbarHeight: 80,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        _teamColor,
-                        _teamColor.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
+                flexibleSpace: teamColor == null
+                    ? null
+                    : Container(
+                        key: const ValueKey('team-app-bar-gradient'),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              teamColor,
+                              teamColor.withValues(alpha: 0),
+                            ],
+                          ),
+                        ),
+                      ),
                 title: Padding(
                   padding: const EdgeInsets.only(left: 8, top: 30),
                   child: Row(
                     children: [
                       GestureDetector(
-                        onTap: () => openTeamPage(context, team!['id'] as int),
+                        onTap: isTeamPageSupported(displayedTeamId)
+                            ? () => openTeamPage(context, displayedTeamId)
+                            : null,
                         child: Image.network(
                           team?['logo'],
                           height: 52,
@@ -288,29 +311,47 @@ class _TeamScreenState extends State<TeamScreen>
                               overflow: TextOverflow
                                   .ellipsis, // Now this will work correctly
                             ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    team!['position'] as String,
-                                    style: Body2.style
-                                        .copyWith(color: appBarForeground),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                            if ((team!['position'] as String).isNotEmpty)
+                              Row(
+                                key: const ValueKey('team-context-label'),
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      team!['position'] as String,
+                                      style: Body2.style
+                                          .copyWith(color: appBarForeground),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                                const Icon(Icons.arrow_drop_up,
-                                    size: 16, color: Colors.green),
-                                Text(
-                                  team!['rankChange'] != 0
-                                      ? ' ${team!['rankChange']}'
-                                      : '',
-                                  style: Eyebrow.style
-                                      .copyWith(color: appBarForeground),
-                                ),
-                              ],
-                            ),
+                                  if (team!['rankChange'] case final int delta
+                                      when delta != 0) ...[
+                                    Icon(
+                                      delta > 0
+                                          ? Icons.arrow_drop_up
+                                          : Icons.arrow_drop_down,
+                                      key: const ValueKey(
+                                        'team-rank-change-icon',
+                                      ),
+                                      size: 16,
+                                      color:
+                                          delta > 0 ? Colors.green : Colors.red,
+                                    ),
+                                    Text(
+                                      '${delta.abs()}',
+                                      key: const ValueKey(
+                                        'team-rank-change-value',
+                                      ),
+                                      style: Eyebrow.style.copyWith(
+                                        color: delta > 0
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                           ],
                         ),
                       )
@@ -323,10 +364,10 @@ class _TeamScreenState extends State<TeamScreen>
                     child: IconButton(
                       key: const Key('team-search-button'),
                       onPressed: () => context.push('/search'),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.search,
                         size: 32,
-                        color: AppPalette.white,
+                        color: appBarForeground,
                       ),
                     ),
                   ),
@@ -364,16 +405,24 @@ class _TeamScreenState extends State<TeamScreen>
             body: TabBarView(
               controller: _tabController,
               children: [
-                OverviewTab(team: team),
+                OverviewTab(
+                  team: team,
+                  onStandingCompetitionSelected: _openStandingCompetition,
+                  standingRepository: widget.standingRepository,
+                ),
                 MatchesTab(team: team),
                 StandingTab(
                   team: team,
+                  regularStandingRepository: widget.standingRepository,
                   xgStandingRepository: widget.xgStandingRepository,
+                  requestedCompetitionId: _requestedStandingCompetitionId,
+                  selectionRequestId: _standingSelectionRequestId,
                 ),
                 SquadTab(team: team),
                 AnalysisTab(
                   team: team,
                   repository: widget.teamAttributeRepository,
+                  probabilityRepository: widget.teamProbabilityRepository,
                 ),
               ],
             ),

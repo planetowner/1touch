@@ -36,7 +36,10 @@ class MatchScoreHeader extends StatelessWidget {
     final away = int.tryParse(awayScore);
     final homeDimmed = home != null && away != null && home < away;
     final awayDimmed = home != null && away != null && away < home;
-    final visibleRoundLabel = roundLabel?.trim();
+    final round = roundLabel?.trim();
+    final visibleRoundLabel = round != null && int.tryParse(round) != null
+        ? 'Round $round'
+        : round;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -132,7 +135,9 @@ class _TeamBlock extends StatelessWidget {
           // '/team/:id' lives inside the bottom-nav shell's own navigator —
           // push() would land there invisibly, behind this screen. go()
           // replaces the location so the shell actually surfaces.
-          onTap: () => openTeamPage(context, teamId),
+          onTap: isTeamPageSupported(teamId)
+              ? () => openTeamPage(context, teamId)
+              : null,
           child: Image.network(
             logoAsset,
             width: logoSize,

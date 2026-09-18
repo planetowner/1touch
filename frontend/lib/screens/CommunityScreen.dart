@@ -3,6 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/data/community/community_repository.dart';
+import 'package:onetouch/data/community/community_repository_provider.dart'
+    as community_providers;
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
@@ -19,11 +22,13 @@ import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 class Community extends StatefulWidget {
   final int teamId;
   final PostRepository? postRepository;
+  final CommunityRepository? communityRepository;
 
   const Community({
     super.key,
     required this.teamId,
     this.postRepository,
+    this.communityRepository,
   });
 
   @override
@@ -40,10 +45,8 @@ class _CommunityState extends State<Community>
 
   late Team _team;
   late bool _isLive;
-  // TODO: Replace this shared UI placeholder with a repository-provided team
-  // follower total when the API exposes an aggregate follower-count field or
-  // endpoint. The current user's followed-team list is not that total.
-  static const int _followerCount = 1;
+  int? _followerCount;
+  int _followerRequestId = 0;
   List<Post> _posts = const [];
   bool _isLoadingPosts = true;
   Object? _postLoadError;
@@ -52,11 +55,15 @@ class _CommunityState extends State<Community>
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
 
+  CommunityRepository get _communityRepository =>
+      widget.communityRepository ?? community_providers.communityRepository;
+
   @override
   void initState() {
     super.initState();
 
     _loadTeam();
+    _loadFollowerCount();
     _loadPosts();
 
     _scrollController = ScrollController()
@@ -77,7 +84,12 @@ class _CommunityState extends State<Community>
     // parent route hands us a different teamId instead of only on first load.
     if (widget.teamId != oldWidget.teamId) {
       setState(_loadTeam);
+      _loadFollowerCount();
       _loadPosts();
+    }
+    if (widget.teamId == oldWidget.teamId &&
+        widget.communityRepository != oldWidget.communityRepository) {
+      _loadFollowerCount();
     }
     if (widget.teamId == oldWidget.teamId &&
         widget.postRepository != oldWidget.postRepository) {
@@ -92,8 +104,26 @@ class _CommunityState extends State<Community>
         .isNotEmpty;
   }
 
-  Future<void> _loadPosts() async {
+  Future<void> _loadFollowerCount() async {
+    final requestId = ++_followerRequestId;
+    setState(() => _followerCount = null);
+    try {
+      final count = await _communityRepository.loadFollowerCount(
+        teamId: widget.teamId,
+      );
+      if (!mounted || requestId != _followerRequestId) return;
+      setState(() => _followerCount = count);
+    } catch (_) {
+      // Follower totals are supplementary. Keep the label available without
+      // inventing a count when this independent request is unavailable.
+      if (!mounted || requestId != _followerRequestId) return;
+      setState(() => _followerCount = null);
+    }
+  }
+
+  Future<void> _loadPosts({bool preserveCurrentPosts = false}) async {
     final requestId = ++_postRequestId;
+    final preserveCurrent = preserveCurrentPosts && _posts.isNotEmpty;
     final category = switch (_selectedTabIndex) {
       1 => PostCategory.general,
       2 => PostCategory.analysis,
@@ -101,7 +131,7 @@ class _CommunityState extends State<Community>
       _ => null,
     };
     setState(() {
-      _isLoadingPosts = true;
+      _isLoadingPosts = !preserveCurrent;
       _postLoadError = null;
     });
 
@@ -119,7 +149,7 @@ class _CommunityState extends State<Community>
     } catch (error) {
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
-        _postLoadError = error;
+        _postLoadError = preserveCurrent ? null : error;
         _isLoadingPosts = false;
       });
     }
@@ -227,12 +257,17 @@ class _CommunityState extends State<Community>
               ),
             ],
             body: CommunityPostBody(
+              teamId: widget.teamId,
               posts: _posts,
               postRepository: _postRepository,
+              communityRepository: _communityRepository,
               selectedSort: _selectedPostSort,
               isLoading: _isLoadingPosts,
               loadError: _postLoadError,
               onRetry: _loadPosts,
+              onPostDetailClosed: () => _loadPosts(
+                preserveCurrentPosts: true,
+              ),
               onSortChanged: _selectPostSort,
             ),
           )

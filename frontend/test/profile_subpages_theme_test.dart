@@ -96,6 +96,24 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('profile real name cannot be edited after registration',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: const EditProfileScreen(),
+      ),
+    );
+
+    final nameField = tester.widget<TextField>(
+      find.byKey(const ValueKey('profile-real-name-field')),
+    );
+    expect(nameField.readOnly, isTrue);
+    expect(nameField.enableInteractiveSelection, isFalse);
+    expect(nameField.showCursor, isFalse);
+    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+  });
+
   for (final testCase in <({String title, Widget page})>[
     (title: 'About', page: const AboutPage()),
     (title: 'Contact', page: const ContactPage()),

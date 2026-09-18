@@ -2,14 +2,16 @@ import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:onetouch/models/fixture.dart';
 
 Fixture fixtureFromApiResponse(ApiFixtureResponse response) {
-  // Team display data remains TeamRepository-owned. Other response-only
-  // metadata stays at the transport boundary until a domain feature needs it.
   return Fixture(
     fixtureId: response.fixtureId,
     seasonId: response.seasonId,
     competitionId: response.competitionId,
     homeTeamId: response.homeTeamId,
     awayTeamId: response.awayTeamId,
+    homeTeamName: response.homeTeamName,
+    awayTeamName: response.awayTeamName,
+    homeTeamLogo: response.homeTeamLogo,
+    awayTeamLogo: response.awayTeamLogo,
     competitionType: _competitionTypeFromApi(response.competitionType),
     roundName: response.roundName,
     stageId: response.stageId,

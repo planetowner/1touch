@@ -3,14 +3,131 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'support/fake_betting_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
 
 void main() {
-  testWidgets('loads the selected H2H limit on a compact screen', (
-    tester,
-  ) async {
+  testWidgets('uses the participating favorite team as the H2H perspective',
+      (tester) async {
+    await _setSize(tester, const Size(430, 932));
+    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+    currentUserPreferences.favoriteTeamId.value = 19;
+    addTearDown(
+      () => currentUserPreferences.favoriteTeamId.value = originalFavorite,
+    );
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => const [
+        Fixture(
+          fixtureId: 901,
+          seasonId: 25583,
+          competitionId: 8,
+          homeTeamId: 8,
+          awayTeamId: 19,
+          competitionType: CompetitionType.league,
+          roundName: '9',
+          status: FixtureStatus.past,
+          startingAt: '2026-01-10 15:00:00',
+          homeScore: 0,
+          awayScore: 2,
+        ),
+        Fixture(
+          fixtureId: 902,
+          seasonId: 25583,
+          competitionId: 8,
+          homeTeamId: 19,
+          awayTeamId: 8,
+          competitionType: CompetitionType.league,
+          roundName: '8',
+          status: FixtureStatus.past,
+          startingAt: '2025-08-10 15:00:00',
+          homeScore: 3,
+          awayScore: 1,
+        ),
+        Fixture(
+          fixtureId: 903,
+          seasonId: 25583,
+          competitionId: 8,
+          homeTeamId: 8,
+          awayTeamId: 19,
+          competitionType: CompetitionType.league,
+          roundName: '7',
+          status: FixtureStatus.past,
+          startingAt: '2025-01-10 15:00:00',
+          homeScore: 1,
+          awayScore: 1,
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(_testApp(repository: repository));
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('match-h2h-against-team-8')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('match-h2h-win-value')),
+          )
+          .data,
+      '2',
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('match-h2h-draw-value')),
+          )
+          .data,
+      '1',
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('match-h2h-loss-value')),
+          )
+          .data,
+      '0',
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('falls back to the selected match home team perspective',
+      (tester) async {
+    await _setSize(tester, const Size(430, 932));
+    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+    currentUserPreferences.favoriteTeamId.value = 83;
+    addTearDown(
+      () => currentUserPreferences.favoriteTeamId.value = originalFavorite,
+    );
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => [_pastFixture(homeScore: 2)],
+    );
+
+    await tester.pumpWidget(_testApp(repository: repository));
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('match-h2h-against-team-19')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('match-h2h-win-value')),
+          )
+          .data,
+      '1',
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('loads the selected H2H limit on a compact screen',
+      (tester) async {
     await _setSize(tester, const Size(320, 568));
     final second = Completer<List<Fixture>>();
     final repository = _RecordingFixtureRepository(
@@ -94,6 +211,52 @@ void main() {
     await tester.pump();
     expect(find.text('10'), findsOneWidget);
     expect(find.text('5'), findsNothing);
+  });
+
+  testWidgets('opens the selected head-to-head fixture', (tester) async {
+    await _setSize(tester, const Size(430, 932));
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => [_pastFixture()],
+    );
+    final betting = fakeBettingController(_selectedFixture.fixtureId);
+    addTearDown(betting.dispose);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => Scaffold(
+            body: H2HTab(
+              bettingController: betting,
+              fixture: _selectedFixture,
+              fixtureRepository: repository,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/match/:matchId',
+          builder: (_, state) {
+            final fixture = state.extra! as Fixture;
+            return Text(
+              'match-${state.pathParameters['matchId']}-'
+              '${state.uri.queryParameters['status']}-'
+              '${fixture.fixtureId}',
+            );
+          },
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pump();
+
+    final card = find.byKey(const ValueKey('match-h2h-fixture-900'));
+    await tester.ensureVisible(card);
+    await tester.pump();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.text('match-900-past-900'), findsOneWidget);
   });
 }
 

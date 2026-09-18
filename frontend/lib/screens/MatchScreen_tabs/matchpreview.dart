@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
@@ -7,14 +8,17 @@ import 'package:onetouch/data/competitions/competition_repository_provider.dart'
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_providers;
-import 'package:onetouch/data/standings/standing_repository_provider.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
+import 'package:onetouch/data/standings/api_standing_repository_provider.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
+import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
+import 'package:onetouch/features/team/attributes/match_attribute_comparison.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 class _StandingRow {
   final int pos;
@@ -44,12 +48,16 @@ class MatchPreviewTab extends StatefulWidget {
   final Fixture fixture;
   final FixtureRepository? fixtureRepository;
   final BettingController bettingController;
+  final TeamAttributeRepository? attributeRepository;
+  final StandingRepository? standingRepository;
 
   const MatchPreviewTab({
     super.key,
     required this.fixture,
     required this.bettingController,
     this.fixtureRepository,
+    this.attributeRepository,
+    this.standingRepository,
   });
 
   @override
@@ -61,6 +69,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   bool _isLatestH2HLoading = true;
   bool _hasLatestH2HError = false;
   int _latestH2HRequestId = 0;
+  List<Standing> _currentStandings = const [];
+  bool _standingsLoading = true;
+  bool _standingsFailed = false;
+  int _standingsRequestId = 0;
 
   FixtureRepository get _fixtureRepository =>
       widget.fixtureRepository ?? fixture_providers.fixtureRepository;
@@ -69,11 +81,16 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   void initState() {
     super.initState();
     _loadLatestHeadToHead();
+    _loadCurrentStandings();
   }
 
   @override
   void didUpdateWidget(MatchPreviewTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.fixture.competitionId != oldWidget.fixture.competitionId ||
+        widget.standingRepository != oldWidget.standingRepository) {
+      _loadCurrentStandings();
+    }
     if (widget.fixture.fixtureId != oldWidget.fixture.fixtureId ||
         widget.fixtureRepository != oldWidget.fixtureRepository) {
       _loadLatestHeadToHead();
@@ -107,14 +124,36 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     }
   }
 
+  Future<void> _loadCurrentStandings() async {
+    final requestId = ++_standingsRequestId;
+    setState(() {
+      _currentStandings = const [];
+      _standingsLoading = true;
+      _standingsFailed = false;
+    });
+    try {
+      final repository = widget.standingRepository ?? apiStandingRepository;
+      // Omitting seasonId lets the API select the competition's current season.
+      final rows =
+          await repository.loadForCompetition(widget.fixture.competitionId);
+      if (!mounted || requestId != _standingsRequestId) return;
+      setState(() {
+        _currentStandings = rows;
+        _standingsLoading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _standingsRequestId) return;
+      setState(() {
+        _standingsLoading = false;
+        _standingsFailed = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final homeTeam = teamRepository.findByIdOrUnknown(
-      widget.fixture.homeTeamId,
-    );
-    final awayTeam = teamRepository.findByIdOrUnknown(
-      widget.fixture.awayTeamId,
-    );
+    final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
+    final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
 
     return SingleChildScrollView(
       child: Column(
@@ -125,7 +164,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           const SizedBox(height: 48),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 0),
-            child: Text("BET", style: Body2_b.style),
+            child: Text(
+              "BET",
+              style: Body2_b.style,
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -137,7 +179,13 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           ),
 
           const SizedBox(height: 48),
-          _buildRadarChart(),
+          MatchAttributeComparison(
+            homeTeamId: widget.fixture.homeTeamId,
+            awayTeamId: widget.fixture.awayTeamId,
+            homeTeamName: homeTeam.name,
+            awayTeamName: awayTeam.name,
+            repository: widget.attributeRepository,
+          ),
           const SizedBox(height: 48),
           _buildLatestH2H(),
           const SizedBox(height: 48),
@@ -150,19 +198,25 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
   Widget _buildHeader() {
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final home = teamRepository.findByIdOrUnknown(widget.fixture.homeTeamId);
-    final away = teamRepository.findByIdOrUnknown(widget.fixture.awayTeamId);
+    final home = fixtureHomeTeam(widget.fixture, teamRepository);
+    final away = fixtureAwayTeam(widget.fixture, teamRepository);
     final kickoff = widget.fixture.kickoff?.toLocal();
     final date =
         kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
     final time =
         kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
+    final round = widget.fixture.roundName?.trim();
+    final roundLabel = round == null || round.isEmpty
+        ? 'Round TBD'
+        : int.tryParse(round) != null
+            ? 'Round $round'
+            : round;
 
     return Row(
       children: [
         Expanded(
           child: _buildTeamBlock(
-            home.shortCode ?? home.name,
+            home.name,
             home.imagePath ?? '',
             home.teamId,
           ),
@@ -171,28 +225,23 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           width: 104,
           child: Column(
             children: [
-              Text(date, style: Body2.style, textAlign: TextAlign.center),
-              Text(time, style: Body2.style),
+              Text(roundLabel,
+                  style: Body2_b.style, textAlign: TextAlign.center),
               const SizedBox(height: 8),
-              Opacity(
-                opacity: 0.30,
-                child: Container(
-                  width: 24,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(width: 1, color: foreground),
-                    ),
-                  ),
-                ),
+              Container(
+                width: 24,
+                height: 1,
+                color: foreground,
               ),
               const SizedBox(height: 8),
-              Text('Venue Name', style: Body2.style),
+              Text(date, style: Body2_b.style, textAlign: TextAlign.center),
+              Text(time, style: Body2_b.style),
             ],
           ),
         ),
         Expanded(
           child: _buildTeamBlock(
-            away.shortCode ?? away.name,
+            away.name,
             away.imagePath ?? '',
             away.teamId,
           ),
@@ -209,7 +258,9 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           // '/match/:matchId'), but '/team/:id' belongs to the bottom-nav
           // shell's own navigator — push() would land there invisibly,
           // behind this screen. go() replaces the location so it surfaces.
-          onTap: () => openTeamPage(context, teamId),
+          onTap: isTeamPageSupported(teamId)
+              ? () => openTeamPage(context, teamId)
+              : null,
           child: Image.network(
             logoPath,
             width: 72,
@@ -222,147 +273,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           name,
           style: Body1.style,
           textAlign: TextAlign.center,
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRadarChart() {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-
-    return Column(
-      children: [
-        SizedBox(
-          height: 260,
-          child: RadarChart(
-            RadarChartData(
-              radarShape: RadarShape.polygon,
-              tickCount: 4,
-
-              // Grid rings
-              gridBorderData: BorderSide(
-                color: foreground.withValues(alpha: 0.30),
-                width: 1,
-              ),
-              // Outermost ring
-              radarBorderData: BorderSide(
-                color: foreground.withValues(alpha: 0.30),
-                width: 1,
-              ),
-              // Tick rings (same as grid)
-              tickBorderData: BorderSide(
-                color: foreground.withValues(alpha: 0.30),
-                width: 1,
-              ),
-
-              // Hide tick value labels on each ring
-              ticksTextStyle: const TextStyle(
-                color: Colors.transparent,
-                fontSize: 0,
-              ),
-
-              // Axis labels
-              getTitle: (index, angle) {
-                const labels = [
-                  'Attack',
-                  'Progression',
-                  'Pressure',
-                  'Dominance',
-                  'Defense',
-                  'Possession',
-                ];
-                return RadarChartTitle(
-                  text: labels[index],
-                  angle: 0, // keep all labels upright
-                );
-              },
-              titleTextStyle: Eyebrow.style.copyWith(color: foreground),
-              titlePositionPercentageOffset: 0.15,
-
-              dataSets: [
-                // Home team
-                RadarDataSet(
-                  fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
-                  borderColor: const Color(0xFFE8434A),
-                  borderWidth: 2,
-                  entryRadius: 3,
-                  dataEntries: const [
-                    RadarEntry(value: 85), // Attack
-                    RadarEntry(value: 75), // Progression
-                    RadarEntry(value: 55), // Pressure
-                    RadarEntry(value: 70), // Dominance
-                    RadarEntry(value: 80), // Defense
-                    RadarEntry(value: 65), // Possession
-                  ],
-                ),
-                // Away team
-                RadarDataSet(
-                  fillColor: foreground.withValues(alpha: 0.1),
-                  borderColor: foreground.withValues(alpha: 0.85),
-                  borderWidth: 2,
-                  entryRadius: 3,
-                  dataEntries: const [
-                    RadarEntry(value: 55),
-                    RadarEntry(value: 60),
-                    RadarEntry(value: 75),
-                    RadarEntry(value: 50),
-                    RadarEntry(value: 60),
-                    RadarEntry(value: 72),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        // Legend
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: _buildLegendDot(
-                const Color(0xFFE8434A),
-                teamRepository
-                    .findByIdOrUnknown(widget.fixture.homeTeamId)
-                    .name
-                    .toUpperCase(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildLegendDot(
-                foreground,
-                teamRepository
-                    .findByIdOrUnknown(widget.fixture.awayTeamId)
-                    .name
-                    .toUpperCase(),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLegendDot(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(
-            label,
-            style: Body2_b.style,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
         ),
       ],
     );
@@ -432,8 +344,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       );
     }
 
-    final home = teamRepository.findByIdOrUnknown(h2h.homeTeamId);
-    final away = teamRepository.findByIdOrUnknown(h2h.awayTeamId);
+    final home = fixtureHomeTeam(h2h, teamRepository);
+    final away = fixtureAwayTeam(h2h, teamRepository);
     final kickoff = h2h.kickoff?.toLocal();
     final date =
         kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
@@ -445,86 +357,91 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       children: [
         const Text("LATEST H2H", style: Body2_b.style),
         const SizedBox(height: 16),
-        Container(
+        GestureDetector(
           key: const ValueKey('match-preview-h2h-card'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.lightGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(24),
+          behavior: HitTestBehavior.opaque,
+          onTap: () => context.push(
+            '/match/${h2h.fixtureId}?status=${h2h.status.name}',
+            extra: h2h,
           ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final homeTeam = _buildSimpleTeamCol(
-                home.shortCode ?? home.name,
-                home.imagePath ?? '',
-                home.teamId,
-              );
-              final awayTeam = _buildSimpleTeamCol(
-                away.shortCode ?? away.name,
-                away.imagePath ?? '',
-                away.teamId,
-              );
-              final homeScore = _buildScoreBox(
-                h2h.homeScore?.toString() ?? '-',
-              );
-              final awayScore = _buildScoreBox(
-                h2h.awayScore?.toString() ?? '-',
-              );
-              final kickoff = Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(date, style: Body2.style, textAlign: TextAlign.center),
-                  Text(time, style: Body2.style, textAlign: TextAlign.center),
-                ],
-              );
-
-              if (constraints.maxWidth < 300) {
-                return Column(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            decoration: BoxDecoration(
+              color: isDark ? AppPalette.lightGrey : AppPalette.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final homeTeam = _buildSimpleTeamCol(
+                  home.shortCode ?? home.name,
+                  home.imagePath ?? '',
+                  home.teamId,
+                );
+                final awayTeam = _buildSimpleTeamCol(
+                  away.shortCode ?? away.name,
+                  away.imagePath ?? '',
+                  away.teamId,
+                );
+                final homeScore =
+                    _buildScoreBox(h2h.homeScore?.toString() ?? '-');
+                final awayScore =
+                    _buildScoreBox(h2h.awayScore?.toString() ?? '-');
+                final kickoff = Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Text(date, style: Body2.style, textAlign: TextAlign.center),
+                    Text(time, style: Body2.style, textAlign: TextAlign.center),
+                  ],
+                );
+
+                if (constraints.maxWidth < 300) {
+                  return Column(
+                    children: [
+                      kickoff,
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: homeTeam),
+                          const SizedBox(width: 8),
+                          homeScore,
+                          const SizedBox(width: 8),
+                          awayScore,
+                          const SizedBox(width: 8),
+                          Expanded(child: awayTeam),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Flexible(child: homeTeam),
+                          const SizedBox(width: 12),
+                          homeScore,
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     kickoff,
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(child: homeTeam),
-                        const SizedBox(width: 8),
-                        homeScore,
-                        const SizedBox(width: 8),
-                        awayScore,
-                        const SizedBox(width: 8),
-                        Expanded(child: awayTeam),
-                      ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          awayScore,
+                          const SizedBox(width: 12),
+                          Flexible(child: awayTeam),
+                        ],
+                      ),
                     ),
                   ],
                 );
-              }
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Flexible(child: homeTeam),
-                        const SizedBox(width: 12),
-                        homeScore,
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  kickoff,
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        awayScore,
-                        const SizedBox(width: 12),
-                        Flexible(child: awayTeam),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+              },
+            ),
           ),
         ),
       ],
@@ -535,7 +452,9 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Column(
       children: [
         GestureDetector(
-          onTap: () => openTeamPage(context, teamId),
+          onTap: isTeamPageSupported(teamId)
+              ? () => openTeamPage(context, teamId)
+              : null,
           child: Image.network(
             asset,
             width: 48,
@@ -562,9 +481,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.black : AppPalette.lightGreyBox,
-        borderRadius: BorderRadius.circular(4),
-      ),
+          color: isDark ? Colors.black : AppPalette.lightGreyBox,
+          borderRadius: BorderRadius.circular(4)),
       child: Text(text, style: Heading3.style.copyWith(color: foreground)),
     );
   }
@@ -575,35 +493,56 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final appColors = AppColors.of(context);
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final league = competitionRepository.findById(widget.fixture.competitionId);
-    final standings = standingRepository.forCompetition(
-      widget.fixture.competitionId,
-    );
-    if (standings.isEmpty) return const SizedBox.shrink();
+    final standings = _currentStandings;
+    if (_standingsLoading || _standingsFailed || standings.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('STANDING', style: Body2_b.style),
+          const SizedBox(height: 16),
+          if (_standingsLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_standingsFailed)
+            TextButton(
+              onPressed: _loadCurrentStandings,
+              child: const Text('순위표를 불러오지 못했어요. 다시 시도'),
+            )
+          else
+            const Center(child: Text('아직 준비중이에요ㅠㅠ')),
+        ],
+      );
+    }
 
-    final matchTeamIds = {widget.fixture.homeTeamId, widget.fixture.awayTeamId};
+    final matchTeamIds = {
+      widget.fixture.homeTeamId,
+      widget.fixture.awayTeamId,
+    };
     final leaders = standings.take(5).toList();
     final leaderIds = leaders.map((standing) => standing.teamId).toSet();
     final featured = standings
-        .where(
-          (standing) =>
-              matchTeamIds.contains(standing.teamId) &&
-              !leaderIds.contains(standing.teamId),
-        )
+        .where((standing) =>
+            matchTeamIds.contains(standing.teamId) &&
+            !leaderIds.contains(standing.teamId))
         .toList();
     final visibleStandings = [...leaders, ...featured];
     final dividerIndex = featured.isEmpty ? -1 : leaders.length;
     final rows = visibleStandings.map((standing) {
-      final team = teamRepository.findByIdOrUnknown(standing.teamId);
+      final repositoryTeam = teamRepository.findById(standing.teamId);
+      final responseName = standing.teamName?.trim();
+      final displayName = repositoryTeam?.shortCode ??
+          (responseName?.isNotEmpty ?? false ? responseName! : null) ??
+          repositoryTeam?.name ??
+          'Unknown Team';
       return _StandingRow(
         pos: standing.position,
-        name: team.shortCode ?? team.name,
-        teamId: team.teamId,
-        logoUrl: team.imagePath,
+        name: displayName,
+        teamId: standing.teamId,
+        logoUrl: standing.teamLogo ?? repositoryTeam?.imagePath,
         mp: standing.matchesPlayed.toString(),
         w: standing.won.toString(),
         d: standing.draw.toString(),
         l: standing.lost.toString(),
-        highlight: matchTeamIds.contains(team.teamId),
+        highlight: matchTeamIds.contains(standing.teamId),
       );
     }).toList();
 
@@ -656,22 +595,14 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                 children: [
                   SizedBox(
                     width: 32,
-                    child: Text(
-                      '#',
-                      style: TextStyle(
-                        color: appColors.mutedForeground,
-                        fontSize: 13,
-                      ),
-                    ),
+                    child: Text('#',
+                        style: TextStyle(
+                            color: appColors.mutedForeground, fontSize: 13)),
                   ),
                   Expanded(
-                    child: Text(
-                      'Club',
-                      style: TextStyle(
-                        color: appColors.mutedForeground,
-                        fontSize: 13,
-                      ),
-                    ),
+                    child: Text('Club',
+                        style: TextStyle(
+                            color: appColors.mutedForeground, fontSize: 13)),
                   ),
                   ..._colLabel('MP'),
                   ..._colLabel('W'),
@@ -688,9 +619,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         Container(
           decoration: BoxDecoration(
             color: surface,
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(20),
-            ),
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
           child: Column(
@@ -755,7 +685,13 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       child: Row(
         children: [
           // Position
-          SizedBox(width: 28, child: Text('${row.pos}', style: mutedStyle)),
+          SizedBox(
+            width: 28,
+            child: Text(
+              '${row.pos}',
+              style: mutedStyle,
+            ),
+          ),
           // Logo + name
           Expanded(
             child: Row(
@@ -779,7 +715,11 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           for (final val in [row.mp, row.w, row.d, row.l])
             SizedBox(
               width: 32,
-              child: Text(val, textAlign: TextAlign.center, style: mutedStyle),
+              child: Text(
+                val,
+                textAlign: TextAlign.center,
+                style: mutedStyle,
+              ),
             ),
         ],
       ),

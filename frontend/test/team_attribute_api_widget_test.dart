@@ -124,7 +124,7 @@ void main() {
       (tester) async {
     final historicalResponse = Completer<http.Response>();
     final repository = _repository((request) {
-      if (!request.url.queryParameters.containsKey('season_id')) {
+      if (request.url.queryParameters['season_id'] == '27965') {
         return Future.value(http.Response(jsonEncode(_attributeJson()), 200));
       }
       expectSync(request.url.queryParameters, {'season_id': '23621'});
@@ -235,7 +235,7 @@ void main() {
   testWidgets('keeps current attributes visible when comparison fails',
       (tester) async {
     final repository = _repository((request) async {
-      if (!request.url.queryParameters.containsKey('season_id')) {
+      if (request.url.queryParameters['season_id'] == '27965') {
         return http.Response(jsonEncode(_attributeJson()), 200);
       }
       return http.Response('Not found', 404);
@@ -278,13 +278,98 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('uses the newest stored season when none is current',
+      (tester) async {
+    final repository = _repository(
+      (request) async {
+        expect(request.url.queryParameters, {'season_id': '25659'});
+        return http.Response(
+          jsonEncode(
+            _attributeJson(
+              seasonId: 25659,
+              seasonName: '2025/2026',
+              isCurrent: false,
+            ),
+          ),
+          200,
+        );
+      },
+      optionsHandler: (_) async => http.Response(
+        jsonEncode({
+          'team_id': 83,
+          'items': [
+            {
+              'competition_id': 564,
+              'season_id': 25659,
+              'season_name': '2025/2026',
+              'is_current': false,
+            },
+            {
+              'competition_id': 564,
+              'season_id': 23621,
+              'season_name': '2024/2025',
+              'is_current': false,
+            },
+          ],
+        }),
+        200,
+      ),
+    );
+
+    await _pumpAttributes(tester, repository);
+
+    expect(find.byType(RadarChart), findsOneWidget);
+    final filter = tester.widget<PopupMenuButton<int>>(
+      find.byKey(const ValueKey('analysis-attributes-filter')),
+    );
+    expect(
+      filter
+          .itemBuilder(
+            tester.element(
+              find.byKey(const ValueKey('analysis-attributes-filter')),
+            ),
+          )
+          .whereType<PopupMenuItem<int>>()
+          .map((item) => item.value),
+      [23621],
+    );
+  });
+
+  testWidgets('does not invent a Barcelona request without a selected team',
+      (tester) async {
+    var requests = 0;
+    final repository = _repository((_) async {
+      requests += 1;
+      return http.Response(jsonEncode(_attributeJson()), 200);
+    }, optionsHandler: (_) async {
+      requests += 1;
+      return http.Response(jsonEncode(_optionsJson()), 200);
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: AttributesSection(team: null, repository: repository),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(requests, 0);
+    expect(find.text('No attribute data available'), findsOneWidget);
+  });
+
   testWidgets('ignores stale historical comparison responses', (tester) async {
     final responses = <int, Completer<http.Response>>{};
     final repository = _repository((request) {
       final seasonId =
           int.tryParse(request.url.queryParameters['season_id'] ?? '');
-      if (seasonId == null) {
+      if (seasonId == 27965) {
         return Future.value(http.Response(jsonEncode(_attributeJson()), 200));
+      }
+      if (seasonId == null) {
+        throw StateError('Expected an explicit attribute season.');
       }
       return responses.putIfAbsent(seasonId, Completer.new).future;
     });

@@ -1,42 +1,80 @@
 import 'package:onetouch/models/season.dart';
 
-// SEASONS  (seasons table)  — 2025/26 current season per competition
+// SEASONS  (seasons table)  — 2026/27 current season for Big Five leagues
 //
 
 const mockSeasons = <Season>[
+  // Big Five 2026/27. IDs match the verified Standing season options.
+  // Dates are mock season-year bounds, not official fixture dates.
+  Season(
+      seasonId: 28083,
+      competitionId: 8,
+      name: '2026/2027',
+      isCurrent: true,
+      startingAt: '2026-07-01 00:00:00',
+      endingAt: '2027-06-30 00:00:00'),
+  Season(
+      seasonId: 28321,
+      competitionId: 82,
+      name: '2026/2027',
+      isCurrent: true,
+      startingAt: '2026-07-01 00:00:00',
+      endingAt: '2027-06-30 00:00:00'),
+  Season(
+      seasonId: 28082,
+      competitionId: 301,
+      name: '2026/2027',
+      isCurrent: true,
+      startingAt: '2026-07-01 00:00:00',
+      endingAt: '2027-06-30 00:00:00'),
+  Season(
+      seasonId: 27895,
+      competitionId: 384,
+      name: '2026/2027',
+      isCurrent: true,
+      startingAt: '2026-07-01 00:00:00',
+      endingAt: '2027-06-30 00:00:00'),
+  Season(
+      seasonId: 27965,
+      competitionId: 564,
+      name: '2026/2027',
+      isCurrent: true,
+      startingAt: '2026-07-01 00:00:00',
+      endingAt: '2027-06-30 00:00:00'),
+  // Big Five 2025/26
   Season(
       seasonId: 25583,
       competitionId: 8,
       name: '2025/2026',
-      isCurrent: true,
+      isCurrent: false,
       startingAt: '2025-08-15 00:00:00',
       endingAt: '2026-05-24 00:00:00'),
   Season(
       seasonId: 25659,
       competitionId: 564,
       name: '2025/2026',
-      isCurrent: true,
+      isCurrent: false,
       startingAt: '2025-08-15 00:00:00',
       endingAt: '2026-05-24 00:00:00'),
   Season(
       seasonId: 25533,
       competitionId: 384,
       name: '2025/2026',
-      isCurrent: true,
+      isCurrent: false,
       startingAt: '2025-08-23 00:00:00',
       endingAt: '2026-05-24 00:00:00'),
   Season(
       seasonId: 25646,
       competitionId: 82,
       name: '2025/2026',
-      isCurrent: true,
+      isCurrent: false,
       startingAt: '2025-08-22 00:00:00',
       endingAt: '2026-05-16 00:00:00'),
   Season(
       seasonId: 25651,
       competitionId: 301,
       name: '2025/2026',
-      isCurrent: true,
+      isCurrent: false,
       startingAt: '2025-08-15 00:00:00',
       endingAt: '2026-05-23 00:00:00'),
   //   Big 5 domestic leagues — 2024/25

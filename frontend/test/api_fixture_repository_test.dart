@@ -345,6 +345,7 @@ Map<String, dynamic> _fixtureDetailJson({int fixtureId = 19712345}) {
     'shots': [],
     'events': [],
     'statistics': [],
+    'player_statistics': [],
     'lineups': [],
     'formations': [],
     'coaches': [],

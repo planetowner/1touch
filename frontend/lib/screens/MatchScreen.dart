@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/data/chat/chat_repository.dart';
+import 'package:onetouch/data/chat/chat_socket.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
     as fixture_provider;
+import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
+import 'package:onetouch/data/profile/current_user_repository.dart';
+import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/data/betting/betting_repository.dart';
@@ -18,6 +23,11 @@ class MatchScreen extends StatefulWidget {
   final Fixture? initialFixture;
   final FixtureRepository? repository;
   final BettingRepository? bettingRepository;
+  final MatchAnalysisRepository? analysisRepository;
+  final StandingRepository? standingRepository;
+  final ChatRepository? chatRepository;
+  final ChatSocket? chatSocket;
+  final CurrentUserRepository? currentUserRepository;
 
   const MatchScreen({
     super.key,
@@ -26,6 +36,11 @@ class MatchScreen extends StatefulWidget {
     this.initialFixture,
     this.repository,
     this.bettingRepository,
+    this.analysisRepository,
+    this.standingRepository,
+    this.chatRepository,
+    this.chatSocket,
+    this.currentUserRepository,
   });
 
   @override
@@ -85,7 +100,7 @@ class _MatchScreenState extends State<MatchScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _hasLoadError = fixture == null;
+        _hasLoadError = true;
       });
     }
   }
@@ -269,6 +284,7 @@ class _MatchScreenState extends State<MatchScreen> {
         );
       case 'MATCH PREVIEW':
         return MatchPreviewTab(
+          standingRepository: widget.standingRepository,
           fixture: fixture!,
           fixtureRepository: _repository,
           bettingController: _betting!,
@@ -280,9 +296,18 @@ class _MatchScreenState extends State<MatchScreen> {
           bettingController: _betting!,
         );
       case 'ANALYSIS':
-        return AnalysisTab(fixture: fixture!, detail: _fixtureDetail);
+        return AnalysisTab(
+          fixture: fixture!,
+          detail: _fixtureDetail,
+          repository: widget.analysisRepository,
+        );
       case 'LIVE CHAT':
-        return LiveChatTab(matchId: fixture!.fixtureId);
+        return LiveChatTab(
+          matchId: fixture!.fixtureId,
+          repository: widget.chatRepository,
+          socket: widget.chatSocket,
+          currentUserRepository: widget.currentUserRepository,
+        );
       default:
         return const SizedBox.shrink();
     }

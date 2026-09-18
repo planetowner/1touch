@@ -14,26 +14,23 @@ extension PostPeriodApiValue on PostPeriod {
       };
 }
 
-// POST /v1/posts/{post_id}/report currently declares a 500-character FastAPI
-// limit, but post_reports.reason is VARCHAR(255) in the MySQL schema. Keep the
-// client/mock contract at the safe storage limit until those backend contracts
-// are aligned; then this constant and its contract tests can be updated.
-const int maxPostReportReasonLength = 255;
+// Matches ReportBody and content_reports.reason in the current backend.
+const int maxPostReportReasonLength = 500;
 
 class CreatePostInput {
   final int teamId;
   final PostCategory category;
   final String title;
   final String body;
-  final String? mediaUrl;
+  final List<int> attachmentIds;
 
-  const CreatePostInput({
+  CreatePostInput({
     required this.teamId,
     required this.category,
     required this.title,
     required this.body,
-    this.mediaUrl,
-  });
+    List<int> attachmentIds = const [],
+  }) : attachmentIds = List.unmodifiable(attachmentIds);
 }
 
 abstract interface class PostRepository {
@@ -52,5 +49,10 @@ abstract interface class PostRepository {
   Future<void> reportPost({
     required int postId,
     required String reason,
+  });
+
+  Future<void> setPostLiked({
+    required int postId,
+    required bool liked,
   });
 }
