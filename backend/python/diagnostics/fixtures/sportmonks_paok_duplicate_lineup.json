@@ -1,0 +1,867 @@
+{
+  "source": "Sportmonks fixture 3239881, retrieved 2026-09-17",
+  "verified_source": "https://www.uefa.com/uefaeuropaleague/match/2021932--paok-vs-olimpik-donetsk/lineups/",
+  "verified_lineup": {
+    "player_id": 77903,
+    "jersey_number": 20,
+    "kept_lineup_id": 4414061,
+    "removed_lineup_id": 6942876784
+  },
+  "fixture": {
+    "id": 3239881,
+    "lineups": [
+      {
+        "id": 4413869,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 333870,
+        "team_id": 649,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 1,
+        "player_name": "Rodrigo Rey",
+        "jersey_number": 1,
+        "details": [
+          {
+            "id": 194266021,
+            "fixture_id": 3239881,
+            "player_id": 333870,
+            "team_id": 649,
+            "lineup_id": 4413869,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 333870,
+          "sport_id": 1,
+          "country_id": 44,
+          "nationality_id": 44,
+          "city_id": 48634,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "R. Rey",
+          "firstname": "Rodrigo Francisco Jesús",
+          "lastname": "Rey",
+          "name": "Rodrigo Francisco Jesús Rey",
+          "display_name": "Rodrigo Rey",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/14/333870.png",
+          "height": 190,
+          "weight": 76,
+          "date_of_birth": "1991-03-08",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413874,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 109196,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 2,
+        "player_name": "Léo Matos",
+        "jersey_number": 3,
+        "details": [
+          {
+            "id": 194266034,
+            "fixture_id": 3239881,
+            "player_id": 109196,
+            "team_id": 649,
+            "lineup_id": 4413874,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 109196,
+          "sport_id": 1,
+          "country_id": 5,
+          "nationality_id": 5,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 25,
+          "common_name": "L. de Matos Cruz",
+          "firstname": "Leonardo",
+          "lastname": "de Matos Cruz",
+          "name": "Leonardo de Matos Cruz",
+          "display_name": "Léo Matos",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/12/109196.png",
+          "height": 184,
+          "weight": 81,
+          "date_of_birth": "1986-04-02",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413879,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 51829,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 5,
+        "player_name": "Marin Leovac",
+        "jersey_number": 4,
+        "details": [
+          {
+            "id": 194266062,
+            "fixture_id": 3239881,
+            "player_id": 51829,
+            "team_id": 649,
+            "lineup_id": 4413879,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 194266065,
+            "fixture_id": 3239881,
+            "player_id": 51829,
+            "team_id": 649,
+            "lineup_id": 4413879,
+            "type_id": 84,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 51829,
+          "sport_id": 1,
+          "country_id": 507,
+          "nationality_id": 266,
+          "city_id": 41022,
+          "position_id": 25,
+          "detailed_position_id": 155,
+          "type_id": 25,
+          "common_name": "M. Leovac",
+          "firstname": "Marin",
+          "lastname": "Leovac",
+          "name": "Marin Leovac",
+          "display_name": "Marin Leovac",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/21/51829.png",
+          "height": 180,
+          "weight": 71,
+          "date_of_birth": "1988-08-07",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413882,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 7638,
+        "team_id": 649,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 11,
+        "player_name": "Aleksandar Prijovic",
+        "jersey_number": 9,
+        "details": [
+          {
+            "id": 194266088,
+            "fixture_id": 3239881,
+            "player_id": 7638,
+            "team_id": 649,
+            "lineup_id": 4413882,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 7638,
+          "sport_id": 1,
+          "country_id": 62,
+          "nationality_id": 296,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 151,
+          "type_id": 27,
+          "common_name": "A. Prijović",
+          "firstname": "Aleksandar",
+          "lastname": "Prijović",
+          "name": "Aleksandar Prijović",
+          "display_name": "Aleksandar Prijović",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/7638.png",
+          "height": 191,
+          "weight": 88,
+          "date_of_birth": "1990-04-21",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413886,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 109192,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 8,
+        "player_name": "Djalma",
+        "jersey_number": 10,
+        "details": [
+          {
+            "id": 194266103,
+            "fixture_id": 3239881,
+            "player_id": 109192,
+            "team_id": 649,
+            "lineup_id": 4413886,
+            "type_id": 119,
+            "data": {
+              "value": 82
+            }
+          }
+        ],
+        "player": {
+          "id": 109192,
+          "sport_id": 1,
+          "country_id": 911,
+          "nationality_id": 911,
+          "city_id": 52297,
+          "position_id": 27,
+          "detailed_position_id": 156,
+          "type_id": 27,
+          "common_name": "D. Abel Campos",
+          "firstname": "Djalma Braume Manuel",
+          "lastname": "Abel Campos",
+          "name": "Djalma Braume Manuel Abel Campos",
+          "display_name": "Djalma",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/8/109192.png",
+          "height": 176,
+          "weight": 78,
+          "date_of_birth": "1987-05-30",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4414042,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 96322,
+        "team_id": 649,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Pedro Henrique",
+        "jersey_number": 11,
+        "details": [
+          {
+            "id": 194266125,
+            "fixture_id": 3239881,
+            "player_id": 96322,
+            "team_id": 649,
+            "lineup_id": 4414042,
+            "type_id": 119,
+            "data": {
+              "value": 24
+            }
+          }
+        ],
+        "player": {
+          "id": 96322,
+          "sport_id": 1,
+          "country_id": 5,
+          "nationality_id": 5,
+          "city_id": 63660,
+          "position_id": 27,
+          "detailed_position_id": 156,
+          "type_id": 27,
+          "common_name": "P. Konzen Medina da Silva",
+          "firstname": "Pedro Henrique",
+          "lastname": "Konzen Medina da Silva",
+          "name": "Pedro Henrique Konzen Medina da Silva",
+          "display_name": "Pedro Henrique",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/2/96322.png",
+          "height": 181,
+          "weight": 78,
+          "date_of_birth": "1990-06-16",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4414049,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 31578,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "S. Malezas",
+        "jersey_number": 13,
+        "details": [],
+        "player": {
+          "id": 31578,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 43238,
+          "position_id": 221,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "S. Malezas",
+          "firstname": "Stelios",
+          "lastname": "Malezas",
+          "name": "Stelios Malezas",
+          "display_name": "Stelios Malezas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/26/31578.png",
+          "height": 193,
+          "weight": 80,
+          "date_of_birth": "1985-03-11",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413891,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 4353,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 4,
+        "player_name": "José Crespo",
+        "jersey_number": 15,
+        "details": [
+          {
+            "id": 194266160,
+            "fixture_id": 3239881,
+            "player_id": 4353,
+            "team_id": 649,
+            "lineup_id": 4413891,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 4353,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": 32,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "J. Crespo Rincón",
+          "firstname": "José Ángel",
+          "lastname": "Crespo Rincón",
+          "name": "José Ángel Crespo Rincón",
+          "display_name": "José Ángel Crespo",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/1/4353.png",
+          "height": 185,
+          "weight": 73,
+          "date_of_birth": "1987-02-09",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413895,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 66755,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 7,
+        "player_name": "Gojko Cimirot",
+        "jersey_number": 16,
+        "details": [
+          {
+            "id": 262243518,
+            "fixture_id": 3239881,
+            "player_id": 66755,
+            "team_id": 649,
+            "lineup_id": 4413895,
+            "type_id": 52,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 194266215,
+            "fixture_id": 3239881,
+            "player_id": 66755,
+            "team_id": 649,
+            "lineup_id": 4413895,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 66755,
+          "sport_id": 1,
+          "country_id": 507,
+          "nationality_id": 507,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "G. Cimirot",
+          "firstname": "Gojko",
+          "lastname": "Cimirot",
+          "name": "Gojko Cimirot",
+          "display_name": "Gojko Cimirot",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/3/66755.png",
+          "height": 178,
+          "weight": 77,
+          "date_of_birth": "1992-12-19",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4414061,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 77903,
+        "team_id": 649,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Efthymios Koulouris",
+        "jersey_number": 20,
+        "details": [],
+        "player": {
+          "id": 77903,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 84085,
+          "position_id": 27,
+          "detailed_position_id": 151,
+          "type_id": 27,
+          "common_name": "E. Koulouris",
+          "firstname": "Efthymios",
+          "lastname": "Koulouris",
+          "name": "Efthymios Koulouris",
+          "display_name": "Efthymios Koulouris",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/15/77903.png",
+          "height": 186,
+          "weight": 82,
+          "date_of_birth": "1996-03-06",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413901,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 23042,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 9,
+        "player_name": "D. Biseswar",
+        "jersey_number": 21,
+        "details": [
+          {
+            "id": 194266268,
+            "fixture_id": 3239881,
+            "player_id": 23042,
+            "team_id": 649,
+            "lineup_id": 4413901,
+            "type_id": 119,
+            "data": {
+              "value": 66
+            }
+          }
+        ],
+        "player": {
+          "id": 23042,
+          "sport_id": 1,
+          "country_id": 38,
+          "nationality_id": 2088,
+          "city_id": 2592,
+          "position_id": 27,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "D. Biseswar",
+          "firstname": "Diego",
+          "lastname": "Biseswar",
+          "name": "Diego Biseswar",
+          "display_name": "Diego Biseswar",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 176,
+          "weight": 79,
+          "date_of_birth": "1988-03-08",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 6942876784,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 77903,
+        "team_id": 649,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Efthymios Koulouris",
+        "jersey_number": 24,
+        "details": [],
+        "player": {
+          "id": 77903,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 84085,
+          "position_id": 27,
+          "detailed_position_id": 151,
+          "type_id": 27,
+          "common_name": "E. Koulouris",
+          "firstname": "Efthymios",
+          "lastname": "Koulouris",
+          "name": "Efthymios Koulouris",
+          "display_name": "Efthymios Koulouris",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/15/77903.png",
+          "height": 186,
+          "weight": 82,
+          "date_of_birth": "1996-03-06",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4414073,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 109416,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Y. Shakhov",
+        "jersey_number": 28,
+        "details": [
+          {
+            "id": 194266297,
+            "fixture_id": 3239881,
+            "player_id": 109416,
+            "team_id": 649,
+            "lineup_id": 4414073,
+            "type_id": 119,
+            "data": {
+              "value": 18
+            }
+          }
+        ],
+        "player": {
+          "id": 109416,
+          "sport_id": 1,
+          "country_id": 86,
+          "nationality_id": 86,
+          "city_id": 23640,
+          "position_id": 26,
+          "detailed_position_id": 153,
+          "type_id": 26,
+          "common_name": "E. Shakhov",
+          "firstname": "Evgeniy",
+          "lastname": "Shakhov",
+          "name": "Evgeniy Shakhov",
+          "display_name": "Evgen Shakhov",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/8/109416.png",
+          "height": 189,
+          "weight": 81,
+          "date_of_birth": "1990-11-30",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413907,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 31054,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 10,
+        "player_name": "Robert Mak",
+        "jersey_number": 29,
+        "details": [
+          {
+            "id": 262243504,
+            "fixture_id": 3239881,
+            "player_id": 31054,
+            "team_id": 649,
+            "lineup_id": 4413907,
+            "type_id": 52,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 194266326,
+            "fixture_id": 3239881,
+            "player_id": 31054,
+            "team_id": 649,
+            "lineup_id": 4413907,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 31054,
+          "sport_id": 1,
+          "country_id": 401,
+          "nationality_id": 401,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 152,
+          "type_id": 26,
+          "common_name": "R. Mak",
+          "firstname": "Róbert",
+          "lastname": "Mak",
+          "name": "Róbert Mak",
+          "display_name": "Robert Mak",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/14/31054.png",
+          "height": 179,
+          "weight": 78,
+          "date_of_birth": "1991-03-08",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4414086,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 110236,
+        "team_id": 649,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "N. Melissas",
+        "jersey_number": 30,
+        "details": [],
+        "player": {
+          "id": 110236,
+          "sport_id": 1,
+          "country_id": 11,
+          "nationality_id": 125,
+          "city_id": 89847,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "N. Melissas",
+          "firstname": "Nikolaos",
+          "lastname": "Melissas",
+          "name": "Nikolaos Melissas",
+          "display_name": "Nikolaos Melissas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 193,
+          "weight": 78,
+          "date_of_birth": "1993-02-24",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4414098,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 108988,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "P. Deligiannidis",
+        "jersey_number": 41,
+        "details": [],
+        "player": {
+          "id": 108988,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 89847,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 25,
+          "common_name": "P. Deligiannidis",
+          "firstname": "Panagiotis",
+          "lastname": "Deligiannidis",
+          "name": "Panagiotis Deligiannidis",
+          "display_name": "Panagiotis Deligiannidis",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/108988.png",
+          "height": 180,
+          "weight": 77,
+          "date_of_birth": "1996-08-29",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413912,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 109195,
+        "team_id": 649,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 3,
+        "player_name": "Fernando Varela",
+        "jersey_number": 43,
+        "details": [
+          {
+            "id": 194266384,
+            "fixture_id": 3239881,
+            "player_id": 109195,
+            "team_id": 649,
+            "lineup_id": 4413912,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 109195,
+          "sport_id": 1,
+          "country_id": 20,
+          "nationality_id": 772,
+          "city_id": 15596,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "F. Lopes dos Santos Varela",
+          "firstname": "Fernando",
+          "lastname": "Lopes dos Santos Varela",
+          "name": "Fernando Lopes dos Santos Varela",
+          "display_name": "Fernando Lopes dos Santos Varela",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/11/109195.png",
+          "height": 185,
+          "weight": 88,
+          "date_of_birth": "1987-11-26",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4414107,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 108293,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Dimitrios Pelkas",
+        "jersey_number": 77,
+        "details": [
+          {
+            "id": 194266406,
+            "fixture_id": 3239881,
+            "player_id": 108293,
+            "team_id": 649,
+            "lineup_id": 4414107,
+            "type_id": 119,
+            "data": {
+              "value": 8
+            }
+          }
+        ],
+        "player": {
+          "id": 108293,
+          "sport_id": 1,
+          "country_id": 125,
+          "nationality_id": 125,
+          "city_id": 31869,
+          "position_id": 26,
+          "detailed_position_id": 150,
+          "type_id": 26,
+          "common_name": "D. Pelkas",
+          "firstname": "Dimitris",
+          "lastname": "Pelkas",
+          "name": "Dimitris Pelkas",
+          "display_name": "Dimitrios Pelkas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/5/108293.png",
+          "height": 177,
+          "weight": 73,
+          "date_of_birth": "1993-10-26",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 4413919,
+        "sport_id": 1,
+        "fixture_id": 3239881,
+        "player_id": 1270,
+        "team_id": 649,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 6,
+        "player_name": "José Alberto Cañas",
+        "jersey_number": 87,
+        "details": [
+          {
+            "id": 194266434,
+            "fixture_id": 3239881,
+            "player_id": 1270,
+            "team_id": 649,
+            "lineup_id": 4413919,
+            "type_id": 119,
+            "data": {
+              "value": 72
+            }
+          }
+        ],
+        "player": {
+          "id": 1270,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": 32,
+          "city_id": 41480,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "J. Cañas Ruiz Herrera",
+          "firstname": "José Alberto",
+          "lastname": "Cañas Ruiz Herrera",
+          "name": "José Alberto Cañas Ruiz Herrera",
+          "display_name": "José Alberto Cañas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/1270.png",
+          "height": 178,
+          "weight": 69,
+          "date_of_birth": "1987-05-27",
+          "gender": "male"
+        }
+      }
+    ],
+    "events": [],
+    "statistics": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  }
+}

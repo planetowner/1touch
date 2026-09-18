@@ -24,8 +24,8 @@ ROOT = Path(__file__).parent / "fixtures"
 RAW = json.loads((ROOT / "opta-valencia-analysis.json").read_text(encoding="utf-8"))
 
 
-def event(start, end=None, *, kinds=("completed_pass",), key="sample"):
-    return {"external_event_id": key, "kinds": list(kinds),
+def event(start, end=None, *, kinds=("completed_pass",), key="sample", position_group_id=25):
+    return {"external_event_id": key, "kinds": list(kinds), "position_group_id": position_group_id,
             "start": {"x": start[0], "y": start[1]},
             "end": {"x": end[0], "y": end[1]} if end else None}
 
@@ -147,8 +147,37 @@ class MetricTests(unittest.TestCase):
         self.assertEqual(h, a)
         self.assertEqual([c["count"] for c in h["progression"]["channels"]], [1, 1, 1])
         d = h["defensive_activity"]
-        self.assertEqual((d["action_count"], d["recoveries"], d["high_regains"]), (4, 3, 2))
+        self.assertEqual((d["action_count"], d["recoveries"], d["high_regains"]), (3, 3, 2))
         self.assertEqual((d["average_regain_x"], d["average_regain_height_m"]), (50, 52.5))
+        self.assertEqual(d["halves"], [{"half": "own", "count": 1, "percentage": 33.33},
+                                       {"half": "opponent", "count": 2, "percentage": 66.67}])
+        self.assertTrue(d["complete"])
+
+    def test_map_mean_and_halves_share_only_outfield_recoveries(self):
+        rows = [event((5, 50), kinds=("recovery",), key="keeper", position_group_id=24),
+                event((20, 30), kinds=("recovery",), key="defender", position_group_id=25),
+                event((50, 40), kinds=("recovery", "tackle_won"), key="midfielder", position_group_id=26),
+                event((80, 60), kinds=("recovery",), key="forward", position_group_id=27)]
+        rows += [event((99, 90), kinds=(kind,), key=kind, position_group_id=None)
+                 for kind in ("tackle_won", "tackle_lost", "interception", "block", "clearance")]
+        d = team_analysis(rows, "home")["defensive_activity"]
+        self.assertEqual([a["external_event_id"] for a in d["actions"]], ["defender", "midfielder", "forward"])
+        self.assertTrue(all(a["kinds"] == ["recovery"] for a in d["actions"]))
+        self.assertEqual((d["recoveries"], d["high_regains"], d["average_regain_height_m"]), (3, 2, 52.5))
+        self.assertEqual([h["count"] for h in d["halves"]], [1, 2])
+        self.assertEqual(sum(h["percentage"] for h in d["halves"]), 100)
+        self.assertEqual((d["complete"], d["missing_position_count"]), (True, 0))
+
+    def test_missing_recovery_position_does_not_present_partial_team_totals(self):
+        rows = [event((20, 20), kinds=("recovery",), key="known"),
+                event((80, 80), kinds=("recovery",), key="unknown", position_group_id=None)]
+        d = team_analysis(rows, "home")["defensive_activity"]
+        self.assertFalse(d["complete"])
+        self.assertEqual((d["missing_position_count"], d["action_count"]), (1, 1))
+        self.assertEqual([a["external_event_id"] for a in d["actions"]], ["known"])
+        for field in ("recoveries", "high_regains", "average_regain_x", "average_regain_height_m"):
+            self.assertIsNone(d[field])
+        self.assertTrue(all(h["count"] is None and h["percentage"] is None for h in d["halves"]))
 
     def test_no_actions_means_zero_counts_but_undefined_percentages_and_averages(self):
         result = team_analysis([], "home")
@@ -156,6 +185,11 @@ class MetricTests(unittest.TestCase):
         self.assertTrue(all(c["count"] == 0 and c["percentage"] is None for c in result["progression"]["channels"]))
         self.assertEqual(result["defensive_activity"]["high_regains"], 0)
         self.assertIsNone(result["defensive_activity"]["average_regain_x"])
+        self.assertEqual(result["defensive_activity"]["halves"], [
+            {"half": "own", "count": 0, "percentage": None},
+            {"half": "opponent", "count": 0, "percentage": None}])
+        keeper_only = team_analysis([event((5, 10), kinds=("recovery",), position_group_id=24)], "home")
+        self.assertEqual(keeper_only["defensive_activity"], result["defensive_activity"])
 
 
 class AnalysisStorageTests(unittest.TestCase):
@@ -165,10 +199,14 @@ class AnalysisStorageTests(unittest.TestCase):
         self.conn.executescript("""
             CREATE TABLE fixtures(fixture_id INTEGER PRIMARY KEY,home_team_id INTEGER,away_team_id INTEGER);
             CREATE TABLE teams(team_id INTEGER PRIMARY KEY);
-            CREATE TABLE players(player_id INTEGER PRIMARY KEY,display_name TEXT);
+            CREATE TABLE positions(position_id INTEGER PRIMARY KEY,position_group_id INTEGER);
+            INSERT INTO positions VALUES (24,24),(148,25);
+            CREATE TABLE players(player_id INTEGER PRIMARY KEY,display_name TEXT,position_id INTEGER);
+            CREATE TABLE fixture_lineups(fixture_id INTEGER,team_id INTEGER,player_id INTEGER,
+              match_position_id INTEGER,PRIMARY KEY(fixture_id,player_id));
             CREATE TABLE fixture_opta_analyses(fixture_id INTEGER PRIMARY KEY REFERENCES fixtures,
-              external_fixture_id TEXT UNIQUE,external_competition_id TEXT,external_season_id TEXT,
-              source_url TEXT,home_count INTEGER,away_count INTEGER,collected_at TEXT);
+              collected_at TEXT);
+            CREATE TABLE fixture_opta_sources(fixture_id INTEGER PRIMARY KEY REFERENCES fixtures,source_url TEXT);
             CREATE TABLE fixture_opta_events(external_event_id TEXT PRIMARY KEY,
               fixture_id INTEGER REFERENCES fixture_opta_analyses,team_id INTEGER REFERENCES teams,
               player_id INTEGER REFERENCES players,minute INTEGER,extra_minute INTEGER,kinds TEXT,
@@ -181,12 +219,17 @@ class AnalysisStorageTests(unittest.TestCase):
         self.plan = plan_match_ids(RAW, case["match"], case["fixtures"], case["lineups"], empty_ids())
         self.result = normalize_analysis(RAW)
         self.fixture_id = self.plan["fixture"]["fixture_id"]
+        # 같은 경기의 Sportmonks 라인업에서 GK(24)로 확인한 Dimitrievski와 Joan Garcia예요.
+        self.goalkeeper_ids = {142175, 16475841}
         f = self.plan["fixture"]
         self.conn.execute("INSERT INTO fixtures VALUES (?,?,?)", (self.fixture_id, f["home_team_id"], f["away_team_id"]))
         for kind in ("team", "player"):
             for internal in set(self.plan["mappings"][kind].values()):
-                sql = "INSERT INTO teams VALUES (?)" if kind == "team" else "INSERT INTO players(player_id) VALUES (?)"
-                self.conn.execute(sql, (internal,))
+                if kind == "team":
+                    self.conn.execute("INSERT INTO teams VALUES (?)", (internal,))
+                else:
+                    self.conn.execute("INSERT INTO players(player_id,position_id) VALUES (?,?)",
+                                      (internal, 24 if internal in self.goalkeeper_ids else 148))
         self.conn.commit()
         self.known = empty_ids()
 
@@ -198,6 +241,13 @@ class AnalysisStorageTests(unittest.TestCase):
             replace_match(SqliteCursor(self.conn), result or self.result, self.plan, self.known,
                           "2026-09-14T16:00:00+00:00", dataset="analysis")
         self.known = self.plan["mappings"]
+
+    def query(self, sql, params):
+        cursor = self.conn.execute(sql.replace("%s", "?"), params)
+        rows = [dict(zip([d[0] for d in cursor.description], row)) for row in cursor.fetchall()]
+        for row in rows:
+            row["collected_at"] = datetime.fromisoformat(row["collected_at"])
+        return rows
 
     def test_idempotence_json_classification_nullable_endpoint_and_failed_refresh_rollback(self):
         self.save()
@@ -222,14 +272,7 @@ class AnalysisStorageTests(unittest.TestCase):
     def test_api_metrics_round_trip_and_uncollected_vs_zero(self):
         from one_touch_loader.api.repos import opta_analysis_repo as repo
 
-        def query(sql, params):
-            cursor = self.conn.execute(sql.replace("%s", "?"), params)
-            rows = [dict(zip([d[0] for d in cursor.description], row)) for row in cursor.fetchall()]
-            for row in rows:
-                row["collected_at"] = datetime.fromisoformat(row["collected_at"])
-            return rows
-
-        with patch.object(repo, "fetch_all_dict", side_effect=query):
+        with patch.object(repo, "fetch_all_dict", side_effect=self.query):
             response = repo.get_analysis(self.fixture_id)
             self.assertFalse(response["available"])
             self.assertIsNone(response["teams"])
@@ -237,13 +280,59 @@ class AnalysisStorageTests(unittest.TestCase):
             response = repo.get_analysis(self.fixture_id)
             self.assertTrue(response["available"])
             for side in ("home", "away"):
-                expected = team_analysis([e for e in self.result["events"] if e["side"] == side], side)
+                events = [{**e, "position_group_id": 24 if self.plan["mappings"]["player"][e["external_player_id"]]
+                           in self.goalkeeper_ids else 25} for e in self.result["events"] if e["side"] == side]
+                expected = team_analysis(events, side)
                 for section in ("attack", "progression", "defensive_activity"):
                     self.assertEqual(response["teams"][side][section], expected[section])
+            self.assertEqual(response["methodology"]["defensive_filters"], ("recovery",))
+            self.assertEqual(response["methodology"]["map_kind"], "outfield_recoveries_not_pressure")
+            for side, count, height in (("home", 32, 24.29), ("away", 43, 45.36)):
+                d = response["teams"][side]["defensive_activity"]
+                self.assertEqual((d["recoveries"], d["average_regain_height_m"]), (count, height))
             self.save({**self.result, "events": [], "counts": {"home": 0, "away": 0}})
             response = repo.get_analysis(self.fixture_id)
             self.assertTrue(response["available"])
             self.assertEqual(response["teams"]["home"]["attack"]["key_passes"], 0)
+
+    def test_api_uses_match_position_before_profile_and_keeps_team_scope(self):
+        from one_touch_loader.api.repos import opta_analysis_repo as repo
+
+        self.save()
+        with patch.object(repo, "fetch_all_dict", side_effect=self.query):
+            baseline = repo.get_analysis(self.fixture_id)["teams"]
+            self.conn.execute("UPDATE players SET position_id=148 WHERE player_id=16475841")
+            self.conn.execute("INSERT INTO fixture_lineups VALUES (?,?,?,?)",
+                              (self.fixture_id, self.plan["fixture"]["away_team_id"], 16475841, 24))
+            midfielder = next(e["player_id"] for e in baseline["away"]["events"]
+                              if "recovery" in e["kinds"] and e["player_id"] not in self.goalkeeper_ids)
+            self.conn.execute("UPDATE players SET position_id=24 WHERE player_id=?", (midfielder,))
+            self.conn.execute("INSERT INTO fixture_lineups VALUES (?,?,?,?)",
+                              (self.fixture_id, self.plan["fixture"]["away_team_id"], midfielder, 26))
+            # 다른 팀 명단의 포지션은 같은 선수 ID여도 이 팀의 골키퍼 판정에 쓰지 않아요.
+            self.conn.execute("INSERT INTO fixture_lineups VALUES (?,?,?,?)",
+                              (self.fixture_id, self.plan["fixture"]["away_team_id"], 142175, 25))
+            actual = repo.get_analysis(self.fixture_id)["teams"]
+            for side in ("home", "away"):
+                self.assertEqual(actual[side]["defensive_activity"], baseline[side]["defensive_activity"])
+
+    def test_api_keeps_pass_metrics_when_recovery_positions_are_incomplete(self):
+        from one_touch_loader.api.repos import opta_analysis_repo as repo
+
+        self.save()
+        with patch.object(repo, "fetch_all_dict", side_effect=self.query):
+            baseline = repo.get_analysis(self.fixture_id)["teams"]
+            self.conn.execute("UPDATE players SET position_id=NULL WHERE player_id=16475841")
+            response = repo.get_analysis(self.fixture_id)["teams"]
+            d = response["away"]["defensive_activity"]
+            self.assertFalse(d["complete"])
+            self.assertEqual((d["missing_position_count"], d["action_count"]), (10, 43))
+            self.assertIsNone(d["recoveries"])
+            self.assertIsNone(d["average_regain_height_m"])
+            for side in ("home", "away"):
+                for key in ("attack", "progression"):
+                    self.assertEqual(response[side][key], baseline[side][key])
+            self.assertTrue(response["home"]["defensive_activity"]["complete"])
 
     def test_route_requires_member_and_existing_fixture(self):
         from fastapi import FastAPI

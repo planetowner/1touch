@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [ValidateSet('r2', 'google', 'apple', 'kakao', 'line', 'ses', 'community')]
+    [ValidateSet('r2', 'google', 'apple', 'kakao', 'line', 'ses', 'community', 'youtube')]
     [string]$Service
 )
 

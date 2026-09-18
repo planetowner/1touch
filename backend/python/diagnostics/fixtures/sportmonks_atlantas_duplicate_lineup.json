@@ -1,0 +1,1047 @@
+{
+  "source": "Sportmonks fixture 1818704, retrieved 2026-09-17",
+  "verified_source": "https://www.uefa.com/uefaeuropaleague/match/2021717--kairat-almaty-vs-atlantas/lineups/",
+  "verified_lineup": {
+    "player_id": 463035,
+    "jersey_number": 19,
+    "kept_lineup_id": 6955683516,
+    "removed_lineup_id": 1051955850
+  },
+  "fixture": {
+    "id": 1818704,
+    "lineups": [
+      {
+        "id": 884744973,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 139137,
+        "team_id": 5681,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 1,
+        "player_name": "D. Mikelionis",
+        "jersey_number": 1,
+        "details": [
+          {
+            "id": 337049141,
+            "fixture_id": 1818704,
+            "player_id": 139137,
+            "team_id": 5681,
+            "lineup_id": 884744973,
+            "type_id": 1535,
+            "data": {
+              "value": 6
+            }
+          },
+          {
+            "id": 192281971,
+            "fixture_id": 1818704,
+            "player_id": 139137,
+            "team_id": 5681,
+            "lineup_id": 884744973,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 192281636,
+            "fixture_id": 1818704,
+            "player_id": 139137,
+            "team_id": 5681,
+            "lineup_id": 884744973,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 139137,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": 43320,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "D. Mikelionis",
+          "firstname": "Deividas",
+          "lastname": "Mikelionis",
+          "name": "Deividas Mikelionis",
+          "display_name": "Deividas Mikelionis",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/1/139137.png",
+          "height": 188,
+          "weight": 81,
+          "date_of_birth": "1995-05-08",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744977,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138598,
+        "team_id": 5681,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 3,
+        "player_name": "V. Gašpuitis",
+        "jersey_number": 3,
+        "details": [
+          {
+            "id": 192281751,
+            "fixture_id": 1818704,
+            "player_id": 138598,
+            "team_id": 5681,
+            "lineup_id": 884744977,
+            "type_id": 119,
+            "data": {
+              "value": 69
+            }
+          },
+          {
+            "id": 192281881,
+            "fixture_id": 1818704,
+            "player_id": 138598,
+            "team_id": 5681,
+            "lineup_id": 884744977,
+            "type_id": 88,
+            "data": {
+              "value": 5
+            }
+          }
+        ],
+        "player": {
+          "id": 138598,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 148,
+          "type_id": 25,
+          "common_name": "V. Gašpuitis",
+          "firstname": "Vytas",
+          "lastname": "Gašpuitis",
+          "name": "Vytas Gašpuitis",
+          "display_name": "Vytas Gaspuitis",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 197,
+          "weight": null,
+          "date_of_birth": "1994-03-04",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744970,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 139169,
+        "team_id": 5681,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 9,
+        "player_name": "Jurijus Veresciakas",
+        "jersey_number": 7,
+        "details": [
+          {
+            "id": 192281983,
+            "fixture_id": 1818704,
+            "player_id": 139169,
+            "team_id": 5681,
+            "lineup_id": 884744970,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 192281889,
+            "fixture_id": 1818704,
+            "player_id": 139169,
+            "team_id": 5681,
+            "lineup_id": 884744970,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 139169,
+          "sport_id": 1,
+          "country_id": 86,
+          "nationality_id": 86,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": null,
+          "type_id": 27,
+          "common_name": "Y. Vereshchak",
+          "firstname": "Yuriy",
+          "lastname": "Vereshchak",
+          "name": "Yuriy Vereshchak",
+          "display_name": "Yuriy Vereshchak",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1994-04-04",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744980,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138650,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "S. Rakauskas",
+        "jersey_number": 8,
+        "details": [
+          {
+            "id": 192281891,
+            "fixture_id": 1818704,
+            "player_id": 138650,
+            "team_id": 5681,
+            "lineup_id": 884744980,
+            "type_id": 119,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 138650,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "S. Rakauskas",
+          "firstname": "Skirmantas",
+          "lastname": "Rakauskas",
+          "name": "Skirmantas Rakauskas",
+          "display_name": "Skirmantas Rakauskas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 180,
+          "weight": 80,
+          "date_of_birth": "1996-01-07",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744984,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138405,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 8,
+        "player_name": "D. Kazlauskas",
+        "jersey_number": 9,
+        "details": [
+          {
+            "id": 192281995,
+            "fixture_id": 1818704,
+            "player_id": 138405,
+            "team_id": 5681,
+            "lineup_id": 884744984,
+            "type_id": 119,
+            "data": {
+              "value": 88
+            }
+          },
+          {
+            "id": 192281820,
+            "fixture_id": 1818704,
+            "player_id": 138405,
+            "team_id": 5681,
+            "lineup_id": 884744984,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 138405,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": 46222,
+          "position_id": 26,
+          "detailed_position_id": 157,
+          "type_id": 27,
+          "common_name": "D. Kazlauskas",
+          "firstname": "Donatas",
+          "lastname": "Kazlauskas",
+          "name": "Donatas Kazlauskas",
+          "display_name": "Donatas Kazlauskas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/5/138405.png",
+          "height": 178,
+          "weight": 70,
+          "date_of_birth": "1994-03-31",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744978,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138505,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "R. Gedminas",
+        "jersey_number": 10,
+        "details": [
+          {
+            "id": 192281625,
+            "fixture_id": 1818704,
+            "player_id": 138505,
+            "team_id": 5681,
+            "lineup_id": 884744978,
+            "type_id": 119,
+            "data": {
+              "value": 30
+            }
+          },
+          {
+            "id": 192281902,
+            "fixture_id": 1818704,
+            "player_id": 138505,
+            "team_id": 5681,
+            "lineup_id": 884744978,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 138505,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": null,
+          "type_id": 27,
+          "common_name": "R. Gedminas",
+          "firstname": "Rokas",
+          "lastname": "Gedminas",
+          "name": "Rokas Gedminas",
+          "display_name": "Rokas Gedminas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1993-04-13",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744952,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 139221,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 6,
+        "player_name": "Domantas Simkus",
+        "jersey_number": 11,
+        "details": [
+          {
+            "id": 192281915,
+            "fixture_id": 1818704,
+            "player_id": 139221,
+            "team_id": 5681,
+            "lineup_id": 884744952,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          },
+          {
+            "id": 192282008,
+            "fixture_id": 1818704,
+            "player_id": 139221,
+            "team_id": 5681,
+            "lineup_id": 884744952,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 139221,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 153,
+          "type_id": 26,
+          "common_name": "D. Šimkus",
+          "firstname": "Domantas",
+          "lastname": "Šimkus",
+          "name": "Domantas Šimkus",
+          "display_name": "Domantas Šimkus",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 174,
+          "weight": 71,
+          "date_of_birth": "1996-02-10",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744979,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138424,
+        "team_id": 5681,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 2,
+        "player_name": "M. Beneta",
+        "jersey_number": 17,
+        "details": [
+          {
+            "id": 192281831,
+            "fixture_id": 1818704,
+            "player_id": 138424,
+            "team_id": 5681,
+            "lineup_id": 884744979,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          },
+          {
+            "id": 192281917,
+            "fixture_id": 1818704,
+            "player_id": 138424,
+            "team_id": 5681,
+            "lineup_id": 884744979,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 192282015,
+            "fixture_id": 1818704,
+            "player_id": 138424,
+            "team_id": 5681,
+            "lineup_id": 884744979,
+            "type_id": 84,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 138424,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 154,
+          "type_id": 25,
+          "common_name": "M. Beneta",
+          "firstname": "Markas",
+          "lastname": "Beneta",
+          "name": "Markas Beneta",
+          "display_name": "Markas Beneta",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 181,
+          "weight": 73,
+          "date_of_birth": "1993-07-08",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 6955683516,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 463035,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "R. Filipavičius",
+        "jersey_number": 19,
+        "details": [],
+        "player": {
+          "id": 463035,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 150,
+          "type_id": 26,
+          "common_name": "R. Filipavicius",
+          "firstname": "Rokas",
+          "lastname": "Filipavicius",
+          "name": "Rokas Filipavicius",
+          "display_name": "Rokas Filipavicius",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/27/463035.png",
+          "height": 181,
+          "weight": null,
+          "date_of_birth": "1999-12-22",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744954,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138510,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "D. Norvilas",
+        "jersey_number": 20,
+        "details": [
+          {
+            "id": 192282023,
+            "fixture_id": 1818704,
+            "player_id": 138510,
+            "team_id": 5681,
+            "lineup_id": 884744954,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 138510,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 153,
+          "type_id": 26,
+          "common_name": "D. Norvilas",
+          "firstname": "Dovydas",
+          "lastname": "Norvilas",
+          "name": "Dovydas Norvilas",
+          "display_name": "Dovydas Norvilas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/14/138510.png",
+          "height": 173,
+          "weight": 68,
+          "date_of_birth": "1993-04-05",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744975,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138736,
+        "team_id": 5681,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 5,
+        "player_name": "J. Raziūnas",
+        "jersey_number": 21,
+        "details": [
+          {
+            "id": 192282028,
+            "fixture_id": 1818704,
+            "player_id": 138736,
+            "team_id": 5681,
+            "lineup_id": 884744975,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 192281848,
+            "fixture_id": 1818704,
+            "player_id": 138736,
+            "team_id": 5681,
+            "lineup_id": 884744975,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 138736,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "J. Raziūnas",
+          "firstname": "Justas",
+          "lastname": "Raziūnas",
+          "name": "Justas Raziūnas",
+          "display_name": "Justas Raziūnas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 170,
+          "weight": 64,
+          "date_of_birth": "1995-01-23",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744964,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 463580,
+        "team_id": 5681,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "S. Juška",
+        "jersey_number": 22,
+        "details": [
+          {
+            "id": 192281942,
+            "fixture_id": 1818704,
+            "player_id": 463580,
+            "team_id": 5681,
+            "lineup_id": 884744964,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 463580,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "S. Juška",
+          "firstname": "Simonas",
+          "lastname": "Juška",
+          "name": "Simonas Juška",
+          "display_name": "Simonas Juška",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 180,
+          "weight": 80,
+          "date_of_birth": "1994-03-28",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744983,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 139070,
+        "team_id": 5681,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Evan Aleksandrov Ridley",
+        "jersey_number": 23,
+        "details": [
+          {
+            "id": 192281616,
+            "fixture_id": 1818704,
+            "player_id": 139070,
+            "team_id": 5681,
+            "lineup_id": 884744983,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 139070,
+          "sport_id": 1,
+          "country_id": 98,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": null,
+          "type_id": 24,
+          "common_name": "E. Aleksandrov Ridley",
+          "firstname": "Evan",
+          "lastname": "Aleksandrov Ridley",
+          "name": "Evan Aleksandrov Ridley",
+          "display_name": "Evan Aleksandrov Ridley",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/30/139070.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1994-06-19",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744962,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138172,
+        "team_id": 5681,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "M. Fridrikas",
+        "jersey_number": 25,
+        "details": [
+          {
+            "id": 192281855,
+            "fixture_id": 1818704,
+            "player_id": 138172,
+            "team_id": 5681,
+            "lineup_id": 884744962,
+            "type_id": 119,
+            "data": {
+              "value": 21
+            }
+          },
+          {
+            "id": 192281946,
+            "fixture_id": 1818704,
+            "player_id": 138172,
+            "team_id": 5681,
+            "lineup_id": 884744962,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 138172,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": 43320,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "M. Fridrikas",
+          "firstname": "Mantas",
+          "lastname": "Fridrikas",
+          "name": "Mantas Fridrikas",
+          "display_name": "Mantas Fridrikas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/138172.png",
+          "height": 186,
+          "weight": 70,
+          "date_of_birth": "1988-09-13",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 1051955850,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 463035,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "R. Filipavičius",
+        "jersey_number": 26,
+        "details": [
+          {
+            "id": 321554546,
+            "fixture_id": 1818704,
+            "player_id": 463035,
+            "team_id": 5681,
+            "lineup_id": 1051955850,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 463035,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 150,
+          "type_id": 26,
+          "common_name": "R. Filipavicius",
+          "firstname": "Rokas",
+          "lastname": "Filipavicius",
+          "name": "Rokas Filipavicius",
+          "display_name": "Rokas Filipavicius",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/27/463035.png",
+          "height": 181,
+          "weight": null,
+          "date_of_birth": "1999-12-22",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744966,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 145810,
+        "team_id": 5681,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 10,
+        "player_name": "Andrei Ciofu",
+        "jersey_number": 27,
+        "details": [
+          {
+            "id": 192282077,
+            "fixture_id": 1818704,
+            "player_id": 145810,
+            "team_id": 5681,
+            "lineup_id": 884744966,
+            "type_id": 119,
+            "data": {
+              "value": 60
+            }
+          },
+          {
+            "id": 192281952,
+            "fixture_id": 1818704,
+            "player_id": 145810,
+            "team_id": 5681,
+            "lineup_id": 884744966,
+            "type_id": 88,
+            "data": {
+              "value": 5
+            }
+          }
+        ],
+        "player": {
+          "id": 145810,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "A. Ciofu",
+          "firstname": "Andrei",
+          "lastname": "Ciofu",
+          "name": "Andrei Ciofu",
+          "display_name": "Andrei Ciofu",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/18/145810.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1994-05-31",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744968,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 146387,
+        "team_id": 5681,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 7,
+        "player_name": "David Andronic",
+        "jersey_number": 34,
+        "details": [
+          {
+            "id": 192282091,
+            "fixture_id": 1818704,
+            "player_id": 146387,
+            "team_id": 5681,
+            "lineup_id": 884744968,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          },
+          {
+            "id": 192281618,
+            "fixture_id": 1818704,
+            "player_id": 146387,
+            "team_id": 5681,
+            "lineup_id": 884744968,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 146387,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "D. Andronic",
+          "firstname": "David Valeryevich",
+          "lastname": "Andronic",
+          "name": "David Valeryevich Andronic",
+          "display_name": "David Andronic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 186,
+          "weight": 72,
+          "date_of_birth": "1995-07-09",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744982,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 138757,
+        "team_id": 5681,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 4,
+        "player_name": "E. Žarskis",
+        "jersey_number": 35,
+        "details": [
+          {
+            "id": 192282098,
+            "fixture_id": 1818704,
+            "player_id": 138757,
+            "team_id": 5681,
+            "lineup_id": 884744982,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 192281874,
+            "fixture_id": 1818704,
+            "player_id": 138757,
+            "team_id": 5681,
+            "lineup_id": 884744982,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 138757,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": 95376,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "E. Žarskis",
+          "firstname": "Edgaras",
+          "lastname": "Žarskis",
+          "name": "Edgaras Žarskis",
+          "display_name": "Edgaras Žarskis",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/5/138757.png",
+          "height": 191,
+          "weight": 83,
+          "date_of_birth": "1994-05-04",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 884744953,
+        "sport_id": 1,
+        "fixture_id": 1818704,
+        "player_id": 136963,
+        "team_id": 5681,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 11,
+        "player_name": "T. Labukas",
+        "jersey_number": 84,
+        "details": [
+          {
+            "id": 192281614,
+            "fixture_id": 1818704,
+            "player_id": 136963,
+            "team_id": 5681,
+            "lineup_id": 884744953,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 192281967,
+            "fixture_id": 1818704,
+            "player_id": 136963,
+            "team_id": 5681,
+            "lineup_id": 884744953,
+            "type_id": 88,
+            "data": {
+              "value": 6
+            }
+          }
+        ],
+        "player": {
+          "id": 136963,
+          "sport_id": 1,
+          "country_id": 2079,
+          "nationality_id": 2079,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": null,
+          "type_id": 27,
+          "common_name": "T. Labukas",
+          "firstname": "Tadas",
+          "lastname": "Labukas",
+          "name": "Tadas Labukas",
+          "display_name": "Tadas Labukas",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/3/136963.png",
+          "height": 182,
+          "weight": 78,
+          "date_of_birth": "1984-01-10",
+          "gender": "male"
+        }
+      }
+    ],
+    "events": [],
+    "statistics": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  }
+}

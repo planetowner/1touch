@@ -14,6 +14,10 @@ from ..repos.standings_repo import get_team_standing
 from ..repos.best_eleven_repo import get_best_eleven
 from ..repos.injuries_repo import get_team_injuries
 from ..repos.team_attributes_repo import get_team_attributes, list_team_attribute_seasons
+from ..repos.probability_repo import get_team_probability
+from ..schemas.probability import TeamProbabilityResponse
+from ..schemas.highlights import TeamHighlightsResponse
+from ..repos.highlights_repo import get_team_highlights
 from ..repos.points_pace_repo import (
     build_current_form_comparison,
     get_points_pace_series,
@@ -37,6 +41,48 @@ from ..schemas.common import (
 
 
 router = APIRouter()
+
+
+@router.get("/teams/{team_id}/highlights", response_model=TeamHighlightsResponse)
+def team_highlights(
+    team_id: int,
+    viewer_country: str = Query(pattern="^[A-Za-z]{2}$", description="실제 시청 국가예요. 예: KR, JP, US. 앱 언어로 추정하지 마세요."),
+    user_id: int = Depends(get_user_id),
+):
+    """공식 구단 영상 우선, 없으면 같은 경기의 공식 대회 영상을 반환해요.
+
+    일반 하이라이트를 Extended보다 먼저 골라요. 업로드일이 아닌 경기일 최신순이며,
+    응답마다 시청 국가의 제한을 적용하고 한 경기당 한 영상, 최대 3경기만 반환해요.
+    서버의 예약 수집 결과를 읽으므로 화면을 열 때 YouTube API를 호출하지 않아요.
+    """
+    if get_team(team_id) is None:
+        raise HTTPException(404, "Team not found")
+    return get_team_highlights(team_id, viewer_country)
+
+
+@router.get("/teams/{team_id}/probability", response_model=TeamProbabilityResponse)
+def team_probability(
+    team_id: int,
+    season_id: int | None = Query(default=None, gt=0),
+    user_id: int = Depends(get_user_id),
+):
+    """저장된 리그 확률·최대 4개 카드·일별 이력·예상 순위·승점·What-if를 조회해요.
+
+    V1은 26/27 Big 5 리그예요. Top 4·Top 6는 실제 유럽대항전 진출 확률이 아니에요.
+    확률은 0~1, 변화량은 %p예요. 비교는 직전 리그 경기 당일 UTC 0시 기준이에요.
+    복원 이력은 reconstructed이며 실제 당일 계산 이력과 구분해 표시해주세요.
+    승점 구간은 중앙 80%예요. 독일·프랑스는 직행 강등과 승강 플레이오프 진입이 별개예요.
+    이 경로는 적재된 값만 읽으며, 로그인한 이용자가 요청할 때 학습하거나 시뮬레이션하지 않아요.
+    """
+    if season_id is None:
+        context = find_team_current_context(team_id)
+        if context is None:
+            raise HTTPException(404, "Current Big 5 team-season not found")
+        season_id = context[1]
+    result = get_team_probability(team_id, season_id)
+    if result is None:
+        raise HTTPException(404, "Probability not calculated for this team-season")
+    return result
 
 
 @router.get("/teams/{team_id}/contracts", response_model=TeamContractsResponse)

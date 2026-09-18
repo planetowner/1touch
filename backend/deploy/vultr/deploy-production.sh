@@ -83,7 +83,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh sync-probability.sh sync-highlights.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -93,6 +93,9 @@ done
 cd "$runtime_directory"
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh config --quiet
 ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps proxy caddy validate --config /etc/caddy/Caddyfile
+# Probability 적재는 별도 명령으로 끝내고, 배포는 실제 저장 자료의 조회만 확인해요.
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_probability
+ONETOUCH_PRODUCTION_ENV=.env.production.next bash compose-production.sh run --rm --no-deps -T api python -m diagnostics.check_highlights
 bash backup-db.sh
 install -d -m 755 -o 1001 -g 1001 /opt/1touch/backend/logs
 
@@ -115,6 +118,10 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.service" /
 install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.timer" /etc/systemd/system/onetouch-fixture-live.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.service" /etc/systemd/system/onetouch-opta-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.timer" /etc/systemd/system/onetouch-opta-sync.timer
+install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.service" /etc/systemd/system/onetouch-probability-sync.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.timer" /etc/systemd/system/onetouch-probability-sync.timer
+install -m 644 "$release_directory/deploy/vultr/onetouch-highlights-sync.service" /etc/systemd/system/onetouch-highlights-sync.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-highlights-sync.timer" /etc/systemd/system/onetouch-highlights-sync.timer
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
 systemctl enable --now onetouch-community-cleanup.timer
@@ -127,6 +134,9 @@ status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}
 [[ "$status" == 401 ]] || { echo "Expected protected API docs (401), got $status" >&2; exit 1; }
 status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/v1/auth/providers?country_code=KR&platform=ios")
 [[ "$status" == 200 ]] || { echo "Expected public login providers (200), got $status" >&2; exit 1; }
+# 계정을 만들거나 토큰을 저장하지 않고 새 경로가 회원 인증을 요구하는지 확인해요.
+status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 10 "https://$api_domain/v1/teams/1/probability")
+[[ "$status" == 401 ]] || { echo "Expected protected Probability API (401), got $status" >&2; exit 1; }
 # 실제 소개 파일이 배포됐는지 확인해 주차 페이지의 200 응답을 성공으로 보지 않아요.
 curl --fail --silent --show-error --retry 12 --retry-all-errors --retry-delay 5 --max-time 10 \
   'https://1touch.football/' --output "$transfer_directory/served-introduction.html"
@@ -134,9 +144,17 @@ cmp "$runtime_directory/site/index.html" "$transfer_directory/served-introductio
 systemctl enable --now onetouch-opta-sync.timer
 systemctl is-enabled onetouch-opta-sync.timer
 systemctl is-active onetouch-opta-sync.timer
+systemctl enable --now onetouch-probability-sync.timer
+systemctl is-enabled onetouch-probability-sync.timer
+systemctl is-active onetouch-probability-sync.timer
+systemctl enable --now onetouch-highlights-sync.timer
+systemctl is-enabled onetouch-highlights-sync.timer
+systemctl is-active onetouch-highlights-sync.timer
 printf '\n'
 bash compose-production.sh ps
 systemctl list-timers onetouch-db-backup.timer --no-pager
 systemctl list-timers onetouch-community-cleanup.timer --no-pager
 systemctl list-timers onetouch-opta-sync.timer --no-pager
+systemctl list-timers onetouch-probability-sync.timer --no-pager
+systemctl list-timers onetouch-highlights-sync.timer --no-pager
 echo 'Public introduction, HTTPS, protected docs, API/database health and daily SQL backup verified.'
