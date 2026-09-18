@@ -1,13 +1,68 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:onetouch/data/standings/api/api_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
 
 void main() {
+  testWidgets('loads backend current standings instead of the fixture season',
+      (tester) async {
+    final requests = <Uri>[];
+    final standings = ApiStandingRepository(
+      apiBaseUri: Uri.parse('https://example.test/v1/'),
+      requestHeaders: const {},
+      client: MockClient((request) async {
+        requests.add(request.url);
+        return http.Response(
+            jsonEncode({
+              'competition_id': 8,
+              'season_id': 28083,
+              'rows': [
+                {
+                  'position': 1,
+                  'rank_delta': null,
+                  'team_id': 999999,
+                  'team_name': 'Current season leader',
+                  'team_logo': null,
+                  'matches_played': 3,
+                  'won': 2,
+                  'draw': 1,
+                  'lost': 0,
+                  'goals_for': 8,
+                  'goals_against': 2,
+                  'goal_diff': 6,
+                  'points': 7,
+                  'last5_form': ['W', 'D'],
+                }
+              ],
+            }),
+            200);
+      }),
+    );
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+          body: MatchPreviewTab(
+        fixture: _firstSelectedFixture,
+        fixtureRepository:
+            _RecordingFixtureRepository(loader: (_, __) async => []),
+        standingRepository: standings,
+      )),
+    ));
+    await tester.pumpAndSettle();
+    expect(requests.single.path, '/v1/competitions/8/standings');
+    expect(requests.single.queryParameters, isEmpty);
+    expect(find.text('Current season leader'), findsOneWidget);
+    expect(standings.cachedForCompetition(8)!.single.seasonId, 28083);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('loads the latest H2H fixture on a compact screen',
       (tester) async {
     await _setSize(tester, const Size(320, 568));
