@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:onetouch/core/viewer_country_config.dart';
 import 'package:onetouch/data/home/api/api_home_mapper.dart';
 import 'package:onetouch/data/home/api/api_home_response.dart';
 import 'package:onetouch/data/home/home_repository.dart';
@@ -12,18 +13,22 @@ class ApiHomeRepository implements HomeRepository {
     required http.Client client,
     required Uri apiBaseUri,
     required Map<String, String> requestHeaders,
+    required String viewerCountry,
   })  : _client = client,
         _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+        _requestHeaders = Map.unmodifiable(requestHeaders),
+        _viewerCountry = ViewerCountryConfig.normalize(viewerCountry);
 
   final http.Client _client;
   final Uri _apiBaseUri;
   final Map<String, String> _requestHeaders;
+  final String _viewerCountry;
 
   @override
   Future<HomeData> load({DateTime? start, DateTime? end}) async {
     const boundaryEnvelope = Duration(days: 1);
     final queryParameters = <String, String>{
+      'viewer_country': _viewerCountry,
       // The backend filters UTC database dates while Home displays device-local
       // dates. Include adjacent UTC dates so timezone-boundary fixtures are not
       // omitted; FixtureCalendar performs the final local-month filtering.
@@ -55,7 +60,15 @@ class ApiHomeRepository implements HomeRepository {
         'Expected the Home response to be a JSON object.',
       );
     }
-    return homeDataFromApiResponse(ApiHomeResponse.fromJson(decoded));
+    final apiResponse = ApiHomeResponse.fromJson(decoded);
+    final responseCountry = apiResponse.highlights?.viewerCountry;
+    if (responseCountry != null && responseCountry != _viewerCountry) {
+      throw FormatException(
+        'Expected highlight viewer_country $_viewerCountry but received '
+        '$responseCountry.',
+      );
+    }
+    return homeDataFromApiResponse(apiResponse);
   }
 
   static Uri _asDirectoryUri(Uri uri) {

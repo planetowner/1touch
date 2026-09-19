@@ -29,16 +29,8 @@ class HomeContentService implements HomeContentRepository {
       );
 
   @override
-  Future<HomeContent> loadForTeam(int favoriteTeamId) async {
-    final results = await Future.wait([
-      fetchHighlights(favoriteTeamId: favoriteTeamId),
-      fetchNews(),
-    ]);
-    return HomeContent(
-      highlights: _withFallbacks(results[0]),
-      news: _withFallbacks(results[1]),
-    );
-  }
+  Future<List<HomeContentItem>> loadNews() async =>
+      List.unmodifiable(_withFallbacks(await fetchNews()));
 
   @override
   Future<HomeContentItem?> loadForMatch({
@@ -57,24 +49,6 @@ class HomeContentService implements HomeContentRepository {
       result.add(homeContentFallbackItems[result.length]);
     }
     return result;
-  }
-
-  Future<List<HomeContentItem>> fetchHighlights({
-    required int favoriteTeamId,
-    int limit = 2,
-  }) async {
-    final teamSources = highlightsByTeam(favoriteTeamId);
-    if (teamSources.isEmpty) return const [];
-
-    final sourceRefs =
-        teamSources.map((item) => item.sourceRef).toSet().toList();
-
-    return _fetchHighlightsFromSources(
-      sourceRefs,
-      sourceCount: sourceRefs.length,
-      limit: limit,
-      relevantTeamIds: [favoriteTeamId],
-    );
   }
 
   Future<HomeContentItem?> fetchMatchHighlight({

@@ -1,16 +1,16 @@
 import 'package:onetouch/models/home_content.dart';
 import 'package:onetouch/models/home_content_item.dart';
 
-/// Domain-facing boundary for Home highlights and news.
+/// Domain-facing boundary for news and the temporary Match highlight lookup.
 ///
-/// These feeds are separate from `GET /v1/home` because that endpoint does
-/// not currently provide either content type. Replace the feed-backed
-/// implementation when the backend exposes an equivalent contract.
+/// Home highlights now come from `GET /v1/home`. News remains feed-backed
+/// because the backend does not provide a news endpoint. Match Details keeps
+/// its temporary feed lookup until a fixture-highlight endpoint exists.
 abstract interface class HomeContentRepository {
   /// Non-empty local content shown while feeds load or are unavailable.
   HomeContent get fallback;
 
-  Future<HomeContent> loadForTeam(int favoriteTeamId);
+  Future<List<HomeContentItem>> loadNews();
 
   Future<HomeContentItem?> loadForMatch({
     required int homeTeamId,
