@@ -3,22 +3,36 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/data/post_attachments/post_attachment_repository.dart';
+import 'package:onetouch/data/post_attachments/post_attachment_repository_provider.dart'
+    as attachment_providers;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/features/community/post_attachment_publisher.dart';
 import 'package:onetouch/features/community/post_composer_widgets.dart';
 import 'package:onetouch/models/post.dart';
 
 export 'package:onetouch/features/community/post_composer_widgets.dart'
     show Category;
 
+typedef PostMediaPicker = Future<List<XFile>> Function();
+
 class AddPost extends StatefulWidget {
   final int? teamId;
   final PostRepository? postRepository;
+  final PostAttachmentRepository? attachmentRepository;
+  final PostMediaPicker? pickMedia;
 
-  const AddPost({super.key, this.teamId, this.postRepository});
+  const AddPost({
+    super.key,
+    this.teamId,
+    this.postRepository,
+    this.attachmentRepository,
+    this.pickMedia,
+  });
 
   @override
   State<AddPost> createState() => _AddPostState();
@@ -39,6 +53,9 @@ class _AddPostState extends State<AddPost> {
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
+  PostAttachmentRepository get _attachmentRepository =>
+      widget.attachmentRepository ??
+      attachment_providers.postAttachmentRepository;
 
   @override
   void initState() {
@@ -60,11 +77,20 @@ class _AddPostState extends State<AddPost> {
   }
 
   Future<void> _pickMedia() async {
-    final List<XFile> picked = await _picker.pickMultipleMedia();
-    if (picked.isNotEmpty) {
-      setState(() {
-        _mediaFiles.addAll(picked);
-      });
+    const maximumAttachments = 10;
+    if (_mediaFiles.length >= maximumAttachments) {
+      _showMessage('You can attach up to 10 files.');
+      return;
+    }
+
+    final picked =
+        await (widget.pickMedia?.call() ?? _picker.pickMultipleMedia());
+    if (!mounted || picked.isEmpty) return;
+
+    final remaining = maximumAttachments - _mediaFiles.length;
+    setState(() => _mediaFiles.addAll(picked.take(remaining)));
+    if (picked.length > remaining) {
+      _showMessage('You can attach up to 10 files.');
     }
   }
 
@@ -92,27 +118,20 @@ class _AddPostState extends State<AddPost> {
       return;
     }
 
-    // ImagePicker returns a device-local path, while POST /v1/posts expects a
-    // remotely accessible media_url. TODO: Revisit when the API provides an
-    // upload contract; upload selected media and submit the returned URL.
-    // Until then, keep the draft intact and block media submission.
-    if (_mediaFiles.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Media upload is not available yet.')),
-      );
-      return;
-    }
-
     setState(() => _isSubmitting = true);
 
     try {
-      await _postRepository.createPost(
-        CreatePostInput(
+      await PostAttachmentPublisher(
+        postRepository: _postRepository,
+        attachmentRepository: _attachmentRepository,
+      ).publish(
+        post: CreatePostInput(
           teamId: widget.teamId ?? FavoriteTeam.id.value,
           category: _mapCategory(),
           title: title,
           body: body,
         ),
+        mediaFiles: List.unmodifiable(_mediaFiles),
       );
       if (!mounted) return;
 
@@ -120,11 +139,15 @@ class _AddPostState extends State<AddPost> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Unable to publish post. Please try again.')),
-      );
+      _showMessage('Unable to publish post. Please try again.');
     }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
