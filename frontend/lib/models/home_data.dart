@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/team.dart';
 
 /// User-specific team and fixture data returned for the Home screen.
@@ -15,14 +16,17 @@ class HomeData {
     required this.nextMatch,
     required this.lastMatch,
     required List<HomeCalendarFixture> calendar,
+    required List<HomeContentItem> highlights,
   })  : followingTeams = List.unmodifiable(followingTeams),
-        calendar = List.unmodifiable(calendar);
+        calendar = List.unmodifiable(calendar),
+        highlights = List.unmodifiable(highlights);
 
   final Team favoriteTeam;
   final List<Team> followingTeams;
   final Fixture? nextMatch;
   final Fixture? lastMatch;
   final List<HomeCalendarFixture> calendar;
+  final List<HomeContentItem> highlights;
 
   Fixture? get liveMatch {
     for (final calendarFixture in calendar) {

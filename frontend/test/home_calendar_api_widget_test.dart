@@ -66,6 +66,7 @@ void main() {
             awayTeamLogo: 'https://cdn.example/opponent.png',
           ),
         ],
+        highlights: null,
       ),
     );
 
