@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import datetime, timezone
 import html
 import json
 from pathlib import Path
 import re
 import unicodedata
+
+from .datetime_utils import utc_datetime
 
 
 CATALOG_PATH = Path(__file__).with_name("youtube_highlights_catalog.json")
@@ -67,11 +68,6 @@ def title_has_home_away_order(title: str, match: dict, aliases: dict) -> bool:
                for home in name_variants(match["home"], aliases)
                for away in name_variants(match["away"], aliases)
                for separator in ("v", "vs"))
-
-
-def utc_datetime(value) -> datetime:
-    parsed = datetime.fromisoformat(value.replace("Z", "+00:00")) if isinstance(value, str) else value
-    return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
 
 
 def duration_seconds(value: str) -> int:
