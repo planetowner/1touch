@@ -1,6 +1,6 @@
 part of 'standing_features.dart';
 
-enum StandingView { standing, xgTable }
+enum StandingView { standing, xgTable, bracket }
 
 extension StandingViewLabel on StandingView {
   String get label {
@@ -9,6 +9,8 @@ extension StandingViewLabel on StandingView {
         return 'STANDING';
       case StandingView.xgTable:
         return 'XG TABLE';
+      case StandingView.bracket:
+        return 'BRACKET';
     }
   }
 }
@@ -16,12 +18,17 @@ extension StandingViewLabel on StandingView {
 class StandingViewToggle extends StatelessWidget {
   final StandingView selectedView;
   final List<StandingView> availableViews;
+  final List<StandingView> displayedViews;
   final ValueChanged<StandingView> onChanged;
 
   const StandingViewToggle({
     super.key,
     required this.selectedView,
     required this.availableViews,
+    this.displayedViews = const [
+      StandingView.standing,
+      StandingView.xgTable,
+    ],
     required this.onChanged,
   });
 
@@ -30,6 +37,14 @@ class StandingViewToggle extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final appColors = AppColors.of(context);
     final trackBackground = isDark ? AppPalette.lightGrey : AppPalette.white;
+    final selectedIndex = displayedViews.indexOf(selectedView);
+    final segmentCount = displayedViews.length;
+    final indicatorAlignment = segmentCount <= 1
+        ? Alignment.center
+        : Alignment(
+            -1 + (2 * selectedIndex / (segmentCount - 1)),
+            0,
+          );
 
     return Container(
       key: const ValueKey('standing-view-toggle'),
@@ -48,15 +63,13 @@ class StandingViewToggle extends StatelessWidget {
         children: [
           AnimatedAlign(
             key: const ValueKey('standing-view-indicator'),
-            alignment: selectedView == StandingView.standing
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
+            alignment: indicatorAlignment,
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
-            child: const FractionallySizedBox(
-              widthFactor: 0.5,
+            child: FractionallySizedBox(
+              widthFactor: 1 / segmentCount,
               heightFactor: 1,
-              child: DecoratedBox(
+              child: const DecoratedBox(
                 key: ValueKey('standing-view-indicator-surface'),
                 decoration: BoxDecoration(
                   color: AppPalette.black,
@@ -66,7 +79,7 @@ class StandingViewToggle extends StatelessWidget {
             ),
           ),
           Row(
-            children: StandingView.values
+            children: displayedViews
                 .map(
                   (view) => Expanded(
                     child: _StandingViewSegment(
@@ -101,7 +114,11 @@ class _StandingViewSegment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
-    final segmentName = view == StandingView.standing ? 'standing' : 'xg-table';
+    final segmentName = switch (view) {
+      StandingView.standing => 'standing',
+      StandingView.xgTable => 'xg-table',
+      StandingView.bracket => 'bracket',
+    };
     const borderRadius = BorderRadius.all(Radius.circular(6));
     final foreground = isSelected
         ? AppPalette.white
