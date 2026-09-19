@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/favorite_team.dart';
@@ -5,6 +7,9 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
     as community_providers;
+import 'package:onetouch/data/post_comments/post_comment_repository.dart';
+import 'package:onetouch/data/post_comments/post_comment_repository_provider.dart'
+    as comment_providers;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
@@ -12,17 +17,20 @@ import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/models/post.dart';
+import 'package:onetouch/models/post_comment.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Post post;
   final PostRepository? postRepository;
   final CommunityRepository? communityRepository;
+  final PostCommentRepository? postCommentRepository;
 
   const PostDetailScreen({
     super.key,
     required this.post,
     this.postRepository,
     this.communityRepository,
+    this.postCommentRepository,
   });
 
   @override
@@ -35,7 +43,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   double _scrollOffset = 0.0;
   late bool _liked;
   late int _likeCount;
+  late int _commentCount;
   bool _isUpdatingLike = false;
+  bool _isCreatingComment = false;
+  PostComment? _replyTarget;
+  List<PostComment> _comments = const [];
+  bool _commentsLoading = true;
+  Object? _commentsError;
+  int _commentsRequestGeneration = 0;
 
   PostRepository get _postRepository =>
       widget.postRepository ?? post_providers.postRepository;
@@ -43,10 +58,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   CommunityRepository get _communityRepository =>
       widget.communityRepository ?? community_providers.communityRepository;
 
+  PostCommentRepository get _postCommentRepository =>
+      widget.postCommentRepository ?? comment_providers.postCommentRepository;
+
   @override
   void initState() {
     super.initState();
     _syncEngagementFromPost();
+    unawaited(_loadComments(showLoading: false));
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -61,12 +80,51 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (widget.post.postId != oldWidget.post.postId) {
       _syncEngagementFromPost();
       _isUpdatingLike = false;
+      _isCreatingComment = false;
+      _replyTarget = null;
+      _comments = const [];
+      _commentsLoading = true;
+      _commentsError = null;
+      unawaited(_loadComments(showLoading: false));
+    } else if (widget.postCommentRepository !=
+        oldWidget.postCommentRepository) {
+      unawaited(_loadComments());
     }
   }
 
   void _syncEngagementFromPost() {
     _liked = widget.post.liked;
     _likeCount = widget.post.likeCount;
+    _commentCount = widget.post.commentCount;
+  }
+
+  Future<void> _loadComments({bool showLoading = true}) async {
+    final requestGeneration = ++_commentsRequestGeneration;
+    if (showLoading && mounted) {
+      setState(() {
+        _commentsLoading = true;
+        _commentsError = null;
+      });
+    }
+
+    try {
+      final comments = await _postCommentRepository.loadForPost(
+        postId: widget.post.postId,
+      );
+      if (!mounted || requestGeneration != _commentsRequestGeneration) return;
+      setState(() {
+        _comments = comments;
+        _commentsLoading = false;
+        _commentsError = null;
+      });
+    } catch (error) {
+      if (!mounted || requestGeneration != _commentsRequestGeneration) return;
+      setState(() {
+        _comments = const [];
+        _commentsLoading = false;
+        _commentsError = error;
+      });
+    }
   }
 
   Future<void> _togglePostLike() async {
@@ -110,8 +168,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  Future<void> _submitComment(String body) async {
+    if (_isCreatingComment) return;
+    final replyTarget = _replyTarget;
+    setState(() => _isCreatingComment = true);
+
+    try {
+      await _postCommentRepository.createComment(
+        postId: widget.post.postId,
+        body: body,
+        replyToId: replyTarget?.commentId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _commentCount++;
+        _replyTarget = null;
+      });
+      await _loadComments();
+    } finally {
+      if (mounted) setState(() => _isCreatingComment = false);
+    }
+  }
+
   @override
   void dispose() {
+    _commentsRequestGeneration++;
     _scrollController.dispose();
     super.dispose();
   }
@@ -198,8 +279,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 post: post,
                 liked: _liked,
                 likeCount: _likeCount,
+                commentCount: _commentCount,
                 onLike: _isUpdatingLike ? null : _togglePostLike,
                 communityRepository: _communityRepository,
+                comments: _comments,
+                commentsLoading: _commentsLoading,
+                commentsError: _commentsError,
+                onRetryComments: _loadComments,
+                onReply: _isCreatingComment
+                    ? null
+                    : (comment) => setState(() => _replyTarget = comment),
                 onReport: (reason) => _postRepository.reportPost(
                   postId: post.postId,
                   reason: reason,
@@ -209,7 +298,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const PostDetailReplyBar(),
+      bottomNavigationBar: PostDetailReplyBar(
+        replyTarget: _replyTarget,
+        onCancelReply: () => setState(() => _replyTarget = null),
+        onSubmit: _submitComment,
+      ),
     );
   }
 }
