@@ -44,6 +44,7 @@ class MockHomeRepository implements HomeRepository {
         start: start,
         end: end,
       ),
+      highlights: const [],
     );
   }
 

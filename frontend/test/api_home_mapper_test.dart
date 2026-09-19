@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:onetouch/data/home/api/api_home_mapper.dart';
+import 'package:onetouch/data/home/api/api_home_highlights_response.dart';
 import 'package:onetouch/data/home/api/api_home_response.dart';
 import 'package:onetouch/data/teams/api/api_team_response.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -13,7 +14,9 @@ void main() {
           nextMatch: _fixture(1001, FixtureStatus.upcoming),
           lastMatch: _fixture(1002, FixtureStatus.past),
           calendar: [_fixture(1003, FixtureStatus.live)],
+          highlights: ApiTeamHighlightsResponse.fromJson(_highlightsJson()),
         ),
+        now: DateTime.utc(2026, 9, 18, 21),
       );
 
       expect(home.favoriteTeam.teamId, 8);
@@ -29,6 +32,14 @@ void main() {
         'https://cdn.example/19.png',
       );
       expect(home.liveMatch?.fixtureId, 1003);
+      expect(home.highlights.single.title, 'Liverpool highlights');
+      expect(home.highlights.single.source, 'Liverpool FC');
+      expect(home.highlights.single.timeLabel, '1h ago');
+      expect(home.highlights.single.imageUrl, isNull);
+      expect(
+        home.highlights.single.destinationUrl,
+        'https://www.youtube.com/watch?v=video-1',
+      );
     });
 
     test('preserves absent next and last matches without inventing values', () {
@@ -84,6 +95,20 @@ void main() {
       );
     });
 
+    test('rejects highlights for a team other than the favorite team', () {
+      final highlights = ApiTeamHighlightsResponse.fromJson(_highlightsJson());
+
+      expect(
+        () => homeDataFromApiResponse(
+          _response(
+            favoriteTeam: _team(19, 'Arsenal', 'ARS'),
+            highlights: highlights,
+          ),
+        ),
+        throwsStateError,
+      );
+    });
+
     test('returns immutable domain collections', () {
       final home = homeDataFromApiResponse(
         _response(calendar: [_fixture(1003, FixtureStatus.live)]),
@@ -91,6 +116,7 @@ void main() {
 
       expect(() => home.followingTeams.clear(), throwsUnsupportedError);
       expect(() => home.calendar.clear(), throwsUnsupportedError);
+      expect(() => home.highlights.clear(), throwsUnsupportedError);
     });
   });
 }
@@ -106,6 +132,7 @@ ApiHomeResponse _response({
   ApiFixtureResponse? nextMatch,
   ApiFixtureResponse? lastMatch,
   List<ApiFixtureResponse> calendar = const [],
+  ApiTeamHighlightsResponse? highlights,
 }) {
   return ApiHomeResponse(
     favoriteTeam: includeFavoriteTeam ? favoriteTeam : null,
@@ -126,8 +153,42 @@ ApiHomeResponse _response({
     nextMatch: nextMatch,
     lastMatch: lastMatch,
     calendar: calendar,
+    highlights: highlights,
   );
 }
+
+Map<String, dynamic> _highlightsJson() => {
+      'team_id': 8,
+      'viewer_country': 'US',
+      'updated_at': null,
+      'items': [
+        {
+          'video_id': 'video-1',
+          'video_url': 'https://www.youtube.com/watch?v=video-1',
+          'title': 'Liverpool highlights',
+          'thumbnail_url': null,
+          'published_at': '2026-09-18T20:00:00Z',
+          'duration_seconds': 420,
+          'channel_id': 'channel-1',
+          'channel_name': 'Liverpool FC',
+          'source_type': 'club',
+          'is_extended': false,
+          'embeddable': true,
+          'match': {
+            'match_key': 'sportmonks:1003',
+            'fixture_id': null,
+            'competition_key': 'sportmonks:8',
+            'competition_name': 'Premier League',
+            'season_name': '2026/2027',
+            'starting_at': '2026-09-18T14:00:00Z',
+            'home': {'team_id': 8, 'name': 'Liverpool'},
+            'away': {'team_id': null, 'name': 'Arsenal'},
+            'record_source': 'sportmonks',
+            'record_url': 'https://example.test/fixtures/1003',
+          },
+        },
+      ],
+    };
 
 ApiTeamResponse _team(int id, String name, String shortCode) {
   return ApiTeamResponse(

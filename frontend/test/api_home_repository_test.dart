@@ -13,6 +13,7 @@ void main() {
         expect(request.method, 'GET');
         expect(request.url.path, '/v1/home');
         expect(request.url.queryParameters, {
+          'viewer_country': 'US',
           'start': '2026-08-31',
           'end': '2026-10-01',
         });
@@ -24,6 +25,7 @@ void main() {
       requestHeaders: const {
         'Authorization': 'Bearer session-token',
       },
+      viewerCountry: 'us',
     );
 
     final home = await repository.load(
@@ -36,6 +38,7 @@ void main() {
     expect(home.calendar.single.fixture.fixtureId, 1003);
     expect(home.calendar.single.fixture.kickoff, DateTime.utc(2026, 9, 1));
     expect(home.calendar.single.opponent.name, 'Arsenal');
+    expect(home.highlights.single.title, 'Liverpool highlights');
   });
 
   test('omits date parameters and supports a trailing base-URI slash',
@@ -43,11 +46,12 @@ void main() {
     final repository = ApiHomeRepository(
       client: MockClient((request) async {
         expect(request.url.path, '/v1/home');
-        expect(request.url.queryParameters, isEmpty);
+        expect(request.url.queryParameters, {'viewer_country': 'US'});
         return http.Response(jsonEncode(_homeJson(calendar: const [])), 200);
       }),
       apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
       requestHeaders: const {},
+      viewerCountry: 'US',
     );
 
     final home = await repository.load();
@@ -62,12 +66,15 @@ void main() {
         requestCount++;
         expect(
           request.url.queryParameters,
-          requestCount == 1 ? {'start': '2026-08-31'} : {'end': '2026-10-01'},
+          requestCount == 1
+              ? {'viewer_country': 'US', 'start': '2026-08-31'}
+              : {'viewer_country': 'US', 'end': '2026-10-01'},
         );
         return http.Response(jsonEncode(_homeJson(calendar: const [])), 200);
       }),
       apiBaseUri: Uri.parse('http://localhost:8000/v1'),
       requestHeaders: const {},
+      viewerCountry: 'US',
     );
 
     await repository.load(start: DateTime(2026, 9, 1));
@@ -86,9 +93,23 @@ void main() {
       client: MockClient((_) async => responses[requestCount++]),
       apiBaseUri: Uri.parse('http://localhost:8000/v1'),
       requestHeaders: const {},
+      viewerCountry: 'US',
     );
 
     await expectLater(repository.load(), throwsA(isA<http.ClientException>()));
+    await expectLater(repository.load(), throwsFormatException);
+  });
+
+  test('rejects a highlight response for a different viewer country', () async {
+    final payload = _homeJson();
+    (payload['highlights'] as Map<String, dynamic>)['viewer_country'] = 'KR';
+    final repository = ApiHomeRepository(
+      client: MockClient((_) async => http.Response(jsonEncode(payload), 200)),
+      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
+      requestHeaders: const {},
+      viewerCountry: 'US',
+    );
+
     await expectLater(repository.load(), throwsFormatException);
   });
 }
@@ -103,8 +124,42 @@ Map<String, dynamic> _homeJson({List<Map<String, dynamic>>? calendar}) {
     'next_match': null,
     'last_match': null,
     'calendar': calendar ?? [_fixtureJson()],
+    'highlights': _highlightsJson(),
   };
 }
+
+Map<String, dynamic> _highlightsJson() => {
+      'team_id': 8,
+      'viewer_country': 'US',
+      'updated_at': '2026-09-18T21:00:00Z',
+      'items': [
+        {
+          'video_id': 'video-1',
+          'video_url': 'https://www.youtube.com/watch?v=video-1',
+          'title': 'Liverpool highlights',
+          'thumbnail_url': 'https://i.ytimg.com/video-1.jpg',
+          'published_at': '2026-09-18T20:00:00Z',
+          'duration_seconds': 420,
+          'channel_id': 'channel-1',
+          'channel_name': 'Liverpool FC',
+          'source_type': 'club',
+          'is_extended': false,
+          'embeddable': true,
+          'match': {
+            'match_key': 'sportmonks:1003',
+            'fixture_id': 1003,
+            'competition_key': 'sportmonks:8',
+            'competition_name': 'Premier League',
+            'season_name': '2026/2027',
+            'starting_at': '2026-09-18T14:00:00Z',
+            'home': {'team_id': 8, 'name': 'Liverpool'},
+            'away': {'team_id': 19, 'name': 'Arsenal'},
+            'record_source': 'sportmonks',
+            'record_url': 'https://example.test/fixtures/1003',
+          },
+        },
+      ],
+    };
 
 Map<String, dynamic> _teamJson(int id, String name, String shortCode) {
   return {

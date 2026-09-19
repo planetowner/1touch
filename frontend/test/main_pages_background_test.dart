@@ -87,6 +87,7 @@ class _StaticHomeRepository implements HomeRepository {
       nextMatch: null,
       lastMatch: null,
       calendar: const [],
+      highlights: const [],
     );
   }
 }

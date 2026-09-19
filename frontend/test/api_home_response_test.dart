@@ -14,6 +14,7 @@ void main() {
       expect(response.nextMatch?.fixtureId, 1001);
       expect(response.lastMatch?.fixtureId, 1002);
       expect(response.calendar.single.fixtureId, 1003);
+      expect(response.highlights?.items.single.videoId, 'video-1');
       expect(() => response.followingTeams.clear(), throwsUnsupportedError);
       expect(() => response.calendar.clear(), throwsUnsupportedError);
     });
@@ -25,6 +26,7 @@ void main() {
         'next_match': null,
         'last_match': null,
         'calendar': [],
+        'highlights': null,
       });
 
       expect(response.favoriteTeam, isNull);
@@ -72,7 +74,12 @@ void main() {
     });
 
     test('requires nullable object fields to be present or null', () {
-      for (final field in ['favorite_team', 'next_match', 'last_match']) {
+      for (final field in [
+        'favorite_team',
+        'next_match',
+        'last_match',
+        'highlights',
+      ]) {
         final missing = _homeJson()..remove(field);
         final malformed = _homeJson()..[field] = [];
 
@@ -105,8 +112,42 @@ Map<String, dynamic> _homeJson() {
     'next_match': _fixtureJson(1001, 'upcoming'),
     'last_match': _fixtureJson(1002, 'past'),
     'calendar': [_fixtureJson(1003, 'live')],
+    'highlights': _highlightsJson(),
   };
 }
+
+Map<String, dynamic> _highlightsJson() => {
+      'team_id': 8,
+      'viewer_country': 'US',
+      'updated_at': '2026-09-18T21:00:00Z',
+      'items': [
+        {
+          'video_id': 'video-1',
+          'video_url': 'https://www.youtube.com/watch?v=video-1',
+          'title': 'Liverpool highlights',
+          'thumbnail_url': null,
+          'published_at': '2026-09-18T20:00:00Z',
+          'duration_seconds': 420,
+          'channel_id': 'channel-1',
+          'channel_name': 'Liverpool FC',
+          'source_type': 'club',
+          'is_extended': false,
+          'embeddable': true,
+          'match': {
+            'match_key': 'sportmonks:1003',
+            'fixture_id': 1003,
+            'competition_key': 'sportmonks:8',
+            'competition_name': 'Premier League',
+            'season_name': '2026/2027',
+            'starting_at': '2026-09-18T14:00:00Z',
+            'home': {'team_id': 8, 'name': 'Liverpool'},
+            'away': {'team_id': 19, 'name': 'Arsenal'},
+            'record_source': 'sportmonks',
+            'record_url': 'https://example.test/fixtures/1003',
+          },
+        },
+      ],
+    };
 
 Map<String, dynamic> _teamJson(int id, String name, String shortCode) {
   return {

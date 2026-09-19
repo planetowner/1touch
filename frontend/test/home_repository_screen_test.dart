@@ -43,7 +43,7 @@ void main() {
     repository.calls.single.completer.complete(_homeData());
     await tester.pump();
 
-    expect(contentRepository.requestedTeamIds, [1]);
+    expect(contentRepository.newsLoadCalls, 1);
     expect(find.text('Alpha FC'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
     await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
@@ -82,6 +82,33 @@ void main() {
 
     expect(find.text('Alpha FC'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('renders official Home highlights instead of feed highlights',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final repository = _ControlledHomeRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          contentRepository: _RecordingHomeContentRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Official API highlight'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    expect(find.text('Official API highlight'), findsOneWidget);
+    expect(find.text('Official channel 1h ago'), findsOneWidget);
   });
 
   testWidgets('reloads calendar months and ignores a stale response',
@@ -293,19 +320,21 @@ Future<void> _setScreenSize(WidgetTester tester, Size size) async {
 }
 
 HomeData _homeData({
-  Team favoriteTeam = const Team(teamId: 1, name: 'Alpha FC'),
+  Team favoriteTeam = const Team(teamId: 83, name: 'Alpha FC'),
   List<Team>? followingTeams,
+  List<HomeContentItem> highlights = const [_apiHighlightItem],
 }) {
   return HomeData(
     favoriteTeam: favoriteTeam,
     followingTeams: followingTeams ??
         [
           favoriteTeam,
-          const Team(teamId: 2, name: 'Beta FC'),
+          const Team(teamId: 9, name: 'Beta FC'),
         ],
     nextMatch: null,
     lastMatch: null,
     calendar: const [],
+    highlights: highlights,
   );
 }
 
@@ -356,7 +385,7 @@ class _RecordingFollowingTeamsRepository implements FollowingTeamsRepository {
 }
 
 class _RecordingHomeContentRepository implements HomeContentRepository {
-  final List<int> requestedTeamIds = [];
+  int newsLoadCalls = 0;
 
   @override
   final HomeContent fallback = HomeContent(
@@ -365,12 +394,9 @@ class _RecordingHomeContentRepository implements HomeContentRepository {
   );
 
   @override
-  Future<HomeContent> loadForTeam(int favoriteTeamId) async {
-    requestedTeamIds.add(favoriteTeamId);
-    return HomeContent(
-      highlights: const [_loadedContentItem],
-      news: const [_loadedContentItem],
-    );
+  Future<List<HomeContentItem>> loadNews() async {
+    newsLoadCalls++;
+    return const [_loadedContentItem];
   }
 
   @override
@@ -392,4 +418,11 @@ const _loadedContentItem = HomeContentItem(
   title: 'Repository content',
   source: 'Repository',
   timeLabel: 'Now',
+);
+
+const _apiHighlightItem = HomeContentItem(
+  title: 'Official API highlight',
+  source: 'Official channel',
+  timeLabel: '1h ago',
+  destinationUrl: 'https://www.youtube.com/watch?v=official',
 );
