@@ -7,6 +7,7 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'support/stub_community_repository.dart';
+import 'support/stub_post_comment_repository.dart';
 
 void main() {
   testWidgets('submits the selected report reason on a tall screen',
@@ -24,6 +25,7 @@ void main() {
           post: _post,
           postRepository: repository,
           communityRepository: const StubCommunityRepository(),
+          postCommentRepository: const StubPostCommentRepository(),
         ),
       ),
     );
@@ -87,6 +89,7 @@ void main() {
           post: _post,
           postRepository: repository,
           communityRepository: const StubCommunityRepository(),
+          postCommentRepository: const StubPostCommentRepository(),
         ),
       ),
     );

@@ -20,6 +20,63 @@ class ApiPostCommentRepository implements PostCommentRepository {
   final Map<String, String> _requestHeaders;
 
   @override
+  Future<int> createComment({
+    required int postId,
+    required String body,
+    int? replyToId,
+  }) async {
+    if (postId < 1) {
+      throw RangeError.value(postId, 'postId', 'Must be positive');
+    }
+    if (replyToId != null && replyToId < 1) {
+      throw RangeError.value(replyToId, 'replyToId', 'Must be positive');
+    }
+    final normalizedBody = body.trim();
+    if (normalizedBody.isEmpty ||
+        normalizedBody.length > maxPostCommentBodyLength) {
+      throw ArgumentError.value(
+        body,
+        'body',
+        'Must contain between 1 and $maxPostCommentBodyLength characters',
+      );
+    }
+
+    final uri = _apiBaseUri.resolve('posts/$postId/comments');
+    final response = await _client.post(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ..._requestHeaders,
+      },
+      body: jsonEncode({
+        'body': normalizedBody,
+        'reply_to_id': replyToId,
+      }),
+    );
+    if (response.statusCode != 201) {
+      throw http.ClientException(
+        'Comment creation failed with status ${response.statusCode}.',
+        uri,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic> || decoded['comment_id'] is! int) {
+      throw const FormatException(
+        'Expected comment creation to return integer "comment_id".',
+      );
+    }
+    final commentId = decoded['comment_id'] as int;
+    if (commentId < 1) {
+      throw const FormatException(
+        'Expected the created comment ID to be positive.',
+      );
+    }
+    return commentId;
+  }
+
+  @override
   Future<List<PostComment>> loadForPost({
     required int postId,
     int afterId = 0,

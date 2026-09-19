@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/community_repository.dart';
+import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
+import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
 
@@ -14,16 +17,28 @@ class PostDetailContent extends StatelessWidget {
     required this.post,
     required this.liked,
     required this.likeCount,
+    required this.commentCount,
     required this.onLike,
     required this.communityRepository,
+    required this.comments,
+    required this.commentsLoading,
+    required this.commentsError,
+    required this.onRetryComments,
+    required this.onReply,
     required this.onReport,
   });
 
   final Post post;
   final bool liked;
   final int likeCount;
+  final int commentCount;
   final VoidCallback? onLike;
   final CommunityRepository communityRepository;
+  final List<PostComment> comments;
+  final bool commentsLoading;
+  final Object? commentsError;
+  final VoidCallback onRetryComments;
+  final ValueChanged<PostComment>? onReply;
   final Future<void> Function(String reason) onReport;
 
   @override
@@ -137,7 +152,7 @@ class PostDetailContent extends StatelessWidget {
                     _PostAction(
                       icon: Icons.mode_comment_outlined,
                       label: formatCommunityEngagementCount(
-                        post.commentCount,
+                        commentCount,
                       ),
                       labelKey: const ValueKey(
                         'community-detail-comment-count',
@@ -164,7 +179,13 @@ class PostDetailContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const _SampleComments(),
+          _PostComments(
+            comments: comments,
+            isLoading: commentsLoading,
+            error: commentsError,
+            onRetry: onRetryComments,
+            onReply: onReply,
+          ),
           const SizedBox(height: 64),
         ],
       ),
@@ -172,8 +193,67 @@ class PostDetailContent extends StatelessWidget {
   }
 }
 
-class PostDetailReplyBar extends StatelessWidget {
-  const PostDetailReplyBar({super.key});
+class PostDetailReplyBar extends StatefulWidget {
+  const PostDetailReplyBar({
+    super.key,
+    required this.replyTarget,
+    required this.onCancelReply,
+    required this.onSubmit,
+  });
+
+  final PostComment? replyTarget;
+  final VoidCallback onCancelReply;
+  final Future<void> Function(String body) onSubmit;
+
+  @override
+  State<PostDetailReplyBar> createState() => _PostDetailReplyBarState();
+}
+
+class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  bool _isSubmitting = false;
+
+  bool get _canSubmit => !_isSubmitting && _controller.text.trim().isNotEmpty;
+
+  @override
+  void didUpdateWidget(PostDetailReplyBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.replyTarget?.commentId != oldWidget.replyTarget?.commentId &&
+        widget.replyTarget != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_canSubmit) return;
+    final body = _controller.text.trim();
+    setState(() => _isSubmitting = true);
+
+    try {
+      await widget.onSubmit(body);
+      if (!mounted) return;
+      _controller.clear();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to post comment. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,34 +261,98 @@ class PostDetailReplyBar extends StatelessWidget {
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // TODO: Connect reply submission when the API supports comments/replies.
     return Container(
       color: isDark ? AppPalette.darkGrey : AppPalette.white,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color:
-                    isDark ? AppPalette.lightGrey : appColors.subtleBackground,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Write a reply...',
-                  hintStyle: TextStyle(color: appColors.mutedForeground),
-                  border: InputBorder.none,
-                  filled: false,
+          if (widget.replyTarget != null) ...[
+            Row(
+              key: const ValueKey('community-reply-target'),
+              children: [
+                Expanded(
+                  child: Text(
+                    'Replying to ${_commentAuthorLabel(widget.replyTarget!)}',
+                    style: Body2.style.copyWith(
+                      color: appColors.mutedForeground,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                style: TextStyle(color: colors.onSurface),
-                cursorColor: colors.onSurface,
-              ),
+                GestureDetector(
+                  key: const ValueKey('community-reply-cancel'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _isSubmitting ? null : widget.onCancelReply,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.close,
+                      size: 18,
+                      color: colors.onSurface,
+                    ),
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 8),
+          ],
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppPalette.lightGrey
+                        : appColors.subtleBackground,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: TextField(
+                    key: const ValueKey('community-comment-input'),
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    readOnly: _isSubmitting,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(
+                        maxPostCommentBodyLength,
+                      ),
+                    ],
+                    textInputAction: TextInputAction.send,
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: (_) => _submit(),
+                    decoration: InputDecoration(
+                      hintText: widget.replyTarget == null
+                          ? 'Write a comment...'
+                          : 'Write a reply...',
+                      hintStyle: TextStyle(color: appColors.mutedForeground),
+                      border: InputBorder.none,
+                      filled: false,
+                    ),
+                    style: TextStyle(color: colors.onSurface),
+                    cursorColor: colors.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                key: const ValueKey('community-comment-send'),
+                behavior: HitTestBehavior.opaque,
+                onTap: _canSubmit ? _submit : null,
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(
+                          key: ValueKey('community-comment-submitting'),
+                          strokeWidth: 2,
+                        )
+                      : const Icon(Icons.send, color: Colors.blueAccent),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          const Icon(Icons.send, color: Colors.blueAccent),
         ],
       ),
     );
@@ -286,52 +430,161 @@ class _PostMediaPreview extends StatelessWidget {
   }
 }
 
-class _SampleComments extends StatelessWidget {
-  const _SampleComments();
+class _PostComments extends StatelessWidget {
+  const _PostComments({
+    required this.comments,
+    required this.isLoading,
+    required this.error,
+    required this.onRetry,
+    required this.onReply,
+  });
+
+  final List<PostComment> comments;
+  final bool isLoading;
+  final Object? error;
+  final VoidCallback onRetry;
+  final ValueChanged<PostComment>? onReply;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // TODO: Replace sample comments when the API provides comment threads.
+    if (isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: CircularProgressIndicator(
+            key: ValueKey('community-comments-loading'),
+          ),
+        ),
+      );
+    }
+    if (error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            children: [
+              Text(
+                'Unable to load comments.',
+                key: const ValueKey('community-comments-error'),
+                style: Body2.style,
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                key: const ValueKey('community-comments-retry'),
+                onPressed: onRetry,
+                child: const Text('RETRY'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    if (comments.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Text(
+          'No comments yet.',
+          key: const ValueKey('community-comments-empty'),
+          style: Body2.style,
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(
-          3,
-          (index) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor:
-                      isDark ? Colors.white24 : AppPalette.lightGrey,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Username', style: Body2_b.style),
-                      Text(
-                        'First sentence goes here. Second sentence goes here. Third sentence goes here.',
-                        style: Body2.style,
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.reply, size: 18, color: colors.onSurface),
-              ],
-            ),
-          ),
-        ),
+        children: comments
+            .map(
+              (comment) => _PostCommentRow(
+                comment: comment,
+                isDark: isDark,
+                onReply: onReply,
+              ),
+            )
+            .toList(growable: false),
       ),
     );
   }
+}
+
+class _PostCommentRow extends StatelessWidget {
+  const _PostCommentRow({
+    required this.comment,
+    required this.isDark,
+    required this.onReply,
+  });
+
+  final PostComment comment;
+  final bool isDark;
+  final ValueChanged<PostComment>? onReply;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final avatarUrl = comment.avatarUrl;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: comment.replyToId == null ? 0 : 24,
+        bottom: 16,
+      ),
+      child: Row(
+        key: ValueKey('community-comment-${comment.commentId}'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 12,
+            backgroundColor: isDark ? Colors.white24 : AppPalette.lightGrey,
+            backgroundImage: avatarUrl == null ? null : NetworkImage(avatarUrl),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_commentAuthorLabel(comment), style: Body2_b.style),
+                Text(_commentBodyLabel(comment), style: Body2.style),
+              ],
+            ),
+          ),
+          if (comment.state == PostCommentState.active)
+            GestureDetector(
+              key: ValueKey('community-comment-reply-${comment.commentId}'),
+              behavior: HitTestBehavior.opaque,
+              onTap: onReply == null ? null : () => onReply!(comment),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(Icons.reply, size: 18, color: colors.onSurface),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+String _commentAuthorLabel(PostComment comment) {
+  return switch (comment.state) {
+    PostCommentState.active => communityUsernameLabel(
+        username: comment.username,
+        authorDeleted: comment.authorDeleted,
+      ),
+    PostCommentState.deleted => 'Deleted comment',
+    PostCommentState.hidden => 'Hidden comment',
+    PostCommentState.blocked => 'Blocked user',
+  };
+}
+
+String _commentBodyLabel(PostComment comment) {
+  return switch (comment.state) {
+    PostCommentState.active => comment.body,
+    PostCommentState.deleted => 'This comment was deleted.',
+    PostCommentState.hidden => 'This comment is unavailable.',
+    PostCommentState.blocked => 'Comment from a blocked user.',
+  };
 }
 
 String _timeAgo(String createdAt) {
