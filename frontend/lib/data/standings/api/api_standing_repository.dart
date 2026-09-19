@@ -22,6 +22,7 @@ class ApiStandingRepository implements StandingRepository {
   final ValueNotifier<Map<StandingQuery, List<Standing>>> _cachedTables =
       ValueNotifier(const {});
   final ValueNotifier<List<Standing>> _standings = ValueNotifier(const []);
+  final Map<StandingQuery, Future<List<Standing>>> _inFlightLoads = {};
 
   @override
   List<Standing> get allStandings => _standings.value;
@@ -46,13 +47,30 @@ class ApiStandingRepository implements StandingRepository {
   Future<List<Standing>> loadForCompetition(
     int competitionId, {
     int? seasonId,
-  }) async {
+  }) {
     final query = StandingQuery(
       competitionId: competitionId,
       seasonId: seasonId,
     );
     final cached = _cachedTables.value[query];
-    if (cached != null) return cached;
+    if (cached != null) return Future.value(cached);
+
+    final inFlight = _inFlightLoads[query];
+    if (inFlight != null) return inFlight;
+
+    late final Future<List<Standing>> load;
+    load = _fetchAndCache(query).whenComplete(() {
+      if (identical(_inFlightLoads[query], load)) {
+        _inFlightLoads.remove(query);
+      }
+    });
+    _inFlightLoads[query] = load;
+    return load;
+  }
+
+  Future<List<Standing>> _fetchAndCache(StandingQuery query) async {
+    final competitionId = query.competitionId;
+    final seasonId = query.seasonId;
 
     final baseUri =
         _apiBaseUri.resolve('competitions/$competitionId/standings');
