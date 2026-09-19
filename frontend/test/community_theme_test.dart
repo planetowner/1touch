@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
@@ -12,6 +13,7 @@ import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
 import 'support/stub_community_repository.dart';
+import 'support/stub_post_comment_repository.dart';
 
 Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
   final element = tester.element(finder);
@@ -151,6 +153,7 @@ void main() {
         theme: app_style.whitetheme,
         home: Community(
           teamId: 9,
+          fixtureRepository: MockFixtureRepository(),
           postRepository: MockPostRepository(),
           communityRepository: const StubCommunityRepository(),
         ),
@@ -168,6 +171,7 @@ void main() {
         theme: app_style.whitetheme,
         home: Community(
           teamId: 8,
+          fixtureRepository: MockFixtureRepository(),
           postRepository: MockPostRepository(),
           communityRepository: const StubCommunityRepository(),
         ),
@@ -308,6 +312,7 @@ void main() {
           post: mockPosts.first,
           postRepository: MockPostRepository(),
           communityRepository: const StubCommunityRepository(),
+          postCommentRepository: const StubPostCommentRepository(),
         ),
       ),
     );
