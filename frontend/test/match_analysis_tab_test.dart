@@ -83,12 +83,18 @@ void main() {
     expect(find.byType(ShotMapDiagram), findsOneWidget);
     expect(find.byType(ProgressionDiagram), findsOneWidget);
     expect(find.byType(DefensiveActivityDiagram), findsOneWidget);
-    expect(find.text('DEFENSIVE ACTIVITY'), findsOneWidget);
-    expect(find.text('PRESSURE'), findsNothing);
+    expect(find.text('DEFENSE'), findsOneWidget);
+    expect(find.text('PRESSURE'), findsOneWidget);
     expect(find.text('Carries into Final Third'), findsNothing);
     expect(find.text('Key Passes'), findsOneWidget);
     expect(find.text('Recoveries'), findsOneWidget);
-    expect(find.text('Ball Possession'), findsOneWidget);
+    expect(find.text('Ball Possession'), findsNothing);
+    expect(find.text('61%'), findsOneWidget);
+    expect(find.text('39%'), findsOneWidget);
+    final possessionFill = tester.widget<FractionallySizedBox>(
+      find.byKey(const ValueKey('match-possession-home-fill')),
+    );
+    expect(possessionFill.widthFactor, 0.61);
     expect(tester.takeException(), isNull);
   });
 
