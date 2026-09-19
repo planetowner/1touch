@@ -17,6 +17,7 @@ import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
 import '../models/home_content.dart';
+import '../models/home_content_item.dart';
 import '../models/home_data.dart';
 import '../models/team_overview.dart';
 import 'package:onetouch/features/index.dart';
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime _calendarMonth =
       DateTime(DateTime.now().year, DateTime.now().month, 1);
   late final HomeContent _fallbackContent;
-  late HomeContent _content;
+  late List<HomeContentItem> _news;
   int _homeRequestId = 0;
   int _contentRequestId = 0;
   bool _teamPreferenceRefreshScheduled = false;
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _fallbackContent = _contentRepository.fallback;
-    _content = _fallbackContent;
+    _news = _fallbackContent.news;
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -113,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
       if (refreshContent) {
-        _loadHomeContent(data.favoriteTeam.teamId);
+        _loadNews();
       }
     } on Object {
       if (!mounted || requestId != _homeRequestId) return;
@@ -151,18 +152,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadHome();
   }
 
-  Future<void> _loadHomeContent(int favoriteTeamId) async {
+  Future<void> _loadNews() async {
     final requestId = ++_contentRequestId;
     try {
-      final content = await _contentRepository.loadForTeam(favoriteTeamId);
+      final news = await _contentRepository.loadNews();
       if (!mounted || requestId != _contentRequestId) return;
       setState(() {
-        _content = content;
+        _news = news;
       });
     } on Object {
       if (!mounted || requestId != _contentRequestId) return;
       setState(() {
-        _content = _fallbackContent;
+        _news = _fallbackContent.news;
       });
     }
   }
@@ -393,13 +394,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 32),
                   const SectionHeader(title: "HIGHLIGHTS"),
                   MyHighlights(
-                    highlights: _content.highlights,
+                    highlights: homeData.highlights.isEmpty
+                        ? _fallbackContent.highlights
+                        : homeData.highlights,
                     fallbacks: _fallbackContent.highlights,
                   ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "NEWS"),
                   MyNews(
-                    news: _content.news,
+                    news: _news,
                     fallbacks: _fallbackContent.news,
                   ),
                   Padding(

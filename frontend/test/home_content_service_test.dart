@@ -7,25 +7,6 @@ import 'package:onetouch/data/home/home_content_repository.dart';
 import 'package:onetouch/data/home/home_content_service.dart';
 
 void main() {
-  test('loads a real YouTube highlight feed entry', () async {
-    final service = HomeContentService(
-      random: Random(1),
-      client: MockClient((request) async {
-        expect(request.url.host, 'www.youtube.com');
-        return http.Response(_youtubeFeed, 200);
-      }),
-    );
-
-    final items = await service.fetchHighlights(favoriteTeamId: 8);
-
-    expect(items, hasLength(1));
-    expect(items.single.title, contains('Liverpool 1-1 Brentford'));
-    expect(items.single.source, 'Liverpool FC');
-    expect(items.single.imageUrl, contains('hqdefault.jpg'));
-    expect(items.single.destinationUrl, endsWith('Gf2DLAp_oXU'));
-    service.dispose();
-  });
-
   test('loads and parses BBC football news', () async {
     final service = HomeContentService(
       random: Random(1),
@@ -65,21 +46,6 @@ void main() {
     service.dispose();
   });
 
-  test('prioritizes favorite-team videos on home', () async {
-    final service = HomeContentService(
-      random: Random(1),
-      client: MockClient((_) async => http.Response(_rankedYoutubeFeed, 200)),
-    );
-
-    final items = await service.fetchHighlights(
-      favoriteTeamId: 8,
-      limit: 1,
-    );
-
-    expect(items.single.title, contains('Liverpool'));
-    service.dispose();
-  });
-
   test('does not use an unrelated club feed for an unmapped team', () async {
     final service = HomeContentService(
       client: MockClient((_) async {
@@ -87,7 +53,6 @@ void main() {
       }),
     );
 
-    expect(await service.fetchHighlights(favoriteTeamId: -1), isEmpty);
     expect(
       await service.fetchMatchHighlight(homeTeamId: -1, awayTeamId: -2),
       isNull,
@@ -101,43 +66,23 @@ void main() {
     );
 
     expect(await service.fetchNews(), isEmpty);
-    expect(await service.fetchHighlights(favoriteTeamId: 8), isEmpty);
     service.dispose();
   });
 
-  test(
-      'repository load supplies immutable fallbacks when feeds are unavailable',
+  test('repository supplies immutable news fallbacks when its feed is down',
       () async {
     final service = HomeContentService(
       client: MockClient((_) async => http.Response('Unavailable', 503)),
     );
     final HomeContentRepository repository = service;
 
-    final content = await repository.loadForTeam(8);
+    final news = await repository.loadNews();
 
-    expect(content.highlights, hasLength(2));
-    expect(content.news, hasLength(2));
-    expect(() => content.highlights.clear(), throwsUnsupportedError);
-    expect(() => content.news.clear(), throwsUnsupportedError);
+    expect(news, hasLength(2));
+    expect(() => news.clear(), throwsUnsupportedError);
     service.dispose();
   });
 }
-
-const _youtubeFeed = '''
-<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
-      xmlns:media="http://search.yahoo.com/mrss/"
-      xmlns="http://www.w3.org/2005/Atom">
-  <entry>
-    <yt:videoId>Gf2DLAp_oXU</yt:videoId>
-    <title>Highlights: Liverpool 1-1 Brentford</title>
-    <author><name>Liverpool FC</name></author>
-    <published>2026-05-24T21:00:11+00:00</published>
-    <media:group>
-      <media:thumbnail url="https://i4.ytimg.com/vi/Gf2DLAp_oXU/hqdefault.jpg" />
-    </media:group>
-  </entry>
-</feed>
-''';
 
 const _rankedYoutubeFeed = '''
 <feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
