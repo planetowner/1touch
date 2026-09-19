@@ -119,11 +119,12 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
         if (!_loading && !_failed && _home != null && _away != null) ...[
           const SizedBox(height: 12),
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Expanded(
+              Flexible(
                   child: _legend(const Color(0xFFE8434A), widget.homeTeamName)),
-              const SizedBox(width: 12),
-              Expanded(child: _legend(foreground, widget.awayTeamName)),
+              const SizedBox(width: 16),
+              Flexible(child: _legend(foreground, widget.awayTeamName)),
             ],
           ),
         ],
@@ -132,6 +133,7 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
   }
 
   Widget _legend(Color color, String name) => Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 10,
