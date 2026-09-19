@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:onetouch/data/home/home_content_repository.dart';
+import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_highlight_catalog.dart';
 import 'package:onetouch/models/home_content.dart';
@@ -11,32 +10,39 @@ import 'package:onetouch/models/home_content_item.dart';
 import 'package:xml/xml.dart';
 
 class HomeContentService implements HomeContentRepository {
-  HomeContentService({http.Client? client, Random? random})
-      : _client = client ?? http.Client(),
-        _random = random ?? Random();
-
-  static final Uri _newsFeed =
-      Uri.parse('https://feeds.bbci.co.uk/sport/football/rss.xml');
+  HomeContentService({
+    http.Client? client,
+    required this.newsRepository,
+    required this.languageCode,
+  }) : _client = client ?? http.Client();
   static const _requestTimeout = Duration(seconds: 8);
 
   final http.Client _client;
-  final Random _random;
+  final NewsRepository newsRepository;
+  final String Function() languageCode;
 
   @override
   HomeContent get fallback => HomeContent(
         highlights: homeContentFallbackItems,
-        news: homeContentFallbackItems,
+        news: const [],
       );
 
   @override
   Future<HomeContent> loadForTeam(int favoriteTeamId) async {
+    var newsFailed = false;
     final results = await Future.wait([
       fetchHighlights(favoriteTeamId: favoriteTeamId),
-      fetchNews(),
+      newsRepository
+          .loadForTeam(favoriteTeamId, language: languageCode())
+          .onError((error, stackTrace) {
+        newsFailed = true;
+        return <HomeContentItem>[];
+      }),
     ]);
     return HomeContent(
       highlights: _withFallbacks(results[0]),
-      news: _withFallbacks(results[1]),
+      news: results[1],
+      newsFailed: newsFailed,
     );
   }
 
@@ -109,48 +115,6 @@ class HomeContentService implements HomeContentRepository {
     return matchingTeams;
   }
 
-  Future<List<HomeContentItem>> fetchNews({int limit = 2}) async {
-    try {
-      final response = await _client.get(_newsFeed).timeout(_requestTimeout);
-      if (response.statusCode != 200) return const [];
-
-      final document = XmlDocument.parse(response.body);
-      final items = _elementsNamed(document, 'item')
-          .map((item) {
-            final thumbnail = _firstElementNamed(item, 'thumbnail');
-            final imageUrl = thumbnail?.getAttribute('url');
-            final title = _firstElementNamed(item, 'title')?.innerText.trim();
-            final destinationUrl =
-                _firstElementNamed(item, 'link')?.innerText.trim();
-            final publishedAt = _parseBbcDate(
-              _firstElementNamed(item, 'pubDate')?.innerText.trim(),
-            );
-
-            if (title == null ||
-                title.isEmpty ||
-                imageUrl == null ||
-                imageUrl.isEmpty) {
-              return null;
-            }
-
-            return HomeContentItem(
-              title: title,
-              source: 'BBC Sport',
-              timeLabel: _relativeTime(publishedAt),
-              imageUrl: imageUrl,
-              destinationUrl: destinationUrl,
-            );
-          })
-          .whereType<HomeContentItem>()
-          .toList()
-        ..shuffle(_random);
-
-      return items.take(limit).toList();
-    } on Object {
-      return const [];
-    }
-  }
-
   Future<List<HomeContentItem>> _fetchHighlightFeed(String sourceRef) async {
     try {
       final uri = Uri.https(
@@ -188,7 +152,7 @@ class HomeContentService implements HomeContentRepository {
             return HomeContentItem(
               title: title,
               source: author?.isNotEmpty == true ? author! : 'YouTube',
-              timeLabel: _relativeTime(publishedAt),
+              timeLabel: contentTimeLabel(publishedAt),
               imageUrl: imageUrl,
               destinationUrl: 'https://www.youtube.com/watch?v=$videoId',
             );
@@ -198,26 +162,6 @@ class HomeContentService implements HomeContentRepository {
     } on Object {
       return const [];
     }
-  }
-
-  DateTime? _parseBbcDate(String? value) {
-    if (value == null || value.isEmpty) return null;
-    try {
-      return DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", 'en_US')
-          .parseUtc(value);
-    } on FormatException {
-      return null;
-    }
-  }
-
-  String _relativeTime(DateTime? publishedAt) {
-    if (publishedAt == null) return 'Latest';
-    final difference = DateTime.now().toUtc().difference(publishedAt.toUtc());
-    if (difference.isNegative || difference.inMinutes < 1) return 'Just now';
-    if (difference.inMinutes < 60) return '${difference.inMinutes}m ago';
-    if (difference.inHours < 24) return '${difference.inHours}h ago';
-    if (difference.inDays < 7) return '${difference.inDays}d ago';
-    return DateFormat('MMM d').format(publishedAt.toLocal());
   }
 
   void dispose() => _client.close();
