@@ -1,14 +1,12 @@
 part of 'match_info_features.dart';
 
 class MatchHighlights extends StatefulWidget {
-  final int homeTeamId;
-  final int awayTeamId;
-  final HomeContentRepository? repository;
+  final int fixtureId;
+  final FixtureHighlightRepository? repository;
 
   const MatchHighlights({
     super.key,
-    required this.homeTeamId,
-    required this.awayTeamId,
+    required this.fixtureId,
     this.repository,
   });
 
@@ -17,12 +15,12 @@ class MatchHighlights extends StatefulWidget {
 }
 
 class _MatchHighlightsState extends State<MatchHighlights> {
-  HomeContentItem? _highlight;
+  FixtureHighlight? _highlight;
   bool _networkImageFailed = false;
   int _requestId = 0;
 
-  HomeContentRepository get _repository =>
-      widget.repository ?? homeContentRepository;
+  FixtureHighlightRepository get _repository =>
+      widget.repository ?? fixtureHighlightRepository;
 
   @override
   void initState() {
@@ -33,8 +31,7 @@ class _MatchHighlightsState extends State<MatchHighlights> {
   @override
   void didUpdateWidget(MatchHighlights oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.homeTeamId != widget.homeTeamId ||
-        oldWidget.awayTeamId != widget.awayTeamId ||
+    if (oldWidget.fixtureId != widget.fixtureId ||
         oldWidget.repository != widget.repository) {
       _highlight = null;
       _networkImageFailed = false;
@@ -45,10 +42,7 @@ class _MatchHighlightsState extends State<MatchHighlights> {
   Future<void> _loadHighlight() async {
     final requestId = ++_requestId;
     try {
-      final highlight = await _repository.loadForMatch(
-        homeTeamId: widget.homeTeamId,
-        awayTeamId: widget.awayTeamId,
-      );
+      final highlight = await _repository.loadForFixture(widget.fixtureId);
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _highlight = highlight;
@@ -64,8 +58,9 @@ class _MatchHighlightsState extends State<MatchHighlights> {
   }
 
   Future<void> _openHighlight() async {
-    final uri = Uri.tryParse(_highlight?.destinationUrl ?? '');
-    if (uri == null || _networkImageFailed) return;
+    final highlight = _highlight;
+    if (highlight == null) return;
+    final uri = Uri.parse(highlight.videoUrl);
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
@@ -80,8 +75,7 @@ class _MatchHighlightsState extends State<MatchHighlights> {
 
   @override
   Widget build(BuildContext context) {
-    final canOpen =
-        _highlight?.destinationUrl?.isNotEmpty == true && !_networkImageFailed;
+    final canOpen = _highlight != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -100,7 +94,7 @@ class _MatchHighlightsState extends State<MatchHighlights> {
   }
 
   Widget _buildImage() {
-    final imageUrl = _highlight?.imageUrl;
+    final imageUrl = _highlight?.thumbnailUrl;
     if (!_networkImageFailed && imageUrl != null && imageUrl.isNotEmpty) {
       return Image.network(
         imageUrl,
@@ -109,25 +103,28 @@ class _MatchHighlightsState extends State<MatchHighlights> {
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) {
           _handleImageError();
-          return _unavailablePlaceholder();
+          return _placeholder();
         },
       );
     }
-    return _unavailablePlaceholder();
+    return _placeholder();
   }
 
-  Widget _unavailablePlaceholder() {
+  Widget _placeholder() {
+    // 썸네일이 없어도 확인된 경기 영상은 열 수 있어요.
     return Container(
       width: double.infinity,
       height: 194,
       alignment: Alignment.center,
       color: AppColors.of(context).cardBackground,
-      child: Text(
-        'HIGHLIGHTS UNAVAILABLE',
-        style: Body2_b.style.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
+      child: _highlight != null
+          ? const Icon(Icons.play_circle_outline, size: 48)
+          : Text(
+              'HIGHLIGHTS UNAVAILABLE',
+              style: Body2_b.style.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
     );
   }
 }

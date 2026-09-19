@@ -55,7 +55,7 @@ def write_candidates(cursor, team_ids, candidates, checked_at):
     cursor.execute('DELETE FROM highlight_channels WHERE channel_id NOT IN (SELECT channel_id FROM highlight_videos)')
 
 
-HIGHLIGHT_SELECT = '''SELECT v.*, c.name AS channel_name,c.source_type,m.fixture_id,m.starting_at,m.external_record,
+HIGHLIGHT_SELECT_BASE = '''SELECT v.*, c.name AS channel_name,c.source_type,m.fixture_id,m.starting_at,m.external_record,
     sy.checked_at,f.home_team_id,f.away_team_id,
     ht.name AS home_name,at.name AS away_name,s.name AS season_name,s.competition_id,co.name AS competition_name
     FROM team_highlights th JOIN highlight_videos v ON v.video_id=th.video_id
@@ -64,7 +64,10 @@ HIGHLIGHT_SELECT = '''SELECT v.*, c.name AS channel_name,c.source_type,m.fixture
     LEFT JOIN fixtures f ON f.fixture_id=m.fixture_id
     LEFT JOIN teams ht ON ht.team_id=f.home_team_id LEFT JOIN teams at ON at.team_id=f.away_team_id
     LEFT JOIN stages st ON st.stage_id=f.stage_id LEFT JOIN seasons s ON s.season_id=st.season_id
-    LEFT JOIN competitions co ON co.competition_id=s.competition_id WHERE th.team_id=%s'''
+    LEFT JOIN competitions co ON co.competition_id=s.competition_id'''
+
+HIGHLIGHT_SELECT = HIGHLIGHT_SELECT_BASE + ' WHERE th.team_id=%s'
+FIXTURE_HIGHLIGHT_SELECT = HIGHLIGHT_SELECT_BASE + ' WHERE m.fixture_id=%s'
 
 
 def candidate_from_row(row):

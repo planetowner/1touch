@@ -263,6 +263,10 @@ void main() {
     );
     expect(matchInfo.detail, same(detail));
     expect(matchInfo.fixture, same(detail.fixture));
+    expect(
+      tester.widget<MatchHighlights>(find.byType(MatchHighlights)).fixtureId,
+      detail.fixture.fixtureId,
+    );
     expect(coaches.coachA, 'Home Coach');
     expect(coaches.coachB, 'Away Coach');
     expect(scoreHeader.venueLabel, 'Test Stadium');

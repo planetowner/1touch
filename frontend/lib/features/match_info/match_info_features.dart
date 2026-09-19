@@ -3,10 +3,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_navigation.dart';
-import 'package:onetouch/data/home/home_content_repository.dart';
-import 'package:onetouch/data/home/home_content_repository_provider.dart';
+import 'package:onetouch/data/highlights/fixture_highlight_repository.dart';
+import 'package:onetouch/data/highlights/fixture_highlight_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
-import 'package:onetouch/models/home_content_item.dart';
+import 'package:onetouch/models/fixture_highlight.dart';
 import 'package:onetouch/models/match_data.dart';
 import 'package:url_launcher/url_launcher.dart';
 

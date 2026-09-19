@@ -1,5 +1,4 @@
 import 'package:onetouch/models/home_content.dart';
-import 'package:onetouch/models/home_content_item.dart';
 
 /// Domain-facing boundary for Home highlights and news.
 ///
@@ -11,9 +10,4 @@ abstract interface class HomeContentRepository {
   HomeContent get fallback;
 
   Future<HomeContent> loadForTeam(int favoriteTeamId);
-
-  Future<HomeContentItem?> loadForMatch({
-    required int homeTeamId,
-    required int awayTeamId,
-  });
 }

@@ -45,26 +45,6 @@ void main() {
     service.dispose();
   });
 
-  test('loads a highlight for either team in a past match', () async {
-    final service = HomeContentService(
-      random: Random(1),
-      client: MockClient((request) async {
-        expect(request.url.host, 'www.youtube.com');
-        return http.Response(_rankedYoutubeFeed, 200);
-      }),
-    );
-
-    final item = await service.fetchMatchHighlight(
-      homeTeamId: 8,
-      awayTeamId: 236,
-    );
-
-    expect(item, isNotNull);
-    expect(item!.title, contains('Liverpool 1-1 Brentford'));
-    expect(item.destinationUrl, endsWith('Gf2DLAp_oXU'));
-    service.dispose();
-  });
-
   test('prioritizes favorite-team videos on home', () async {
     final service = HomeContentService(
       random: Random(1),
@@ -88,10 +68,6 @@ void main() {
     );
 
     expect(await service.fetchHighlights(favoriteTeamId: -1), isEmpty);
-    expect(
-      await service.fetchMatchHighlight(homeTeamId: -1, awayTeamId: -2),
-      isNull,
-    );
     service.dispose();
   });
 

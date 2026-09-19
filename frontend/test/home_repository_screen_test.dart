@@ -372,14 +372,6 @@ class _RecordingHomeContentRepository implements HomeContentRepository {
       news: const [_loadedContentItem],
     );
   }
-
-  @override
-  Future<HomeContentItem?> loadForMatch({
-    required int homeTeamId,
-    required int awayTeamId,
-  }) async {
-    return null;
-  }
 }
 
 const _fallbackContentItem = HomeContentItem(
