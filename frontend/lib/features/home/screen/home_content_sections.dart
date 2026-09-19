@@ -19,19 +19,48 @@ class MyNews extends StatelessWidget {
   const MyNews({
     super.key,
     required this.news,
-    required this.fallbacks,
+    this.isLoading = false,
+    this.hasError = false,
+    this.isKorean = false,
+    this.onRetry,
   });
 
   final List<HomeContentItem> news;
-  final List<HomeContentItem> fallbacks;
+  final bool isLoading;
+  final bool hasError;
+  final bool isKorean;
+  final VoidCallback? onRetry;
 
   @override
-  Widget build(BuildContext context) =>
-      _HomeContentList(items: news, fallbacks: fallbacks);
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (hasError || news.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(
+            hasError
+                ? (isKorean ? '뉴스를 불러오지 못했어요' : 'Unable to load news.')
+                : (isKorean ? '아직 등록된 팀 뉴스가 없어요' : 'No team news yet.'),
+            style: Body2.style,
+          ),
+          if (hasError && onRetry != null)
+            TextButton(
+                onPressed: onRetry, child: Text(isKorean ? '다시 시도' : 'Retry')),
+        ]),
+      );
+    }
+    return _HomeContentList(items: news);
+  }
 }
 
 class _HomeContentList extends StatelessWidget {
-  const _HomeContentList({required this.items, required this.fallbacks});
+  const _HomeContentList({required this.items, this.fallbacks = const []});
 
   final List<HomeContentItem> items;
   final List<HomeContentItem> fallbacks;
@@ -49,7 +78,9 @@ class _HomeContentList extends StatelessWidget {
             child: _HomeContentCard(
               key: ValueKey('${items[index].destinationUrl}-$index'),
               item: items[index],
-              fallback: fallbacks[index % fallbacks.length],
+              fallback: fallbacks.isEmpty
+                  ? null
+                  : fallbacks[index % fallbacks.length],
             ),
           ),
         ),
@@ -58,7 +89,7 @@ class _HomeContentList extends StatelessWidget {
   }
 }
 
-class _HomeContentCard extends StatefulWidget {
+class _HomeContentCard extends StatelessWidget {
   const _HomeContentCard({
     super.key,
     required this.item,
@@ -66,22 +97,7 @@ class _HomeContentCard extends StatefulWidget {
   });
 
   final HomeContentItem item;
-  final HomeContentItem fallback;
-
-  @override
-  State<_HomeContentCard> createState() => _HomeContentCardState();
-}
-
-class _HomeContentCardState extends State<_HomeContentCard> {
-  bool _useFallback = false;
-
-  @override
-  void didUpdateWidget(_HomeContentCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.item.imageUrl != widget.item.imageUrl) {
-      _useFallback = false;
-    }
-  }
+  final HomeContentItem? fallback;
 
   Future<void> _openDestination(String? value) async {
     final uri = value == null ? null : Uri.tryParse(value);
@@ -89,16 +105,9 @@ class _HomeContentCardState extends State<_HomeContentCard> {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  void _handleImageError() {
-    if (_useFallback) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_useFallback) setState(() => _useFallback = true);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final item = _useFallback ? widget.fallback : widget.item;
+    // 이미지 오류가 나도 실제 기사 제목과 원문 링크는 유지해요.
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: item.destinationUrl == null
@@ -115,14 +124,11 @@ class _HomeContentCardState extends State<_HomeContentCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: 37,
-                  child: Text(
-                    item.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Body1_b.style,
-                  ),
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Body1_b.style,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -140,15 +146,14 @@ class _HomeContentCardState extends State<_HomeContentCard> {
   }
 
   Widget _buildImage() {
-    final imageUrl = widget.item.imageUrl;
-    if (!_useFallback && imageUrl != null && imageUrl.isNotEmpty) {
+    final imageUrl = item.imageUrl;
+    if (imageUrl != null && imageUrl.isNotEmpty) {
       return Image.network(
         imageUrl,
         width: 119,
         height: 68,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) {
-          _handleImageError();
           return _fallbackImage();
         },
       );
@@ -157,8 +162,12 @@ class _HomeContentCardState extends State<_HomeContentCard> {
   }
 
   Widget _fallbackImage() {
+    if (fallback == null) {
+      return const SizedBox(
+          width: 119, height: 68, child: Icon(Icons.article_outlined));
+    }
     return Image.asset(
-      widget.fallback.fallbackAsset,
+      fallback!.fallbackAsset,
       width: 119,
       height: 68,
       fit: BoxFit.cover,
