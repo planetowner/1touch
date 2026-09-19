@@ -22,6 +22,7 @@ class ApiXgStandingRepository implements XgStandingRepository {
   final ValueNotifier<Map<XgStandingQuery, List<XgStanding>>> _cachedTables =
       ValueNotifier(const {});
   final ValueNotifier<List<XgStanding>> _xgStandings = ValueNotifier(const []);
+  final Map<XgStandingQuery, Future<List<XgStanding>>> _inFlightLoads = {};
 
   @override
   List<XgStanding> get allXgStandings => _xgStandings.value;
@@ -46,13 +47,30 @@ class ApiXgStandingRepository implements XgStandingRepository {
   Future<List<XgStanding>> loadForCompetition(
     int competitionId, {
     int? seasonId,
-  }) async {
+  }) {
     final query = XgStandingQuery(
       competitionId: competitionId,
       seasonId: seasonId,
     );
     final cached = _cachedTables.value[query];
-    if (cached != null) return cached;
+    if (cached != null) return Future.value(cached);
+
+    final inFlight = _inFlightLoads[query];
+    if (inFlight != null) return inFlight;
+
+    late final Future<List<XgStanding>> load;
+    load = _fetchAndCache(query).whenComplete(() {
+      if (identical(_inFlightLoads[query], load)) {
+        _inFlightLoads.remove(query);
+      }
+    });
+    _inFlightLoads[query] = load;
+    return load;
+  }
+
+  Future<List<XgStanding>> _fetchAndCache(XgStandingQuery query) async {
+    final competitionId = query.competitionId;
+    final seasonId = query.seasonId;
 
     final baseUri =
         _apiBaseUri.resolve('competitions/$competitionId/xg-standings');
