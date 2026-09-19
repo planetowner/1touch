@@ -241,7 +241,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               clipBehavior: Clip.antiAlias,
               decoration: ShapeDecoration(
-                color: const Color(0xFFFF5B5B),
+                color: const Color(0xFFFF5C5C),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -282,7 +282,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  static const Color _homeColor = Color(0xFFFF5B5B);
+  static const Color _homeColor = Color(0xFFFF5C5C);
 
   String get _homeCode {
     final team = fixtureHomeTeam(widget.fixture, teamRepository);
@@ -443,7 +443,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                       key: const ValueKey('match-possession-home-fill'),
                       widthFactor: fraction,
                       heightFactor: 1,
-                      child: const ColoredBox(color: Color(0xFFFF5B5B)),
+                      child: const ColoredBox(color: Color(0xFFFF5C5C)),
                     ),
                   ),
                   Padding(
@@ -847,7 +847,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           width: 80,
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF5B5B),
+            color: const Color(0xFFFF5C5C),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -995,7 +995,7 @@ class _ShotMapPainter extends CustomPainter {
       ..color = color.withValues(alpha: 0.5)
       ..strokeWidth = 1;
     final dotPaint = Paint()..color = color;
-    final goalPaint = Paint()..color = const Color(0xFFFF5B5B);
+    final goalPaint = Paint()..color = const Color(0xFFFF5C5C);
 
     for (final shot in shots) {
       final start = Offset(

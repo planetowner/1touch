@@ -114,15 +114,15 @@ class _MomentumPainter extends CustomPainter {
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0x8CFF5B5B), Color(0x0DFF5B5B)],
+        colors: [Color(0x8CFF5C5C), Color(0x0DFF5C5C)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, centerY));
     final belowPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
         colors: [
-          neutralColor.withValues(alpha: 0.35),
-          neutralColor.withValues(alpha: 0.05)
+          Colors.white.withValues(alpha: 0.35),
+          Colors.white.withValues(alpha: 0.05)
         ],
       ).createShader(
           Rect.fromLTWH(0, centerY, size.width, size.height - centerY));
@@ -133,7 +133,7 @@ class _MomentumPainter extends CustomPainter {
     }
 
     final linePaint = Paint()
-      ..color = neutralColor
+      ..color = Colors.white
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke
       ..strokeJoin = StrokeJoin.round
@@ -142,6 +142,16 @@ class _MomentumPainter extends CustomPainter {
     for (final p in points.skip(1)) {
       path.lineTo(p.dx, p.dy);
     }
+    // Keep the white graph line visible on the light-mode card too.
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = neutralColor.withValues(alpha: 0.25)
+        ..strokeWidth = 3
+        ..style = PaintingStyle.stroke
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round,
+    );
     canvas.drawPath(path, linePaint);
   }
 
