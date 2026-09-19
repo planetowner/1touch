@@ -83,7 +83,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -125,6 +125,9 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-highlights-sync.timer" 
 # 포인트 테이블 생성 뒤 사용자가 정산 예약을 켜요. 배포에서는 실행 파일만 준비해요.
 install -m 644 "$release_directory/deploy/vultr/onetouch-betting-sync.service" /etc/systemd/system/onetouch-betting-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-betting-sync.timer" /etc/systemd/system/onetouch-betting-sync.timer
+# 뉴스 테이블과 첫 수집이 준비된 뒤 예약 실행을 켜요. 이후 배포에서도 실행 파일을 갱신해요.
+install -m 644 "$release_directory/deploy/vultr/onetouch-news-sync.service" /etc/systemd/system/onetouch-news-sync.service
+install -m 644 "$release_directory/deploy/vultr/onetouch-news-sync.timer" /etc/systemd/system/onetouch-news-sync.timer
 systemctl daemon-reload
 systemctl enable --now onetouch-db-backup.timer
 systemctl enable --now onetouch-community-cleanup.timer

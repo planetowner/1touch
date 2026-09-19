@@ -22,6 +22,7 @@ from one_touch_loader.loaders.xg_standings_loader import build_xg_standings
 from one_touch_loader.loaders.understat_ids_loader import collect_understat_ids
 from one_touch_loader.loaders.understat_loader import collect_understat
 from one_touch_loader.loaders.highlights_loader import run_cli as run_highlights_cli
+from one_touch_loader.loaders.news_loader import run_cli as run_news_cli
 from one_touch_loader.loaders.injuries_loader import (
     refresh_current_injuries,
     refresh_team_injuries,
@@ -242,6 +243,9 @@ New database reload order (redesigned commands):
   python -m one_touch_loader.cli player-rankings freeze-reference <competition_id>
   경기 평점 적재 후 시즌 점수를 갱신해요. 기준 표본은 다시 계산하지 않아요.
   python -m one_touch_loader.cli player-rankings build-scores <season_id>
+
+27. news (selected team, latest three articles within 14 days)
+  python -m one_touch_loader.cli news refresh [--check | --apply]
 """
 
 
@@ -423,6 +427,8 @@ def main():
                    "xg-standings": build_xg_standings}[cmd]
         print(f"{cmd} done: {command(season_name, competition_ids, check=check)}")
 
+    elif cmd == "news":
+        run_news_cli(sys.argv[2:] or ["refresh"])
     elif cmd == "highlights":
         run_highlights_cli(sys.argv[2:] or ["refresh"])
 
