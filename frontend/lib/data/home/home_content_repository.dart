@@ -2,11 +2,9 @@ import 'package:onetouch/models/home_content.dart';
 
 /// Domain-facing boundary for Home highlights and news.
 ///
-/// These feeds are separate from `GET /v1/home` because that endpoint does
-/// not currently provide either content type. Replace the feed-backed
-/// implementation when the backend exposes an equivalent contract.
+/// 뉴스는 팀별 API, 하이라이트는 기존 피드에서 불러와요.
 abstract interface class HomeContentRepository {
-  /// Non-empty local content shown while feeds load or are unavailable.
+  /// 뉴스는 예시 기사로 채우지 않아요. 하이라이트의 기존 표시만 유지해요.
   HomeContent get fallback;
 
   Future<HomeContent> loadForTeam(int favoriteTeamId);

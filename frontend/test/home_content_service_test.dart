@@ -1,15 +1,16 @@
-import 'dart:math';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/data/home/home_content_repository.dart';
 import 'package:onetouch/data/home/home_content_service.dart';
+import 'package:onetouch/data/home/news_repository.dart';
+import 'package:onetouch/models/home_content_item.dart';
 
 void main() {
   test('loads a real YouTube highlight feed entry', () async {
     final service = HomeContentService(
-      random: Random(1),
+      newsRepository: _NewsRepository(),
+      languageCode: () => 'ko',
       client: MockClient((request) async {
         expect(request.url.host, 'www.youtube.com');
         return http.Response(_youtubeFeed, 200);
@@ -26,28 +27,42 @@ void main() {
     service.dispose();
   });
 
-  test('loads and parses BBC football news', () async {
+  test('loads only the selected team through the news repository', () async {
+    final news = _NewsRepository(items: const [
+      HomeContentItem(title: '팀 기사', source: '공급자', timeLabel: '1시간 전')
+    ]);
     final service = HomeContentService(
-      random: Random(1),
-      client: MockClient((request) async {
-        expect(request.url.host, 'feeds.bbci.co.uk');
-        return http.Response(_bbcFeed, 200);
-      }),
+      newsRepository: news,
+      languageCode: () => 'ko',
+      client: MockClient((_) async => http.Response('Unavailable', 503)),
     );
+    final content = await service.loadForTeam(83);
+    expect(news.teamId, 83);
+    expect(news.language, 'ko');
+    expect(content.news, hasLength(1));
+    expect(content.news.single.title, '팀 기사');
+    expect(content.newsFailed, isFalse);
+    service.dispose();
+  });
 
-    final items = await service.fetchNews();
-
-    expect(items, hasLength(1));
-    expect(items.single.title, 'A real football story');
-    expect(items.single.source, 'BBC Sport');
-    expect(items.single.imageUrl, contains('football.jpg'));
-    expect(items.single.destinationUrl, 'https://www.bbc.co.uk/sport/story');
+  test('news failure preserves highlights without fabricating articles',
+      () async {
+    final service = HomeContentService(
+      newsRepository: _NewsRepository(fail: true),
+      languageCode: () => 'en',
+      client: MockClient((_) async => http.Response(_youtubeFeed, 200)),
+    );
+    final content = await service.loadForTeam(8);
+    expect(content.highlights.first.title, contains('Liverpool'));
+    expect(content.news, isEmpty);
+    expect(content.newsFailed, isTrue);
     service.dispose();
   });
 
   test('prioritizes favorite-team videos on home', () async {
     final service = HomeContentService(
-      random: Random(1),
+      newsRepository: _NewsRepository(),
+      languageCode: () => 'ko',
       client: MockClient((_) async => http.Response(_rankedYoutubeFeed, 200)),
     );
 
@@ -62,6 +77,8 @@ void main() {
 
   test('does not use an unrelated club feed for an unmapped team', () async {
     final service = HomeContentService(
+      newsRepository: _NewsRepository(),
+      languageCode: () => 'ko',
       client: MockClient((_) async {
         fail('No feed should be requested for an unmapped team');
       }),
@@ -73,10 +90,11 @@ void main() {
 
   test('returns an empty list when a feed is unavailable', () async {
     final service = HomeContentService(
+      newsRepository: _NewsRepository(),
+      languageCode: () => 'ko',
       client: MockClient((_) async => http.Response('Unavailable', 503)),
     );
 
-    expect(await service.fetchNews(), isEmpty);
     expect(await service.fetchHighlights(favoriteTeamId: 8), isEmpty);
     service.dispose();
   });
@@ -85,6 +103,8 @@ void main() {
       'repository load supplies immutable fallbacks when feeds are unavailable',
       () async {
     final service = HomeContentService(
+      newsRepository: _NewsRepository(),
+      languageCode: () => 'ko',
       client: MockClient((_) async => http.Response('Unavailable', 503)),
     );
     final HomeContentRepository repository = service;
@@ -92,7 +112,7 @@ void main() {
     final content = await repository.loadForTeam(8);
 
     expect(content.highlights, hasLength(2));
-    expect(content.news, hasLength(2));
+    expect(content.news, isEmpty);
     expect(() => content.highlights.clear(), throwsUnsupportedError);
     expect(() => content.news.clear(), throwsUnsupportedError);
     service.dispose();
@@ -140,15 +160,19 @@ const _rankedYoutubeFeed = '''
 </feed>
 ''';
 
-const _bbcFeed = '''
-<rss xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
-  <channel>
-    <item>
-      <title>A real football story</title>
-      <link>https://www.bbc.co.uk/sport/story</link>
-      <pubDate>Thu, 16 Jul 2026 19:54:48 GMT</pubDate>
-      <media:thumbnail url="https://ichef.bbci.co.uk/football.jpg" />
-    </item>
-  </channel>
-</rss>
-''';
+class _NewsRepository implements NewsRepository {
+  _NewsRepository({this.items = const [], this.fail = false});
+  final List<HomeContentItem> items;
+  final bool fail;
+  int? teamId;
+  String? language;
+
+  @override
+  Future<List<HomeContentItem>> loadForTeam(int teamId,
+      {required String language}) async {
+    this.teamId = teamId;
+    this.language = language;
+    if (fail) throw StateError('offline');
+    return items;
+  }
+}
