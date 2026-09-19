@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
@@ -31,13 +29,6 @@ void main() async {
   // Initializes the team catalog before loading and validating stored IDs.
   await currentUserPreferences.initialize();
   await playerRepository.initializeFollowing();
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    // 이미 초기화된 경우 무시
-  }
   runApp(const MyApp());
 }
 
