@@ -502,7 +502,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('DEFENSIVE ACTIVITY', style: Body2_b.style),
+        const Text('PRESSURE', style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(24),
