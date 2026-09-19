@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -81,6 +82,61 @@ void main() {
 
     expect(repository.cachedTables.value, hasLength(3));
     expect(repository.allXgStandings, hasLength(3));
+  });
+
+  test('deduplicates simultaneous requests for the same query', () async {
+    var requestCount = 0;
+    final response = Completer<http.Response>();
+    final repository = ApiXgStandingRepository(
+      client: MockClient((_) {
+        requestCount++;
+        return response.future;
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    final firstLoad = repository.loadForCompetition(8, seasonId: 25583);
+    final secondLoad = repository.loadForCompetition(8, seasonId: 25583);
+
+    await Future<void>.delayed(Duration.zero);
+    expect(requestCount, 1);
+    response.complete(http.Response(jsonEncode(_responseJson()), 200));
+    final results = await Future.wait([firstLoad, secondLoad]);
+
+    expect(results[1], same(results[0]));
+    expect(requestCount, 1);
+  });
+
+  test('does not deduplicate different xG standing queries', () async {
+    var requestCount = 0;
+    final responses = <int, Completer<http.Response>>{};
+    final repository = ApiXgStandingRepository(
+      client: MockClient((request) {
+        requestCount++;
+        final seasonId = int.parse(request.url.queryParameters['season_id']!);
+        return responses
+            .putIfAbsent(seasonId, () => Completer<http.Response>())
+            .future;
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    final firstLoad = repository.loadForCompetition(8, seasonId: 25583);
+    final secondLoad = repository.loadForCompetition(8, seasonId: 23614);
+
+    await Future<void>.delayed(Duration.zero);
+    expect(requestCount, 2);
+    responses[25583]!.complete(
+      http.Response(jsonEncode(_responseJson()), 200),
+    );
+    responses[23614]!.complete(
+      http.Response(jsonEncode(_responseJson(seasonId: 23614)), 200),
+    );
+    await Future.wait([firstLoad, secondLoad]);
+
+    expect(requestCount, 2);
   });
 
   test('rejects HTTP, malformed, and mismatched responses without caching',
