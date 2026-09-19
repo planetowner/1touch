@@ -100,7 +100,7 @@ class CommunityTeamHeader extends StatelessWidget {
   final Team team;
   final bool isLive;
   final int? followerCount;
-  final VoidCallback onTeamTap;
+  final VoidCallback? onTeamTap;
 
   @override
   Widget build(BuildContext context) {
