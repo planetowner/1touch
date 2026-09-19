@@ -78,11 +78,10 @@ class _SubList extends StatelessWidget {
           alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: subs.map((sub) {
         final children = [
-          if (!alignEnd)
-            Flexible(
-              child: Text(sub.name,
-                  style: Eyebrow.style, overflow: TextOverflow.ellipsis),
-            ),
+          Flexible(
+            child: Text(sub.name,
+                style: Eyebrow.style, overflow: TextOverflow.ellipsis),
+          ),
           if (sub.subIn) ...[
             const SizedBox(width: 4),
             const MatchEventIcon(type: LineupEventType.subIn),
@@ -95,11 +94,6 @@ class _SubList extends StatelessWidget {
             const SizedBox(width: 4),
             const MatchEventIcon(type: LineupEventType.goal),
           ],
-          if (alignEnd)
-            Flexible(
-              child: Text(sub.name,
-                  style: Eyebrow.style, overflow: TextOverflow.ellipsis),
-            ),
         ];
 
         return GestureDetector(
@@ -113,7 +107,7 @@ class _SubList extends StatelessWidget {
             child: Row(
               mainAxisAlignment:
                   alignEnd ? MainAxisAlignment.end : MainAxisAlignment.start,
-              children: children,
+              children: alignEnd ? children.reversed.toList() : children,
             ),
           ),
         );
