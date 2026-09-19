@@ -131,7 +131,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
       homeTeamId: widget.fixture.homeTeamId,
       awayTeamId: widget.fixture.awayTeamId,
     );
-    final momentumValues = _momentumValues();
     final tacticalAvailable = _analysis?.available == true;
     final shotMapAvailable = _shotMap?.available == true;
     return SingleChildScrollView(
@@ -147,10 +146,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
           if (widget.detail?.expectedGoals case final expectedGoals?)
             _buildXGSection(expectedGoals),
-          if (momentumValues.isNotEmpty) ...[
-            const SizedBox(height: 48),
-            MomentumChart(values: momentumValues),
-          ],
           if (_isLoading) ...[
             const SizedBox(height: 48),
             const Center(child: CircularProgressIndicator()),
@@ -188,25 +183,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
         ],
       ),
     );
-  }
-
-  List<double> _momentumValues() {
-    final points = (widget.detail?.pressure ?? const <FixturePressurePoint>[])
-        .where(
-          (point) =>
-              point.minute >= 0 &&
-              point.minute <= 90 &&
-              (point.teamId == widget.fixture.homeTeamId ||
-                  point.teamId == widget.fixture.awayTeamId),
-        )
-        .toList(growable: false);
-    if (points.length < 2) return const [];
-    final values = List<double>.filled(91, 0);
-    for (final point in points) {
-      values[point.minute] +=
-          point.pressure * (point.teamId == widget.fixture.homeTeamId ? 1 : -1);
-    }
-    return values;
   }
 
   Widget _buildLoadError() => Center(
@@ -499,7 +475,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildProgressionBlock() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final foreground = Theme.of(context).colorScheme.onSurface;
     final selected = _selectedAnalysis?.progression;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,9 +493,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
               const SizedBox(height: 24),
               ProgressionDiagram(
                 lanePercents: _channelPercentages(selected),
-                color: showHome ? _homeColor : foreground,
-                lineColor: foreground.withValues(alpha: 0.30),
-                labelColor: foreground,
+                rightToLeft: !showHome,
+                color: _homeColor,
+                labelColor: Colors.white,
               ),
               const SizedBox(height: 24),
               _buildStatRow(
@@ -1047,31 +1022,31 @@ class _ShotMapPainter extends CustomPainter {
       oldDelegate.lineColor != lineColor;
 }
 
-// Full-pitch progression diagram: 3 horizontal lanes, each an arrow sized
-// and labeled by how much of that lane's play moved the ball forward.
+// Channel progression: three gradient arrows with labels near their tips.
 class ProgressionDiagram extends StatelessWidget {
-  final List<double> lanePercents; // [top, middle, bottom], 0..100
+  final bool rightToLeft;
+  final List<double> lanePercents; // [left, center, right], 0..100
   final Color color;
-  final Color lineColor;
   final Color labelColor;
   const ProgressionDiagram({
     super.key,
+    this.rightToLeft = false,
     required this.lanePercents,
     required this.color,
-    required this.lineColor,
     required this.labelColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.6,
+      aspectRatio: 594 / 320,
       child: CustomPaint(
         painter: _ProgressionPainter(
           lanePercents,
           color,
-          lineColor,
           labelColor,
+          Theme.of(context).colorScheme.onSurface,
+          rightToLeft,
         ),
       ),
     );
@@ -1079,95 +1054,124 @@ class ProgressionDiagram extends StatelessWidget {
 }
 
 class _ProgressionPainter extends CustomPainter {
+  final bool rightToLeft;
   final List<double> lanePercents;
   final Color color;
-  final Color lineColor;
   final Color labelColor;
+  final Color lineColor;
   const _ProgressionPainter(
-    this.lanePercents,
-    this.color,
-    this.lineColor,
-    this.labelColor,
-  );
+      this.lanePercents, this.color, this.labelColor, this.lineColor,
+      this.rightToLeft);
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.translate(size.width * (rightToLeft ? 114 : 48) / 594,
+        size.height * 28 / 320);
+    _paintArrows(canvas, Size(size.width * 432 / 594, size.height * 264 / 320));
+    canvas.restore();
+
     final line = _pitchLinePaint(lineColor);
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), line);
-    canvas.drawLine(
-        Offset(size.width / 3, 0), Offset(size.width / 3, size.height), line);
-    canvas.drawLine(Offset(size.width * 2 / 3, 0),
-        Offset(size.width * 2 / 3, size.height), line);
-    canvas.drawCircle(
-        Offset(size.width / 2, size.height / 2), size.height * 0.22, line);
+    final pitch = (Offset.zero & size).deflate(line.strokeWidth / 2);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(pitch, const Radius.circular(5)),
+      line,
+    );
+    canvas.drawLine(Offset(size.width / 2, pitch.top),
+        Offset(size.width / 2, pitch.bottom), line);
+    final radius = size.height * 0.175;
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), radius, line);
 
-    final goalW = size.width * 0.04;
-    final goalH = size.height * 0.36;
-    canvas.drawRect(
-        Rect.fromLTWH(0, (size.height - goalH) / 2, goalW, goalH), line);
-    canvas.drawRect(
-        Rect.fromLTWH(
-            size.width - goalW, (size.height - goalH) / 2, goalW, goalH),
-        line);
-
-    final laneHeight = size.height / 3;
-    for (var i = 0; i < 3 && i < lanePercents.length; i++) {
-      final midY = laneHeight * i + laneHeight / 2;
-      final pct = (lanePercents[i] / 100).clamp(0.0, 1.0);
-      final arrowLen = size.width * 0.18 + size.width * 0.6 * pct;
-      _drawArrow(
-        canvas,
-        start: Offset(size.width * 0.08, midY),
-        length: arrowLen,
-        thickness: 10 + 14 * pct,
-        color: color.withValues(alpha: 0.35 + 0.5 * pct),
-      );
-      _drawLabel(
-        canvas,
-        '${lanePercents[i].round()}%',
-        Offset(size.width * 0.08 + arrowLen / 2, midY),
-      );
+    final boxWidth = size.width * 78 / 594;
+    final boxTop = size.height * 0.20;
+    final boxBottom = size.height * 0.80;
+    final corner = size.width * 0.012;
+    for (final rightSide in [false, true]) {
+      canvas.save();
+      if (rightSide) {
+        canvas.translate(size.width, 0);
+        canvas.scale(-1, 1);
+      }
+      final box = Path()
+        ..moveTo(pitch.left, boxTop)
+        ..lineTo(boxWidth - corner, boxTop)
+        ..quadraticBezierTo(boxWidth, boxTop, boxWidth, boxTop + corner)
+        ..lineTo(boxWidth, boxBottom - corner)
+        ..quadraticBezierTo(boxWidth, boxBottom, boxWidth - corner, boxBottom)
+        ..lineTo(pitch.left, boxBottom);
+      canvas.drawPath(box, line);
+      canvas.save();
+      canvas.clipRect(Rect.fromLTRB(boxWidth, 0, size.width, size.height));
+      canvas.drawCircle(
+          Offset(size.width * 60 / 594, size.height / 2), radius, line);
+      canvas.restore();
+      canvas.restore();
     }
   }
 
-  void _drawArrow(Canvas canvas,
-      {required Offset start,
-      required double length,
-      required double thickness,
-      required Color color}) {
-    final paint = Paint()..color = color;
-    final shaftEnd = start.dx + length * 0.78;
-    final tipEnd = start.dx + length;
-    final path = Path()
-      ..moveTo(start.dx, start.dy - thickness / 2)
-      ..lineTo(shaftEnd, start.dy - thickness / 2)
-      ..lineTo(shaftEnd, start.dy - thickness)
-      ..lineTo(tipEnd, start.dy)
-      ..lineTo(shaftEnd, start.dy + thickness)
-      ..lineTo(shaftEnd, start.dy + thickness / 2)
-      ..lineTo(start.dx, start.dy + thickness / 2)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawLabel(Canvas canvas, String text, Offset center) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(
-          color: labelColor,
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
+  void _paintArrows(Canvas canvas, Size size) {
+    final values =
+        lanePercents.take(3).map((v) => v.clamp(0.0, 100.0)).toList();
+    final maximum =
+        values.fold<double>(0, (largest, v) => math.max(largest, v));
+    final laneHeight = size.height / 3;
+    final headWidth = size.width * 0.10;
+    for (var i = 0; i < values.length; i++) {
+      final midY = laneHeight * (i + 0.5);
+      // A minimum shaft width keeps even small percentages legible.
+      final relative = maximum == 0 ? 0.0 : values[i] / maximum;
+      final tip = size.width * (0.64 + 0.36 * relative);
+      final shoulder = tip - headWidth;
+      final shaftHalf = laneHeight * 0.32;
+      final headHalf = laneHeight * 0.49;
+      final path = Path()
+        ..moveTo(0, midY - shaftHalf)
+        ..lineTo(shoulder, midY - shaftHalf)
+        ..lineTo(shoulder, midY - headHalf)
+        ..lineTo(tip, midY)
+        ..lineTo(shoulder, midY + headHalf)
+        ..lineTo(shoulder, midY + shaftHalf)
+        ..lineTo(0, midY + shaftHalf)
+        ..close();
+      final bounds = Rect.fromLTWH(0, midY - headHalf, tip, headHalf * 2);
+      canvas.save();
+      if (rightToLeft) {
+        canvas.translate(size.width, 0);
+        canvas.scale(-1, 1);
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..shader = LinearGradient(
+            colors: [color.withValues(alpha: 0), color, color],
+            stops: const [0, 0.35, 1],
+          ).createShader(bounds),
+      );
+      canvas.restore();
+      final label = TextPainter(
+        text: TextSpan(
+          text: '${lanePercents[i].round()}%',
+          style: Heading4.style.copyWith(
+            color: labelColor,
+            fontSize: size.width * 0.075,
+          ),
         ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    painter.paint(
-        canvas, center - Offset(painter.width / 2, painter.height / 2));
+        textDirection: TextDirection.ltr,
+      )..layout();
+      label.paint(
+          canvas,
+          Offset(
+            rightToLeft
+                ? size.width - shoulder + size.width * 0.02
+                : shoulder - size.width * 0.02 - label.width,
+            midY - label.height / 2,
+          ));
+    }
   }
 
   @override
   bool shouldRepaint(covariant _ProgressionPainter oldDelegate) =>
+      oldDelegate.rightToLeft != rightToLeft ||
       oldDelegate.lanePercents != lanePercents ||
       oldDelegate.color != color ||
       oldDelegate.lineColor != lineColor ||
