@@ -428,13 +428,68 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 _buildTeamToggle(),
                 const SizedBox(height: 24),
                 for (final row in rows)
-                  _buildStatRow(
-                    row.label,
-                    row.home,
-                    row.away,
-                    suffix: row.isPercent ? '%' : '',
-                  ),
+                  if (row.label == 'Ball Possession')
+                    _buildPossessionBar(row.home, row.away)
+                  else
+                    _buildStatRow(
+                      row.label,
+                      row.home,
+                      row.away,
+                      suffix: row.isPercent ? '%' : '',
+                    ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPossessionBar(num home, num away) {
+    final total = home + away;
+    final fraction = total <= 0 ? 0.5 : (home / total).clamp(0.0, 1.0);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: SizedBox(
+              key: const ValueKey('match-possession-bar'),
+              height: 36,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  const ColoredBox(color: Colors.white),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      key: const ValueKey('match-possession-home-fill'),
+                      widthFactor: fraction,
+                      heightFactor: 1,
+                      child: const ColoredBox(color: Color(0xFFFF5B5B)),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _formatNumber(home, suffix: '%'),
+                          style: Heading4.style.copyWith(
+                            color: fraction == 0 ? Colors.black : Colors.white,
+                          ),
+                        ),
+                        Text(
+                          _formatNumber(away, suffix: '%'),
+                          style: Heading4.style.copyWith(color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
