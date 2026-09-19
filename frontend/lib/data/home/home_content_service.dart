@@ -40,17 +40,6 @@ class HomeContentService implements HomeContentRepository {
     );
   }
 
-  @override
-  Future<HomeContentItem?> loadForMatch({
-    required int homeTeamId,
-    required int awayTeamId,
-  }) {
-    return fetchMatchHighlight(
-      homeTeamId: homeTeamId,
-      awayTeamId: awayTeamId,
-    );
-  }
-
   List<HomeContentItem> _withFallbacks(List<HomeContentItem> items) {
     final result = items.take(homeContentFallbackItems.length).toList();
     while (result.length < homeContentFallbackItems.length) {
@@ -77,34 +66,11 @@ class HomeContentService implements HomeContentRepository {
     );
   }
 
-  Future<HomeContentItem?> fetchMatchHighlight({
-    required int homeTeamId,
-    required int awayTeamId,
-  }) async {
-    final teamSources = [
-      ...highlightsByTeam(homeTeamId),
-      ...highlightsByTeam(awayTeamId),
-    ];
-    if (teamSources.isEmpty) return null;
-
-    final sourceRefs =
-        teamSources.map((item) => item.sourceRef).toSet().toList();
-    final items = await _fetchHighlightsFromSources(
-      sourceRefs,
-      sourceCount: sourceRefs.length,
-      limit: 1,
-      relevantTeamIds: [homeTeamId, awayTeamId],
-      preferExactMatch: true,
-    );
-    return items.firstOrNull;
-  }
-
   Future<List<HomeContentItem>> _fetchHighlightsFromSources(
     List<String> sourceRefs, {
     required int sourceCount,
     required int limit,
     List<int> relevantTeamIds = const [],
-    bool preferExactMatch = false,
   }) async {
     final feeds = await Future.wait(
       sourceRefs.take(sourceCount).map(_fetchHighlightFeed),
@@ -115,12 +81,10 @@ class HomeContentService implements HomeContentRepository {
         final rightScore = _highlightRelevance(
           right.value,
           relevantTeamIds,
-          preferExactMatch: preferExactMatch,
         );
         final leftScore = _highlightRelevance(
           left.value,
           relevantTeamIds,
-          preferExactMatch: preferExactMatch,
         );
         final scoreComparison = rightScore.compareTo(leftScore);
         return scoreComparison != 0
@@ -132,9 +96,8 @@ class HomeContentService implements HomeContentRepository {
 
   int _highlightRelevance(
     HomeContentItem item,
-    List<int> teamIds, {
-    required bool preferExactMatch,
-  }) {
+    List<int> teamIds,
+  ) {
     final title = item.title.toLowerCase();
     final teamTerms = teamIds
         .map((teamId) => _highlightSearchTerms[teamId] ?? const <String>[])
@@ -143,11 +106,6 @@ class HomeContentService implements HomeContentRepository {
     final matchingTeams =
         teamTerms.where((terms) => terms.any(title.contains)).length;
 
-    if (preferExactMatch &&
-        teamTerms.length > 1 &&
-        matchingTeams == teamTerms.length) {
-      return 100 + matchingTeams;
-    }
     return matchingTeams;
   }
 
