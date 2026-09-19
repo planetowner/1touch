@@ -41,3 +41,10 @@ class TeamHighlightsResponse(BaseModel):
     viewer_country: str = Field(description="언어·국적과 별개인 실제 시청 국가의 ISO 2자리 코드예요.")
     updated_at: datetime | None
     items: list[HighlightOut] = Field(description="국가 제한을 통과한 서로 다른 최근 경기 최대 3개예요. 부족하면 있는 만큼만 반환해요.")
+
+
+class FixtureHighlightsResponse(BaseModel):
+    fixture_id: int
+    viewer_country: str | None = Field(description="null이면 국가별 재생 제한은 외부 YouTube에서 처리해요.")
+    updated_at: datetime | None
+    items: list[HighlightOut] = Field(max_length=1, description="해당 경기의 공식 영상 최대 1개예요. 조건에 맞는 영상이 없으면 빈 목록이에요.")

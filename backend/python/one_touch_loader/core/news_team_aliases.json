@@ -1,0 +1,1264 @@
+{
+  "verified_at": "2026-09-19",
+  "note": "현재 DB의 팀 ID·리그와 Wikidata의 구단명·국가를 대조했어요. 선수 이름과 일반 별명으로는 팀을 추정하지 않아요.",
+  "teams": {
+    "3": {
+      "name": "Sunderland",
+      "wikidata": "Q18739",
+      "en": [
+        "Sunderland",
+        "Sunderland A.F.C."
+      ],
+      "ko": [
+        "선덜랜드 AFC",
+        "선덜랜드"
+      ]
+    },
+    "6": {
+      "name": "Tottenham Hotspur",
+      "wikidata": "Q18741",
+      "en": [
+        "Tottenham Hotspur",
+        "Tottenham Hotspur F.C.",
+        "Tottenham",
+        "Spurs"
+      ],
+      "ko": [
+        "토트넘 홋스퍼 FC",
+        "토트넘 홋스퍼",
+        "토트넘"
+      ]
+    },
+    "8": {
+      "name": "Liverpool",
+      "wikidata": "Q1130849",
+      "en": [
+        "Liverpool",
+        "Liverpool F.C."
+      ],
+      "ko": [
+        "리버풀 FC",
+        "리버풀fc",
+        "리버풀 F.C.",
+        "FC 리버풀",
+        "리버풀FC",
+        "리버풀"
+      ]
+    },
+    "9": {
+      "name": "Manchester City",
+      "wikidata": "Q50602",
+      "en": [
+        "Manchester City",
+        "Manchester City F.C.",
+        "Man City"
+      ],
+      "ko": [
+        "맨체스터 시티 FC",
+        "맨체스터 시티",
+        "맨 시티",
+        "맨시티"
+      ]
+    },
+    "11": {
+      "name": "Fulham",
+      "wikidata": "Q18708",
+      "en": [
+        "Fulham",
+        "Fulham F.C."
+      ],
+      "ko": [
+        "풀럼 FC",
+        "풀럼"
+      ]
+    },
+    "13": {
+      "name": "Everton",
+      "wikidata": "Q5794",
+      "en": [
+        "Everton",
+        "Everton F.C."
+      ],
+      "ko": [
+        "에버턴 FC",
+        "에버턴"
+      ]
+    },
+    "14": {
+      "name": "Manchester United",
+      "wikidata": "Q18656",
+      "en": [
+        "Manchester United",
+        "Manchester United F.C.",
+        "Man United",
+        "Man Utd"
+      ],
+      "ko": [
+        "맨체스터 유나이티드 FC",
+        "맨유",
+        "맨체스터 유나이티드"
+      ]
+    },
+    "15": {
+      "name": "Aston Villa",
+      "wikidata": "Q18711",
+      "en": [
+        "Aston Villa",
+        "Aston Villa F.C.",
+        "Villa"
+      ],
+      "ko": [
+        "아스톤 빌라 FC",
+        "아스톤 빌라"
+      ]
+    },
+    "18": {
+      "name": "Chelsea",
+      "wikidata": "Q9616",
+      "en": [
+        "Chelsea",
+        "Chelsea F.C."
+      ],
+      "ko": [
+        "첼시 FC",
+        "첼시"
+      ]
+    },
+    "19": {
+      "name": "Arsenal",
+      "wikidata": "Q9617",
+      "en": [
+        "Arsenal",
+        "Arsenal F.C."
+      ],
+      "ko": [
+        "아스널 FC",
+        "아스널",
+        "아스날 FC",
+        "아스날"
+      ]
+    },
+    "20": {
+      "name": "Newcastle United",
+      "wikidata": "Q18716",
+      "en": [
+        "Newcastle United",
+        "Newcastle United F.C.",
+        "Newcastle"
+      ],
+      "ko": [
+        "뉴캐슬 유나이티드 FC",
+        "뉴캐슬 유나이티드",
+        "뉴캐슬"
+      ]
+    },
+    "22": {
+      "name": "Hull City",
+      "wikidata": "Q19477",
+      "en": [
+        "Hull City",
+        "Hull City A.F.C.",
+        "Hull"
+      ],
+      "ko": [
+        "헐 시티 AFC",
+        "헐 시티"
+      ]
+    },
+    "36": {
+      "name": "Celta de Vigo",
+      "wikidata": "Q8749",
+      "en": [
+        "Celta de Vigo",
+        "RC Celta de Vigo",
+        "Celta"
+      ],
+      "ko": [
+        "셀타 비고",
+        "RC 셀타 데 비고",
+        "셀타 데 비고"
+      ]
+    },
+    "37": {
+      "name": "Roma",
+      "wikidata": "Q2739",
+      "en": [
+        "Roma",
+        "AS Roma"
+      ],
+      "ko": [
+        "AS 로마",
+        "로마"
+      ]
+    },
+    "43": {
+      "name": "Lazio",
+      "wikidata": "Q2609",
+      "en": [
+        "Lazio",
+        "SS Lazio"
+      ],
+      "ko": [
+        "SS 라치오",
+        "라치오"
+      ]
+    },
+    "44": {
+      "name": "Olympique Marseille",
+      "wikidata": "Q132885",
+      "en": [
+        "Olympique Marseille",
+        "Olympique de Marseille",
+        "Marseille",
+        "OM"
+      ],
+      "ko": [
+        "올랭피크 드 마르세유",
+        "올림피크 드 마르세유",
+        "올림피크 마르셰유",
+        "올림피크 마르세유",
+        "올랭피크 마르세유",
+        "마르세유"
+      ]
+    },
+    "51": {
+      "name": "Crystal Palace",
+      "wikidata": "Q19467",
+      "en": [
+        "Crystal Palace",
+        "Crystal Palace F.C.",
+        "Palace"
+      ],
+      "ko": [
+        "크리스털 팰리스 FC",
+        "크리스털 팰리스"
+      ]
+    },
+    "52": {
+      "name": "AFC Bournemouth",
+      "wikidata": "Q19568",
+      "en": [
+        "AFC Bournemouth",
+        "Bournemouth"
+      ],
+      "ko": [
+        "AFC 본머스",
+        "본머스"
+      ]
+    },
+    "63": {
+      "name": "Nottingham Forest",
+      "wikidata": "Q19490",
+      "en": [
+        "Nottingham Forest",
+        "Nottingham Forest F.C.",
+        "Forest",
+        "Nottm Forest"
+      ],
+      "ko": [
+        "노팅엄 포리스트 FC",
+        "노팅엄 포레스트 FC",
+        "노팅엄 포리스트",
+        "노팅엄 포레스트"
+      ]
+    },
+    "67": {
+      "name": "Schalke 04",
+      "wikidata": "Q32494",
+      "en": [
+        "Schalke 04",
+        "Schalke"
+      ],
+      "ko": [
+        "FC 샬케 04",
+        "샬케",
+        "샬케 04"
+      ]
+    },
+    "68": {
+      "name": "Borussia Dortmund",
+      "wikidata": "Q41420",
+      "en": [
+        "Borussia Dortmund",
+        "Dortmund",
+        "BVB"
+      ],
+      "ko": [
+        "보루시아 도르트문트",
+        "BV 보루시아 도르트문트",
+        "도르트문트"
+      ]
+    },
+    "71": {
+      "name": "Leeds United",
+      "wikidata": "Q1128631",
+      "en": [
+        "Leeds United",
+        "Leeds United F.C.",
+        "Leeds",
+        "Leeds Utd"
+      ],
+      "ko": [
+        "리즈 유나이티드 FC",
+        "리즈 유나이티드",
+        "리즈 유나이티드 A.F.C.",
+        "리즈시절",
+        "리즈 시절",
+        "리즈 유나이티드 AFC",
+        "리즈"
+      ]
+    },
+    "78": {
+      "name": "Brighton & Hove Albion",
+      "wikidata": "Q19453",
+      "en": [
+        "Brighton & Hove Albion",
+        "Brighton & Hove Albion F.C.",
+        "Brighton"
+      ],
+      "ko": [
+        "브라이턴 앤 호브 앨비언 FC",
+        "브라이턴 앤 호브 앨비언",
+        "브라이턴"
+      ]
+    },
+    "79": {
+      "name": "Olympique Lyonnais",
+      "wikidata": "Q704",
+      "en": [
+        "Olympique Lyonnais",
+        "Lyon",
+        "OL"
+      ],
+      "ko": [
+        "올랭피크 리오네",
+        "리오네",
+        "올랭피크 리옹",
+        "리옹"
+      ]
+    },
+    "82": {
+      "name": "Werder Bremen",
+      "wikidata": "Q51976",
+      "en": [
+        "Werder Bremen",
+        "SV Werder Bremen",
+        "Werder"
+      ],
+      "ko": [
+        "SV 베르더 브레멘",
+        "베르더 브레멘"
+      ]
+    },
+    "83": {
+      "name": "FC Barcelona",
+      "wikidata": "Q7156",
+      "en": [
+        "FC Barcelona",
+        "Barcelona",
+        "Barca"
+      ],
+      "ko": [
+        "FC 바르셀로나",
+        "바르샤",
+        "바르셀로나"
+      ]
+    },
+    "90": {
+      "name": "FC Augsburg",
+      "wikidata": "Q15755",
+      "en": [
+        "FC Augsburg"
+      ],
+      "ko": [
+        "FC 아우크스부르크",
+        "아우크스부르크"
+      ]
+    },
+    "102": {
+      "name": "Genoa",
+      "wikidata": "Q2074",
+      "en": [
+        "Genoa",
+        "Genoa CFC"
+      ],
+      "ko": [
+        "제노아 CFC",
+        "제노아"
+      ]
+    },
+    "106": {
+      "name": "Getafe",
+      "wikidata": "Q8806",
+      "en": [
+        "Getafe",
+        "Getafe CF"
+      ],
+      "ko": [
+        "헤타페 CF",
+        "헤타페"
+      ]
+    },
+    "109": {
+      "name": "Fiorentina",
+      "wikidata": "Q2052",
+      "en": [
+        "Fiorentina",
+        "ACF Fiorentina"
+      ],
+      "ko": [
+        "ACF 피오렌티나",
+        "피오렌티나"
+      ]
+    },
+    "113": {
+      "name": "AC Milan",
+      "wikidata": "Q1543",
+      "en": [
+        "AC Milan",
+        "Milan"
+      ],
+      "ko": [
+        "AC 밀란",
+        "밀란"
+      ]
+    },
+    "116": {
+      "name": "Ipswich Town",
+      "wikidata": "Q9653",
+      "en": [
+        "Ipswich Town",
+        "Ipswich Town F.C.",
+        "Ipswich"
+      ],
+      "ko": [
+        "입스위치 타운 FC",
+        "입스위치 타운"
+      ]
+    },
+    "117": {
+      "name": "Coventry City",
+      "wikidata": "Q19580",
+      "en": [
+        "Coventry City",
+        "Coventry City F.C.",
+        "Coventry"
+      ],
+      "ko": [
+        "코번트리 시티 FC",
+        "코번트리 시티"
+      ]
+    },
+    "126": {
+      "name": "Málaga",
+      "wikidata": "Q8857",
+      "en": [
+        "Málaga",
+        "Málaga CF"
+      ],
+      "ko": [
+        "말라가 CF",
+        "말라가"
+      ]
+    },
+    "214": {
+      "name": "Valencia",
+      "wikidata": "Q10333",
+      "en": [
+        "Valencia",
+        "Valencia CF"
+      ],
+      "ko": [
+        "발렌시아 CF",
+        "발렌시아 클루브 데 푸트볼",
+        "발렌시아"
+      ]
+    },
+    "236": {
+      "name": "Brentford",
+      "wikidata": "Q19571",
+      "en": [
+        "Brentford",
+        "Brentford F.C."
+      ],
+      "ko": [
+        "브렌트퍼드 FC",
+        "브렌트퍼드"
+      ]
+    },
+    "266": {
+      "name": "Brest",
+      "wikidata": "Q218372",
+      "en": [
+        "Brest",
+        "Stade Brestois 29",
+        "Stade Brestois"
+      ],
+      "ko": [
+        "스타드 브레스트 29",
+        "스타드 브레스트",
+        "스타드 브레스투아 29",
+        "스타드 브레스투아"
+      ]
+    },
+    "267": {
+      "name": "Venezia",
+      "wikidata": "Q501245",
+      "en": [
+        "Venezia",
+        "Venezia F.C."
+      ],
+      "ko": [
+        "FBC 우니오네 베네치아",
+        "SSC 베네치아",
+        "AC 베네치아",
+        "우니오네 베네치아",
+        "베네치아"
+      ]
+    },
+    "268": {
+      "name": "Como",
+      "wikidata": "Q1120838",
+      "en": [
+        "Como",
+        "Como 1907"
+      ],
+      "ko": [
+        "칼초 코모"
+      ]
+    },
+    "271": {
+      "name": "Lens",
+      "wikidata": "Q191843",
+      "en": [
+        "Lens",
+        "R.C. Lens"
+      ],
+      "ko": [
+        "RC 랑스",
+        "랑스"
+      ]
+    },
+    "277": {
+      "name": "RB Leipzig",
+      "wikidata": "Q702455",
+      "en": [
+        "RB Leipzig",
+        "Leipzig"
+      ],
+      "ko": [
+        "RB 라이프치히",
+        "라이프치히"
+      ]
+    },
+    "289": {
+      "name": "Toulouse",
+      "wikidata": "Q19518",
+      "en": [
+        "Toulouse",
+        "Toulouse FC"
+      ],
+      "ko": [
+        "툴루즈 FC",
+        "툴루즈"
+      ]
+    },
+    "346": {
+      "name": "Udinese",
+      "wikidata": "Q2798",
+      "en": [
+        "Udinese",
+        "Udinese Calcio"
+      ],
+      "ko": [
+        "우디네세 칼초"
+      ]
+    },
+    "366": {
+      "name": "Eintracht Frankfurt",
+      "wikidata": "Q38245",
+      "en": [
+        "Eintracht Frankfurt",
+        "Frankfurt"
+      ],
+      "ko": [
+        "아인트라흐트 프랑크푸르트",
+        "아인트라트 프랑크푸르트"
+      ]
+    },
+    "377": {
+      "name": "Rayo Vallecano",
+      "wikidata": "Q10300",
+      "en": [
+        "Rayo Vallecano",
+        "Rayo"
+      ],
+      "ko": [
+        "라요 바예카노"
+      ]
+    },
+    "398": {
+      "name": "Parma",
+      "wikidata": "Q2693",
+      "en": [
+        "Parma",
+        "Parma Calcio 1913"
+      ],
+      "ko": [
+        "파르마 FC",
+        "파르마 F.C.",
+        "파르마 축구 협회",
+        "파르마 칼초",
+        "파르마"
+      ]
+    },
+    "429": {
+      "name": "Deportivo A Coruña",
+      "wikidata": "Q8760",
+      "en": [
+        "Deportivo A Coruña",
+        "Deportivo de A Coruña",
+        "Deportivo",
+        "Depor",
+        "RC Deportivo"
+      ],
+      "ko": [
+        "데포르티보 라코루냐"
+      ]
+    },
+    "450": {
+      "name": "Nice",
+      "wikidata": "Q185163",
+      "en": [
+        "Nice",
+        "OGC Nice"
+      ],
+      "ko": [
+        "OGC 니스",
+        "니스"
+      ]
+    },
+    "459": {
+      "name": "Osasuna",
+      "wikidata": "Q10286",
+      "en": [
+        "Osasuna",
+        "Club Atlético Osasuna"
+      ],
+      "ko": [
+        "CA 오사수나",
+        "오사수나"
+      ]
+    },
+    "485": {
+      "name": "Real Betis",
+      "wikidata": "Q8723",
+      "en": [
+        "Real Betis",
+        "Real Betis Balompié",
+        "Betis"
+      ],
+      "ko": [
+        "레알 베티스",
+        "레알 베티스 발롬피에"
+      ]
+    },
+    "503": {
+      "name": "FC Bayern München",
+      "wikidata": "Q15789",
+      "en": [
+        "FC Bayern München",
+        "FC Bayern Munich",
+        "Bayern"
+      ],
+      "ko": [
+        "FC 바이에른 뮌헨",
+        "바이에른 뮌헨",
+        "뮌헨",
+        "바이에른"
+      ]
+    },
+    "528": {
+      "name": "Espanyol",
+      "wikidata": "Q8780",
+      "en": [
+        "Espanyol",
+        "RCD Espanyol de Barcelona"
+      ],
+      "ko": [
+        "RCD 에스파뇰",
+        "에스파뇰"
+      ]
+    },
+    "585": {
+      "name": "Cagliari",
+      "wikidata": "Q1900",
+      "en": [
+        "Cagliari",
+        "Cagliari Calcio"
+      ],
+      "ko": [
+        "칼리아리 칼초"
+      ]
+    },
+    "591": {
+      "name": "Paris Saint Germain",
+      "wikidata": "Q483020",
+      "en": [
+        "Paris Saint Germain",
+        "Paris Saint-Germain FC",
+        "PSG",
+        "Paris Saint-Germain"
+      ],
+      "ko": [
+        "파리 생제르맹 FC",
+        "파리 생제르망 FC",
+        "파리 생 제르맹 FC",
+        "파리 생제르망",
+        "파리 생 제르맹",
+        "파리 생제르맹"
+      ]
+    },
+    "594": {
+      "name": "Real Sociedad",
+      "wikidata": "Q10315",
+      "en": [
+        "Real Sociedad"
+      ],
+      "ko": [
+        "레알 소시에다드",
+        "레알 소시에다드 데 푸트볼, S.A.D.",
+        "레알 소시에다드 데 푸트볼"
+      ]
+    },
+    "597": {
+      "name": "Napoli",
+      "wikidata": "Q2641",
+      "en": [
+        "Napoli",
+        "SSC Napoli"
+      ],
+      "ko": [
+        "SSC 나폴리",
+        "나폴리"
+      ]
+    },
+    "598": {
+      "name": "Rennes",
+      "wikidata": "Q19509",
+      "en": [
+        "Rennes",
+        "Stade Rennais F.C.",
+        "Stade Rennais"
+      ],
+      "ko": [
+        "스타드 렌 FC",
+        "스타드 렌"
+      ]
+    },
+    "613": {
+      "name": "Torino",
+      "wikidata": "Q2768",
+      "en": [
+        "Torino",
+        "Torino FC"
+      ],
+      "ko": [
+        "토리노 FC",
+        "토리노"
+      ]
+    },
+    "625": {
+      "name": "Juventus",
+      "wikidata": "Q1422",
+      "en": [
+        "Juventus",
+        "Juventus FC"
+      ],
+      "ko": [
+        "유벤투스 FC",
+        "유벤투스",
+        "유베"
+      ]
+    },
+    "676": {
+      "name": "Sevilla",
+      "wikidata": "Q10329",
+      "en": [
+        "Sevilla",
+        "Sevilla FC"
+      ],
+      "ko": [
+        "세비야 FC",
+        "세비야"
+      ]
+    },
+    "683": {
+      "name": "Borussia Mönchengladbach",
+      "wikidata": "Q101959",
+      "en": [
+        "Borussia Mönchengladbach",
+        "Gladbach",
+        "Monchengladbach"
+      ],
+      "ko": [
+        "보루시아 묀헨글라트바흐",
+        "보루시아 묀헨글라트바하",
+        "보루시아 묀센글라트바흐",
+        "보루시아 묀헨글라드바흐",
+        "보루시아 뮌헨글라트바흐",
+        "보루시아 뮌헨글라드바흐"
+      ]
+    },
+    "686": {
+      "name": "Strasbourg",
+      "wikidata": "Q126334",
+      "en": [
+        "Strasbourg",
+        "RC Strasbourg Alsace"
+      ],
+      "ko": [
+        "RC 스트라스부르",
+        "스트라스부르"
+      ]
+    },
+    "690": {
+      "name": "LOSC Lille",
+      "wikidata": "Q19516",
+      "en": [
+        "LOSC Lille",
+        "Lille OSC",
+        "Lille",
+        "LOSC"
+      ],
+      "ko": [
+        "릴 OSC"
+      ]
+    },
+    "708": {
+      "name": "Atalanta",
+      "wikidata": "Q1886",
+      "en": [
+        "Atalanta",
+        "Atalanta BC"
+      ],
+      "ko": [
+        "아탈란타 BC",
+        "아탈란타"
+      ]
+    },
+    "776": {
+      "name": "Angers SCO",
+      "wikidata": "Q845137",
+      "en": [
+        "Angers SCO",
+        "Angers",
+        "angevin"
+      ],
+      "ko": [
+        "앙제 SCO",
+        "앙제"
+      ]
+    },
+    "794": {
+      "name": "FSV Mainz 05",
+      "wikidata": "Q105254",
+      "en": [
+        "FSV Mainz 05",
+        "1. FSV Mainz 05",
+        "Mainz"
+      ],
+      "ko": [
+        "1. FSV 마인츠 05",
+        "마인츠 05",
+        "FSV 마인츠 05"
+      ]
+    },
+    "1055": {
+      "name": "Le Havre",
+      "wikidata": "Q328658",
+      "en": [
+        "Le Havre",
+        "Le Havre AC",
+        "HAC",
+        "Havre AC"
+      ],
+      "ko": [
+        "르아브르 AC",
+        "르 아브르 AC",
+        "르아브르",
+        "르 아브르"
+      ]
+    },
+    "1079": {
+      "name": "FC Union Berlin",
+      "wikidata": "Q141971",
+      "en": [
+        "FC Union Berlin",
+        "1. FC Union Berlin",
+        "Union Berlin"
+      ],
+      "ko": [
+        "1. FC 우니온 베를린",
+        "우니온 베를린"
+      ]
+    },
+    "1099": {
+      "name": "Elche",
+      "wikidata": "Q10512",
+      "en": [
+        "Elche",
+        "Elche CF"
+      ],
+      "ko": [
+        "엘체 CF",
+        "엘체"
+      ]
+    },
+    "1628": {
+      "name": "Monza",
+      "wikidata": "Q289482",
+      "en": [
+        "Monza",
+        "AC Monza"
+      ],
+      "ko": [
+        "AC 몬차 브리안차",
+        "몬차 브리안차"
+      ]
+    },
+    "2642": {
+      "name": "Paderborn",
+      "wikidata": "Q160532",
+      "en": [
+        "Paderborn",
+        "SC Paderborn 07"
+      ],
+      "ko": [
+        "SC 파더보른 07",
+        "파더보른 07"
+      ]
+    },
+    "2708": {
+      "name": "Hamburger SV",
+      "wikidata": "Q51974",
+      "en": [
+        "Hamburger SV",
+        "Hamburg",
+        "HSV"
+      ],
+      "ko": [
+        "함부르거 SV",
+        "함부르크 SV",
+        "함부르거",
+        "함부르크"
+      ]
+    },
+    "2714": {
+      "name": "Sassuolo",
+      "wikidata": "Q8603",
+      "en": [
+        "Sassuolo",
+        "US Sassuolo Calcio"
+      ],
+      "ko": [
+        "US 사수올로 칼초",
+        "사수올로 칼초"
+      ]
+    },
+    "2726": {
+      "name": "TSG Hoffenheim",
+      "wikidata": "Q22707",
+      "en": [
+        "TSG Hoffenheim",
+        "TSG 1899 Hoffenheim",
+        "Hoffenheim"
+      ],
+      "ko": [
+        "TSG 1899 호펜하임",
+        "1899 호펜하임",
+        "호펜하임"
+      ]
+    },
+    "2930": {
+      "name": "Inter",
+      "wikidata": "Q631",
+      "en": [
+        "Inter Milan",
+        "Internazionale"
+      ],
+      "ko": [
+        "FC 인테르나치오날레 밀라노",
+        "인테르 밀란",
+        "인테르",
+        "인테르나치오날레",
+        "인테르나치오날레 밀라노"
+      ]
+    },
+    "2975": {
+      "name": "Deportivo Alavés",
+      "wikidata": "Q223620",
+      "en": [
+        "Deportivo Alavés",
+        "Alaves"
+      ],
+      "ko": [
+        "데포르티보 알라베스",
+        "알라베스"
+      ]
+    },
+    "3319": {
+      "name": "VfB Stuttgart",
+      "wikidata": "Q4512",
+      "en": [
+        "VfB Stuttgart",
+        "Stuttgart"
+      ],
+      "ko": [
+        "VfB 슈투트가르트",
+        "VfB 슈트트가르트",
+        "슈투트가르트",
+        "슈트트가르트"
+      ]
+    },
+    "3320": {
+      "name": "FC Köln",
+      "wikidata": "Q104770",
+      "en": [
+        "FC Köln",
+        "1. FC Köln",
+        "Koln",
+        "Cologne"
+      ],
+      "ko": [
+        "1. FC 쾰른",
+        "FC 쾰른",
+        "쾰른"
+      ]
+    },
+    "3321": {
+      "name": "Bayer 04 Leverkusen",
+      "wikidata": "Q104761",
+      "en": [
+        "Bayer 04 Leverkusen",
+        "Leverkusen",
+        "Bayer 04"
+      ],
+      "ko": [
+        "바이어 04 레버쿠젠",
+        "바이어 레버쿠젠",
+        "바이에르 레버쿠젠",
+        "바이엘 레버쿠젠"
+      ]
+    },
+    "3457": {
+      "name": "Levante",
+      "wikidata": "Q8823",
+      "en": [
+        "Levante",
+        "Levante UD"
+      ],
+      "ko": [
+        "레반테 UD",
+        "레반테"
+      ]
+    },
+    "3468": {
+      "name": "Real Madrid",
+      "wikidata": "Q8682",
+      "en": [
+        "Real Madrid",
+        "Real Madrid Club de Fútbol"
+      ],
+      "ko": [
+        "레알 마드리드 CF",
+        "레알 마드리드"
+      ]
+    },
+    "3477": {
+      "name": "Villarreal",
+      "wikidata": "Q12297",
+      "en": [
+        "Villarreal",
+        "Villarreal CF"
+      ],
+      "ko": [
+        "비야레알 CF",
+        "비야레알",
+        "비야레알 클루브 데 푸트볼"
+      ]
+    },
+    "3543": {
+      "name": "SC Freiburg",
+      "wikidata": "Q106394",
+      "en": [
+        "SC Freiburg",
+        "Freiburg"
+      ],
+      "ko": [
+        "SC 프라이부르크",
+        "슈포르트클럽 프라이부르크",
+        "프라이부르크"
+      ]
+    },
+    "3588": {
+      "name": "Elversberg",
+      "wikidata": "Q692691",
+      "en": [
+        "Elversberg",
+        "SV Elversberg"
+      ],
+      "ko": [
+        "SV 엘페르스베르크",
+        "엘페르스베르크"
+      ]
+    },
+    "3682": {
+      "name": "Auxerre",
+      "wikidata": "Q182876",
+      "en": [
+        "Auxerre",
+        "AJ Auxerre"
+      ],
+      "ko": [
+        "AJ 오세르",
+        "AJ 옥세르",
+        "오세르",
+        "옥세르"
+      ]
+    },
+    "4070": {
+      "name": "Frosinone",
+      "wikidata": "Q845043",
+      "en": [
+        "Frosinone",
+        "Frosinone Calcio"
+      ],
+      "ko": [
+        "프로시노네 칼초"
+      ]
+    },
+    "4508": {
+      "name": "Paris",
+      "wikidata": "Q1051013",
+      "en": [
+        "Paris FC"
+      ],
+      "ko": [
+        "파리 FC"
+      ]
+    },
+    "6789": {
+      "name": "Monaco",
+      "wikidata": "Q180305",
+      "en": [
+        "Monaco",
+        "AS Monaco FC"
+      ],
+      "ko": [
+        "AS 모나코 FC",
+        "AS 모나코",
+        "모나코"
+      ]
+    },
+    "7047": {
+      "name": "Troyes",
+      "wikidata": "Q501693",
+      "en": [
+        "Troyes",
+        "ES Troyes AC"
+      ],
+      "ko": [
+        "트루아 AC",
+        "트루아"
+      ]
+    },
+    "7758": {
+      "name": "Le Mans",
+      "wikidata": "Q210864",
+      "en": [
+        "Le Mans",
+        "Le Mans F.C."
+      ],
+      "ko": [
+        "르망 FC",
+        "르망 UC72",
+        "르망"
+      ]
+    },
+    "7790": {
+      "name": "Lecce",
+      "wikidata": "Q13391",
+      "en": [
+        "Lecce",
+        "US Lecce"
+      ],
+      "ko": [
+        "US 레체",
+        "레체"
+      ]
+    },
+    "7980": {
+      "name": "Atlético de Madrid",
+      "wikidata": "Q8701",
+      "en": [
+        "Atlético de Madrid",
+        "Atlético Madrid",
+        "Atletico",
+        "Atleti"
+      ],
+      "ko": [
+        "아틀레티코 마드리드",
+        "아틀레티코"
+      ]
+    },
+    "8513": {
+      "name": "Bologna",
+      "wikidata": "Q1893",
+      "en": [
+        "Bologna",
+        "Bologna F.C. 1909"
+      ],
+      "ko": [
+        "볼로냐 FC 1909",
+        "볼로냐 FC"
+      ]
+    },
+    "9257": {
+      "name": "Lorient",
+      "wikidata": "Q48911",
+      "en": [
+        "Lorient",
+        "F.C. Lorient"
+      ],
+      "ko": [
+        "FC 로리앙",
+        "로리앙"
+      ]
+    },
+    "9818": {
+      "name": "Racing Santander",
+      "wikidata": "Q12236",
+      "en": [
+        "Racing Santander",
+        "Racing de Santander",
+        "Racing"
+      ],
+      "ko": [
+        "라싱 산탄데르"
+      ]
+    },
+    "13258": {
+      "name": "Athletic Club",
+      "wikidata": "Q8687",
+      "en": [
+        "Athletic Club",
+        "Athletic"
+      ],
+      "ko": [
+        "아틀레틱 빌바오",
+        "아틀레틱 클루브"
+      ]
+    }
+  }
+}
