@@ -1,0 +1,753 @@
+{
+  "verified_at": "2026-09-19",
+  "sources": [
+    {
+      "key": "2345e1c55e8c1725",
+      "name": "인터풋볼",
+      "language": "ko",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공식 RSS 응답의 기사 수가 0개예요. 실제 기사를 확인한 뒤 연결해요."
+    },
+    {
+      "key": "6a103fa035f2a88d",
+      "name": "스포츠조선",
+      "language": "ko",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": "https://www.sportschosun.com/rss/index_sc.htm",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://sports.chosun.com/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "cbfe38374c68ea29",
+      "name": "포포투",
+      "language": "ko",
+      "competition_ids": [
+        8,
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": "https://cdn.fourfourtwo.co.kr/rss/gns_allArticle.xml",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://www.fourfourtwo.co.kr/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "5cc02ba0274576fc",
+      "name": "OSEN",
+      "language": "ko",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "c907e9b52e91c8f9",
+      "name": "엑스포츠뉴스",
+      "language": "ko",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "a7752a41fff6a293",
+      "name": "마이데일리",
+      "language": "ko",
+      "competition_ids": [
+        8,
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "02ca2f56d030aaaf",
+      "name": "스포티비뉴스",
+      "language": "ko",
+      "competition_ids": [
+        8,
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "246ae001a2f8b11b",
+      "name": "풋볼리스트",
+      "language": "ko",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": "https://www.footballist.co.kr/rss/S1N1.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.footballist.co.kr/rssIndex.html",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "0600cdd2e0b5b386",
+      "name": "스포츠경향",
+      "language": "ko",
+      "competition_ids": [
+        8,
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "4d784af10d19750a",
+      "name": "스타뉴스",
+      "language": "ko",
+      "competition_ids": [
+        8,
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "ad882c018b25c129",
+      "name": "OffsAIde",
+      "language": "en",
+      "competition_ids": [
+        8,
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "67e37d523c954625",
+      "name": "Evening Standard",
+      "language": "en",
+      "competition_ids": [
+        8,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "5e7bed0260c9f15d",
+      "name": "CaughtOffside",
+      "language": "en",
+      "competition_ids": [
+        8,
+        564
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "195060ca6fc4ac48",
+      "name": "The Independent",
+      "language": "en",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "36053d8d270c2710",
+      "name": "Football League World",
+      "language": "en",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "e6b8c29a898397e4",
+      "name": "Football365",
+      "language": "en",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "콘텐츠 재사용 조건을 확인해야 해요."
+    },
+    {
+      "key": "3609a73fcf87c91d",
+      "name": "EPL Index",
+      "language": "en",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": "https://eplindex.com/feed",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://eplindex.com/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "c7938a87d481cc6a",
+      "name": "The Peoples Person",
+      "language": "en",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "0fcea82a7063946b",
+      "name": "The Football Faithful",
+      "language": "en",
+      "competition_ids": [
+        8
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "5697f60c602afda1",
+      "name": "OneFootball",
+      "language": "en",
+      "competition_ids": [
+        8,
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "b5f31bc6ff769fe2",
+      "name": "일간스포츠",
+      "language": "ko",
+      "competition_ids": [
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "f19fb9aea38a8f1c",
+      "name": "MHN스포츠",
+      "language": "ko",
+      "competition_ids": [
+        564,
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "0704181371d8091a",
+      "name": "스포츠서울",
+      "language": "ko",
+      "competition_ids": [
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "75159e54b7e56e93",
+      "name": "뉴시스",
+      "language": "ko",
+      "competition_ids": [
+        564,
+        82,
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "31a2aa0495fa014a",
+      "name": "스포츠동아",
+      "language": "ko",
+      "competition_ids": [
+        564,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "5abd53a43a1ebe92",
+      "name": "Barca Universal",
+      "language": "en",
+      "competition_ids": [
+        564
+      ],
+      "feed_url": "https://barcauniversal.com/feed/",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://barcauniversal.com/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "daec381ee00af808",
+      "name": "Get Spanish Football News",
+      "language": "en",
+      "competition_ids": [
+        564
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "7fe334ec928c000b",
+      "name": "Football Espana",
+      "language": "en",
+      "competition_ids": [
+        564
+      ],
+      "feed_url": "https://www.football-espana.net/feed",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://www.football-espana.net/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "abd266a0681bdb37",
+      "name": "Madrid Universal",
+      "language": "en",
+      "competition_ids": [
+        564
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "96b22b1907c75505",
+      "name": "Foot Africa",
+      "language": "en",
+      "competition_ids": [
+        564,
+        82,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "1412834530cbfcb1",
+      "name": "Sempre Barca",
+      "language": "en",
+      "competition_ids": [
+        564
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "7c87ea17977b6c86",
+      "name": "Playmakerstats",
+      "language": "en",
+      "competition_ids": [
+        564,
+        82,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "9ddd9c97473a2ac4",
+      "name": "노컷뉴스",
+      "language": "ko",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "4cdef789521af20b",
+      "name": "스포츠타임스",
+      "language": "ko",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "696413f2e302c5ec",
+      "name": "Bulinews",
+      "language": "en",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": "https://bulinews.com/rss.xml",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://bulinews.com/rss",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "04ed35d1c2f1db7f",
+      "name": "Get German Football News",
+      "language": "en",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": "https://www.getfootballnewsgermany.com/feed/",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://www.getfootballnewsgermany.com/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "28980e7826625788",
+      "name": "FCBinside",
+      "language": "en",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "5f952cb6d821e24e",
+      "name": "BVBWLD.de",
+      "language": "en",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "b4551064170c6ca3",
+      "name": "Nur die Raute",
+      "language": "en",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "beb886f2fc2122b4",
+      "name": "FC Bayern München",
+      "language": "en",
+      "competition_ids": [
+        82
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "cc8805bf76df66da",
+      "name": "문화일보",
+      "language": "ko",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "bc336462e0916f8d",
+      "name": "Football Italia",
+      "language": "en",
+      "competition_ids": [
+        384,
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "자동 수집·재사용 조건을 확인해야 해요."
+    },
+    {
+      "key": "b9980598e832a7f1",
+      "name": "SempreInter.Com",
+      "language": "en",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "f7810450b4d78bc9",
+      "name": "RomaPress",
+      "language": "en",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "742def176bae3d4d",
+      "name": "talkJuve",
+      "language": "en",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "3111171b8d5f8663",
+      "name": "gonfialarete.com",
+      "language": "en",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "85be02ca1dbb1182",
+      "name": "SempreMilan",
+      "language": "en",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "8502c265e6b6ce68",
+      "name": "Get Italian Football News",
+      "language": "en",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": "https://www.getfootballnewsitaly.com/feed/",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://www.getfootballnewsitaly.com/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "6b9c83625bd29cd4",
+      "name": "The Cult of Calcio",
+      "language": "en",
+      "competition_ids": [
+        384
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "252270c5f0acd6f8",
+      "name": "스포탈코리아",
+      "language": "ko",
+      "competition_ids": [
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "81f4f82defad3837",
+      "name": "Get French Football News",
+      "language": "en",
+      "competition_ids": [
+        301
+      ],
+      "feed_url": "https://www.getfootballnewsfrance.com/feed/",
+      "timezone": null,
+      "is_active": true,
+      "verification_url": "https://www.getfootballnewsfrance.com/about-us/",
+      "note": "RSS 응답·발행 시각·언어 확인"
+    },
+    {
+      "key": "c42ba445675371f3",
+      "name": "Parisfans.fr",
+      "language": "en",
+      "competition_ids": [
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "원문이 프랑스어예요. 영어 공급 경로를 확인해야 해요."
+    },
+    {
+      "key": "9d95639f857581e4",
+      "name": "PSG Talk",
+      "language": "en",
+      "competition_ids": [
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    },
+    {
+      "key": "1301698760b45605",
+      "name": "Gazeta Esportiva.com",
+      "language": "en",
+      "competition_ids": [
+        301
+      ],
+      "feed_url": null,
+      "timezone": null,
+      "is_active": false,
+      "verification_url": null,
+      "note": "공급 경로 확인 전"
+    }
+  ]
+}

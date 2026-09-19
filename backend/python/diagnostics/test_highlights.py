@@ -13,13 +13,14 @@ from one_touch_loader.core.highlights import (
     load_catalog, match_video, normalize_video, select_latest_matches,
 )
 from one_touch_loader.core.highlight_fixtures import from_dfb_html
-from one_touch_loader.api.schemas.highlights import TeamHighlightsResponse
+from one_touch_loader.api.schemas.highlights import TeamHighlightsResponse, FixtureHighlightsResponse
 
 # 파일 읽기와 순수 함수만 시험해요. 실제 연결 풀은 만들지 않아요.
 with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from one_touch_loader.loaders import highlights_loader as loader
     from one_touch_loader.api.repos import highlights_repo
     from one_touch_loader.api.routes import teams as team_routes
+    from one_touch_loader.api.routes import fixtures as fixture_routes
 
 SAMPLE = json.loads((Path(__file__).parent / "fixtures/highlights-sample.json").read_text(encoding="utf-8"))
 CATALOG = load_catalog()
@@ -58,6 +59,12 @@ class HighlightSelectionTests(unittest.TestCase):
     def test_under_three_and_no_playable_video_are_not_padded(self):
         self.assertEqual(len(select_latest_matches([candidate("one", 1)], "JP")), 1)
         self.assertEqual(select_latest_matches([candidate("none", 1, restriction={"allowed": []})], "JP"), [])
+
+    def test_external_playback_leaves_country_restrictions_to_youtube(self):
+        videos = [candidate("club", 8, restriction={"allowed": ["GB"]}),
+                  candidate("competition", 8, source="competition")]
+        self.assertEqual(select_latest_matches(videos, None)[0]["video_id"], "club")
+        self.assertEqual(select_latest_matches(videos, "KR")[0]["video_id"], "competition")
 
     def test_actual_description_wording_does_not_exclude_match_highlights(self):
         for vid in ("9vaPWVvl5Y8", "xoungdAL15U", "yV9AugsrnXM"):
@@ -178,6 +185,69 @@ class CollectionTests(unittest.TestCase):
 
 
 class HighlightAPITests(unittest.TestCase):
+    def test_fixture_query_uses_exact_id_and_shared_country_selection(self):
+        fixture_id = 19722166
+        values = [candidate("blocked-club", 13, restriction={"blocked": ["KR"]}),
+                  candidate("extended", 13, extended=True),
+                  candidate("regular", 13), candidate("competition", 13, source="competition")]
+        rows = [{**v, "fixture_id": fixture_id, "match_key": f"sportmonks:{fixture_id}",
+                 "title": v["title"] + (" Extended" if v["is_extended"] else ""),
+                 "starting_at": v["match"]["starting_at"], "checked_at": datetime(2026, 9, 19),
+                 "home_team_id": 14, "away_team_id": 9, "home_name": "Manchester United",
+                 "away_name": "Manchester City", "season_name": "2026/2027",
+                 "competition_id": 8, "competition_name": "Premier League"} for v in values]
+        with patch.object(highlights_repo, "fetch_all_dict", return_value=rows) as fetch:
+            response = FixtureHighlightsResponse.model_validate(
+                highlights_repo.get_fixture_highlights(fixture_id, "kr"))
+        sql, params = fetch.call_args.args
+        self.assertIn("WHERE m.fixture_id=%s", sql)
+        self.assertNotIn("WHERE th.team_id=%s", sql)
+        self.assertEqual(params, (fixture_id,))
+        self.assertEqual(response.viewer_country, "KR")
+        self.assertEqual([v.video_id for v in response.items], ["regular"])
+        self.assertEqual(response.items[0].match.fixture_id, fixture_id)
+
+    def test_fixture_without_video_returns_empty(self):
+        with patch.object(highlights_repo, "fetch_all_dict", return_value=[]):
+            response = highlights_repo.get_fixture_highlights(19722166, "KR")
+        self.assertEqual(response["items"], [])
+        self.assertIsNone(response["updated_at"])
+
+    def test_fixture_endpoint_country_auth_and_missing_fixture(self):
+        app = FastAPI()
+        app.include_router(fixture_routes.router, prefix="/v1")
+        path = "/v1/fixtures/19722166/highlights"
+        with TestClient(app) as client:
+            self.assertEqual(client.get(path + "?viewer_country=KR").status_code, 401)
+        app.dependency_overrides[fixture_routes.get_user_id] = lambda: 1
+        payload = {"fixture_id": 19722166, "viewer_country": "KR", "updated_at": None, "items": []}
+        with TestClient(app) as client, \
+             patch.object(fixture_routes, "get_fixture", return_value={"fixture_id": 19722166}) as fixture, \
+             patch.object(fixture_routes, "get_fixture_highlights", return_value=payload) as highlights:
+            self.assertEqual(client.get(path + "?viewer_country=KOR").status_code, 422)
+            response = client.get(path + "?viewer_country=KR")
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(response.json(), payload)
+            highlights.assert_called_once_with(19722166, "KR")
+            fixture.return_value = None
+            self.assertEqual(client.get(path + "?viewer_country=KR").status_code, 404)
+            highlights.assert_called_once()
+
+    def test_fixture_endpoint_allows_external_playback_without_country(self):
+        app = FastAPI()
+        app.include_router(fixture_routes.router, prefix="/v1")
+        app.dependency_overrides[fixture_routes.get_user_id] = lambda: 1
+        payload = {"fixture_id": 19722166, "viewer_country": None, "updated_at": None,
+                   "items": [candidate("official", 13)]}
+        with TestClient(app) as client, \
+             patch.object(fixture_routes, "get_fixture", return_value={"fixture_id": 19722166}), \
+             patch.object(fixture_routes, "get_fixture_highlights", return_value=payload) as highlights:
+            response = client.get("/v1/fixtures/19722166/highlights")
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertIsNone(response.json()["viewer_country"])
+            self.assertNotIn("region_restriction", response.json()["items"][0])
+            highlights.assert_called_once_with(19722166, None)
+
     def test_repository_reads_json_and_uses_shared_selector(self):
         values = [candidate("a", 1), candidate("b", 3), candidate("c", 5), candidate("new", 8)]
         rows = []

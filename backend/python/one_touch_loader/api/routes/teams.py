@@ -18,6 +18,8 @@ from ..repos.probability_repo import get_team_probability
 from ..schemas.probability import TeamProbabilityResponse
 from ..schemas.highlights import TeamHighlightsResponse
 from ..repos.highlights_repo import get_team_highlights
+from ..schemas.news import TeamNewsResponse
+from ..repos.news_repo import get_team_news
 from ..repos.points_pace_repo import (
     build_current_form_comparison,
     get_points_pace_series,
@@ -41,6 +43,17 @@ from ..schemas.common import (
 
 
 router = APIRouter()
+
+
+@router.get("/teams/{team_id}/news", response_model=TeamNewsResponse)
+def team_news(
+    team_id: int,
+    language: str = Query(default="en", min_length=2, max_length=35, description="사용자 언어예요. ko는 한국어 공급자, 그 외는 영어 공급자를 사용해요."),
+    user_id: int = Depends(get_user_id),
+):
+    if get_team(team_id) is None:
+        raise HTTPException(404, "Team not found")
+    return get_team_news(team_id, language)
 
 
 @router.get("/teams/{team_id}/highlights", response_model=TeamHighlightsResponse)

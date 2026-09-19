@@ -394,8 +394,7 @@ class MatchInfoTab extends StatelessWidget {
           if (!isLive) ...[
             const SizedBox(height: 24),
             MatchHighlights(
-              homeTeamId: homeTeam.teamId,
-              awayTeamId: awayTeam.teamId,
+              fixtureId: fixture.fixtureId,
             ),
             // TODO(match-info): Restore Player of the Match when the backend
             // exposes an explicit award instead of inferring one from rating.

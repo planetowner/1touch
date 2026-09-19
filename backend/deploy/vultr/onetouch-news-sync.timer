@@ -1,0 +1,9 @@
+[Unit]
+Description=Refresh 1Touch team news every 30 minutes
+
+[Timer]
+OnCalendar=*-*-* *:00,30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
