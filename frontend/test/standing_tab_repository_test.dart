@@ -316,6 +316,19 @@ void main() {
     expect(seasonFilter.value, 25580);
     expect(find.byType(KnockoutBracket), findsOneWidget);
     expect(
+      find.byKey(const ValueKey('standing-view-standing')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('standing-view-bracket')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('standing-view-standing')));
+    await tester.pump();
+
+    expect(find.byType(KnockoutBracket), findsNothing);
+    expect(
       repository.requests,
       contains((competitionId: 2, seasonId: 25580)),
     );

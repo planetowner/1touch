@@ -90,8 +90,21 @@ class _StandingTabState extends State<StandingTab> {
       .where((fixture) => knockoutRoundFromName(fixture.roundName) != null)
       .toList();
 
-  bool get _showKnockoutBracket =>
+  bool get _knockoutBracketAvailable =>
       hasEuropeanKnockoutStage(_selectedKnockoutFixtures);
+
+  StandingView get _defaultView =>
+      _knockoutBracketAvailable ? StandingView.bracket : StandingView.standing;
+
+  StandingView _viewAfterSelectionChange(StandingView currentView) {
+    if (currentView == StandingView.xgTable && _xgAvailable) {
+      return currentView;
+    }
+    if (currentView == StandingView.bracket && _knockoutBracketAvailable) {
+      return currentView;
+    }
+    return _defaultView;
+  }
 
   @override
   void initState() {
@@ -156,6 +169,7 @@ class _StandingTabState extends State<StandingTab> {
 
     selectedLeagueId = leagueId;
     selectedSeasonId = seasonId;
+    _selectedView = _defaultView;
   }
 
   bool _applyRequestedCompetition(int? competitionId) {
@@ -168,7 +182,7 @@ class _StandingTabState extends State<StandingTab> {
     final season = _defaultSeasonForCompetition(competitionId);
     selectedLeagueId = competitionId;
     selectedSeasonId = season.seasonId;
-    _selectedView = StandingView.standing;
+    _selectedView = _defaultView;
     return true;
   }
 
@@ -431,27 +445,23 @@ class _StandingTabState extends State<StandingTab> {
                   ],
                 ),
               ),
-              if (_showKnockoutBracket)
-                KnockoutBracket(
-                  fixtures: _selectedKnockoutFixtures,
-                  currentTeamId: currentTeamId,
-                )
-              else
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                      child: StandingViewToggle(
-                        selectedView: _selectedView,
-                        availableViews: _availableViews,
-                        onChanged: _changeStandingView,
-                      ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                    child: StandingViewToggle(
+                      selectedView: _selectedView,
+                      availableViews: _availableViews,
+                      displayedViews: _displayedViews,
+                      onChanged: _changeStandingView,
                     ),
-                    _buildSelectedTable(),
+                  ),
+                  _buildSelectedContent(),
+                  if (_selectedView != StandingView.bracket)
                     StandingsLegend(leagueId: selectedLeagueId),
-                  ],
-                ),
+                ],
+              ),
               const SizedBox(height: 144),
             ],
           ),
@@ -468,14 +478,24 @@ class _StandingTabState extends State<StandingTab> {
     }
   }
 
-  // Which views are usable for the currently selected league.
-  // xG TABLE is hidden entirely for non-Big-5 leagues.
+  // Which views are usable for the currently selected competition.
   List<StandingView> get _availableViews => [
         StandingView.standing,
         if (_xgAvailable) StandingView.xgTable,
+        if (_knockoutBracketAvailable) StandingView.bracket,
       ];
 
-  Widget _buildSelectedTable() {
+  // Preserve the established two-segment control: European knockout seasons
+  // swap BRACKET into the second slot instead of changing the control's shape.
+  List<StandingView> get _displayedViews => [
+        StandingView.standing,
+        if (_knockoutBracketAvailable)
+          StandingView.bracket
+        else
+          StandingView.xgTable,
+      ];
+
+  Widget _buildSelectedContent() {
     switch (_selectedView) {
       case StandingView.standing:
         if (_isStandingLoading && standings.isEmpty) {
@@ -559,6 +579,11 @@ class _StandingTabState extends State<StandingTab> {
           horizontalScrollController: _horizontalScrollController,
           isScrolledToEnd: isScrolledToEnd,
         );
+      case StandingView.bracket:
+        return KnockoutBracket(
+          fixtures: _selectedKnockoutFixtures,
+          currentTeamId: currentTeamId,
+        );
     }
   }
 
@@ -589,13 +614,11 @@ class _StandingTabState extends State<StandingTab> {
           onChanged: (val) {
             if (val == null) return;
             final season = _defaultSeasonForCompetition(val);
+            final previousView = _selectedView;
             setState(() {
               selectedLeagueId = val;
               selectedSeasonId = season.seasonId;
-              // If user was viewing xG and new league isn't Big 5, fall back
-              if (!_xgAvailable && _selectedView == StandingView.xgTable) {
-                _selectedView = StandingView.standing;
-              }
+              _selectedView = _viewAfterSelectionChange(previousView);
             });
             if (_selectedView == StandingView.xgTable && _xgAvailable) {
               _startXgLoad();
@@ -644,8 +667,10 @@ class _StandingTabState extends State<StandingTab> {
           style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (val) {
             if (val == null) return;
+            final previousView = _selectedView;
             setState(() {
               selectedSeasonId = val;
+              _selectedView = _viewAfterSelectionChange(previousView);
             });
             if (_selectedView == StandingView.xgTable) {
               _startXgLoad();

@@ -361,7 +361,10 @@ void main() {
         home: Scaffold(
           body: StandingViewToggle(
             selectedView: StandingView.xgTable,
-            availableViews: StandingView.values,
+            availableViews: const [
+              StandingView.standing,
+              StandingView.xgTable,
+            ],
             onChanged: (_) {},
           ),
         ),
@@ -425,7 +428,10 @@ void main() {
           body: StatefulBuilder(
             builder: (context, setState) => StandingViewToggle(
               selectedView: selectedView,
-              availableViews: StandingView.values,
+              availableViews: const [
+                StandingView.standing,
+                StandingView.xgTable,
+              ],
               onChanged: (view) => setState(() => selectedView = view),
             ),
           ),
