@@ -494,8 +494,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
               ProgressionDiagram(
                 lanePercents: _channelPercentages(selected),
                 rightToLeft: !showHome,
-                color: _homeColor,
-                labelColor: Colors.white,
+                color: showHome ? _homeColor : Colors.white,
+                labelColor: showHome ? Colors.white : Colors.black,
               ),
               const SizedBox(height: 24),
               _buildStatRow(
