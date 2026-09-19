@@ -404,9 +404,8 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     return ReorderableListView.builder(
       scrollController: controller,
       itemCount: _followedTeams.length,
-      onReorder: (oldIndex, newIndex) {
+      onReorderItem: (oldIndex, newIndex) {
         setState(() {
-          if (newIndex > oldIndex) newIndex--;
           final item = _followedTeams.removeAt(oldIndex);
           _followedTeams.insert(newIndex, item);
           _updateEnabled = true;

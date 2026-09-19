@@ -212,9 +212,8 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
     return ReorderableListView.builder(
       scrollController: controller,
       itemCount: _followedPlayers.length,
-      onReorder: (oldIndex, newIndex) {
+      onReorderItem: (oldIndex, newIndex) {
         setState(() {
-          if (newIndex > oldIndex) newIndex--;
           final item = _followedPlayers.removeAt(oldIndex);
           _followedPlayers.insert(newIndex, item);
           _updateEnabled = true;
