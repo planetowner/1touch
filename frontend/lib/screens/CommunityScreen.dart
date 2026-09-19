@@ -6,7 +6,9 @@ import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
     as community_providers;
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
+import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
+    as fixture_providers;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
@@ -23,12 +25,14 @@ class Community extends StatefulWidget {
   final int teamId;
   final PostRepository? postRepository;
   final CommunityRepository? communityRepository;
+  final FixtureRepository? fixtureRepository;
 
   const Community({
     super.key,
     required this.teamId,
     this.postRepository,
     this.communityRepository,
+    this.fixtureRepository,
   });
 
   @override
@@ -44,7 +48,8 @@ class _CommunityState extends State<Community>
   PostSort _selectedPostSort = PostSort.newest;
 
   late Team _team;
-  late bool _isLive;
+  bool _isLive = false;
+  int _liveFixtureRequestId = 0;
   int? _followerCount;
   int _followerRequestId = 0;
   List<Post> _posts = const [];
@@ -63,6 +68,7 @@ class _CommunityState extends State<Community>
     super.initState();
 
     _loadTeam();
+    _loadLiveStatus();
     _loadFollowerCount();
     _loadPosts();
 
@@ -83,9 +89,18 @@ class _CommunityState extends State<Community>
     // in the bottom-nav shell is kept in memory), so re-resolve when the
     // parent route hands us a different teamId instead of only on first load.
     if (widget.teamId != oldWidget.teamId) {
-      setState(_loadTeam);
+      setState(() {
+        _loadTeam();
+        _isLive = false;
+      });
+      _loadLiveStatus();
       _loadFollowerCount();
       _loadPosts();
+    }
+    if (widget.teamId == oldWidget.teamId &&
+        widget.fixtureRepository != oldWidget.fixtureRepository) {
+      setState(() => _isLive = false);
+      _loadLiveStatus();
     }
     if (widget.teamId == oldWidget.teamId &&
         widget.communityRepository != oldWidget.communityRepository) {
@@ -99,9 +114,45 @@ class _CommunityState extends State<Community>
 
   void _loadTeam() {
     _team = teamRepository.requireById(widget.teamId);
-    _isLive = fixtureRepository
-        .forTeam(widget.teamId, status: FixtureStatus.live)
-        .isNotEmpty;
+  }
+
+  Future<void> _loadLiveStatus() async {
+    final requestId = ++_liveFixtureRequestId;
+    final teamId = widget.teamId;
+
+    try {
+      final repository =
+          widget.fixtureRepository ?? fixture_providers.fixtureDetailRepository;
+      final fixtures = await repository.loadForTeam(
+        teamId,
+        status: FixtureStatus.live,
+        limit: 1,
+      );
+      if (!mounted ||
+          requestId != _liveFixtureRequestId ||
+          teamId != widget.teamId) {
+        return;
+      }
+
+      final hasLiveMatch = fixtures.any(
+        (fixture) =>
+            fixture.status == FixtureStatus.live &&
+            (fixture.homeTeamId == teamId || fixture.awayTeamId == teamId),
+      );
+      if (_isLive != hasLiveMatch) {
+        setState(() => _isLive = hasLiveMatch);
+      }
+    } catch (_) {
+      // A failed or unavailable fixture request must never create a live badge.
+      if (!mounted ||
+          requestId != _liveFixtureRequestId ||
+          teamId != widget.teamId) {
+        return;
+      }
+      if (_isLive) {
+        setState(() => _isLive = false);
+      }
+    }
   }
 
   Future<void> _loadFollowerCount() async {
@@ -249,7 +300,9 @@ class _CommunityState extends State<Community>
                 team: team,
                 isLive: _isLive,
                 followerCount: _followerCount,
-                onTeamTap: () => openTeamPage(context, team.teamId),
+                onTeamTap: isTeamPageSupported(team.teamId)
+                    ? () => openTeamPage(context, team.teamId)
+                    : null,
               ),
               CommunityPostTabHeader(
                 controller: _tabController,
