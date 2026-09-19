@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import datetime, timezone
 import html
 import json
 from pathlib import Path
 import re
 import unicodedata
+
+from .datetime_utils import utc_datetime
 
 
 CATALOG_PATH = Path(__file__).with_name("youtube_highlights_catalog.json")
@@ -67,11 +68,6 @@ def title_has_home_away_order(title: str, match: dict, aliases: dict) -> bool:
                for home in name_variants(match["home"], aliases)
                for away in name_variants(match["away"], aliases)
                for separator in ("v", "vs"))
-
-
-def utc_datetime(value) -> datetime:
-    parsed = datetime.fromisoformat(value.replace("Z", "+00:00")) if isinstance(value, str) else value
-    return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
 
 
 def duration_seconds(value: str) -> int:
@@ -170,13 +166,14 @@ def available_in(video: dict, viewer_country: str) -> bool:
     )
 
 
-def select_latest_matches(candidates: list[dict], viewer_country: str, limit: int = 3) -> list[dict]:
-    country = viewer_country.upper()
-    if not re.fullmatch(r"[A-Z]{2}", country):
+def select_latest_matches(candidates: list[dict], viewer_country: str | None, limit: int = 3) -> list[dict]:
+    country = viewer_country.upper() if viewer_country is not None else None
+    if country is not None and not re.fullmatch(r"[A-Z]{2}", country):
         raise ValueError("viewer_country must be a two-letter country code")
     by_match = defaultdict(list)
     for candidate in candidates:
-        if available_in(candidate, country):
+        # 국가를 보내지 않는 경기 화면은 외부 YouTube에서 재생 가능 여부를 판단해요.
+        if country is None or available_in(candidate, country):
             by_match[candidate["match"]["match_key"]].append(candidate)
     selected = []
     for choices in by_match.values():

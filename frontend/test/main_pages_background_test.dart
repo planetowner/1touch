@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/home/home_content_repository.dart';
+import 'package:onetouch/models/home_content.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
@@ -17,7 +19,9 @@ void main() {
   final pages = <({String name, Widget screen, String gradientKey})>[
     (
       name: 'home',
-      screen: const HomeScreen(repository: _StaticHomeRepository()),
+      screen: HomeScreen(
+          repository: const _StaticHomeRepository(),
+          contentRepository: _EmptyHomeContentRepository()),
       gradientKey: 'home-brand-gradient',
     ),
     (
@@ -90,4 +94,13 @@ class _StaticHomeRepository implements HomeRepository {
       highlights: const [],
     );
   }
+}
+
+// 배경 테스트는 뉴스 서버 설정이나 외부 피드에 의존하지 않아요.
+class _EmptyHomeContentRepository implements HomeContentRepository {
+  @override
+  HomeContent get fallback => HomeContent(highlights: const [], news: const []);
+
+  @override
+  Future<HomeContent> loadForTeam(int favoriteTeamId) async => fallback;
 }
