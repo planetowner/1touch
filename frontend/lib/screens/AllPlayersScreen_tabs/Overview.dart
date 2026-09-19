@@ -3,6 +3,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/features/player_image.dart';
+import 'package:onetouch/features/player/rating_level_ring.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 
@@ -345,14 +346,14 @@ class PlayerBioStatsBlock extends StatelessWidget {
       {"label": "Height", "value": "${player.heightCm}cm", "icon": null},
       {"label": "Weight", "value": "${player.weightKg}kg", "icon": null},
       {"label": "Age", "value": "$age yrs", "icon": null},
-      {"label": "Form", "value": player.form, "icon": "refresh"},
+      {"label": "Form", "value": player.form, "icon": "rating"},
       {"label": "Market Value", "value": player.marketValue, "icon": null},
       {"label": "Squad Role", "value": player.squadRole, "icon": null},
       {"label": "Preferred Foot", "value": player.preferredFoot, "icon": null},
       {
         "label": "Cost-Effectiveness",
         "value": "Very Good",
-        "icon": "refresh",
+        "icon": "rating",
         "infoOnLabel": true
       },
     ];
@@ -432,7 +433,7 @@ class PlayerBioStatsBlock extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      Expanded(
+                                      Flexible(
                                         child: Text(
                                           stat["value"] as String,
                                           style: Heading5.style,
@@ -440,14 +441,12 @@ class PlayerBioStatsBlock extends StatelessWidget {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      if (stat["icon"] == "refresh")
+                                      if (stat["icon"] == "rating")
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(left: 6),
-                                          child: Icon(
-                                            Icons.refresh,
-                                            size: 16,
-                                            color: appColors.mutedForeground,
+                                          child: RatingLevelRing(
+                                            rating: stat["value"] as String,
                                           ),
                                         ),
                                     ],
