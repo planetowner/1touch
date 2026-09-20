@@ -20,13 +20,7 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
       decoration: BoxDecoration(
         color: appColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1F000000),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: appCardShadows(context),
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
