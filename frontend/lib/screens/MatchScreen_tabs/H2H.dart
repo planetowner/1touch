@@ -345,6 +345,7 @@ class _H2HTabState extends State<H2HTab> {
       decoration: BoxDecoration(
         color: isDark ? AppPalette.lightGrey : AppPalette.white,
         borderRadius: BorderRadius.circular(24),
+        boxShadow: appCardShadows(context),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -411,6 +412,7 @@ class _H2HTabState extends State<H2HTab> {
       decoration: BoxDecoration(
         color: isDark ? AppPalette.lightGrey : AppPalette.white,
         borderRadius: BorderRadius.circular(24),
+        boxShadow: appCardShadows(context),
       ),
       child: Column(
         children: [

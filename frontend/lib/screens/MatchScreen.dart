@@ -205,6 +205,7 @@ class _MatchScreenState extends State<MatchScreen> {
                                 ? selectedSurface
                                 : unselectedSurface,
                             borderRadius: BorderRadius.circular(16),
+                            boxShadow: appCardShadows(context),
                           ),
                           child: Text(
                             tabs[index],

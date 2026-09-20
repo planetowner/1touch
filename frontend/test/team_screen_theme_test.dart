@@ -4,6 +4,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/features/team/overview/team_screen_features.dart';
 import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repository.dart';
 import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -26,6 +27,44 @@ void main() {
     Size(375, 667),
     Size(393, 852),
   ];
+
+  testWidgets('Team overview fixture box shadows only in light mode',
+      (tester) async {
+    final teams = {
+      'next_match': const Fixture(
+        fixtureId: 9001,
+        seasonId: 25583,
+        competitionId: 8,
+        homeTeamId: 9,
+        awayTeamId: 19,
+        competitionType: CompetitionType.league,
+        roundName: '4',
+        status: FixtureStatus.upcoming,
+        startingAt: '2026-09-20T15:00:00.000Z',
+      ),
+    };
+
+    Future<BoxDecoration> pumpFixtureCard(ThemeData theme) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(body: Fixtures(teams: teams)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final card = tester.widget<Container>(
+        find.byKey(const ValueKey('team-overview-fixtures-card')),
+      );
+      return card.decoration! as BoxDecoration;
+    }
+
+    final lightDecoration = await pumpFixtureCard(app_style.whitetheme);
+    expect(lightDecoration.boxShadow, app_style.lightModeCardShadows);
+
+    final darkDecoration = await pumpFixtureCard(app_style.darktheme);
+    expect(darkDecoration.boxShadow, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final testCase in <({String name, ThemeData theme})>[
     (name: 'dark', theme: app_style.darktheme),
@@ -319,6 +358,10 @@ void main() {
     );
     expect(fixturesCard.padding, EdgeInsets.zero);
     expect(
+      (fixturesCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
+    );
+    expect(
       (standingCard.decoration as BoxDecoration).color,
       app_style.AppPalette.lightGreyBox,
     );
@@ -478,6 +521,10 @@ void main() {
     expect(
       (fixturesCard.decoration as BoxDecoration).color,
       app_style.AppPalette.darkGrey,
+    );
+    expect(
+      (fixturesCard.decoration as BoxDecoration).boxShadow,
+      isEmpty,
     );
     expect(tester.takeException(), isNull);
   });

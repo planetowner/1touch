@@ -120,6 +120,7 @@ class _OverviewTabState extends State<OverviewTab> {
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Container(
+                  key: const ValueKey('team-overview-ad-card'),
                   width: double.infinity,
                   height: 108,
                   decoration: ShapeDecoration(
@@ -127,6 +128,7 @@ class _OverviewTabState extends State<OverviewTab> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
+                    shadows: appCardShadows(context),
                   ),
                   child: Center(
                     child: Text(
