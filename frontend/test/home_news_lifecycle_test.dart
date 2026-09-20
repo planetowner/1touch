@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/home/home_content_repository.dart';
 import 'package:onetouch/data/home/home_repository.dart';
-import 'package:onetouch/models/home_content.dart';
+import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
@@ -25,7 +24,7 @@ void main() {
     final content = _ContentRepository();
     await tester.pumpWidget(MaterialApp(
         theme: app_style.whitetheme,
-        home: HomeScreen(repository: home, contentRepository: content)));
+        home: HomeScreen(repository: home, newsRepository: content)));
     await tester.pump();
     expect(content.calls.single.teamId, 83);
     home.teamId = 3468;
@@ -55,7 +54,7 @@ void main() {
         theme: app_style.whitetheme,
         home: ValueListenableBuilder<bool>(
           valueListenable: active,
-          child: HomeScreen(repository: home, contentRepository: content),
+          child: HomeScreen(repository: home, newsRepository: content),
           builder: (context, enabled, child) =>
               TickerMode(enabled: enabled, child: child!),
         )));
@@ -79,9 +78,9 @@ void main() {
   });
 }
 
-HomeContent _news(String title) => HomeContent(highlights: const [], news: [
+List<HomeContentItem> _news(String title) => [
       HomeContentItem(title: title, source: '공급자', timeLabel: '방금 전'),
-    ]);
+    ];
 
 class _HomeRepository implements HomeRepository {
   int teamId = 83;
@@ -95,16 +94,20 @@ class _HomeRepository implements HomeRepository {
         nextMatch: null,
         lastMatch: null,
         calendar: const [],
+        highlights: const [],
       );
 }
 
-class _ContentRepository implements HomeContentRepository {
-  final calls = <({int teamId, Completer<HomeContent> completer})>[];
+class _ContentRepository implements NewsRepository {
+  final calls = <({int teamId, Completer<List<HomeContentItem>> completer})>[];
+
   @override
-  HomeContent get fallback => HomeContent(highlights: const [], news: const []);
-  @override
-  Future<HomeContent> loadForTeam(int favoriteTeamId) {
-    final call = (teamId: favoriteTeamId, completer: Completer<HomeContent>());
+  Future<List<HomeContentItem>> loadForTeam(
+    int favoriteTeamId, {
+    required String language,
+  }) {
+    final call =
+        (teamId: favoriteTeamId, completer: Completer<List<HomeContentItem>>());
     calls.add(call);
     return call.completer.future;
   }
