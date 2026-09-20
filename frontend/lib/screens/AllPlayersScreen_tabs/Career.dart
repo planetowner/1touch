@@ -381,7 +381,8 @@ class _CareerTabState extends State<CareerTab> {
     required PlayerCareerSeason? nextSeason,
   }) {
     final key = _seasonKey(season);
-    final isExpanded = _expandedSeasons.contains(key);
+    final canExpand = _competitionFilter == _allCompetitions;
+    final isExpanded = canExpand && _expandedSeasons.contains(key);
     final team = _teamFor(season.teamId);
     final competitions = _competitionFilter == _allCompetitions
         ? season.competitions
@@ -404,13 +405,15 @@ class _CareerTabState extends State<CareerTab> {
       children: [
         InkWell(
           key: Key('career-season-$key'),
-          onTap: () => setState(() {
-            if (isExpanded) {
-              _expandedSeasons.remove(key);
-            } else {
-              _expandedSeasons.add(key);
-            }
-          }),
+          onTap: canExpand
+              ? () => setState(() {
+                    if (isExpanded) {
+                      _expandedSeasons.remove(key);
+                    } else {
+                      _expandedSeasons.add(key);
+                    }
+                  })
+              : null,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
@@ -441,16 +444,18 @@ class _CareerTabState extends State<CareerTab> {
                   flex: 2,
                   child: Center(child: _ratingBadge(rating)),
                 ),
-                SizedBox(
-                  width: 22,
-                  child: Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: _foreground,
-                    size: 20,
+                if (canExpand)
+                  SizedBox(
+                    width: 22,
+                    child: Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: _foreground,
+                      size: 20,
+                    ),
                   ),
-                ),
+                if (!canExpand) const SizedBox(width: 22),
               ],
             ),
           ),
@@ -589,7 +594,11 @@ class _FilterButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _FilterButton({super.key, required this.label, required this.onTap});
+  const _FilterButton({
+    super.key,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
