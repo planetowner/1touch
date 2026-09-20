@@ -310,6 +310,26 @@ void main() {
     ]);
     expect(yellowCards.homePercent, 2);
     expect(yellowCards.awayPercent, 0);
+    expect(
+      tester
+          .widget<Container>(
+            find.byKey(
+              const ValueKey('match-info-stat-Possession-home-fill'),
+            ),
+          )
+          .color,
+      const Color(0xFFFF5C5C),
+    );
+    expect(
+      tester
+          .widget<Container>(
+            find.byKey(
+              const ValueKey('match-info-stat-Possession-away-fill'),
+            ),
+          )
+          .color,
+      Colors.white,
+    );
     expect(momentum.values[10], 0.7);
     expect(momentum.values[20], -0.4);
     expect(lineup.homeFormation, '4-3-3');
@@ -373,6 +393,16 @@ void main() {
       find.byKey(const ValueKey('player-match-stat-sheet')),
       findsOneWidget,
     );
+    final statHeader = tester.widget<Container>(
+      find.byKey(const ValueKey('player-match-stat-header')),
+    );
+    final headerGradient =
+        (statHeader.decoration as BoxDecoration).gradient as LinearGradient;
+    expect(headerGradient.colors, const [
+      Color(0xFF6CABDD),
+      Color(0xFF3376A3),
+      Color(0xFF102A43),
+    ]);
     expect(find.text('Home Starter'), findsWidgets);
     expect(find.text('FINISH'), findsOneWidget);
     expect(find.text('Goals'), findsOneWidget);
