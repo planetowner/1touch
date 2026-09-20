@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/home/home_content_repository.dart';
 import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
-import 'package:onetouch/models/home_content.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
@@ -19,14 +18,14 @@ void main() {
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
     final repository = _ControlledHomeRepository();
-    final contentRepository = _RecordingHomeContentRepository();
+    final newsRepository = _RecordingNewsRepository();
 
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
         home: HomeScreen(
           repository: repository,
-          contentRepository: contentRepository,
+          newsRepository: newsRepository,
         ),
       ),
     );
@@ -43,7 +42,7 @@ void main() {
     repository.calls.single.completer.complete(_homeData());
     await tester.pump();
 
-    expect(contentRepository.newsLoadCalls, 1);
+    expect(newsRepository.loadCalls, 1);
     expect(find.text('Alpha FC'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
     await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
@@ -64,7 +63,7 @@ void main() {
         theme: app_style.whitetheme,
         home: HomeScreen(
           repository: repository,
-          contentRepository: _RecordingHomeContentRepository(),
+          newsRepository: _RecordingNewsRepository(),
         ),
       ),
     );
@@ -94,7 +93,7 @@ void main() {
         theme: app_style.whitetheme,
         home: HomeScreen(
           repository: repository,
-          contentRepository: _RecordingHomeContentRepository(),
+          newsRepository: _RecordingNewsRepository(),
         ),
       ),
     );
@@ -121,7 +120,7 @@ void main() {
         theme: app_style.whitetheme,
         home: HomeScreen(
           repository: repository,
-          contentRepository: _RecordingHomeContentRepository(),
+          newsRepository: _RecordingNewsRepository(),
         ),
       ),
     );
@@ -163,7 +162,7 @@ void main() {
         theme: app_style.whitetheme,
         home: HomeScreen(
           repository: repository,
-          contentRepository: _RecordingHomeContentRepository(),
+          newsRepository: _RecordingNewsRepository(),
         ),
       ),
     );
@@ -201,7 +200,7 @@ void main() {
         theme: app_style.whitetheme,
         home: HomeScreen(
           repository: repository,
-          contentRepository: _RecordingHomeContentRepository(),
+          newsRepository: _RecordingNewsRepository(),
         ),
       ),
     );
@@ -261,7 +260,7 @@ void main() {
         theme: app_style.whitetheme,
         home: HomeScreen(
           repository: homeRepository,
-          contentRepository: _RecordingHomeContentRepository(),
+          newsRepository: _RecordingNewsRepository(),
           followingTeamsRepository: followingRepository,
         ),
       ),
@@ -384,27 +383,18 @@ class _RecordingFollowingTeamsRepository implements FollowingTeamsRepository {
   }
 }
 
-class _RecordingHomeContentRepository implements HomeContentRepository {
-  int newsLoadCalls = 0;
+class _RecordingNewsRepository implements NewsRepository {
+  int loadCalls = 0;
 
   @override
-  final HomeContent fallback = HomeContent(
-    highlights: const [_fallbackContentItem],
-    news: const [_fallbackContentItem],
-  );
-
-  @override
-  Future<List<HomeContentItem>> loadNews() async {
-    newsLoadCalls++;
+  Future<List<HomeContentItem>> loadForTeam(
+    int teamId, {
+    required String language,
+  }) async {
+    loadCalls++;
     return const [_loadedContentItem];
   }
 }
-
-const _fallbackContentItem = HomeContentItem(
-  title: 'Fallback content',
-  source: 'Local',
-  timeLabel: 'Latest',
-);
 
 const _loadedContentItem = HomeContentItem(
   title: 'Repository content',
