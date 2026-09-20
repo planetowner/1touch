@@ -56,6 +56,13 @@ void main() {
     expect(queries.single.compareTeamId, 1);
     expect(queries.single.compareSeasonId, 100);
     expect(find.text('24/25 PREV'), findsOneWidget);
+    final chartCard = tester.widget<Container>(
+      find.byKey(const ValueKey('analysis-current-form-chart-card')),
+    );
+    expect(
+      (chartCard.decoration as BoxDecoration).boxShadow,
+      lightModeCardShadows,
+    );
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
     expect(tester.getSize(filter).width, lessThanOrEqualTo(145));

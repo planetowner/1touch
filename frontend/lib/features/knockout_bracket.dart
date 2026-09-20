@@ -203,6 +203,7 @@ class _BracketMatchCard extends StatelessWidget {
                 extra: match,
               ),
       child: Container(
+        key: ValueKey('knockout-fixture-card-${match?.fixtureId ?? 'empty'}'),
         width: _width,
         height: _height,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -211,6 +212,7 @@ class _BracketMatchCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border:
               isCurrentTeamMatch ? Border.all(color: appColors.divider) : null,
+          boxShadow: appCardShadows(context),
         ),
         child: match == null
             ? const Column(

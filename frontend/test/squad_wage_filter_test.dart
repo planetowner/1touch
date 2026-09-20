@@ -44,6 +44,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('API Player'), findsOneWidget);
+    final playerCard = tester.widget<Container>(
+      find.byKey(const ValueKey('squad-player-card-1')),
+    );
+    expect(
+      (playerCard.decoration as BoxDecoration).boxShadow,
+      lightModeCardShadows,
+    );
     expect(repository.requestedSeasonIds, [27965]);
     expect(find.text('26/27'), findsOneWidget);
     await tester.tap(find.text('POSITION'));

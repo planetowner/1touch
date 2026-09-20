@@ -40,63 +40,58 @@ class _FixturesState extends State<Fixtures> {
     return SizedBox(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Material(
-          elevation: 0,
-          color: appColors.cardBackground,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          key: const ValueKey('team-overview-fixtures-card'),
+          padding: EdgeInsets.only(bottom: isLight ? 0 : 24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: appColors.cardBackground,
+            boxShadow: appCardShadows(context),
+          ),
           clipBehavior: Clip.antiAlias,
-          child: Container(
-            key: const ValueKey('team-overview-fixtures-card'),
-            padding: EdgeInsets.only(bottom: isLight ? 0 : 24),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: appColors.cardBackground,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (match != null)
-                  GestureDetector(
-                    onTap: () => context.push(
-                      '/match/${match.fixtureId}',
-                      extra: match,
-                    ),
-                    child: MatchCard(
-                      match: match,
-                      leagueName: leagueName,
-                      backgroundColor: nextMatchBackground,
-                    ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (match != null)
+                GestureDetector(
+                  onTap: () => context.push(
+                    '/match/${match.fixtureId}',
+                    extra: match,
                   ),
-                if (lastMatch != null)
-                  GestureDetector(
-                    onTap: () => context.push(
-                      '/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}',
-                      extra: lastMatch,
-                    ),
-                    child: () {
-                      final home = fixtureHomeTeam(lastMatch, teamRepository);
-                      final away = fixtureAwayTeam(lastMatch, teamRepository);
-                      return MatchCard2(
-                        date: _formatMatchDate(lastMatch.kickoff),
-                        venue: '',
-                        team1shortname: home.shortCode ?? home.name,
-                        team1Logo: home.imagePath ?? '',
-                        team1Id: home.teamId,
-                        team2shortname: away.shortCode ?? away.name,
-                        team2Logo: away.imagePath ?? '',
-                        team2Id: away.teamId,
-                        homeScore: lastMatch.homeScore ?? 0,
-                        awayScore: lastMatch.awayScore ?? 0,
-                        backgroundColor: lastMatchBackground,
-                        contentPadding: isLight
-                            ? const EdgeInsets.fromLTRB(16, 16, 16, 24)
-                            : null,
-                      );
-                    }(),
+                  child: MatchCard(
+                    match: match,
+                    leagueName: leagueName,
+                    backgroundColor: nextMatchBackground,
                   ),
-              ],
-            ),
+                ),
+              if (lastMatch != null)
+                GestureDetector(
+                  onTap: () => context.push(
+                    '/match/${lastMatch.fixtureId}?status=${lastMatch.status.name}',
+                    extra: lastMatch,
+                  ),
+                  child: () {
+                    final home = fixtureHomeTeam(lastMatch, teamRepository);
+                    final away = fixtureAwayTeam(lastMatch, teamRepository);
+                    return MatchCard2(
+                      date: _formatMatchDate(lastMatch.kickoff),
+                      venue: '',
+                      team1shortname: home.shortCode ?? home.name,
+                      team1Logo: home.imagePath ?? '',
+                      team1Id: home.teamId,
+                      team2shortname: away.shortCode ?? away.name,
+                      team2Logo: away.imagePath ?? '',
+                      team2Id: away.teamId,
+                      homeScore: lastMatch.homeScore ?? 0,
+                      awayScore: lastMatch.awayScore ?? 0,
+                      backgroundColor: lastMatchBackground,
+                      contentPadding: isLight
+                          ? const EdgeInsets.fromLTRB(16, 16, 16, 24)
+                          : null,
+                    );
+                  }(),
+                ),
+            ],
           ),
         ),
       ),

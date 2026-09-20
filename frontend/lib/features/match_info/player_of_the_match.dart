@@ -27,6 +27,7 @@ class PlayerOfTheMatch extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
+            boxShadow: appCardShadows(context),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
