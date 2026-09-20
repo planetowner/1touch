@@ -2,15 +2,24 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi.responses import Response
 
 from ..db import fetch_one_dict
 from ..deps import get_user_id
 from ..repos.transfers_repo import get_player_club_history
 from ..repos.player_rankings_repo import get_player_rankings
 from ..schemas.player_rankings import PlayerRankingsResponse
+from ..services.media_storage import player_image_content
+from ...core.player_images import IMAGE_ROUTE
 
 router = APIRouter()
+
+
+@router.get(f"{IMAGE_ROUTE}/{{digest}}.png", response_class=Response)
+def player_image(digest: str = Path(pattern=r"^[0-9a-f]{64}$")):
+    """공개 선수 사진만 반환해요. 회원 사진·첨부파일의 접근 권한은 바꾸지 않아요."""
+    return player_image_content(digest)
 
 
 @router.get("/players/rankings", response_model=PlayerRankingsResponse)

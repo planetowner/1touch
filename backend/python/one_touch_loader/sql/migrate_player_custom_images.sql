@@ -1,0 +1,2 @@
+ALTER TABLE players
+  ADD COLUMN image_is_custom BOOLEAN NOT NULL DEFAULT FALSE AFTER image_path;
