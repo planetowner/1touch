@@ -14,9 +14,14 @@ class OnesToWatchCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
+      key: const ValueKey('ones-to-watch-card'),
       width: 150,
       height: 200,
       margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: appCardShadows(context),
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Column(

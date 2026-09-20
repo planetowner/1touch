@@ -114,6 +114,10 @@ void main() {
                 decoration.borderRadius == BorderRadius.circular(28),
           );
       expect(calendarSurface.color, semanticColors.cardBackground);
+      expect(
+        calendarSurface.boxShadow,
+        testCase.name == 'light' ? app_style.lightModeCardShadows : isEmpty,
+      );
 
       final todayText = tester.widget<Text>(find.text('${DateTime.now().day}'));
       expect(todayText.style?.color, colorScheme.onPrimary);
