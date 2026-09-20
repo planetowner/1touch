@@ -47,7 +47,6 @@ class StatComparisonBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final total = data.homePercent + data.awayPercent;
     final homeFlex = total == 0 ? 50 : (data.homePercent / total * 100).round();
     final awayFlex = 100 - homeFlex;
@@ -75,14 +74,25 @@ class StatComparisonBar extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                          flex: homeFlex,
-                          child: Container(height: 8, color: Colors.redAccent)),
+                        flex: homeFlex,
+                        child: Container(
+                          key: ValueKey(
+                            'match-info-stat-${data.category}-home-fill',
+                          ),
+                          height: 8,
+                          color: const Color(0xFFFF5C5C),
+                        ),
+                      ),
                       Expanded(
-                          flex: awayFlex,
-                          child: Container(
-                            height: 8,
-                            color: isDark ? Colors.white : AppPalette.black,
-                          )),
+                        flex: awayFlex,
+                        child: Container(
+                          key: ValueKey(
+                            'match-info-stat-${data.category}-away-fill',
+                          ),
+                          height: 8,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
