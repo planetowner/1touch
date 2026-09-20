@@ -130,9 +130,10 @@ class _MatchScreenState extends State<MatchScreen> {
     final appBarBackground = isDark
         ? AppColors.of(context).pageBackground
         : AppPalette.lightModeDarkGrey;
-    final selectedSurface = isDark ? AppPalette.white : AppPalette.black;
-    final selectedForeground = isDark ? AppPalette.black : AppPalette.white;
-    final unselectedSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
+    final selectedSurface = AppPalette.white;
+    final selectedForeground = AppPalette.black;
+    final unselectedSurface =
+        isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox;
 
     return Scaffold(
       key: const ValueKey('match-screen-scaffold'),
@@ -194,6 +195,7 @@ class _MatchScreenState extends State<MatchScreen> {
                           });
                         },
                         child: Container(
+                          key: ValueKey('match-tab-$index'),
                           padding: const EdgeInsets.symmetric(
                             vertical: 8,
                             horizontal: 16,
