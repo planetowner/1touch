@@ -85,6 +85,22 @@ void main() {
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
     expect(backIcon.color, app_style.AppPalette.black);
     expect(
+      decorationColor(tester, const ValueKey('match-tab-0')),
+      app_style.AppPalette.white,
+    );
+    expect(
+      decorationColor(tester, const ValueKey('match-tab-1')),
+      app_style.AppPalette.lightGreyBox,
+    );
+    expect(
+      tester.widget<Text>(find.text('MATCH PREVIEW')).style!.color,
+      app_style.AppPalette.black,
+    );
+    expect(
+      tester.widget<Text>(find.text('HEAD TO HEAD')).style!.color,
+      app_style.AppPalette.black,
+    );
+    expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
       app_style.AppPalette.white,
     );
@@ -118,6 +134,14 @@ void main() {
     await tester.tap(find.text('HEAD TO HEAD'));
     await tester.pump();
     await tester.pump();
+    expect(
+      decorationColor(tester, const ValueKey('match-tab-0')),
+      app_style.AppPalette.lightGreyBox,
+    );
+    expect(
+      decorationColor(tester, const ValueKey('match-tab-1')),
+      app_style.AppPalette.white,
+    );
     expect(
       decorationColor(tester, const ValueKey('match-h2h-wdl-card')),
       app_style.AppPalette.white,
