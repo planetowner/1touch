@@ -110,8 +110,18 @@ class _MomentumPainter extends CustomPainter {
     _drawDashedLine(canvas, Offset(midX, 0), Offset(midX, size.height),
         neutralColor.withValues(alpha: 0.3));
 
-    final abovePaint = Paint()..color = const Color(0x8CFF5C5C);
-    final belowPaint = Paint()..color = Colors.white.withValues(alpha: 0.2);
+    final abovePaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xB3FF5C5C), Color(0x00FF5C5C)],
+      ).createShader(Rect.fromLTRB(0, 0, size.width, centerY));
+    final belowPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.white.withValues(alpha: 0), Colors.white54],
+      ).createShader(Rect.fromLTRB(0, centerY, size.width, size.height));
 
     for (var i = 0; i < points.length - 1; i++) {
       _fillSegment(
