@@ -26,40 +26,46 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
       child: Column(
         children: [
           for (int i = 0; i < visibleCount; i++)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Text("${i + 1}", style: Heading3.style),
-                  const SizedBox(width: 16),
-                  SizedBox(
-                    width: 56,
-                    height: 56,
-                    child: ClipOval(
-                      child: PlayerImage(player: widget.players[i]),
+            InkWell(
+              key: ValueKey('ranking-player-${widget.players[i].id}'),
+              onTap: () => openPlayerPage(context, widget.players[i].id),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Text("${i + 1}", style: Heading3.style),
+                    const SizedBox(width: 16),
+                    SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: ClipOval(
+                        child: PlayerImage(player: widget.players[i]),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.players[i].fullName, style: Heading5.style),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${widget.players[i].teamName} • #${widget.players[i].jerseyNumber}',
-                          style: Body2.style,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.players[i].fullName,
+                              style: Heading5.style),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${widget.players[i].teamName} • #${widget.players[i].jerseyNumber}',
+                            style: Body2.style,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Text(
-                    widget.players[i].rankingScore.toStringAsFixed(1),
-                    textAlign: TextAlign.right,
-                    style: Heading5.style,
-                  ),
-                ],
+                    Text(
+                      widget.players[i].rankingScore.toStringAsFixed(1),
+                      textAlign: TextAlign.right,
+                      style: Heading5.style,
+                    ),
+                  ],
+                ),
               ),
             ),
           const SizedBox(height: 8),
@@ -163,42 +169,48 @@ class FullRankingPopup extends StatelessWidget {
                   final showStar = playerRepository.isFollowing(player.id);
                   final showArrow = player.rankingChange != 0;
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Text("$rank", style: Heading4.style),
-                        const SizedBox(width: 8),
-                        if (showArrow)
-                          const Icon(Icons.arrow_drop_up,
-                              color: Colors.blueAccent)
-                        else
-                          const SizedBox(width: 24),
-                        SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: ClipOval(child: PlayerImage(player: player)),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(player.fullName, style: Heading5.style),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${player.teamName} • #${player.jerseyNumber}',
-                                style: Body2.style,
-                              ),
-                            ],
+                  return InkWell(
+                    key: ValueKey('full-ranking-player-${player.id}'),
+                    onTap: () => openPlayerPage(context, player.id),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Text("$rank", style: Heading4.style),
+                          const SizedBox(width: 8),
+                          if (showArrow)
+                            const Icon(Icons.arrow_drop_up,
+                                color: Colors.blueAccent)
+                          else
+                            const SizedBox(width: 24),
+                          SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: ClipOval(child: PlayerImage(player: player)),
                           ),
-                        ),
-                        if (showStar) Icon(Icons.star, color: colors.onSurface),
-                        Text(
-                          player.rankingScore.toStringAsFixed(1),
-                          style: Heading5.style,
-                        ),
-                      ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(player.fullName, style: Heading5.style),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${player.teamName} • #${player.jerseyNumber}',
+                                  style: Body2.style,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (showStar)
+                            Icon(Icons.star, color: colors.onSurface),
+                          Text(
+                            player.rankingScore.toStringAsFixed(1),
+                            style: Heading5.style,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
