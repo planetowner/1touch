@@ -404,6 +404,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       decoration: BoxDecoration(
         color: AppColors.of(context).subtleBackground,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: appCardShadows(context),
       ),
       alignment: Alignment.center,
       child: Text(
@@ -440,6 +441,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       decoration: BoxDecoration(
         color: appColors.cardBackground,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: appCardShadows(context),
       ),
       child: Column(
         children: [

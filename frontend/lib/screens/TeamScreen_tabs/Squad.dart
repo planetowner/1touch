@@ -813,97 +813,104 @@ class _PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Stack(
-              children: [
-                // Background + image fills entire area
-                Container(
-                  width: double.infinity,
-                  color: appColors.cardBackground,
-                ),
+    return Container(
+      key: ValueKey('squad-player-card-${player.id}'),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: appCardShadows(context),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 4,
+              child: Stack(
+                children: [
+                  // Background + image fills entire area
+                  Container(
+                    width: double.infinity,
+                    color: appColors.cardBackground,
+                  ),
 
-                // Playerimage
-                Positioned(
-                  right: 10,
-                  left: 50,
-                  top: 20,
-                  bottom: 0,
-                  child: player.imageUrl != null
-                      ? Image.network(
-                          player.imageUrl!,
-                          fit: BoxFit.contain,
-                          alignment: Alignment.bottomCenter,
-                          errorBuilder: (_, __, ___) => Image.asset(
+                  // Playerimage
+                  Positioned(
+                    right: 10,
+                    left: 50,
+                    top: 20,
+                    bottom: 0,
+                    child: player.imageUrl != null
+                        ? Image.network(
+                            player.imageUrl!,
+                            fit: BoxFit.contain,
+                            alignment: Alignment.bottomCenter,
+                            errorBuilder: (_, __, ___) => Image.asset(
+                              'assets/player_comparison/player_placeholder.png',
+                              fit: BoxFit.contain,
+                              alignment: Alignment.bottomCenter,
+                            ),
+                          )
+                        : Image.asset(
                             'assets/player_comparison/player_placeholder.png',
                             fit: BoxFit.contain,
                             alignment: Alignment.bottomCenter,
                           ),
-                        )
-                      : Image.asset(
-                          'assets/player_comparison/player_placeholder.png',
-                          fit: BoxFit.contain,
-                          alignment: Alignment.bottomCenter,
-                        ),
-                ),
-
-                if (player.jerseyNumber != null)
-                  Positioned(
-                    top: 14,
-                    left: 12,
-                    child: Text(
-                      '${player.jerseyNumber}',
-                      key: ValueKey('squad-jersey-number-${player.id}'),
-                      style: Heading2.style,
-                    ),
                   ),
 
-                if (player.leadershipRole != null)
-                  Positioned(
-                    left: 12,
-                    bottom: 12,
-                    child: _LeadershipBadge(
-                      playerId: player.id,
-                      role: player.leadershipRole!,
+                  if (player.jerseyNumber != null)
+                    Positioned(
+                      top: 14,
+                      left: 12,
+                      child: Text(
+                        '${player.jerseyNumber}',
+                        key: ValueKey('squad-jersey-number-${player.id}'),
+                        style: Heading2.style,
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              color: appColors.subtleBackground,
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      player.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Heading5.style,
+
+                  if (player.leadershipRole != null)
+                    Positioned(
+                      left: 12,
+                      bottom: 12,
+                      child: _LeadershipBadge(
+                        playerId: player.id,
+                        role: player.leadershipRole!,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    player.teamLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Body2.style,
-                  ),
                 ],
               ),
             ),
-          ),
-        ],
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                color: appColors.subtleBackground,
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        player.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Heading5.style,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      player.teamLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Body2.style,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -384,11 +384,13 @@ class _MatchesTabState extends State<MatchesTab> {
         extra: fixture,
       ),
       child: Container(
+        key: ValueKey('team-fixture-card-${fixture.fixtureId}'),
         margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: cardBackground,
           borderRadius: BorderRadius.circular(14),
+          boxShadow: appCardShadows(context),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

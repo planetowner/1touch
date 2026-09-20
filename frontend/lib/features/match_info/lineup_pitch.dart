@@ -57,6 +57,7 @@ class LineupPitch extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(20),
+            boxShadow: appCardShadows(context),
           ),
           clipBehavior: Clip.hardEdge,
           child: Stack(

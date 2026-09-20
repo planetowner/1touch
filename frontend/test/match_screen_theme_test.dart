@@ -63,10 +63,13 @@ void main() {
     await tester.pump();
   }
 
-  Color decorationColor(WidgetTester tester, Key key) {
+  BoxDecoration boxDecoration(WidgetTester tester, Key key) {
     final container = tester.widget<Container>(find.byKey(key));
-    return (container.decoration! as BoxDecoration).color!;
+    return container.decoration! as BoxDecoration;
   }
+
+  Color decorationColor(WidgetTester tester, Key key) =>
+      boxDecoration(tester, key).color!;
 
   testWidgets('upcoming match uses responsive light surfaces', (tester) async {
     await pumpMatch(
@@ -103,6 +106,13 @@ void main() {
     expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
       app_style.AppPalette.white,
+    );
+    expect(
+      boxDecoration(
+        tester,
+        const ValueKey('match-betting-card'),
+      ).boxShadow,
+      app_style.lightModeCardShadows,
     );
     expect(
       decorationColor(tester, const ValueKey('match-preview-standing-header')),
@@ -209,6 +219,13 @@ void main() {
     expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
       app_style.AppPalette.darkGrey,
+    );
+    expect(
+      boxDecoration(
+        tester,
+        const ValueKey('match-betting-card'),
+      ).boxShadow,
+      isEmpty,
     );
     expect(tester.takeException(), isNull);
   });

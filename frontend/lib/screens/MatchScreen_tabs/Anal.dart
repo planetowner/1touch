@@ -203,6 +203,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
               ? AppPalette.darkGrey
               : AppPalette.white,
           borderRadius: BorderRadius.circular(16),
+          boxShadow: appCardShadows(context),
         ),
         child: const Text(
           'Tactical analysis is unavailable for this match.',
@@ -348,6 +349,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             decoration: BoxDecoration(
               color: isDark ? AppPalette.darkGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: appCardShadows(context),
             ),
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -401,6 +403,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             decoration: BoxDecoration(
               color: isDark ? AppPalette.darkGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: appCardShadows(context),
             ),
             child: Column(
               children: [
@@ -497,6 +500,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           child: Column(
             children: [
@@ -550,6 +554,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           child: Column(
             children: [
@@ -730,6 +735,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             decoration: BoxDecoration(
               color: isDark ? AppPalette.darkGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: appCardShadows(context),
             ),
             child: Column(
               children: [
