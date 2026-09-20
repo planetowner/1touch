@@ -106,24 +106,22 @@ void main() {
         matching: find.byType(Icon),
       ),
     );
-    final gradientBox = tester.widget<Container>(
-      find.byKey(const ValueKey('player-detail-gradient')),
+    final solidBackground = tester.widget<ColoredBox>(
+      find.byKey(const ValueKey('player-detail-solid-background')),
     );
-    final gradient =
-        (gradientBox.decoration! as BoxDecoration).gradient! as LinearGradient;
     final topBlock = find.byKey(const ValueKey('player-overview-top-block'));
 
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
-    expect(tabBar.labelColor, app_style.AppPalette.white);
-    expect(tabBar.unselectedLabelColor, app_style.AppPalette.white);
-    expect(tabIndicator.borderSide.color, app_style.AppPalette.white);
-    expect(followIcon.color, app_style.AppPalette.white);
-    expect(searchIcon.color, app_style.AppPalette.white);
-    expect(compareIcon.color, app_style.AppPalette.white);
+    expect(tabBar.labelColor, app_style.AppPalette.black);
+    expect(tabBar.unselectedLabelColor, app_style.AppPalette.black);
+    expect(tabIndicator.borderSide.color, app_style.AppPalette.black);
+    expect(followIcon.color, app_style.AppPalette.black);
+    expect(searchIcon.color, app_style.AppPalette.black);
+    expect(compareIcon.color, app_style.AppPalette.black);
     for (final text in tester.widgetList<Text>(
       find.descendant(of: topBlock, matching: find.byType(Text)),
     )) {
-      expect(text.style?.color, app_style.AppPalette.white);
+      expect(text.style?.color, app_style.AppPalette.black);
     }
     expect(
       (bioCard.decoration as BoxDecoration).color,
@@ -131,19 +129,13 @@ void main() {
     );
     expect(nestedScroll.physics, isA<ClampingScrollPhysics>());
     expect(overviewScroll.physics, isA<ClampingScrollPhysics>());
-    expect(gradient.begin, Alignment.bottomCenter);
-    expect(gradient.end, Alignment.topCenter);
-    final lightGradientColor =
-        Color.lerp(salah.teamColor.first, Colors.white, 0.30)!;
-    expect(gradient.colors, [
-      lightGradientColor,
-      lightGradientColor.withValues(alpha: 0),
-    ]);
-    expect(gradient.stops, isNull);
+    expect(solidBackground.color, app_style.AppPalette.lightModeDarkGrey);
     await tester.pumpAndSettle();
     expect(
       tester
-          .getSize(find.byKey(const ValueKey('player-detail-gradient')))
+          .getSize(
+            find.byKey(const ValueKey('player-detail-solid-background')),
+          )
           .height,
       closeTo(368, 0.01),
     );
@@ -205,7 +197,7 @@ void main() {
     expect(tester.takeException(), isNull, reason: 'Career must not overflow');
   });
 
-  testWidgets('player gradient uses the softened fade in dark mode',
+  testWidgets('player detail uses a solid background in dark mode',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -218,18 +210,10 @@ void main() {
     );
     await tester.pump();
 
-    final gradientBox = tester.widget<Container>(
-      find.byKey(const ValueKey('player-detail-gradient')),
+    final solidBackground = tester.widget<ColoredBox>(
+      find.byKey(const ValueKey('player-detail-solid-background')),
     );
-    final gradient =
-        (gradientBox.decoration! as BoxDecoration).gradient! as LinearGradient;
-    final darkGradientColor =
-        Color.lerp(salah.teamColor.first, Colors.black, 0.30)!;
-    expect(gradient.colors, [
-      darkGradientColor,
-      darkGradientColor.withValues(alpha: 0),
-    ]);
-    expect(gradient.stops, isNull);
+    expect(solidBackground.color, app_style.AppPalette.black);
     expect(tester.takeException(), isNull);
   });
 
