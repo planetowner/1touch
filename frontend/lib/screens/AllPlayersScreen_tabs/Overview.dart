@@ -24,7 +24,7 @@ class PlayerOverviewTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTopBlock(player),
+              _buildTopBlock(context, player),
               const SizedBox(height: 48),
               _buildBioStatsBlock(context),
               const SizedBox(height: 48),
@@ -41,7 +41,8 @@ class PlayerOverviewTab extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBlock(Player player) {
+  Widget _buildTopBlock(BuildContext context, Player player) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Row(
       key: const ValueKey('player-overview-top-block'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,22 +52,22 @@ class PlayerOverviewTab extends StatelessWidget {
           children: [
             Text(
               '${player.jerseyNumber}',
-              style: Heading1.style.copyWith(color: AppPalette.white),
+              style: Heading1.style.copyWith(color: foreground),
             ),
             const SizedBox(height: 4),
             Text(
               player.positionLabel,
-              style: Body1.style.copyWith(color: AppPalette.white),
+              style: Body1.style.copyWith(color: foreground),
             ),
             const SizedBox(height: 8),
             Text(
               player.teamName,
-              style: Body1.style.copyWith(color: AppPalette.white),
+              style: Body1.style.copyWith(color: foreground),
             ),
             const SizedBox(height: 4),
             Text(
               '${player.nationality} ${player.nationalityFlag}',
-              style: Body1.style.copyWith(color: AppPalette.white),
+              style: Body1.style.copyWith(color: foreground),
             ),
           ],
         ),

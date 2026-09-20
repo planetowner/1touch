@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
@@ -13,8 +12,6 @@ import 'package:onetouch/data/post_comments/post_comment_repository_provider.dar
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
-import 'package:onetouch/data/teams/team_repository.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
@@ -205,41 +202,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
     final pageBackground = mainPageBackground(context);
     final colors = Theme.of(context).colorScheme;
-    final favoriteTeamColor = Color(
-      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
-    );
-    final gradientHeight = responsiveBrandGradientHeight(context);
 
     return Scaffold(
       backgroundColor: pageBackground,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // 3. Background Gradient with AnimatedOpacity
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: (1 - opacityFactor), // Fades out as you scroll down
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: const ValueKey('community-detail-brand-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      favoriteTeamColor,
-                      favoriteTeamColor.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 0.6],
-                  ),
-                ),
-              ),
-            ),
-          ),
           CustomScrollView(
             controller: _scrollController, // Bind the controller
             slivers: [
@@ -259,19 +227,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   onPressed: () => context.pop(),
                 ),
                 toolbarHeight: 80,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        favoriteTeamColor,
-                        favoriteTeamColor.withValues(alpha: 0),
-                      ],
-                      stops: const [0.0, 0.9],
-                    ),
-                  ),
-                ),
+                flexibleSpace: ColoredBox(color: pageBackground),
                 floating: true,
                 snap: true,
               ),

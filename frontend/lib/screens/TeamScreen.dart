@@ -12,7 +12,6 @@ import 'package:onetouch/data/team_overview/team_overview_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository_provider.dart'
     as team_overview_providers;
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
-import 'package:onetouch/data/teams/team_color_palette_2627.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
 import 'package:onetouch/features/helper.dart';
@@ -51,7 +50,6 @@ class _TeamScreenState extends State<TeamScreen>
   bool isLoading = true;
   Object? _loadError;
   int _loadRequestId = 0;
-  Color? _teamColor;
   int? _requestedStandingCompetitionId;
   int _standingSelectionRequestId = 0;
 
@@ -95,7 +93,6 @@ class _TeamScreenState extends State<TeamScreen>
       team = cached == null ? null : _teamMap(cached);
       isLoading = cached == null;
       _loadError = null;
-      _teamColor = _brandColorForTeam(cached?.name);
     }
 
     if (updateState) {
@@ -114,7 +111,6 @@ class _TeamScreenState extends State<TeamScreen>
       }
       setState(() {
         team = _teamMap(overview);
-        _teamColor = _brandColorForTeam(overview.name);
         isLoading = false;
         _loadError = null;
       });
@@ -156,12 +152,6 @@ class _TeamScreenState extends State<TeamScreen>
     };
   }
 
-  Color? _brandColorForTeam(String? teamName) {
-    if (teamName == null) return null;
-    final palette = teamColorPaletteForName(teamName);
-    return palette == null ? null : Color(palette.primary);
-  }
-
   void _retryOverviewLoad() {
     _startOverviewLoad();
   }
@@ -186,7 +176,6 @@ class _TeamScreenState extends State<TeamScreen>
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final pageBackground = mainPageBackground(context);
-    final gradientHeight = responsiveBrandGradientHeight(context);
 
     if (isLoading) {
       return Scaffold(
@@ -218,37 +207,13 @@ class _TeamScreenState extends State<TeamScreen>
 
     final displayedTeamId = team!['id'] as int;
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
-    final teamColor = _teamColor;
-    final appBarForeground =
-        teamColor == null ? colors.onSurface : AppPalette.white;
+    final appBarForeground = colors.onSurface;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: pageBackground,
       body: Stack(
         children: [
-          if (teamColor != null)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: gradientHeight,
-              child: AnimatedOpacity(
-                opacity: (1 - opacityFactor),
-                duration: const Duration(milliseconds: 200),
-                child: Container(
-                  key: const ValueKey('team-brand-gradient'),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [teamColor, pageBackground],
-                      stops: const [0.0, 0.6],
-                    ),
-                  ),
-                ),
-              ),
-            ),
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -265,21 +230,7 @@ class _TeamScreenState extends State<TeamScreen>
                 snap: true,
                 pinned: false,
                 toolbarHeight: 80,
-                flexibleSpace: teamColor == null
-                    ? null
-                    : Container(
-                        key: const ValueKey('team-app-bar-gradient'),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              teamColor,
-                              teamColor.withValues(alpha: 0),
-                            ],
-                          ),
-                        ),
-                      ),
+                flexibleSpace: ColoredBox(color: pageBackground),
                 title: Padding(
                   padding: const EdgeInsets.only(left: 8, top: 30),
                   child: Row(

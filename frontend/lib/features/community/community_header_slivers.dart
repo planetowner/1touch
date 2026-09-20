@@ -8,14 +8,12 @@ import 'package:onetouch/models/team.dart';
 class CommunitySliverAppBar extends StatelessWidget {
   const CommunitySliverAppBar({
     super.key,
-    required this.brandColor,
     required this.pageBackground,
     required this.opacityFactor,
     required this.onSearch,
     required this.onProfile,
   });
 
-  final Color brandColor;
   final Color pageBackground;
   final double opacityFactor;
   final VoidCallback onSearch;
@@ -23,36 +21,29 @@ class CommunitySliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return SliverAppBar(
       backgroundColor: Color.lerp(
         Colors.transparent,
         pageBackground,
         opacityFactor,
       ),
-      foregroundColor: AppPalette.white,
+      foregroundColor: foreground,
       elevation: 0,
       floating: true,
       snap: true,
       toolbarHeight: 80,
       centerTitle: false,
       titleSpacing: 0,
-      flexibleSpace: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [brandColor, brandColor.withAlpha(0)],
-          ),
-        ),
-      ),
+      flexibleSpace: ColoredBox(color: pageBackground),
       title: Padding(
         padding: const EdgeInsets.only(left: 24, top: 30),
         child: SvgPicture.asset(
           'assets/app_logo.svg',
           height: 23,
           width: 120,
-          colorFilter: const ColorFilter.mode(
-            AppPalette.white,
+          colorFilter: ColorFilter.mode(
+            foreground,
             BlendMode.srcIn,
           ),
         ),
@@ -65,19 +56,19 @@ class CommunitySliverAppBar extends StatelessWidget {
               IconButton(
                 key: const ValueKey('community-search-button'),
                 onPressed: onSearch,
-                icon: const Icon(
+                icon: Icon(
                   Icons.search,
                   size: 32,
-                  color: AppPalette.white,
+                  color: foreground,
                 ),
               ),
               IconButton(
                 key: const ValueKey('community-profile-button'),
                 onPressed: onProfile,
-                icon: const Icon(
+                icon: Icon(
                   Icons.account_circle_outlined,
                   size: 32,
-                  color: AppPalette.white,
+                  color: foreground,
                 ),
               ),
             ],

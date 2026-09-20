@@ -65,20 +65,23 @@ void main() {
     });
   }
 
-  testWidgets('Players gradient extends responsively', (tester) async {
+  testWidgets('Players uses a solid page background', (tester) async {
     await _pumpPlayers(
       tester,
       theme: app_style.whitetheme,
       size: const Size(393, 852),
     );
 
-    final gradientFinder = find.byKey(const ValueKey('players-brand-gradient'));
-    final gradientContainer = tester.widget<Container>(gradientFinder);
-    final gradient = (gradientContainer.decoration! as BoxDecoration).gradient!
-        as LinearGradient;
-
-    expect(tester.getSize(gradientFinder).height, closeTo(596.4, 0.01));
-    expect(gradient.stops, const [0.0, 0.65]);
+    expect(find.byKey(const ValueKey('players-brand-gradient')), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is DecoratedBox &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration as BoxDecoration).gradient != null,
+      ),
+      findsNothing,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -165,14 +168,14 @@ void main() {
       expect(tester.widget<Icon>(find.byIcon(Icons.tune)).color,
           testCase.foreground);
       expect(tester.widget<Icon>(find.byIcon(Icons.search).first).color,
-          app_style.AppPalette.white);
+          testCase.foreground);
       expect(
         tester.widget<Icon>(find.byIcon(Icons.safety_divider)).color,
-        app_style.AppPalette.white,
+        testCase.foreground,
       );
       expect(
         tester.widget<Icon>(find.byIcon(Icons.account_circle_outlined)).color,
-        app_style.AppPalette.white,
+        testCase.foreground,
       );
       expect(tester.takeException(), isNull);
     });

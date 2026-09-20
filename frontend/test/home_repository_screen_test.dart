@@ -301,12 +301,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Manchester City'), findsOneWidget);
-    final gradientContainer = tester.widget<Container>(
-      find.byKey(const ValueKey('home-brand-gradient')),
-    );
-    final gradient = (gradientContainer.decoration as BoxDecoration).gradient!
-        as LinearGradient;
-    expect(gradient.colors.first, const Color(0xFF6CABDD));
+    expect(find.byKey(const ValueKey('home-brand-gradient')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
