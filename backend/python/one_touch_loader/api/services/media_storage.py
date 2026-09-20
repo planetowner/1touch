@@ -6,9 +6,10 @@ import warnings
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from PIL import Image, UnidentifiedImageError
 from .auth_security import new_token, required_setting
+from ...core.player_images import IMAGE_CACHE_CONTROL, image_object_key
 
 IMAGE_LIMIT = 10_000_000
 VIDEO_LIMIT = 100_000_000
@@ -57,6 +58,28 @@ def object_operation(operation: str, **kwargs):
         return getattr(r2_client(), operation)(Bucket=required_setting("R2_BUCKET"), **kwargs)
     except (ClientError, BotoCoreError) as exc:
         raise HTTPException(502, "Attachment storage unavailable") from exc
+
+
+def player_image_content(digest: str):
+    try:
+        # 공개 경로는 선수 사진 전용 접두사만 읽고 회원 첨부파일에는 접근하지 않아요.
+        response = r2_client().get_object(Bucket=required_setting("R2_BUCKET"), Key=image_object_key(digest))
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") in {"NoSuchKey", "404"}:
+            raise HTTPException(404, "Player image not found") from exc
+        raise HTTPException(502, "Player image storage unavailable") from exc
+    except BotoCoreError as exc:
+        raise HTTPException(502, "Player image storage unavailable") from exc
+    # 150px PNG는 작아서 한 번에 읽어요. 영상의 범위 요청·비공개 캐시 정책은 유지해요.
+    stream = response["Body"]
+    try:
+        content = stream.read()
+    finally:
+        stream.close()
+    return Response(content, media_type="image/png", headers={
+        "Cache-Control": IMAGE_CACHE_CONTROL, "X-Content-Type-Options": "nosniff",
+        "ETag": f'"{digest}"',
+    })
 
 
 @contextmanager

@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS players (
   height_cm      SMALLINT UNSIGNED NULL,
   weight_kg      SMALLINT UNSIGNED NULL,
   image_path     VARCHAR(512) NULL,
+  image_is_custom BOOLEAN NOT NULL DEFAULT FALSE,
 
   PRIMARY KEY (player_id),
   KEY idx_players_position (position_id),
