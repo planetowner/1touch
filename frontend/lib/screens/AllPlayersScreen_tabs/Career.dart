@@ -20,7 +20,6 @@ class CareerTab extends StatefulWidget {
 class _CareerTabState extends State<CareerTab> {
   static const _allCompetitions = 'ALL LEAGUES';
 
-  String _trophyFilter = 'TEAM';
   String _competitionFilter = _allCompetitions;
   final Set<String> _expandedSeasons = {};
 
@@ -40,7 +39,6 @@ class _CareerTabState extends State<CareerTab> {
   void didUpdateWidget(covariant CareerTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.player.id != widget.player.id) {
-      _trophyFilter = 'TEAM';
       _competitionFilter = _allCompetitions;
       _expandedSeasons.clear();
       _expandNewestSeason();
@@ -135,23 +133,7 @@ class _CareerTabState extends State<CareerTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('TROPHIES', style: Body2_b.style),
-            _FilterButton(
-              key: const Key('career-trophy-filter'),
-              label: _trophyFilter,
-              onTap: () => _showFilterSheet(
-                options: const ['TEAM', 'PERSONAL'],
-                selected: _trophyFilter,
-                onSelected: (option) => setState(() {
-                  _trophyFilter = option;
-                }),
-              ),
-            ),
-          ],
-        ),
+        Text('TROPHIES', style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           key: const ValueKey('player-career-trophies-card'),
@@ -162,9 +144,7 @@ class _CareerTabState extends State<CareerTab> {
             boxShadow: appCardShadows(context),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          child: _trophyFilter == 'TEAM'
-              ? _buildTeamTrophies()
-              : _buildPersonalAwards(),
+          child: _buildTeamTrophies(),
         ),
       ],
     );
@@ -225,6 +205,9 @@ class _CareerTabState extends State<CareerTab> {
     );
   }
 
+  // TODO: Reconnect this content to a TEAM / PERSONAL trophy filter when the
+  // personal-trophy experience is added to the Career tab.
+  // ignore: unused_element
   Widget _buildPersonalAwards() {
     final awards = widget.player.personalAwards;
     if (awards.isEmpty) {

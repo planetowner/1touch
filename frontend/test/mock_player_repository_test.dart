@@ -163,7 +163,7 @@ void main() {
     );
   });
 
-  testWidgets('career competition and personal award filters are functional',
+  testWidgets('career competition filter works while trophy filter is hidden',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -184,15 +184,7 @@ void main() {
     expect(find.text('UCL'), findsAtLeastNWidgets(1));
     expect(find.byKey(const Key('career-season-591-25/26')), findsOneWidget);
     expect(find.byKey(const Key('career-season-645-22/23')), findsNothing);
-
-    await tester.tap(find.byKey(const Key('career-trophy-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('PERSONAL').last);
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('No personal awards in the mock dataset'),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('career-trophy-filter')), findsNothing);
+    expect(find.text('PERSONAL'), findsNothing);
   });
 }

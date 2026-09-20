@@ -302,19 +302,13 @@ void main() {
 
       await tester.tap(find.text('Career'));
       await tester.pumpAndSettle();
-      final trophyFilterText = tester.widget<Text>(
-        find.descendant(
-          of: find.byKey(const Key('career-trophy-filter')),
-          matching: find.text('TEAM'),
-        ),
-      );
       final competitionFilterText = tester.widget<Text>(
         find.descendant(
           of: find.byKey(const Key('career-competition-filter')),
           matching: find.text('ALL LEAGUES'),
         ),
       );
-      expect(trophyFilterText.style?.color, testCase.foreground);
+      expect(find.byKey(const Key('career-trophy-filter')), findsNothing);
       expect(competitionFilterText.style?.color, testCase.foreground);
       expect(tester.takeException(), isNull);
     });
