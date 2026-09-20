@@ -52,6 +52,11 @@ void main() {
 
       expect(find.text('Mohamed Salah'), findsOneWidget);
       expect(find.text('Cost-Effectiveness'), findsOneWidget);
+      expect(find.text('Squad Role'), findsOneWidget);
+      expect(find.text(salah.squadRole), findsOneWidget);
+      expect(find.text('Market Value'), findsNothing);
+      expect(find.text('Preferred Foot'), findsNothing);
+      expect(find.byIcon(Icons.help_outline), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
