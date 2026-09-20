@@ -127,6 +127,10 @@ void main() {
       (bioCard.decoration as BoxDecoration).color,
       app_style.AppPalette.white,
     );
+    expect(
+      (bioCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
+    );
     expect(nestedScroll.physics, isA<ClampingScrollPhysics>());
     expect(overviewScroll.physics, isA<ClampingScrollPhysics>());
     expect(solidBackground.color, app_style.AppPalette.lightModeDarkGrey);
@@ -171,6 +175,10 @@ void main() {
       (analysisCard.decoration as BoxDecoration).color,
       app_style.AppPalette.white,
     );
+    expect(
+      (analysisCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
+    );
     expect(tester.takeException(), isNull,
         reason: 'Analysis must not overflow');
 
@@ -183,6 +191,13 @@ void main() {
       (matchFilter.decoration as BoxDecoration).color,
       app_style.AppPalette.white,
     );
+    final matchCard = tester.widget<Container>(
+      find.byKey(const ValueKey('player-match-card')).first,
+    );
+    expect(
+      (matchCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
+    );
     expect(tester.takeException(), isNull, reason: 'Matches must not overflow');
 
     await tester.tap(find.text('Career'));
@@ -193,6 +208,10 @@ void main() {
     expect(
       (careerCard.decoration as BoxDecoration).color,
       app_style.AppPalette.white,
+    );
+    expect(
+      (careerCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
     );
     expect(tester.takeException(), isNull, reason: 'Career must not overflow');
   });

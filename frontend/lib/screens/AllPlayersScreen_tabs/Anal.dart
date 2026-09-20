@@ -127,6 +127,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           decoration: BoxDecoration(
             color: cardColor,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           padding: const EdgeInsets.all(24),
           child: Row(
@@ -267,6 +268,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       decoration: BoxDecoration(
         color: isDark ? AppPalette.darkGrey : AppPalette.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: appCardShadows(context),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -320,6 +322,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           padding: const EdgeInsets.all(24),
           child: SizedBox(
@@ -376,6 +379,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           child: Column(
             children: [
