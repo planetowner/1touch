@@ -11,31 +11,18 @@ import 'package:onetouch/screens/CommunityScreen.dart';
 import 'support/stub_community_repository.dart';
 import 'package:onetouch/screens/HomeScreen.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
-import 'package:onetouch/screens/TeamScreen.dart';
-
-import 'support/test_team_overview_repository.dart';
 
 void main() {
-  final pages = <({String name, Widget screen, String gradientKey})>[
+  final pages = <({String name, Widget screen})>[
     (
       name: 'home',
       screen: HomeScreen(
           repository: const _StaticHomeRepository(),
           newsRepository: const _EmptyNewsRepository()),
-      gradientKey: 'home-brand-gradient',
     ),
     (
       name: 'players',
       screen: const Players(),
-      gradientKey: 'players-brand-gradient',
-    ),
-    (
-      name: 'team',
-      screen: TeamScreen(
-        teamId: 9,
-        teamOverviewRepository: TestTeamOverviewRepository.withTeam9(),
-      ),
-      gradientKey: 'team-brand-gradient',
     ),
     (
       name: 'community',
@@ -44,7 +31,6 @@ void main() {
         postRepository: MockPostRepository(),
         communityRepository: const StubCommunityRepository(),
       ),
-      gradientKey: 'community-brand-gradient',
     ),
   ];
 
@@ -65,10 +51,19 @@ void main() {
       final appBar =
           tester.widget<SliverAppBar>(find.byType(SliverAppBar).first);
       expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
-      expect(appBar.foregroundColor, app_style.AppPalette.white);
       expect(
-        tester.getSize(find.byKey(ValueKey(page.gradientKey))).height,
-        closeTo(596.4, 0.01),
+          appBar.foregroundColor,
+          Theme.of(tester.element(find.byType(Scaffold).first))
+              .colorScheme
+              .onSurface);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is DecoratedBox &&
+              widget.decoration is BoxDecoration &&
+              (widget.decoration as BoxDecoration).gradient != null,
+        ),
+        findsNothing,
       );
     });
   }

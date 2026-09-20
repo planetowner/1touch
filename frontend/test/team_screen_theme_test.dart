@@ -57,8 +57,6 @@ void main() {
           final colorScheme = Theme.of(context).colorScheme;
           final tabBar = tester.widget<TabBar>(find.byType(TabBar));
           final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
-          final expectedGradientHeight =
-              (size.height * 0.70).clamp(550.0, 650.0).toDouble();
 
           expect(
             tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
@@ -66,13 +64,11 @@ void main() {
           );
           expect(tabBar.labelColor, colorScheme.onSurface);
           expect(tabBar.indicatorColor, colorScheme.onSurface);
-          expect(appBar.foregroundColor, app_style.AppPalette.white);
+          expect(appBar.foregroundColor, colorScheme.onSurface);
           expect(
-            tester
-                .getSize(find.byKey(const ValueKey('team-brand-gradient')))
-                .height,
-            expectedGradientHeight,
-          );
+              find.byKey(const ValueKey('team-brand-gradient')), findsNothing);
+          expect(find.byKey(const ValueKey('team-app-bar-gradient')),
+              findsNothing);
           expect(tester.takeException(), isNull);
 
           final tabView = find.byType(TabBarView);

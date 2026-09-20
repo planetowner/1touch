@@ -6,12 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/PlayerScreenFeatures.dart';
 import 'package:onetouch/models/player.dart';
-
-import '../core/favorite_team.dart';
 
 class Players extends StatefulWidget {
   const Players({super.key});
@@ -38,8 +34,6 @@ class _PlayersState extends State<Players> {
   String selectedSeason = "2025/2026";
   String selectedPosition = "FW";
 
-  Color _teamColor = const Color(0xFFD82457);
-
   @override
   void initState() {
     super.initState();
@@ -49,27 +43,10 @@ class _PlayersState extends State<Players> {
           _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
         });
       });
-
-    _teamColor = Color(
-      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
-    );
-    // This tab stays alive in the bottom-nav shell, so listen for favorite
-    // team switches made elsewhere (e.g. HomeScreen) instead of only
-    // resolving the color once.
-    FavoriteTeam.id.addListener(_handleFavoriteTeamChanged);
-  }
-
-  void _handleFavoriteTeamChanged() {
-    setState(() {
-      _teamColor = Color(
-        teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
-      );
-    });
   }
 
   @override
   void dispose() {
-    FavoriteTeam.id.removeListener(_handleFavoriteTeamChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -109,7 +86,6 @@ class _PlayersState extends State<Players> {
     final opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
     final colors = Theme.of(context).colorScheme;
-    final gradientHeight = responsiveBrandGradientHeight(context);
     final position = PlayerPosition.values.firstWhere(
       (value) => value.label == selectedPosition,
       orElse: () => PlayerPosition.forward,
@@ -124,29 +100,6 @@ class _PlayersState extends State<Players> {
       backgroundColor: pageBackground,
       body: Stack(
         children: [
-          // Background gradient
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: 1 - opacityFactor,
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: const ValueKey('players-brand-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [_teamColor, _teamColor.withAlpha(0)],
-                    stops: const [0.0, 0.65],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
           CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -154,22 +107,14 @@ class _PlayersState extends State<Players> {
               SliverAppBar(
                 backgroundColor: Color.lerp(
                     Colors.transparent, pageBackground, opacityFactor),
-                foregroundColor: AppPalette.white,
+                foregroundColor: colors.onSurface,
                 elevation: 0,
                 floating: true,
                 snap: true,
                 toolbarHeight: 80,
                 centerTitle: false,
                 titleSpacing: 0,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [_teamColor, _teamColor.withAlpha(0)],
-                    ),
-                  ),
-                ),
+                flexibleSpace: ColoredBox(color: pageBackground),
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
                   padding: const EdgeInsets.only(left: 24, top: 30),
@@ -177,8 +122,8 @@ class _PlayersState extends State<Players> {
                     'assets/app_logo.svg',
                     height: 23,
                     width: 120,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
+                    colorFilter: ColorFilter.mode(
+                      colors.onSurface,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -190,23 +135,23 @@ class _PlayersState extends State<Players> {
                       children: [
                         IconButton(
                           onPressed: () => context.push('/search'),
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.search,
                             size: 32,
-                            color: Colors.white,
+                            color: colors.onSurface,
                           ),
                         ),
                         IconButton(
                           onPressed: () => context.push('/compare'),
-                          icon: const Icon(Icons.safety_divider,
-                              size: 32, color: Colors.white),
+                          icon: Icon(Icons.safety_divider,
+                              size: 32, color: colors.onSurface),
                         ),
                         IconButton(
                           onPressed: () => context.push('/profile'),
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.account_circle_outlined,
                             size: 32,
-                            color: Colors.white,
+                            color: colors.onSurface,
                           ),
                         ),
                       ],

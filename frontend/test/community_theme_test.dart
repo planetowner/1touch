@@ -6,7 +6,6 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
-import 'package:onetouch/data/teams/mock/team_catalog.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -77,9 +76,10 @@ void main() {
           matching: find.byType(Icon),
         ),
       );
-      final brandGradient =
-          find.byKey(const ValueKey('community-brand-gradient'));
       final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+      final foreground = Theme.of(
+        tester.element(find.byType(Scaffold).first),
+      ).colorScheme.onSurface;
 
       expect(
           scaffold.backgroundColor,
@@ -87,8 +87,8 @@ void main() {
             tester.element(find.byType(Scaffold).first),
           ));
       expect(logo.colorFilter, isNotNull);
-      expect(search.color, app_style.AppPalette.white);
-      expect(profile.color, app_style.AppPalette.white);
+      expect(search.color, foreground);
+      expect(profile.color, foreground);
       expect(
         _effectiveTextColor(
           tester,
@@ -100,7 +100,10 @@ void main() {
         find.byKey(const ValueKey('community-favorite-icon')),
         findsNothing,
       );
-      expect(tester.getSize(brandGradient).height, 550);
+      expect(
+        find.byKey(const ValueKey('community-brand-gradient')),
+        findsNothing,
+      );
       expect(tabBar.labelColor, testCase.tabColor);
       expect(tabBar.indicatorColor, testCase.tabColor);
       expect(
@@ -303,8 +306,6 @@ void main() {
     final originalFavoriteTeamId = FavoriteTeam.id.value;
     FavoriteTeam.id.value = 9;
     addTearDown(() => FavoriteTeam.id.value = originalFavoriteTeamId);
-    final favoriteTeamColor = Color(mockTeamById(9).primaryColor);
-
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.whitetheme,
@@ -329,22 +330,9 @@ void main() {
       (rulesCard.decoration as BoxDecoration).color,
       app_style.AppPalette.white,
     );
-    final detailGradient = tester.widget<Container>(
+    expect(
       find.byKey(const ValueKey('community-detail-brand-gradient')),
-    );
-    expect(
-      tester
-          .getSize(
-            find.byKey(const ValueKey('community-detail-brand-gradient')),
-          )
-          .height,
-      550,
-    );
-    expect(
-      ((detailGradient.decoration as BoxDecoration).gradient as LinearGradient)
-          .colors
-          .first,
-      favoriteTeamColor,
+      findsNothing,
     );
     expect(find.byIcon(Icons.star_border), findsNothing);
     expect(tester.takeException(), isNull);
@@ -374,22 +362,9 @@ void main() {
       (mediaPicker.decoration as BoxDecoration).color,
       const Color(0xFFC8C8C8),
     );
-    final addGradient = tester.widget<Container>(
+    expect(
       find.byKey(const ValueKey('community-add-brand-gradient')),
-    );
-    expect(
-      tester
-          .getSize(
-            find.byKey(const ValueKey('community-add-brand-gradient')),
-          )
-          .height,
-      550,
-    );
-    expect(
-      ((addGradient.decoration as BoxDecoration).gradient as LinearGradient)
-          .colors
-          .first,
-      favoriteTeamColor,
+      findsNothing,
     );
     final generalFilterSize = tester.getSize(
       find.byKey(const ValueKey('community-category-filter')),

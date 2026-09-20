@@ -9,8 +9,6 @@ import 'package:onetouch/data/post_attachments/post_attachment_repository_provid
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
-import 'package:onetouch/data/teams/team_repository.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/community/post_attachment_publisher.dart';
 import 'package:onetouch/features/community/post_composer_widgets.dart';
 import 'package:onetouch/models/post.dart';
@@ -155,11 +153,7 @@ class _AddPostState extends State<AddPost> {
     // 2. Calculate Opacity Factor (0.0 to 1.0)
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
-    final gradientHeight = responsiveBrandGradientHeight(context);
     final colors = Theme.of(context).colorScheme;
-    final favoriteTeamColor = Color(
-      teamRepository.requireById(FavoriteTeam.id.value).primaryColor,
-    );
 
     return Scaffold(
       backgroundColor: pageBackground,
@@ -184,32 +178,6 @@ class _AddPostState extends State<AddPost> {
       ),
       body: Stack(
         children: [
-          // 5. Background Gradient (Fades out on scroll)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: (1 - opacityFactor), // Fades to 0
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: const ValueKey('community-add-brand-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      favoriteTeamColor,
-                      favoriteTeamColor.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 0.6],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
           // 6. Scrollable Content
           SingleChildScrollView(
             controller: _scrollController,

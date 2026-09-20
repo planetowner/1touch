@@ -69,14 +69,8 @@ class _PlayerCardState extends State<PlayerCard>
   @override
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
-    double gradientOpacity = 1.0 - opacityFactor;
     final pageBackground = mainPageBackground(context);
-    const gradientForeground = AppPalette.white;
-    final blendColor = Theme.of(context).brightness == Brightness.dark
-        ? Colors.black
-        : Colors.white;
-    final gradientColor =
-        Color.lerp(widget.player.teamColor[0], blendColor, 0.30)!;
+    final gradientForeground = Theme.of(context).colorScheme.onSurface;
 
     final double topInset = MediaQuery.of(context).padding.top;
     final double overviewGradientHeight =
@@ -91,10 +85,6 @@ class _PlayerCardState extends State<PlayerCard>
       backgroundColor: pageBackground,
       body: Stack(
         children: [
-          // Global gradient behind everything including tab bar.
-          // AnimatedPositioned smoothly eases the height between the tall
-          // Overview gradient and the compact one on the other tabs, so the
-          // fade point glides into place instead of snapping on tab change.
           AnimatedPositioned(
             key: const ValueKey('player-detail-gradient-position'),
             duration: const Duration(milliseconds: 300),
@@ -104,22 +94,9 @@ class _PlayerCardState extends State<PlayerCard>
             right: 0,
             height: gradientHeight,
             child: IgnorePointer(
-              child: AnimatedOpacity(
-                opacity: gradientOpacity,
-                duration: const Duration(milliseconds: 50),
-                child: Container(
-                  key: const ValueKey('player-detail-gradient'),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        gradientColor,
-                        gradientColor.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
+              child: ColoredBox(
+                key: const ValueKey('player-detail-solid-background'),
+                color: pageBackground,
               ),
             ),
           ),
