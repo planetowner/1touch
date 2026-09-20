@@ -106,12 +106,13 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: const ValueKey('player-match-stat-header'),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFFD82457), // bright at bottom
-            Color(0xFF5A001F), // mid maroon
-            Color(0xFF260011), // deep dark at top
+            Color(0xFF6CABDD),
+            Color(0xFF3376A3),
+            Color(0xFF102A43),
           ],
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
