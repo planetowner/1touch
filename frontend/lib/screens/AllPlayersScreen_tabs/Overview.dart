@@ -345,20 +345,22 @@ class PlayerBioStatsBlock extends StatelessWidget {
                 (now.month == birthDate.month && now.day < birthDate.day))
             ? 1
             : 0);
-    final stats = [
-      {"label": "Height", "value": "${player.heightCm}cm", "icon": null},
-      {"label": "Weight", "value": "${player.weightKg}kg", "icon": null},
-      {"label": "Age", "value": "$age yrs", "icon": null},
-      {"label": "Form", "value": player.form, "icon": "rating"},
-      {"label": "Market Value", "value": player.marketValue, "icon": null},
-      {"label": "Squad Role", "value": player.squadRole, "icon": null},
-      {"label": "Preferred Foot", "value": player.preferredFoot, "icon": null},
-      {
-        "label": "Cost-Effectiveness",
-        "value": "Very Good",
-        "icon": "rating",
-        "infoOnLabel": true
-      },
+    final columns = [
+      [
+        _PlayerInfo(label: 'Height', value: '${player.heightCm}cm'),
+        _PlayerInfo(label: 'Age', value: '$age yrs'),
+        _PlayerInfo(label: 'Form', value: player.form, showRating: true),
+      ],
+      [
+        _PlayerInfo(label: 'Weight', value: '${player.weightKg}kg'),
+        _PlayerInfo(label: 'Squad Role', value: player.squadRole),
+        const _PlayerInfo(
+          label: 'Cost-Effectiveness',
+          value: 'Very Good',
+          showRating: true,
+          showInfo: true,
+        ),
+      ],
     ];
 
     return Container(
@@ -369,113 +371,104 @@ class PlayerBioStatsBlock extends StatelessWidget {
         boxShadow: appCardShadows(context),
       ),
       padding: const EdgeInsets.all(16),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          const minCellWidth = 110.0;
-          final columnCount =
-              (constraints.maxWidth / minCellWidth).floor().clamp(1, 3);
-          final rows = <List<Map<String, dynamic>>>[];
-          for (var i = 0; i < stats.length; i += columnCount) {
-            rows.add(stats.sublist(
-              i,
-              (i + columnCount).clamp(0, stats.length),
-            ));
-          }
-
-          return Column(
-            children: rows.asMap().entries.map((entry) {
-              final rowIndex = entry.key;
-              final row = entry.value;
-
-              return Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var columnIndex = 0;
+              columnIndex < columns.length;
+              columnIndex++) ...[
+            if (columnIndex > 0) const SizedBox(width: 16),
+            Expanded(
+              child: Column(
                 children: [
-                  if (rowIndex != 0)
-                    Divider(color: appColors.divider, height: 24),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: row.asMap().entries.map((cellEntry) {
-                      final cellIndex = cellEntry.key;
-                      final stat = cellEntry.value;
-                      final isLast = cellIndex == row.length - 1;
-
-                      return Expanded(
-                        flex: columnCount == 3 &&
-                                stat["label"] == "Cost-Effectiveness"
-                            ? 2
-                            : 1,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          stat["label"] as String,
-                                          style: Body2.style.copyWith(
-                                            color: appColors.mutedForeground,
-                                          ),
-                                        ),
-                                      ),
-                                      if (stat["infoOnLabel"] == true)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 4),
-                                          child: Icon(
-                                            Icons.info_outline,
-                                            size: 14,
-                                            color: appColors.mutedForeground,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          stat["value"] as String,
-                                          style: Heading5.style,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      if (stat["icon"] == "rating")
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 6),
-                                          child: RatingLevelRing(
-                                            rating: stat["value"] as String,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (!isLast)
-                              Container(
-                                width: 1,
-                                height: 40,
-                                color: appColors.divider,
-                                margin: const EdgeInsets.only(right: 12),
-                              ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                  for (var itemIndex = 0;
+                      itemIndex < columns[columnIndex].length;
+                      itemIndex++) ...[
+                    if (itemIndex > 0)
+                      Divider(
+                        color: appColors.divider,
+                        height: 34,
+                        thickness: 2,
+                      ),
+                    _PlayerInfoCell(info: columns[columnIndex][itemIndex]),
+                  ],
                 ],
-              );
-            }).toList(),
-          );
-        },
+              ),
+            ),
+          ],
+        ],
       ),
+    );
+  }
+}
+
+class _PlayerInfo {
+  const _PlayerInfo({
+    required this.label,
+    required this.value,
+    this.showRating = false,
+    this.showInfo = false,
+  });
+
+  final String label;
+  final String value;
+  final bool showRating;
+  final bool showInfo;
+}
+
+class _PlayerInfoCell extends StatelessWidget {
+  const _PlayerInfoCell({required this.info});
+
+  final _PlayerInfo info;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 18,
+          child: FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  info.label,
+                  key: ValueKey('player-info-label-${info.label}'),
+                  style: Body1.style.copyWith(color: foreground),
+                ),
+                if (info.showInfo) ...[
+                  const SizedBox(width: 4),
+                  Icon(Icons.help_outline, size: 18, color: foreground),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          height: 22,
+          child: FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(info.value, style: Heading5.style),
+                if (info.showRating) ...[
+                  const SizedBox(width: 8),
+                  RatingLevelRing(rating: info.value),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
