@@ -176,14 +176,48 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('career-competition-filter')));
+    final competitionFilter =
+        find.byKey(const Key('career-competition-filter'));
+    expect(
+      find.descendant(
+        of: competitionFilter,
+        matching: find.byIcon(Icons.keyboard_arrow_down),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(competitionFilter);
     await tester.pumpAndSettle();
     await tester.tap(find.text('UCL').last);
     await tester.pumpAndSettle();
 
     expect(find.text('UCL'), findsAtLeastNWidgets(1));
-    expect(find.byKey(const Key('career-season-591-25/26')), findsOneWidget);
+    final filteredSeason = find.byKey(
+      const Key('career-season-591-25/26'),
+    );
+    expect(filteredSeason, findsOneWidget);
     expect(find.byKey(const Key('career-season-645-22/23')), findsNothing);
+    expect(
+      find.descendant(
+        of: competitionFilter,
+        matching: find.byIcon(Icons.keyboard_arrow_down),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: filteredSeason,
+        matching: find.byIcon(Icons.keyboard_arrow_down),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: filteredSeason,
+        matching: find.byIcon(Icons.keyboard_arrow_up),
+      ),
+      findsNothing,
+    );
     expect(find.byKey(const Key('career-trophy-filter')), findsNothing);
     expect(find.text('PERSONAL'), findsNothing);
   });
