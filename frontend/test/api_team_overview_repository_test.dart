@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -50,6 +51,61 @@ void main() {
     await repository.loadForTeam(19);
 
     expect(repository.cachedTeams.value.keys, {83, 19});
+  });
+
+  test('deduplicates simultaneous requests for the same team', () async {
+    var requestCount = 0;
+    final response = Completer<http.Response>();
+    final repository = ApiTeamOverviewRepository(
+      client: MockClient((_) {
+        requestCount++;
+        return response.future;
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    final firstLoad = repository.loadForTeam(83);
+    final secondLoad = repository.loadForTeam(83);
+
+    await Future<void>.delayed(Duration.zero);
+    expect(requestCount, 1);
+    response.complete(http.Response(jsonEncode(_overviewJson()), 200));
+    final results = await Future.wait([firstLoad, secondLoad]);
+
+    expect(results[1], same(results[0]));
+    expect(requestCount, 1);
+  });
+
+  test('does not deduplicate requests for different teams', () async {
+    var requestCount = 0;
+    final responses = <int, Completer<http.Response>>{};
+    final repository = ApiTeamOverviewRepository(
+      client: MockClient((request) {
+        requestCount++;
+        final teamId = int.parse(request.url.pathSegments.last);
+        return responses
+            .putIfAbsent(teamId, () => Completer<http.Response>())
+            .future;
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      requestHeaders: const {},
+    );
+
+    final firstLoad = repository.loadForTeam(83);
+    final secondLoad = repository.loadForTeam(19);
+
+    await Future<void>.delayed(Duration.zero);
+    expect(requestCount, 2);
+    responses[83]!.complete(
+      http.Response(jsonEncode(_overviewJson()), 200),
+    );
+    responses[19]!.complete(
+      http.Response(jsonEncode(_overviewJson(teamId: 19)), 200),
+    );
+    await Future.wait([firstLoad, secondLoad]);
+
+    expect(requestCount, 2);
   });
 
   test('rejects HTTP failures, malformed roots, and mismatched teams',

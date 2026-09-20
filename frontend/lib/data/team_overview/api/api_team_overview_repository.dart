@@ -21,6 +21,7 @@ class ApiTeamOverviewRepository implements TeamOverviewRepository {
   final Map<String, String> _requestHeaders;
   final ValueNotifier<Map<int, TeamOverview>> _cachedTeams =
       ValueNotifier(const {});
+  final Map<int, Future<TeamOverview>> _inFlightLoads = {};
 
   @override
   ValueListenable<Map<int, TeamOverview>> get cachedTeams => _cachedTeams;
@@ -29,10 +30,24 @@ class ApiTeamOverviewRepository implements TeamOverviewRepository {
   TeamOverview? cachedForTeam(int teamId) => _cachedTeams.value[teamId];
 
   @override
-  Future<TeamOverview> loadForTeam(int teamId) async {
+  Future<TeamOverview> loadForTeam(int teamId) {
     final cached = cachedForTeam(teamId);
-    if (cached != null) return cached;
+    if (cached != null) return Future.value(cached);
 
+    final inFlight = _inFlightLoads[teamId];
+    if (inFlight != null) return inFlight;
+
+    late final Future<TeamOverview> load;
+    load = _fetchAndCache(teamId).whenComplete(() {
+      if (identical(_inFlightLoads[teamId], load)) {
+        _inFlightLoads.remove(teamId);
+      }
+    });
+    _inFlightLoads[teamId] = load;
+    return load;
+  }
+
+  Future<TeamOverview> _fetchAndCache(int teamId) async {
     final uri = _apiBaseUri.resolve('teams/$teamId');
     final response = await _client.get(
       uri,
