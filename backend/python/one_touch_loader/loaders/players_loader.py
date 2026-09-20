@@ -27,6 +27,7 @@ INSERT INTO players (
 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
+# 직접 교체한 투명 사진은 프로필을 다시 수집해도 Sportmonks 사진으로 덮어쓰지 않아요.
 SQL_UPSERT_PLAYER = SQL_INSERT_PLAYER + """
 ON DUPLICATE KEY UPDATE
   display_name   = VALUES(display_name),
@@ -36,7 +37,7 @@ ON DUPLICATE KEY UPDATE
   date_of_birth  = VALUES(date_of_birth),
   height_cm      = VALUES(height_cm),
   weight_kg      = VALUES(weight_kg),
-  image_path     = VALUES(image_path)
+  image_path     = CASE WHEN image_is_custom THEN image_path ELSE VALUES(image_path) END
 """
 
 SQL_UPSERT_SPORTMONKS_PLAYER_ID = """
