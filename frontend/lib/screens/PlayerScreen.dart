@@ -190,12 +190,6 @@ class _PlayersState extends State<Players> {
                                     size: 20,
                                     color: colors.onSurface,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.keyboard_arrow_down,
-                                    size: 24,
-                                    color: colors.onSurface,
-                                  ),
                                 ],
                               ),
                             ),
