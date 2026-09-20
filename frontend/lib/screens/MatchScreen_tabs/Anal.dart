@@ -422,6 +422,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildPossessionBar(num home, num away) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final total = home + away;
     final fraction = total <= 0 ? 0.5 : (home / total).clamp(0.0, 1.0);
     return Padding(
@@ -436,7 +437,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  const ColoredBox(color: Colors.white),
+                  ColoredBox(
+                    key: const ValueKey('match-possession-away-fill'),
+                    color: isDark
+                        ? AppPalette.white
+                        : AppPalette.lightModeDarkGrey,
+                  ),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: FractionallySizedBox(
@@ -454,7 +460,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
                         Text(
                           _formatNumber(home, suffix: '%'),
                           style: Heading4.style.copyWith(
-                            color: fraction == 0 ? Colors.black : Colors.white,
+                            color: isDark && fraction != 0
+                                ? AppPalette.white
+                                : AppPalette.black,
                           ),
                         ),
                         Text(
@@ -592,9 +600,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
   Widget _buildTeamToggle() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final selectedSurface = isDark ? AppPalette.lightGrey : AppPalette.black;
-    final unselectedSurface = isDark ? Colors.black : AppPalette.white;
-    const selectedForeground = AppPalette.white;
+    final selectedSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
+    final unselectedSurface =
+        isDark ? AppPalette.black : AppPalette.lightModeDarkGrey;
+    final selectedForeground = isDark ? AppPalette.white : AppPalette.black;
 
     return Row(
       children: [
@@ -602,6 +611,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           child: GestureDetector(
             onTap: () => setState(() => showHome = true),
             child: Container(
+              key: const ValueKey('match-analysis-home-toggle'),
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: showHome ? selectedSurface : unselectedSurface,
@@ -629,6 +639,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           child: GestureDetector(
             onTap: () => setState(() => showHome = false),
             child: Container(
+              key: const ValueKey('match-analysis-away-toggle'),
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: !showHome ? selectedSurface : unselectedSurface,
@@ -871,7 +882,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           alignment: Alignment.topRight,
           decoration: BoxDecoration(
-            color: isDark ? Colors.white : AppPalette.lightGreyBox,
+            color: isDark ? AppPalette.white : AppPalette.lightModeDarkGrey,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -1059,15 +1070,14 @@ class _ProgressionPainter extends CustomPainter {
   final Color color;
   final Color labelColor;
   final Color lineColor;
-  const _ProgressionPainter(
-      this.lanePercents, this.color, this.labelColor, this.lineColor,
-      this.rightToLeft);
+  const _ProgressionPainter(this.lanePercents, this.color, this.labelColor,
+      this.lineColor, this.rightToLeft);
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
-    canvas.translate(size.width * (rightToLeft ? 114 : 48) / 594,
-        size.height * 28 / 320);
+    canvas.translate(
+        size.width * (rightToLeft ? 114 : 48) / 594, size.height * 28 / 320);
     _paintArrows(canvas, Size(size.width * 432 / 594, size.height * 264 / 320));
     canvas.restore();
 
