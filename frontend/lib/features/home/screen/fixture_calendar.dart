@@ -122,6 +122,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
           decoration: BoxDecoration(
             color: appColors.cardBackground,
             borderRadius: BorderRadius.circular(28),
+            boxShadow: appCardShadows(context),
           ),
           margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(

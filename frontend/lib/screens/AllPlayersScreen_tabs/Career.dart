@@ -159,6 +159,7 @@ class _CareerTabState extends State<CareerTab> {
           decoration: BoxDecoration(
             color: _sectionSurface,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           child: _trophyFilter == 'TEAM'
@@ -346,6 +347,7 @@ class _CareerTabState extends State<CareerTab> {
           decoration: BoxDecoration(
             color: _sectionSurface,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: seasons.isEmpty

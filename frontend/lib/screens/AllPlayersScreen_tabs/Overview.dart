@@ -121,6 +121,7 @@ class PlayerOverviewTab extends StatelessWidget {
           decoration: BoxDecoration(
             color: cardColor,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           child: Column(
@@ -274,6 +275,7 @@ class PlayerOverviewTab extends StatelessWidget {
           decoration: BoxDecoration(
             color: cardColor,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           child: Column(
             children: history.map((club) {
@@ -364,6 +366,7 @@ class PlayerBioStatsBlock extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: appCardShadows(context),
       ),
       padding: const EdgeInsets.all(16),
       child: LayoutBuilder(

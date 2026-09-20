@@ -46,110 +46,119 @@ class PlayerMatchCard extends StatelessWidget {
     // Two separate boxes stacked flush so they read as one connected card:
     // a lighter top box (only the top corners rounded) and a darker bottom box
     // (only the bottom corners rounded). The colour change is the divider.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Top box: opponent crest + result/score + competition.
-        Container(
-          key: const ValueKey('player-match-card-top'),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: topColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: isDark ? AppPalette.black : appColors.subtleBackground,
-                  shape: BoxShape.circle,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: againstLogo != null
-                    ? Image.asset(
-                        againstLogo!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 8),
-              Text(result, style: Heading5.style),
-              const SizedBox(width: 16),
-              Text("( $score )", style: Heading5.style),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  competition,
-                  textAlign: TextAlign.right,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Eyebrow.style,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Bottom box: stat label + value pills, then the rating badge.
-        Container(
-          key: const ValueKey('player-match-card-bottom'),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: bottomColor,
-            borderRadius:
-                const BorderRadius.vertical(bottom: Radius.circular(16)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              ...stats.map((stat) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          stat["label"]!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Eyebrow.style,
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: statColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(stat["value"]!, style: Body2_b.style),
-                        ),
-                      ],
-                    ),
+    return Container(
+      key: const ValueKey('player-match-card'),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: appCardShadows(context),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Top box: opponent crest + result/score + competition.
+          Container(
+            key: const ValueKey('player-match-card-top'),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: topColor,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color:
+                        isDark ? AppPalette.black : appColors.subtleBackground,
+                    shape: BoxShape.circle,
                   ),
-                );
-              }),
-              // Rating badge sits on the app's near-black chip, distinct from
-              // the grey stat pills.
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppPalette.black,
-                  borderRadius: BorderRadius.circular(4),
+                  clipBehavior: Clip.antiAlias,
+                  child: againstLogo != null
+                      ? Image.asset(
+                          againstLogo!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        )
+                      : null,
                 ),
-                child: Text(
-                  rating,
-                  style: Body2_b.style.copyWith(color: AppPalette.white),
+                const SizedBox(width: 8),
+                Text(result, style: Heading5.style),
+                const SizedBox(width: 16),
+                Text("( $score )", style: Heading5.style),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    competition,
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Eyebrow.style,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+          // Bottom box: stat label + value pills, then the rating badge.
+          Container(
+            key: const ValueKey('player-match-card-bottom'),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: bottomColor,
+              borderRadius:
+                  const BorderRadius.vertical(bottom: Radius.circular(16)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                ...stats.map((stat) {
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            stat["label"]!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Eyebrow.style,
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: statColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(stat["value"]!, style: Body2_b.style),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                // Rating badge sits on the app's near-black chip, distinct from
+                // the grey stat pills.
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppPalette.black,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    rating,
+                    style: Body2_b.style.copyWith(color: AppPalette.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
