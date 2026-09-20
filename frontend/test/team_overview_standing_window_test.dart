@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/standing.dart' as standing_model;
@@ -32,6 +33,13 @@ void main() {
     await tester.pumpWidget(subject(9));
 
     expectPremierLeagueRows(tester, ['MCI', 'ARS', 'NEW', 'LIV', 'BOU']);
+    final shell = tester.widget<Container>(
+      find.byKey(const ValueKey('overview-standing-shell-8')),
+    );
+    expect(
+      (shell.decoration as BoxDecoration).boxShadow,
+      lightModeCardShadows,
+    );
     final card = find.byKey(const ValueKey('overview-standing-card-8'));
     expect(find.descendant(of: card, matching: find.text('BRE')), findsNothing);
   });

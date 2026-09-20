@@ -42,6 +42,13 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('ATTRIBUTES'), findsOneWidget);
+      final attributesCard = tester.widget<Container>(
+        find.byKey(const ValueKey('analysis-attributes-card')),
+      );
+      expect(
+        (attributesCard.decoration as BoxDecoration).boxShadow,
+        app_style.lightModeCardShadows,
+      );
       final chart = tester.widget<RadarChart>(find.byType(RadarChart));
       expect(
         List.generate(

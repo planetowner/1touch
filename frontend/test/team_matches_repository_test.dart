@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Matches.dart';
@@ -74,6 +75,13 @@ void main() {
           )
           .textAlign,
       TextAlign.center,
+    );
+    final fixtureCard = tester.widget<Container>(
+      find.byKey(const ValueKey('team-fixture-card-3')),
+    );
+    expect(
+      (fixtureCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
     );
 
     tester.view.physicalSize = const Size(430, 932);

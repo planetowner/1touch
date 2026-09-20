@@ -20,19 +20,26 @@ class StandingTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 24, right: 24),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _ExpandableClubColumn(
-              standings: standings,
-              currentTeamId: currentTeamId,
-              leagueId: leagueId,
-            ),
-            Container(width: 1, color: AppColors.of(context).divider),
-            Expanded(child: _buildStatsSide(context)),
-          ],
+      child: Container(
+        key: const ValueKey('standing-table-card'),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: appCardShadows(context),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ExpandableClubColumn(
+                standings: standings,
+                currentTeamId: currentTeamId,
+                leagueId: leagueId,
+              ),
+              Container(width: 1, color: AppColors.of(context).divider),
+              Expanded(child: _buildStatsSide(context)),
+            ],
+          ),
         ),
       ),
     );

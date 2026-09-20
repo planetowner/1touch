@@ -71,6 +71,13 @@ void main() {
     expect(find.text('Compact0'), findsOneWidget);
     expect(find.text('Compact10'), findsOneWidget);
     expect(find.byType(BestElevenPitch), findsOneWidget);
+    final bestElevenCard = tester.widget<Container>(
+      find.byKey(const ValueKey('team-best-eleven-card')),
+    );
+    expect(
+      (bestElevenCard.decoration as BoxDecoration).boxShadow,
+      lightModeCardShadows,
+    );
     expect(tester.takeException(), isNull);
   });
 
