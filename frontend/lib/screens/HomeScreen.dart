@@ -13,7 +13,6 @@ import 'package:onetouch/data/home/news_repository_provider.dart'
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
     as following_teams_provider;
-import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
@@ -211,9 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
-    final gradientHeight = responsiveBrandGradientHeight(context);
     final colorScheme = Theme.of(context).colorScheme;
-    const appBarForeground = AppPalette.white;
+    final appBarForeground = colorScheme.onSurface;
 
     final homeData = _homeData;
     if (_isLoading && homeData == null) {
@@ -254,38 +252,11 @@ class _HomeScreenState extends State<HomeScreen> {
       lastMatch: homeData.lastMatch,
     );
     final favoriteTeamId = favoriteTeam.id;
-    // TeamOut does not expose brand colors yet. Resolve the selected team's
-    // frontend-owned color by ID until the backend adds that field.
-    final teamColor = Color(
-      teamRepository.findById(team.teamId)?.primaryColor ?? team.primaryColor,
-    );
-
     return Scaffold(
       backgroundColor: pageBackground,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: (1 - opacityFactor),
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: const ValueKey('home-brand-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [teamColor, pageBackground],
-                    stops: const [0.0, 0.6],
-                  ),
-                ),
-              ),
-            ),
-          ),
           CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -302,18 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 toolbarHeight: 80,
                 centerTitle: false,
                 titleSpacing: 0,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        teamColor,
-                        teamColor.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
+                flexibleSpace: ColoredBox(color: pageBackground),
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
                   padding: const EdgeInsets.only(left: 24, top: 30),

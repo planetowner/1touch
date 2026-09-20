@@ -244,7 +244,6 @@ class _CommunityState extends State<Community>
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
-    final gradientHeight = responsiveBrandGradientHeight(context);
     final team = _team;
 
     return Scaffold(
@@ -262,35 +261,10 @@ class _CommunityState extends State<Community>
       ),
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: (1 - opacityFactor),
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: const ValueKey('community-brand-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(team.primaryColor),
-                      Color(team.primaryColor).withAlpha(0)
-                    ],
-                    stops: const [0.0, 0.6],
-                  ),
-                ),
-              ),
-            ),
-          ),
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               CommunitySliverAppBar(
-                brandColor: Color(team.primaryColor),
                 pageBackground: pageBackground,
                 opacityFactor: opacityFactor,
                 onSearch: () => context.push('/search'),

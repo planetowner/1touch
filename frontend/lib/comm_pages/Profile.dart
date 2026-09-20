@@ -45,7 +45,6 @@ class _ProfileState extends State<Profile> {
 
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
-  Color _teamColor = const Color(0xFFD82457);
   CurrentUserProfile? _profile;
   List<Team> _followingTeams = const [];
   int? _favoriteTeamId;
@@ -115,15 +114,11 @@ class _ProfileState extends State<Profile> {
         );
       }
       if (!mounted) return;
-      final favoriteTeam = teamRepository.findById(profile.favoriteTeamId);
       setState(() {
         _profile = profile;
         _followingTeams = followingTeams;
         _favoriteTeamId = profile.favoriteTeamId;
         _isLoading = false;
-        if (favoriteTeam != null) {
-          _teamColor = Color(favoriteTeam.primaryColor);
-        }
       });
     } on Object {
       if (!mounted) return;
@@ -190,43 +185,13 @@ class _ProfileState extends State<Profile> {
       );
     }
 
-    final gradientHeight = responsiveBrandGradientHeight(context);
-    final appBarForeground =
-        Color.lerp(AppPalette.white, colors.onSurface, opacityFactor)!;
+    final appBarForeground = colors.onSurface;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: profileBackground,
       body: Stack(
         children: [
-          // Background Gradient with AnimatedOpacity
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: gradientHeight,
-            child: AnimatedOpacity(
-              opacity: (1 - opacityFactor), // Fades out as you scroll down
-              duration:
-                  const Duration(milliseconds: 0), // Instant update with scroll
-              child: Container(
-                key: const ValueKey('profile-background-gradient'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isLight
-                        ? [_teamColor, profileBackground]
-                        : [
-                            _teamColor,
-                            appColors.pageBackground.withValues(alpha: 0),
-                          ],
-                    stops: isLight ? const [0.0, 0.9] : const [0.0, 0.6],
-                  ),
-                ),
-              ),
-            ),
-          ),
           CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -330,9 +295,6 @@ class _ProfileState extends State<Profile> {
                               ),
                             );
                             if (!mounted || result == null) return;
-                            final favoriteTeam = teamRepository.findById(
-                              result.favoriteTeamId,
-                            );
                             final supportedTeams = result.teams
                                 .where((team) =>
                                     teamPageEligibility.supports(team.teamId))
@@ -345,9 +307,6 @@ class _ProfileState extends State<Profile> {
                             setState(() {
                               _followingTeams = supportedTeams;
                               _favoriteTeamId = result.favoriteTeamId;
-                              if (favoriteTeam != null) {
-                                _teamColor = Color(favoriteTeam.primaryColor);
-                              }
                             });
                           },
                         ),
