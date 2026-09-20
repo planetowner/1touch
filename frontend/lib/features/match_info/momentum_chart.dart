@@ -44,6 +44,7 @@ class MomentumChart extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: appCardShadows(context),
           ),
           child: Column(
             children: [

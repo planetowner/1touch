@@ -369,6 +369,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             decoration: BoxDecoration(
               color: isDark ? AppPalette.lightGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(24),
+              boxShadow: appCardShadows(context),
             ),
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -551,101 +552,114 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       children: [
         const Text("STANDING", style: Body2_b.style),
         const SizedBox(height: 16),
-        //   HEADER BOX: rounded top corners only
         Container(
-          key: const ValueKey('match-preview-standing-header'),
           decoration: BoxDecoration(
-            color: surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: appCardShadows(context),
           ),
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // League logo + name
-              Row(
-                children: [
-                  Image.network(
-                    league?.imagePath ?? '',
-                    width: 24,
-                    height: 24,
-                    errorBuilder: (_, __, ___) => competitionLogoFallback(
-                      widget.fixture.competitionId,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      league?.name ?? 'Unknown',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: foreground,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Column labels
-              Row(
-                children: [
-                  SizedBox(
-                    width: 32,
-                    child: Text('#',
-                        style: TextStyle(
-                            color: appColors.mutedForeground, fontSize: 13)),
-                  ),
-                  Expanded(
-                    child: Text('Club',
-                        style: TextStyle(
-                            color: appColors.mutedForeground, fontSize: 13)),
-                  ),
-                  ..._colLabel('MP'),
-                  ..._colLabel('W'),
-                  ..._colLabel('D'),
-                  ..._colLabel('L'),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Container(height: 1, color: appColors.divider),
-            ],
-          ),
-        ),
-        //   BODY BOX: rounded bottom corners only
-        Container(
-          decoration: BoxDecoration(
-            color: surface,
-            borderRadius:
-                const BorderRadius.vertical(bottom: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-          child: Column(
-            children: List.generate(rows.length, (i) {
-              final row = rows[i];
-              return Column(
-                children: [
-                  if (i == dividerIndex)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Center(
-                        child: Text(
-                          '• • •',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 11,
-                            letterSpacing: 4,
+              // HEADER BOX: rounded top corners only
+              Container(
+                key: const ValueKey('match-preview-standing-header'),
+                decoration: BoxDecoration(
+                  color: surface,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // League logo + name
+                    Row(
+                      children: [
+                        Image.network(
+                          league?.imagePath ?? '',
+                          width: 24,
+                          height: 24,
+                          errorBuilder: (_, __, ___) => competitionLogoFallback(
+                            widget.fixture.competitionId,
+                            size: 24,
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            league?.name ?? 'Unknown',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: foreground,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  _buildStandingRowWidget(row),
-                ],
-              );
-            }),
+                    const SizedBox(height: 20),
+                    // Column labels
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 32,
+                          child: Text('#',
+                              style: TextStyle(
+                                  color: appColors.mutedForeground,
+                                  fontSize: 13)),
+                        ),
+                        Expanded(
+                          child: Text('Club',
+                              style: TextStyle(
+                                  color: appColors.mutedForeground,
+                                  fontSize: 13)),
+                        ),
+                        ..._colLabel('MP'),
+                        ..._colLabel('W'),
+                        ..._colLabel('D'),
+                        ..._colLabel('L'),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Container(height: 1, color: appColors.divider),
+                  ],
+                ),
+              ),
+              // BODY BOX: rounded bottom corners only
+              Container(
+                decoration: BoxDecoration(
+                  color: surface,
+                  borderRadius:
+                      const BorderRadius.vertical(bottom: Radius.circular(20)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                child: Column(
+                  children: List.generate(rows.length, (i) {
+                    final row = rows[i];
+                    return Column(
+                      children: [
+                        if (i == dividerIndex)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Center(
+                              child: Text(
+                                '• • •',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 11,
+                                  letterSpacing: 4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        _buildStandingRowWidget(row),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+            ],
           ),
         ),
       ],

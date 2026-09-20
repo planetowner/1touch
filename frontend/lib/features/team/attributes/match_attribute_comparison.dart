@@ -96,6 +96,7 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
                 ? AppPalette.black
                 : AppPalette.white,
             borderRadius: BorderRadius.circular(24),
+            boxShadow: appCardShadows(context),
           ),
           child: _loading
               ? const SizedBox(

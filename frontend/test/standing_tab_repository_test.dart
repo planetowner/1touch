@@ -44,6 +44,13 @@ void main() {
     expect(find.text('API United'), findsNothing);
     expect(find.text('Second United'), findsNothing);
     expect(find.byKey(const ValueKey('standing-loading')), findsNothing);
+    final standingCard = tester.widget<Container>(
+      find.byKey(const ValueKey('standing-table-card')),
+    );
+    expect(
+      (standingCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
+    );
 
     final clubColumn = find.byKey(const ValueKey('standing-club-column'));
     expect(tester.getSize(clubColumn).width, 146);
@@ -169,6 +176,13 @@ void main() {
     expect(xgRepository.requests, [(competitionId: 8, seasonId: 28083)]);
     expect(find.text('MCI'), findsOneWidget);
     expect(find.text('API Expected United'), findsNothing);
+    final xgCard = tester.widget<Container>(
+      find.byKey(const ValueKey('xg-standing-table-card')),
+    );
+    expect(
+      (xgCard.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
+    );
     await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
     await tester.pumpAndSettle();
     expect(find.text('API Expected United'), findsOneWidget);
