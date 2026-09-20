@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:onetouch/data/home/home_content_repository.dart';
-import 'package:onetouch/data/home/home_content_repository_provider.dart'
-    as content_provider;
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
+import 'package:onetouch/data/home/mock/home_content_catalog.dart';
+import 'package:onetouch/data/home/news_repository.dart';
+import 'package:onetouch/data/home/news_repository_provider.dart'
+    as news_provider;
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
     as following_teams_provider;
@@ -16,7 +17,6 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
-import '../models/home_content.dart';
 import '../models/home_content_item.dart';
 import '../models/home_data.dart';
 import '../models/team_overview.dart';
@@ -26,12 +26,12 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
     this.repository,
-    this.contentRepository,
+    this.newsRepository,
     this.followingTeamsRepository,
   });
 
   final HomeRepository? repository;
-  final HomeContentRepository? contentRepository;
+  final NewsRepository? newsRepository;
   final FollowingTeamsRepository? followingTeamsRepository;
 
   @override
@@ -46,16 +46,19 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   DateTime _calendarMonth =
       DateTime(DateTime.now().year, DateTime.now().month, 1);
-  late final HomeContent _fallbackContent;
-  late List<HomeContentItem> _news;
+  List<HomeContentItem> _news = const [];
+  bool _isNewsLoading = false;
+  bool _hasNewsError = false;
+  String _newsLanguage = '';
+  bool? _wasTickerEnabled;
   int _homeRequestId = 0;
-  int _contentRequestId = 0;
+  int _newsRequestId = 0;
   bool _teamPreferenceRefreshScheduled = false;
 
   HomeRepository get _repository =>
       widget.repository ?? home_provider.homeRepository;
-  HomeContentRepository get _contentRepository =>
-      widget.contentRepository ?? content_provider.homeContentRepository;
+  NewsRepository get _newsRepository =>
+      widget.newsRepository ?? news_provider.newsRepository;
   FollowingTeamsRepository get _followingTeamsRepository =>
       widget.followingTeamsRepository ??
       following_teams_provider.followingTeamsRepository;
@@ -63,8 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _fallbackContent = _contentRepository.fallback;
-    _news = _fallbackContent.news;
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -77,6 +78,23 @@ class _HomeScreenState extends State<HomeScreen> {
     currentUserPreferences.followedTeamIds
         .addListener(_onTeamPreferencesChanged);
     _loadHome(refreshContent: true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final language = Localizations.localeOf(context).toLanguageTag();
+    final tickerEnabled = TickerMode.valuesOf(context).enabled;
+    final languageChanged =
+        _newsLanguage.isNotEmpty && _newsLanguage != language;
+    final returnedToTab = _wasTickerEnabled == false && tickerEnabled;
+    _newsLanguage = language;
+    _wasTickerEnabled = tickerEnabled;
+
+    final homeData = _homeData;
+    if (homeData != null && (languageChanged || returnedToTab)) {
+      _loadNews(homeData.favoriteTeam.teamId);
+    }
   }
 
   void _onTeamPreferencesChanged() {
@@ -114,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
       if (refreshContent) {
-        _loadNews();
+        _loadNews(data.favoriteTeam.teamId);
       }
     } on Object {
       if (!mounted || requestId != _homeRequestId) return;
@@ -152,18 +170,29 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadHome();
   }
 
-  Future<void> _loadNews() async {
-    final requestId = ++_contentRequestId;
+  Future<void> _loadNews(int teamId) async {
+    final requestId = ++_newsRequestId;
+    setState(() {
+      _news = const [];
+      _isNewsLoading = true;
+      _hasNewsError = false;
+    });
     try {
-      final news = await _contentRepository.loadNews();
-      if (!mounted || requestId != _contentRequestId) return;
+      final news = await _newsRepository.loadForTeam(
+        teamId,
+        language: _newsLanguage,
+      );
+      if (!mounted || requestId != _newsRequestId) return;
       setState(() {
         _news = news;
+        _isNewsLoading = false;
       });
     } on Object {
-      if (!mounted || requestId != _contentRequestId) return;
+      if (!mounted || requestId != _newsRequestId) return;
       setState(() {
-        _news = _fallbackContent.news;
+        _news = const [];
+        _isNewsLoading = false;
+        _hasNewsError = true;
       });
     }
   }
@@ -395,15 +424,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SectionHeader(title: "HIGHLIGHTS"),
                   MyHighlights(
                     highlights: homeData.highlights.isEmpty
-                        ? _fallbackContent.highlights
+                        ? homeContentFallbackItems
                         : homeData.highlights,
-                    fallbacks: _fallbackContent.highlights,
+                    fallbacks: homeContentFallbackItems,
                   ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "NEWS"),
                   MyNews(
                     news: _news,
-                    fallbacks: _fallbackContent.news,
+                    isLoading: _isNewsLoading,
+                    hasError: _hasNewsError,
+                    isKorean: _newsLanguage.toLowerCase().startsWith('ko'),
+                    onRetry: () => _loadNews(homeData.favoriteTeam.teamId),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(24),
