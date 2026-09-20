@@ -95,6 +95,27 @@ void main() {
       find.byKey(const ValueKey('match-possession-home-fill')),
     );
     expect(possessionFill.widthFactor, 0.61);
+    final homeToggle = tester.widget<Container>(
+      find.byKey(const ValueKey('match-analysis-home-toggle')).first,
+    );
+    final awayToggle = tester.widget<Container>(
+      find.byKey(const ValueKey('match-analysis-away-toggle')).first,
+    );
+    final awayPossessionFill = tester.widget<ColoredBox>(
+      find.byKey(const ValueKey('match-possession-away-fill')),
+    );
+    expect(
+      (homeToggle.decoration as BoxDecoration).color,
+      app_style.AppPalette.white,
+    );
+    expect(
+      (awayToggle.decoration as BoxDecoration).color,
+      app_style.AppPalette.lightModeDarkGrey,
+    );
+    expect(
+      awayPossessionFill.color,
+      app_style.AppPalette.lightModeDarkGrey,
+    );
     expect(tester.takeException(), isNull);
   });
 
