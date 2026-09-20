@@ -141,6 +141,22 @@ void main() {
 
     expect(repository.requests, [(fixtureId: 1001, limit: 5)]);
     expect(find.byKey(const ValueKey('match-h2h-wdl-card')), findsOneWidget);
+    expect(
+      tester.getSize(
+        find.byKey(const ValueKey('match-h2h-limit-dropdown')),
+      ),
+      const Size(152, 40),
+    );
+    final selectedLabel = tester.widget<Text>(
+      find
+          .descendant(
+            of: find.byKey(const ValueKey('match-h2h-limit-dropdown')),
+            matching: find.text('LAST 5 MATCHES'),
+          )
+          .first,
+    );
+    expect(selectedLabel.maxLines, 1);
+    expect(selectedLabel.softWrap, isFalse);
 
     final dropdown = tester.widget<DropdownButton<int>>(
       find.byType(DropdownButton<int>),

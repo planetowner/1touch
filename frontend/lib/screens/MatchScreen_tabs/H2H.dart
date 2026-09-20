@@ -239,52 +239,70 @@ class _H2HTabState extends State<H2HTab> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Functional dropdown
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<int>(
-                  isExpanded: true,
-                  value: _selectedMatches,
-                  dropdownColor: surface,
+          Flexible(
+            child: SizedBox(
+              key: const ValueKey('match-h2h-limit-dropdown'),
+              width: 152,
+              height: 40,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: surface,
                   borderRadius: BorderRadius.circular(16),
-                  icon: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Icon(Icons.keyboard_arrow_down, color: foreground),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    isExpanded: true,
+                    isDense: true,
+                    value: _selectedMatches,
+                    dropdownColor: surface,
+                    borderRadius: BorderRadius.circular(16),
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Icon(Icons.keyboard_arrow_down, color: foreground),
+                    ),
+                    style: Body2_b.style.copyWith(color: foreground),
+                    onChanged: (val) {
+                      if (val == null || val == _selectedMatches) return;
+                      setState(() => _selectedMatches = val);
+                      _loadHeadToHead();
+                    },
+                    items: _matchOptions.map((n) {
+                      return DropdownMenuItem<int>(
+                        value: n,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'LAST $n MATCHES',
+                              maxLines: 1,
+                              softWrap: false,
+                              style: Body2_b.style.copyWith(color: foreground),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    selectedItemBuilder: (context) => _matchOptions.map((n) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'LAST $_selectedMatches MATCHES',
+                              maxLines: 1,
+                              softWrap: false,
+                              style: Body2_b.style.copyWith(color: foreground),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                  style: Body2_b.style.copyWith(color: foreground),
-                  onChanged: (val) {
-                    if (val == null || val == _selectedMatches) return;
-                    setState(() => _selectedMatches = val);
-                    _loadHeadToHead();
-                  },
-                  items: _matchOptions.map((n) {
-                    return DropdownMenuItem<int>(
-                      value: n,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Text(
-                          'LAST $n MATCHES',
-                          style: Body2_b.style.copyWith(color: foreground),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  selectedItemBuilder: (context) => _matchOptions.map((n) {
-                    return Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Text(
-                          'LAST $_selectedMatches MATCHES',
-                          style: Body2_b.style.copyWith(color: foreground),
-                        ),
-                      ),
-                    );
-                  }).toList(),
                 ),
               ),
             ),
