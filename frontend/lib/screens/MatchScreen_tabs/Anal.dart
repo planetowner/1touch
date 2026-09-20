@@ -133,6 +133,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
     final tacticalAvailable = _analysis?.available == true;
     final shotMapAvailable = _shotMap?.available == true;
+    final keyPasses = _pairedStatistic('key-passes');
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,9 +154,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
             const SizedBox(height: 48),
             _buildLoadError(),
           ] else ...[
-            if (tacticalAvailable || shotMapAvailable) ...[
+            if (tacticalAvailable || shotMapAvailable || keyPasses != null) ...[
               const SizedBox(height: 48),
-              _buildAttackBlock(),
+              _buildAttackBlock(keyPasses),
             ],
             if (_possessionRows().isNotEmpty) ...[
               const SizedBox(height: 48),
@@ -326,7 +327,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _buildAttackBlock() {
+  Widget _buildAttackBlock(({double home, double away})? keyPasses) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     final homeShots = _shotMap?.homeCount;
@@ -363,12 +364,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
                   _buildStatRow('Goals', homeGoals, awayGoals),
                   _buildStatRow('Shots on Target', homeShots, awayShots),
                 ],
-                if (_analysis?.available == true) ...[
+                // 키패스는 Opta 전술 분석과 별개인 Sportmonks 팀 통계를 사용해요.
+                if (keyPasses != null)
                   _buildStatRow(
                     'Key Passes',
-                    _homeAnalysis?.attack.keyPasses,
-                    _awayAnalysis?.attack.keyPasses,
+                    keyPasses.home,
+                    keyPasses.away,
                   ),
+                if (_analysis?.available == true) ...[
                   _buildStatRow(
                     'Passes into Final Third',
                     _homeAnalysis?.attack.completedPassesIntoFinalThird,
