@@ -29,6 +29,7 @@ class MatchBettingSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: _surface(context),
               borderRadius: BorderRadius.circular(16),
+              boxShadow: appCardShadows(context),
             ),
             child: Column(
               children: [
@@ -450,6 +451,7 @@ class BettingParticipationCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDark ? AppPalette.lightGrey : AppPalette.white,
               borderRadius: BorderRadius.circular(24),
+              boxShadow: appCardShadows(context),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

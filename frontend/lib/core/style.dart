@@ -9,6 +9,21 @@ abstract final class AppPalette {
   static const lightModeDarkGrey = Color(0xFFEBEBEB);
 }
 
+const List<BoxShadow> lightModeCardShadows = [
+  BoxShadow(
+    color: Color(0x26000000),
+    blurRadius: 8,
+    offset: Offset(0, 4),
+    spreadRadius: 3,
+  ),
+];
+
+List<BoxShadow> appCardShadows(BuildContext context) {
+  return Theme.of(context).brightness == Brightness.light
+      ? lightModeCardShadows
+      : const [];
+}
+
 Color mainPageBackground(BuildContext context) {
   return Theme.of(context).brightness == Brightness.light
       ? AppPalette.lightModeDarkGrey

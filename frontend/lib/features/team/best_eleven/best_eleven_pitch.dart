@@ -38,37 +38,44 @@ class BestElevenPitch extends StatelessWidget {
     }
     final rowKeys = byRow.keys.toList()..sort((a, b) => b.compareTo(a));
 
-    return Material(
-      color: pitchBackground,
-      elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(color: pitchBackground),
-        child: Column(
-          children: [
-            CustomPaint(
-              painter: _HalfCirclePainter(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.15),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  children: rowKeys.map((key) {
-                    final rowPlayers = byRow[key]!;
-                    return _BestElevenRow(
-                      players: rowPlayers,
-                      isDefensiveRow: key == rowKeys.last,
-                    );
-                  }).toList(),
+    return Container(
+      key: const ValueKey('team-best-eleven-card'),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: appCardShadows(context),
+      ),
+      child: Material(
+        color: pitchBackground,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(color: pitchBackground),
+          child: Column(
+            children: [
+              CustomPaint(
+                painter: _HalfCirclePainter(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: rowKeys.map((key) {
+                      final rowPlayers = byRow[key]!;
+                      return _BestElevenRow(
+                        players: rowPlayers,
+                        isDefensiveRow: key == rowKeys.last,
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-          ],
+              const SizedBox(height: 12),
+            ],
+          ),
         ),
       ),
     );
