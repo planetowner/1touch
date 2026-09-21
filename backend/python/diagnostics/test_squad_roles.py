@@ -270,10 +270,14 @@ class CollectionTests(unittest.TestCase):
             rows = [dict(role=None, team_id=8, season_id=1, player_id=12),
                     dict(role='prospect', team_id=8, season_id=1, player_id=1)]
             loader.save_current_squad_roles(rows)
-            sql, params = cur.executemany.call_args.args
-            self.assertIn('SET sm.squad_role=%s', sql)
+            sql, params = cur.execute.call_args.args
+            self.assertIn('SET sm.squad_role=incoming.squad_role', sql)
+            self.assertIn('incoming.team_id=sm.team_id', sql)
+            self.assertIn('incoming.season_id=sm.season_id', sql)
+            self.assertIn('incoming.player_id=sm.player_id', sql)
             self.assertIn('s.is_current=1', sql)
-            self.assertEqual(params, [(None, 8, 1, 12), ('prospect', 8, 1, 1)])
+            self.assertEqual(params, (None, 8, 1, 12, 'prospect', 8, 1, 1))
+            cur.execute.assert_called_once()
             transaction.assert_called_once()
 
     def test_default_command_never_writes_operational_data(self):
