@@ -168,10 +168,56 @@ class SportmonksClientTest(unittest.TestCase):
 
     def test_verified_player_corrections_preserve_both_lineup_slots(self):
         cases = (
+            ("sportmonks_2025_sant_andreu_actor_errors.json", {14671673456: 37655317, 14671673464: 37640778, 14671673466: 448466}),
+            ("sportmonks_2025_quintanar_actor_errors.json", {14671668439: 37761933, 14671668424: 37786133}),
+            ("sportmonks_2025_navalcarnero_lineup_errors.json", {14671658430: 37550527, 14671658425: 37717976}),
+            ("sportmonks_2025_cano_tapiador_lineup_errors.json", {14671673528: 37297130, 14671656186: 37718920}),
+            ("sportmonks_2025_birch_lineup_error.json", {14671853180: 37772590}),
+            ("sportmonks_2025_paks_substitution_error.json", {}),
+            ("sportmonks_2025_tre_fiori_first_lineup_errors.json", {
+                14670288809: 37595507, 14670288810: 37773408, 14670288745: 5640808,
+            }),
+            ("sportmonks_2025_tre_fiori_return_lineup_errors.json", {
+                14670316085: 5640808, 14670316269: 37773408, 14670316267: 22889283, 14670316268: 37595507,
+            }),
             ("sportmonks_lineup_player_id_errors.json", {6955752879: 148658, 4321876: 148658}),
+            ("sportmonks_2025_warlow_bench_red.json", {14670316645: 17576}),
+            ("sportmonks_2025_kolgeci_lineup_errors.json", {14670343768: 37761577, 14670390670: 37761577}),
+            ("sportmonks_2025_egnatia_jefferson_lineup_errors.json", {
+                14670350172: 37630540, 14670390902: 37630540,
+                14670436561: 37630540, 14670496246: 37630540,
+            }),
+            ("sportmonks_2025_sarajevo_owen_lineup_errors.json", {
+                14670350259: 37287261, 14670381003: 37767760,
+            }),
+            ("sportmonks_2024_european_four_lineup_errors.json", {
+                11196959425: 37308565, 11637798320: 6974918, 13619614185: 37659450,
+            }),
+            ("sportmonks_2024_cup_three_lineup_errors.json", {
+                14001590773: 3876895, 14001590783: 31648559, 14001590785: 31648625,
+                14001590768: 37786365, 14001590767: 37786370, 14001590781: 37786362,
+                14001590774: 31625697, 14001590776: 37297119, 14001590764: 380522,
+                14001590761: 37713992, 14001590777: 31648563, 14001590760: 37786368,
+                13586488680: 380432, 13586488689: 9308210, 13586488674: 22859313,
+                13586488682: 37586257, 13586488696: 37728288, 13586488677: 37788449,
+                13586488679: 37549740, 14001303483: 445349, 14001303485: 32810211,
+                14001303494: 32810345, 14001303498: 37262642, 14001303487: 37543063,
+                14001303496: 37565149, 14001303475: 37786924, 14001303497: 37786927,
+                14001303493: 37786928, 14001303489: 37263972, 14001303500: 37786931,
+            }),
             ("sportmonks_lineup_izquierdo_error.json", {143428: 62408}),
             ("sportmonks_lineup_martinez_error.json", {142293: 31686}),
             ("sportmonks_lineup_event_player_mismatch.json", {14674391794: 37655935}),
+            ("sportmonks_2026_hughes_lineup_error.json", {14674158335: 38219298}),
+            ("sportmonks_2024_nixon_lineup_errors.json", {11934480093: 37259186, 14668918453: 37259186}),
+            ("sportmonks_2024_ejea_lineup_errors.json", {
+                14176285946: 37263060, 14176285941: 3510306,
+                14176285953: 27440263, 14176285937: 37296890, 14176285951: 37262581,
+            }),
+            ("sportmonks_2024_velez_alassan_lineup_errors.json", {
+                10951508407: 37287261, 11067586803: 37287261,
+                10951567640: 37457529, 11067586823: 37457529, 14613111437: 37602913,
+            }),
             ("sportmonks_2026_strassen_actor_errors.json", {
                 14674130745: 21404660, 14674145259: 21404660,
                 14674130710: 435952, 14674145202: 435952,
@@ -198,6 +244,11 @@ class SportmonksClientTest(unittest.TestCase):
                     self.assertEqual(len(result["lineups"]), len(original["lineups"]))
                     for before, after in zip(original["lineups"], result["lineups"]):
                         expected = deepcopy(before)
+                        expected.update(sample.get("expected_lineup_fields", {}).get(str(before["id"]), {}))
+                        stats = sample.get("stat_overrides", {}).get(str(before["id"]), {})
+                        for detail in expected["details"]:
+                            if str(detail["type_id"]) in stats:
+                                detail["data"]["value"] = stats[str(detail["type_id"])]
                         if before["id"] in corrected_lineup_ids:
                             player_id = corrected_lineup_ids[before["id"]]
                             expected["player_id"] = player_id
@@ -212,6 +263,8 @@ class SportmonksClientTest(unittest.TestCase):
             ("sportmonks_event_minute_error.json", {"minute": 90, "extra_minute": 6}),
             ("sportmonks_sampaoli_event_minute_error.json", {"minute": 59}),
             ("sportmonks_coach_event_player_error.json", {"player_id": None, "player_name": "Cristian Stellini", "coach_id": 128374, "on_bench": True}),
+            ("sportmonks_basaksehir_coach_error.json", {"player_id": None, "player_name": "Çagdas Atan", "coach_id": 30462}),
+            ("sportmonks_tns_coach_error.json", {"player_id": None, "player_name": "Craig Harrison", "coach_id": 455867}),
         )
         for filename, correction in cases:
             with self.subTest(filename=filename):
@@ -268,6 +321,33 @@ class SportmonksClientTest(unittest.TestCase):
                 "sportmonks_2026_ki_event_actor_errors.json",
                 "sportmonks_2026_sutjeska_event_actor_errors.json",
                 "sportmonks_2026_qualifying_event_actor_errors.json",
+                "sportmonks_2026_audited_event_actor_errors.json",
+                "sportmonks_2024_audited_event_actor_errors.json",
+                "sportmonks_2024_velez_event_errors.json",
+                "sportmonks_2024_cup_three_event_errors.json",
+                "sportmonks_2024_extremadura_event_errors.json",
+            "sportmonks_2024_logrones_event_errors.json",
+            "sportmonks_2024_cacereno_event_errors.json",
+            "sportmonks_2024_ceuta_event_errors.json",
+            "sportmonks_2024_sant_andreu_event_errors.json",
+            "sportmonks_2024_conquense_event_errors.json",
+            "sportmonks_2024_orihuela_event_errors.json",
+                "sportmonks_2024_european_six_event_errors.json",
+                "sportmonks_2024_sliema_own_goal_error.json",
+                "sportmonks_2025_five_coach_duplicate_errors.json",
+                "sportmonks_2025_three_coach_duplicate_errors.json",
+                "sportmonks_2025_roma_fiorentina_brighton_event_errors.json",
+                "sportmonks_2025_arteta_duplicate_error.json",
+                "sportmonks_2025_yuri_duplicate_error.json",
+                "sportmonks_2025_weiss_two_cards.json",
+                "sportmonks_2025_newcastle_coach_duplicate.json",
+                "sportmonks_2025_pafos_card_errors.json",
+                "sportmonks_2023_weiss_var_error.json",
+                "sportmonks_2018_completion_events.json",
+                "sportmonks_2019_completion_events.json",
+                "sportmonks_2019-semantic_completion_events.json",
+                "sportmonks_negative_completion_events.json",
+                "sportmonks_2020_completion_events.json", "sportmonks_2021_completion_events.json", "sportmonks_2022_completion_events.json", "sportmonks_2023_completion_events.json", "sportmonks_2024_completion_events.json", "sportmonks_2025_completion_events.json", "sportmonks_2025-semantic_completion_events.json", "sportmonks_2017_completion_events.json",
             )
         ]
         for case in (case for sample in samples for case in sample["cases"]):
@@ -276,8 +356,9 @@ class SportmonksClientTest(unittest.TestCase):
                 expected = {**deepcopy(original), "events": deepcopy(case["expected_events"])}
                 retained = {e["id"]: e for e in expected["events"]}
                 affected = next(e for e in original["events"] if e != retained.get(e["id"]))
-                # 선수·감독 ID와 이름이 같아도 확인하지 않은 이벤트에는 보정하지 않아요.
-                other_event = {**affected, "id": 900}
+                # 같은 팀 감독으로 확인된 카드는 공통 규칙으로 보정해요.
+                # 다른 팀에 붙은 미검증 이벤트까지 선수 ID만 보고 바꾸지는 않아요.
+                other_event = {**affected, "id": 900, "participant_id": -1}
                 original["events"].append(deepcopy(other_event))
                 expected["events"].append(deepcopy(other_event))
                 client = SportmonksClient.__new__(SportmonksClient)

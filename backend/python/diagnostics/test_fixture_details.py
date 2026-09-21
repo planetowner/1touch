@@ -435,49 +435,202 @@ class FixtureDetailsStorageTests(unittest.TestCase):
     def test_verified_paok_basel_duplicate_rolls_back_then_stores_once(self):
         self._assert_verified_duplicate_lineup("sportmonks_paok_basel_duplicate_lineup.json", 649)
 
+    def test_verified_petrocub_duplicate_rolls_back_then_stores_once(self):
+        self._assert_verified_duplicate_lineup("sportmonks_petrocub_duplicate_lineup.json", 6131)
+
+    def test_las_rozas_duplicate_keeps_official_number_26(self):
+        self._assert_verified_duplicate_lineup("sportmonks_las_rozas_duplicate_lineup.json", 29542)
+
+    def test_vic_unused_keeper_keeps_bench_slot_without_false_participation(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_vic_unused_keeper.json").read_text(encoding="utf-8"))
+        self._assert_verified_lineup_repair(sample)
+        self.assertEqual(self.connection.execute(
+            "SELECT player_id,lineup_type_id,jersey_number,minutes_played,rating "
+            "FROM fixture_lineups WHERE fixture_id=19320855 ORDER BY jersey_number"
+        ).fetchall(), [(37787565, 12, 1, None, None), (37787564, 11, 13, 90, 7.21)])
+        self.assertEqual(self.connection.execute(
+            "SELECT player_id,stat_value FROM fixture_player_stats "
+            "WHERE fixture_id=19320855 AND stat_type_id=57"
+        ).fetchall(), [(37787564, 5)])
+
+    def test_ki_unused_petersen_keeps_bench_slot_without_copied_minutes(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_ki_unused_petersen.json").read_text(encoding="utf-8"))
+        self._assert_verified_lineup_repair(sample)
+        self.assertEqual(self.connection.execute(
+            "SELECT player_id,jersey_number,minutes_played FROM fixture_lineups "
+            "WHERE fixture_id=19228790 ORDER BY jersey_number"
+        ).fetchall(), [(21782198, 20, 14), (87132, 21, None)])
+
+    def test_trakai_ki_goalkeepers_keep_separate_profiles_and_stats(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_trakai_ki_goalkeepers.json").read_text(encoding="utf-8"))
+        self.connection.execute("INSERT OR IGNORE INTO positions VALUES (24)")
+        self._assert_verified_lineup_repair(sample)
+        self.assertEqual(self.connection.execute(
+            "SELECT player_id,jersey_number,minutes_played FROM fixture_lineups WHERE fixture_id=11896778 ORDER BY jersey_number"
+        ).fetchall(), [(85663, 1, 90), (86429, 16, None)])
+
+    def test_celje_substitute_keeps_own_profile_and_four_minutes(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_celje_dundalk_lineup.json").read_text(encoding="utf-8"))
+        self.connection.execute("INSERT OR IGNORE INTO positions VALUES (149)")
+        self._assert_verified_lineup_repair(sample)
+        self.assertEqual(self.connection.execute(
+            "SELECT player_id,lineup_type_id,jersey_number,minutes_played,match_position_id "
+            "FROM fixture_lineups WHERE fixture_id=16865255 ORDER BY jersey_number"
+        ).fetchall(), [(73772, 11, 4, 90, 25), (183562, 12, 6, 4, None)])
+
+    def test_european_lineup_repairs_preserve_verified_players_and_minutes(self):
+        samples = []
+        for filename in ("sportmonks_2020_europa_lineup_repairs.json", "sportmonks_2021_qualifier_lineup_repairs.json",
+                         "sportmonks_2022_qualifier_lineup_repairs.json",
+                         "sportmonks_2024_champions_lineup_repairs.json"):
+            samples.extend(json.loads((Path(__file__).parent / "fixtures" / filename).read_text(encoding="utf-8")))
+        for sample in samples:
+            with self.subTest(fixture_id=sample["fixture"]["id"]):
+                self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", [(152,), (26,), (24,), (154,)])
+                self._assert_verified_lineup_repair(sample)
+                self.assertEqual(self.connection.execute(
+                    "SELECT player_id,lineup_type_id,jersey_number,minutes_played,match_position_id "
+                    "FROM fixture_lineups WHERE fixture_id=? ORDER BY jersey_number",
+                    (sample["fixture"]["id"],),
+                ).fetchall(), [tuple(row) for row in sample["expected_lineups"]])
+
+    def test_kups_null_slots_restore_verified_stats_without_inventing_values(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_kups_slovan_null_players.json").read_text(encoding="utf-8"))
+        payload = sample["fixtures"][0]
+        fixture_id = payload["id"]
+        profiles = {p["id"]: p for p in sample["correct_players"]}
+        # 선수 ID가 비어 있으면 기존 로더는 두 선수의 실제 출전·골 통계를 저장하지 못해요.
+        raw = details.normalize_fixture_lineups(payload, fixture_id)
+        self.assertEqual(raw["lineups"], [])
+        self.assertEqual(raw["player_stats"], [])
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._get = Mock(side_effect=lambda path, **kwargs: {
+            "data": [deepcopy(payload)] if path.startswith("fixtures/multi/") else deepcopy(profiles[int(path.split("/")[1])])
+        })
+        corrected = client.get_fixture_details_batch([fixture_id])[0]
+        for before, after in zip(payload["lineups"], corrected["lineups"]):
+            self.assertEqual(before["details"], after["details"])
+        rows = details.normalize_fixture_lineups(corrected, fixture_id)
+        self.connection.execute("INSERT INTO fixtures VALUES (?)", (fixture_id,))
+        self.connection.execute("INSERT INTO teams VALUES (4323)")
+        self.connection.commit()
+        selected = {k: rows[k] for k in ("lineups", "player_stats")}
+        self.assertEqual(details.replace_fixture_detail_rows(fixture_id, selected, corrected["lineups"]), 2)
+        self.assertEqual(details.replace_fixture_detail_rows(fixture_id, selected, corrected["lineups"]), 0)
+        self.assertEqual(self.connection.execute(
+            "SELECT player_id,jersey_number,minutes_played FROM fixture_lineups WHERE fixture_id=? ORDER BY jersey_number",
+            (fixture_id,),
+        ).fetchall(), [(151627, 13, 33), (90876, 20, 115)])
+        self.assertEqual(self.connection.execute(
+            "SELECT player_id,stat_type_id,stat_value FROM fixture_player_stats WHERE fixture_id=?", (fixture_id,),
+        ).fetchall(), [(151627, 52, 1)])
+
+    def test_zeta_vukcevic_players_keep_separate_profiles_and_minutes(self):
+        samples = json.loads((Path(__file__).parent / "fixtures/sportmonks_zeta_vukcevic.json").read_text(encoding="utf-8"))
+        for sample in samples:
+            with self.subTest(fixture_id=sample["fixture"]["id"]):
+                self.connection.execute("INSERT OR IGNORE INTO positions VALUES (25)")
+                self._assert_verified_lineup_repair(sample)
+                self.assertEqual(self.connection.execute(
+                    "SELECT player_id,jersey_number,minutes_played FROM fixture_lineups WHERE fixture_id=? ORDER BY jersey_number",
+                    (sample["fixture"]["id"],),
+                ).fetchall(), [tuple(row) for row in sample["expected_lineups"]])
+
+    def test_remaining_lineup_repairs_preserve_stats_and_store_once(self):
+        for filename in ("sportmonks_2018_lineup_repairs.json", "sportmonks_2018_completion_lineups.json", "sportmonks_2019_completion_lineups.json", "sportmonks_2020_completion_lineups.json", "sportmonks_2021_completion_lineups.json", "sportmonks_2022_completion_lineups.json", "sportmonks_2023_completion_lineups.json", "sportmonks_2024_completion_lineups.json", "sportmonks_2025_completion_lineups.json", "sportmonks_2025-semantic_completion_lineups.json", "sportmonks_2017_completion_lineups.json", "sportmonks_2022-barbadas_completion_lineups.json", "sportmonks_2022-existing_completion_lineups.json"):
+            samples = json.loads((Path(__file__).parent / "fixtures" / filename).read_text(encoding="utf-8"))
+            for sample in samples:
+                with self.subTest(fixture_id=sample["fixture"]["id"]):
+                    self._assert_verified_lineup_repair(sample)
+
     def _assert_verified_duplicate_lineup(self, sample_name, team_id):
         sample = json.loads((Path(__file__).parent / "fixtures" / sample_name).read_text(encoding="utf-8"))
-        payload = sample["fixture"]
         verified = sample["verified_lineup"]
-        fid = payload["id"]
-        self.connection.execute("INSERT INTO fixtures VALUES (?)", (fid,))
-        self.connection.execute("INSERT INTO teams VALUES (?)", (team_id,))
-        self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
-            (lineup["player"]["detailed_position_id"],) for lineup in payload["lineups"]
-            if lineup["player"]["detailed_position_id"] is not None
-        })
-        self.connection.commit()
-        raw_rows = details.normalize_fixture_lineups(payload, fid)
-        raw_rows = {key: raw_rows[key] for key in ("lineups", "player_stats")}
-        with self.assertRaisesRegex(sqlite3.IntegrityError, "UNIQUE constraint failed"):
-            details.replace_fixture_detail_rows(fid, raw_rows, payload["lineups"])
-        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM players").fetchone(), (0,))
-        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups").fetchone(), (0,))
-
-        client = SportmonksClient.__new__(SportmonksClient)
-        client._get = Mock(return_value={"data": [deepcopy(payload)]})
-        corrected = client.get_fixture_details_batch([fid])[0]
-        expected = [row for row in payload["lineups"] if row["id"] != verified["removed_lineup_id"]]
-        self.assertEqual(corrected["lineups"], expected)
-        self.assertEqual(client.correct_fixture_details(deepcopy(corrected)), corrected)
-        # 단건 재개와 묶음 재개가 같은 보정 규칙을 사용해요.
-        client._get = Mock(return_value={"data": deepcopy(payload)})
-        self.assertEqual(client.get_fixture_details(fid), corrected)
-        rows = details.normalize_fixture_lineups(corrected, fid)
-        rows = {key: rows[key] for key in ("lineups", "player_stats")}
-        # 제외할 슬롯에는 저장할 통계가 없어요. 올바른 슬롯과 다른 선수의 통계는 모두 보존돼요.
-        self.assertEqual(rows["player_stats"], raw_rows["player_stats"])
-        self.assertEqual(details.replace_fixture_detail_rows(fid, rows, corrected["lineups"]), 18)
-        self.assertEqual(details.replace_fixture_detail_rows(fid, rows, corrected["lineups"]), 0)
-        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups").fetchone(), (18,))
+        sample.update(team_id=team_id, removed_lineup_ids=[verified["removed_lineup_id"]],
+                      lineup_overrides={}, profiles={}, stat_player_overrides={})
+        self._assert_verified_lineup_repair(sample)
         self.assertEqual(self.connection.execute(
-            "SELECT jersey_number FROM fixture_lineups WHERE player_id=?", (verified["player_id"],)
+            "SELECT jersey_number FROM fixture_lineups WHERE fixture_id=? AND player_id=?",
+            (sample["fixture"]["id"], verified["player_id"]),
         ).fetchall(), [(verified["jersey_number"],)])
 
-        # 같은 선수라도 검증한 슬롯 ID가 아니면 자동으로 삭제하지 않아요.
+    def _assert_verified_lineup_repair(self, sample):
+        payload, fid = sample["fixture"], sample["fixture"]["id"]
+        self.connection.execute("INSERT INTO fixtures VALUES (?)", (fid,))
+        self.connection.executemany("INSERT OR IGNORE INTO teams VALUES (?)", {
+            (lineup["team_id"],) for lineup in payload["lineups"]
+        })
+        self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
+            (profile["detailed_position_id"],)
+            for profile in [*(lineup["player"] for lineup in payload["lineups"]), *sample["profiles"].values()]
+            if profile and profile.get("detailed_position_id") is not None
+        })
+        self.connection.commit()
+        before = self.connection.execute("SELECT COUNT(*) FROM players").fetchone()
+        raw = details.normalize_fixture_lineups(payload, fid)
+        if sample.get("raw_duplicate", True):
+            with self.assertRaisesRegex(sqlite3.IntegrityError, "UNIQUE constraint failed"):
+                details.replace_fixture_detail_rows(fid, {k: raw[k] for k in ("lineups", "player_stats")}, payload["lineups"])
+            self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM players").fetchone(), before)
+        else:
+            # 중복 없는 미출전 오기는 이미 저장된 잘못된 통계까지 제거하는지 확인해요.
+            details.replace_fixture_detail_rows(fid, {k: raw[k] for k in ("lineups", "player_stats")}, payload["lineups"])
+            self.assertEqual(self.connection.execute(
+                "SELECT COUNT(*) FROM fixture_player_stats WHERE fixture_id=?", (fid,)
+            ).fetchone(), (len(raw["player_stats"]),))
+
+        expected = deepcopy(payload)
+        expected["lineups"] = [r for r in expected["lineups"] if r["id"] not in sample["removed_lineup_ids"]]
+        for lineup in expected["lineups"]:
+            changes = sample["lineup_overrides"].get(str(lineup["id"]), {})
+            lineup.update(changes)
+            if changes.get("player_id") is not None:
+                lineup["player"] = sample["profiles"][str(changes["player_id"])]
+            stats = dict(sample.get("stat_overrides", {}).get(str(lineup["id"]), {}))
+            minutes = sample.get("minutes_overrides", {}).get(str(lineup["id"]))
+            if minutes is not None:
+                stats['119'] = minutes
+            for detail in lineup["details"]:
+                if str(detail["type_id"]) in stats:
+                    detail["data"]["value"] = stats[str(detail["type_id"])]
+        client = SportmonksClient.__new__(SportmonksClient)
+        def response(path, params=None):
+            if path.startswith("players/"):
+                return {"data": deepcopy(sample["profiles"][path.split("/")[-1]])}
+            return {"data": [deepcopy(payload)] if path.startswith("fixtures/multi/") else deepcopy(payload)}
+        client._get = Mock(side_effect=response)
+        corrected = client.get_fixture_details_batch([fid])[0]
+        self.assertEqual(corrected, expected)
+        self.assertEqual(client.get_fixture_details(fid), expected)
+        self.assertEqual(client.correct_fixture_details(deepcopy(corrected)), expected)
+        rows = details.normalize_fixture_lineups(corrected, fid)
+        rows = {k: rows[k] for k in ("lineups", "player_stats")}
+        # 같은 잘못된 선수 ID의 두 슬롯도 실제로는 다른 선수일 수 있어요.
+        # 검증된 슬롯별 기대값으로 확인해야 정상 슬롯의 통계까지 옮기는 오류를 잡아요.
+        expected_stats = {
+            (fid, lineup["team_id"], details._canonical_player_id(lineup["player_id"]), stat["type_id"], stat["data"]["value"])
+            for lineup in expected["lineups"] for stat in lineup["details"]
+            if lineup["player_id"] is not None
+            and stat["type_id"] in details.STORED_STAT_TYPE_IDS and stat["data"]["value"] is not None
+        }
+        for player_id in sample.get("discarded_stat_player_ids", []):
+            self.assertTrue(any(row[2] == player_id for row in raw["player_stats"]))
+        self.assertEqual(set(rows["player_stats"]), expected_stats)
+        details.replace_fixture_detail_rows(fid, rows, corrected["lineups"])
+        self.assertEqual(details.replace_fixture_detail_rows(fid, rows, corrected["lineups"]), 0)
+        self.assertEqual(self.connection.execute(
+            "SELECT COUNT(*) FROM fixture_lineups WHERE fixture_id=?", (fid,)
+        ).fetchone(), (sum(lineup["player_id"] is not None for lineup in expected["lineups"]),))
+        stored = self.connection.execute(
+            "SELECT fixture_id,team_id,player_id,stat_type_id,stat_value FROM fixture_player_stats WHERE fixture_id=?", (fid,)
+        ).fetchall()
+        self.assertEqual(set(stored), expected_stats)
+        self.assertEqual(len(stored), len(expected_stats))
+
+        # 검증하지 않은 슬롯 ID에는 등번호·선수 변경이나 중복 제거를 적용하지 않아요.
         unverified = deepcopy(payload)
-        removed_slot = next(row for row in unverified["lineups"] if row["id"] == verified["removed_lineup_id"])
-        removed_slot["id"] = 998
+        for lineup in unverified["lineups"]:
+            lineup["id"] += 100_000_000_000
         self.assertEqual(client.correct_fixture_details(deepcopy(unverified)), unverified)
 
     def test_gent_wrong_identity_is_corrected_in_goal_lineup_and_player_stats(self):
@@ -582,6 +735,30 @@ class FixtureDetailsStorageTests(unittest.TestCase):
 
     def test_verified_lineup_and_event_ids_store_only_confirmed_players(self):
         for filename in (
+            "sportmonks_2017_floriana_lineup_error.json",
+            "sportmonks_2025_sant_andreu_actor_errors.json",
+            "sportmonks_2025_quintanar_actor_errors.json",
+            "sportmonks_2025_navalcarnero_lineup_errors.json",
+            "sportmonks_2025_cano_tapiador_lineup_errors.json",
+            "sportmonks_2025_birch_lineup_error.json",
+            "sportmonks_2025_tre_fiori_first_lineup_errors.json",
+            "sportmonks_2025_tre_fiori_return_lineup_errors.json",
+            "sportmonks_2025_paks_substitution_error.json",
+            "sportmonks_2025_warlow_bench_red.json",
+            "sportmonks_2025_kolgeci_lineup_errors.json",
+            "sportmonks_2025_egnatia_jefferson_lineup_errors.json",
+            "sportmonks_2025_sarajevo_owen_lineup_errors.json",
+            "sportmonks_2024_cup_two_lineup_errors.json",
+            "sportmonks_2024_olot_lineup_errors.json",
+            "sportmonks_2024_sant_andreu_lineup_errors.json",
+            "sportmonks_2024_conquense_lineup_errors.json",
+            "sportmonks_2024_orihuela_lineup_errors.json",
+            "sportmonks_2024_salamanca_lineup_errors.json",
+            "sportmonks_2024_logrones_europa_lineup_errors.json",
+            "sportmonks_2024_cacereno_lineup_errors.json",
+            "sportmonks_2024_swansea_edu_lineup_errors.json",
+            "sportmonks_2024_ceuta_lineup_errors.json",
+            "sportmonks_2024_european_four_lineup_errors.json",
             "sportmonks_lineup_null_player_id.json",
             "sportmonks_lineup_event_player_mismatch.json",
             "sportmonks_2026_strassen_actor_errors.json",
@@ -589,6 +766,10 @@ class FixtureDetailsStorageTests(unittest.TestCase):
         ):
             sample = json.loads((Path(__file__).parent / "fixtures" / filename).read_text(encoding="utf-8"))
             profiles = {p["id"]: p for p in sample["correct_players"]}
+            # 운영에 이미 있는 이벤트 배우는 표본의 시작 상태로만 넣어요. 빈 명단은 만들지 않아요.
+            self.connection.executemany("INSERT OR IGNORE INTO players (player_id) VALUES (?)", [
+                (player_id,) for player_id in sample.get("known_player_ids", [])
+            ])
             for payload in sample["fixtures"]:
                 fixture_id = payload["id"]
                 with self.subTest(fixture_id=fixture_id):
@@ -601,9 +782,13 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                     self.connection.commit()
                     before_players = self.connection.execute("SELECT COUNT(*) FROM players").fetchone()
                     # 라인업이 실제 교체 선수를 가리키지 않으면 이벤트의 선수 FK가 실패해요.
-                    with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+                    if sample.get("raw_fk_failure", {}).get(str(fixture_id), True):
+                        with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+                            details.replace_fixture_detail_rows(fixture_id, _normalize_fixture_details(payload, fixture_id), payload["lineups"])
+                        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM players").fetchone(), before_players)
+                    else:
+                        # 앞 경기에서 같은 선수를 이미 저장했다면 FK는 통과해도 빈 명단은 남아요.
                         details.replace_fixture_detail_rows(fixture_id, _normalize_fixture_details(payload, fixture_id), payload["lineups"])
-                    self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM players").fetchone(), before_players)
 
                     client = SportmonksClient.__new__(SportmonksClient)
                     client._get = Mock(side_effect=lambda path, **kwargs: {
@@ -638,6 +823,16 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                         self.assertEqual(self.connection.execute(
                             "SELECT full_name,date_of_birth FROM players WHERE player_id=?", (player_id,),
                         ).fetchone(), (profiles[player_id]["name"], profiles[player_id]["date_of_birth"]))
+                    # 벤치 퇴장·빈 상세를 연결해도 검증하지 않은 출전 분·통계를 만들면 안 돼요.
+                    for player_id, values in sample.get("expected_player_participation", {}).get(str(fixture_id), {}).items():
+                        self.assertEqual(self.connection.execute(
+                            "SELECT lineup_type_id,jersey_number,minutes_played,rating FROM fixture_lineups "
+                            "WHERE fixture_id=? AND player_id=?", (fixture_id, int(player_id)),
+                        ).fetchone(), tuple(values["lineup"]))
+                        self.assertEqual(self.connection.execute(
+                            "SELECT stat_type_id,stat_value FROM fixture_player_stats "
+                            "WHERE fixture_id=? AND player_id=? ORDER BY stat_type_id", (fixture_id, int(player_id)),
+                        ).fetchall(), [tuple(row) for row in values["stats"]])
 
     def test_verified_rexhaj_name_only_preserves_events_and_missing_fields(self):
         sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_rexhaj_missing_profile.json").read_text(encoding="utf-8"))
@@ -689,62 +884,159 @@ class FixtureDetailsStorageTests(unittest.TestCase):
         self.assertEqual(unverified, payload)
 
     def test_verified_event_profile_without_lineup_is_inserted_atomically(self):
+        baseline = sqlite3.connect(":memory:")
+        self.addCleanup(baseline.close)
+        self.connection.backup(baseline)
         for filename in (
             "sportmonks_event_player_missing_lineup.json",
             "sportmonks_lisakovich_missing_lineup.json",
             "sportmonks_charles_cook_missing_lineup.json",
+            "sportmonks_2017_aik_ki_missing_lineups.json",
+            "sportmonks_2017_bristol_missing_lineups.json",
+            "sportmonks_2017_braga_away_missing_lineups.json",
+            "sportmonks_2017_braga_home_missing_lineups.json",
+            "sportmonks_2017_zelj_first_actor_errors.json",
+            "sportmonks_2018_aik_missing_lineups.json",
+            "sportmonks_2018_bala_missing_lineup.json",
+            "sportmonks_2019_aik_missing_lineups.json",
+            "sportmonks_2020_completion_profiles.json", "sportmonks_2021_completion_profiles.json", "sportmonks_2022_completion_profiles.json", "sportmonks_2023_completion_profiles.json", "sportmonks_2024_completion_profiles.json", "sportmonks_2025_completion_profiles.json", "sportmonks_2025-semantic_completion_profiles.json", "sportmonks_2017_completion_profiles.json",
         ):
             sample = json.loads((Path(__file__).parent / "fixtures" / filename).read_text(encoding="utf-8"))
-            payload = sample["fixture"]
+            cases = sample["cases"] if "cases" in sample else [{"fixture": sample["fixture"]}]
+            for case in cases:
+                payload = case["fixture"]
+                fixture_id = payload["id"]
+                mapping = {int(eid): pids for eid, pids in case["event_profile_ids"].items()} if "event_profile_ids" in case else {
+                    payload["events"][0]["id"]: [payload["events"][0]["player_id"]]
+                }
+                profiles = {pid: sample["profiles"][str(pid)] for pids in mapping.values() for pid in pids}
+                with self.subTest(fixture_id=fixture_id):
+                    # 같은 선수의 앞선 경기 저장이 다음 표본의 실제 프로필 누락을 가리지 않게 해요.
+                    self.connection.rollback()
+                    baseline.backup(self.connection)
+                    self.connection.execute("INSERT INTO fixtures VALUES (?)", (fixture_id,))
+                    self.connection.executemany("INSERT OR IGNORE INTO teams VALUES (?)", {
+                        (event["participant_id"],) for event in payload["events"]
+                    } | {(lineup["team_id"],) for lineup in payload["lineups"]})
+                    lineup_profiles = {l["player_id"]: l["player"] for l in payload["lineups"] if l["player_id"] is not None and l["player"]}
+                    self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
+                        (p["detailed_position_id"],) for p in [*profiles.values(), *lineup_profiles.values()]
+                        if p["detailed_position_id"] is not None
+                    })
+                    # 기존 DB에 있는 다른 이벤트 배우만 시작 상태로 넣고, 빠진 명단을 만들지 않아요.
+                    existing_ids = {pid for event in payload["events"] for pid in (event["player_id"], event["related_player_id"])
+                                    if pid is not None} - profiles.keys() - lineup_profiles.keys()
+                    self.connection.executemany("INSERT OR IGNORE INTO players(player_id) VALUES (?)", [(pid,) for pid in existing_ids])
+                    self.connection.commit()
+                    before_players = self.connection.execute("SELECT * FROM players ORDER BY player_id").fetchall()
+                    before_ids = {row[0] for row in before_players}
+                    client = SportmonksClient.__new__(SportmonksClient)
+                    client._get = Mock(side_effect=lambda path, **kwargs: {
+                        "data": deepcopy(payload) if path.startswith("fixtures/") else deepcopy(sample["profiles"][path.split("/")[1]])
+                    })
+                    with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+                        details.replace_fixture_detail_rows(fixture_id, _normalize_fixture_details(payload, fixture_id), payload["lineups"])
+                    self.assertEqual(self.connection.execute("SELECT * FROM players ORDER BY player_id").fetchall(), before_players)
+                    self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_events WHERE fixture_id=?", (fixture_id,)).fetchone(), (0,))
+
+                    corrected = client.get_fixture_details(fixture_id)
+                    expected = deepcopy(payload)
+                    duplicate_ids = set(case.get("duplicate_event_ids", []))
+                    expected["events"] = [event for event in expected["events"] if event["id"] not in duplicate_ids]
+                    for event in expected["events"]:
+                        event.update(case.get("event_overrides", {}).get(str(event["id"]), {}))
+                        if event["id"] in mapping:
+                            event["verified_player_profiles"] = [profiles[pid] for pid in mapping[event["id"]]]
+                    self.assertEqual(corrected, case.get("expected", expected))
+                    self.assertEqual(corrected, expected)
+                    self.assertEqual(client._get.call_count, 1 + case.get("expected_profile_requests", sum(map(len, mapping.values()))))
+                    # 확인한 이벤트 보정 외 실제 카드·명단·통계의 모든 값은 그대로예요.
+                    rows = _normalize_fixture_details(corrected, fixture_id)
+                    expected_rows = _normalize_fixture_details(expected, fixture_id)
+                    expected_rows["events"] = [row for row in expected_rows["events"] if row[0] not in duplicate_ids]
+                    self.assertEqual(rows, expected_rows)
+                    with patch.object(details, "_load_scope", return_value=[fixture_id]), patch.object(details, "SportmonksClient", return_value=client), patch("builtins.print"):
+                        expected_new = (profiles.keys() | lineup_profiles.keys()) - before_ids
+                        self.assertEqual(details.collect_fixture_details(fixture_id)["players"], len(expected_new))
+                        for pid in profiles:
+                            self.connection.execute("UPDATE players SET display_name='기존 검증 이름' WHERE player_id=?", (pid,))
+                        self.connection.commit()
+                        self.assertEqual(details.collect_fixture_details(fixture_id)["players"], 0)
+                    for table, columns, key in (
+                        ("fixture_events", "event_id,fixture_id,team_id,event_type_id,player_id,related_player_id,minute,extra_minute,on_bench", "events"),
+                        ("fixture_lineups", "fixture_id,team_id,player_id,lineup_type_id,formation_field,jersey_number,minutes_played,rating,match_position_id", "lineups"),
+                        ("fixture_player_stats", "fixture_id,team_id,player_id,stat_type_id,stat_value", "player_stats"),
+                    ):
+                        stored = self.connection.execute(f"SELECT {columns} FROM {table} WHERE fixture_id=?", (fixture_id,)).fetchall()
+                        self.assertEqual(set(stored), set(rows[key]))
+                        self.assertEqual(len(stored), len(rows[key]))
+                    for pid, profile in profiles.items():
+                        self.assertEqual(self.connection.execute("SELECT display_name,date_of_birth FROM players WHERE player_id=?", (pid,)).fetchone(), ("기존 검증 이름", profile["date_of_birth"]))
+                        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_lineups WHERE fixture_id=? AND player_id=?", (fixture_id,pid)).fetchone(), (0,))
+                        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_player_stats WHERE fixture_id=? AND player_id=?", (fixture_id,pid)).fetchone(), (0,))
+
+                    # 검증 목록 밖 이벤트는 같은 배우여도 프로필을 자동으로 보충하지 않아요.
+                    unknown = deepcopy(payload)
+                    for event in unknown["events"]:
+                        event["id"] += 100_000_000_000
+                    client._get = Mock(return_value={"data": deepcopy(unknown)})
+                    self.assertEqual(client.get_fixture_details(fixture_id), unknown)
+                    self.assertEqual(client._get.call_count, 1)
+
+    def test_jagiellonia_verified_actors_keep_missing_and_mixed_lineups_unfilled(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_2024_jagiellonia_verified_actors.json").read_text(encoding="utf-8"))
+        verified_ids = {int(key) for key in sample["profiles"]}
+        for case in sample["cases"]:
+            payload, expected = case["fixture"], case["expected"]
             fixture_id = payload["id"]
-            original_event = payload["events"][0]
-            player_id = original_event["player_id"]
-            profile = sample["profiles"][str(player_id)]
             with self.subTest(fixture_id=fixture_id):
                 self.connection.execute("INSERT INTO fixtures VALUES (?)", (fixture_id,))
-                self.connection.execute("INSERT INTO teams VALUES (?)", (original_event["participant_id"],))
-                self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
-                    (p["detailed_position_id"],) for p in [profile, *(l["player"] for l in payload["lineups"])]
+                self.connection.executemany("INSERT OR IGNORE INTO teams VALUES (?)", {
+                    (event["participant_id"],) for event in payload["events"]
                 })
+                self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
+                    (profile["detailed_position_id"],) for profile in sample["profiles"].values()
+                })
+                existing_ids = {pid for event in payload["events"] for pid in
+                                (event["player_id"], event["related_player_id"]) if pid is not None} - verified_ids
+                self.connection.executemany("INSERT OR IGNORE INTO players(player_id) VALUES (?)", [(pid,) for pid in existing_ids])
                 self.connection.commit()
-                before_count = self.connection.execute("SELECT COUNT(*) FROM players").fetchone()
+                keys = ("event_types", "events", "lineups", "player_stats")
+                raw_rows = _normalize_fixture_details(payload, fixture_id)
+                if fixture_id != 19194448:
+                    # 원문은 실제 교체 선수의 FK가 없어 저장 전체가 취소돼요.
+                    with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+                        details.replace_fixture_detail_rows(fixture_id, {key: raw_rows[key] for key in keys}, payload["lineups"])
+                    self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_events WHERE fixture_id=?", (fixture_id,)).fetchone(), (0,))
+
                 client = SportmonksClient.__new__(SportmonksClient)
                 client._get = Mock(side_effect=lambda path, **kwargs: {
                     "data": deepcopy(payload) if path.startswith("fixtures/") else deepcopy(sample["profiles"][path.split("/")[1]])
                 })
-                # 라인업에 없는 실제 교체 선수 때문에 저장 전체가 취소됐던 경로를 재현해요.
-                with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
-                    details.replace_fixture_detail_rows(fixture_id, _normalize_fixture_details(payload, fixture_id), payload["lineups"])
-                self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM players").fetchone(), before_count)
-
                 corrected = client.get_fixture_details(fixture_id)
-                event = deepcopy(corrected["events"][0])
-                self.assertEqual(event.pop("verified_player_profile"), profile)
-                self.assertEqual(event, original_event)
-                self.assertEqual(corrected["lineups"], payload["lineups"])
-                self.assertEqual(client._get.call_count, 2)
-
-                with patch.object(details, "_load_scope", return_value=[fixture_id]), patch.object(details, "SportmonksClient", return_value=client), patch("builtins.print"):
-                    self.assertEqual(details.collect_fixture_details(fixture_id)["players"], 2)
-                    self.connection.execute("UPDATE players SET display_name='기존 검증 이름' WHERE player_id=?", (player_id,))
-                    self.connection.commit()
-                    self.assertEqual(details.collect_fixture_details(fixture_id)["players"], 0)
+                # 검증한 두 명단 연결·서른 교체·두 이벤트 프로필 외 전체 원문 값도 비교해요.
+                self.assertEqual(corrected, expected)
+                rows = _normalize_fixture_details(corrected, fixture_id)
+                event_profiles = details.verified_event_player_profiles(corrected)
+                details.replace_fixture_detail_rows(fixture_id, {key: rows[key] for key in keys}, corrected["lineups"], event_profiles)
                 self.assertEqual(self.connection.execute(
-                    "SELECT player_id,related_player_id,minute FROM fixture_events WHERE fixture_id=?", (fixture_id,),
-                ).fetchall(), [(player_id, original_event["related_player_id"], original_event["minute"])])
+                    "SELECT event_id,fixture_id,team_id,event_type_id,player_id,related_player_id,minute,extra_minute,on_bench "
+                    "FROM fixture_events WHERE fixture_id=? ORDER BY event_id", (fixture_id,),
+                ).fetchall(), sorted(rows["events"]))
+                expected_lineups = {19135801: [(37460555, 77, 5)], 19135802: [(37629806, 36, 18)], 19194448: []}
                 self.assertEqual(self.connection.execute(
-                    "SELECT player_id FROM fixture_lineups WHERE fixture_id=?", (fixture_id,),
-                ).fetchall(), [(original_event["related_player_id"],)])
-                self.assertEqual(self.connection.execute(
-                    "SELECT display_name,date_of_birth FROM players WHERE player_id=?", (player_id,),
-                ).fetchone(), ("기존 검증 이름", profile["date_of_birth"]))
-
-                # 검증 목록 밖 이벤트는 같은 선수 ID여도 프로필을 가져오거나 자동 저장하지 않아요.
-                payload["events"][0]["id"] = 999
-                client._get.reset_mock()
-                unverified = client.get_fixture_details(fixture_id)
-                self.assertNotIn("verified_player_profile", unverified["events"][0])
-                self.assertEqual(client._get.call_count, 1)
+                    "SELECT player_id,jersey_number,minutes_played FROM fixture_lineups WHERE fixture_id=?", (fixture_id,),
+                ).fetchall(), expected_lineups[fixture_id])
+                # Marczuk은 실제 슬롯이 없어요. 상대 팀 7번을 고치거나 통계를 만들지 않아요.
+                self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_player_stats WHERE fixture_id=? AND player_id=37531515", (fixture_id,)).fetchone(), (0,))
+                self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_player_stats WHERE fixture_id=?", (fixture_id,)).fetchone(), (len(rows["player_stats"]),))
+                if event_profiles:
+                    unknown = deepcopy(payload)
+                    unknown["lineups"] = []
+                    unknown["events"] = [{**next(e for e in payload["events"] if e["id"] in (117214871, 118164492)), "id": 999}]
+                    client._get = Mock(return_value={"data": deepcopy(unknown)})
+                    self.assertEqual(client.get_fixture_details(fixture_id), unknown)
+                    self.assertEqual(client._get.call_count, 1)
 
     def test_real_event_player_error_stores_verified_relation_and_preserves_event(self):
         sample = json.loads(
@@ -888,6 +1180,8 @@ class FixtureDetailsStorageTests(unittest.TestCase):
     def test_coach_event_does_not_create_an_unrelated_player(self):
         cases = (
             ("sportmonks_coach_event_player_error.json", [(82392114, 20, None, 59, 1)]),
+            ("sportmonks_basaksehir_coach_error.json", [(156508153, 20, None, 79, 0)]),
+            ("sportmonks_tns_coach_error.json", [(156508154, 19, None, 43, 0)]),
             ("sportmonks_duplicate_coach_cards.json", [(120554621, 20, None, 84, 0), (120573201, 20, None, 84, 0)]),
         )
         for filename, expected in cases:
@@ -964,6 +1258,21 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                 "sportmonks_2026_ki_event_actor_errors.json",
                 "sportmonks_2026_sutjeska_event_actor_errors.json",
                 "sportmonks_2026_qualifying_event_actor_errors.json",
+                "sportmonks_2024_european_six_event_errors.json",
+                "sportmonks_2024_sliema_own_goal_error.json",
+                "sportmonks_2025_five_coach_duplicate_errors.json",
+                "sportmonks_2025_three_coach_duplicate_errors.json",
+                "sportmonks_2025_roma_fiorentina_brighton_event_errors.json",
+                "sportmonks_2025_arteta_duplicate_error.json",
+                "sportmonks_2025_yuri_duplicate_error.json",
+                "sportmonks_2025_weiss_two_cards.json",
+                "sportmonks_2025_newcastle_coach_duplicate.json",
+                "sportmonks_2025_pafos_card_errors.json",
+                "sportmonks_2023_weiss_var_error.json",
+                "sportmonks_2018_completion_events.json",
+                "sportmonks_2019_completion_events.json",
+                "sportmonks_2019-semantic_completion_events.json",
+                "sportmonks_2020_completion_events.json", "sportmonks_2021_completion_events.json", "sportmonks_2022_completion_events.json", "sportmonks_2023_completion_events.json", "sportmonks_2024_completion_events.json", "sportmonks_2025_completion_events.json", "sportmonks_2025-semantic_completion_events.json", "sportmonks_2017_completion_events.json",
             )
         ]
         sample = {
@@ -974,10 +1283,15 @@ class FixtureDetailsStorageTests(unittest.TestCase):
             event["participant_id"]
             for case in sample["cases"] for event in case["fixture"]["events"]
         } | {
+            event["participant_id"]
+            for case in sample["cases"] for event in case["expected_events"]
+        } | {
             coach["meta"]["participant_id"]
             for case in sample["cases"] for coach in case["fixture"]["coaches"]
         }
-        self.connection.executemany("INSERT INTO teams VALUES (?)", [(team,) for team in teams])
+        # 공통 초기 자료에 이미 있는 Newcastle(20) 등은 다시 넣지 않아요.
+        existing_teams = {row[0] for row in self.connection.execute("SELECT team_id FROM teams")}
+        self.connection.executemany("INSERT INTO teams VALUES (?)", [(team,) for team in teams - existing_teams])
         self.connection.executemany("INSERT INTO players (player_id) VALUES (?)", [(p,) for p in sample["known_player_ids"]])
         self.connection.commit()
         for case in sample["cases"]:
@@ -986,12 +1300,15 @@ class FixtureDetailsStorageTests(unittest.TestCase):
             with self.subTest(fixture_id=fixture_id):
                 self.connection.execute("INSERT INTO fixtures VALUES (?)", (fixture_id,))
                 self.connection.commit()
-                # 실제 선수만 등록하면 모든 원문 표본의 잘못된 FK에서 실패해야 해요.
-                with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+                # 배우 오류는 FK에서 막히고, 시간만 틀린 기록은 저장된 원값도 교체해야 해요.
+                if case.get("raw_actor_error", True):
+                    with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+                        details.replace_fixture_detail_rows(fixture_id, _normalize_fixture_details(payload, fixture_id))
+                    self.assertEqual(self.connection.execute(
+                        "SELECT COUNT(*) FROM fixture_events WHERE fixture_id=?", (fixture_id,),
+                    ).fetchone(), (0,))
+                else:
                     details.replace_fixture_detail_rows(fixture_id, _normalize_fixture_details(payload, fixture_id))
-                self.assertEqual(self.connection.execute(
-                    "SELECT COUNT(*) FROM fixture_events WHERE fixture_id=?", (fixture_id,),
-                ).fetchone(), (0,))
 
                 client = SportmonksClient.__new__(SportmonksClient)
                 client._get = Mock(return_value={"data": deepcopy(payload)})

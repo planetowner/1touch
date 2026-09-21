@@ -1,0 +1,182 @@
+{
+  "source": "Sportmonks fixture 17055763 retrieved 2026-09-18; exact null slots verified against official lineup, event/detail player IDs and canonical player profiles.",
+  "verified_sources": [
+    "https://en.skslovan.com/zapasy/gamecenter.php?gameID=3681&type=lineups",
+    "https://www.skysports.com/football/kups-kuopio-vs-sk-slovan-bratislava/teams/434180"
+  ],
+  "fixtures": [
+    {
+      "id": 17055763,
+      "sport_id": 1,
+      "league_id": 5,
+      "season_id": 17367,
+      "stage_id": 77448131,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 8,
+      "venue_id": 2556,
+      "name": "KuPS vs Slovan Bratislava",
+      "starting_at": "2020-09-17 15:30:00",
+      "result_info": "Game ended in draw.",
+      "leg": "1/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1600356600,
+      "events": [],
+      "statistics": [],
+      "lineups": [
+        {
+          "id": 9178166,
+          "sport_id": 1,
+          "fixture_id": 17055763,
+          "player_id": null,
+          "team_id": 4323,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Aniekpeno Udoh",
+          "jersey_number": 13,
+          "details": [
+            {
+              "id": 222541416,
+              "fixture_id": 17055763,
+              "player_id": 151627,
+              "team_id": 4323,
+              "lineup_id": 9178166,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 265973749,
+              "fixture_id": 17055763,
+              "player_id": 151627,
+              "team_id": 4323,
+              "lineup_id": 9178166,
+              "type_id": 52,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 222541422,
+              "fixture_id": 17055763,
+              "player_id": 151627,
+              "team_id": 4323,
+              "lineup_id": 9178166,
+              "type_id": 119,
+              "data": {
+                "value": 33
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 9178028,
+          "sport_id": 1,
+          "fixture_id": 17055763,
+          "player_id": null,
+          "team_id": 4323,
+          "position_id": 26,
+          "formation_field": "3:1",
+          "type_id": 11,
+          "formation_position": 6,
+          "player_name": "Ville Saxman",
+          "jersey_number": 20,
+          "details": [
+            {
+              "id": 222541491,
+              "fixture_id": 17055763,
+              "player_id": 90876,
+              "team_id": 4323,
+              "lineup_id": 9178028,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 222541495,
+              "fixture_id": 17055763,
+              "player_id": 90876,
+              "team_id": 4323,
+              "lineup_id": 9178028,
+              "type_id": 119,
+              "data": {
+                "value": 115
+              }
+            }
+          ],
+          "player": null
+        }
+      ],
+      "formations": [],
+      "coaches": [],
+      "pressure": []
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 151627,
+      "sport_id": 1,
+      "country_id": 716,
+      "nationality_id": 716,
+      "city_id": null,
+      "position_id": null,
+      "detailed_position_id": null,
+      "type_id": 27,
+      "common_name": "A. Udo",
+      "firstname": "Aniekpeno",
+      "lastname": "Udo",
+      "name": "Aniekpeno Udo",
+      "display_name": "Aniekpeno Udoh",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/11/151627.png",
+      "height": 183,
+      "weight": 88,
+      "date_of_birth": "1996-11-11",
+      "gender": "male"
+    },
+    {
+      "id": 90876,
+      "sport_id": 1,
+      "country_id": 1233,
+      "nationality_id": 1233,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": null,
+      "type_id": 26,
+      "common_name": "V. Saxman",
+      "firstname": "Ville",
+      "lastname": "Saxman",
+      "name": "Ville Saxman",
+      "display_name": "Ville Saxman",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 177,
+      "weight": 74,
+      "date_of_birth": "1989-11-15",
+      "gender": "male"
+    }
+  ],
+  "expected_profile_requests": {
+    "17055763": 2
+  },
+  "expected_lineups": {
+    "17055763": [
+      [
+        151627,
+        13
+      ],
+      [
+        90876,
+        20
+      ]
+    ]
+  }
+}

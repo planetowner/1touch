@@ -1,0 +1,37 @@
+{
+  "cases": [],
+  "profiles": {},
+  "verified_source": {
+    "18533253": {
+      "sources": [
+        "https://www.fotmob.com/en-GB/matches/buducnost-podgorica-vs-llapi/40l4nalo",
+        "https://fk-buducnost.me/plavi-odradili-prvi-trening-na-zlatiboru-foto/",
+        "https://www.uefa.com/european-qualifiers/teams/players/250166669--marko-perovic/"
+      ],
+      "verified": "실제44번 미출전 Marko Perovic은2006-03-05 몬테네그로 선수37598758. 구단2022준비명단·UEFA생일·해당경기전체벤치명단 대조. 잘못된Heredia449353슬롯만 정정. 기존빈통계 유지."
+    },
+    "18533255": {
+      "sources": [
+        "https://www.mackolik.com/mac/atl%C3%A8tic-club-escaldes-vs-gzira-united/3nh0xsty2z2te6esz1mvwwjdg",
+        "https://www.bdfutbol.com/j/j50043.html",
+        "https://www.sofascore.com/football/player/jean-paul-attard/1006025"
+      ],
+      "verified": "실제Gzira21번미출전Attard37590595는2001-05-28 MaltaMF;전체경기명단과BDF생일·Sofa2022Gzira이적대조. 잘못된Heredia449353슬롯만 정정. 포지션세부미제공 유지."
+    },
+    "18533267": {
+      "sources": [
+        "https://www.fotmob.com/matches/vikingur-vs-europa-fc/1xehr0f1",
+        "https://www.sofascore.com/football/player/signar-a-brunni/1029339",
+        "https://www.fsf.fo/wp-content/uploads/2024/02/FSF_Arsfragreiding_2023_19-02-2024.pdf"
+      ],
+      "verified": "실제Vikingur3번미출전Signar37490756,2002-11-19. 전체경기벤치명단·선수프로필과FSF연보 일치. 잘못된Heredia449353슬롯만 정정. 빈통계 유지."
+    },
+    "18601656": {
+      "sources": [
+        "https://semafor.hns.family/en/players/32126/hrvoje-barisic/",
+        "https://www.tntsports.co.uk/football/uefa-europa-conference-league/2022-2023/live-fc-tobol-hsk-zrinjski_mtc1352912/live.shtml"
+      ],
+      "verified": "현재공급자67685와DB이름HrvojeBarisic/1991-02-03가HNS공식과일치,APIteams2021-07-01부터Zrinjski6213#4일치. 기존Moses오기는현재없어추가정정불필요."
+    }
+  }
+}
