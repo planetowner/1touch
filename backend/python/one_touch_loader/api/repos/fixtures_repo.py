@@ -47,6 +47,8 @@ SELECT
   f.away_penalty_score,
   th.name AS home_team_name,
   ta.name AS away_team_name,
+  th.short_name AS home_team_short_name,
+  ta.short_name AS away_team_short_name,
   th.image_path AS home_team_logo,
   ta.image_path AS away_team_logo
 FROM fixtures f

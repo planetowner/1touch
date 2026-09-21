@@ -32,7 +32,8 @@ def list_fixture_shots(fixture_id: int) -> list[dict]:
 
 def list_xg_standings(competition_id: int, season_id: int) -> list[dict]:
     return fetch_all_dict("""
-        SELECT x.position, x.team_id, t.name AS team_name, t.image_path AS team_logo,
+        SELECT x.position, x.team_id, t.name AS team_name, t.short_name AS team_short_name,
+               t.image_path AS team_logo,
                x.matches_played, x.xg, x.xga, x.xpts
         FROM xg_standings x JOIN seasons s ON s.season_id=x.season_id
         JOIN teams t ON t.team_id=x.team_id

@@ -73,6 +73,7 @@ def list_standings(
           st.previous_position,
           st.team_id,
           t.name AS team_name,
+          t.short_name AS team_short_name,
           t.image_path AS team_logo,
           st.won,
           st.draw,

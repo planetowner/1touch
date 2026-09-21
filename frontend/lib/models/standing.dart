@@ -12,6 +12,7 @@ class Standing {
   final String groupName; // empty string when phase == league
   final int teamId;
   final String? teamName;
+  final String? teamShortName;
   final String? teamLogo;
   final int position;
   final int? rankDelta;
@@ -32,6 +33,7 @@ class Standing {
     required this.groupName,
     required this.teamId,
     this.teamName,
+    this.teamShortName,
     this.teamLogo,
     required this.position,
     this.rankDelta,
@@ -54,6 +56,7 @@ class Standing {
       groupName: json['group_name'] as String? ?? '',
       teamId: json['team_id'] as int,
       teamName: json['team_name'] as String?,
+      teamShortName: json['team_short_name'] as String?,
       teamLogo: json['team_logo'] as String?,
       position: json['position'] as int,
       rankDelta: json['rank_delta'] as int?,
@@ -97,6 +100,7 @@ class XgStanding {
   final int seasonId;
   final int teamId;
   final String? teamName;
+  final String? teamShortName;
   final String? teamLogo;
   final int position;
   final int matchesPlayed;
@@ -114,6 +118,7 @@ class XgStanding {
     required this.seasonId,
     required this.teamId,
     this.teamName,
+    this.teamShortName,
     this.teamLogo,
     required this.position,
     required this.matchesPlayed,
@@ -133,6 +138,7 @@ class XgStanding {
       seasonId: json['season_id'] as int,
       teamId: json['team_id'] as int,
       teamName: json['team_name'] as String?,
+      teamShortName: json['team_short_name'] as String?,
       teamLogo: json['team_logo'] as String?,
       position: json['position'] as int,
       matchesPlayed: json['matches_played'] as int,

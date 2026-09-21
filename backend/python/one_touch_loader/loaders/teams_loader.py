@@ -49,6 +49,7 @@ CUP_BASE_COMPETITION_IDS = {
     570: 564,
 }
 
+# short_name은 앱에서 정한 표시 이름이라 공급자 재수집 때 덮어쓰지 않아요.
 SQL_UPSERT_TEAM = """
 INSERT INTO teams (team_id, name, short_code, image_path)
 VALUES (%s, %s, %s, %s)

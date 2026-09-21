@@ -1,0 +1,382 @@
+[
+  {
+    "team_id": 19,
+    "short_name": "Arsenal"
+  },
+  {
+    "team_id": 15,
+    "short_name": "Aston Villa"
+  },
+  {
+    "team_id": 52,
+    "short_name": "Bournemouth"
+  },
+  {
+    "team_id": 236,
+    "short_name": "Brentford"
+  },
+  {
+    "team_id": 78,
+    "short_name": "Brighton"
+  },
+  {
+    "team_id": 18,
+    "short_name": "Chelsea"
+  },
+  {
+    "team_id": 117,
+    "short_name": "Conventry"
+  },
+  {
+    "team_id": 51,
+    "short_name": "C Palace"
+  },
+  {
+    "team_id": 13,
+    "short_name": "Everton"
+  },
+  {
+    "team_id": 11,
+    "short_name": "Fulham"
+  },
+  {
+    "team_id": 22,
+    "short_name": "Hull City"
+  },
+  {
+    "team_id": 116,
+    "short_name": "Ipswich"
+  },
+  {
+    "team_id": 71,
+    "short_name": "Leeds"
+  },
+  {
+    "team_id": 8,
+    "short_name": "Liverpool"
+  },
+  {
+    "team_id": 9,
+    "short_name": "Man City"
+  },
+  {
+    "team_id": 14,
+    "short_name": "Man Utd"
+  },
+  {
+    "team_id": 20,
+    "short_name": "Newcastle"
+  },
+  {
+    "team_id": 63,
+    "short_name": "N Forest"
+  },
+  {
+    "team_id": 3,
+    "short_name": "Sunderland"
+  },
+  {
+    "team_id": 6,
+    "short_name": "Spurs"
+  },
+  {
+    "team_id": 2975,
+    "short_name": "Alaves"
+  },
+  {
+    "team_id": 13258,
+    "short_name": "Ath Club"
+  },
+  {
+    "team_id": 7980,
+    "short_name": "A Madrid"
+  },
+  {
+    "team_id": 83,
+    "short_name": "Barcelona"
+  },
+  {
+    "team_id": 36,
+    "short_name": "Celta Vigo"
+  },
+  {
+    "team_id": 429,
+    "short_name": "Deportivo"
+  },
+  {
+    "team_id": 1099,
+    "short_name": "Elche"
+  },
+  {
+    "team_id": 528,
+    "short_name": "Espanyol"
+  },
+  {
+    "team_id": 106,
+    "short_name": "Getafe"
+  },
+  {
+    "team_id": 3457,
+    "short_name": "Levante"
+  },
+  {
+    "team_id": 126,
+    "short_name": "Malaga"
+  },
+  {
+    "team_id": 459,
+    "short_name": "Osasuna"
+  },
+  {
+    "team_id": 9818,
+    "short_name": "R Santandr"
+  },
+  {
+    "team_id": 377,
+    "short_name": "R Vallecano"
+  },
+  {
+    "team_id": 485,
+    "short_name": "Real Betis"
+  },
+  {
+    "team_id": 3468,
+    "short_name": "Real Madrid"
+  },
+  {
+    "team_id": 676,
+    "short_name": "Sevilla"
+  },
+  {
+    "team_id": 594,
+    "short_name": "Sociedad"
+  },
+  {
+    "team_id": 214,
+    "short_name": "Valencia"
+  },
+  {
+    "team_id": 3477,
+    "short_name": "Villarreal"
+  },
+  {
+    "team_id": 1079,
+    "short_name": "1.FC Union Berlin"
+  },
+  {
+    "team_id": 503,
+    "short_name": "Bayern"
+  },
+  {
+    "team_id": 68,
+    "short_name": "Dortmund"
+  },
+  {
+    "team_id": 3588,
+    "short_name": "Elversberg"
+  },
+  {
+    "team_id": 3320,
+    "short_name": "Cologne"
+  },
+  {
+    "team_id": 366,
+    "short_name": "Frankfurt"
+  },
+  {
+    "team_id": 3543,
+    "short_name": "Freiburg"
+  },
+  {
+    "team_id": 2708,
+    "short_name": "Hamburg"
+  },
+  {
+    "team_id": 2726,
+    "short_name": "Hoffenheim"
+  },
+  {
+    "team_id": 3321,
+    "short_name": "Leverkusen"
+  },
+  {
+    "team_id": 683,
+    "short_name": "M’gladbach"
+  },
+  {
+    "team_id": 794,
+    "short_name": "Mainz"
+  },
+  {
+    "team_id": 2642,
+    "short_name": "Paderborn"
+  },
+  {
+    "team_id": 277,
+    "short_name": "RB Leipzig"
+  },
+  {
+    "team_id": 67,
+    "short_name": "Schalke"
+  },
+  {
+    "team_id": 3319,
+    "short_name": "Stuttgart"
+  },
+  {
+    "team_id": 82,
+    "short_name": "W Bremen"
+  },
+  {
+    "team_id": 113,
+    "short_name": "AC Milan"
+  },
+  {
+    "team_id": 708,
+    "short_name": "Atalanta"
+  },
+  {
+    "team_id": 8513,
+    "short_name": "Bologna"
+  },
+  {
+    "team_id": 585,
+    "short_name": "Cagliari"
+  },
+  {
+    "team_id": 268,
+    "short_name": "Como"
+  },
+  {
+    "team_id": 109,
+    "short_name": "Fiorentina"
+  },
+  {
+    "team_id": 4070,
+    "short_name": "Frosinone"
+  },
+  {
+    "team_id": 102,
+    "short_name": "Genoa"
+  },
+  {
+    "team_id": 2930,
+    "short_name": "Inter"
+  },
+  {
+    "team_id": 625,
+    "short_name": "Juventus"
+  },
+  {
+    "team_id": 43,
+    "short_name": "Lazio"
+  },
+  {
+    "team_id": 7790,
+    "short_name": "Lecce"
+  },
+  {
+    "team_id": 1628,
+    "short_name": "Monza"
+  },
+  {
+    "team_id": 597,
+    "short_name": "Napoli"
+  },
+  {
+    "team_id": 398,
+    "short_name": "Parma"
+  },
+  {
+    "team_id": 37,
+    "short_name": "Roma"
+  },
+  {
+    "team_id": 2714,
+    "short_name": "Sassuolo"
+  },
+  {
+    "team_id": 613,
+    "short_name": "Torino"
+  },
+  {
+    "team_id": 346,
+    "short_name": "Udinese"
+  },
+  {
+    "team_id": 267,
+    "short_name": "Venezia"
+  },
+  {
+    "team_id": 776,
+    "short_name": "Angers"
+  },
+  {
+    "team_id": 3682,
+    "short_name": "Auxerre"
+  },
+  {
+    "team_id": 266,
+    "short_name": "Brest"
+  },
+  {
+    "team_id": 1055,
+    "short_name": "Le Havre"
+  },
+  {
+    "team_id": 7758,
+    "short_name": "Le Mans"
+  },
+  {
+    "team_id": 690,
+    "short_name": "Lille"
+  },
+  {
+    "team_id": 9257,
+    "short_name": "Lorient"
+  },
+  {
+    "team_id": 79,
+    "short_name": "Lyon"
+  },
+  {
+    "team_id": 44,
+    "short_name": "Marseille"
+  },
+  {
+    "team_id": 6789,
+    "short_name": "Monaco"
+  },
+  {
+    "team_id": 450,
+    "short_name": "Nice"
+  },
+  {
+    "team_id": 4508,
+    "short_name": "Paris FC"
+  },
+  {
+    "team_id": 591,
+    "short_name": "PSG"
+  },
+  {
+    "team_id": 271,
+    "short_name": "RC Lens"
+  },
+  {
+    "team_id": 598,
+    "short_name": "Rennes"
+  },
+  {
+    "team_id": 686,
+    "short_name": "Strasbourg"
+  },
+  {
+    "team_id": 289,
+    "short_name": "Toulouse"
+  },
+  {
+    "team_id": 7047,
+    "short_name": "Troyes"
+  }
+]
