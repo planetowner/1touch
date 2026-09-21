@@ -17,6 +17,8 @@ class Fixture {
   final int awayTeamId;
   final String? homeTeamName;
   final String? awayTeamName;
+  final String? homeTeamShortName;
+  final String? awayTeamShortName;
   final String? homeTeamLogo;
   final String? awayTeamLogo;
   final CompetitionType competitionType;
@@ -43,6 +45,8 @@ class Fixture {
     required this.awayTeamId,
     this.homeTeamName,
     this.awayTeamName,
+    this.homeTeamShortName,
+    this.awayTeamShortName,
     this.homeTeamLogo,
     this.awayTeamLogo,
     required this.competitionType,
@@ -73,6 +77,8 @@ class Fixture {
       awayTeamId: json['away_team_id'] as int,
       homeTeamName: json['home_team_name'] as String?,
       awayTeamName: json['away_team_name'] as String?,
+      homeTeamShortName: json['home_team_short_name'] as String?,
+      awayTeamShortName: json['away_team_short_name'] as String?,
       homeTeamLogo: json['home_team_logo'] as String?,
       awayTeamLogo: json['away_team_logo'] as String?,
       competitionType:
