@@ -241,6 +241,14 @@ void main() {
           .value,
       61,
     );
+    expect(
+      tester
+          .widget<RadarChart>(find.byType(RadarChart))
+          .data
+          .dataSets[1]
+          .borderColor,
+      const Color(0xFF1B6EBD).withValues(alpha: 0.85),
+    );
     expect(tester.takeException(), isNull);
   });
 

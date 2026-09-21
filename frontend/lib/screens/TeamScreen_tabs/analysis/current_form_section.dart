@@ -431,9 +431,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           ? _analysisTeamPrimaryColor(widget.team)
           : Color(currentTeam.primaryColor),
       opponentTeamName: comparison.teamName ?? comparisonTeam?.name,
-      opponentPrimaryFallback: comparisonTeam == null
-          ? null
-          : Color(comparisonTeam.primaryColor),
+      opponentPrimaryFallback:
+          comparisonTeam == null ? null : Color(comparisonTeam.primaryColor),
       background: appColors.cardBackground,
     );
     final teamPrimaryColor = comparisonColors.anchor;
@@ -724,9 +723,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           ? _analysisTeamPrimaryColor(widget.team)
           : Color(currentTeam.primaryColor),
       opponentTeamName: comparison.teamName ?? comparisonTeam?.name,
-      opponentPrimaryFallback: comparisonTeam == null
-          ? null
-          : Color(comparisonTeam.primaryColor),
+      opponentPrimaryFallback:
+          comparisonTeam == null ? null : Color(comparisonTeam.primaryColor),
       background: appColors.cardBackground,
     );
     return Padding(

@@ -302,6 +302,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             size: 32,
                           ),
                         ),
+                        SizedBox(
+                          width: 16,
+                        ),
                         // New Dropdown Feature
                         GestureDetector(
                           onTap: () => TeamSelectionSheet.show(
@@ -336,6 +339,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                           ),
+                        ),
+                        SizedBox(
+                          width: 16,
                         ),
                         IconButton(
                           onPressed: () {
