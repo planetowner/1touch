@@ -47,6 +47,7 @@ void main() {
           positionGroupCode: 'DEF',
           positionCode: 'LB',
           starts: 18,
+          jerseyNumber: 27,
         ),
       ],
     );
@@ -67,6 +68,8 @@ void main() {
     expect(result.players.first.playerName, isNull);
     expect(result.players.last.positionGroupCode, 'DEF');
     expect(result.players.last.positionCode, 'LB');
+    expect(result.players.last.jerseyNumber, 27);
+    expect(result.players.first.jerseyNumber, isNull);
     expect(() => result.players.clear(), throwsUnsupportedError);
   });
 }

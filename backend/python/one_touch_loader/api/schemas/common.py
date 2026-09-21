@@ -97,6 +97,7 @@ class BestElevenPlayerOut(BaseModel):
     player_id: int
     player_name: Optional[str] = None
     player_image: Optional[str] = None
+    jersey_number: Optional[int] = None
     position_group_code: Optional[str] = None
     position_code: Optional[str] = None
     starts: int
