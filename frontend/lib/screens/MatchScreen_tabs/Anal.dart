@@ -166,18 +166,13 @@ class _AnalysisTabState extends State<AnalysisTab> {
             if (tacticalAvailable) ...[
               const SizedBox(height: 48),
               _buildProgressionBlock(),
-              const SizedBox(height: 48),
-              _buildDefensiveActivityBlock(),
             ],
             if (!tacticalAvailable && !shotMapAvailable) ...[
               const SizedBox(height: 48),
               _buildUnavailableNotice(),
             ],
           ],
-          if (_defenseRows().isNotEmpty ||
-              widget.detail?.expectedGoals != null ||
-              widget.fixture.homeScore != null ||
-              widget.fixture.awayScore != null) ...[
+          if (tacticalAvailable || _defenseRows().isNotEmpty) ...[
             const SizedBox(height: 48),
             _buildDefenseBlock(),
           ],
@@ -565,76 +560,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _buildDefensiveActivityBlock() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    final selected = _selectedAnalysis?.defensiveActivity;
-    final events = [
-      for (final action in selected?.actions ?? const <TacticalPitchPoint>[])
-        Offset(action.x / 100, action.y / 100),
-    ];
-    final average = selected?.averageRegainX;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('PRESSURE', style: Body2_b.style),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.darkGrey : AppPalette.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
-          ),
-          child: Column(
-            children: [
-              _buildTeamToggle(),
-              const SizedBox(height: 24),
-              DefensiveActivityDiagram(
-                events: events,
-                bands: average == null ? const [] : [average / 100],
-                lineColor: foreground.withValues(alpha: 0.30),
-                dotColor: foreground,
-              ),
-              const SizedBox(height: 24),
-              _buildStatRow(
-                'Recoveries',
-                _homeAnalysis?.defensiveActivity.recoveries,
-                _awayAnalysis?.defensiveActivity.recoveries,
-              ),
-              _buildStatRow(
-                'High Regains',
-                _homeAnalysis?.defensiveActivity.highRegains,
-                _awayAnalysis?.defensiveActivity.highRegains,
-              ),
-              _buildStatRow(
-                'Average Regain Height',
-                _homeAnalysis?.defensiveActivity.averageRegainHeightMetres,
-                _awayAnalysis?.defensiveActivity.averageRegainHeightMetres,
-                suffix: 'm',
-              ),
-              _buildStatRow(
-                'Opponent Half',
-                _homeAnalysis?.defensiveActivity.opponentHalfPercentage,
-                _awayAnalysis?.defensiveActivity.opponentHalfPercentage,
-                suffix: '%',
-              ),
-              if (selected?.complete == false) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Position data incomplete (${selected?.missingPositionCount ?? 0} missing)',
-                  style: Body2.style.copyWith(
-                    color: AppColors.of(context).mutedForeground,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTeamToggle() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
@@ -751,40 +676,70 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildDefenseBlock() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBackground = isDark ? AppPalette.darkGrey : AppPalette.white;
+    final comparisonColors = _comparisonColors(cardBackground);
+    final selectedTeamColor =
+        showHome ? comparisonColors.anchor : comparisonColors.opponent;
     final rows = _defenseRows();
-    final expectedGoals = widget.detail?.expectedGoals;
+    final zoneDeltas = _defenseZoneDeltas();
+    final missingPositionCount = [
+      _homeAnalysis?.defensiveActivity,
+      _awayAnalysis?.defensiveActivity,
+    ].fold<int>(
+      0,
+      (total, activity) =>
+          total +
+          (activity?.complete == false
+              ? activity?.missingPositionCount ?? 0
+              : 0),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("DEFENSE", style: Body2_b.style),
+          const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('DEFENSE', style: Body2_b.style),
+              SizedBox(width: 4),
+              Tooltip(
+                message:
+                    'Pitch values compare each team’s share of recoveries by third.',
+                child: Icon(Icons.help_outline, size: 14),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           Container(
+            key: const ValueKey('match-analysis-defense-card'),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: isDark ? AppPalette.darkGrey : AppPalette.white,
+              color: cardBackground,
               borderRadius: BorderRadius.circular(16),
               boxShadow: appCardShadows(context),
             ),
             child: Column(
               children: [
-                if (widget.fixture.homeScore != null ||
-                    widget.fixture.awayScore != null) ...[
-                  _statBoxRow(
-                    leftValue: _formatNumber(widget.fixture.awayScore),
-                    label: 'GA',
-                    rightValue: _formatNumber(widget.fixture.homeScore),
+                _buildTeamToggle(),
+                if (zoneDeltas != null) ...[
+                  const SizedBox(height: 24),
+                  DefenseTerritoryDiagram(
+                    zoneDeltas: zoneDeltas,
+                    selectedTeamColor: selectedTeamColor,
+                    lineColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.55),
                   ),
                 ],
-                if (expectedGoals != null) ...[
-                  if (widget.fixture.homeScore != null ||
-                      widget.fixture.awayScore != null)
-                    const SizedBox(height: 16),
-                  _statBoxRow(
-                    leftValue: _formatNumber(expectedGoals.homeXga),
-                    label: 'xGA',
-                    rightValue: _formatNumber(expectedGoals.awayXga),
+                if (zoneDeltas == null && missingPositionCount > 0) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Recovery comparison incomplete '
+                    '($missingPositionCount missing)',
+                    style: Body2.style.copyWith(
+                      color: AppColors.of(context).mutedForeground,
+                    ),
                   ),
                 ],
                 if (rows.isNotEmpty) ...[
@@ -797,6 +752,36 @@ class _AnalysisTabState extends State<AnalysisTab> {
           ),
         ],
       ),
+    );
+  }
+
+  List<double>? _defenseZoneDeltas() {
+    final home = _defenseZonePercentages(_homeAnalysis?.defensiveActivity);
+    final away = _defenseZonePercentages(_awayAnalysis?.defensiveActivity);
+    if (home == null || away == null) return null;
+    final selected = showHome ? home : away;
+    final opponent = showHome ? away : home;
+    return List.generate(
+      3,
+      (index) => selected[index] - opponent[index],
+      growable: false,
+    );
+  }
+
+  List<double>? _defenseZonePercentages(MatchDefensiveActivity? activity) {
+    if (activity == null || !activity.complete || activity.actions.isEmpty) {
+      return null;
+    }
+    final counts = [0, 0, 0];
+    for (final action in activity.actions) {
+      final zone = (action.x.clamp(0, 99.999) / (100 / 3)).floor();
+      counts[zone] += 1;
+    }
+    final total = activity.actions.length;
+    return List.generate(
+      3,
+      (index) => counts[index] * 100 / total,
+      growable: false,
     );
   }
 
@@ -880,57 +865,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
             .replaceFirst(RegExp(r'0+$'), '')
             .replaceFirst(RegExp(r'\.$'), '');
     return '$text$suffix';
-  }
-
-  Widget _statBoxRow({
-    required String leftValue,
-    required String label,
-    required String rightValue,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Left stat box (e.g. 2)
-        Container(
-          width: 80,
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFF5C5C),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            leftValue,
-            style: Heading4.style.copyWith(color: Colors.white),
-          ),
-        ),
-
-        // Center label (e.g. GA)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-          child: Text(
-            label,
-            style: Body2_b.style,
-          ),
-        ),
-
-        // Right stat box (e.g. 1)
-        Container(
-          width: 80,
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-          alignment: Alignment.topRight,
-          decoration: BoxDecoration(
-            color: isDark ? AppPalette.white : AppPalette.lightModeDarkGrey,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            rightValue,
-            style: Heading4.style.copyWith(color: Colors.black),
-          ),
-        ),
-      ],
-    );
   }
 }
 
@@ -1227,89 +1161,141 @@ class _ProgressionPainter extends CustomPainter {
       oldDelegate.labelColor != labelColor;
 }
 
-// Full-pitch recovery diagram: a vertical average-regain band plus dots for
-// verified outfield Recovery events.
-class DefensiveActivityDiagram extends StatelessWidget {
-  final List<Offset> events;
-  final List<double> bands;
+// Team-relative recovery distribution across the defensive, middle, and
+// attacking thirds. Each value is the selected team's share minus its
+// opponent's share, so the three displayed differences sum to roughly zero.
+class DefenseTerritoryDiagram extends StatelessWidget {
+  final List<double> zoneDeltas;
+  final Color selectedTeamColor;
   final Color lineColor;
-  final Color dotColor;
-  const DefensiveActivityDiagram({
+  const DefenseTerritoryDiagram({
     super.key,
-    required this.events,
-    required this.bands,
+    required this.zoneDeltas,
+    required this.selectedTeamColor,
     required this.lineColor,
-    required this.dotColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1.6,
-      child: CustomPaint(
-        painter: _DefensiveActivityPainter(
-          events,
-          bands,
-          lineColor,
-          dotColor,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(5),
+      child: AspectRatio(
+        key: const ValueKey('match-defense-territory'),
+        aspectRatio: 1.6,
+        child: CustomPaint(
+          painter: _DefenseTerritoryPainter(
+            zoneDeltas,
+            selectedTeamColor,
+            lineColor,
+          ),
         ),
       ),
     );
   }
 }
 
-class _DefensiveActivityPainter extends CustomPainter {
-  final List<Offset> events;
-  final List<double> bands;
+class _DefenseTerritoryPainter extends CustomPainter {
+  final List<double> zoneDeltas;
+  final Color selectedTeamColor;
   final Color lineColor;
-  final Color dotColor;
-  const _DefensiveActivityPainter(
-    this.events,
-    this.bands,
+  const _DefenseTerritoryPainter(
+    this.zoneDeltas,
+    this.selectedTeamColor,
     this.lineColor,
-    this.dotColor,
   );
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bandPaint = Paint()
-      ..color = const Color(0xFFB23A3A).withValues(alpha: 0.45);
-    final bandWidth = size.width * 0.1;
-    for (final bx in bands) {
+    final zoneWidth = size.width / 3;
+    for (var index = 0; index < 3; index += 1) {
+      final delta = zoneDeltas[index];
       canvas.drawRect(
-        Rect.fromLTWH(
-            bx * size.width - bandWidth / 2, 0, bandWidth, size.height),
-        bandPaint,
+        Rect.fromLTWH(index * zoneWidth, 0, zoneWidth, size.height),
+        Paint()
+          ..color = selectedTeamColor.withValues(
+            alpha: defenseTerritoryOpacity(delta),
+          ),
       );
     }
 
     final line = _pitchLinePaint(lineColor);
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), line);
-    canvas.drawLine(
-        Offset(size.width / 2, 0), Offset(size.width / 2, size.height), line);
+    final pitch = (Offset.zero & size).deflate(line.strokeWidth / 2);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(pitch, const Radius.circular(5)),
+      line,
+    );
+    for (final fraction in const [1 / 3, 1 / 2, 2 / 3]) {
+      canvas.drawLine(
+        Offset(size.width * fraction, 0),
+        Offset(size.width * fraction, size.height),
+        line,
+      );
+    }
     canvas.drawCircle(
-        Offset(size.width / 2, size.height / 2), size.height * 0.22, line);
+      Offset(size.width / 2, size.height / 2),
+      size.height * 0.17,
+      line,
+    );
 
-    final goalW = size.width * 0.04;
-    final goalH = size.height * 0.36;
+    final boxWidth = size.width * 0.13;
+    final boxTop = size.height * 0.20;
+    final boxHeight = size.height * 0.60;
+    canvas.drawRect(Rect.fromLTWH(0, boxTop, boxWidth, boxHeight), line);
     canvas.drawRect(
-        Rect.fromLTWH(0, (size.height - goalH) / 2, goalW, goalH), line);
-    canvas.drawRect(
-        Rect.fromLTWH(
-            size.width - goalW, (size.height - goalH) / 2, goalW, goalH),
-        line);
+      Rect.fromLTWH(size.width - boxWidth, boxTop, boxWidth, boxHeight),
+      line,
+    );
 
-    final dotPaint = Paint()..color = dotColor;
-    for (final e in events) {
-      canvas.drawCircle(
-          Offset(e.dx * size.width, e.dy * size.height), 4, dotPaint);
+    final arrowColor = AppPalette.white.withValues(alpha: 0.48);
+    final arrowY = size.height / 2;
+    final arrowStart = size.width * 0.72;
+    final arrowShoulder = size.width * 0.86;
+    final arrowTip = size.width * 0.93;
+    canvas.drawLine(
+      Offset(arrowStart, arrowY),
+      Offset(arrowShoulder, arrowY),
+      Paint()
+        ..color = arrowColor
+        ..strokeWidth = size.height * 0.12
+        ..strokeCap = StrokeCap.square,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(arrowShoulder, arrowY - size.height * 0.18)
+        ..lineTo(arrowTip, arrowY)
+        ..lineTo(arrowShoulder, arrowY + size.height * 0.18)
+        ..close(),
+      Paint()..color = arrowColor,
+    );
+
+    for (var index = 0; index < 3; index += 1) {
+      final value = zoneDeltas[index];
+      final label = value >= 0
+          ? '+${value.toStringAsFixed(1)}%'
+          : '${value.toStringAsFixed(1)}%';
+      final text = TextPainter(
+        text: TextSpan(
+          text: label,
+          style: Heading4.style.copyWith(color: AppPalette.white),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: zoneWidth);
+      text.paint(
+        canvas,
+        Offset(
+          zoneWidth * (index + 0.5) - text.width / 2,
+          size.height / 2 - text.height / 2,
+        ),
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _DefensiveActivityPainter oldDelegate) =>
-      oldDelegate.events != events ||
-      oldDelegate.bands != bands ||
-      oldDelegate.lineColor != lineColor ||
-      oldDelegate.dotColor != dotColor;
+  bool shouldRepaint(covariant _DefenseTerritoryPainter oldDelegate) =>
+      oldDelegate.zoneDeltas != zoneDeltas ||
+      oldDelegate.selectedTeamColor != selectedTeamColor ||
+      oldDelegate.lineColor != lineColor;
 }
+
+double defenseTerritoryOpacity(double zoneDelta) =>
+    (0.5 + zoneDelta / 100).clamp(0.0, 1.0).toDouble();
