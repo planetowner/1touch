@@ -376,6 +376,10 @@ class FixtureDetailsStorageTests(unittest.TestCase):
                                        side_effect=lambda *args, **kwargs: nullcontext())
         ranking_refresh.start()
         self.addCleanup(ranking_refresh.stop)
+        role_refresh = patch.object(details.squad_roles, 'refresh_squad_roles_after_fixture',
+                                    side_effect=lambda *args, **kwargs: nullcontext())
+        role_refresh.start()
+        self.addCleanup(role_refresh.stop)
         # 운영 DB 대신 메모리 안에서 실제 INSERT·DELETE·FK·rollback을 확인해요.
         self.connection = sqlite3.connect(":memory:")
         self.connection.execute("PRAGMA foreign_keys = ON")

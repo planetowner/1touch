@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import DefaultDict, Dict, Iterable, List, Optional, Set, Tuple
 
 from ..core.db import fetch_all, transaction
+from ..core.player_membership import season_start_date as _season_start_date
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient
 
@@ -146,19 +146,6 @@ def _require_date(value, field_name: str) -> date:
         except ValueError as exc:
             raise ValueError(f"Invalid date: {field_name}={value!r}") from exc
     raise ValueError(f"Missing or invalid date: {field_name}={value!r}")
-
-
-def _season_start_date(season_name: str) -> date:
-    match = re.fullmatch(r"(\d{4})/(\d{4})", season_name)
-    if match is None:
-        raise ValueError(f"Unsupported season name: {season_name!r}")
-
-    start_year = int(match.group(1))
-    end_year = int(match.group(2))
-    if end_year != start_year + 1:
-        raise ValueError(f"Unsupported season year range: {season_name!r}")
-
-    return date(start_year, 7, 1)
 
 
 def _normalize_squad_item(

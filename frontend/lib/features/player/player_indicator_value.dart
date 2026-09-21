@@ -6,7 +6,8 @@ import 'package:onetouch/models/player_indicators.dart';
 class PlayerIndicatorValue extends StatelessWidget {
   const PlayerIndicatorValue({
     super.key,
-    required this.score,
+    this.score,
+    this.label,
     required this.loading,
     required this.failed,
     required this.explanation,
@@ -14,6 +15,7 @@ class PlayerIndicatorValue extends StatelessWidget {
   });
 
   final PlayerIndicatorScore? score;
+  final String? label;
   final bool loading;
   final bool failed;
   final String explanation;
@@ -25,7 +27,7 @@ class PlayerIndicatorValue extends StatelessWidget {
         ? 'Loading'
         : failed
             ? 'Unavailable'
-            : score?.grade ?? '—';
+            : label ?? score?.grade ?? '—';
     return Tooltip(
       message: explanation,
       triggerMode: TooltipTriggerMode.tap,
@@ -42,8 +44,11 @@ class PlayerIndicatorValue extends StatelessWidget {
           else if (failed)
             InkResponse(
               onTap: onRetry,
-              child:
-                  const Icon(Icons.refresh, size: 20, semanticLabel: 'Retry'),
+              child: const Icon(
+                Icons.refresh,
+                size: 20,
+                semanticLabel: 'Retry',
+              ),
             )
           else if (score?.band != null)
             Semantics(

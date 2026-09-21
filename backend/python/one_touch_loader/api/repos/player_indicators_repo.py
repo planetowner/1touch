@@ -58,7 +58,7 @@ def _build_current_snapshot(as_of: datetime) -> dict[int, dict]:
         try:
             with conn.cursor(dictionary=True) as cur:
                 cur.execute(f"""
-                    SELECT sm.player_id, sm.team_id, sm.season_id, sm.position_group_id,
+                    SELECT sm.player_id, sm.team_id, sm.season_id, sm.position_group_id, sm.squad_role,
                            s.competition_id, s.name AS season_name, w.estimated_weekly_gross_eur
                     FROM team_squad_members sm JOIN seasons s ON s.season_id=sm.season_id
                     LEFT JOIN player_wages w ON w.team_id=sm.team_id
@@ -88,7 +88,9 @@ def _build_current_snapshot(as_of: datetime) -> dict[int, dict]:
     if current_names != {calibration["applies_to_season"]}:
         calibration = None
     items = build_player_indicators(roster, matches, fixtures, calibration, as_of=as_of)
+    roles = {(r['player_id'], r['team_id'], r['season_id']): r['squad_role'] for r in roster}
     for result in items:
+        result['squad_role'] = roles[(result['player_id'], result['team_id'], result['season_id'])]
         result["form_calibration"] = calibration
         result["as_of"] = as_of.replace(tzinfo=timezone.utc)
         if result["form"]["last_match_at"] is not None:
