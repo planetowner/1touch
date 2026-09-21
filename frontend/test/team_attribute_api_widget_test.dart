@@ -73,6 +73,11 @@ void main() {
         chart.data.dataSets.first.dataEntries.map((entry) => entry.value),
         [79.76, 73.57, 86.39, 72.96, 82.8],
       );
+      expect(chart.data.dataSets.first.borderColor, const Color(0xFFD92455));
+      expect(
+        chart.data.dataSets.first.fillColor,
+        const Color(0xFFD92455).withValues(alpha: 0.3),
+      );
       expect(
         find.byKey(const ValueKey('analysis-attributes-filter')),
         findsOneWidget,
