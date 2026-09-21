@@ -1,20 +1,29 @@
 from datetime import datetime, timezone
 
 from ..db import fetch_all_dict, fetch_one_dict
-from ...core.player_rating_percentile import display_score, rank_players
+from ...core.player_rating_percentile import (
+    RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME, display_score, rank_players,
+)
 
 
 def get_player_rankings(season_id: int, *, limit: int = 20, offset: int = 0) -> dict | None:
-    metadata = fetch_one_dict("""
+    league_ids = ','.join(map(str, RATING_COMPETITION_IDS))
+    metadata = fetch_one_dict(f"""
         SELECT s.competition_id, s.season_id, s.name AS season_name,
-               ref.start_season_name, ref.end_season_name, ref.minimum_rated_matches,
-               UNIX_TIMESTAMP(ref.frozen_at) AS frozen_epoch,
+               ref.start_season_name, s.name AS end_season_name, ref.minimum_rated_matches,
+               UNIX_TIMESTAMP(ref.updated_at) AS reference_updated_epoch,
                (SELECT COUNT(*) FROM player_rating_reference_samples sample
-                WHERE sample.competition_id=ref.competition_id) AS sample_count
+                JOIN seasons sample_season ON sample_season.season_id=sample.season_id
+                WHERE sample.competition_id IN ({league_ids})
+                  AND sample_season.name BETWEEN ref.start_season_name AND s.name) AS sample_count
         FROM seasons s
         JOIN player_rating_references ref ON ref.competition_id=s.competition_id
         WHERE s.season_id=%s
-    """, (season_id,))
+          AND s.competition_id IN ({league_ids})
+          AND s.name BETWEEN ref.start_season_name AND ref.end_season_name
+          AND (SELECT COUNT(*) FROM player_rating_references ready
+               WHERE ready.competition_id IN ({league_ids}) AND ready.start_season_name=%s)=%s
+    """, (season_id, REFERENCE_START_SEASON_NAME, len(RATING_COMPETITION_IDS)))
     if metadata is None:
         return None
     rows = fetch_all_dict("""
@@ -41,8 +50,9 @@ def get_player_rankings(season_id: int, *, limit: int = 20, offset: int = 0) -> 
             "start_season_name": metadata["start_season_name"],
             "end_season_name": metadata["end_season_name"],
             "minimum_rated_matches": metadata["minimum_rated_matches"],
+            "competition_ids": list(RATING_COMPETITION_IDS),
             "sample_count": metadata["sample_count"],
-            "frozen_at": datetime.fromtimestamp(float(metadata["frozen_epoch"]), tz=timezone.utc),
+            "updated_at": datetime.fromtimestamp(float(metadata["reference_updated_epoch"]), tz=timezone.utc),
         },
         "total": len(ranked), "limit": limit, "offset": offset, "items": items,
     }

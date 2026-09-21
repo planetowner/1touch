@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
@@ -29,6 +31,13 @@ void main() async {
   // Initializes the team catalog before loading and validating stored IDs.
   await currentUserPreferences.initialize();
   await playerRepository.initializeFollowing();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // 이미 초기화된 경우 무시
+  }
   runApp(const MyApp());
 }
 
@@ -94,9 +103,9 @@ final GoRouter _router = GoRouter(
                 path: ':id',
                 builder: (context, state) {
                   final playerId = state.pathParameters['id']!;
-                  final player = playerRepository.findById(playerId) ??
-                      playerRepository.allPlayers.first;
-                  return PlayerCard(player: player);
+                  final player = playerRepository.findById(playerId);
+                  return PlayerCard(
+                      player: player, playerId: int.tryParse(playerId));
                 },
               ),
             ],

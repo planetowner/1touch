@@ -36,6 +36,18 @@ METRICS = {
     "shots": ("Total shots", "count", (42,)),
     "dribble_attempts": ("Dribble attempts", "count", (108,)),
     "dribble_success_rate": ("Dribble success rate", "percentage", (109, 108)),
+    "duels_won": ("Duels won", "count", (106,)),
+    "long_balls_won": ("Long balls completed", "count", (123,)),
+    "accurate_passes": ("Accurate passes", "count", (116,)),
+    "passes_attempted": ("Passes", "count", (80,)),
+}
+
+# Overview와 Matches는 경기별 포지션 대신 이번 시즌 최다 출전 포지션을 사용해요.
+SUMMARY_METRICS = {
+    24: ("saves", "long_balls_won", "accurate_passes"),
+    25: ("tackles", "interceptions", "duels_won"),
+    26: ("assists", "touches", "passes_attempted"),
+    27: ("goals", "assists", "shots"),
 }
 
 # GK High Claim과 DF Dribbling은 제외했어요. 공통 지표는 위 정의를 재사용해요.
@@ -81,7 +93,7 @@ STORED_STAT_TYPE_IDS = frozenset(
 ) | {MAN_OF_MATCH_TYPE_ID} | frozenset(TEAM_TOTALS)
 
 
-def _metric(code: str, stats: dict, xg) -> dict:
+def build_metric(code: str, stats: dict, xg) -> dict:
     label, kind, type_ids = METRICS[code]
     result = {
         "code": code, "label": label, "kind": kind,
@@ -129,6 +141,14 @@ def build_team_player_statistics(team_ids: list[int], lineups: list[dict], stat_
     return result
 
 
+def build_categories(position_id: int | None, stats: dict, xg) -> list[dict]:
+    return [
+        {"code": code, "label": label,
+         "metrics": [build_metric(metric, stats, xg) for metric in metric_codes]}
+        for code, label, metric_codes in CATEGORIES.get(position_id, ())
+    ]
+
+
 def build_player_statistics(lineups: list[dict], stat_rows: list[dict], xg_rows: list[dict]) -> list[dict]:
     by_player = _stats_by_player(stat_rows)
     xg_by_player = {row["player_id"]: row["xg"] for row in xg_rows}
@@ -143,11 +163,6 @@ def build_player_statistics(lineups: list[dict], stat_rows: list[dict], xg_rows:
             "minutes_played": lineup["minutes_played"], "rating": lineup["rating"],
             # 최고 평점으로 POM을 만들어 내지 않아요. 미제공은 null로 남겨요.
             "is_man_of_match": None if pom is None else bool(pom),
-            "categories": [
-                {"code": code, "label": label,
-                 "metrics": [_metric(metric, stats, xg_by_player.get(lineup["player_id"]))
-                             for metric in metric_codes]}
-                for code, label, metric_codes in CATEGORIES.get(position_id, ())
-            ],
+            "categories": build_categories(position_id, stats, xg_by_player.get(lineup["player_id"])),
         })
     return players

@@ -9,6 +9,9 @@ import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/Career.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/data/players/api/api_player_detail_response.dart';
+import 'support/player_detail_fixture.dart';
 
 void main() {
   test('2025/26 catalog has unique stable IDs and balanced coverage', () {
@@ -114,77 +117,81 @@ void main() {
     );
   });
 
-  testWidgets('player profile renders the selected repository player',
+  testWidgets('player profile uses the provider identity and current team',
       (tester) async {
-    final player = playerRepository.findById('lee-kang-in')!;
-
-    await tester.pumpWidget(
-      MaterialApp(home: PlayerCard(player: player)),
-    );
+    final detail = detailFixture();
+    await tester.pumpWidget(MaterialApp(
+        home: PlayerCard(playerId: detail.playerId, initialDetail: detail)));
     await tester.pumpAndSettle();
-
-    expect(find.text('Lee Kang-in'), findsOneWidget);
-    expect(find.text('Paris Saint-Germain'), findsAtLeastNWidgets(1));
-    expect(find.text('South Korea 🇰🇷'), findsOneWidget);
+    expect(find.text(detail.profile.name), findsOneWidget);
+    expect(find.text(detail.profile.teamName!), findsAtLeastNWidgets(1));
+    expect(find.text(detail.profile.nationality!), findsOneWidget);
     expect(find.text('Heungmin Son'), findsNothing);
   });
 
-  testWidgets('career tab joins team trophies and expands season competitions',
+  testWidgets(
+      'career joins actual team trophies and expands competition history',
       (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
+    final json = playerDetailJson();
+    json['honours'] = [
+      {
+        'team_id': 591,
+        'team_name': 'Paris Saint-Germain',
+        'team_image': null,
+        'competition_id': 301,
+        'competition_name': 'Ligue 1',
+        'season_name': '2024/2025'
+      },
+    ];
+    final detail = playerDetailFromJson(json);
+    await tester.binding.setSurfaceSize(const Size(430, 932));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    final player = playerRepository.findById('lee-kang-in')!;
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: CareerTab(player: player)),
-      ),
-    );
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: PlayerDetailScope(
+                store: PlayerDetailStore(
+                    playerId: detail.playerId, initial: detail),
+                child: CareerTab(playerId: detail.playerId)))));
     await tester.pumpAndSettle();
-
-    expect(find.text('PARIS SAINT GERMAIN'), findsOneWidget);
-    expect(find.text('Ligue 1'), findsOneWidget);
-    expect(find.text('UEFA Champions League'), findsOneWidget);
-    expect(
-      find.byKey(const Key('career-competition-591-25/26-LIGUE 1')),
-      findsOneWidget,
-    );
-
-    final newestSeason = find.byKey(
-      const Key('career-season-591-25/26'),
-    );
-    await tester.ensureVisible(newestSeason);
+    expect(find.text('Paris Saint-Germain'), findsOneWidget);
+    expect(find.text('PERSONAL'), findsNothing);
+    final first = detail.career.first;
+    final key = '${first.season}-${first.teamId}';
+    final competition = find
+        .byKey(Key('career-competition-$key-${first.competitions.first.id}'));
+    expect(competition, findsOneWidget);
+    final season = find.byKey(Key('career-season-$key'));
+    await tester.ensureVisible(season);
     await tester.pumpAndSettle();
-    await tester.tap(newestSeason);
+    await tester.tap(season);
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('career-competition-591-25/26-LIGUE 1')),
-      findsNothing,
-    );
+    expect(competition, findsNothing);
   });
 
-  testWidgets('career competition filter works while trophy filter is hidden',
+  testWidgets(
+      'career filter uses competition IDs and excludes unmatched seasons',
       (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    final player = playerRepository.findById('lee-kang-in')!;
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: CareerTab(player: player)),
-      ),
-    );
+    final detail = detailFixture();
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: PlayerDetailScope(
+                store: PlayerDetailStore(
+                    playerId: detail.playerId, initial: detail),
+                child: CareerTab(playerId: detail.playerId)))));
     await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const Key('career-competition-filter')));
+    final id = detail.career.first.competitions.first.id;
+    tester
+        .widget<DropdownButtonFormField<int>>(
+            find.byKey(const Key('career-competition-filter')))
+        .onChanged!(id);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('UCL').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('UCL'), findsAtLeastNWidgets(1));
-    expect(find.byKey(const Key('career-season-591-25/26')), findsOneWidget);
-    expect(find.byKey(const Key('career-season-645-22/23')), findsNothing);
-    expect(find.byKey(const Key('career-trophy-filter')), findsNothing);
+    for (final season in detail.career) {
+      expect(
+          find.byKey(Key('career-season-${season.season}-${season.teamId}')),
+          season.competitions.any((c) => c.id == id)
+              ? findsOneWidget
+              : findsNothing);
+    }
     expect(find.text('PERSONAL'), findsNothing);
   });
 }

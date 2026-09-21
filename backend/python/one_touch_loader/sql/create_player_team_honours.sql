@@ -3,6 +3,10 @@ CREATE TABLE IF NOT EXISTS player_team_honours (
   team_id   BIGINT UNSIGNED NOT NULL,
   competition_id BIGINT UNSIGNED NOT NULL,
   season_id BIGINT UNSIGNED NOT NULL,
+  team_name VARCHAR(160) NULL,
+  team_image_path VARCHAR(512) NULL,
+  competition_name VARCHAR(120) NULL,
+  season_name VARCHAR(120) NULL,
 
   PRIMARY KEY (player_id, team_id, competition_id, season_id),
   KEY idx_player_team_honours_team (team_id),

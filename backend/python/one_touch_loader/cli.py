@@ -93,7 +93,7 @@ from one_touch_loader.loaders.team_attribute_refresh_loader import (
     refresh_current_team_attributes,
 )
 from one_touch_loader.loaders.player_rating_rankings_loader import (
-    freeze_player_rating_reference, build_player_rating_scores,
+    rebuild_player_rating_scores, build_player_rating_scores,
 )
 
 
@@ -238,10 +238,10 @@ New database reload order (redesigned commands):
 25. highlights (official latest three matches, viewer-country filtering)
   python -m one_touch_loader.cli highlights refresh [team_id,team_id] [--check | --apply] [--full-scan]
 
-26. player-rankings (Sportmonks ratings, at least 10 rated matches)
-  리그별 2020/21~2024/25 기준 표본은 처음 한 번만 저장해요. 재실행해도 기준은 유지해요.
-  python -m one_touch_loader.cli player-rankings freeze-reference <competition_id>
-  경기 평점 적재 후 시즌 점수를 갱신해요. 기준 표본은 다시 계산하지 않아요.
+26. player-rankings (2017/18부터 평가 시즌까지의 5대 리그 누적 비교)
+  전체 시즌의 표본과 점수를 미리 확인하거나 적용해요.
+  python -m one_touch_loader.cli player-rankings rebuild [--check | --apply]
+  경기 평점 적재 후 해당 시즌과 영향을 받는 이후 시즌을 갱신해요.
   python -m one_touch_loader.cli player-rankings build-scores <season_id>
 
 27. news (selected team, latest three articles within 14 days)
@@ -800,16 +800,13 @@ def main():
             print(USAGE)
 
     elif cmd == "player-rankings":
-        if len(sys.argv) != 4:
-            print(USAGE)
-            return
-        sub = sys.argv[2]
-        if sub == "freeze-reference":
-            count = freeze_player_rating_reference(int(sys.argv[3]))
-            print(f"Player-rankings fixed reference: samples={count}")
-        elif sub == "build-scores":
+        sub = sys.argv[2] if len(sys.argv) > 2 else None
+        if sub == "rebuild" and (len(sys.argv) == 3 or
+                                 len(sys.argv) == 4 and sys.argv[3] in ("--check", "--apply")):
+            print(rebuild_player_rating_scores(apply="--apply" in sys.argv[3:]))
+        elif sub == "build-scores" and len(sys.argv) == 4:
             count = build_player_rating_scores(int(sys.argv[3]))
-            print(f"Player-rankings scores updated: players={count}")
+            print(f"Player-rankings shared reference and affected seasons updated: selected_season_players={count}")
         else:
             print(USAGE)
 
