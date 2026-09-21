@@ -6,6 +6,7 @@ class ApiPlayerIndicatorsResponse {
           playerId: json['player_id'] as int,
           seasonName: json['season_name'] as String,
           asOf: DateTime.parse(json['as_of'] as String),
+          squadRole: _squadRole(json['squad_role'] as String?),
           form: _score(json['form'] as Map<String, dynamic>),
           costEffectiveness: _score(
             json['cost_effectiveness'] as Map<String, dynamic>,
@@ -19,8 +20,22 @@ class ApiPlayerIndicatorsResponse {
 
   final PlayerIndicators indicators;
 
-  static PlayerIndicatorScore _score(Map<String, dynamic> json,
-      {bool requirePercentile = true}) {
+  static String? _squadRole(String? role) {
+    return switch (role) {
+      null => null,
+      'crucial' => 'Crucial',
+      'important' => 'Important',
+      'rotation' => 'Rotation',
+      'sporadic' => 'Sporadic',
+      'prospect' => 'Prospect',
+      _ => throw const FormatException('Unknown squad role.'),
+    };
+  }
+
+  static PlayerIndicatorScore _score(
+    Map<String, dynamic> json, {
+    bool requirePercentile = true,
+  }) {
     final band = json['band'] as int?;
     final grade = json['grade'] as String?;
     final percentile = (json['percentile'] as num?)?.toDouble();

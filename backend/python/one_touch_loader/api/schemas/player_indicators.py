@@ -51,4 +51,5 @@ class PlayerIndicatorsResponse(BaseModel):
     comparison_scope: Literal["current_season_big_five_all_positions"]
     form: FormScore
     cost_effectiveness: WageEfficiencyScore
+    squad_role: Literal['crucial', 'important', 'rotation', 'sporadic', 'prospect'] | None = None
     form_calibration: dict | None
