@@ -1,0 +1,187 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 19615702,
+        "lineups": [],
+        "events": [
+          {
+            "id": 152487891,
+            "fixture_id": 19615702,
+            "period_id": 6464234,
+            "participant_id": 9,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 37459073,
+            "related_player_id": 23697990,
+            "player_name": "Rico Lewis",
+            "related_player_name": "Jérémy Doku",
+            "result": "10-1",
+            "info": "Right foot shot",
+            "addition": "9th Goal",
+            "minute": 90,
+            "extra_minute": 1,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1522,
+            "detailed_period_id": 6464234,
+            "rescinded": null,
+            "sort_order": 11,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 152487891,
+          "fixture_id": 19615702,
+          "period_id": 6464234,
+          "participant_id": 9,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 37459073,
+          "related_player_id": 21072805,
+          "player_name": "Rico Lewis",
+          "related_player_name": "Rayan Cherki",
+          "result": "10-1",
+          "info": "Right foot shot",
+          "addition": "9th Goal",
+          "minute": 90,
+          "extra_minute": 1,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1522,
+          "detailed_period_id": 6464234,
+          "rescinded": null,
+          "sort_order": 11,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": false
+    },
+    {
+      "fixture": {
+        "id": 19600523,
+        "lineups": [],
+        "events": [
+          {
+            "id": 152270484,
+            "fixture_id": 19600523,
+            "period_id": 6389354,
+            "participant_id": 106,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 37591342,
+            "related_player_id": 187163,
+            "player_name": "José Luis Pérez",
+            "related_player_name": "Javi Muñoz",
+            "result": "2-1",
+            "info": "Right foot shot",
+            "addition": "3rd Goal",
+            "minute": 69,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1522,
+            "detailed_period_id": 6389354,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 152270484,
+          "fixture_id": 19600523,
+          "period_id": 6389354,
+          "participant_id": 106,
+          "type_id": 15,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": null,
+          "player_name": "Álvaro Calado",
+          "related_player_name": null,
+          "result": "2-1",
+          "info": "Own goal",
+          "addition": "3rd Goal",
+          "minute": 69,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 6389354,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 15,
+            "name": "Own Goal",
+            "code": "owngoal",
+            "developer_name": "OWNGOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": false
+    }
+  ],
+  "known_player_ids": [
+    187163,
+    21072805,
+    23697990,
+    37459073,
+    37591342
+  ],
+  "verified_source": {
+    "19615702": {
+      "sources": [
+        "https://www.skysports.com/football/manchester-city-vs-exeter-city/live/550868",
+        "https://www.bbc.co.uk/sport/football/live/c0lxgy7253zt?page=6"
+      ],
+      "verified": "최신 전체 경기 중계의 Lewis90+1 도움은 Cherki. 바로 앞 슛도 Cherki 도움으로 기록되어 있고 BBC 최종 도움 요약은54/90+1 두 개. 원문의 Doku2/Cherki1을 각각1/2로 고치고 골 사건 도움만 교정. 기존 통계79만 수정, 새 통계 없음."
+    },
+    "19600523": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2025-2026-copa-del-rey-cda-navalcarnero-getafe-cf-4",
+        "https://www.skysports.com/football/navalcarnero-vs-getafe/live/549971",
+        "https://www.transfermarkt.com.ar/spielbericht/index/spielbericht/4766850",
+        "https://www.365scores.com/en-us/football/match/copa-del-rey-13/getafe-navalcarnero-140-22186-13"
+      ],
+      "verified": "LaLiga 상세 중계와 최신 Sky/Transfermarkt/365 최종 득점표는69분 Calado 자책골로 일치. LaLiga 상단·당시 일부 기사 Joselu 표기는 서로 충돌함을 보존. 자책골로 고치고 잘못 연결된 Joselu와 Javi 도움 제거, 원래 존재하는 골/도움 통계만0으로 정정. Calado 후보37736944는 전체명만 일치하나 표시명VaroLopez/공격수/2026소속23번과 섞여 있어 선수 ID를 연결하지 않음. 원래GKNULL 명단과 미제공통계 유지."
+    }
+  }
+}

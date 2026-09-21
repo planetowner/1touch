@@ -1,0 +1,148 @@
+{
+  "source": "20260920-2024-detail-error-provider-profiles.json",
+  "evidence": "20260921-2024-cacereno-verified-repairs.json",
+  "cases": [
+    {
+      "fixture": {
+        "id": 19332455,
+        "events": [
+          {
+            "id": 147424618,
+            "fixture_id": 19332455,
+            "period_id": 5771003,
+            "participant_id": 6181,
+            "type_id": 18,
+            "section": "event",
+            "player_id": null,
+            "related_player_id": 37544134,
+            "player_name": null,
+            "related_player_name": "Jorge Sarmiento",
+            "result": null,
+            "info": null,
+            "addition": "5th Substitution",
+            "minute": 59,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771003,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147425202,
+            "fixture_id": 19332455,
+            "period_id": 5771003,
+            "participant_id": 6181,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 382733,
+            "related_player_id": 383386,
+            "player_name": "Pepe Bernal",
+            "related_player_name": "Deco",
+            "result": null,
+            "info": null,
+            "addition": "10th Substitution",
+            "minute": 77,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771003,
+            "rescinded": null,
+            "sort_order": 10,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [],
+        "coaches": [],
+        "statistics": [],
+        "pressure": [],
+        "formations": []
+      },
+      "expected_events": [
+        {
+          "id": 147424618,
+          "fixture_id": 19332455,
+          "period_id": 5771003,
+          "participant_id": 6181,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37587996,
+          "related_player_id": 37544134,
+          "player_name": "Marcos Carrillo",
+          "related_player_name": "Jorge Sarmiento",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 59,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771003,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147425202,
+          "fixture_id": 19332455,
+          "period_id": 5771003,
+          "participant_id": 6181,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 382733,
+          "related_player_id": 383386,
+          "player_name": "Pepe Bernal",
+          "related_player_name": "Deco",
+          "result": null,
+          "info": null,
+          "addition": "10th Substitution",
+          "minute": 77,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771003,
+          "rescinded": null,
+          "sort_order": 10,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}

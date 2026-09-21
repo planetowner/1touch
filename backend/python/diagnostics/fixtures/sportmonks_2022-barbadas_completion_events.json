@@ -1,0 +1,20 @@
+{
+  "cases": [],
+  "known_player_ids": [],
+  "verified_source": {
+    "18717988": {
+      "sources": [
+        "https://www.skysports.com/football/barbadas-vs-valladolid/teams/478732",
+        "https://www.bdfutbol.com/es/j/j304162.html",
+        "https://udbarbadas.com/wp-content/uploads/2022/11/DIPTICO-COPA-vs7-2.pdf"
+      ],
+      "verified": "3번 Pana는 Jesus Ivan Cerdeira Mercado26581922,18번 Xinzo는 Pablo Nogueiras Miranda27048646로 시즌20777 명단과 실제 경기표 일치. Xinzo52분 투입/58분 경고.28번 미출전 Hugo Iriarte는 Liam37672155와 다른 사람. 공급자 시즌 전체 명단과 Hugo222명/Iriarte 검색에서 ID를 확인할 수 없어 잘못된 ID와 프로필만 NULL로 비움. 원문과 확인한 이름은 보존하고 기존 NULL명단 저장 제외 계약 적용. Hugo용 임의 ID/생일/분/통계 생성 없음.",
+      "unavailable": {
+        "lineup_id": 6657953562,
+        "player_name": "Hugo Iriarte Dominguez",
+        "reason": "verified person has no identified provider player ID",
+        "participation": "unused bench"
+      }
+    }
+  }
+}

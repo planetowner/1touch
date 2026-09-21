@@ -1,0 +1,179 @@
+{
+  "source": "Sportmonks actual fixture events and coaches, 2026-09-20T17:42:49Z",
+  "cases": [
+    {
+      "fixture_id": 19732690,
+      "name": "Real Betis vs Getafe",
+      "state_id": 5,
+      "coaches": [
+        {
+          "id": 524009,
+          "player_id": 524009,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": 32,
+          "city_id": null,
+          "common_name": "J. Bordalás Jiménez",
+          "firstname": "José",
+          "lastname": "Bordalás Jiménez",
+          "name": "José Bordalás Jiménez",
+          "display_name": "José Bordalás Jiménez",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/524009.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1964-03-05",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19732690,
+            "coach_id": 524009,
+            "participant_id": 106
+          }
+        },
+        {
+          "id": 523898,
+          "player_id": 523898,
+          "sport_id": 1,
+          "country_id": 80,
+          "nationality_id": 80,
+          "city_id": null,
+          "common_name": "M. Pellegrini",
+          "firstname": "Manuel Luis",
+          "lastname": "Pellegrini Ripamonti",
+          "name": "Manuel Luis Pellegrini Ripamonti",
+          "display_name": "Manuel Pellegrini Ripamonti",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/26/523898.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1953-09-16",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19732690,
+            "coach_id": 523898,
+            "participant_id": 485
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": 157939286,
+          "fixture_id": 19732690,
+          "period_id": 7111345,
+          "participant_id": 106,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 524009,
+          "related_player_id": null,
+          "player_name": "José Bordalás",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "6th Yellowcard",
+          "minute": 25,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7111345,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    },
+    {
+      "fixture_id": 19873924,
+      "name": "Sturm Graz vs Rennes",
+      "state_id": 5,
+      "coaches": [
+        {
+          "id": 896608,
+          "player_id": 896608,
+          "sport_id": 1,
+          "country_id": 17,
+          "nationality_id": 17,
+          "city_id": null,
+          "common_name": "F. Haise",
+          "firstname": "Franck",
+          "lastname": "Haise",
+          "name": "Franck Haise",
+          "display_name": "Franck Haise",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/coaches/0/896608.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1971-04-15",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19873924,
+            "coach_id": 896608,
+            "participant_id": 598
+          }
+        },
+        {
+          "id": 350699,
+          "player_id": 350699,
+          "sport_id": 1,
+          "country_id": 143,
+          "nationality_id": 143,
+          "city_id": null,
+          "common_name": "F. Ingolitsch",
+          "firstname": "Fabio",
+          "lastname": "Ingolitsch",
+          "name": "Fabio Ingolitsch",
+          "display_name": "Fabio Ingolitsch",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1992-04-10",
+          "gender": "male",
+          "meta": {
+            "fixture_id": 19873924,
+            "coach_id": 350699,
+            "participant_id": 3357
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": 157935140,
+          "fixture_id": 19873924,
+          "period_id": 7110846,
+          "participant_id": 3357,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 350699,
+          "related_player_id": null,
+          "player_name": "Fabio Ingolitsch",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "3rd Yellowcard",
+          "minute": 51,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 7110846,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "source": "Sportmonks fixture 16865255 and player 183562 retrieved 2026-09-18",
+  "verified_sources": [
+    "https://www.nzs.si/podrocja/novinarji/novice/celjani-do-drugega-kroga-kvalifikacij-242031",
+    "https://www.skysports.com/football/nk-celje-vs-dundalk/teams/428134"
+  ],
+  "team_id": 1114,
+  "removed_lineup_ids": [],
+  "lineup_overrides": {
+    "8959747": {
+      "player_id": 183562,
+      "type_id": 12,
+      "position_id": null,
+      "formation_position": null,
+      "player_name": "Nino Pungaršek"
+    }
+  },
+  "profiles": {
+    "183562": {
+      "id": 183562,
+      "sport_id": 1,
+      "country_id": 1638,
+      "nationality_id": 1638,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 149,
+      "type_id": 27,
+      "common_name": "N. Pungaršek",
+      "firstname": "Nino",
+      "lastname": "Pungaršek",
+      "name": "Nino Pungaršek",
+      "display_name": "Nino Pungaršek",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 171,
+      "weight": null,
+      "date_of_birth": "1995-11-01",
+      "gender": "male"
+    }
+  },
+  "stat_player_overrides": {},
+  "fixture": {
+    "id": 16865255,
+    "events": [],
+    "formations": [],
+    "lineups": [
+      {
+        "id": 8959466,
+        "sport_id": 1,
+        "fixture_id": 16865255,
+        "player_id": 73772,
+        "team_id": 1114,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Josip Calusic",
+        "jersey_number": 4,
+        "details": [
+          {
+            "id": 221086255,
+            "fixture_id": 16865255,
+            "player_id": 73772,
+            "team_id": 1114,
+            "lineup_id": 8959466,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 73772,
+          "sport_id": 1,
+          "country_id": 266,
+          "nationality_id": 266,
+          "city_id": 85519,
+          "position_id": 25,
+          "detailed_position_id": 148,
+          "type_id": 25,
+          "common_name": "J. Ćalušić",
+          "firstname": "Josip",
+          "lastname": "Ćalušić",
+          "name": "Josip Ćalušić",
+          "display_name": "Josip Calusic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/12/73772.png",
+          "height": 184,
+          "weight": 82,
+          "date_of_birth": "1993-10-11",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 8959747,
+        "sport_id": 1,
+        "fixture_id": 16865255,
+        "player_id": 73772,
+        "team_id": 1114,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 4,
+        "player_name": "Josip Calusic",
+        "jersey_number": 6,
+        "details": [
+          {
+            "id": 221086271,
+            "fixture_id": 16865255,
+            "player_id": 183562,
+            "team_id": 1114,
+            "lineup_id": 8959747,
+            "type_id": 119,
+            "data": {
+              "value": 4
+            }
+          }
+        ],
+        "player": {
+          "id": 73772,
+          "sport_id": 1,
+          "country_id": 266,
+          "nationality_id": 266,
+          "city_id": 85519,
+          "position_id": 25,
+          "detailed_position_id": 148,
+          "type_id": 25,
+          "common_name": "J. Ćalušić",
+          "firstname": "Josip",
+          "lastname": "Ćalušić",
+          "name": "Josip Ćalušić",
+          "display_name": "Josip Calusic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/12/73772.png",
+          "height": 184,
+          "weight": 82,
+          "date_of_birth": "1993-10-11",
+          "gender": "male"
+        }
+      }
+    ]
+  }
+}

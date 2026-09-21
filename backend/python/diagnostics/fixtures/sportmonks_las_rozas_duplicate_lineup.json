@@ -1,0 +1,117 @@
+{
+  "fixture": {
+    "id": 19320860,
+    "sport_id": 1,
+    "league_id": 570,
+    "season_id": 24526,
+    "state_id": 5,
+    "name": "Las Rozas vs Sevilla",
+    "starting_at": "2024-10-30 18:00:00",
+    "lineups": [
+      {
+        "id": 13430744052,
+        "sport_id": 1,
+        "fixture_id": 19320860,
+        "player_id": 37785498,
+        "team_id": 29542,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Izan García",
+        "jersey_number": 26,
+        "details": [
+          {
+            "id": 1998816879,
+            "fixture_id": 19320860,
+            "player_id": 37785498,
+            "team_id": 29542,
+            "lineup_id": 13430744052,
+            "type_id": 40,
+            "data": {
+              "value": false
+            }
+          }
+        ],
+        "player": {
+          "id": 37785498,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": null,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": null,
+          "common_name": "I. García Lerma",
+          "firstname": "Izan",
+          "lastname": "García Lerma",
+          "name": "Izan García Lerma",
+          "display_name": "Izan García",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": null,
+          "gender": "male"
+        }
+      },
+      {
+        "id": 14673342220,
+        "sport_id": 1,
+        "fixture_id": 19320860,
+        "player_id": 37785498,
+        "team_id": 29542,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Izan García",
+        "jersey_number": 27,
+        "details": [],
+        "player": {
+          "id": 37785498,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": null,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": null,
+          "common_name": "I. García Lerma",
+          "firstname": "Izan",
+          "lastname": "García Lerma",
+          "name": "Izan García Lerma",
+          "display_name": "Izan García",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": null,
+          "gender": "male"
+        }
+      }
+    ],
+    "formations": [
+      {
+        "id": 8317195,
+        "fixture_id": 19320860,
+        "participant_id": 676,
+        "formation": "4-2-3-1",
+        "location": "away"
+      },
+      {
+        "id": 8317196,
+        "fixture_id": 19320860,
+        "participant_id": 29542,
+        "formation": "4-4-2",
+        "location": "home"
+      }
+    ],
+    "events": []
+  },
+  "verified_lineup": {
+    "player_id": 37785498,
+    "jersey_number": 26,
+    "kept_lineup_id": 13430744052,
+    "removed_lineup_id": 14673342220
+  },
+  "source": "Affected lineup subset and original formations from 20260920-2024-detail-error-provider-profiles.json"
+}

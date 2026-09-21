@@ -1,0 +1,145 @@
+{
+  "source": "Sportmonks fixture 11896778 and player 85663, retrieved 2026-09-18",
+  "verified_source": "https://www.skysports.com/football/trakai-vs-ki-klaksvik/teams/409141",
+  "team_id": 5284,
+  "removed_lineup_ids": [],
+  "lineup_overrides": {
+    "7258545": {
+      "player_id": 85663
+    }
+  },
+  "profiles": {
+    "85663": {
+      "id": 85663,
+      "sport_id": 1,
+      "country_id": 2154,
+      "nationality_id": 2154,
+      "city_id": null,
+      "position_id": 24,
+      "detailed_position_id": 24,
+      "type_id": 24,
+      "common_name": "K. Joensen",
+      "firstname": "Kristian",
+      "lastname": "Joensen",
+      "name": "Kristian Joensen",
+      "display_name": "Kristian Joensen",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 190,
+      "weight": null,
+      "date_of_birth": "1992-12-21",
+      "gender": "male"
+    }
+  },
+  "stat_player_overrides": {
+    "86429": 85663
+  },
+  "fixture": {
+    "id": 11896778,
+    "events": [],
+    "formations": [],
+    "lineups": [
+      {
+        "id": 7258545,
+        "sport_id": 1,
+        "fixture_id": 11896778,
+        "player_id": 86429,
+        "team_id": 5284,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "M. Joensen",
+        "jersey_number": 1,
+        "details": [
+          {
+            "id": 150113252,
+            "fixture_id": 11896778,
+            "player_id": 85663,
+            "team_id": 5284,
+            "lineup_id": 7258545,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 336589322,
+            "fixture_id": 11896778,
+            "player_id": 85663,
+            "team_id": 5284,
+            "lineup_id": 7258545,
+            "type_id": 1535,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 210513106,
+            "fixture_id": 11896778,
+            "player_id": 85663,
+            "team_id": 5284,
+            "lineup_id": 7258545,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 86429,
+          "sport_id": 1,
+          "country_id": 2154,
+          "nationality_id": 2154,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": null,
+          "type_id": 24,
+          "common_name": "M. Joensen",
+          "firstname": "Meinhardt",
+          "lastname": "Joensen",
+          "name": "Meinhardt Joensen",
+          "display_name": "Meinhardt Joensen",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/29/86429.png",
+          "height": 186,
+          "weight": null,
+          "date_of_birth": "1979-11-27",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 6847096644,
+        "sport_id": 1,
+        "fixture_id": 11896778,
+        "player_id": 86429,
+        "team_id": 5284,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "M. Joensen",
+        "jersey_number": 16,
+        "details": [],
+        "player": {
+          "id": 86429,
+          "sport_id": 1,
+          "country_id": 2154,
+          "nationality_id": 2154,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": null,
+          "type_id": 24,
+          "common_name": "M. Joensen",
+          "firstname": "Meinhardt",
+          "lastname": "Joensen",
+          "name": "Meinhardt Joensen",
+          "display_name": "Meinhardt Joensen",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/29/86429.png",
+          "height": 186,
+          "weight": null,
+          "date_of_birth": "1979-11-27",
+          "gender": "male"
+        }
+      }
+    ]
+  }
+}

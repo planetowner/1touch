@@ -1,0 +1,250 @@
+[
+  {
+    "source": "Sportmonks fixture 19296219, canonical player profile and official match record verified 2026-09-19",
+    "verified_sources": [
+      "https://www.vfb.de/de/vfb/profis/saison/champions-league/2425/2-vfb-stuttgart----ac-sparta-prag-/"
+    ],
+    "team_id": 3319,
+    "removed_lineup_ids": [
+      14673342053
+    ],
+    "lineup_overrides": {},
+    "profiles": {},
+    "stat_player_overrides": {},
+    "fixture": {
+      "id": 19296219,
+      "events": [],
+      "lineups": [
+        {
+          "id": 14673342053,
+          "sport_id": 1,
+          "fixture_id": 19296219,
+          "player_id": 37650889,
+          "team_id": 3319,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Christopher Olivier",
+          "jersey_number": 14,
+          "details": [],
+          "player": {
+            "id": 37650889,
+            "sport_id": 1,
+            "country_id": 143,
+            "nationality_id": 143,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 154,
+            "type_id": null,
+            "common_name": "C. Olivier",
+            "firstname": "Christopher",
+            "lastname": "Olivier",
+            "name": "Christopher Olivier",
+            "display_name": "Christopher Olivier",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/37650889.png",
+            "height": 187,
+            "weight": 81,
+            "date_of_birth": "2006-01-31",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 12779959080,
+          "sport_id": 1,
+          "fixture_id": 19296219,
+          "player_id": 37650889,
+          "team_id": 3319,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Christopher Olivier",
+          "jersey_number": 31,
+          "details": [
+            {
+              "id": 1998716558,
+              "fixture_id": 19296219,
+              "player_id": 37650889,
+              "team_id": 3319,
+              "lineup_id": 12779959080,
+              "type_id": 40,
+              "data": {
+                "value": false
+              }
+            }
+          ],
+          "player": {
+            "id": 37650889,
+            "sport_id": 1,
+            "country_id": 143,
+            "nationality_id": 143,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 154,
+            "type_id": null,
+            "common_name": "C. Olivier",
+            "firstname": "Christopher",
+            "lastname": "Olivier",
+            "name": "Christopher Olivier",
+            "display_name": "Christopher Olivier",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/37650889.png",
+            "height": 187,
+            "weight": 81,
+            "date_of_birth": "2006-01-31",
+            "gender": "male"
+          }
+        }
+      ],
+      "formations": [
+        {
+          "id": 8292376,
+          "fixture_id": 19296219,
+          "participant_id": 2727,
+          "formation": "3-4-3",
+          "location": "away"
+        },
+        {
+          "id": 8292377,
+          "fixture_id": 19296219,
+          "participant_id": 3319,
+          "formation": "4-2-3-1",
+          "location": "home"
+        }
+      ]
+    },
+    "expected_lineups": [
+      [
+        37650889,
+        12,
+        31,
+        null,
+        26
+      ]
+    ]
+  },
+  {
+    "source": "Sportmonks fixture 19296251, canonical player profile and official match record verified 2026-09-19",
+    "verified_sources": [
+      "https://www.uefa.com/newsfiles/UCL/2025/2041962_SPS.pdf"
+    ],
+    "team_id": 2727,
+    "removed_lineup_ids": [
+      14673342054
+    ],
+    "lineup_overrides": {},
+    "profiles": {},
+    "stat_player_overrides": {},
+    "fixture": {
+      "id": 19296251,
+      "events": [],
+      "lineups": [
+        {
+          "id": 13253150258,
+          "sport_id": 1,
+          "fixture_id": 19296251,
+          "player_id": 24816775,
+          "team_id": 2727,
+          "position_id": 24,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Jakub Surovcik",
+          "jersey_number": 44,
+          "details": [
+            {
+              "id": 1998725266,
+              "fixture_id": 19296251,
+              "player_id": 24816775,
+              "team_id": 2727,
+              "lineup_id": 13253150258,
+              "type_id": 40,
+              "data": {
+                "value": false
+              }
+            }
+          ],
+          "player": {
+            "id": 24816775,
+            "sport_id": 1,
+            "country_id": 401,
+            "nationality_id": 401,
+            "city_id": null,
+            "position_id": 24,
+            "detailed_position_id": 24,
+            "type_id": 24,
+            "common_name": "J. Surovčík",
+            "firstname": "Jakub",
+            "lastname": "Surovčík",
+            "name": "Jakub Surovčík",
+            "display_name": "Jakub Surovcik",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/7/24816775.png",
+            "height": 197,
+            "weight": null,
+            "date_of_birth": "2002-06-28",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14673342054,
+          "sport_id": 1,
+          "fixture_id": 19296251,
+          "player_id": 24816775,
+          "team_id": 2727,
+          "position_id": 24,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Jakub Surovcik",
+          "jersey_number": 144,
+          "details": [],
+          "player": {
+            "id": 24816775,
+            "sport_id": 1,
+            "country_id": 401,
+            "nationality_id": 401,
+            "city_id": null,
+            "position_id": 24,
+            "detailed_position_id": 24,
+            "type_id": 24,
+            "common_name": "J. Surovčík",
+            "firstname": "Jakub",
+            "lastname": "Surovčík",
+            "name": "Jakub Surovčík",
+            "display_name": "Jakub Surovcik",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/7/24816775.png",
+            "height": 197,
+            "weight": null,
+            "date_of_birth": "2002-06-28",
+            "gender": "male"
+          }
+        }
+      ],
+      "formations": [
+        {
+          "id": 8308817,
+          "fixture_id": 19296251,
+          "participant_id": 2727,
+          "formation": "3-4-3",
+          "location": "away"
+        },
+        {
+          "id": 8308818,
+          "fixture_id": 19296251,
+          "participant_id": 9,
+          "formation": "4-1-4-1",
+          "location": "home"
+        }
+      ]
+    },
+    "expected_lineups": [
+      [
+        24816775,
+        12,
+        44,
+        null,
+        24
+      ]
+    ]
+  }
+]

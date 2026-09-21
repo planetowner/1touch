@@ -1,0 +1,148 @@
+{
+  "source": "20260920-2024-detail-error-provider-profiles.json",
+  "evidence": "20260921-2024-ceuta-verified-repairs.json",
+  "cases": [
+    {
+      "fixture": {
+        "id": 19332464,
+        "events": [
+          {
+            "id": 147425174,
+            "fixture_id": 19332464,
+            "period_id": 5771006,
+            "participant_id": 12330,
+            "type_id": 18,
+            "section": "event",
+            "player_id": null,
+            "related_player_id": null,
+            "player_name": null,
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "4th Substitution",
+            "minute": 73,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771006,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147425198,
+            "fixture_id": 19332464,
+            "period_id": 5771006,
+            "participant_id": 459,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 24073451,
+            "related_player_id": null,
+            "player_name": "Sofiane El Ftouhi",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "6th Substitution",
+            "minute": 73,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771006,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [],
+        "coaches": [],
+        "statistics": [],
+        "pressure": [],
+        "formations": []
+      },
+      "expected_events": [
+        {
+          "id": 147425174,
+          "fixture_id": 19332464,
+          "period_id": 5771006,
+          "participant_id": 12330,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 24073451,
+          "related_player_id": 37547296,
+          "player_name": "Sofiane El Ftouhi",
+          "related_player_name": "Martin Bellotti",
+          "result": null,
+          "info": null,
+          "addition": "4th Substitution",
+          "minute": 73,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771006,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147425198,
+          "fixture_id": 19332464,
+          "period_id": 5771006,
+          "participant_id": 459,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 2510665,
+          "related_player_id": 188089,
+          "player_name": "Jesús Areso",
+          "related_player_name": "Nacho Vidal",
+          "result": null,
+          "info": null,
+          "addition": "6th Substitution",
+          "minute": 73,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771006,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}
