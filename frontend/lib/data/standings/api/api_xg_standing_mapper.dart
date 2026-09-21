@@ -18,6 +18,7 @@ List<XgStanding> xgStandingsFromApiResponse(
       seasonId: response.seasonId,
       teamId: row.teamId,
       teamName: row.teamName,
+      teamShortName: row.teamShortName,
       teamLogo: row.teamLogo,
       position: row.position,
       matchesPlayed: row.matchesPlayed,
