@@ -39,9 +39,9 @@ VERIFIED_NON_SENIOR_TEAM_IDS = {
 }
 
 
-def load_senior_team_ids() -> set[int]:
+def load_senior_team_ids(*, query=None) -> set[int]:
     # 컵의 외부 상대팀까지 일괄 인정하지 않아요. 수집 점검과 API가 같은 분류를 사용해요.
-    rows = fetch_all("""
+    rows = (query or fetch_all)("""
         SELECT DISTINCT ts.team_id FROM team_seasons ts JOIN seasons s ON s.season_id=ts.season_id
         WHERE s.competition_id IN (8,82,301,384,564)
     """)

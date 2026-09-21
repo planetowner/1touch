@@ -75,10 +75,10 @@ class ApiBestElevenPlayerResponse {
     required this.playerId,
     required this.playerName,
     required this.playerImage,
-    required this.jerseyNumber,
     required this.positionGroupCode,
     required this.positionCode,
     required this.starts,
+    this.jerseyNumber,
   });
 
   final String slotKey;
@@ -86,10 +86,10 @@ class ApiBestElevenPlayerResponse {
   final int playerId;
   final String? playerName;
   final String? playerImage;
-  final int? jerseyNumber;
   final String? positionGroupCode;
   final String? positionCode;
   final int starts;
+  final int? jerseyNumber;
 
   factory ApiBestElevenPlayerResponse.fromJson(Map<String, dynamic> json) {
     return ApiBestElevenPlayerResponse(
@@ -98,10 +98,10 @@ class ApiBestElevenPlayerResponse {
       playerId: _requiredInt(json, 'player_id'),
       playerName: _nullableString(json, 'player_name'),
       playerImage: _nullableString(json, 'player_image'),
-      jerseyNumber: _nullableInt(json, 'jersey_number'),
       positionGroupCode: _nullableString(json, 'position_group_code'),
       positionCode: _nullableString(json, 'position_code'),
       starts: _requiredInt(json, 'starts'),
+      jerseyNumber: _nullableInt(json, 'jersey_number'),
     );
   }
 }

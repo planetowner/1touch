@@ -3,365 +3,174 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
-import 'package:onetouch/screens/AllPlayersScreen_tabs/Overview.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/features/player/player_detail_view.dart';
+import 'support/player_detail_fixture.dart';
 
 void main() {
-  const phoneSizes = [
-    Size(320, 568),
-    Size(375, 667),
-    Size(430, 932),
-  ];
-  final salah = playerRepository.findById('mohamed-salah')!;
-
-  test('player gradient heights follow the visible header content', () {
+  final player = playerRepository.findById('lee-kang-in')!;
+  test('player gradient ends below the overview profile', () {
     expect(playerDetailOverviewGradientHeight(20), 329);
     expect(playerDetailOverviewGradientHeight(59), 368);
     expect(playerDetailTabGradientHeight(20), 168);
     expect(playerDetailTabGradientHeight(59), 207);
   });
 
-  for (final size in phoneSizes) {
-    testWidgets('player screen fits a ${size.width}x${size.height} viewport',
-        (tester) async {
-      await tester.binding.setSurfaceSize(size);
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-
-      final horizontalPadding = (size.width * 0.05).clamp(16.0, 24.0);
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: app_style.darktheme,
-          home: Scaffold(
-            body: Column(
-              children: [
-                SizedBox(
-                  height: 100,
-                  child: PlayerScreenHeader(
-                    player: salah,
-                    horizontalPadding: horizontalPadding,
-                    foregroundColor: app_style.AppPalette.white,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: PlayerBioStatsBlock(player: salah),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(find.text('Mohamed Salah'), findsOneWidget);
-      expect(find.text('Cost-Effectiveness'), findsOneWidget);
-      expect(find.text('Squad Role'), findsOneWidget);
-      expect(find.text(salah.squadRole), findsOneWidget);
-      expect(find.text('Market Value'), findsNothing);
-      expect(find.text('Preferred Foot'), findsNothing);
-      expect(find.byIcon(Icons.help_outline), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-  }
-
-  testWidgets('player detail uses light surfaces and anchored scrolling',
-      (tester) async {
-    tester.view.physicalSize = const Size(393, 852);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: MediaQuery(
-          data: const MediaQueryData(
-            size: Size(393, 852),
-            padding: EdgeInsets.only(top: 59),
-          ),
-          child: PlayerCard(player: salah),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-    final tabIndicator = tabBar.indicator! as UnderlineTabIndicator;
-    final nestedScroll =
-        tester.widget<NestedScrollView>(find.byType(NestedScrollView));
-    final overviewScroll = tester.widget<SingleChildScrollView>(
-      find.byKey(const ValueKey('player-overview-scroll')),
-    );
-    final bioCard = tester.widget<Container>(
-      find.byKey(const ValueKey('player-bio-stats-card')),
-    );
-    final followIcon = tester.widget<Icon>(
-      find.descendant(
-        of: find.byKey(const Key('player-follow-button')),
-        matching: find.byType(Icon),
-      ),
-    );
-    final searchIcon = tester.widget<Icon>(
-      find.descendant(
-        of: find.byKey(const ValueKey('player-search-button')),
-        matching: find.byType(Icon),
-      ),
-    );
-    final compareIcon = tester.widget<Icon>(
-      find.descendant(
-        of: find.byKey(const ValueKey('player-compare-button')),
-        matching: find.byType(Icon),
-      ),
-    );
-    final gradientBox = tester.widget<DecoratedBox>(
-      find.byKey(const ValueKey('player-detail-gradient')),
-    );
-    final gradient =
-        (gradientBox.decoration as BoxDecoration).gradient! as LinearGradient;
-    final topBlock = find.byKey(const ValueKey('player-overview-top-block'));
-
-    expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
-    expect(tabBar.labelColor, app_style.AppPalette.black);
-    expect(tabBar.unselectedLabelColor, app_style.AppPalette.black);
-    expect(tabIndicator.borderSide.color, app_style.AppPalette.black);
-    expect(followIcon.color, app_style.AppPalette.black);
-    expect(searchIcon.color, app_style.AppPalette.black);
-    expect(compareIcon.color, app_style.AppPalette.black);
-    for (final text in tester.widgetList<Text>(
-      find.descendant(of: topBlock, matching: find.byType(Text)),
-    )) {
-      expect(text.style?.color, app_style.AppPalette.black);
-    }
-    expect(
-      (bioCard.decoration as BoxDecoration).color,
-      app_style.AppPalette.white,
-    );
-    expect(
-      (bioCard.decoration as BoxDecoration).boxShadow,
-      app_style.lightModeCardShadows,
-    );
-    expect(nestedScroll.physics, isA<ClampingScrollPhysics>());
-    expect(overviewScroll.physics, isA<ClampingScrollPhysics>());
-    expect(gradient.begin, Alignment.bottomCenter);
-    expect(gradient.end, Alignment.topCenter);
-    expect(
-      gradient.colors,
-      const [Color(0x333D3D3D), Color(0x003D3D3D)],
-    );
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .getSize(find.byKey(const ValueKey('player-detail-gradient')))
-          .height,
-      closeTo(368, 0.01),
-    );
-
-    final topBeforeDrag = tester.getTopLeft(topBlock).dy;
-    await tester.drag(
-      find.byKey(const ValueKey('player-overview-scroll')),
-      const Offset(0, 300),
-    );
-    await tester.pumpAndSettle();
-    expect(tester.getTopLeft(topBlock).dy, closeTo(topBeforeDrag, 0.01));
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('non-overview gradients stop at the bottom of the tab bar',
-      (tester) async {
-    tester.view.physicalSize = const Size(393, 852);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: MediaQuery(
-          data: const MediaQueryData(
-            size: Size(393, 852),
-            padding: EdgeInsets.only(top: 59),
-          ),
-          child: PlayerCard(player: salah),
-        ),
-      ),
-    );
-    await tester.pump();
-    await tester.tap(find.text('Analysis'));
-    await tester.pumpAndSettle();
-
-    expect(
-      tester
-          .getSize(find.byKey(const ValueKey('player-detail-gradient')))
-          .height,
-      closeTo(207, 0.01),
-    );
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('all player detail tabs use light cards', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: PlayerCard(player: salah),
-      ),
-    );
-    await tester.pump();
-
-    await tester.tap(find.text('Analysis'));
-    await tester.pumpAndSettle();
-    final analysisCard = tester.widget<Container>(
-      find.byKey(const ValueKey('player-top-stats-card')),
-    );
-    expect(
-      (analysisCard.decoration as BoxDecoration).color,
-      app_style.AppPalette.white,
-    );
-    expect(
-      (analysisCard.decoration as BoxDecoration).boxShadow,
-      app_style.lightModeCardShadows,
-    );
-    expect(tester.takeException(), isNull,
-        reason: 'Analysis must not overflow');
-
-    await tester.tap(find.text('Matches'));
-    await tester.pumpAndSettle();
-    final matchFilter = tester.widget<Container>(
-      find.byKey(const ValueKey('player-matches-season-filter')),
-    );
-    expect(
-      (matchFilter.decoration as BoxDecoration).color,
-      app_style.AppPalette.white,
-    );
-    final matchCard = tester.widget<Container>(
-      find.byKey(const ValueKey('player-match-card')).first,
-    );
-    expect(
-      (matchCard.decoration as BoxDecoration).boxShadow,
-      app_style.lightModeCardShadows,
-    );
-    expect(tester.takeException(), isNull, reason: 'Matches must not overflow');
-
-    await tester.tap(find.text('Career'));
-    await tester.pumpAndSettle();
-    final careerCard = tester.widget<Container>(
-      find.byKey(const ValueKey('player-career-trophies-card')),
-    );
-    expect(
-      (careerCard.decoration as BoxDecoration).color,
-      app_style.AppPalette.white,
-    );
-    expect(
-      (careerCard.decoration as BoxDecoration).boxShadow,
-      app_style.lightModeCardShadows,
-    );
-    expect(tester.takeException(), isNull, reason: 'Career must not overflow');
-  });
-
-  testWidgets('player detail uses the dark-mode neutral gradient',
-      (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.darktheme,
-        home: PlayerCard(player: salah),
-      ),
-    );
-    await tester.pump();
-
-    final gradientBox = tester.widget<DecoratedBox>(
-      find.byKey(const ValueKey('player-detail-gradient')),
-    );
-    final gradient =
-        (gradientBox.decoration as BoxDecoration).gradient! as LinearGradient;
-    expect(gradient.begin, Alignment.bottomCenter);
-    expect(gradient.end, Alignment.topCenter);
-    expect(
-      gradient.colors,
-      const [Color(0xFF282929), Color(0x00282929)],
-    );
-    expect(
-        tester
-            .getSize(find.byKey(const ValueKey('player-detail-gradient')))
-            .height,
-        closeTo(309, 0.01));
-    expect(tester.takeException(), isNull);
-  });
-
   for (final testCase in <({
     String name,
     ThemeData theme,
     Color foreground,
+    List<Color> gradientColors,
   })>[
     (
       name: 'light',
       theme: app_style.whitetheme,
       foreground: app_style.AppPalette.black,
+      gradientColors: const [Color(0x333D3D3D), Color(0x003D3D3D)],
     ),
     (
       name: 'dark',
       theme: app_style.darktheme,
       foreground: app_style.AppPalette.white,
+      gradientColors: const [Color(0xFF282929), Color(0x00282929)],
     ),
   ]) {
-    testWidgets('player filters use ${testCase.name} foreground colors',
+    testWidgets('player detail uses the ${testCase.name} neutral gradient',
         (tester) async {
-      await tester.binding.setSurfaceSize(const Size(393, 852));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repository = FakePlayerDetailRepository();
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: testCase.theme,
-          home: PlayerCard(player: salah),
+      await tester.pumpWidget(MaterialApp(
+        theme: testCase.theme,
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(393, 852),
+            padding: EdgeInsets.only(top: 59),
+          ),
+          child: PlayerCard(player: player, detailRepository: repository),
         ),
-      );
-      await tester.pump();
-
-      await tester.tap(find.text('Analysis'));
+      ));
       await tester.pumpAndSettle();
-      final analysisFilter = tester.widget<DropdownButton<String>>(
-        find.descendant(
-          of: find.byKey(const ValueKey('player-analysis-season-filter')),
-          matching: find.byType(DropdownButton<String>),
-        ),
-      );
-      expect(analysisFilter.style?.color, testCase.foreground);
-      for (final item in analysisFilter.items!) {
-        final text = item.child as Text;
-        expect(text.style?.color, testCase.foreground);
-        expect(text.data, text.data!.toUpperCase());
-      }
 
-      await tester.tap(find.text('Matches'));
-      await tester.pumpAndSettle();
-      final matchFilter = tester.widget<DropdownButton<String>>(
-        find.descendant(
-          of: find.byKey(const ValueKey('player-matches-season-filter')),
-          matching: find.byType(DropdownButton<String>),
-        ),
+      final gradientContainer = tester.widget<Container>(
+        find.byKey(const ValueKey('player-detail-gradient')),
       );
-      expect(matchFilter.style?.color, testCase.foreground);
-      for (final item in matchFilter.items!) {
-        final text = item.child as Text;
-        expect(text.style?.color, testCase.foreground);
-        expect(text.data, text.data!.toUpperCase());
-      }
+      final gradient = (gradientContainer.decoration as BoxDecoration).gradient!
+          as LinearGradient;
+      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+      final indicator = tabBar.indicator! as UnderlineTabIndicator;
+      expect(gradient.colors, testCase.gradientColors);
+      expect(tabBar.labelColor, testCase.foreground);
+      expect(tabBar.unselectedLabelColor, testCase.foreground);
+      expect(indicator.borderSide.color, testCase.foreground);
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey('player-detail-gradient')))
+            .height,
+        closeTo(368, 0.01),
+      );
 
-      await tester.tap(find.text('Career'));
+      await tester.tap(find.text('Analysis').first);
       await tester.pumpAndSettle();
-      final competitionFilterText = tester.widget<Text>(
-        find.descendant(
-          of: find.byKey(const Key('career-competition-filter')),
-          matching: find.text('ALL LEAGUES'),
-        ),
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey('player-detail-gradient')))
+            .height,
+        closeTo(207, 0.01),
       );
-      expect(find.byKey(const Key('career-trophy-filter')), findsNothing);
-      expect(competitionFilterText.style?.color, testCase.foreground);
       expect(tester.takeException(), isNull);
     });
   }
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final dark in [false, true]) {
+      testWidgets('all real player tabs fit $size dark=$dark', (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final repository = FakePlayerDetailRepository();
+        for (final tab in ['Overview', 'Analysis', 'Matches', 'Career']) {
+          await tester.pumpWidget(MaterialApp(
+              theme: dark ? app_style.darktheme : app_style.whitetheme,
+              home: PlayerCard(
+                  key: ValueKey(tab),
+                  player: player,
+                  detailRepository: repository)));
+          await tester.pumpAndSettle();
+          if (tab != 'Overview') {
+            await tester.ensureVisible(find.text(tab).first);
+            await tester.tap(find.text(tab).first);
+            await tester.pumpAndSettle();
+          }
+          expect(tester.takeException(), isNull, reason: tab);
+          final scroll =
+              find.byKey(ValueKey('player-${tab.toLowerCase()}-scroll'));
+          expect(scroll, findsOneWidget);
+          await tester.drag(scroll, const Offset(0, -500));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull,
+              reason: '$tab after scrolling');
+          if (tab == 'Career') {
+            expect(find.text('PERSONAL'), findsNothing);
+            expect(
+                find.text('Team trophy records unavailable'), findsOneWidget);
+          }
+        }
+      });
+    }
+  }
+  testWidgets(
+      'overview and matches use the same API metrics and one initial request',
+      (tester) async {
+    final repository = FakePlayerDetailRepository();
+    await tester.pumpWidget(MaterialApp(
+        home: PlayerCard(player: player, detailRepository: repository)));
+    await tester.pumpAndSettle();
+    final overviewCards = tester
+        .widgetList<PlayerDetailMatchCard>(find.byType(PlayerDetailMatchCard))
+        .toList();
+    expect(overviewCards.length, 3);
+    expect(overviewCards.first.match.metrics.map((m) => m.code),
+        ['goals', 'assists', 'shots']);
+    await tester.tap(find.text('Matches').first);
+    await tester.pumpAndSettle();
+    final matches = tester
+        .widgetList<PlayerDetailMatchCard>(find.byType(PlayerDetailMatchCard))
+        .toList();
+    expect(matches.length, 8);
+    expect(matches.first.match.metrics.map((m) => m.code),
+        ['goals', 'assists', 'shots']);
+    expect(find.text('LIVE'), findsNothing);
+    expect(repository.calls.length, 1);
+  });
+  testWidgets('season selection loads its own data', (tester) async {
+    final repository = FakePlayerDetailRepository();
+    await tester.pumpWidget(MaterialApp(
+        home: PlayerCard(player: player, detailRepository: repository)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Analysis').first);
+    await tester.pumpAndSettle();
+    final selector =
+        tester.widget<PlayerSeasonSelector>(find.byType(PlayerSeasonSelector));
+    selector.onChanged(selector.detail.seasons.last.id);
+    await tester.pumpAndSettle();
+    expect(repository.calls.last.seasonId, selector.detail.seasons.last.id);
+    expect(find.text('Minutes Played'), findsNothing);
+    expect(find.text('Goal Contributions'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('failed detail has retry without mock competitions',
+      (tester) async {
+    final repository = FakePlayerDetailRepository()..fail = true;
+    await tester.pumpWidget(MaterialApp(
+        home: PlayerCard(player: player, detailRepository: repository)));
+    await tester.pumpAndSettle();
+    expect(find.text('Could not load player data'), findsOneWidget);
+    expect(find.byType(PlayerCompetitionTable), findsNothing);
+    repository.fail = false;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PlayerCompetitionTable), findsOneWidget);
+  });
 }

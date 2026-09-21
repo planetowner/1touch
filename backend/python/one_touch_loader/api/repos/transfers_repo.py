@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
+from ...core.player_membership import build_club_history
 from ...core.transfer_team_levels import load_senior_team_ids
 from ...core.transfer_source_rules import WITHHELD_PLAYER_MOVEMENTS
 from ..db import fetch_all_dict
@@ -34,39 +35,13 @@ def get_team_transfers_by_window(team_id: int, season_id: int, window: dict, as_
     return [row for row in rows if row["player_id"] not in WITHHELD_PLAYER_MOVEMENTS]
 
 
-def build_club_history(rows: list[dict], senior_ids: set[int]) -> list[dict]:
-    # start_date·end_date는 이적 원문의 합류·이탈 날짜이며 계약 시작·종료일이 아니에요.
-    # De Gea의 맨유 이탈(2023-07-01)과 Fiorentina 합류(2024-08-09)는 별도 행이에요.
-    # 다음 팀 입단일로 이전 기간을 메우지 않고 해당 출발팀의 이탈 기록만 사용해요.
-    history, open_spells = [], {}
-    for row in rows:
-        from_id, to_id = row["from_team_id"], row["to_team_id"]
-        # Becker의 Mainz 임대→완전 이적은 복귀 행 없이 같은 출발·도착팀을 반환해요.
-        # 이미 그 팀에 소속된 기간을 이어가며 원소속팀에 새 소속 기간을 만들지 않아요.
-        if to_id in open_spells and row["type_id"] == 219:
-            continue
-        if from_id is not None:
-            spell = open_spells.pop(from_id, None)
-            if spell is None:
-                # Griezmann의 Real Sociedad 입단일은 원문에 없어요. 이적일로 시작일을 만들지 않아요.
-                spell = {"team_id": from_id, "team_name": row["from_team_name"], "team_image": row["from_team_image"], "start_date": None}
-                history.append(spell)
-            spell["end_date"] = row["transfer_date"]
-        if to_id is not None:
-            if to_id not in open_spells:
-                spell = {"team_id": to_id, "team_name": row["to_team_name"], "team_image": row["to_team_image"],
-                         "start_date": row["transfer_date"], "end_date": None}
-                history.append(spell)
-                open_spells[to_id] = spell
-    # 종료일 NULL은 확인된 이탈 기록이 없다는 뜻이에요. 현재 소속을 확정하는 플래그는 아니에요.
-    # 먼저 전체 이동으로 기간을 닫아요. 미분류·2군을 숨겨도 앞뒤 1군 기간을 합치지 않아요.
-    return [spell for spell in reversed(history) if spell["team_id"] in senior_ids]
-
-
-def get_player_club_history(player_id: int, as_of: date) -> dict:
+def get_player_club_history(player_id: int, as_of: date, *, query=None) -> dict:
     if player_id in WITHHELD_PLAYER_MOVEMENTS:
         return {"player_id": player_id, "clubs": []}
-    rows = fetch_all_dict(f"SELECT {TRANSFER_COLUMNS} {TRANSFER_FROM}" + """
+    fetch = query or fetch_all_dict
+    rows = fetch(f"SELECT {TRANSFER_COLUMNS} {TRANSFER_FROM}" + """
         WHERE tr.player_id=%s AND tr.transfer_date<=%s ORDER BY tr.transfer_date, tr.transfer_id
     """, (player_id, as_of))
-    return {"player_id": player_id, "clubs": build_club_history(rows, load_senior_team_ids())}
+    # 선수 상세에서는 같은 읽기 전용 연결을 공유해 원격 DB 재연결을 줄여요.
+    senior_ids = load_senior_team_ids(query=lambda sql: [(row['team_id'],) for row in fetch(sql)]) if query else load_senior_team_ids()
+    return {"player_id": player_id, "clubs": build_club_history(rows, senior_ids)}
