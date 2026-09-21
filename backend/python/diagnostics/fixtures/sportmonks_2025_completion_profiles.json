@@ -1,0 +1,78 @@
+{
+  "cases": [],
+  "profiles": {},
+  "verified_source": {
+    "19427093": {
+      "sources": [
+        "https://www.bdfutbol.com/p/p.php?id=403584",
+        "https://www.worldfootball.net/"
+      ],
+      "verified": "실제 Olimpija 감독 Simão의 84분 경고. 공급자 감독 객체의 456302와 일치하며 Kairat 팀/선수 연결만 바로잡음. BDF 경기표와 Weltfussball 감독 포함 전체 명단 대조."
+    },
+    "19427129": {
+      "sources": [
+        "https://archive.onlajnok.com/match/index/date/2025-07-10/id/497114"
+      ],
+      "verified": "반환 경기 두 감독의 41분 항의 경고를 Onlajny 반환 경기표와 NZS 자료로 확인. 선수 ID 칸을 비우고 정확한 감독 단건 프로필로 연결. 90+1의 미상 경고는 신원을 추측하지 않고 유지."
+    },
+    "19481569": {
+      "sources": [
+        "https://www.beitarfc.co.il/news/flsujetska_beitar/",
+        "https://fscg.me/en/news/13966/call-up-for-simun-and-bajovic/",
+        "https://www.fcviktoria.cz/viktorian/2016/2016_1EL.pdf",
+        "https://www.sofascore.com/hr/football/player/aleksandar-desancic/795912"
+      ],
+      "verified": "FSCG의 Marko Simun 신원과 실제 명단 19번, Toskovic 골의 Simun 크로스 대조. 22번 Desancic은 72분 Scekic 대신 투입; 2번 Golubovic과 다른 사람. 원래 full name/경력 및 2015년 공식 프로그램의 1996-02-20으로 섞인 표시명/생일 교정. Beitar 공식 81분 Kalu 아웃/71분 Yona 투입을 공급자 82/71분 이벤트와 대조해 기존 통계 Kalu82/Yona19로 정정. 투입 시간 사건은 유지."
+    },
+    "19481608": {
+      "sources": [
+        "https://www.sportschau.de/live-und-ergebnisse/fussball/europa-conference-league-qual/ma11155782/jk-nomme-kalju_st-patricks-athletic/taktische-aufstellung"
+      ],
+      "verified": "감독 포함 경기표의 Kalju Andreev109/St Pats Kenny58을 대조. 원래 Kalju109 사건은 Andreev이며 St Pats Kenny 선수 연결 제거. 공급자에 없는 Kenny58 사건은 생성하지 않음."
+    },
+    "19510403": {
+      "sources": [
+        "https://legia.net/mecz/relacja/legia-warszawa-aek-larnaka/13612",
+        "https://www.livesoccertv.com/match/legia-warszawa-vs-aek-larnaca/3ov9g",
+        "https://www.laczynaspilka.pl/biblioteka/mecze/legia-warszawa-aek-larnaka-21-14082025"
+      ],
+      "verified": "전체 중계의 Legia 감독45/AEK 감독89/Chacon78 경고 및 정확한 감독 단건 API 프로필 대조. 원래 Astiz/상대 감독이 선수 칸에 들어간 오류를 교정. 별도22분 스태프 카드에는 공급자 행이 없어 생성하지 않음."
+    },
+    "19541517": {
+      "sources": [
+        "https://matches.football.web.gc.safcservices.com/v2/opta/getsingle?teamID=t56&matchID=g2597259&seasonID=2025",
+        "https://www.premierleague.com/en/players/536243/daniel-vost/overview",
+        "https://theanalyst.com/players/2260/cameron-ashia",
+        "https://theanalyst.com/players/2241/daniel-vost"
+      ],
+      "verified": "Sunderland 공식 구조화 경기표의 실제36/38 선발, 전체8교체와 승부차기 대조. Ashia2005-04-22와 Vost2006-03-17은 Opta/브라우저로 읽은 PL 공식 프로필 확인. 원래76/90분 및6.9/6.8 평점 유지."
+    },
+    "19600516": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2025-2026-copa-del-rey-reus-fc-reddis-real-sociedad-4",
+        "https://reusfcreddis.com/jugadors/polete/",
+        "https://reusfcreddis.com/demarcacions/defensa/",
+        "https://donfutbolisto.com/es/partido/reus-fcr-real-sociedad-copa-del-rey-03-12-2025/"
+      ],
+      "verified": "실제2 Alberto/3 Morales/24 Serra와 다른 두 Pol의 생일·공식명단 대조. 59분 교체 방향 정정, 확정된87분 Serra 연결. 원문71분 두 경고는 LaLiga/RFEF 간 배우·시간 충돌이 있어 그대로 보존하며 검증 완료로 취급하지 않음. Miquel Ustrell은 확인된 공급자 ID가 없어 NULL 유지. 미제공 네 교체 행 생성 없음."
+    },
+    "19600524": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2025-2026-copa-del-rey-ebro-ca-osasuna-4",
+        "https://www.osasuna.es/copa-del-rey-2025-ebro-vs-osasuna",
+        "https://www.lapreferente.com/J353141/cd-ebro/ivan-perez.html",
+        "https://www.bdfutbol.com/es/p/j308628.html",
+        "https://www.bdfutbol.com/es/j/j19222.html"
+      ],
+      "verified": "전체10교체·8골·2경고 대조. 같은 시즌4번259968은 Robres2022/Ebro2023부터의 경력과 RFEF 성명 Pérez Dueña로 특정. Peru 국가 속성이 다른 기록과 섞여 있어 이 경기용 프로필은 확인한 Spain/전체 성명으로 정정. 생일2003-01-01은 LaPreferente/Transfermarkt와 같아 유지. Charlez 전체 성명/2000-10-03/구단 경력과 Iker 공식 Zaragoza2005-09-11 검증. 실제74분 아웃 두 선수의 기존119만 수정. 미제공교체 생성 없음."
+    },
+    "19645323": {
+      "sources": [
+        "https://www.worldfootball.net/match-report/co41/fa-cup/ma11848531/oxford-united_sunderland-afc/",
+        "https://www.livesoccertv.com/pt/match/sunderland-vs-oxford-united/1zi8r",
+        "https://matches.football.web.gc.safcservices.com/v2/opta/getsingle?teamID=t56&matchID=g2621255&seasonID=2025"
+      ],
+      "verified": "감독을 포함한 두 독립 전체 경기표의 Oxford Bloomfield75 단일 경고와 Sunderland 공식7선수카드 대조. 올바른75분 감독 사건은 보존하고 Sunderland50분으로 복제된152787826만 제외. 선수 Isidor50 사건은 유지."
+    }
+  }
+}

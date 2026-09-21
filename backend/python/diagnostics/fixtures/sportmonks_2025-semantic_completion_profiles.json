@@ -1,0 +1,22 @@
+{
+  "cases": [],
+  "profiles": {},
+  "verified_source": {
+    "19615702": {
+      "sources": [
+        "https://www.skysports.com/football/manchester-city-vs-exeter-city/live/550868",
+        "https://www.bbc.co.uk/sport/football/live/c0lxgy7253zt?page=6"
+      ],
+      "verified": "최신 전체 경기 중계의 Lewis90+1 도움은 Cherki. 바로 앞 슛도 Cherki 도움으로 기록되어 있고 BBC 최종 도움 요약은54/90+1 두 개. 원문의 Doku2/Cherki1을 각각1/2로 고치고 골 사건 도움만 교정. 기존 통계79만 수정, 새 통계 없음."
+    },
+    "19600523": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2025-2026-copa-del-rey-cda-navalcarnero-getafe-cf-4",
+        "https://www.skysports.com/football/navalcarnero-vs-getafe/live/549971",
+        "https://www.transfermarkt.com.ar/spielbericht/index/spielbericht/4766850",
+        "https://www.365scores.com/en-us/football/match/copa-del-rey-13/getafe-navalcarnero-140-22186-13"
+      ],
+      "verified": "LaLiga 상세 중계와 최신 Sky/Transfermarkt/365 최종 득점표는69분 Calado 자책골로 일치. LaLiga 상단·당시 일부 기사 Joselu 표기는 서로 충돌함을 보존. 자책골로 고치고 잘못 연결된 Joselu와 Javi 도움 제거, 원래 존재하는 골/도움 통계만0으로 정정. Calado 후보37736944는 전체명만 일치하나 표시명VaroLopez/공격수/2026소속23번과 섞여 있어 선수 ID를 연결하지 않음. 원래GKNULL 명단과 미제공통계 유지."
+    }
+  }
+}

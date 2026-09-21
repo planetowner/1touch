@@ -1,0 +1,333 @@
+[
+  {
+    "source": "Sportmonks fixture and player responses retrieved 2026-09-18",
+    "verified_sources": [
+      "https://vidi.hu/en/match-centre/videoton-fc-i/2019-2020/196-2019-07-11-fk-zeta-golubovci-mol-fehervar-fc/line-up",
+      "https://www.skysports.com/football/fehervar-fc-vs-zeta-golubovci/teams/409192"
+    ],
+    "team_id": 7459,
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "6265471797": {
+        "player_id": 147611
+      }
+    },
+    "profiles": {
+      "147611": {
+        "id": 147611,
+        "sport_id": 1,
+        "country_id": 998,
+        "nationality_id": 998,
+        "city_id": null,
+        "position_id": 25,
+        "detailed_position_id": null,
+        "type_id": 25,
+        "common_name": "Đ. Vukčević",
+        "firstname": "Đorđije",
+        "lastname": "Vukčević",
+        "name": "Đorđije Vukčević",
+        "display_name": "Đorđije Vukčević",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": 184,
+        "weight": 80,
+        "date_of_birth": "1996-08-18",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "fixture": {
+      "id": 11875056,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 6936600,
+          "sport_id": 1,
+          "fixture_id": 11875056,
+          "player_id": 14004374,
+          "team_id": 7459,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": null,
+          "player_name": "I. Vukčević",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 208702104,
+              "fixture_id": 11875056,
+              "player_id": 14004374,
+              "team_id": 7459,
+              "lineup_id": 6936600,
+              "type_id": 88,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 208702108,
+              "fixture_id": 11875056,
+              "player_id": 14004374,
+              "team_id": 7459,
+              "lineup_id": 6936600,
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ],
+          "player": {
+            "id": 14004374,
+            "sport_id": 1,
+            "country_id": 998,
+            "nationality_id": 998,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "I. Vukčević",
+            "firstname": "Ivan",
+            "lastname": "Vukčević",
+            "name": "Ivan Vukčević",
+            "display_name": "Ivan Vukcevic",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/14004374.png",
+            "height": 185,
+            "weight": null,
+            "date_of_birth": "2001-12-04",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 6265471797,
+          "sport_id": 1,
+          "fixture_id": 11875056,
+          "player_id": 14004374,
+          "team_id": 7459,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": null,
+          "player_name": "I. Vukčević",
+          "jersey_number": 11,
+          "details": [
+            {
+              "id": 604096245,
+              "fixture_id": 11875056,
+              "player_id": 14004374,
+              "team_id": 7459,
+              "lineup_id": 6265471797,
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            },
+            {
+              "id": 604095002,
+              "fixture_id": 11875056,
+              "player_id": 14004374,
+              "team_id": 7459,
+              "lineup_id": 6265471797,
+              "type_id": 88,
+              "data": {
+                "value": 4
+              }
+            }
+          ],
+          "player": {
+            "id": 14004374,
+            "sport_id": 1,
+            "country_id": 998,
+            "nationality_id": 998,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "I. Vukčević",
+            "firstname": "Ivan",
+            "lastname": "Vukčević",
+            "name": "Ivan Vukčević",
+            "display_name": "Ivan Vukcevic",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/14004374.png",
+            "height": 185,
+            "weight": null,
+            "date_of_birth": "2001-12-04",
+            "gender": "male"
+          }
+        }
+      ]
+    },
+    "expected_lineups": [
+      [
+        14004374,
+        7,
+        90
+      ],
+      [
+        147611,
+        11,
+        90
+      ]
+    ]
+  },
+  {
+    "source": "Sportmonks fixture and player responses retrieved 2026-09-18",
+    "verified_sources": [
+      "https://vidi.hu/en/match-centre/videoton-fc-i/2019-2020/196-2019-07-11-fk-zeta-golubovci-mol-fehervar-fc/line-up",
+      "https://www.skysports.com/football/fehervar-fc-vs-zeta-golubovci/teams/409192"
+    ],
+    "team_id": 7459,
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "6265467104": {
+        "player_id": 147611,
+        "details": [
+          {
+            "id": 604089168,
+            "fixture_id": 11875057,
+            "player_id": 14004374,
+            "team_id": 7459,
+            "lineup_id": 6265467104,
+            "type_id": 119,
+            "data": {
+              "value": 75
+            }
+          }
+        ]
+      }
+    },
+    "profiles": {
+      "147611": {
+        "id": 147611,
+        "sport_id": 1,
+        "country_id": 998,
+        "nationality_id": 998,
+        "city_id": null,
+        "position_id": 25,
+        "detailed_position_id": null,
+        "type_id": 25,
+        "common_name": "Đ. Vukčević",
+        "firstname": "Đorđije",
+        "lastname": "Vukčević",
+        "name": "Đorđije Vukčević",
+        "display_name": "Đorđije Vukčević",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": 184,
+        "weight": 80,
+        "date_of_birth": "1996-08-18",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "fixture": {
+      "id": 11875057,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 6936700,
+          "sport_id": 1,
+          "fixture_id": 11875057,
+          "player_id": 14004374,
+          "team_id": 7459,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": null,
+          "player_name": "I. Vukčević",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 208703592,
+              "fixture_id": 11875057,
+              "player_id": 14004374,
+              "team_id": 7459,
+              "lineup_id": 6936700,
+              "type_id": 119,
+              "data": {
+                "value": 83
+              }
+            }
+          ],
+          "player": {
+            "id": 14004374,
+            "sport_id": 1,
+            "country_id": 998,
+            "nationality_id": 998,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "I. Vukčević",
+            "firstname": "Ivan",
+            "lastname": "Vukčević",
+            "name": "Ivan Vukčević",
+            "display_name": "Ivan Vukcevic",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/14004374.png",
+            "height": 185,
+            "weight": null,
+            "date_of_birth": "2001-12-04",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 6265467104,
+          "sport_id": 1,
+          "fixture_id": 11875057,
+          "player_id": 14004374,
+          "team_id": 7459,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": null,
+          "player_name": "I. Vukčević",
+          "jersey_number": 11,
+          "details": [
+            {
+              "id": 604089168,
+              "fixture_id": 11875057,
+              "player_id": 14004374,
+              "team_id": 7459,
+              "lineup_id": 6265467104,
+              "type_id": 119,
+              "data": {
+                "value": 83
+              }
+            }
+          ],
+          "player": {
+            "id": 14004374,
+            "sport_id": 1,
+            "country_id": 998,
+            "nationality_id": 998,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "I. Vukčević",
+            "firstname": "Ivan",
+            "lastname": "Vukčević",
+            "name": "Ivan Vukčević",
+            "display_name": "Ivan Vukcevic",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/14004374.png",
+            "height": 185,
+            "weight": null,
+            "date_of_birth": "2001-12-04",
+            "gender": "male"
+          }
+        }
+      ]
+    },
+    "expected_lineups": [
+      [
+        14004374,
+        7,
+        83
+      ],
+      [
+        147611,
+        11,
+        75
+      ]
+    ]
+  }
+]

@@ -1,0 +1,148 @@
+{
+  "source": "20260920-2024-detail-error-provider-profiles.json",
+  "evidence": "20260920-2024-cup-two-verified-repairs.json",
+  "cases": [
+    {
+      "fixture": {
+        "id": 19320861,
+        "events": [
+          {
+            "id": 122809298,
+            "fixture_id": 19320861,
+            "period_id": 5700297,
+            "participant_id": 270394,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37632030,
+            "related_player_id": 108940,
+            "player_name": "Marco Pérez",
+            "related_player_name": "Juanmi Callejón",
+            "result": null,
+            "info": null,
+            "addition": "5th Substitution",
+            "minute": 63,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5700297,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 122810357,
+            "fixture_id": 19320861,
+            "period_id": 5700297,
+            "participant_id": 270394,
+            "type_id": 18,
+            "section": "event",
+            "player_id": null,
+            "related_player_id": null,
+            "player_name": "Alberto Caro",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "9th Substitution",
+            "minute": 67,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5700297,
+            "rescinded": null,
+            "sort_order": 9,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [],
+        "coaches": [],
+        "statistics": [],
+        "pressure": [],
+        "formations": []
+      },
+      "expected_events": [
+        {
+          "id": 122809298,
+          "fixture_id": 19320861,
+          "period_id": 5700297,
+          "participant_id": 270394,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37551709,
+          "related_player_id": 108940,
+          "player_name": "Marco Manchón",
+          "related_player_name": "Juanmi Callejón",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 63,
+          "extra_minute": null,
+          "injured": false,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5700297,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 122810357,
+          "fixture_id": 19320861,
+          "period_id": 5700297,
+          "participant_id": 270394,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37262667,
+          "related_player_id": 37262730,
+          "player_name": "Alberto Caro",
+          "related_player_name": "Tala",
+          "result": null,
+          "info": null,
+          "addition": "9th Substitution",
+          "minute": 67,
+          "extra_minute": null,
+          "injured": false,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5700297,
+          "rescinded": null,
+          "sort_order": 9,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}

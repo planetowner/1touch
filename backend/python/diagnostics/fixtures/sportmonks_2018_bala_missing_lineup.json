@@ -1,0 +1,83 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 10331707,
+        "events": [
+          {
+            "id": 32411817,
+            "fixture_id": 10331707,
+            "period_id": 375774,
+            "participant_id": 1232,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 14484,
+            "related_player_id": 9541,
+            "player_name": "S. Tames",
+            "related_player_name": "Andy Mangan",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 54,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "32411817": [
+          9541
+        ]
+      }
+    }
+  ],
+  "profiles": {
+    "9541": {
+      "id": 9541,
+      "sport_id": 1,
+      "country_id": 462,
+      "nationality_id": 462,
+      "city_id": 51090,
+      "position_id": 221,
+      "detailed_position_id": null,
+      "type_id": 27,
+      "common_name": "A. Mangan",
+      "firstname": "Andrew",
+      "lastname": "Mangan",
+      "name": "Andrew Mangan",
+      "display_name": "Andrew Mangan",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/5/9541.png",
+      "height": 175,
+      "weight": 74,
+      "date_of_birth": "1986-08-30",
+      "gender": "male"
+    }
+  },
+  "verified_source": {
+    "sources": [
+      "https://www.fsgc.sm/assets/documents/541.pdf",
+      "https://www.wrexhamafcarchive.co.uk/player.php?id=231"
+    ],
+    "verified": "UEFA 경기표 전체와 PDF 화면 대조. Mangan 54분 아웃, Kieran Smith 67분 아웃, Stuart John Jones 88분 투입. Pearson 경고는 79분. Sky의 Sean Smith/Joshua Jones 표기가 틀렸음. Mangan의 이름·생일·Bala 경력 일치.",
+    "unavailable": "공급자에 Mangan 명단 행이 없어 만들지 않음. 이벤트 프로필만 보충."
+  }
+}

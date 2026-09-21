@@ -1,0 +1,15 @@
+{
+  "cases": [],
+  "profiles": {},
+  "verified_source": {
+    "11955001": {
+      "sources": [
+        "https://www.skysports.com/football/aik-vs-celtic/report/420133",
+        "https://fbref.com/en/squads/b81aa4fa/2019-2020/goallogs/c19/Celtic-Goal-Logs-Europa-League",
+        "https://www.transfermarkt.co.uk/aik_seltik-glazgo/index/spielbericht/3244631",
+        "https://www.sofascore.com/football/match/celtic-aik/oKscX"
+      ],
+      "verified": "87분 Jullien 득점의 도움은 Ryan Christie. Sky 기사 본문도 Christie의 낮은 크로스를 Jullien이 Brown 앞에서 마무리했다고 설명. 기존 171725 Brown을 경기 명단의 172752 Christie로 교정. 34분은 Sky의 초기 자책골 표기와 달리 현재 FBref·Sofascore·Transfermarkt가 Johnston 득점으로 집계하고 Transfermarkt는 McGregor 도움도 표시하여 공급자 일반골·도움 연결을 유지. 나머지 득점·카드·교체는 기존 기록 유지."
+    }
+  }
+}
