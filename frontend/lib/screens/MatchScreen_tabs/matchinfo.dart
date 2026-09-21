@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/KaneRest.dart';
@@ -349,6 +351,13 @@ class MatchInfoTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final homeTeam = fixtureHomeTeam(fixture, teamRepository);
     final awayTeam = fixtureAwayTeam(fixture, teamRepository);
+    final comparisonColors = TeamComparisonColorResolver.resolve(
+      anchorTeamName: homeTeam.name,
+      anchorPrimaryFallback: Color(homeTeam.primaryColor),
+      opponentTeamName: awayTeam.name,
+      opponentPrimaryFallback: Color(awayTeam.primaryColor),
+      background: mainPageBackground(context),
+    );
     final homeScore = fixture.homeScore?.toString() ?? '#';
     final awayScore = fixture.awayScore?.toString() ?? '#';
     final coachNamesByTeam = {
@@ -401,11 +410,19 @@ class MatchInfoTab extends StatelessWidget {
           ],
           if (momentumValues.isNotEmpty) ...[
             const SizedBox(height: 48),
-            MomentumChart(values: momentumValues),
+            MomentumChart(
+              values: momentumValues,
+              homeColor: comparisonColors.anchor,
+              awayColor: comparisonColors.opponent,
+            ),
           ],
           if (statBars.isNotEmpty) ...[
             const SizedBox(height: 48),
-            StatBarsSection(bars: statBars),
+            StatBarsSection(
+              bars: statBars,
+              homeColor: comparisonColors.anchor,
+              awayColor: comparisonColors.opponent,
+            ),
           ],
           if (hasCompleteLineup) ...[
             const SizedBox(height: 48),

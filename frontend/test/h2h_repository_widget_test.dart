@@ -5,7 +5,9 @@ import 'support/fake_betting_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
 
@@ -92,6 +94,22 @@ void main() {
           )
           .data,
       '0',
+    );
+    final expectedColors = TeamComparisonColorResolver.resolve(
+      anchorTeamName: 'Arsenal',
+      opponentTeamName: 'Liverpool',
+      background: Colors.white,
+    );
+    final betCard = tester.widget<BettingParticipationCard>(
+      find.byType(BettingParticipationCard),
+    );
+    expect(
+      betCard.barColors![0],
+      expectedColors.opponent,
+    );
+    expect(
+      betCard.barColors![2],
+      expectedColors.anchor,
     );
     expect(tester.takeException(), isNull);
   });

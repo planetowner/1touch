@@ -2,14 +2,29 @@ part of 'match_info_features.dart';
 
 class StatBarsSection extends StatelessWidget {
   final List<StatBarData> bars;
+  final Color homeColor;
+  final Color awayColor;
 
-  const StatBarsSection({super.key, required this.bars});
+  const StatBarsSection({
+    super.key,
+    required this.bars,
+    this.homeColor = const Color(0xFFFF5C5C),
+    this.awayColor = Colors.white,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: bars.map((b) => StatComparisonBar(data: b)).toList(),
+      children: bars
+          .map(
+            (bar) => StatComparisonBar(
+              data: bar,
+              homeColor: homeColor,
+              awayColor: awayColor,
+            ),
+          )
+          .toList(),
     );
   }
 }
@@ -35,8 +50,15 @@ class StatBarData {
 
 class StatComparisonBar extends StatelessWidget {
   final StatBarData data;
+  final Color homeColor;
+  final Color awayColor;
 
-  const StatComparisonBar({super.key, required this.data});
+  const StatComparisonBar({
+    super.key,
+    required this.data,
+    this.homeColor = const Color(0xFFFF5C5C),
+    this.awayColor = Colors.white,
+  });
 
   String _fmt(double v) {
     final number = data.fractionDigits == null
@@ -80,7 +102,7 @@ class StatComparisonBar extends StatelessWidget {
                             'match-info-stat-${data.category}-home-fill',
                           ),
                           height: 8,
-                          color: const Color(0xFFFF5C5C),
+                          color: homeColor,
                         ),
                       ),
                       Expanded(
@@ -90,7 +112,7 @@ class StatComparisonBar extends StatelessWidget {
                             'match-info-stat-${data.category}-away-fill',
                           ),
                           height: 8,
-                          color: Colors.white,
+                          color: awayColor,
                         ),
                       ),
                     ],

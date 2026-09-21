@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
@@ -385,14 +386,38 @@ class _H2HTabState extends State<H2HTab> {
     );
   }
 
-  Widget _buildBetsCard() => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('BETS', style: Body2_b.style),
-          const SizedBox(height: 16),
-          BettingParticipationCard(controller: widget.bettingController),
-        ],
-      );
+  Widget _buildBetsCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
+    final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
+    final perspectiveIsHome = _perspectiveTeamId == widget.fixture.homeTeamId;
+    final anchorTeam = perspectiveIsHome ? homeTeam : awayTeam;
+    final opponentTeam = perspectiveIsHome ? awayTeam : homeTeam;
+    final comparisonColors = TeamComparisonColorResolver.resolve(
+      anchorTeamName: anchorTeam.name,
+      anchorPrimaryFallback: Color(anchorTeam.primaryColor),
+      opponentTeamName: opponentTeam.name,
+      opponentPrimaryFallback: Color(opponentTeam.primaryColor),
+      background: isDark ? AppPalette.lightGrey : AppPalette.white,
+    );
+    final homeColor =
+        perspectiveIsHome ? comparisonColors.anchor : comparisonColors.opponent;
+    final awayColor =
+        perspectiveIsHome ? comparisonColors.opponent : comparisonColors.anchor;
+    final drawColor = Color.lerp(homeColor, awayColor, 0.5)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('BETS', style: Body2_b.style),
+        const SizedBox(height: 16),
+        BettingParticipationCard(
+          controller: widget.bettingController,
+          barColors: [homeColor, drawColor, awayColor],
+        ),
+      ],
+    );
+  }
 
   Widget _buildPastMatchCard(
     String teamA,

@@ -437,8 +437,15 @@ class MatchStatsHeader extends StatelessWidget {
 }
 
 class BettingParticipationCard extends StatelessWidget {
-  const BettingParticipationCard({super.key, required this.controller});
+  const BettingParticipationCard({
+    super.key,
+    required this.controller,
+    this.barColors,
+  }) : assert(barColors == null || barColors.length == 3);
+
   final BettingController controller;
+  final List<Color>? barColors;
+
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: controller,
@@ -463,6 +470,7 @@ class BettingParticipationCard extends StatelessWidget {
                     values: market!.options
                         .map((option) => option.probability)
                         .toList(),
+                    colors: barColors,
                   )
                 else
                   Text(controller.loading
@@ -474,6 +482,7 @@ class BettingParticipationCard extends StatelessWidget {
                 if (market?.userProbabilities != null)
                   BettingProbabilityBar(
                     values: market!.userProbabilities!,
+                    colors: barColors,
                     selected:
                         ['open', 'won', 'lost'].contains(market.bet?.status)
                             ? market.bet?.outcome
@@ -548,54 +557,71 @@ class _BetReceipt extends StatelessWidget {
 }
 
 class BettingProbabilityBar extends StatelessWidget {
-  const BettingProbabilityBar({super.key, required this.values, this.selected});
+  const BettingProbabilityBar({
+    super.key,
+    required this.values,
+    this.selected,
+    this.colors,
+  }) : assert(colors == null || colors.length == 3);
+
   final List<double> values;
   final BetOutcome? selected;
+  final List<Color>? colors;
+
   @override
-  Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: SizedBox(
-          height: 40,
-          child: Row(
-            children: List.generate(3, (index) {
-              if (values[index] <= 0) return const SizedBox.shrink();
-              return Expanded(
-                flex: (values[index] * 1000000).round().clamp(1, 1000000),
-                child: Container(
-                  color: [
-                    const Color(0xFFFF5757),
-                    const Color(0xFFFFAAAA),
-                    AppPalette.lightGreyBox,
-                  ][index],
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  alignment: Alignment.center,
-                  child: FittedBox(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${(values[index] * 100).toStringAsFixed(1)}%',
-                          style: TextStyle(
-                            color: index == 0 ? Colors.white : AppPalette.black,
-                            fontWeight: FontWeight.bold,
-                          ),
+  Widget build(BuildContext context) {
+    final segmentColors = colors ??
+        const [
+          Color(0xFFFF5757),
+          Color(0xFFFFAAAA),
+          AppPalette.lightGreyBox,
+        ];
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: SizedBox(
+        height: 40,
+        child: Row(
+          children: List.generate(3, (index) {
+            if (values[index] <= 0) return const SizedBox.shrink();
+            return Expanded(
+              flex: (values[index] * 1000000).round().clamp(1, 1000000),
+              child: Container(
+                color: segmentColors[index],
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                alignment: Alignment.center,
+                child: FittedBox(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${(values[index] * 100).toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          color: _foregroundFor(segmentColors[index]),
+                          fontWeight: FontWeight.bold,
                         ),
-                        if (selected?.index == index)
-                          Icon(
-                            Icons.check_circle,
-                            size: 14,
-                            color: index == 0 ? Colors.white : AppPalette.black,
-                          ),
-                      ],
-                    ),
+                      ),
+                      if (selected?.index == index)
+                        Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: _foregroundFor(segmentColors[index]),
+                        ),
+                    ],
                   ),
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          }),
         ),
-      );
+      ),
+    );
+  }
 }
+
+Color _foregroundFor(Color background) =>
+    ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+        ? Colors.white
+        : AppPalette.black;
 
 class _BetButton extends StatelessWidget {
   const _BetButton({required this.text, required this.onPressed});
