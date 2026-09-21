@@ -37,7 +37,7 @@ class CommunitySliverAppBar extends StatelessWidget {
       titleSpacing: 0,
       flexibleSpace: ColoredBox(color: pageBackground),
       title: Padding(
-        padding: const EdgeInsets.only(left: 24, top: 30),
+        padding: const EdgeInsets.only(left: 24),
         child: SvgPicture.asset(
           'assets/app_logo.svg',
           height: 23,
@@ -50,7 +50,7 @@ class CommunitySliverAppBar extends StatelessWidget {
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 8, top: 30),
+          padding: const EdgeInsets.only(right: 8),
           child: Row(
             children: [
               IconButton(
