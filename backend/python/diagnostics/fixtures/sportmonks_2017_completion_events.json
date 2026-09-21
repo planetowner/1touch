@@ -1,0 +1,115 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 1818647,
+        "lineups": [],
+        "events": [
+          {
+            "id": 31875164,
+            "fixture_id": 1818647,
+            "period_id": 2761066,
+            "participant_id": 850,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 9611526,
+            "related_player_id": 25279,
+            "player_name": "R. Amani",
+            "related_player_name": "Aleksei Kangaskolkka",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 86,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 31875164,
+          "fixture_id": 1818647,
+          "period_id": 2761066,
+          "participant_id": 850,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 91467,
+          "related_player_id": 25279,
+          "player_name": "Rezgar Amani",
+          "related_player_name": "Aleksei Kangaskolkka",
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 86,
+          "extra_minute": null,
+          "injured": false,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    }
+  ],
+  "known_player_ids": [
+    25279,
+    91467
+  ],
+  "verified_source": {
+    "1818647": {
+      "sources": [
+        "https://www-assets.palloliitto.fi/62562/1650977144-jalkapallokirja_2017.pdf",
+        "https://www.veikkausliiga.com/pelaajat/54275/amani-rezgar"
+      ],
+      "verified": "PZPN의 실제5번 Amani/Kangaskolkka86분 교체와 원래 명단91467의 정확한 성명·팀·등번호 대조. 중복 프로필9611526을 만들지 않고 실제 명단의91467로 이벤트를 통일. 공식협회/리그 생일1992-06-01로 경기용 프로필 교정, 원래4분 유지."
+    },
+    "2571789": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4350",
+        "https://fkzeljeznicar.ba/en/foto-sinan-ramovic-novi-fudbaler-zeljeznicara-2/44769/",
+        "https://fkzeljeznicar.ba/sinan-ramovic-odigrao-50-utakmicu-u-dresu-zelje/38720/",
+        "https://fkzeljeznicar.ba/foto-zeljeznicar-se-porazom-u-stockholmu-oprostio-od-evropske-lige/27285/",
+        "https://isport.blesk.cz/fotbal/evropska-liga-predkola-2017-2018/stockholm-zeljeznicar-sarajevo/online-prenos?match=262392"
+      ],
+      "verified": "AIK 공식 전체명단·실제48/85골·80Avdic/Markkanen 교체, 공식Zeljeznicar Ramovic데뷔/1992-10-13/68분 투입을 대조해6명 프로필 보충. 한 교체의 두 배우는 같은 tuple계약 사용. 공급자에없는AIK명단·분·통계는 생성하지 않음. Radinovic/Graovac의45분 및89분 카드 충돌은 증거부족으로 원문을 보존하며 검증 완료로 취급하지 않음. HNS1경기징계는 경고누적 가능성이 있어 퇴장 증거로 사용하지 않음.",
+      "followup": "2026-09-21 추가 확인: iSport 당시 중계는 Graovac 45+2 경고, Radinovic 90 경고와 90+4 슈팅을 기록한다. 이는 Radinovic 89분 퇴장 주장에 반하는 구체적 근거다. 구단 기사 및 Sky와의 충돌이 남으므로 카드 유형·분·출전 통계는 확정 보정하지 않는다."
+    },
+    "5512563": {
+      "sources": [
+        "https://www.beneventocalcio.club/news/notizie/607/benevento-perugia-i-convocati.shtml",
+        "https://www.gazzetta.it/Calcio/12-08-2017/coppa-italia-bologna-cittadella-0-3-espulso-verdi-5-210958004912.shtml",
+        "https://www.sportsmole.co.uk/football/coppa-italia/benevento-vs-perugia_game_65396.html"
+      ],
+      "verified": "경기전날 공식 소집명단의Brignola99번 확인. 실제80분투입99번슬롯4581360의10분·통계는 유지하고 통계없는25번중복만 제거. 당시기사와경기표의Cataldi44분직접퇴장/그전Cerri1골 확인해 기존119=44,88=1로 교정. 공급자에없는퇴장행·85통계는 만들지 않음."
+    }
+  }
+}
