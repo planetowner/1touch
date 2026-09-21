@@ -3,6 +3,7 @@ part of 'team_best_eleven_section.dart';
 class BestElevenPitch extends StatelessWidget {
   BestElevenPitch({
     super.key,
+    required this.teamId,
     required List<BestElevenEntry> players,
   }) : _players = List.unmodifiable(
           players.map(
@@ -14,6 +15,7 @@ class BestElevenPitch extends StatelessWidget {
           ),
         );
 
+  final int teamId;
   final List<_BestElevenPitchPlayer> _players;
 
   @override
@@ -23,6 +25,12 @@ class BestElevenPitch extends StatelessWidget {
     final pitchBackground = Theme.of(context).brightness == Brightness.dark
         ? AppPalette.lightGrey
         : appColors.cardBackground;
+    final team = teamRepository.findById(teamId);
+    final playerCircleColor = TeamComparisonColorResolver.paletteFor(
+      teamName: team?.name,
+      primaryFallback: team == null ? null : Color(team.primaryColor),
+    ).primary;
+    final jerseyNumberColor = _jerseyNumberColor(playerCircleColor);
 
     final Map<int, List<_BestElevenPitchPlayer>> byRow = {};
     for (final player in _players) {
@@ -68,6 +76,8 @@ class BestElevenPitch extends StatelessWidget {
                       final rowPlayers = byRow[key]!;
                       return _BestElevenRow(
                         players: rowPlayers,
+                        playerCircleColor: playerCircleColor,
+                        jerseyNumberColor: jerseyNumberColor,
                         isDefensiveRow: key == rowKeys.last,
                       );
                     }).toList(),
@@ -86,10 +96,14 @@ class BestElevenPitch extends StatelessWidget {
 class _BestElevenRow extends StatelessWidget {
   const _BestElevenRow({
     required this.players,
+    required this.playerCircleColor,
+    required this.jerseyNumberColor,
     this.isDefensiveRow = false,
   });
 
   final List<_BestElevenPitchPlayer> players;
+  final Color playerCircleColor;
+  final Color jerseyNumberColor;
   final bool isDefensiveRow;
 
   @override
@@ -105,7 +119,11 @@ class _BestElevenRow extends StatelessWidget {
         padding: const EdgeInsets.only(top: 0),
         child: Transform.translate(
           offset: Offset(0, topOffset),
-          child: _BestElevenPlayerDot(player: players[columnIndex]),
+          child: _BestElevenPlayerDot(
+            player: players[columnIndex],
+            circleColor: playerCircleColor,
+            jerseyNumberColor: jerseyNumberColor,
+          ),
         ),
       );
     }
@@ -121,9 +139,15 @@ class _BestElevenRow extends StatelessWidget {
 }
 
 class _BestElevenPlayerDot extends StatelessWidget {
-  const _BestElevenPlayerDot({required this.player});
+  const _BestElevenPlayerDot({
+    required this.player,
+    required this.circleColor,
+    required this.jerseyNumberColor,
+  });
 
   final _BestElevenPitchPlayer player;
+  final Color circleColor;
+  final Color jerseyNumberColor;
 
   @override
   Widget build(BuildContext context) {
@@ -131,23 +155,22 @@ class _BestElevenPlayerDot extends StatelessWidget {
     final label = playerName == null || playerName.isEmpty
         ? 'Unknown'
         : playerName.split(' ').last;
-    final colors = Theme.of(context).colorScheme;
-
     return SizedBox(
       width: 62,
       child: Column(
         children: [
           Container(
+            key: ValueKey('best-eleven-player-dot-${player.slotKey}'),
             width: 32,
             height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: colors.onSurface,
+              color: circleColor,
             ),
             alignment: Alignment.center,
             child: Text(
               player.jerseyNumber?.toString() ?? '##',
-              style: Heading5.style.copyWith(color: colors.onPrimary),
+              style: Heading5.style.copyWith(color: jerseyNumberColor),
             ),
           ),
           const SizedBox(height: 6),
@@ -162,6 +185,25 @@ class _BestElevenPlayerDot extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _jerseyNumberColor(Color background) {
+  const minimumNormalTextContrast = 4.5;
+  final blackContrast = ColorUtils.getContrastRatio(
+    background,
+    AppPalette.black,
+  );
+  final whiteContrast = ColorUtils.getContrastRatio(
+    background,
+    AppPalette.white,
+  );
+
+  if (blackContrast >= whiteContrast) {
+    assert(blackContrast >= minimumNormalTextContrast);
+    return AppPalette.black;
+  }
+  assert(whiteContrast >= minimumNormalTextContrast);
+  return AppPalette.white;
 }
 
 class _BestElevenPitchPlayer {
