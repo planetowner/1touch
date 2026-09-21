@@ -34,7 +34,11 @@ class PlayerIndicatorValue extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Flexible(child: Text(value, style: Heading5.style)),
+          Flexible(
+              child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(value, style: Heading5.style))),
           const SizedBox(width: 8),
           if (loading)
             const SizedBox.square(
