@@ -1,0 +1,774 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 16905170,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34742639,
+            "fixture_id": 16905170,
+            "period_id": 3731154,
+            "participant_id": 2353,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 190449,
+            "related_player_id": null,
+            "player_name": "A. Khalili",
+            "related_player_name": null,
+            "result": "1-0",
+            "info": null,
+            "addition": null,
+            "minute": 14,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 34742681,
+            "fixture_id": 16905170,
+            "period_id": 457359,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 858,
+            "related_player_id": 190449,
+            "player_name": "A. Kačaniklić",
+            "related_player_name": "A. Khalili",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 77,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 34742691,
+            "fixture_id": 16905170,
+            "period_id": 457359,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 177679,
+            "related_player_id": 192069,
+            "player_name": "Vladimir Rodic",
+            "related_player_name": "Mohanad Jeahze",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 80,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 77804788,
+            "fixture_id": 16905170,
+            "period_id": 457359,
+            "participant_id": 2353,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 177679,
+            "related_player_id": null,
+            "player_name": "Vladimir Rodic",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 89,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 4,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "34742639": [
+          190449
+        ],
+        "34742681": [
+          190449
+        ],
+        "34742691": [
+          177679,
+          192069
+        ],
+        "77804788": [
+          177679
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 17054974,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34805238,
+            "fixture_id": 17054974,
+            "period_id": 528585,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 190320,
+            "related_player_id": 190648,
+            "player_name": "Richárd Magyar",
+            "related_player_name": "David Fällman",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 46,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 34805247,
+            "fixture_id": 17054974,
+            "period_id": 3752544,
+            "participant_id": 2353,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 192069,
+            "related_player_id": null,
+            "player_name": "Mohanad Jeahze",
+            "related_player_name": null,
+            "result": null,
+            "info": "Tripping",
+            "addition": null,
+            "minute": 14,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 34805255,
+            "fixture_id": 17054974,
+            "period_id": 528585,
+            "participant_id": 2353,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 190407,
+            "related_player_id": null,
+            "player_name": "Serge-Junior Martinsson Ngouali",
+            "related_player_name": null,
+            "result": null,
+            "info": "Roughing",
+            "addition": null,
+            "minute": 47,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 4,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 34805260,
+            "fixture_id": 17054974,
+            "period_id": 528585,
+            "participant_id": 2353,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 190449,
+            "related_player_id": null,
+            "player_name": "A. Khalili",
+            "related_player_name": null,
+            "result": null,
+            "info": "Unsportsmanlike conduct",
+            "addition": null,
+            "minute": 81,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 6,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "34805238": [
+          190320,
+          190648
+        ],
+        "34805247": [
+          192069
+        ],
+        "34805255": [
+          190407
+        ],
+        "34805260": [
+          190449
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 17323700,
+        "lineups": [],
+        "events": [
+          {
+            "id": 35030708,
+            "fixture_id": 17323700,
+            "period_id": 551156,
+            "participant_id": 10722,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 133409,
+            "related_player_id": 436065,
+            "player_name": "F. Nardi",
+            "related_player_name": "Francesco Deli",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 59,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "35030708": [
+          133409
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 17323704,
+        "lineups": [],
+        "events": [
+          {
+            "id": 35030664,
+            "fixture_id": 17323704,
+            "period_id": 3812961,
+            "participant_id": 8271,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 366951,
+            "related_player_id": 62418,
+            "player_name": "N. Bianchi",
+            "related_player_name": "R. Faty",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 26,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "35030664": [
+          366951
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 17324351,
+        "lineups": [],
+        "events": [
+          {
+            "id": 35032139,
+            "fixture_id": 17324351,
+            "period_id": 551487,
+            "participant_id": 658,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37540087,
+            "related_player_id": 28349,
+            "player_name": "N. Fantoni",
+            "related_player_name": "J. Vandeputte",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 60,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 35032151,
+            "fixture_id": 17324351,
+            "period_id": 551487,
+            "participant_id": 658,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37540087,
+            "related_player_id": null,
+            "player_name": "N. Fantoni",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 76,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 3,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "35032139": [
+          37540087
+        ],
+        "35032151": [
+          37540087
+        ]
+      }
+    }
+  ],
+  "profiles": {
+    "190449": {
+      "id": 190449,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 36843,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "A. Khalili",
+      "firstname": "Abdul Rahman",
+      "lastname": "Khalili",
+      "name": "Abdul Rahman Khalili",
+      "display_name": "Abdulrahman Khalili",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/17/190449.png",
+      "height": 180,
+      "weight": 76,
+      "date_of_birth": "1992-06-07",
+      "gender": "male"
+    },
+    "177679": {
+      "id": 177679,
+      "sport_id": 1,
+      "country_id": 296,
+      "nationality_id": 998,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": 26,
+      "common_name": "V. Rodić",
+      "firstname": "Vladimir",
+      "lastname": "Rodić",
+      "name": "Vladimir Rodić",
+      "display_name": "Vladimir Rodic",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 176,
+      "weight": 71,
+      "date_of_birth": "1993-09-07",
+      "gender": "male"
+    },
+    "192069": {
+      "id": 192069,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 107,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 155,
+      "type_id": 25,
+      "common_name": "M. Jeahze",
+      "firstname": "Mohanad",
+      "lastname": "Jeahze",
+      "name": "Mohanad Jeahze",
+      "display_name": "Mohanad Jeahze",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 179,
+      "weight": null,
+      "date_of_birth": "1997-04-10",
+      "gender": "male"
+    },
+    "190320": {
+      "id": 190320,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": null,
+      "detailed_position_id": null,
+      "type_id": 25,
+      "common_name": "R. Magyar",
+      "firstname": "Richard",
+      "lastname": "Magyar",
+      "name": "Richard Magyar",
+      "display_name": "Richard Magyar",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/16/190320.png",
+      "height": 192,
+      "weight": 85,
+      "date_of_birth": "1991-05-03",
+      "gender": "male"
+    },
+    "190648": {
+      "id": 190648,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "type_id": 25,
+      "common_name": "D. Fällman",
+      "firstname": "David",
+      "lastname": "Fällman",
+      "name": "David Fällman",
+      "display_name": "David Fällman",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/24/190648.png",
+      "height": 187,
+      "weight": 79,
+      "date_of_birth": "1990-02-04",
+      "gender": "male"
+    },
+    "190407": {
+      "id": 190407,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 3662,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 149,
+      "type_id": 26,
+      "common_name": "S. Martinsson-Ngouali",
+      "firstname": "Serge Junior",
+      "lastname": "Martinsson-Ngouali",
+      "name": "Serge Junior Martinsson-Ngouali",
+      "display_name": "Serge-Junior Ngouali",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/7/190407.png",
+      "height": 175,
+      "weight": 75,
+      "date_of_birth": "1992-01-23",
+      "gender": "male"
+    },
+    "133409": {
+      "id": 133409,
+      "sport_id": 1,
+      "country_id": 251,
+      "nationality_id": 251,
+      "city_id": 91640,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "F. Nardi",
+      "firstname": "Filippo",
+      "lastname": "Nardi",
+      "name": "Filippo Nardi",
+      "display_name": "Filippo Nardi",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 175,
+      "weight": 69,
+      "date_of_birth": "1998-03-03",
+      "gender": "male"
+    },
+    "366951": {
+      "id": 366951,
+      "sport_id": 1,
+      "country_id": 251,
+      "nationality_id": 251,
+      "city_id": 19751,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "N. Bianchi",
+      "firstname": "Nicolò",
+      "lastname": "Bianchi",
+      "name": "Nicolò Bianchi",
+      "display_name": "Nicolò Bianchi",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 185,
+      "weight": 76,
+      "date_of_birth": "1992-02-24",
+      "gender": "male"
+    },
+    "37540087": {
+      "id": 37540087,
+      "sport_id": 1,
+      "country_id": 251,
+      "nationality_id": 251,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "type_id": 25,
+      "common_name": "N. Fantoni",
+      "firstname": "Nicholas",
+      "lastname": "Fantoni",
+      "name": "Nicholas Fantoni",
+      "display_name": "Nicholas Fantoni",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 189,
+      "weight": null,
+      "date_of_birth": "2002-10-04",
+      "gender": "male"
+    }
+  },
+  "verified_source": {
+    "16858568": {
+      "sources": [
+        "https://www.fsf.fo/wp-content/uploads/2021/02/Arsfragreidingin_2020_16-02-2021_KL_2318.pdf",
+        "https://portal.fo/roysni-32542/b36-er-vidari.grein"
+      ],
+      "verified": "FSF 204쪽 경기표 화면 전체와 당일 기사 대조. 28분 Przybylski 득점 도움은 Árni Frederiksberg 86656(1992-06-13). Andras 86653은 다른 선수. 원문의 다른 득점·교체·카드 유지. 31은 득점 분이 아닌 Przybylski 등번호."
+    },
+    "16865259": {
+      "sources": [
+        "https://www.sofascore.com/football/match/ludogorets-fk-buducnost-podgorica/TccsPBr",
+        "https://fbref.com/en/squads/f4f98e1c/2020-2021/goallogs/c8/Buducnost-Podgorica-Goal-Logs-Champions-League",
+        "https://fscg.me/en/players/petar-vukcevic-109047/"
+      ],
+      "verified": "31분 Ćuković 득점 도움은 Petar Vukčević. FSCG 공식 생일 2001-03-02와 공급자 19960414 일치. Nikola 147334를 실제 명단의 Petar로 교정."
+    },
+    "16905170": {
+      "sources": [
+        "https://puskasakademia.hu/cdn/publication/file/2025-11/pafc_ujpest_08_30_web.pdf",
+        "https://www.national-football-teams.com/old/club/2416/2020_2/Hammarby_If.html",
+        "https://www.e-nepujsag.ro/storage/pdf/2020/08/augusztus31hetfo2020.pdf"
+      ],
+      "verified": "Puskás 공식 프로그램 20쪽의 전체 득점·카드와 동시대 전체 교체 기록 대조. Nagy의 실제 경고는 한 번(33분)이므로 원래 경고의 분을 바로잡고 추가된 34분 중복만 제거. Rodic 1993-09-07, Khalili 1992-06-07, Jeahze 1997-04-10과 2020 Hammarby 경력 일치. Bojanic 득점 raw32/프로그램31, Rodic 경고 raw89/프로그램88은 표기 차이로 기록하고 원문 유지.",
+      "unavailable": "Hammarby 명단이 없어 이벤트 프로필만 보충. NULL 도움은 유지."
+    },
+    "16996211": {
+      "sources": [
+        "https://kallxo.com/sport/gjilani-mposhtet-nga-apoel-pas-vazhdimeve-dhe-eliminohet-nga-liga-e-europes/",
+        "https://www.arbresh.info/sport/apoel-i-ne-vazhdime-triumfon-ndaj-gjilani-t/",
+        "https://www.skysports.com/football/gjilani-vs-apoel-nicosia/teams/428204"
+      ],
+      "verified": "78분 페널티킥 실축은 Mousa Al Tamari. 90분 Efrem과 교체된 실제 #11, 1997-06-10의 명단 프로필 474354와 일치. Baha Abdel-Rahman 328443 연결만 교정."
+    },
+    "17054974": {
+      "sources": [
+        "https://www.laczynaspilka.pl/biblioteka/mecze/hammarby-if-lech-poznan-03-16092020",
+        "https://www.national-football-teams.com/old/club/2416/2020_2/Hammarby_If.html",
+        "https://www.aikstats.se/player.php?id=819",
+        "https://www.statscrew.com/worldfootball/roster/t-HAMIF263/y-2021"
+      ],
+      "verified": "PZPN 전체 경기표에서 Magyar/Fallman 46분 교체, Jeahze14·Ngouali47·Khalili81 경고 확인. Richard Magyar 1991-05-03, David Fallman 1990-02-04, Ngouali 1992-01-23 및 앞 경기 프로필과 일치. Ousted80 경고를 Ludwigson으로 바꾸지 않음.",
+      "unavailable": "Hammarby 명단 행을 만들지 않음."
+    },
+    "17055757": {
+      "sources": [
+        "https://www.idnes.cz/fotbal/online-futbolo-klubas-riteriai-fc-slovan-liberec.BU189387",
+        "https://en.fcslovanliberec.cz/clanek.asp?id=2944"
+      ],
+      "verified": "iDNES 전체 중계의 90+3분 Matousek 득점 직전 Yusuf 패스 확인. 실제 명단 #21 Abdulla Yusuf Helal 311129(1993-06-12)로 도움 연결. Fahad Al Hardan 310384는 다른 선수."
+    },
+    "17323700": {
+      "sources": [
+        "https://www.skysports.com/football/cagliari-vs-cremonese/teams/438802",
+        "https://www.mackolik.com/mac/cagliari-vs-cremonese/acdlwbwv7raappqc5u1r5qd5g",
+        "https://www.datasport.it/calcio/calciatori/Nardi-Filippo-10567.html"
+      ],
+      "verified": "실제 #30 Filippo Nardi 1998-03-03, Deli와 59분 교체 확인. 원문 득점·교체·카드를 보존.",
+      "unavailable": "공급자에 없는 Nardi 명단·통계는 생성하지 않음. Carboni 84분 교체가 외부 기록에 있지만 공급자에 없어 이벤트를 생성하지 않음."
+    },
+    "17323704": {
+      "sources": [
+        "https://www.bolognafc.it/bologna-reggina-2-0/",
+        "https://www.ntacalabria.it/sport-calabrese/calcio/coppa-italia-bologna-reggina-2-0-70%E2%80%B2-vignato73%E2%80%B2-orsolini.html",
+        "https://www.cesenafc.com/it/society/news/nicolo-bianchi-in-bianconero-per-le-prossime-due-stagioni"
+      ],
+      "verified": "실제 Nicolò Bianchi(1992-02-24), Faty와26분 교체 및 Reggina 경력 확인. 실제 개최일은2020-10-27. 기존 이벤트 배우는 유지.",
+      "unavailable": "없는 Bianchi 명단·통계와 공급자에 없는 De Rose 경고는 생성하지 않음."
+    },
+    "17324351": {
+      "sources": [
+        "https://www.udinese.it/Apps/WebObjects/Udinese.woa/wa/viewSection?id=46612&lang=esp",
+        "https://www.footballdatabase.eu/en/match/overview/2093412-udinese-vicenza",
+        "https://www.calciomagazine.net/squalificati-dopo-3-turno-coppa-italia-2020-2021-128628.html",
+        "https://www.messinacalcio.org/2021/08/11/altri-due-ingaggi-del-messina-dal-vicenza-arrivano-busatto-e-fantoni/"
+      ],
+      "verified": "Nicholas Fantoni 2002-10-04, Vandeputte와60분 교체와76분 경고 확인. 징계 공고 전재에 Barlocco/Bizzotto/Da Riva/Fantoni/Forestieri가 있어 잘못 기재된 Zonta로 바꾸지 않음. Udinese 공식에서 Samir/De Maio64 확인. 교체 배우·카드 원문 유지.",
+      "unavailable": "없는 Fantoni 명단·통계는 생성하지 않음."
+    },
+    "17633389": {
+      "sources": [
+        "https://www.ilcosenza.it/2020/11/25/parma-cosenza-2-1-i-lupi-escono-a-testa-alta-dalla-coppa-italia/",
+        "https://www.calcio-risultati.com/diretta/887852001290592741-parma-vs-cosenza",
+        "https://www.calciomagazine.net/parma-cosenza-cronaca-diretta-25-novembre-2020-130266.html",
+        "https://therangersarchives.co.uk/alves-bruno/"
+      ],
+      "verified": "Gagliolo로 중복 연결된 #5는 1988-06-05 Matteo Scozzarella이며59분 Brugman과 교체. #7 Gagliolo60분 슬롯은 유지. #5를MF로 바로잡고 이미 존재하는119를90-59=31분으로 교정. #22는 Bruno Alves(1981-11-27); 공급자 full name은 맞고 display name만 감독 Mikael Stahre로 잘못됨. 기존 선수 프로필은 이 작업의 경기 저장에서 덮어쓰지 않음."
+    },
+    "17746677": {
+      "sources": [
+        "https://redscores.com/match/manchester-city-cheltenham-town/ExXC",
+        "https://www.fotmob.com/en-GB/matches/manchester-city-vs-cheltenham-town/2ff9b4",
+        "https://www.sofascore.com/football/player/george-lloyd/894222"
+      ],
+      "verified": "#19 George Lloyd는 2000-02-11 출생28551735. 1983년생18232 연결만 교정. 59분 May 도움과68분 Sean Long 교체 대조. 기존119의90을68로 바로잡고 다른 상세 통계는 모두 유지."
+    }
+  }
+}

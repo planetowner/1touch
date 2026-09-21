@@ -1,0 +1,788 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 11867038,
+        "lineups": [],
+        "events": [
+          {
+            "id": 33464536,
+            "fixture_id": 11867038,
+            "period_id": 3369970,
+            "participant_id": 17313,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 161867,
+            "related_player_id": 328492,
+            "player_name": "Nikola Zugić",
+            "related_player_name": "Sebastià Gómez",
+            "result": "1-0",
+            "info": null,
+            "addition": "1st Goal",
+            "minute": 17,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 33464536,
+          "fixture_id": 11867038,
+          "period_id": 3369970,
+          "participant_id": 17313,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 161867,
+          "related_player_id": 405156,
+          "player_name": "Nikola Zugić",
+          "related_player_name": "Sebastián Gómez",
+          "result": "1-0",
+          "info": null,
+          "addition": "1st Goal",
+          "minute": 17,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 11867046,
+        "lineups": [],
+        "events": [
+          {
+            "id": 33464580,
+            "fixture_id": 11867046,
+            "period_id": 3369986,
+            "participant_id": 5284,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 153307,
+            "related_player_id": 86333,
+            "player_name": "Simen Raaen Sandmael",
+            "related_player_name": "Jan Andreasen",
+            "result": "2-0",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 37,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 33464580,
+          "fixture_id": 11867046,
+          "period_id": 3369986,
+          "participant_id": 5284,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 153307,
+          "related_player_id": 87172,
+          "player_name": "Simen Raaen Sandmael",
+          "related_player_name": "Jákup Biskopstø Andreasen",
+          "result": "2-0",
+          "info": null,
+          "addition": "2nd Goal",
+          "minute": 37,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 11875027,
+        "lineups": [],
+        "events": [
+          {
+            "id": 33509244,
+            "fixture_id": 11875027,
+            "period_id": 3383691,
+            "participant_id": 3712,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 74157,
+            "related_player_id": 147072,
+            "player_name": "A. Šofranac",
+            "related_player_name": "Milos Nikolic",
+            "result": "1-1",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 90,
+            "extra_minute": 3,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 33509244,
+          "fixture_id": 11875027,
+          "period_id": 3383691,
+          "participant_id": 3712,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 74157,
+          "related_player_id": 61511,
+          "player_name": "A. Šofranac",
+          "related_player_name": "Stefan Nikolić",
+          "result": "1-1",
+          "info": null,
+          "addition": "2nd Goal",
+          "minute": 90,
+          "extra_minute": 3,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 11913349,
+        "lineups": [],
+        "events": [
+          {
+            "id": 33761703,
+            "fixture_id": 11913349,
+            "period_id": 3446106,
+            "participant_id": 2929,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 83925,
+            "related_player_id": 37637811,
+            "player_name": "L. Petry",
+            "related_player_name": "S. Hedlund",
+            "result": "1-0",
+            "info": null,
+            "addition": "1st Goal",
+            "minute": 11,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 33761703,
+          "fixture_id": 11913349,
+          "period_id": 3446106,
+          "participant_id": 2929,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 83925,
+          "related_player_id": 191216,
+          "player_name": "L. Petry",
+          "related_player_name": "Sebastian Starke Hedlund",
+          "result": "1-0",
+          "info": null,
+          "addition": "1st Goal",
+          "minute": 11,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 11916514,
+        "lineups": [],
+        "events": [
+          {
+            "id": 87637258,
+            "fixture_id": 11916514,
+            "period_id": 3450208,
+            "participant_id": 948,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 13553595,
+            "related_player_id": null,
+            "player_name": "A. Hodžić",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 109,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 87637258,
+          "fixture_id": 11916514,
+          "period_id": 3450208,
+          "participant_id": 948,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 67417,
+          "related_player_id": null,
+          "player_name": "Armin Hodžić",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 109,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 11916523,
+        "lineups": [],
+        "events": [
+          {
+            "id": 33782100,
+            "fixture_id": 11916523,
+            "period_id": 3450226,
+            "participant_id": 528,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 186864,
+            "related_player_id": 107746,
+            "player_name": "Borja Iglesias",
+            "related_player_name": "Julián López",
+            "result": "3-0",
+            "info": null,
+            "addition": "3rd Goal",
+            "minute": 60,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 33782100,
+          "fixture_id": 11916523,
+          "period_id": 3450226,
+          "participant_id": 528,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 186864,
+          "related_player_id": 185640,
+          "player_name": "Borja Iglesias",
+          "related_player_name": "Javi López",
+          "result": "3-0",
+          "info": null,
+          "addition": "3rd Goal",
+          "minute": 60,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 11943756,
+        "lineups": [],
+        "events": [
+          {
+            "id": 33962875,
+            "fixture_id": 11943756,
+            "period_id": 3492015,
+            "participant_id": 6557,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 125113,
+            "related_player_id": 127341,
+            "player_name": "D. Jan",
+            "related_player_name": "Amir Cohen",
+            "result": "1-0",
+            "info": null,
+            "addition": "1st Goal",
+            "minute": 15,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 33962875,
+          "fixture_id": 11943756,
+          "period_id": 3492015,
+          "participant_id": 6557,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 125113,
+          "related_player_id": 125015,
+          "player_name": "D. Jan",
+          "related_player_name": "Avishay Cohen",
+          "result": "1-0",
+          "info": null,
+          "addition": "1st Goal",
+          "minute": 15,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 11990808,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34155400,
+            "fixture_id": 11990808,
+            "period_id": 3568518,
+            "participant_id": 5841,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 26312527,
+            "related_player_id": 1500843,
+            "player_name": "Jonfi",
+            "related_player_name": "Chopi",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 61,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 88013534,
+            "fixture_id": 11990808,
+            "period_id": 3568518,
+            "participant_id": 5841,
+            "type_id": 19,
+            "section": "event",
+            "player_id": null,
+            "related_player_id": null,
+            "player_name": "Jaime Isuardi",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": null,
+            "minute": 67,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": 1496,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 34155400,
+          "fixture_id": 11990808,
+          "period_id": 3568518,
+          "participant_id": 5841,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 26312527,
+          "related_player_id": 1500843,
+          "player_name": "Jonfi",
+          "related_player_name": "Roberto Gándara",
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 61,
+          "extra_minute": null,
+          "injured": false,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": false
+    }
+  ],
+  "known_player_ids": [
+    61511,
+    67417,
+    74157,
+    83925,
+    87172,
+    125015,
+    125113,
+    153307,
+    161867,
+    185640,
+    186864,
+    191216,
+    405156,
+    1500843,
+    26312527
+  ],
+  "verified_source": {
+    "11867038": {
+      "sources": [
+        "https://www.fsgc.sm/assets/documents/548.pdf",
+        "https://www.skysports.com/football/ue-engordany-vs-fiorita/teams/407977"
+      ],
+      "verified": "실제 19번 주장 Gómez Pérez Sebastián(1983-11-01) 405156으로 17분 도움 연결. 1991년생 328492는 다른 선수. UEFA 전체 경기표에서 득점·교체·카드를 대조. 원문의 나머지 이벤트는 유지."
+    },
+    "11867046": {
+      "sources": [
+        "https://globalsportsarchive.com/en/soccer/match/2019-06-27/ki-vs-tre-fiori-fc/1644170"
+      ],
+      "verified": "37분 Sandmael 득점의 도움은 Jákup Biskopstø Andreasen(1998-05-31), 실제 8번 87172. Jan Andreasen(1972년생) 86333 연결을 교정."
+    },
+    "11875027": {
+      "sources": [
+        "https://www.livesoccertv.com/pl/match/slovan-bratislava-vs-sutjeska/7g1h2"
+      ],
+      "verified": "전체 중계에 90+3분 Sofranac 득점 도움 S. Nikolić. 실제 9번 교체 선수 Stefan Nikolić(1990-04-16) 61511. Milos Nikolic 147072는 다른 사람. 원문의 다른 이벤트는 유지."
+    },
+    "11913349": {
+      "sources": [
+        "https://ludogorets.com/en/match-center/?m=1476&t=report"
+      ],
+      "verified": "실제 6번 Sebastian Starke Hedlund(1995-04-05), 191216. 이름·생일이 같은 중복 프로필 37637811 대신 이 경기 명단 ID로 도움을 연결. FBref의 두 경기 기록도 Hedlund 도움 1회와 Petry 득점 1회를 확인."
+    },
+    "11916514": {
+      "sources": [
+        "https://magyarhirlap.hu/sport/20190801-hosszabbitasban-bucsuzott-a-fehervar-az-europa-ligatol"
+      ],
+      "verified": "109분 경고는 실제 15번 Armin Hodžić(1994-11-17) 67417. 103분 Huszti와 교체된 선수와 일치. 2000년생 13553595를 교정."
+    },
+    "11916523": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2019-2020-europa-league-rcd-espanyol-stjarnan-1"
+      ],
+      "verified": "LaLiga 공식 60분 Borja Iglesias 득점 중계에 Javi López 도움 명시. 실제 16번 185640(1986-01-21). Julian López 107746 연결을 교정."
+    },
+    "11943756": {
+      "sources": [
+        "https://m.aiscore.com/match-bnei-yehuda-tel-aviv-fc-neftci-baku/o17pjiv10pmby7j"
+      ],
+      "verified": "15분 Dor Jan 도움은 Avishay Cohen(1995-06-19) 125015. FBref Neftci 실점 기록과 Avishay 개인 기록, 전체 경기표 대조. Amir Cohen 127341는 다른 사람.",
+      "additional_sources": [
+        "https://fbref.com/en/squads/d0ab5e26/2019-2020/goallogs/c19/Neftci-Goal-Logs-Europa-League",
+        "https://www.livesoccertv.com/pt/match/neftci-vs-bnei-yehuda/89n79"
+      ]
+    },
+    "11952405": {
+      "sources": [
+        "https://www.footballtoday.net/livescore/5234623844652248639-cagliari-vs-chievo"
+      ],
+      "verified": "실제 미출전 Burruchaga 2번 슬롯7619360의 88=2는 보존하고 빈 8번 중복6835728250만 제거. 선수·득점·교체·카드 전체 대조. 원문의 Pucciarelli 득점 유지."
+    },
+    "11952407": {
+      "sources": [
+        "https://www.calcio-risultati.com/diretta/6618415063840765302-spal-vs-feralpisalo",
+        "https://sport.sky.de/fussball/ferrara-vs-feralpisalo/aufstellung/420086"
+      ],
+      "verified": "Opta 경기표의 Väisänen 15번과 Altare 14번으로 대조. 88 통계가 있는 원래 슬롯888349991와7619423을 보존하고 빈 중복만 제거. Väisänen 등번호만15로 교정. 62분 Legati 교체는 Opta 두 경기표와 일치하여 유지. Sky의5/19 표기와 기사의67분은 충돌 출처로 보존."
+    },
+    "11952411": {
+      "sources": [
+        "https://www.matchendirect.fr/live-score/parme-parme_1bwc4qk08lmt65ig0fefehlre.html?p=compositions"
+      ],
+      "verified": "실제 Machin14·Grassi88·Ricci99. 통계가 있는 슬롯7619312·7619270·7619416을 보존하고 빈5·8·64번 중복만 제거. Grassi67분 교체·86분 경고, 기존11923과 평점은 유지."
+    },
+    "11982131": {
+      "sources": [
+        "https://www.fotmob.com/en-GB/matches/levante-vs-melilla-cd/80h7xfxy",
+        "https://www.lapreferente.com/J176646C10031/melilla-cd/bilal.html"
+      ],
+      "verified": "4번 Salah는90분 정상 슬롯7790448. 17번 Braim은 Brahim Amar Romero383480(1995-08-02),57분 Joselu와 교체해11933 유지. 16번은 미출전 Bilal Amar Ahmed. 공급자33608622의season16643/team238136/jersey16 일치로 선택. 2846713은2017 UD Melilla 프로필. 서로 다른 생일은 확정하지 않고 신규 프로필에는NULL. 88=5와 다른 통계는 보존."
+    },
+    "11982140": {
+      "sources": [
+        "https://as.com/futbol/2019/12/18/copa_del_rey/1576688130_066589.html",
+        "https://www.bdfutbol.com/en/j/j27738.html"
+      ],
+      "verified": "실제11번은 MF Alex Diéguez Negro26304346이며57분 Remeseiro와 교체. GK Alex Domínguez12066417 연결을 교정. 기존11957과 전체 평점·통계 유지. 공급자 생일 NULL 유지."
+    },
+    "11982149": {
+      "sources": [
+        "https://www.estadiodeportivo.com/betis/2019/12/19/antoniano-0-4-real-betis/257779.html",
+        "https://www.lapreferente.com/J160340/nacho-cordero.html"
+      ],
+      "verified": "58분 Pepelu 대신 들어온 Nacho Cordero37325865(2000-12-13)를18번 슬롯7791168에 연결. Juanma Romero37304157은 다른 선수. 기존11932와 평점·통계를 유지."
+    },
+    "11984657": {
+      "sources": [
+        "https://www.skysports.com/football/southampton-vs-huddersfield-town/teams/421565"
+      ],
+      "verified": "실제 미출전 Callum Slattery30번 슬롯6829706454는 유지하고 빈55번 중복3740369307만 제거. Smallbone47/Vokins87 득점·전체 교체·카드는 유지."
+    },
+    "11990808": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2019-2020-copa-del-rey-club-portugalete-real-betis-2",
+        "https://www.bdfutbol.com/es/j/j100067.html",
+        "https://www.bdfutbol.com/es/j/j27879.html"
+      ],
+      "verified": "LaLiga 공식61분 Jon Fernández/Jonfi가Roberto Gándara를 교체. 17번6265060853은Roberto1500843(1990-04-16)이며11961. 8번Ángel Gándara/Txopi437008은90분 유지. 20번6265062320은Jonfi26312527,11929이며67분 경고는10번Isuardi에게만 있어 잘못 복사된840을 교정. NULL배우 중복 경고88013534만 제거. 기존교체의out1500843 유지. Jonfi의season16643/team5841 일치, 충돌하는생일은신규프로필NULL로보존."
+    }
+  }
+}
