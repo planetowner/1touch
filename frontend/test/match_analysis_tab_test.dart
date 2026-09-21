@@ -15,8 +15,28 @@ void main() {
     final analysis = MatchTacticalAnalysis(
       fixtureId: fixture.fixtureId,
       available: true,
-      home: _team(fixture.homeTeamId, keyPasses: 7, recoveries: 21),
-      away: _team(fixture.awayTeamId, keyPasses: 2, recoveries: 14),
+      home: _team(
+        fixture.homeTeamId,
+        keyPasses: 7,
+        recoveries: 4,
+        actions: const [
+          TacticalPitchPoint(x: 10, y: 20),
+          TacticalPitchPoint(x: 20, y: 70),
+          TacticalPitchPoint(x: 50, y: 40),
+          TacticalPitchPoint(x: 80, y: 60),
+        ],
+      ),
+      away: _team(
+        fixture.awayTeamId,
+        keyPasses: 2,
+        recoveries: 4,
+        actions: const [
+          TacticalPitchPoint(x: 10, y: 20),
+          TacticalPitchPoint(x: 45, y: 40),
+          TacticalPitchPoint(x: 55, y: 70),
+          TacticalPitchPoint(x: 80, y: 60),
+        ],
+      ),
     );
     final shotMap = MatchShotMap(
       fixtureId: fixture.fixtureId,
@@ -57,6 +77,16 @@ void main() {
         ),
         _keyPasses(fixture.homeTeamId, 25),
         _keyPasses(fixture.awayTeamId, 4),
+        _stat(fixture.homeTeamId, 'tackles-won', 10),
+        _stat(fixture.awayTeamId, 'tackles-won', 6),
+        _stat(fixture.homeTeamId, 'interceptions', 6),
+        _stat(fixture.awayTeamId, 'interceptions', 2),
+        _stat(fixture.homeTeamId, 'blocked-shots', 7),
+        _stat(fixture.awayTeamId, 'blocked-shots', 3),
+        _stat(fixture.homeTeamId, 'duels-won', 7),
+        _stat(fixture.awayTeamId, 'duels-won', 3),
+        _stat(fixture.homeTeamId, 'clearances', 7),
+        _stat(fixture.awayTeamId, 'clearances', 3),
       ],
     );
 
@@ -84,13 +114,38 @@ void main() {
       tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram)).color,
       const Color(0xFF5FAFF1),
     );
-    expect(find.byType(DefensiveActivityDiagram), findsOneWidget);
+    expect(find.byType(DefenseTerritoryDiagram), findsOneWidget);
+    expect(
+      tester
+          .widget<DefenseTerritoryDiagram>(
+            find.byType(DefenseTerritoryDiagram),
+          )
+          .zoneDeltas,
+      [25, -25, 0],
+    );
+    expect(
+      tester
+          .widget<DefenseTerritoryDiagram>(
+            find.byType(DefenseTerritoryDiagram),
+          )
+          .selectedTeamColor,
+      tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram)).color,
+    );
+    expect(defenseTerritoryOpacity(-20.8), closeTo(0.292, 0.0001));
+    expect(defenseTerritoryOpacity(23.4), closeTo(0.734, 0.0001));
+    expect(defenseTerritoryOpacity(-2.7), closeTo(0.473, 0.0001));
     expect(find.text('DEFENSE'), findsOneWidget);
-    expect(find.text('PRESSURE'), findsOneWidget);
+    expect(find.text('PRESSURE'), findsNothing);
+    expect(find.text('Tackles Won'), findsOneWidget);
+    expect(find.text('Interceptions'), findsOneWidget);
+    expect(find.text('Blocks'), findsOneWidget);
+    expect(find.text('Duels Won'), findsOneWidget);
+    expect(find.text('Clearances'), findsOneWidget);
+    expect(find.text('Error'), findsNothing);
     expect(find.text('Carries into Final Third'), findsNothing);
     expect(find.text('Key Passes'), findsOneWidget);
     expect(_keyPassRowText(tester), ['25', 'Key Passes', '4']);
-    expect(find.text('Recoveries'), findsOneWidget);
+    expect(find.text('Recoveries'), findsNothing);
     expect(find.text('Ball Possession'), findsNothing);
     expect(find.text('61%'), findsOneWidget);
     expect(find.text('39%'), findsOneWidget);
@@ -143,6 +198,22 @@ void main() {
         tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram));
     expect(awayProgression.color, const Color(0xFFEF2C34));
     expect(awayProgression.rightToLeft, isTrue);
+    expect(
+      tester
+          .widget<DefenseTerritoryDiagram>(
+            find.byType(DefenseTerritoryDiagram),
+          )
+          .zoneDeltas,
+      [-25, 25, 0],
+    );
+    expect(
+      tester
+          .widget<DefenseTerritoryDiagram>(
+            find.byType(DefenseTerritoryDiagram),
+          )
+          .selectedTeamColor,
+      awayProgression.color,
+    );
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(
@@ -285,10 +356,22 @@ FixtureStatistic _keyPasses(int teamId, double value) => FixtureStatistic(
       value: value,
     );
 
+FixtureStatistic _stat(int teamId, String code, double value) =>
+    FixtureStatistic(
+      teamId: teamId,
+      statTypeId: 0,
+      statCode: code,
+      statName: code,
+      value: value,
+    );
+
 MatchTeamTacticalAnalysis _team(
   int teamId, {
   required int keyPasses,
   required int recoveries,
+  List<TacticalPitchPoint> actions = const [
+    TacticalPitchPoint(x: 60, y: 40),
+  ],
 }) =>
     MatchTeamTacticalAnalysis(
       teamId: teamId,
@@ -320,8 +403,8 @@ MatchTeamTacticalAnalysis _team(
       defensiveActivity: MatchDefensiveActivity(
         complete: true,
         missingPositionCount: 0,
-        actionCount: 1,
-        actions: const [TacticalPitchPoint(x: 60, y: 40)],
+        actionCount: actions.length,
+        actions: actions,
         recoveries: recoveries,
         highRegains: 5,
         ownHalfPercentage: 60,
