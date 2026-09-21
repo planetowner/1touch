@@ -28,6 +28,35 @@ void main() {
     Size(393, 852),
   ];
 
+  testWidgets('Team app bar keeps 16dp around its 48dp logo', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamScreen(
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
+          xgStandingRepository: xgStandingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+    final appBarLogo = tester.getSize(
+      find.byKey(const ValueKey('team-app-bar-logo')),
+    );
+    expect(appBar.toolbarHeight, 80);
+    expect(appBarLogo, const Size.square(48));
+    expect((appBar.toolbarHeight - appBarLogo.height) / 2, 16);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Team overview fixture box shadows only in light mode',
       (tester) async {
     final teams = {
