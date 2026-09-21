@@ -169,7 +169,7 @@ class _BestElevenPlayerDot extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Text(
-              player.jerseyNumber?.toString() ?? '##',
+              player.jerseyNumber?.toString() ?? '—',
               style: Heading5.style.copyWith(color: jerseyNumberColor),
             ),
           ),

@@ -1,0 +1,1357 @@
+{
+  "player_id": 9967153,
+  "profile": {
+    "player_id": 9967153,
+    "name": "Kang-in Lee",
+    "image": null,
+    "height_cm": 174,
+    "weight_kg": 66,
+    "date_of_birth": "2001-02-19",
+    "nationality": "South Korea",
+    "nationality_image": null,
+    "team_id": 7980,
+    "team_name": "Atlético de Madrid",
+    "team_image": null,
+    "jersey_number": 7,
+    "squad_role": "crucial",
+    "position_group": "FW"
+  },
+  "current_season_name": "2026/2027",
+  "current_position": "FW",
+  "seasons": [
+    {
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga"
+    },
+    {
+      "season_id": 25651,
+      "season_name": "2025/2026",
+      "competition_id": 301,
+      "competition_name": "Ligue 1"
+    },
+    {
+      "season_id": 23643,
+      "season_name": "2024/2025",
+      "competition_id": 301,
+      "competition_name": "Ligue 1"
+    },
+    {
+      "season_id": 21779,
+      "season_name": "2023/2024",
+      "competition_id": 301,
+      "competition_name": "Ligue 1"
+    },
+    {
+      "season_id": 19799,
+      "season_name": "2022/2023",
+      "competition_id": 564,
+      "competition_name": "La Liga"
+    },
+    {
+      "season_id": 18462,
+      "season_name": "2021/2022",
+      "competition_id": 564,
+      "competition_name": "La Liga"
+    },
+    {
+      "season_id": 17480,
+      "season_name": "2020/2021",
+      "competition_id": 564,
+      "competition_name": "La Liga"
+    },
+    {
+      "season_id": 16326,
+      "season_name": "2019/2020",
+      "competition_id": 564,
+      "competition_name": "La Liga"
+    },
+    {
+      "season_id": 13133,
+      "season_name": "2018/2019",
+      "competition_id": 564,
+      "competition_name": "La Liga"
+    }
+  ],
+  "selected_season": {
+    "season_id": 27965,
+    "season_name": "2026/2027",
+    "competition_id": 564,
+    "competition_name": "La Liga"
+  },
+  "competitions": [
+    {
+      "season_id": 28155,
+      "competition_id": 2,
+      "competition_name": "Champions League",
+      "appearances": 1,
+      "starts": 1,
+      "minutes": 59,
+      "wins": 0,
+      "win_rate": 0.0,
+      "rating": 6.53,
+      "rated_matches": 1
+    },
+    {
+      "season_id": 27965,
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "appearances": 7,
+      "starts": 6,
+      "minutes": 469,
+      "wins": 5,
+      "win_rate": 71.4,
+      "rating": 7.38,
+      "rated_matches": 7
+    }
+  ],
+  "matches": [
+    {
+      "fixture_id": 19732681,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 11,
+      "formation_field": "4:1",
+      "jersey_number": 7,
+      "minutes_played": 89,
+      "rating": 6.94,
+      "match_position_id": 27,
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "competition_type": "league",
+      "starting_at": "2026-09-20T14:15:00",
+      "state_id": 5,
+      "home_team_id": 7980,
+      "away_team_id": 3468,
+      "home_score": 2,
+      "away_score": 1,
+      "round_name": "7",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Real Madrid",
+      "opponent_image": null,
+      "xg": null,
+      "result": "WIN",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": null
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": null
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": 2.0
+        }
+      ]
+    },
+    {
+      "fixture_id": 19732691,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 11,
+      "formation_field": "3:1",
+      "jersey_number": 7,
+      "minutes_played": 90,
+      "rating": 8.69,
+      "match_position_id": 26,
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "competition_type": "league",
+      "starting_at": "2026-09-16T17:00:00",
+      "state_id": 5,
+      "home_team_id": 7980,
+      "away_team_id": 459,
+      "home_score": 4,
+      "away_score": 0,
+      "round_name": "6",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Osasuna",
+      "opponent_image": null,
+      "xg": null,
+      "result": "WIN",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": 1.0
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": null
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": 6.0
+        }
+      ]
+    },
+    {
+      "fixture_id": 19732695,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 11,
+      "formation_field": "4:2",
+      "jersey_number": 7,
+      "minutes_played": 60,
+      "rating": 6.58,
+      "match_position_id": 27,
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "competition_type": "league",
+      "starting_at": "2026-09-13T19:00:00",
+      "state_id": 5,
+      "home_team_id": 594,
+      "away_team_id": 7980,
+      "home_score": 0,
+      "away_score": 3,
+      "round_name": "5",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Real Sociedad",
+      "opponent_image": null,
+      "xg": null,
+      "result": "WIN",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": null
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": null
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": 1.0
+        }
+      ]
+    },
+    {
+      "fixture_id": 19872609,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 11,
+      "formation_field": "4:2",
+      "jersey_number": 7,
+      "minutes_played": 59,
+      "rating": 6.53,
+      "match_position_id": 27,
+      "season_id": 28155,
+      "season_name": "2026/2027",
+      "competition_id": 2,
+      "competition_name": "Champions League",
+      "competition_type": "europe",
+      "starting_at": "2026-09-09T19:00:00",
+      "state_id": 5,
+      "home_team_id": 8,
+      "away_team_id": 7980,
+      "home_score": 2,
+      "away_score": 1,
+      "round_name": "1",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Liverpool",
+      "opponent_image": null,
+      "xg": null,
+      "result": "DEF",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": null
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": null
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": null
+        }
+      ]
+    },
+    {
+      "fixture_id": 19732711,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 11,
+      "formation_field": "4:2",
+      "jersey_number": 7,
+      "minutes_played": 59,
+      "rating": 6.87,
+      "match_position_id": 27,
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "competition_type": "league",
+      "starting_at": "2026-09-05T14:15:00",
+      "state_id": 5,
+      "home_team_id": 13258,
+      "away_team_id": 7980,
+      "home_score": 3,
+      "away_score": 0,
+      "round_name": "4",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Athletic Club",
+      "opponent_image": null,
+      "xg": 0.097889,
+      "result": "DEF",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": null
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": null
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": 2.0
+        }
+      ]
+    },
+    {
+      "fixture_id": 19732713,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 11,
+      "formation_field": "4:2",
+      "jersey_number": 7,
+      "minutes_played": 72,
+      "rating": 7.59,
+      "match_position_id": 27,
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "competition_type": "league",
+      "starting_at": "2026-08-29T19:30:00",
+      "state_id": 5,
+      "home_team_id": 676,
+      "away_team_id": 7980,
+      "home_score": 1,
+      "away_score": 3,
+      "round_name": "3",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Sevilla",
+      "opponent_image": null,
+      "xg": 0.0,
+      "result": "WIN",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": null
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": 1.0
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": null
+        }
+      ]
+    },
+    {
+      "fixture_id": 19732731,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 11,
+      "formation_field": "4:2",
+      "jersey_number": 7,
+      "minutes_played": 66,
+      "rating": 7.2,
+      "match_position_id": 27,
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "competition_type": "league",
+      "starting_at": "2026-08-23T15:00:00",
+      "state_id": 5,
+      "home_team_id": 7980,
+      "away_team_id": 3477,
+      "home_score": 2,
+      "away_score": 2,
+      "round_name": "2",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Villarreal",
+      "opponent_image": null,
+      "xg": 0.179541,
+      "result": "DRAW",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": null
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": null
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": 6.0
+        }
+      ]
+    },
+    {
+      "fixture_id": 19732741,
+      "team_id": 7980,
+      "player_id": 9967153,
+      "lineup_type_id": 12,
+      "formation_field": null,
+      "jersey_number": 7,
+      "minutes_played": 33,
+      "rating": 7.82,
+      "match_position_id": 26,
+      "season_id": 27965,
+      "season_name": "2026/2027",
+      "competition_id": 564,
+      "competition_name": "La Liga",
+      "competition_type": "league",
+      "starting_at": "2026-08-19T19:00:00",
+      "state_id": 5,
+      "home_team_id": 7980,
+      "away_team_id": 126,
+      "home_score": 2,
+      "away_score": 0,
+      "round_name": "1",
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "opponent_name": "Málaga",
+      "opponent_image": null,
+      "xg": 0.075808,
+      "result": "WIN",
+      "position_group": "FW",
+      "metrics": [
+        {
+          "code": "goals",
+          "label": "Goals",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            52
+          ],
+          "value": 1.0
+        },
+        {
+          "code": "assists",
+          "label": "Assists",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            79
+          ],
+          "value": null
+        },
+        {
+          "code": "shots",
+          "label": "Total shots",
+          "kind": "count",
+          "source": "sportmonks",
+          "stat_type_ids": [
+            42
+          ],
+          "value": 3.0
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "position_group": "FW",
+    "categories": [
+      {
+        "code": "finish",
+        "label": "Finish",
+        "metrics": [
+          {
+            "code": "goals",
+            "label": "Goals",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              52
+            ],
+            "value": null,
+            "observed_matches": 2,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 0,
+            "rank": null,
+            "percentile": null
+          },
+          {
+            "code": "xg",
+            "label": "xG",
+            "kind": "decimal",
+            "source": "understat",
+            "stat_type_ids": [],
+            "value": null,
+            "observed_matches": 4,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 0,
+            "rank": null,
+            "percentile": null
+          },
+          {
+            "code": "shots",
+            "label": "Total shots",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              42
+            ],
+            "value": null,
+            "observed_matches": 6,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 6,
+            "rank": null,
+            "percentile": null
+          }
+        ]
+      },
+      {
+        "code": "playmaking",
+        "label": "Playmaking",
+        "metrics": [
+          {
+            "code": "key_passes",
+            "label": "Key passes",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              117
+            ],
+            "value": 10.0,
+            "observed_matches": 7,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": 1.9189765458422174,
+            "rank_value": 1.9189765458422174,
+            "reference_count": 1,
+            "rank": 1,
+            "percentile": 100.0
+          },
+          {
+            "code": "final_third_passes",
+            "label": "Passes in final third",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              27269
+            ],
+            "value": 24.0,
+            "observed_matches": 7,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": 4.605543710021322,
+            "rank_value": 4.605543710021322,
+            "reference_count": 7,
+            "rank": 2,
+            "percentile": 85.7
+          },
+          {
+            "code": "assists",
+            "label": "Assists",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              79
+            ],
+            "value": null,
+            "observed_matches": 1,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 0,
+            "rank": null,
+            "percentile": null
+          }
+        ]
+      },
+      {
+        "code": "defence",
+        "label": "Defence",
+        "metrics": [
+          {
+            "code": "ball_recoveries",
+            "label": "Ball recoveries",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              27271
+            ],
+            "value": 19.0,
+            "observed_matches": 7,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": 3.6460554371002134,
+            "rank_value": 3.6460554371002134,
+            "reference_count": 5,
+            "rank": 1,
+            "percentile": 100.0
+          },
+          {
+            "code": "tackles",
+            "label": "Tackles",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              78
+            ],
+            "value": null,
+            "observed_matches": 5,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 1,
+            "rank": null,
+            "percentile": null
+          }
+        ]
+      },
+      {
+        "code": "dribble",
+        "label": "Dribble",
+        "metrics": [
+          {
+            "code": "dribble_attempts",
+            "label": "Dribble attempts",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              108
+            ],
+            "value": null,
+            "observed_matches": 6,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 4,
+            "rank": null,
+            "percentile": null
+          },
+          {
+            "code": "dribble_success_rate",
+            "label": "Dribble success rate",
+            "kind": "percentage",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              109,
+              108
+            ],
+            "value": null,
+            "numerator": null,
+            "denominator": null,
+            "observed_matches": 5,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 1,
+            "rank": null,
+            "percentile": null
+          },
+          {
+            "code": "fouls_drawn",
+            "label": "Fouls drawn",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              96
+            ],
+            "value": null,
+            "observed_matches": 6,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": null,
+            "rank_value": null,
+            "reference_count": 2,
+            "rank": null,
+            "percentile": null
+          }
+        ]
+      },
+      {
+        "code": "link_up",
+        "label": "Link Up",
+        "metrics": [
+          {
+            "code": "touches",
+            "label": "Touches",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              120
+            ],
+            "value": 334.0,
+            "observed_matches": 7,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": 64.09381663113007,
+            "rank_value": 64.09381663113007,
+            "reference_count": 16,
+            "rank": 2,
+            "percentile": 93.8
+          },
+          {
+            "code": "passes",
+            "label": "Passes completed / attempted",
+            "kind": "pair",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              116,
+              80
+            ],
+            "value": null,
+            "numerator": 189.0,
+            "denominator": 231.0,
+            "observed_matches": 7,
+            "total_matches": 7,
+            "lower_is_better": false,
+            "per90": 36.26865671641791,
+            "rank_value": 36.26865671641791,
+            "reference_count": 14,
+            "rank": 2,
+            "percentile": 92.9
+          },
+          {
+            "code": "possession_lost",
+            "label": "Possession lost",
+            "kind": "count",
+            "source": "sportmonks",
+            "stat_type_ids": [
+              27273
+            ],
+            "value": 71.0,
+            "observed_matches": 7,
+            "total_matches": 7,
+            "lower_is_better": true,
+            "per90": 13.624733475479744,
+            "rank_value": 13.624733475479744,
+            "reference_count": 15,
+            "rank": 10,
+            "percentile": 40.0
+          }
+        ]
+      }
+    ],
+    "top_stats": [
+      {
+        "code": "key_passes",
+        "label": "Key passes",
+        "kind": "count",
+        "source": "sportmonks",
+        "stat_type_ids": [
+          117
+        ],
+        "value": 10.0,
+        "observed_matches": 7,
+        "total_matches": 7,
+        "lower_is_better": false,
+        "per90": 1.9189765458422174,
+        "rank_value": 1.9189765458422174,
+        "reference_count": 1,
+        "rank": 1,
+        "percentile": 100.0
+      },
+      {
+        "code": "ball_recoveries",
+        "label": "Ball recoveries",
+        "kind": "count",
+        "source": "sportmonks",
+        "stat_type_ids": [
+          27271
+        ],
+        "value": 19.0,
+        "observed_matches": 7,
+        "total_matches": 7,
+        "lower_is_better": false,
+        "per90": 3.6460554371002134,
+        "rank_value": 3.6460554371002134,
+        "reference_count": 5,
+        "rank": 1,
+        "percentile": 100.0
+      },
+      {
+        "code": "final_third_passes",
+        "label": "Passes in final third",
+        "kind": "count",
+        "source": "sportmonks",
+        "stat_type_ids": [
+          27269
+        ],
+        "value": 24.0,
+        "observed_matches": 7,
+        "total_matches": 7,
+        "lower_is_better": false,
+        "per90": 4.605543710021322,
+        "rank_value": 4.605543710021322,
+        "reference_count": 7,
+        "rank": 2,
+        "percentile": 85.7
+      }
+    ],
+    "reference_minimum_minutes": 450,
+    "reference_players": 16,
+    "appearances": 7,
+    "starts": 6,
+    "team_matches": 7,
+    "starting_rate": 85.7,
+    "win_rate": 71.4,
+    "performance": [
+      {
+        "fixture_id": 19732741,
+        "round": 1,
+        "rating": 7.82
+      },
+      {
+        "fixture_id": 19732731,
+        "round": 2,
+        "rating": 7.2
+      },
+      {
+        "fixture_id": 19732713,
+        "round": 3,
+        "rating": 7.59
+      },
+      {
+        "fixture_id": 19732711,
+        "round": 4,
+        "rating": 6.87
+      },
+      {
+        "fixture_id": 19732695,
+        "round": 5,
+        "rating": 6.58
+      },
+      {
+        "fixture_id": 19732691,
+        "round": 6,
+        "rating": 8.69
+      },
+      {
+        "fixture_id": 19732681,
+        "round": 7,
+        "rating": 6.94
+      }
+    ]
+  },
+  "career": [
+    {
+      "season_name": "2026/2027",
+      "team_id": 7980,
+      "team_name": "Atlético de Madrid",
+      "team_code": "ATM",
+      "team_image": null,
+      "appearances": 8,
+      "starts": 7,
+      "minutes": 528,
+      "wins": 5,
+      "win_rate": 62.5,
+      "rating": 7.28,
+      "rated_matches": 8,
+      "last_match_at": "2026-09-20T14:15:00",
+      "competitions": [
+        {
+          "competition_id": 564,
+          "competition_name": "La Liga",
+          "appearances": 7,
+          "starts": 6,
+          "minutes": 469,
+          "wins": 5,
+          "win_rate": 71.4,
+          "rating": 7.38,
+          "rated_matches": 7
+        },
+        {
+          "competition_id": 2,
+          "competition_name": "Champions League",
+          "appearances": 1,
+          "starts": 1,
+          "minutes": 59,
+          "wins": 0,
+          "win_rate": 0.0,
+          "rating": 6.53,
+          "rated_matches": 1
+        }
+      ]
+    },
+    {
+      "season_name": "2025/2026",
+      "team_id": 591,
+      "team_name": "Paris Saint Germain",
+      "team_code": "PSG",
+      "team_image": null,
+      "appearances": 37,
+      "starts": 18,
+      "minutes": 1785,
+      "wins": 26,
+      "win_rate": 70.3,
+      "rating": 7.09,
+      "rated_matches": 37,
+      "last_match_at": "2026-05-17T19:00:00",
+      "competitions": [
+        {
+          "competition_id": 301,
+          "competition_name": "Ligue 1",
+          "appearances": 27,
+          "starts": 18,
+          "minutes": 1522,
+          "wins": 18,
+          "win_rate": 66.7,
+          "rating": 7.18,
+          "rated_matches": 27
+        },
+        {
+          "competition_id": 2,
+          "competition_name": "Champions League",
+          "appearances": 10,
+          "starts": 0,
+          "minutes": 263,
+          "wins": 8,
+          "win_rate": 80.0,
+          "rating": 6.86,
+          "rated_matches": 10
+        }
+      ]
+    },
+    {
+      "season_name": "2024/2025",
+      "team_id": 591,
+      "team_name": "Paris Saint Germain",
+      "team_code": "PSG",
+      "team_image": null,
+      "appearances": 41,
+      "starts": 23,
+      "minutes": 2124,
+      "wins": 30,
+      "win_rate": 73.2,
+      "rating": 7.37,
+      "rated_matches": 41,
+      "last_match_at": "2025-05-10T19:00:00",
+      "competitions": [
+        {
+          "competition_id": 301,
+          "competition_name": "Ligue 1",
+          "appearances": 30,
+          "starts": 19,
+          "minutes": 1665,
+          "wins": 23,
+          "win_rate": 76.7,
+          "rating": 7.47,
+          "rated_matches": 30
+        },
+        {
+          "competition_id": 2,
+          "competition_name": "Champions League",
+          "appearances": 11,
+          "starts": 4,
+          "minutes": 459,
+          "wins": 7,
+          "win_rate": 63.6,
+          "rating": 7.07,
+          "rated_matches": 11
+        }
+      ]
+    },
+    {
+      "season_name": "2023/2024",
+      "team_id": 591,
+      "team_name": "Paris Saint Germain",
+      "team_code": "PSG",
+      "team_image": null,
+      "appearances": 32,
+      "starts": 21,
+      "minutes": 1810,
+      "wins": 18,
+      "win_rate": 56.2,
+      "rating": 7.26,
+      "rated_matches": 31,
+      "last_match_at": "2024-05-19T19:00:00",
+      "competitions": [
+        {
+          "competition_id": 301,
+          "competition_name": "Ligue 1",
+          "appearances": 23,
+          "starts": 18,
+          "minutes": 1469,
+          "wins": 14,
+          "win_rate": 60.9,
+          "rating": 7.25,
+          "rated_matches": 22
+        },
+        {
+          "competition_id": 2,
+          "competition_name": "Champions League",
+          "appearances": 9,
+          "starts": 3,
+          "minutes": 341,
+          "wins": 4,
+          "win_rate": 44.4,
+          "rating": 7.3,
+          "rated_matches": 9
+        }
+      ]
+    },
+    {
+      "season_name": "2022/2023",
+      "team_id": 645,
+      "team_name": "Mallorca",
+      "team_code": "MLL",
+      "team_image": null,
+      "appearances": 36,
+      "starts": 33,
+      "minutes": 2840,
+      "wins": 13,
+      "win_rate": 36.1,
+      "rating": 7.25,
+      "rated_matches": 36,
+      "last_match_at": "2023-06-04T16:30:00",
+      "competitions": [
+        {
+          "competition_id": 564,
+          "competition_name": "La Liga",
+          "appearances": 36,
+          "starts": 33,
+          "minutes": 2840,
+          "wins": 13,
+          "win_rate": 36.1,
+          "rating": 7.25,
+          "rated_matches": 36
+        }
+      ]
+    },
+    {
+      "season_name": "2021/2022",
+      "team_id": 645,
+      "team_name": "Mallorca",
+      "team_code": "MLL",
+      "team_image": null,
+      "appearances": 30,
+      "starts": 15,
+      "minutes": 1409,
+      "wins": 6,
+      "win_rate": 20.0,
+      "rating": 6.78,
+      "rated_matches": 29,
+      "last_match_at": "2022-05-15T17:30:00",
+      "competitions": [
+        {
+          "competition_id": 564,
+          "competition_name": "La Liga",
+          "appearances": 30,
+          "starts": 15,
+          "minutes": 1409,
+          "wins": 6,
+          "win_rate": 20.0,
+          "rating": 6.78,
+          "rated_matches": 29
+        }
+      ]
+    },
+    {
+      "season_name": "2020/2021",
+      "team_id": 214,
+      "team_name": "Valencia",
+      "team_code": "VAL",
+      "team_image": null,
+      "appearances": 24,
+      "starts": 15,
+      "minutes": 1267,
+      "wins": 10,
+      "win_rate": 41.7,
+      "rating": 7.07,
+      "rated_matches": 23,
+      "last_match_at": "2021-05-22T16:00:00",
+      "competitions": [
+        {
+          "competition_id": 564,
+          "competition_name": "La Liga",
+          "appearances": 24,
+          "starts": 15,
+          "minutes": 1267,
+          "wins": 10,
+          "win_rate": 41.7,
+          "rating": 7.07,
+          "rated_matches": 23
+        }
+      ]
+    },
+    {
+      "season_name": "2019/2020",
+      "team_id": 214,
+      "team_name": "Valencia",
+      "team_code": "VAL",
+      "team_image": null,
+      "appearances": 22,
+      "starts": 4,
+      "minutes": 570,
+      "wins": 6,
+      "win_rate": 27.3,
+      "rating": 6.69,
+      "rated_matches": 21,
+      "last_match_at": "2020-07-19T19:00:00",
+      "competitions": [
+        {
+          "competition_id": 564,
+          "competition_name": "La Liga",
+          "appearances": 17,
+          "starts": 3,
+          "minutes": 445,
+          "wins": 4,
+          "win_rate": 23.5,
+          "rating": 6.7,
+          "rated_matches": 17
+        },
+        {
+          "competition_id": 2,
+          "competition_name": "Champions League",
+          "appearances": 5,
+          "starts": 1,
+          "minutes": 125,
+          "wins": 2,
+          "win_rate": 40.0,
+          "rating": 6.63,
+          "rated_matches": 4
+        }
+      ]
+    },
+    {
+      "season_name": "2018/2019",
+      "team_id": 214,
+      "team_name": "Valencia",
+      "team_code": "VAL",
+      "team_image": null,
+      "appearances": 5,
+      "starts": 0,
+      "minutes": 57,
+      "wins": 4,
+      "win_rate": 80.0,
+      "rating": 6.78,
+      "rated_matches": 4,
+      "last_match_at": "2019-04-18T19:00:00",
+      "competitions": [
+        {
+          "competition_id": 564,
+          "competition_name": "La Liga",
+          "appearances": 3,
+          "starts": 0,
+          "minutes": 21,
+          "wins": 2,
+          "win_rate": 66.7,
+          "rating": 6.73,
+          "rated_matches": 2
+        },
+        {
+          "competition_id": 5,
+          "competition_name": "Europa League",
+          "appearances": 2,
+          "starts": 0,
+          "minutes": 36,
+          "wins": 2,
+          "win_rate": 100.0,
+          "rating": 6.83,
+          "rated_matches": 2
+        }
+      ]
+    }
+  ],
+  "clubs": [
+    {
+      "team_id": 7980,
+      "team_name": "Atlético de Madrid",
+      "team_image": null,
+      "start_date": "2026-07-25",
+      "end_date": null
+    },
+    {
+      "team_id": 591,
+      "team_name": "Paris Saint Germain",
+      "team_image": null,
+      "start_date": "2023-07-08",
+      "end_date": "2026-07-25"
+    },
+    {
+      "team_id": 645,
+      "team_name": "Mallorca",
+      "team_image": null,
+      "start_date": "2021-08-30",
+      "end_date": "2023-07-08"
+    },
+    {
+      "team_id": 214,
+      "team_name": "Valencia",
+      "team_image": null,
+      "start_date": "2019-01-30",
+      "end_date": "2021-08-30"
+    }
+  ],
+  "honours": []
+}
