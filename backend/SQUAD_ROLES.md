@@ -74,7 +74,7 @@ python -m diagnostics.refresh_squad_roles --apply --report ..\logs\diagnostics\s
 
 최신 자료를 다시 조회·계산한 후 현재 스쿼드의 역할 컬럼만 한 트랜잭션으로 갱신해요.
 검증되지 않은 역할은 NULL로 저장해 오래된 역할을 남기지 않아요. 선수 프로필·명단·부상·출전 기록은 바꾸지 않아요.
-모든 계산이 성공해야 저장 단계에 들어가요. 기본 실행에는 저장 단계가 없어요.
+모든 계산이 성공해야 저장 단계에 들어가요. 기본 실행에는 저장 단계가 없어요. 역할은 여러 선수의 값을 한 UPDATE로 보내 원격 DB 왕복을 줄여요.
 운영 API와 앱에 새 코드를 반영하는 배포는 별도예요. DB 반영만으로 기존 앱 코드가 바뀌지 않아요.
 
 ## 다음 시즌 기준 학습
@@ -149,3 +149,9 @@ flutter analyze --no-pub lib/models/player_indicators.dart lib/data/players/api/
 더 용 대조 원본: `C:\dev\1touch\.codex_tmp\squad-role-audit\de-jong-availability-audit.json`.
 
 추천 커밋 메시지: `fix(players): 스쿼드 역할에 현재 나이와 확인된 부상 기간 반영`
+
+## 최초 운영 DB 저장
+
+2026-09-21 03:55 UTC에 현재 스쿼드 2,596명의 저장값을 계산 보고서와 모두 대조했어요. 2,171명은 역할을 저장했고, 근거가 부족한 425명은 NULL로 유지했어요.
+가비는 Sporadic, 더 용은 NULL, 이강인은 Crucial이에요. 기존 역할 값은 변경 전에 별도 로컬 파일로 백업했어요.
+일괄 저장은 약 4.7초였어요. 원격 DB에 선수마다 요청하던 초기 방식은 중단했고, 재실행 전 이전 트랜잭션의 저장값이 0건으로 롤백된 것도 확인했어요.
