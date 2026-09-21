@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,6 +64,8 @@ void main() {
       (chartCard.decoration as BoxDecoration).boxShadow,
       lightModeCardShadows,
     );
+    final chart = tester.widget<LineChart>(find.byType(LineChart));
+    expect(chart.data.lineBarsData.first.color, const Color(0xFF7A263A));
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
     expect(tester.getSize(filter).width, lessThanOrEqualTo(145));

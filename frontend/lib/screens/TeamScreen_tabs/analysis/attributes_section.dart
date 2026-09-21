@@ -184,6 +184,7 @@ class _AttributesSectionState extends State<AttributesSection> {
 
   @override
   Widget build(BuildContext context) {
+    final teamPrimaryColor = _analysisTeamPrimaryColor(widget.team);
     if (_isLoading) {
       return const Padding(
         padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
@@ -198,6 +199,20 @@ class _AttributesSectionState extends State<AttributesSection> {
             style: TextStyle(color: AppColors.of(context).mutedForeground)),
       );
     }
+
+    final comparisonTeam = _comparisonScores == null
+        ? null
+        : teamRepository.findById(_comparisonScores!.teamId);
+    final comparisonColor = comparisonTeam == null
+        ? null
+        : TeamComparisonColorResolver.resolve(
+            anchorTeamName: widget.team?['name'] as String? ??
+                teamRepository.findById(_myScores!.teamId)?.name,
+            anchorPrimaryFallback: teamPrimaryColor,
+            opponentTeamName: comparisonTeam.name,
+            opponentPrimaryFallback: Color(comparisonTeam.primaryColor),
+            background: AppColors.of(context).cardBackground,
+          ).opponent;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
@@ -238,6 +253,8 @@ class _AttributesSectionState extends State<AttributesSection> {
             child: TeamAttributeRadar(
               scores: _myScores!,
               comparisonScores: _comparisonScores,
+              currentColor: teamPrimaryColor,
+              comparisonColor: comparisonColor,
             ),
           ),
 
@@ -251,10 +268,10 @@ class _AttributesSectionState extends State<AttributesSection> {
               spacing: 20,
               runSpacing: 8,
               children: [
-                _legendDot(const Color(0xFFE8434A), 'MY TEAM'),
+                _legendDot(teamPrimaryColor, 'MY TEAM'),
                 if (_comparisonScores != null)
                   _legendDot(
-                    Theme.of(context).colorScheme.onSurface,
+                    comparisonColor ?? Colors.white,
                     '${_compactSeasonLabel(_comparisonScores!.seasonLabel)} '
                     '${(teamRepository.findById(_comparisonScores!.teamId)?.name ?? 'Unknown Team').toUpperCase()}',
                   ),

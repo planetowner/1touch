@@ -423,6 +423,21 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final data = _comparison!;
     final current = data.current;
     final comparison = data.comparison;
+    final currentTeam = teamRepository.findById(current.teamId);
+    final comparisonTeam = teamRepository.findById(comparison.teamId);
+    final comparisonColors = TeamComparisonColorResolver.resolve(
+      anchorTeamName: current.teamName ?? currentTeam?.name,
+      anchorPrimaryFallback: currentTeam == null
+          ? _analysisTeamPrimaryColor(widget.team)
+          : Color(currentTeam.primaryColor),
+      opponentTeamName: comparison.teamName ?? comparisonTeam?.name,
+      opponentPrimaryFallback: comparisonTeam == null
+          ? null
+          : Color(comparisonTeam.primaryColor),
+      background: appColors.cardBackground,
+    );
+    final teamPrimaryColor = comparisonColors.anchor;
+    final comparisonColor = comparisonColors.opponent;
     final maxRound = math.max(2, data.maxRound);
     final maxPoints = math.max(5, ((data.maxPoints + 4) ~/ 5) * 5).toDouble();
     final selectedRound = _selectedFormRound;
@@ -499,8 +514,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                               lineTouchData:
                                   const LineTouchData(enabled: false),
                               lineBarsData: [
-                                _formLine(current, const Color(0xFFFF525D)),
-                                _formLine(comparison, colorScheme.onSurface),
+                                _formLine(current, teamPrimaryColor),
+                                _formLine(comparison, comparisonColor),
                               ],
                             ),
                           ),
@@ -519,8 +534,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                                 comparisonPoints: comparisonPoint
                                     ?.cumulativePoints
                                     .toDouble(),
-                                currentColor: const Color(0xFFFF525D),
-                                comparisonColor: colorScheme.onSurface,
+                                currentColor: teamPrimaryColor,
+                                comparisonColor: comparisonColor,
                               ),
                             ),
                           ),
@@ -698,7 +713,22 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   }
 
   Widget _buildLegend() {
+    final appColors = AppColors.of(context);
+    final current = _comparison!.current;
     final comparison = _comparison!.comparison;
+    final currentTeam = teamRepository.findById(current.teamId);
+    final comparisonTeam = teamRepository.findById(comparison.teamId);
+    final comparisonColors = TeamComparisonColorResolver.resolve(
+      anchorTeamName: current.teamName ?? currentTeam?.name,
+      anchorPrimaryFallback: currentTeam == null
+          ? _analysisTeamPrimaryColor(widget.team)
+          : Color(currentTeam.primaryColor),
+      opponentTeamName: comparison.teamName ?? comparisonTeam?.name,
+      opponentPrimaryFallback: comparisonTeam == null
+          ? null
+          : Color(comparisonTeam.primaryColor),
+      background: appColors.cardBackground,
+    );
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: SizedBox(
@@ -709,9 +739,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           spacing: 20,
           runSpacing: 8,
           children: [
-            _legendItem(const Color(0xFFFF525D), 'CURRENT'),
+            _legendItem(comparisonColors.anchor, 'CURRENT'),
             _legendItem(
-              Theme.of(context).colorScheme.onSurface,
+              comparisonColors.opponent,
               '${_compactSeasonLabel(comparison.seasonName)} '
               '${(comparison.teamShortCode ?? comparison.teamName ?? '').toUpperCase()}',
             ),

@@ -1,5 +1,20 @@
 part of '../Analysis.dart';
 
+Color _analysisTeamPrimaryColor(Map<String, dynamic>? team) {
+  final directColor = team?['primary_color'];
+  final teamId = team?['id'];
+  final repositoryTeam =
+      teamId is int ? teamRepository.findById(teamId) : null;
+  return TeamComparisonColorResolver.paletteFor(
+    teamName: team?['name'] as String? ?? repositoryTeam?.name,
+    primaryFallback: directColor is int
+        ? Color(directColor)
+        : repositoryTeam == null
+            ? null
+            : Color(repositoryTeam.primaryColor),
+  ).primary;
+}
+
 class _AnalysisSectionHeader extends StatelessWidget {
   final String title;
   final Widget? trailing;
