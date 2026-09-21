@@ -1,0 +1,146 @@
+# 현재 시즌 폼·가성비
+
+두 등급은 현재 시즌 5대 리그(8, 82, 301, 384, 564)의 전체 선수를 합쳐 비교해요.
+포지션별로 등급을 나누지 않고, `seasons.is_current=1`인 정규 리그의 정상 종료 경기만 사용해요.
+기존 선수 종합 평점·랭킹 계산은 바꾸지 않아요.
+
+## 폼
+
+- 현재 시즌의 최근 **5번 출전**을 사용해요. 다른 5대 리그로 이적한 선수의 출전도 선수 ID로 합쳐요.
+- 가중치: `minutes_played × exp(-decay_per_day × days_since_match)`.
+- 원점수: `sum(rating × weight) / sum(weight)`.
+- 평점 미제공은 0점으로 채우지 않아요. 최근 5번 출전 중 평점이 빠진 경기를 더 오래된 경기로 대체하지 않아요.
+- 직전 시즌에서 각 경기보다 앞선 최대 5번 출전으로 다음 평점을 예측해 감쇠 계수를 선택해요. 대상 경기의 출전 시간으로 제곱 오차를 가중해요.
+- 2026/2027 보정값은 2025/2026의 49,989개 예측 쌍으로 검증했어요. 선택된 감쇠 계수는 **0**이에요. 이 시즌에는 최근 5번 출전 안에서 출전 시간만 가중해요. 임의로 최근 경기에 추가 비중을 주지 않아요.
+- 검증 오차(MSE)는 약 0.319254예요. 반감기 7일을 강제로 적용하면 약 0.369906이에요. 이 수치는 직전 시즌의 계수 선택 결과이며, 현재 시즌의 독립적인 예측 성능 보장은 아니에요.
+- 보정값은 `python/one_touch_loader/core/player_form_calibration.json`에 있어요. 다음 시즌에는 아래 읽기 전용 진단으로 다시 검증해야 해요. 적용 시즌이 다르면 폼 등급을 미제공으로 반환해요.
+
+```powershell
+Set-Location C:\dev\1touch\backend
+$env:PYTHONPATH='C:\dev\1touch\backend\python'
+python python/diagnostics/calibrate_player_form.py --output python/one_touch_loader/core/player_form_calibration.json
+```
+
+위 명령은 DB에서 읽기만 하고, 검증 결과를 지정한 로컬 코드 파일에 저장해요.
+
+## 가성비 확정안: A 통합
+
+이번 시즌의 평점과 출전 비중이 주급에 기대되는 수준보다 얼마나 높은지 평가해요.
+5대 리그 전체를 한 모델로 학습하고, 리그·포지션·구단 급여 차이는 기대치를 계산할 때 반영해요.
+리그나 포지션마다 별도로 등급 인원을 나누지 않아요.
+
+### 입력과 기대치
+
+- 입력: `log(본인 추정 세전 주급 EUR)`, `log(본인 제외 동료 주급 중앙값)`, 리그, 포지션.
+- 평점: 현재 소속 구단에서 기록한 이번 시즌 출전 시간 가중 평점.
+- 출전 비중: 현재 구단에서 뛴 시간 / (현재 구단의 종료된 정규 리그 경기 수 × 90분).
+- 본인 주급과 구단 중앙값은 각각 5개 분위수 매듭의 3차 spline으로 바꿔요. 리그·포지션은 범주 변수예요.
+- 두 기대치는 중앙값 분위수 회귀로 각각 학습해요. `QuantileRegressor(quantile=.5, alpha=.001, solver='highs')`를 사용해요.
+- spline과 입력 표준화는 학습 집단으로만 적합해요. 평점 기대치는 0~10, 출전 비중 기대치는 0~1로 제한해요.
+
+구단 중앙값에는 미출전 동료도 포함하고, 미제공·0원 급여는 제외해요.
+급여가 높은 선수에게 점수를 더하지 않아요. 그 급여에 기대되는 성과를 실제 성과와 비교해요.
+출전 비중의 분모는 구단의 시즌 전체 경기 시간이에요. 이적 전 기간을 임의로 빼지 않아요.
+평점 없는 경기의 확인된 출전 시간도 출전 비중에는 포함해요.
+
+### 통합 점수
+
+```text
+평점 차이 = (실제 시즌 평점 - 기대 평점) / 학습 집단 평점 표준편차
+출전 차이 = (실제 출전 비중 - 기대 출전 비중) / 학습 집단 출전 비중 표준편차
+통합 점수 = 평점 차이 × 0.5 + 출전 차이 × 0.5
+```
+
+표준편차는 각 학습 정답의 표준편차(ddof=0)예요. 예측 잔차의 표준편차가 아니에요.
+50:50은 확정한 제품 규칙이며 학습으로 구한 최적 가중치라고 표현하지 않아요.
+평점 없는 선수도 확인된 출전 비중은 학습에 사용해요. 통합 등급은 두 항목이 모두 있을 때만 제공해요.
+급여·평점·포지션·동료 급여가 없거나 학습·보정 표본이 부족하면 등급을 만들지 않아요.
+누락 평점을 0으로 채우거나 남은 항목에 100%를 주지 않아요.
+이적료, 시장 가치, 최근 폼, 이전 시즌 기록은 넣지 않아요.
+
+### 오차 기반 등급
+
+선수 ID 순으로 정렬하고 고정 seed `20260920`의 5-fold 분할을 사용해요.
+각 fold에서 전체의 약 60%는 학습, 20%는 오차 보정, 20%는 평가에 사용해요.
+평가 선수의 성과는 자기 기대치 학습과 자기 등급 경계 보정에 모두 들어가지 않아요.
+개인의 주급은 성과 예측에 필요한 알려진 입력이므로 제외하지 않아요.
+추가 seed 두 개는 시안의 민감도 검증에만 썼고, 등급 투표나 평균에는 사용하지 않아요.
+
+오차 보정 집단에서 `abs(통합 점수)`를 정렬해 80%와 95% 경계를 구해요.
+표본 수가 m이면 순위는 `ceil((m+1) × coverage)`예요. 95% 순위를 정할 표본이 부족하면 미제공이에요.
+
+| 통합 점수 | 등급 |
+| --- | --- |
+| -95% 경계 미만 | Very Poor |
+| -95% 경계 이상, -80% 경계 미만 | Poor |
+| -80% 경계 이상, +80% 경계 이하 | Fair |
+| +80% 경계 초과, +95% 경계 이하 | Good |
+| +95% 경계 초과 | Very Good |
+
+Fair는 통상적인 예측 오차 범위 안이라는 뜻이에요. 적정 급여를 확정한다는 뜻은 아니에요.
+등급별로 인원을 20%씩 강제하지 않아요. 각 구단에도 등급별 인원을 할당하지 않아요.
+시즌 초의 적은 경기 수도 그대로 사용하므로 응답의 경기 수와 함께 해석해야 해요.
+
+폼만 기존 백분위 규칙을 유지해요. `50 × (below + through_equal) / reference_count`로 동점을 처리하고,
+20% 간격으로 Very Poor / Poor / Fair / Good / Excellent를 표시해요.
+급여 없는 선수도 폼 집단에는 포함될 수 있어요.
+
+## API·화면
+
+- `GET /v1/players/{player_id}/indicators`, 기존 Bearer 세션 인증을 사용해요.
+- 과거 시즌 매개변수는 없어요. `season_name`과 `as_of`가 적용 시즌·계산 시각이에요.
+- 현재 5대 리그 명단에 없으면 명시적인 404, 데이터 부족이면 해당 지표의 `grade=null`과 사유를 반환해요.
+- 가성비 `raw_score`는 통합 점수, `percentile`은 null이에요. `grade`와 `band`로 등급을 표시해요.
+- `expected_rating`, `expected_minutes_share`, 두 표준편차와 표준화 차이, `fair_boundary`, `very_boundary`로 계산 근거를 제공해요.
+- 기존 `expected_weekly_wage_eur` 필드는 null로 유지해요. 확정 모델은 기대 급여를 계산하지 않아요.
+- `reference_count`는 해당 등급을 제공할 수 있는 전체 선수 수예요. 각 fold의 학습 인원이라는 뜻은 아니에요.
+- DB에 테이블이나 점수를 쓰지 않아요. 읽기 전용 트랜잭션으로 자료를 읽고 계산해요.
+- 전체 비교 집단의 조회·계산 결과를 기존 방식대로 프로세스 안에서 최대 1분 공유해요.
+- Overview는 실제 API 결과를 읽고, 로딩·재시도·미제공 상태를 구분해요. 폼·가성비 링은 같은 컴포넌트를 사용해요.
+- 가성비 설명은 주급 대비 평점·출전 비중의 동일 비중 평가와 오차 기반 등급으로 수정했어요. 가성비 링에 백분위 접근성 문구를 붙이지 않아요.
+- 기본 선수 명단과 나머지 프로필 항목은 기존 카탈로그를 유지해요. 두 지표만 현재 시즌 API를 사용해요.
+- 실행 환경의 `API_BASE_URI`, `API_SESSION_TOKEN`을 사용해요. 로그인·세션 구조 변경은 포함하지 않아요.
+
+## 확정안 검증 (2026-09-20)
+
+고정 입력 시각은 `2026-09-20 20:31:37.986065 UTC`예요.
+
+- 2,596명의 폼 결과가 기존과 일치했어요.
+- 가성비 1,487명의 점수·기대치·등급 경계·등급이 확정한 A 통합 시안과 일치했어요(수치 허용 오차 1e-9).
+- 전체 등급: Very Poor 13, Poor 66, Fair 1,210, Good 134, Very Good 64.
+- 바르셀로나·바이에른·아틀레티코의 이전 표와 같은 결과예요.
+- 2,596명 모두 API 응답 형식을 통과했어요.
+- 백엔드 지표 테스트 18개, 기존 백분위 테스트 9개가 통과했어요.
+- 화면 관련 테스트 28개가 통과했어요. 가성비 백분위 null, 미제공·실패·재시도, 두 화면 크기, 라이트·다크 모드를 포함해요.
+- 변경한 Dart 파일 4개의 정적 분석은 문제 없이 통과했어요.
+- 표준 검증은 기존 다른 파일 12개의 포맷 차이 때문에 중단됐어요. 해당 파일을 고치지 않고 관련 검사를 별도로 실행했어요.
+- 로컬 전체 모델 계산은 약 19.8초였어요. DB 조회 시간은 별도이며 운영 서버의 첫 응답 시간은 미검증이에요.
+- 위 수치는 로컬 모델 확정 시점의 검증이에요. 운영 적용 여부는 별도 배포 기록으로 확인해요.
+
+원본 시안은 `../outputs/player-indicators/cost-a-combined-barcelona-202627.json`에 있고,
+최종 대조 결과는 `../outputs/player-indicators/final-model-verification.json`에 있어요.
+이전 V1/V2 비교 보고서는 과거 검토 자료이며 현재 계산 규칙이 아니에요.
+
+실행한 검증 명령:
+
+```powershell
+# C:\dev\1touch\backend
+$env:PYTHONPATH='C:\dev\1touch\.codex_tmp\player-indicator-test-deps;C:\dev\1touch\backend\python'
+python -m unittest discover -s python/diagnostics -p test_player_indicators.py -v
+python -m unittest discover -s python/diagnostics -p test_player_rating_percentile.py -v
+
+# C:\dev\1touch (같은 PYTHONPATH 사용)
+python .codex_tmp/verify_final_cost.py
+
+# C:\dev\1touch\frontend
+& 'C:\Program Files\Git\bin\bash.exe' ./tool/verify.sh test/player_indicators_test.dart test/player_screen_responsive_test.dart test/mock_player_repository_test.dart
+flutter analyze lib/data/players/api/api_player_indicators_response.dart lib/features/player/player_indicator_value.dart lib/screens/AllPlayersScreen_tabs/Overview.dart test/player_indicators_test.dart
+flutter test --no-pub test/player_indicators_test.dart test/player_screen_responsive_test.dart test/mock_player_repository_test.dart
+```
+
+## 최신 원격과 통합한 릴리스 검증
+
+- 최신 원격 선수 카드의 배치·테마·그림자와 기존 공유 링을 유지하고 실제 API 값을 연결했어요.
+- 미배포 랭킹 코드에 있던 리그 상수 의존성을 제거하고, 기존 5대 리그 상수를 재사용했어요.
+- 격리된 릴리스에서 지표 테스트 18개, 기존 백분위 테스트 5개, 프런트 관련 테스트 28개가 통과했어요.
+- 다른 작업의 파일과 운영 뉴스 타이머 설정은 이번 배포물에 섞지 않아요.
