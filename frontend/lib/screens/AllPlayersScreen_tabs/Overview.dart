@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/players/player_indicators_repository.dart';
+import 'package:onetouch/data/players/player_indicators_repository_provider.dart';
+import 'package:onetouch/features/player/player_indicator_value.dart';
+import 'package:onetouch/models/player_indicators.dart';
 import 'package:onetouch/features/player_image.dart';
-import 'package:onetouch/features/player/rating_level_ring.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 
@@ -327,13 +332,112 @@ class PlayerOverviewTab extends StatelessWidget {
   }
 }
 
-class PlayerBioStatsBlock extends StatelessWidget {
+class PlayerBioStatsBlock extends StatefulWidget {
   final Player player;
+  final PlayerIndicatorsRepository? repository;
 
-  const PlayerBioStatsBlock({super.key, required this.player});
+  const PlayerBioStatsBlock({
+    super.key,
+    required this.player,
+    this.repository,
+  });
+
+  @override
+  State<PlayerBioStatsBlock> createState() => _PlayerBioStatsBlockState();
+}
+
+class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
+  PlayerIndicators? _indicators;
+  bool _loading = false;
+  bool _failed = false;
+  int _requestId = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(PlayerBioStatsBlock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.player.externalPlayerId != widget.player.externalPlayerId ||
+        oldWidget.repository != widget.repository) {
+      _load();
+    }
+  }
+
+  void _load() {
+    final requestId = ++_requestId;
+    final playerId = widget.player.externalPlayerId;
+    _indicators = null;
+    _failed = false;
+    _loading = playerId != null;
+    if (playerId != null) unawaited(_fetch(playerId, requestId));
+  }
+
+  Future<void> _fetch(int playerId, int requestId) async {
+    try {
+      final result = await (widget.repository ?? playerIndicatorsRepository)
+          .loadCurrent(playerId);
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _indicators = result;
+        _loading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _failed = true;
+        _loading = false;
+      });
+    }
+  }
+
+  String _explanation({required bool cost}) {
+    final score = cost ? _indicators?.costEffectiveness : _indicators?.form;
+    final definition = cost
+        ? 'Compares season rating and share of playing time with expectations '
+            "for the player's estimated gross wage, club wage level, league "
+            'and position. The two differences carry equal weight. '
+            'Fair means within the usual prediction error; higher grades mean '
+            'more return for the wage. Transfer fees are not included.'
+        : 'Recent performance over the latest 5 league appearances this season, '
+            'weighted by playing time and calibrated recency. '
+            'Compared with all positions across the five leagues.';
+    final season = _indicators?.seasonName;
+    final scope =
+        season == null ? 'Current season only.' : 'Current season: $season.';
+    final evidence = score?.grade == null
+        ? switch (score?.unavailableReason) {
+            'wage_unavailable' => 'Wage data is unavailable.',
+            'no_rated_matches' => 'No rated appearances are available.',
+            _ => _failed
+                ? 'Could not load the indicators. Tap retry to try again.'
+                : 'An indicator is shown when enough data is available.',
+          }
+        : '${score!.ratedMatches} rated appearances. '
+            '${score.referenceCount} players across the five leagues. '
+            '${cost ? 'Grades are based on prediction error, not equal-sized groups.' : ''}';
+    return '$definition\n\n$scope $evidence';
+  }
+
+  _PlayerInfo _indicatorInfo({required bool cost}) => _PlayerInfo(
+        label: cost ? 'Cost-Effectiveness' : 'Form',
+        explanation: cost ? _explanation(cost: true) : null,
+        valueWidget: PlayerIndicatorValue(
+          key: ValueKey(cost ? 'player-cost-effectiveness' : 'player-form'),
+          score: cost ? _indicators?.costEffectiveness : _indicators?.form,
+          loading: _loading,
+          failed: _failed,
+          explanation: _explanation(cost: cost),
+          onRetry: () => setState(_load),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
+    final player = widget.player;
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? AppPalette.darkGrey : AppPalette.white;
@@ -349,17 +453,12 @@ class PlayerBioStatsBlock extends StatelessWidget {
       [
         _PlayerInfo(label: 'Height', value: '${player.heightCm}cm'),
         _PlayerInfo(label: 'Age', value: '$age yrs'),
-        _PlayerInfo(label: 'Form', value: player.form, showRating: true),
+        _indicatorInfo(cost: false),
       ],
       [
         _PlayerInfo(label: 'Weight', value: '${player.weightKg}kg'),
         _PlayerInfo(label: 'Squad Role', value: player.squadRole),
-        const _PlayerInfo(
-          label: 'Cost-Effectiveness',
-          value: 'Very Good',
-          showRating: true,
-          showInfo: true,
-        ),
+        _indicatorInfo(cost: true),
       ],
     ];
 
@@ -405,15 +504,15 @@ class PlayerBioStatsBlock extends StatelessWidget {
 class _PlayerInfo {
   const _PlayerInfo({
     required this.label,
-    required this.value,
-    this.showRating = false,
-    this.showInfo = false,
+    this.value,
+    this.valueWidget,
+    this.explanation,
   });
 
   final String label;
-  final String value;
-  final bool showRating;
-  final bool showInfo;
+  final String? value;
+  final Widget? valueWidget;
+  final String? explanation;
 }
 
 class _PlayerInfoCell extends StatelessWidget {
@@ -441,9 +540,14 @@ class _PlayerInfoCell extends StatelessWidget {
                   key: ValueKey('player-info-label-${info.label}'),
                   style: Body1.style.copyWith(color: foreground),
                 ),
-                if (info.showInfo) ...[
+                if (info.explanation != null) ...[
                   const SizedBox(width: 4),
-                  Icon(Icons.help_outline, size: 18, color: foreground),
+                  Tooltip(
+                    message: info.explanation!,
+                    triggerMode: TooltipTriggerMode.tap,
+                    child:
+                        Icon(Icons.help_outline, size: 18, color: foreground),
+                  ),
                 ],
               ],
             ),
@@ -456,16 +560,7 @@ class _PlayerInfoCell extends StatelessWidget {
           child: FittedBox(
             alignment: Alignment.centerLeft,
             fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(info.value, style: Heading5.style),
-                if (info.showRating) ...[
-                  const SizedBox(width: 8),
-                  RatingLevelRing(rating: info.value),
-                ],
-              ],
-            ),
+            child: info.valueWidget ?? Text(info.value!, style: Heading5.style),
           ),
         ),
       ],
