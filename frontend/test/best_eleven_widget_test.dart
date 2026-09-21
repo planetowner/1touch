@@ -70,6 +70,9 @@ void main() {
 
     expect(find.text('Compact0'), findsOneWidget);
     expect(find.text('Compact10'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
+    expect(find.text('11'), findsOneWidget);
+    expect(find.text('##'), findsNothing);
     expect(find.byType(BestElevenPitch), findsOneWidget);
     final bestElevenCard = tester.widget<Container>(
       find.byKey(const ValueKey('team-best-eleven-card')),
@@ -350,6 +353,7 @@ TeamBestEleven _lineup({
           slotIndex: index,
           playerId: 100 + index,
           playerName: '$playerPrefix$index',
+          jerseyNumber: index + 1,
           starts: 10,
         ),
     ],

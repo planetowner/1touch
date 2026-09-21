@@ -13,6 +13,7 @@ void main() {
     expect(response.usagePercentage, 66.67);
     expect(response.formations.single.isDefault, isTrue);
     expect(response.players.single.playerName, 'Player Name');
+    expect(response.players.single.jerseyNumber, 4);
     expect(response.players.single.positionGroupCode, 'DEF');
     expect(response.players.single.positionCode, 'CB');
     expect(response.players.single.starts, 18);
@@ -25,6 +26,7 @@ void main() {
     player
       ..['player_name'] = null
       ..['player_image'] = null
+      ..['jersey_number'] = null
       ..['position_group_code'] = null
       ..['position_code'] = null;
 
@@ -32,6 +34,7 @@ void main() {
 
     expect(result.playerName, isNull);
     expect(result.playerImage, isNull);
+    expect(result.jerseyNumber, isNull);
     expect(result.positionGroupCode, isNull);
     expect(result.positionCode, isNull);
   });
@@ -73,6 +76,10 @@ void main() {
           {...jsonPlayer, 'starts': '18'},
         ],
       _responseJson()
+        ..['players'] = [
+          {...jsonPlayer, 'jersey_number': '4'},
+        ],
+      _responseJson()
         ..['formations'] = [
           {...jsonFormation, 'is_default': 1},
         ],
@@ -99,6 +106,7 @@ const jsonPlayer = <String, dynamic>{
   'player_id': 100,
   'player_name': 'Player Name',
   'player_image': 'https://example.com/player.png',
+  'jersey_number': 4,
   'position_group_code': 'DEF',
   'position_code': 'CB',
   'starts': 18,
