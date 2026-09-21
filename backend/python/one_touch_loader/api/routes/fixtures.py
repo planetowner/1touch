@@ -45,6 +45,16 @@ def fixture_analysis(fixture_id: int, user_id: int = Depends(get_user_id)):
     average_regain_height_m는 우리 골라인부터 표준 105m 경기장으로 환산한 평균 거리예요.
     halves는 own(우리 진영 x<50)·opponent(상대 진영 x>=50)의 회수 횟수와 비중이에요.
     비중의 분모는 해당 팀 필드 선수의 전체 Recovery이며, high_regains는 opponent 횟수와 같아요.
+    thirds는 공격 방향을 맞춘 defensive(x<100/3)·middle(x<200/3)·attacking 구역의 횟수·비중이에요.
+    league_comparison은 같은 순서로 league_percentage와 difference_pp(팀 비중−리그 비중)를 제공해요.
+    recovery_baseline은 같은 시즌·대회에서 대상 경기 시작 시각까지 종료된 경기(state 5/7/8)를 비교해요.
+    대상 경기와 동시각 경기도 종료됐으면 포함하고, 이후 경기는 포함하지 않아요.
+    양 팀 모두 포지션이 완전한 수집 경기만 쓰며 회수 0회 팀은 비중이 없어 평균에서 제외해요.
+    각 팀·경기 비중을 동일 가중치로 평균내며, 전체 회수 횟수를 합친 비중과는 달라요.
+    baseline에는 season_id·competition_id·through(UTC), 종료/수집/포함 경기 수, 팀·경기 수,
+    포지션 미확인 제외 경기 수·회수 0회 제외 팀 수·미수집 경기 수·대상 포함 여부가 있어요.
+    표본이 없으면 리그 비중·차이는 null이고, 팀이 불완전하거나 회수가 0회여도 차이는 null이에요.
+    thirds·리그 비중·차이는 소수 6자리, 차이 단위는 %p예요. 평균과 차이는 반올림 전에 계산해요.
     회수가 0개면 평균·비중은 null이에요. 포지션 미확인 회수가 있으면 complete=false이고,
     missing_position_count에 누락 수를 주며 팀 전체 회수 횟수·평균·비중은 null로 반환해요.
     이 경우 actions와 action_count는 필드 선수로 확인된 점만 나타내요.
