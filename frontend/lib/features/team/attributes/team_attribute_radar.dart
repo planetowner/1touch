@@ -6,10 +6,16 @@ import 'package:onetouch/models/team_attribute_scores.dart';
 
 class TeamAttributeRadar extends StatelessWidget {
   const TeamAttributeRadar(
-      {super.key, required this.scores, this.comparisonScores});
+      {super.key,
+      required this.scores,
+      this.comparisonScores,
+      this.currentColor = const Color(0xFFE8434A),
+      this.comparisonColor});
 
   final TeamAttributeScores scores;
   final TeamAttributeScores? comparisonScores;
+  final Color currentColor;
+  final Color? comparisonColor;
 
   //   Radar chart
 
@@ -25,7 +31,8 @@ class TeamAttributeRadar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
-    final comparisonColor = Theme.of(context).colorScheme.onSurface;
+    final resolvedComparisonColor =
+        comparisonColor ?? Theme.of(context).colorScheme.onSurface;
     return SizedBox(
       height: 260,
       child: RadarChart(
@@ -49,10 +56,10 @@ class TeamAttributeRadar extends StatelessWidget {
           titleTextStyle: Eyebrow.style,
           titlePositionPercentageOffset: 0.15,
           dataSets: [
-            // MY TEAM — red
+            // MY TEAM — the selected team's primary color.
             RadarDataSet(
-              fillColor: const Color(0xFFE8434A).withValues(alpha: 0.3),
-              borderColor: const Color(0xFFE8434A),
+              fillColor: currentColor.withValues(alpha: 0.3),
+              borderColor: currentColor,
               borderWidth: 2,
               entryRadius: 0,
               dataEntries:
@@ -61,8 +68,8 @@ class TeamAttributeRadar extends StatelessWidget {
             // Comparison — white outline
             if (comparisonScores != null)
               RadarDataSet(
-                fillColor: comparisonColor.withValues(alpha: 0.1),
-                borderColor: comparisonColor.withValues(alpha: 0.85),
+                fillColor: resolvedComparisonColor.withValues(alpha: 0.1),
+                borderColor: resolvedComparisonColor.withValues(alpha: 0.85),
                 borderWidth: 2,
                 entryRadius: 0,
                 dataEntries: comparisonScores!.radarValues
