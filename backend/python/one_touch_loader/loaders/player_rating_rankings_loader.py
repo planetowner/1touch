@@ -1,17 +1,20 @@
-"""과거 기준은 고정하고, 경기 평점을 저장할 때 시즌 점수를 함께 갱신해요."""
+"""누적 비교 표본과 영향받는 모든 리그·시즌 점수를 함께 갱신해요."""
 from __future__ import annotations
 
-from contextlib import contextmanager
+from collections import Counter
+from contextlib import closing, contextmanager
+import re
 
-from one_touch_loader.core.db import transaction
+from one_touch_loader.core.db import get_conn, transaction
 from one_touch_loader.core.fixture_states import COMPLETED_STATE_IDS
 from one_touch_loader.core.player_rating_percentile import (
-    HistoricalPercentile, MINIMUM_RATED_MATCHES, REFERENCE_SEASON_NAMES, average_rating,
+    MINIMUM_RATED_MATCHES, RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME,
+    score_season_records,
 )
 
 
 def fetch_rating_aggregates(cursor, season_ids: list[int], minimum_rated_matches: int) -> list[dict]:
-    # 포지션 변경과 같은 리그 내 이적은 나누지 않아요. 기준 표본과 평가 대상에 같은 집계 규칙을 써요.
+    # 같은 리그 내 이적·포지션 변경은 합치고, 다른 리그 기록은 각각 한 표본으로 세요.
     cursor.execute(f"""
         SELECT s.competition_id, s.season_id, fl.player_id,
                COUNT(fl.rating) AS rated_matches, SUM(fl.rating) AS rating_sum
@@ -30,124 +33,179 @@ def fetch_rating_aggregates(cursor, season_ids: list[int], minimum_rated_matches
     return cursor.fetchall()
 
 
-def freeze_player_rating_reference(competition_id: int) -> int:
-    """리그별 2020/21~2024/25 표본을 처음 한 번만 저장하고 표본 수를 반환해요."""
-    with transaction() as conn:
-        with conn.cursor(dictionary=True) as cur:
-            # 같은 리그의 중복 실행도 기존 표본을 다시 만들지 않게 직렬화해요.
-            cur.execute("SELECT competition_type FROM competitions WHERE competition_id=%s FOR UPDATE", (competition_id,))
-            competition = cur.fetchone()
-            if competition is None or competition["competition_type"] != "league":
-                raise ValueError("A league competition_id is required")
-            cur.execute("SELECT competition_id FROM player_rating_references WHERE competition_id=%s", (competition_id,))
-            if cur.fetchone() is not None:
-                cur.execute("SELECT COUNT(*) AS n FROM player_rating_reference_samples WHERE competition_id=%s", (competition_id,))
-                return cur.fetchone()["n"]
-
-            cur.execute(f"""SELECT season_id, name FROM seasons
-                WHERE competition_id=%s AND name IN ({','.join(['%s'] * len(REFERENCE_SEASON_NAMES))})
-                ORDER BY name""", (competition_id, *REFERENCE_SEASON_NAMES))
-            seasons = cur.fetchall()
-            if tuple(row["name"] for row in seasons) != REFERENCE_SEASON_NAMES:
-                raise ValueError("All five reference seasons (2020/2021 through 2024/2025) are required")
-            season_ids = [row["season_id"] for row in seasons]
-            samples = fetch_rating_aggregates(cur, season_ids, MINIMUM_RATED_MATCHES)
-            if {row["season_id"] for row in samples} != set(season_ids):
-                raise ValueError("Every reference season must have players with at least 10 rated matches")
-
-            cur.execute("""INSERT INTO player_rating_references
-                (competition_id, start_season_name, end_season_name, minimum_rated_matches)
-                VALUES (%s,%s,%s,%s)""", (
-                competition_id, REFERENCE_SEASON_NAMES[0], REFERENCE_SEASON_NAMES[-1], MINIMUM_RATED_MATCHES,
-            ))
-            cur.executemany("""INSERT INTO player_rating_reference_samples
-                (competition_id, season_id, player_id, rated_matches, rating_sum)
-                VALUES (%s,%s,%s,%s,%s)""", [
-                (competition_id, row["season_id"], row["player_id"], row["rated_matches"], row["rating_sum"])
-                for row in samples
-            ])
-    return len(samples)
+def _lock_rating_pool(cur):
+    # 리그별 잠금으로는 공유 표본을 보호할 수 없어서 모든 갱신이 같은 행을 먼저 잠가요.
+    # 일반 SELECT보다 먼저 잠가, 기다린 작업도 직전 커밋의 표본을 읽도록 해요.
+    cur.execute("SELECT competition_id FROM competitions WHERE competition_id=%s FOR UPDATE",
+                (RATING_COMPETITION_IDS[0],))
+    cur.fetchone()
 
 
-def build_player_rating_scores(season_id: int) -> int:
-    """저장된 기준 표본으로 한 시즌을 갱신해요. 기준 자체는 변경하지 않아요."""
-    with transaction() as conn:
-        with conn.cursor(dictionary=True) as cur:
-            return _write_player_rating_scores(cur, season_id)
+def _rating_seasons(cur) -> list[dict]:
+    cur.execute(f"""SELECT season_id, competition_id, name AS season_name FROM seasons
+        WHERE competition_id IN ({','.join(['%s'] * len(RATING_COMPETITION_IDS))})
+          AND name >= %s ORDER BY name, competition_id""",
+                (*RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME))
+    seasons = cur.fetchall()
+    if not seasons or any(not re.fullmatch(r"\d{4}/\d{4}", row["season_name"]) for row in seasons):
+        raise ValueError("Five-league seasons from 2017/2018 are required")
+    last_year = int(seasons[-1]["season_name"][:4])
+    expected = {(competition, f"{year}/{year + 1}")
+                for year in range(int(REFERENCE_START_SEASON_NAME[:4]), last_year + 1)
+                for competition in RATING_COMPETITION_IDS}
+    if {(row["competition_id"], row["season_name"]) for row in seasons} != expected:
+        raise ValueError("Every year from 2017/2018 must contain all five league seasons")
+    return seasons
 
 
-def minimum_rated_matches_for_season(cur, season_id: int, standard_minimum: int) -> int:
-    # 시작한 라운드 번호가 아니라 모든 경기가 끝난 라운드 수로 중반을 판단해요.
-    # 미래 일정도 분모에 포함하고, 연기·진행 중 경기가 남은 라운드는 완료로 세지 않아요.
+def _season_minimums(cur, season_ids: list[int], standard_minimum: int) -> dict[int, int]:
     completed = ",".join(map(str, COMPLETED_STATE_IDS))
-    cur.execute(f"""SELECT COUNT(*) AS total_rounds,
+    cur.execute(f"""SELECT season_id, COUNT(*) AS total_rounds,
                           COALESCE(SUM(round_finished), 0) AS completed_rounds
         FROM (
-            SELECT r.round_id,
+            SELECT st.season_id, r.round_id,
                    MIN(CASE WHEN f.state_id IN ({completed}) THEN 1 ELSE 0 END) AS round_finished
             FROM fixtures f
             JOIN stages st ON st.stage_id=f.stage_id
             JOIN rounds r ON r.round_id=f.round_id
-            WHERE st.season_id=%s AND r.name REGEXP '^[0-9]+$'
-            GROUP BY r.round_id
-        ) AS season_rounds""", (season_id,))
-    progress = cur.fetchone()
-    halfway = progress["total_rounds"] > 0 and progress["completed_rounds"] * 2 >= progress["total_rounds"]
-    return standard_minimum if halfway else 1
+            WHERE st.season_id IN ({','.join(['%s'] * len(season_ids))}) AND r.name REGEXP '^[0-9]+$'
+            GROUP BY st.season_id, r.round_id
+        ) AS season_rounds GROUP BY season_id""", tuple(season_ids))
+    minimums = dict.fromkeys(season_ids, 1)
+    for row in cur.fetchall():
+        # 미래 일정도 분모에 포함하고, 연기·진행 중 경기가 있는 라운드는 완료로 세지 않아요.
+        if row["total_rounds"] > 0 and row["completed_rounds"] * 2 >= row["total_rounds"]:
+            minimums[row["season_id"]] = standard_minimum
+    return minimums
 
 
-def _write_player_rating_scores(cur, season_id: int) -> int:
-    # 수동 실행과 경기 저장이 같은 계산·삭제·저장 규칙을 사용해요.
-    cur.execute("SELECT competition_id FROM seasons WHERE season_id=%s FOR UPDATE", (season_id,))
-    season = cur.fetchone()
-    if season is None:
-        raise ValueError("Season not found")
-    competition_id = season["competition_id"]
-    cur.execute("SELECT minimum_rated_matches FROM player_rating_references WHERE competition_id=%s", (competition_id,))
-    reference = cur.fetchone()
-    if reference is None:
-        raise ValueError("Freeze this league's historical rating reference before building scores")
-    cur.execute("SELECT rating_sum, rated_matches FROM player_rating_reference_samples WHERE competition_id=%s", (competition_id,))
-    distribution = HistoricalPercentile(
-        average_rating(row["rating_sum"], row["rated_matches"]) for row in cur.fetchall()
-    )
-    # 과거 표본의 10경기 기준은 고정하고, 평가 시즌만 중반 전까지 제한을 풀어요.
-    minimum = minimum_rated_matches_for_season(cur, season_id, reference["minimum_rated_matches"])
-    rows = fetch_rating_aggregates(cur, [season_id], minimum)
-    values = [(
-        competition_id, season_id, row["player_id"], row["rated_matches"], row["rating_sum"],
-        distribution.score(average_rating(row["rating_sum"], row["rated_matches"])),
-    ) for row in rows]
-    # 중반의 기준 전환이나 평점 정정으로 자격을 잃은 선수도 빠지도록 시즌 전체를 교체해요.
-    cur.execute("DELETE FROM player_rating_scores WHERE season_id=%s", (season_id,))
+def minimum_rated_matches_for_season(cur, season_id: int, standard_minimum: int) -> int:
+    return _season_minimums(cur, [season_id], standard_minimum)[season_id]
+
+
+def _eligible_rating_rows(cur, seasons: list[dict]) -> list[dict]:
+    names = {row["season_id"]: row["season_name"] for row in seasons}
+    minimums = _season_minimums(cur, list(names), MINIMUM_RATED_MATCHES)
+    # 평가 선수와 비교 표본에 같은 시즌별 출전 기준을 적용해요.
+    return [{**row, "season_name": names[row["season_id"]]}
+            for row in fetch_rating_aggregates(cur, list(names), 1)
+            if row["rated_matches"] >= minimums[row["season_id"]]]
+
+
+def _pool_is_ready(cur) -> bool:
+    cur.execute("SELECT competition_id, start_season_name FROM player_rating_references")
+    rows = {row["competition_id"]: row["start_season_name"] for row in cur.fetchall()}
+    return all(rows.get(competition) == REFERENCE_START_SEASON_NAME for competition in RATING_COMPETITION_IDS)
+
+
+def _save_reference_metadata(cur, seasons: list[dict]):
+    # 이 메타데이터는 적재된 범위예요. 실제 비교의 끝 시즌은 평가 시즌마다 달라요.
+    cur.executemany("""INSERT INTO player_rating_references
+        (competition_id, start_season_name, end_season_name, minimum_rated_matches)
+        VALUES (%s,%s,%s,%s)
+        ON DUPLICATE KEY UPDATE start_season_name=VALUES(start_season_name),
+          end_season_name=VALUES(end_season_name), minimum_rated_matches=VALUES(minimum_rated_matches),
+          updated_at=CURRENT_TIMESTAMP""", [
+        (competition, REFERENCE_START_SEASON_NAME,
+         max(row["season_name"] for row in seasons if row["competition_id"] == competition),
+         MINIMUM_RATED_MATCHES) for competition in RATING_COMPETITION_IDS
+    ])
+
+
+def _replace_samples(cur, season_ids: list[int], rows: list[dict]):
+    cur.execute(f"DELETE FROM player_rating_reference_samples WHERE season_id IN ({','.join(['%s'] * len(season_ids))})",
+                tuple(season_ids))
+    if rows:
+        cur.executemany("""INSERT INTO player_rating_reference_samples
+            (competition_id, season_id, player_id, rated_matches, rating_sum) VALUES (%s,%s,%s,%s,%s)""", [
+            (row["competition_id"], row["season_id"], row["player_id"], row["rated_matches"], row["rating_sum"])
+            for row in rows
+        ])
+
+
+def _replace_scores(cur, season_ids: list[int], scored: list[dict]):
+    cur.execute(f"DELETE FROM player_rating_scores WHERE season_id IN ({','.join(['%s'] * len(season_ids))})",
+                tuple(season_ids))
+    values = [(row["competition_id"], row["season_id"], row["player_id"], row["rated_matches"],
+               row["rating_sum"], row["percentile_score"]) for row in scored if row["season_id"] in season_ids]
     if values:
         cur.executemany("""INSERT INTO player_rating_scores
             (competition_id, season_id, player_id, rated_matches, rating_sum, percentile_score)
             VALUES (%s,%s,%s,%s,%s,%s)""", values)
-    return len(values)
+
+
+def rebuild_player_rating_scores(*, apply: bool = False) -> dict:
+    """저장된 원본으로 전체 범위를 계산해요. --apply에서만 표본과 점수를 교체해요."""
+    with (transaction() if apply else closing(get_conn())) as conn:
+        with conn.cursor(dictionary=True) as cur:
+            if apply:
+                _lock_rating_pool(cur)
+            seasons = _rating_seasons(cur)
+            rows = _eligible_rating_rows(cur, seasons)
+            scored = score_season_records(rows)
+            if apply:
+                _save_reference_metadata(cur, seasons)
+                ids = [row["season_id"] for row in seasons]
+                _replace_samples(cur, ids, rows)
+                _replace_scores(cur, ids, scored)
+    counts = Counter(row["season_name"] for row in rows)
+    cumulative = 0
+    reports = []
+    for name in sorted({row["season_name"] for row in seasons}):
+        cumulative += counts[name]
+        reports.append({"season_name": name, "players": counts[name], "reference_samples": cumulative})
+    return {"apply": apply, "league_seasons": len(seasons), "scores": len(scored), "seasons": reports}
+
+
+def build_player_rating_scores(season_id: int) -> int:
+    with transaction() as conn:
+        with conn.cursor(dictionary=True) as cur:
+            _lock_rating_pool(cur)
+            return _write_player_rating_scores(cur, season_id)
+
+
+def _write_player_rating_scores(cur, season_id: int) -> int:
+    if not _pool_is_ready(cur):
+        raise ValueError("Run player-rankings rebuild --apply to initialize the cumulative five-league reference")
+    seasons = _rating_seasons(cur)
+    target = next((row for row in seasons if row["season_id"] == season_id), None)
+    if target is None:
+        raise ValueError("A five-league season from 2017/2018 is required")
+    changed = [row for row in seasons if row["season_name"] == target["season_name"]]
+    rows = _eligible_rating_rows(cur, changed)
+    _replace_samples(cur, [row["season_id"] for row in changed], rows)
+    cur.execute(f"""SELECT sample.*, s.name AS season_name FROM player_rating_reference_samples sample
+        JOIN seasons s ON s.season_id=sample.season_id
+        WHERE sample.competition_id IN ({','.join(['%s'] * len(RATING_COMPETITION_IDS))})
+          AND s.name >= %s ORDER BY s.name, sample.competition_id, sample.player_id""",
+                (*RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME))
+    scored = score_season_records(cur.fetchall())
+    # 과거 평점 정정은 그 시즌과 이후 시즌의 기준에도 영향을 줘요. 이전 시즌은 건드리지 않아요.
+    affected = [row["season_id"] for row in seasons if row["season_name"] >= target["season_name"]]
+    _replace_scores(cur, affected, scored)
+    _save_reference_metadata(cur, seasons)
+    return sum(row["season_id"] == season_id for row in rows)
 
 
 @contextmanager
 def refresh_player_ratings_after_fixture(connection, fixture_id: int, *,
                                          state_id: int | None = None, lineups_changed: bool = True):
-    """경기 저장과 시즌 점수를 한 트랜잭션에 묶고, 준비된 리그만 갱신해요."""
     if not lineups_changed:
         yield
         return
     with connection.cursor(dictionary=True) as cur:
-        # 일반 조회나 선수 저장 전에 시즌을 잠가 동시 수집이 서로의 최신 평점을 놓치지 않게 해요.
-        # 종료 판정이 취소된 경우에도 이전 점수에서 그 경기를 빼야 해요.
+        _lock_rating_pool(cur)
         completed = ",".join(map(str, COMPLETED_STATE_IDS))
-        cur.execute(f"""SELECT s.season_id
-            FROM fixtures f
+        cur.execute(f"""SELECT s.season_id FROM fixtures f
             JOIN stages st ON st.stage_id=f.stage_id
             JOIN seasons s ON s.season_id=st.season_id
             JOIN rounds r ON r.round_id=f.round_id
-            JOIN player_rating_references ref ON ref.competition_id=s.competition_id
             WHERE f.fixture_id=%s AND r.name REGEXP '^[0-9]+$'
-              AND (f.state_id IN ({completed}) OR %s IN ({completed}))
-            FOR UPDATE""", (fixture_id, state_id))
+              AND s.competition_id IN ({','.join(['%s'] * len(RATING_COMPETITION_IDS))})
+              AND s.name >= %s AND (f.state_id IN ({completed}) OR %s IN ({completed}))""",
+                    (fixture_id, *RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME, state_id))
         scope = cur.fetchone()
+        ready = scope is not None and _pool_is_ready(cur)
         yield
-        if scope is not None:
+        if ready:
             _write_player_rating_scores(cur, scope["season_id"])
