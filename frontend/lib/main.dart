@@ -9,6 +9,7 @@ import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 
@@ -36,6 +37,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
+  errorBuilder: (context, state) => const AppErrorScreen(statusCode: 404),
   routes: [
     // Splash
     GoRoute(
@@ -115,6 +117,15 @@ final GoRouter _router = GoRouter(
                   final teamId = int.parse(state.pathParameters['id']!);
                   return TeamScreen(teamId: teamId);
                 },
+                routes: [
+                  GoRoute(
+                    path: 'probability/:event',
+                    builder: (context, state) => TeamProbabilityScreen(
+                      teamId: int.parse(state.pathParameters['id']!),
+                      event: state.pathParameters['event']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
