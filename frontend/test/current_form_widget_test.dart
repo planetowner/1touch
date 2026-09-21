@@ -66,6 +66,7 @@ void main() {
     );
     final chart = tester.widget<LineChart>(find.byType(LineChart));
     expect(chart.data.lineBarsData.first.color, const Color(0xFF7A263A));
+    expect(chart.data.lineBarsData[1].color, Colors.white);
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
     expect(tester.getSize(filter).width, lessThanOrEqualTo(145));

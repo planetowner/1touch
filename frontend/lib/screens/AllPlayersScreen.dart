@@ -18,6 +18,9 @@ double playerDetailOverviewGradientHeight(double topInset) =>
     _playerDetailOverviewPadding +
     _playerDetailTopBlockHeight;
 
+double playerDetailTabGradientHeight(double topInset) =>
+    topInset + _playerDetailAppBarHeight + _playerDetailTabBarHeight;
+
 class PlayerCard extends StatefulWidget {
   final Player player;
 
@@ -47,9 +50,10 @@ class _PlayerCardState extends State<PlayerCard>
 
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
-      setState(() {
-        currentTabIndex = _tabController.index;
-      });
+      if (!_tabController.indexIsChanging &&
+          currentTabIndex != _tabController.index) {
+        setState(() => currentTabIndex = _tabController.index);
+      }
     });
     playerRepository.followedPlayerIds.addListener(_onFollowingChanged);
   }
@@ -70,15 +74,15 @@ class _PlayerCardState extends State<PlayerCard>
   Widget build(BuildContext context) {
     double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     final pageBackground = mainPageBackground(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final gradientForeground = Theme.of(context).colorScheme.onSurface;
-
-    final double topInset = MediaQuery.of(context).padding.top;
-    final double overviewGradientHeight =
-        playerDetailOverviewGradientHeight(topInset);
-    final double gradientHeight = isOverviewTab
-        ? overviewGradientHeight
-        // Other tabs: fade ends just past the tab bar.
-        : topInset + _playerDetailAppBarHeight + _playerDetailTabBarHeight;
+    final gradientColors = isDark
+        ? const [Color(0xFF282929), Color(0x00282929)]
+        : const [Color(0x333D3D3D), Color(0x003D3D3D)];
+    final topInset = MediaQuery.paddingOf(context).top;
+    final gradientHeight = isOverviewTab
+        ? playerDetailOverviewGradientHeight(topInset)
+        : playerDetailTabGradientHeight(topInset);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -94,9 +98,15 @@ class _PlayerCardState extends State<PlayerCard>
             right: 0,
             height: gradientHeight,
             child: IgnorePointer(
-              child: ColoredBox(
-                key: const ValueKey('player-detail-solid-background'),
-                color: pageBackground,
+              child: DecoratedBox(
+                key: const ValueKey('player-detail-gradient'),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: gradientColors,
+                  ),
+                ),
               ),
             ),
           ),

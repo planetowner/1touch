@@ -1,9 +1,16 @@
 part of 'match_info_features.dart';
 
 class MomentumChart extends StatelessWidget {
-  const MomentumChart({super.key, this.values = _defaultMomentum});
+  const MomentumChart({
+    super.key,
+    this.values = _defaultMomentum,
+    this.homeColor = const Color(0xFFFF5C5C),
+    this.awayColor = Colors.white,
+  });
 
   final List<double> values;
+  final Color homeColor;
+  final Color awayColor;
 
   // Mock per-5-minute momentum series, -100..100 (negative = away team
   // dominance, positive = home team), 0' through 90' inclusive.
@@ -52,7 +59,12 @@ class MomentumChart extends StatelessWidget {
                 height: 140,
                 width: double.infinity,
                 child: CustomPaint(
-                  painter: _MomentumPainter(values, foreground),
+                  painter: _MomentumPainter(
+                    values,
+                    foreground,
+                    homeColor: homeColor,
+                    awayColor: awayColor,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -87,7 +99,15 @@ class MomentumChart extends StatelessWidget {
 class _MomentumPainter extends CustomPainter {
   final List<double> values;
   final Color neutralColor;
-  const _MomentumPainter(this.values, this.neutralColor);
+  final Color homeColor;
+  final Color awayColor;
+
+  const _MomentumPainter(
+    this.values,
+    this.neutralColor, {
+    this.homeColor = const Color(0xFFFF5C5C),
+    this.awayColor = Colors.white,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -112,16 +132,22 @@ class _MomentumPainter extends CustomPainter {
         neutralColor.withValues(alpha: 0.3));
 
     final abovePaint = Paint()
-      ..shader = const LinearGradient(
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0xB3FF5C5C), Color(0x00FF5C5C)],
+        colors: [
+          homeColor.withValues(alpha: 0.70),
+          homeColor.withValues(alpha: 0),
+        ],
       ).createShader(Rect.fromLTRB(0, 0, size.width, centerY));
     final belowPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Colors.white.withValues(alpha: 0), Colors.white54],
+        colors: [
+          awayColor.withValues(alpha: 0),
+          awayColor.withValues(alpha: 0.33),
+        ],
       ).createShader(Rect.fromLTRB(0, centerY, size.width, size.height));
 
     for (var i = 0; i < points.length - 1; i++) {
@@ -215,5 +241,8 @@ class _MomentumPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MomentumPainter oldDelegate) =>
-      oldDelegate.values != values || oldDelegate.neutralColor != neutralColor;
+      oldDelegate.values != values ||
+      oldDelegate.neutralColor != neutralColor ||
+      oldDelegate.homeColor != homeColor ||
+      oldDelegate.awayColor != awayColor;
 }
