@@ -1,0 +1,128 @@
+{
+  "fixture": {
+    "id": 19228790,
+    "lineups": [
+      {
+        "id": 11640887216,
+        "sport_id": 1,
+        "fixture_id": 19228790,
+        "player_id": 21782198,
+        "team_id": 5284,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Börge Petersen",
+        "jersey_number": 20,
+        "details": [
+          {
+            "id": 1169115654,
+            "fixture_id": 19228790,
+            "player_id": 21782198,
+            "team_id": 5284,
+            "lineup_id": 11640887216,
+            "type_id": 119,
+            "data": {
+              "value": 14
+            }
+          }
+        ],
+        "player": {
+          "id": 21782198,
+          "sport_id": 1,
+          "country_id": 2154,
+          "nationality_id": 2154,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 148,
+          "type_id": 25,
+          "common_name": "B. Petersen",
+          "firstname": "Börge",
+          "lastname": "Petersen",
+          "name": "Börge Petersen",
+          "display_name": "Børge Petersen",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/21782198.png",
+          "height": 183,
+          "weight": null,
+          "date_of_birth": "2002-04-24",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 11640887222,
+        "sport_id": 1,
+        "fixture_id": 19228790,
+        "player_id": 87132,
+        "team_id": 5284,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Paetur Petersen",
+        "jersey_number": 21,
+        "details": [
+          {
+            "id": 1169114869,
+            "fixture_id": 19228790,
+            "player_id": 87132,
+            "team_id": 5284,
+            "lineup_id": 11640887222,
+            "type_id": 119,
+            "data": {
+              "value": 14
+            }
+          }
+        ],
+        "player": {
+          "id": 87132,
+          "sport_id": 1,
+          "country_id": 2154,
+          "nationality_id": 2154,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 163,
+          "type_id": 26,
+          "common_name": "P. Petersen",
+          "firstname": "Pætur Joensson",
+          "lastname": "Petersen",
+          "name": "Pætur Joensson Petersen",
+          "display_name": "Pætur Petersen",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/87132.png",
+          "height": 181,
+          "weight": null,
+          "date_of_birth": "1998-03-29",
+          "gender": "male"
+        }
+      }
+    ],
+    "events": [],
+    "formations": [
+      {
+        "id": 8245166,
+        "fixture_id": 19228790,
+        "participant_id": 5284,
+        "formation": "3-4-3",
+        "location": "away"
+      },
+      {
+        "id": 8245168,
+        "fixture_id": 19228790,
+        "participant_id": 3877,
+        "formation": "4-2-3-1",
+        "location": "home"
+      }
+    ]
+  },
+  "team_id": 5284,
+  "removed_lineup_ids": [],
+  "lineup_overrides": {
+    "11640887222": {
+      "details": []
+    }
+  },
+  "profiles": {},
+  "stat_player_overrides": {},
+  "discarded_stat_player_ids": [],
+  "raw_duplicate": false,
+  "source": "Two actual Petersen lineup rows, FSF COMET official match sheet page247 confirms20 played and21 unused"
+}

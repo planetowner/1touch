@@ -1,0 +1,845 @@
+[
+  {
+    "source": "Sportmonks fixture 18137448 and player profile retrieved 2026-09-18",
+    "verified_sources": [
+      "https://www.live-result.com/football/matches/match1096115_Fola-Lincoln_Red_Imps-online",
+      "https://sportspress.lu/wp-content/uploads/2019/10/UEFAU17.pdf"
+    ],
+    "team_id": 3833,
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "6750256861": {
+        "player_id": 37265578,
+        "player_name": "Evan da Costa e Sousa"
+      }
+    },
+    "profiles": {
+      "37265578": {
+        "id": 37265578,
+        "sport_id": 1,
+        "country_id": 3126,
+        "nationality_id": 3126,
+        "city_id": null,
+        "position_id": 24,
+        "detailed_position_id": 24,
+        "type_id": 24,
+        "common_name": "E. da Costa e Sousa",
+        "firstname": "Evan",
+        "lastname": "da Costa e Sousa",
+        "name": "Evan da Costa e Sousa",
+        "display_name": "Evan da Costa",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/players/10/37265578.png",
+        "height": 190,
+        "weight": null,
+        "date_of_birth": "2003-05-07",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "expected_lineups": [
+      [
+        37530381,
+        12,
+        15,
+        null,
+        27
+      ],
+      [
+        37265578,
+        12,
+        22,
+        null,
+        24
+      ]
+    ],
+    "fixture": {
+      "id": 18137448,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 352990,
+          "sport_id": 1,
+          "fixture_id": 18137448,
+          "player_id": 37530381,
+          "team_id": 3833,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "R. Costa de Sousa",
+          "jersey_number": 15,
+          "details": [
+            {
+              "id": 228675239,
+              "fixture_id": 18137448,
+              "player_id": 37530381,
+              "team_id": 3833,
+              "lineup_id": 352990,
+              "type_id": 88,
+              "data": {
+                "value": 2
+              }
+            }
+          ],
+          "player": {
+            "id": 37530381,
+            "sport_id": 1,
+            "country_id": 3126,
+            "nationality_id": 3126,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 148,
+            "type_id": 27,
+            "common_name": "R. Costa de Sousa",
+            "firstname": "Rui Jorge",
+            "lastname": "Costa de Sousa",
+            "name": "Rui Jorge Costa de Sousa",
+            "display_name": "Rui Jorge Costa de Sousa",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "2002-12-26",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 6750256861,
+          "sport_id": 1,
+          "fixture_id": 18137448,
+          "player_id": 37530381,
+          "team_id": 3833,
+          "position_id": 24,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "R. Costa de Sousa",
+          "jersey_number": 22,
+          "details": [],
+          "player": {
+            "id": 37530381,
+            "sport_id": 1,
+            "country_id": 3126,
+            "nationality_id": 3126,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 148,
+            "type_id": 27,
+            "common_name": "R. Costa de Sousa",
+            "firstname": "Rui Jorge",
+            "lastname": "Costa de Sousa",
+            "name": "Rui Jorge Costa de Sousa",
+            "display_name": "Rui Jorge Costa de Sousa",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "2002-12-26",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source": "Sportmonks fixture 18137433 and player profile retrieved 2026-09-18",
+    "verified_sources": [
+      "https://fmf.md/noutate/3395/liga-campionilor-sheriffteuta-10?lang=en",
+      "https://www.skysports.com/football/sheriff-tiraspol-mol-vs-teuta-durres/teams/446045"
+    ],
+    "team_id": 5203,
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "368970": {
+        "jersey_number": 22
+      },
+      "6750272726": {
+        "player_id": 49591,
+        "player_name": "Fabjan Beqja",
+        "jersey_number": 7
+      }
+    },
+    "profiles": {
+      "49591": {
+        "id": 49591,
+        "sport_id": 1,
+        "country_id": 2454,
+        "nationality_id": 2454,
+        "city_id": null,
+        "position_id": 25,
+        "detailed_position_id": 154,
+        "type_id": 25,
+        "common_name": "F. Beqja",
+        "firstname": "Fabjan",
+        "lastname": "Beqja",
+        "name": "Fabjan Beqja",
+        "display_name": "Fabjan Beqja",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "1994-02-15",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "expected_lineups": [
+      [
+        49591,
+        12,
+        7,
+        null,
+        26
+      ],
+      [
+        29710408,
+        12,
+        22,
+        10,
+        26
+      ]
+    ],
+    "fixture": {
+      "id": 18137433,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 368970,
+          "sport_id": 1,
+          "fixture_id": 18137433,
+          "player_id": 29710408,
+          "team_id": 5203,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Ledio Beqja",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 591714924,
+              "fixture_id": 18137433,
+              "player_id": 29710408,
+              "team_id": 5203,
+              "lineup_id": 368970,
+              "type_id": 119,
+              "data": {
+                "value": 10
+              }
+            }
+          ],
+          "player": {
+            "id": 29710408,
+            "sport_id": 1,
+            "country_id": 2454,
+            "nationality_id": 2454,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 149,
+            "type_id": 26,
+            "common_name": "L. Beqja",
+            "firstname": "Ledio",
+            "lastname": "Beqja",
+            "name": "Ledio Beqja",
+            "display_name": "Ledio Beqja",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 183,
+            "weight": null,
+            "date_of_birth": "2001-06-18",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 6750272726,
+          "sport_id": 1,
+          "fixture_id": 18137433,
+          "player_id": 29710408,
+          "team_id": 5203,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Ledio Beqja",
+          "jersey_number": 22,
+          "details": [],
+          "player": {
+            "id": 29710408,
+            "sport_id": 1,
+            "country_id": 2454,
+            "nationality_id": 2454,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 149,
+            "type_id": 26,
+            "common_name": "L. Beqja",
+            "firstname": "Ledio",
+            "lastname": "Beqja",
+            "name": "Ledio Beqja",
+            "display_name": "Ledio Beqja",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 183,
+            "weight": null,
+            "date_of_birth": "2001-06-18",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source": "Sportmonks fixture 18151433 retrieved 2026-09-18",
+    "verified_sources": [
+      "https://www.footballtoday.net/livescore/7797227867097917093-glentoran-vs-the-new-saints"
+    ],
+    "team_id": 746,
+    "removed_lineup_ids": [
+      6334982808
+    ],
+    "lineup_overrides": {},
+    "profiles": {},
+    "stat_player_overrides": {},
+    "expected_lineups": [
+      [
+        148665,
+        12,
+        33,
+        null,
+        24
+      ]
+    ],
+    "fixture": {
+      "id": 18151433,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 6334982808,
+          "sport_id": 1,
+          "fixture_id": 18151433,
+          "player_id": 148665,
+          "team_id": 746,
+          "position_id": 24,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Ross Glendinning",
+          "jersey_number": 32,
+          "details": [],
+          "player": {
+            "id": 148665,
+            "sport_id": 1,
+            "country_id": 491,
+            "nationality_id": 491,
+            "city_id": null,
+            "position_id": 24,
+            "detailed_position_id": 24,
+            "type_id": 24,
+            "common_name": "R. Glendinning",
+            "firstname": "Ross",
+            "lastname": "Glendinning",
+            "name": "Ross Glendinning",
+            "display_name": "Ross Glendinning",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/25/148665.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "1993-05-18",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 356628,
+          "sport_id": 1,
+          "fixture_id": 18151433,
+          "player_id": 148665,
+          "team_id": 746,
+          "position_id": 24,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Ross Glendinning",
+          "jersey_number": 33,
+          "details": [
+            {
+              "id": 229154104,
+              "fixture_id": 18151433,
+              "player_id": 148665,
+              "team_id": 746,
+              "lineup_id": 356628,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 148665,
+            "sport_id": 1,
+            "country_id": 491,
+            "nationality_id": 491,
+            "city_id": null,
+            "position_id": 24,
+            "detailed_position_id": 24,
+            "type_id": 24,
+            "common_name": "R. Glendinning",
+            "firstname": "Ross",
+            "lastname": "Glendinning",
+            "name": "Ross Glendinning",
+            "display_name": "Ross Glendinning",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/25/148665.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "1993-05-18",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source": "Sportmonks fixture 18151449 retrieved 2026-09-18",
+    "verified_sources": [
+      "https://donfutbolisto.com/es/partido/domzale-swift-hesperange-conference-league-08-07-2021/"
+    ],
+    "team_id": 820,
+    "removed_lineup_ids": [
+      6334975898
+    ],
+    "lineup_overrides": {},
+    "profiles": {},
+    "stat_player_overrides": {},
+    "expected_lineups": [
+      [
+        182826,
+        12,
+        89,
+        null,
+        27
+      ]
+    ],
+    "fixture": {
+      "id": 18151449,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 6334975898,
+          "sport_id": 1,
+          "fixture_id": 18151449,
+          "player_id": 182826,
+          "team_id": 820,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Slobodan Vuk",
+          "jersey_number": 88,
+          "details": [],
+          "player": {
+            "id": 182826,
+            "sport_id": 1,
+            "country_id": 507,
+            "nationality_id": 1638,
+            "city_id": 41022,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "S. Vuk",
+            "firstname": "Slobodan",
+            "lastname": "Vuk",
+            "name": "Slobodan Vuk",
+            "display_name": "Slobodan Vuk",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/10/182826.png",
+            "height": 180,
+            "weight": 78,
+            "date_of_birth": "1989-09-15",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 357169,
+          "sport_id": 1,
+          "fixture_id": 18151449,
+          "player_id": 182826,
+          "team_id": 820,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Slobodan Vuk",
+          "jersey_number": 89,
+          "details": [],
+          "player": {
+            "id": 182826,
+            "sport_id": 1,
+            "country_id": 507,
+            "nationality_id": 1638,
+            "city_id": 41022,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "S. Vuk",
+            "firstname": "Slobodan",
+            "lastname": "Vuk",
+            "name": "Slobodan Vuk",
+            "display_name": "Slobodan Vuk",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/10/182826.png",
+            "height": 180,
+            "weight": 78,
+            "date_of_birth": "1989-09-15",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source": "Sportmonks fixture 18224982 and player 146210 retrieved 2026-09-18",
+    "verified_sources": [
+      "https://fmf.md/noutate/3471/europa-conference-league-sivassporpetrocub-10"
+    ],
+    "provider_missing_lineups": [
+      {
+        "jersey_number": 19,
+        "name": "Mikhail Platika",
+        "note": "FMF lists this starter; Sportmonks has no corresponding lineup slot. No row or statistics fabricated."
+      }
+    ],
+    "team_id": 6131,
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "10023004": {
+        "player_id": 146210,
+        "player_name": "Alexandru Bejan",
+        "type_id": 12,
+        "position_id": null,
+        "formation_position": null
+      }
+    },
+    "profiles": {
+      "146210": {
+        "id": 146210,
+        "sport_id": 1,
+        "country_id": 2345,
+        "nationality_id": 2345,
+        "city_id": null,
+        "position_id": 26,
+        "detailed_position_id": null,
+        "type_id": 26,
+        "common_name": "A. Bejan",
+        "firstname": "Alexandru",
+        "lastname": "Bejan",
+        "name": "Alexandru Bejan",
+        "display_name": "Alexandru Bejan",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": 177,
+        "weight": null,
+        "date_of_birth": "1996-05-07",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "expected_lineups": [
+      [
+        146210,
+        12,
+        10,
+        null,
+        null
+      ],
+      [
+        146165,
+        11,
+        11,
+        90,
+        26
+      ]
+    ],
+    "fixture": {
+      "id": 18224982,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 10023004,
+          "sport_id": 1,
+          "fixture_id": 18224982,
+          "player_id": 146165,
+          "team_id": 6131,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": 10,
+          "player_name": "Sergiu Platica",
+          "jersey_number": 10,
+          "details": [
+            {
+              "id": 231398552,
+              "fixture_id": 18224982,
+              "player_id": 146210,
+              "team_id": 6131,
+              "lineup_id": 10023004,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 146165,
+            "sport_id": 1,
+            "country_id": 2345,
+            "nationality_id": 2345,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 27,
+            "common_name": "S. Plătică",
+            "firstname": "Sergiu",
+            "lastname": "Plătică",
+            "name": "Sergiu Plătică",
+            "display_name": "Sergiu Platica",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/21/146165.png",
+            "height": 185,
+            "weight": null,
+            "date_of_birth": "1991-06-05",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 10022791,
+          "sport_id": 1,
+          "fixture_id": 18224982,
+          "player_id": 146165,
+          "team_id": 6131,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": 9,
+          "player_name": "Sergiu Platica",
+          "jersey_number": 11,
+          "details": [
+            {
+              "id": 231398487,
+              "fixture_id": 18224982,
+              "player_id": 146165,
+              "team_id": 6131,
+              "lineup_id": 10022791,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 231398417,
+              "fixture_id": 18224982,
+              "player_id": 146165,
+              "team_id": 6131,
+              "lineup_id": 10022791,
+              "type_id": 84,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 231398558,
+              "fixture_id": 18224982,
+              "player_id": 146165,
+              "team_id": 6131,
+              "lineup_id": 10022791,
+              "type_id": 119,
+              "data": {
+                "value": 90
+              }
+            }
+          ],
+          "player": {
+            "id": 146165,
+            "sport_id": 1,
+            "country_id": 2345,
+            "nationality_id": 2345,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 27,
+            "common_name": "S. Plătică",
+            "firstname": "Sergiu",
+            "lastname": "Plătică",
+            "name": "Sergiu Plătică",
+            "display_name": "Sergiu Platica",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/21/146165.png",
+            "height": 185,
+            "weight": null,
+            "date_of_birth": "1991-06-05",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "source": "Sportmonks fixture 18320105 raw lineup slots; 2026-09-18 read-only response",
+    "verified_sources": [
+      "https://www.laczynaspilka.pl/biblioteka/mecze/rubin-kazan-rakow-czestochowa-01-pd-12082021",
+      "https://www.laliga.com/en-GB/match/temporada-2021-2022-europa-conference-league-rubin-kazan-rakow-czestochowa-6"
+    ],
+    "verification": "Rubin #19 Ivan Ignatyev (1490712, 1999-01-06) entered at the start of second extra-time half for Kostyukov, matching provider event 3000979 at minute 105: 15 minutes. #20 Vladislav Ignatjev (169579) started and was replaced at 94. Retain both slots and other fields.",
+    "team_id": 35,
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "444323": {
+        "player_id": 1490712,
+        "player_name": "Ivan Ignatyev",
+        "details": [
+          {
+            "id": 232914087,
+            "fixture_id": 18320105,
+            "player_id": 169579,
+            "team_id": 35,
+            "lineup_id": 444323,
+            "type_id": 119,
+            "data": {
+              "value": 15
+            }
+          }
+        ]
+      }
+    },
+    "profiles": {
+      "1490712": {
+        "id": 1490712,
+        "sport_id": 1,
+        "country_id": 227,
+        "nationality_id": 227,
+        "city_id": 345,
+        "position_id": 27,
+        "detailed_position_id": 151,
+        "type_id": 27,
+        "common_name": "I. Ignatyev",
+        "firstname": "Ivan",
+        "lastname": "Ignatyev",
+        "name": "Ivan Ignatyev",
+        "display_name": "Ivan Ignatjev ",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": 180,
+        "weight": 74,
+        "date_of_birth": "1999-01-06",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "expected_lineups": [
+      [
+        1490712,
+        12,
+        19,
+        15,
+        26
+      ],
+      [
+        169579,
+        11,
+        20,
+        94,
+        27
+      ]
+    ],
+    "fixture": {
+      "id": 18320105,
+      "events": [],
+      "formations": [],
+      "lineups": [
+        {
+          "id": 444323,
+          "sport_id": 1,
+          "fixture_id": 18320105,
+          "player_id": 169579,
+          "team_id": 35,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Vladislav Ignatjev",
+          "jersey_number": 19,
+          "details": [
+            {
+              "id": 232914087,
+              "fixture_id": 18320105,
+              "player_id": 169579,
+              "team_id": 35,
+              "lineup_id": 444323,
+              "type_id": 119,
+              "data": {
+                "value": 94
+              }
+            }
+          ],
+          "player": {
+            "id": 169579,
+            "sport_id": 1,
+            "country_id": 227,
+            "nationality_id": 227,
+            "city_id": null,
+            "position_id": null,
+            "detailed_position_id": null,
+            "type_id": 26,
+            "common_name": "V. Ignatyev",
+            "firstname": "Vladislav",
+            "lastname": "Ignatyev",
+            "name": "Vladislav Ignatyev",
+            "display_name": "Vladislav Ignatjev",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/11/169579.png",
+            "height": 180,
+            "weight": 72,
+            "date_of_birth": "1987-01-20",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 444280,
+          "sport_id": 1,
+          "fixture_id": 18320105,
+          "player_id": 169579,
+          "team_id": 35,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 11,
+          "formation_position": 2,
+          "player_name": "Vladislav Ignatjev",
+          "jersey_number": 20,
+          "details": [
+            {
+              "id": 232914117,
+              "fixture_id": 18320105,
+              "player_id": 169579,
+              "team_id": 35,
+              "lineup_id": 444280,
+              "type_id": 119,
+              "data": {
+                "value": 94
+              }
+            }
+          ],
+          "player": {
+            "id": 169579,
+            "sport_id": 1,
+            "country_id": 227,
+            "nationality_id": 227,
+            "city_id": null,
+            "position_id": null,
+            "detailed_position_id": null,
+            "type_id": 26,
+            "common_name": "V. Ignatyev",
+            "firstname": "Vladislav",
+            "lastname": "Ignatyev",
+            "name": "Vladislav Ignatyev",
+            "display_name": "Vladislav Ignatjev",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/11/169579.png",
+            "height": 180,
+            "weight": 72,
+            "date_of_birth": "1987-01-20",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,507 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 18845804,
+        "lineups": [],
+        "events": [
+          {
+            "id": 89051453,
+            "fixture_id": 18845804,
+            "period_id": 4908581,
+            "participant_id": 593,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 23278578,
+            "related_player_id": null,
+            "player_name": "Naci Ünüvar",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 103,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": 1496,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 18845818,
+        "lineups": [],
+        "events": [
+          {
+            "id": 89053520,
+            "fixture_id": 18845818,
+            "period_id": 4908295,
+            "participant_id": 5834,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 101148,
+            "related_player_id": null,
+            "player_name": "Milic Curcic",
+            "related_player_name": null,
+            "result": null,
+            "info": "Argument",
+            "addition": null,
+            "minute": 11,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": 1497,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 89053520,
+          "fixture_id": 18845818,
+          "period_id": 4908295,
+          "participant_id": 5834,
+          "type_id": 19,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": null,
+          "player_name": "Milic Curcic",
+          "related_player_name": null,
+          "result": null,
+          "info": "Argument",
+          "addition": null,
+          "minute": 90,
+          "extra_minute": 6,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": 86260,
+          "sub_type_id": 1497,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 18845830,
+        "lineups": [],
+        "events": [
+          {
+            "id": 89028493,
+            "fixture_id": 18845830,
+            "period_id": 4907372,
+            "participant_id": 5510,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 59949,
+            "related_player_id": 24081874,
+            "player_name": "Valeri Gorbachik",
+            "related_player_name": "Ruslan Lisakovich",
+            "result": "1-1",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 90,
+            "extra_minute": 8,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1522,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 89028493,
+          "fixture_id": 18845830,
+          "period_id": 4907372,
+          "participant_id": 5510,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 59949,
+          "related_player_id": 2206769,
+          "player_name": "Valeri Gorbachik",
+          "related_player_name": "Dmitriy Lisakovich",
+          "result": "1-1",
+          "info": null,
+          "addition": "2nd Goal",
+          "minute": 90,
+          "extra_minute": 8,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1522,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 18882134,
+        "lineups": [],
+        "events": [
+          {
+            "id": 88805494,
+            "fixture_id": 18882134,
+            "period_id": 4898096,
+            "participant_id": 18968,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37705392,
+            "related_player_id": 514046,
+            "player_name": "Dennis Scoccimarro",
+            "related_player_name": "Luca Ceccaroli",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 57,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 88805494,
+          "fixture_id": 18882134,
+          "period_id": 4898096,
+          "participant_id": 18968,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37705392,
+          "related_player_id": 514046,
+          "player_name": "Dennis Scoccimarro",
+          "related_player_name": "Luca Ceccaroli",
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 57,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          },
+          "verified_player_profiles": [
+            {
+              "id": 37705392,
+              "sport_id": 1,
+              "country_id": 251,
+              "nationality_id": 251,
+              "city_id": null,
+              "position_id": null,
+              "detailed_position_id": null,
+              "type_id": null,
+              "common_name": "D. Scoccimarro",
+              "firstname": "Dennis",
+              "lastname": "Scoccimarro",
+              "name": "Dennis Scoccimarro",
+              "display_name": "Dennis Scoccimarro",
+              "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+              "height": 178,
+              "weight": null,
+              "date_of_birth": null,
+              "gender": "male"
+            }
+          ]
+        }
+      ],
+      "raw_actor_error": false
+    },
+    {
+      "fixture": {
+        "id": 19024882,
+        "lineups": [],
+        "events": [
+          {
+            "id": 92181051,
+            "fixture_id": 19024882,
+            "period_id": 5087333,
+            "participant_id": 265789,
+            "type_id": 14,
+            "section": "event",
+            "player_id": null,
+            "related_player_id": 37652411,
+            "player_name": "Nieto E.",
+            "related_player_name": "Ilyasse El Jjouaoui",
+            "result": "1-10",
+            "info": null,
+            "addition": "11th Goal",
+            "minute": 55,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 11,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 92181051,
+          "fixture_id": 19024882,
+          "period_id": 5087333,
+          "participant_id": 265789,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 37728177,
+          "related_player_id": 37652411,
+          "player_name": "Enrique Márquez",
+          "related_player_name": "Ilyasse El Jjouaoui",
+          "result": "1-10",
+          "info": null,
+          "addition": "11th Goal",
+          "minute": 55,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 11,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": false
+    },
+    {
+      "fixture": {
+        "id": 19032647,
+        "lineups": [],
+        "events": [
+          {
+            "id": 93380844,
+            "fixture_id": 19032647,
+            "period_id": 5149393,
+            "participant_id": 13429,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37546036,
+            "related_player_id": null,
+            "player_name": "José Misffut",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 72,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [],
+      "raw_actor_error": true
+    }
+  ],
+  "known_player_ids": [
+    59949,
+    514046,
+    2206769,
+    37652411,
+    37705392,
+    37728177
+  ],
+  "verified_source": {
+    "18845803": {
+      "sources": [
+        "https://www.skysports.com/football/fc-twente-vs-hammarby-if/teams/483529",
+        "https://fctwente.nl/nieuws/fc-twente-wint-thuis-van-hammarby-if"
+      ],
+      "verified": "공식 경기표와 실제33 Hammar/34 Demirol/45 Rafferty 교체를 대조. 62분·90+1분의 해당 이벤트 프로필만 보충. Hammarby 미제공 명단·통계 생성 없음."
+    },
+    "18845804": {
+      "sources": [
+        "https://www.fotmob.com/matches/hammarby-vs-fc-twente/2cmc71",
+        "https://fctwente.nl/nieuws/europese-zege-met-schaduwzijde",
+        "https://www.fcupdate.nl/voetbalcompetities/internationaal/uefa-europa-conference-league/programma-uitslagen/2023-2024/hammarby-if-twente-03-08"
+      ],
+      "verified": "18 Sadiku·22 Nilsson·33 Hammar·45 Rafferty의 실제 교체와 경고를 대조. 103분 Unuvar 경고는 한 번이므로 중복89051453 제거, 기존84=2를1로 교정. 105/106분·90+1분 표현 차이는 원문 유지. 115분 득점자는 구단 공식 Steijn으로 원문 유지."
+    },
+    "18845818": {
+      "sources": [
+        "https://www.live-result.com/football/matches/match1384522_Tobol_Kostanay-Basel-online",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2023/RB_International_2324_1_Tobol_Kostanay.pdf",
+        "https://www.sahadan.com/mac/tobol-vs-basel/cpmh3elkqnrf7q0joagapqw44"
+      ],
+      "verified": "101148은 실제 조회상 Dimitri Boudaud1987-02-10으로 감독과 다른 사람. 같은 팀 감독86260 Milic Curcic1981-01-26 및 Basel 공식 프로그램으로 확인. 상세 중계96분과 Sahadan90+6분이 일치하여 잘못된11분을90+6으로 정정. 선수 행 생성 없음."
+    },
+    "18845830": {
+      "sources": [
+        "https://www.live-result.com/football/matches/match1381888_AEK_Larnaca-Torpedo_Zhodino-online",
+        "https://www.transfermarkt.co.uk/aek-larnaka-torpedo-belaz-zhodino/index/spielbericht/4138012",
+        "https://news.sportbox.ru/Vidy_sporta/Futbol/Evropejskie_chempionaty/Liga_konferencij/stats/turnir_20975/game_1380871693"
+      ],
+      "verified": "90+8 Gorbachik 도움은 실제10번 Dmitriy Lisakovich2206769. 61분 투입/72분 경고/29분 명단과 모두 일치. 다른 선수 Ruslan24081874 연결만 정정."
+    },
+    "18882134": {
+      "sources": [
+        "https://www.fsgc.sm/it/notizia/tre-penne-proud-and-disciplined-valmiera-superior-sharpness-makes-the-difference/664",
+        "https://www.lega-pro.com/com/1819-53L.pdf",
+        "https://www.sofascore.com/sl/football/player/scoccimarro-dennis/917260"
+      ],
+      "verified": "FSGC 공식 경기표는57분 Ceccaroli 대신 Scoccimarro 투입을 확인. 원문에16번 명단 자체가 없어 프로필만 보충. 공급자1999-04-14와 Lega Pro 공식등록1999-04-16이 충돌하므로 신규 프로필 생일은 NULL. 명단·분·통계 생성 없음."
+    },
+    "19024882": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2023-2024-copa-del-rey-hernan-cortes-real-betis-2",
+        "https://www.vi.nl/spelers/sergio-alvarez-bastida/info",
+        "https://theanalyst.com/players/16427/enrique-esono",
+        "https://www.resultados-futbol.com/equipo/hernan-cortes/2024"
+      ],
+      "verified": "21 Sergio Alvarez1984-10-21은73분 교체되어 기존90→73/12실점→10. 17 Enrique Esono Lottar Eyang2003-10-17은선발90분. 실제7 Enrique Marquez Nieto의55분 득점ID를 같은 정상 명단37728177로 연결. 득점 도움Ilyasse는기존ID유지. 다른13골/교체/승부차기아닌PK실축 기록 대조."
+    },
+    "19032647": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2023-2024-copa-del-rey-atl-astorga-sevilla-fc-3",
+        "https://www.rtve.es/deportes/20231206/astorga-sevilla-copa-rey-resultado/2464322.shtml",
+        "https://www.bdfutbol.com/es/a/j___leon_FED.html"
+      ],
+      "verified": "실제7번 Diego Pelaez Pelaez1988-03-11을 SergioSantaCruz 대신 연결하고77분교체로90→77. LaLiga 전체중계의25 ChristianBueno/40 JaviAmor/72 Misffut 세 경고를 유지하며 Misffut중복93380844만제거,기존84를1로정정. RTVE 교체상대·경고 요약과 상세 중계의 충돌은 보존하고 다른 교체를 임의변경하지 않음."
+    },
+    "19032650": {
+      "sources": [
+        "https://www.fotmob.com/matches/villanovense-vs-real-betis/2c7wg9",
+        "https://fbref.com/en/players/f3d39b6c/German-Rodriguez-Rojas"
+      ],
+      "verified": "14 Germán Ezequiel Rodriguez Rojas1990-01-05는85분 MarioGonzalez 대신투입. 잘못된Buonanotte연결을실제이벤트ID211387로맞추고기존14분을5분으로교정.89/90+3실점2유지. 다른득점·도움·전체교체와카드대조."
+    }
+  }
+}

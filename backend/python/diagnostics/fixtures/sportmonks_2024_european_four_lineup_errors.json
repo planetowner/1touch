@@ -1,0 +1,1571 @@
+{
+  "source": "20260920-2024-detail-error-provider-profiles.json",
+  "evidence": "20260920-2024-european-four-verified-repairs.json",
+  "fixtures": [
+    {
+      "id": 19136047,
+      "events": [
+        {
+          "id": 117274516,
+          "fixture_id": 19136047,
+          "period_id": 5504817,
+          "participant_id": 7178,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 237188,
+          "related_player_id": 68755,
+          "player_name": "Déinner Quiñónes",
+          "related_player_name": "D. Dimov",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 72,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5504817,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 117274517,
+          "fixture_id": 19136047,
+          "period_id": 5504817,
+          "participant_id": 516,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 28944221,
+          "related_player_id": 126387,
+          "player_name": "Tomer Yosefi",
+          "related_player_name": "Guy Badash",
+          "result": null,
+          "info": null,
+          "addition": "6th Substitution",
+          "minute": 72,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5504817,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 117274560,
+          "fixture_id": 19136047,
+          "period_id": 5504817,
+          "participant_id": 516,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37308565,
+          "related_player_id": 125785,
+          "player_name": "I. Pais",
+          "related_player_name": "Shai Elias",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 72,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5504817,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 11196959358,
+          "sport_id": 1,
+          "fixture_id": 19136047,
+          "player_id": 237188,
+          "team_id": 516,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Déinner Quiñónes",
+          "jersey_number": 10,
+          "details": [
+            {
+              "id": 1155377178,
+              "fixture_id": 19136047,
+              "player_id": 237188,
+              "team_id": 516,
+              "lineup_id": 11196959358,
+              "type_id": 119,
+              "data": {
+                "value": 18
+              }
+            }
+          ],
+          "player": {
+            "id": 237188,
+            "sport_id": 1,
+            "country_id": 353,
+            "nationality_id": 353,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": 27,
+            "common_name": "D. Quiñónes Quiñónes",
+            "firstname": "Deinner Alexander",
+            "lastname": "Quiñónes Quiñónes",
+            "name": "Deinner Alexander Quiñónes Quiñónes",
+            "display_name": "Déinner Quiñónes",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/4/237188.png",
+            "height": 173,
+            "weight": 79,
+            "date_of_birth": "1995-08-16",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11196959408,
+          "sport_id": 1,
+          "fixture_id": 19136047,
+          "player_id": 28944221,
+          "team_id": 516,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Tomer Yosefi",
+          "jersey_number": 15,
+          "details": [
+            {
+              "id": 1155377502,
+              "fixture_id": 19136047,
+              "player_id": 28944221,
+              "team_id": 516,
+              "lineup_id": 11196959408,
+              "type_id": 119,
+              "data": {
+                "value": 18
+              }
+            }
+          ],
+          "player": {
+            "id": 28944221,
+            "sport_id": 1,
+            "country_id": 802,
+            "nationality_id": 802,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 150,
+            "type_id": 26,
+            "common_name": "T. Yosefi",
+            "firstname": "Tomer",
+            "lastname": "Yosefi",
+            "name": "Tomer Yosefi",
+            "display_name": "Tomer Yosefi",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 182,
+            "weight": null,
+            "date_of_birth": "1999-02-02",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11196959286,
+          "sport_id": 1,
+          "fixture_id": 19136047,
+          "player_id": 125785,
+          "team_id": 516,
+          "position_id": 26,
+          "formation_field": "3:2",
+          "type_id": 11,
+          "formation_position": 7,
+          "player_name": "Shai Elias",
+          "jersey_number": 19,
+          "details": [
+            {
+              "id": 1155290745,
+              "fixture_id": 19136047,
+              "player_id": 125785,
+              "team_id": 516,
+              "lineup_id": 11196959286,
+              "type_id": 119,
+              "data": {
+                "value": 72
+              }
+            }
+          ],
+          "player": {
+            "id": 125785,
+            "sport_id": 1,
+            "country_id": 802,
+            "nationality_id": 802,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 149,
+            "type_id": 25,
+            "common_name": "S. Elias",
+            "firstname": "Shay",
+            "lastname": "Elias",
+            "name": "Shay Elias",
+            "display_name": "Shai Elias",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/25/125785.png",
+            "height": 185,
+            "weight": null,
+            "date_of_birth": "1999-02-25",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11196959420,
+          "sport_id": 1,
+          "fixture_id": 19136047,
+          "player_id": 126387,
+          "team_id": 516,
+          "position_id": 26,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Guy Badash",
+          "jersey_number": 24,
+          "details": [
+            {
+              "id": 1155290750,
+              "fixture_id": 19136047,
+              "player_id": 126387,
+              "team_id": 516,
+              "lineup_id": 11196959420,
+              "type_id": 119,
+              "data": {
+                "value": 72
+              }
+            }
+          ],
+          "player": {
+            "id": 126387,
+            "sport_id": 1,
+            "country_id": 802,
+            "nationality_id": 802,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 156,
+            "type_id": 27,
+            "common_name": "G. Badash",
+            "firstname": "Guy",
+            "lastname": "Badash",
+            "name": "Guy Badash",
+            "display_name": "Guy Badash",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 181,
+            "weight": null,
+            "date_of_birth": "1994-05-24",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11196959425,
+          "sport_id": 1,
+          "fixture_id": 19136047,
+          "player_id": null,
+          "team_id": 7178,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Nacho Pais",
+          "jersey_number": 5,
+          "details": [
+            {
+              "id": 1155377184,
+              "fixture_id": 19136047,
+              "player_id": 37308565,
+              "team_id": 7178,
+              "lineup_id": 11196959425,
+              "type_id": 119,
+              "data": {
+                "value": 18
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 11196959432,
+          "sport_id": 1,
+          "fixture_id": 19136047,
+          "player_id": 68755,
+          "team_id": 7178,
+          "position_id": 26,
+          "formation_field": "3:1",
+          "type_id": 11,
+          "formation_position": 7,
+          "player_name": "D. Dimov",
+          "jersey_number": 27,
+          "details": [
+            {
+              "id": 1155290762,
+              "fixture_id": 19136047,
+              "player_id": 68755,
+              "team_id": 7178,
+              "lineup_id": 11196959432,
+              "type_id": 119,
+              "data": {
+                "value": 72
+              }
+            }
+          ],
+          "player": {
+            "id": 68755,
+            "sport_id": 1,
+            "country_id": 224,
+            "nationality_id": 224,
+            "city_id": 82351,
+            "position_id": 26,
+            "detailed_position_id": 149,
+            "type_id": 25,
+            "common_name": "D. Dimov",
+            "firstname": "Daniel",
+            "lastname": "Dimov",
+            "name": "Daniel Dimov",
+            "display_name": "D. Dimov",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/19/68755.png",
+            "height": 188,
+            "weight": 83,
+            "date_of_birth": "1989-01-21",
+            "gender": "male"
+          }
+        }
+      ],
+      "coaches": [],
+      "statistics": [],
+      "pressure": [],
+      "formations": []
+    },
+    {
+      "id": 19194498,
+      "events": [
+        {
+          "id": 118221180,
+          "fixture_id": 19194498,
+          "period_id": 5542071,
+          "participant_id": 3545,
+          "type_id": 18,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": 20336073,
+          "player_name": null,
+          "related_player_name": "Daniel Vasulin",
+          "result": null,
+          "info": null,
+          "addition": "4th Substitution",
+          "minute": 71,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5542071,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 118221181,
+          "fixture_id": 19194498,
+          "period_id": 5542071,
+          "participant_id": 6403,
+          "type_id": 18,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": 37327993,
+          "player_name": null,
+          "related_player_name": "Denys Kuzyk",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 72,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5542071,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 118221645,
+          "fixture_id": 19194498,
+          "period_id": 5542071,
+          "participant_id": 6403,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 6974918,
+          "related_player_id": 1548508,
+          "player_name": "Bandeira",
+          "related_player_name": "Andriy Ponedelnik",
+          "result": null,
+          "info": null,
+          "addition": "6th Substitution",
+          "minute": 84,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5542071,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 11638216008,
+          "sport_id": 1,
+          "fixture_id": 19194498,
+          "player_id": 1148,
+          "team_id": 3545,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Matej Vydra",
+          "jersey_number": 11,
+          "details": [
+            {
+              "id": 1168944734,
+              "fixture_id": 19194498,
+              "player_id": 1148,
+              "team_id": 3545,
+              "lineup_id": 11638216008,
+              "type_id": 119,
+              "data": {
+                "value": 19
+              }
+            }
+          ],
+          "player": {
+            "id": 1148,
+            "sport_id": 1,
+            "country_id": 245,
+            "nationality_id": 245,
+            "city_id": 18230,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "M. Vydra",
+            "firstname": "Matěj",
+            "lastname": "Vydra",
+            "name": "Matěj Vydra",
+            "display_name": "Matej Vydra",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/1148.png",
+            "height": 180,
+            "weight": 71,
+            "date_of_birth": "1992-05-01",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11637798332,
+          "sport_id": 1,
+          "fixture_id": 19194498,
+          "player_id": 20336073,
+          "team_id": 3545,
+          "position_id": 27,
+          "formation_field": "4:2",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Daniel Vasulin",
+          "jersey_number": 51,
+          "details": [
+            {
+              "id": 1168932434,
+              "fixture_id": 19194498,
+              "player_id": 20336073,
+              "team_id": 3545,
+              "lineup_id": 11637798332,
+              "type_id": 52,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1168889966,
+              "fixture_id": 19194498,
+              "player_id": 20336073,
+              "team_id": 3545,
+              "lineup_id": 11637798332,
+              "type_id": 119,
+              "data": {
+                "value": 71
+              }
+            }
+          ],
+          "player": {
+            "id": 20336073,
+            "sport_id": 1,
+            "country_id": 245,
+            "nationality_id": 245,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 26,
+            "common_name": "D. Vašulín",
+            "firstname": "Daniel",
+            "lastname": "Vašulín",
+            "name": "Daniel Vašulín",
+            "display_name": "Daniel Vasulin",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/20336073.png",
+            "height": 195,
+            "weight": null,
+            "date_of_birth": "1998-06-11",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11626426010,
+          "sport_id": 1,
+          "fixture_id": 19194498,
+          "player_id": 1548508,
+          "team_id": 6403,
+          "position_id": 25,
+          "formation_field": "2:4",
+          "type_id": 11,
+          "formation_position": 2,
+          "player_name": "Andriy Ponedelnik",
+          "jersey_number": 7,
+          "details": [
+            {
+              "id": 1168931169,
+              "fixture_id": 19194498,
+              "player_id": 1548508,
+              "team_id": 6403,
+              "lineup_id": 11626426010,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1168889980,
+              "fixture_id": 19194498,
+              "player_id": 1548508,
+              "team_id": 6403,
+              "lineup_id": 11626426010,
+              "type_id": 119,
+              "data": {
+                "value": 84
+              }
+            }
+          ],
+          "player": {
+            "id": 1548508,
+            "sport_id": 1,
+            "country_id": 86,
+            "nationality_id": 86,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 154,
+            "type_id": 27,
+            "common_name": "A. Ponedelnik",
+            "firstname": "Andriy",
+            "lastname": "Ponedelnik",
+            "name": "Andriy Ponedelnik",
+            "display_name": "Andriy Ponedelnik",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/28/1548508.png",
+            "height": 180,
+            "weight": 77,
+            "date_of_birth": "1997-02-28",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11637798303,
+          "sport_id": 1,
+          "fixture_id": 19194498,
+          "player_id": 37317381,
+          "team_id": 6403,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Oleksandr Drambayev",
+          "jersey_number": 15,
+          "details": [
+            {
+              "id": 1168944735,
+              "fixture_id": 19194498,
+              "player_id": 37317381,
+              "team_id": 6403,
+              "lineup_id": 11637798303,
+              "type_id": 119,
+              "data": {
+                "value": 19
+              }
+            }
+          ],
+          "player": {
+            "id": 37317381,
+            "sport_id": 1,
+            "country_id": 86,
+            "nationality_id": 86,
+            "city_id": null,
+            "position_id": 25,
+            "detailed_position_id": 155,
+            "type_id": 25,
+            "common_name": "A. Drambayev",
+            "firstname": "Alexander",
+            "lastname": "Drambayev",
+            "name": "Alexander Drambayev",
+            "display_name": "Oleksandr Drambayev",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 186,
+            "weight": 74,
+            "date_of_birth": "2001-04-21",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11626426031,
+          "sport_id": 1,
+          "fixture_id": 19194498,
+          "player_id": 37327993,
+          "team_id": 6403,
+          "position_id": 26,
+          "formation_field": "4:3",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Denys Kuzyk",
+          "jersey_number": 21,
+          "details": [
+            {
+              "id": 1168889982,
+              "fixture_id": 19194498,
+              "player_id": 37327993,
+              "team_id": 6403,
+              "lineup_id": 11626426031,
+              "type_id": 119,
+              "data": {
+                "value": 71
+              }
+            },
+            {
+              "id": 1168931170,
+              "fixture_id": 19194498,
+              "player_id": 37327993,
+              "team_id": 6403,
+              "lineup_id": 11626426031,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 37327993,
+            "sport_id": 1,
+            "country_id": 86,
+            "nationality_id": 86,
+            "city_id": null,
+            "position_id": 26,
+            "detailed_position_id": 158,
+            "type_id": 25,
+            "common_name": "D. Kuzyk",
+            "firstname": "Denys",
+            "lastname": "Kuzyk",
+            "name": "Denys Kuzyk",
+            "display_name": "Denys Kuzyk",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/25/37327993.png",
+            "height": 179,
+            "weight": 73,
+            "date_of_birth": "2002-09-18",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 11637798320,
+          "sport_id": 1,
+          "fixture_id": 19194498,
+          "player_id": null,
+          "team_id": 6403,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Rafael Fonseca",
+          "jersey_number": 25,
+          "details": [
+            {
+              "id": 1168955415,
+              "fixture_id": 19194498,
+              "player_id": 6974918,
+              "team_id": 6403,
+              "lineup_id": 11637798320,
+              "type_id": 119,
+              "data": {
+                "value": 6
+              }
+            }
+          ],
+          "player": null
+        }
+      ],
+      "coaches": [],
+      "statistics": [],
+      "pressure": [],
+      "formations": []
+    },
+    {
+      "id": 19296517,
+      "events": [
+        {
+          "id": 123264722,
+          "fixture_id": 19296517,
+          "period_id": 5715828,
+          "participant_id": 5909,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37659450,
+          "related_player_id": 15832928,
+          "player_name": "Batyrkhan Mustafin",
+          "related_player_name": "Ramazan Karimov",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 90,
+          "extra_minute": 1,
+          "injured": false,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5715828,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 13619614155,
+          "sport_id": 1,
+          "fixture_id": 19296517,
+          "player_id": 15832928,
+          "team_id": 5909,
+          "position_id": 27,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Ramazan Karimov",
+          "jersey_number": 81,
+          "details": [
+            {
+              "id": 1277288591,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 118,
+              "data": {
+                "value": 7.24
+              }
+            },
+            {
+              "id": 1277338689,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 106,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 1277338692,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 107,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 1277334018,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27266,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 1277280185,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 80,
+              "data": {
+                "value": 16
+              }
+            },
+            {
+              "id": 1277280184,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 116,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 1277280291,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 119,
+              "data": {
+                "value": 89
+              }
+            },
+            {
+              "id": 1277280276,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 1584,
+              "data": {
+                "value": 50
+              }
+            },
+            {
+              "id": 1277328096,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 56,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1277435968,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 96,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 1277459472,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 101,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1998758000,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 40,
+              "data": {
+                "value": false
+              }
+            },
+            {
+              "id": 1998757848,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27272,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 1277319910,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 108,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 1998757984,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27276,
+              "data": {
+                "value": 50
+              }
+            },
+            {
+              "id": 1998757820,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27269,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1998757835,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27271,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1998757868,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27274,
+              "data": {
+                "value": 10
+              }
+            },
+            {
+              "id": 1998757909,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27273,
+              "data": {
+                "value": 12
+              }
+            },
+            {
+              "id": 1998757924,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 94,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1998757961,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 27275,
+              "data": {
+                "value": 50
+              }
+            },
+            {
+              "id": 1277521034,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 100,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1277280186,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 120,
+              "data": {
+                "value": 34
+              }
+            },
+            {
+              "id": 1277316082,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 1491,
+              "data": {
+                "value": 9
+              }
+            },
+            {
+              "id": 1277316083,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 105,
+              "data": {
+                "value": 17
+              }
+            },
+            {
+              "id": 2028888245,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 117172,
+              "data": {
+                "value": 94
+              }
+            },
+            {
+              "id": 2028888246,
+              "fixture_id": 19296517,
+              "player_id": 15832928,
+              "team_id": 5909,
+              "lineup_id": 13619614155,
+              "type_id": 88,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 15832928,
+            "sport_id": 1,
+            "country_id": 2427,
+            "nationality_id": 2427,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "R. Karimov",
+            "firstname": "Ramazan",
+            "lastname": "Karimov",
+            "name": "Ramazan Karimov",
+            "display_name": "Ramazan Karimov",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/0/15832928.png",
+            "height": 190,
+            "weight": 81,
+            "date_of_birth": "1999-07-05",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 13619614185,
+          "sport_id": 1,
+          "fixture_id": 19296517,
+          "player_id": null,
+          "team_id": 5909,
+          "position_id": 27,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Batyrkhan Mustafin",
+          "jersey_number": 96,
+          "details": [
+            {
+              "id": 1277581906,
+              "fixture_id": 19296517,
+              "player_id": null,
+              "team_id": 5909,
+              "lineup_id": 13619614185,
+              "type_id": 120,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1998758093,
+              "fixture_id": 19296517,
+              "player_id": null,
+              "team_id": 5909,
+              "lineup_id": 13619614185,
+              "type_id": 40,
+              "data": {
+                "value": false
+              }
+            },
+            {
+              "id": 1277592325,
+              "fixture_id": 19296517,
+              "player_id": null,
+              "team_id": 5909,
+              "lineup_id": 13619614185,
+              "type_id": 119,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1998758054,
+              "fixture_id": 19296517,
+              "player_id": null,
+              "team_id": 5909,
+              "lineup_id": 13619614185,
+              "type_id": 27273,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1998758075,
+              "fixture_id": 19296517,
+              "player_id": null,
+              "team_id": 5909,
+              "lineup_id": 13619614185,
+              "type_id": 118,
+              "data": {
+                "value": 6.66
+              }
+            }
+          ],
+          "player": null
+        }
+      ],
+      "coaches": [],
+      "statistics": [],
+      "pressure": [],
+      "formations": []
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 37308565,
+      "sport_id": 1,
+      "country_id": 44,
+      "nationality_id": 44,
+      "city_id": 72523,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "I. Pais Mayán",
+      "firstname": "Ignacio",
+      "lastname": "Pais Mayán",
+      "name": "Ignacio Pais Mayán",
+      "display_name": "Ignacio Pais",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 175,
+      "weight": 71,
+      "date_of_birth": "2000-05-30",
+      "gender": "male"
+    },
+    {
+      "id": 6974918,
+      "sport_id": 1,
+      "country_id": 20,
+      "nationality_id": 20,
+      "city_id": 1905,
+      "position_id": 25,
+      "detailed_position_id": 154,
+      "type_id": 25,
+      "common_name": "R. Bandeira da Fonseca",
+      "firstname": "Rafael Alexandre",
+      "lastname": "Bandeira da Fonseca",
+      "name": "Rafael Alexandre Bandeira da Fonseca",
+      "display_name": "Bandeira",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/6/6974918.png",
+      "height": 182,
+      "weight": 70,
+      "date_of_birth": "2001-01-31",
+      "gender": "male"
+    },
+    {
+      "id": 37659450,
+      "sport_id": 1,
+      "country_id": 2427,
+      "nationality_id": 2427,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": null,
+      "common_name": "B. Mustafin",
+      "firstname": "Batyrkhan",
+      "lastname": "Mustafin",
+      "name": "Batyrkhan Mustafin",
+      "display_name": "Batyrkhan Mustafin",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": null,
+      "gender": "male"
+    }
+  ],
+  "expected_events": {
+    "19136047": [
+      {
+        "id": 117274516,
+        "fixture_id": 19136047,
+        "period_id": 5504817,
+        "participant_id": 7178,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37308565,
+        "related_player_id": 68755,
+        "player_name": "Ignacio Pais",
+        "related_player_name": "D. Dimov",
+        "result": null,
+        "info": null,
+        "addition": "5th Substitution",
+        "minute": 72,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5504817,
+        "rescinded": null,
+        "sort_order": 5,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 117274517,
+        "fixture_id": 19136047,
+        "period_id": 5504817,
+        "participant_id": 516,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 237188,
+        "related_player_id": 126387,
+        "player_name": "Déinner Quiñónes",
+        "related_player_name": "Guy Badash",
+        "result": null,
+        "info": null,
+        "addition": "6th Substitution",
+        "minute": 72,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5504817,
+        "rescinded": null,
+        "sort_order": 6,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 117274560,
+        "fixture_id": 19136047,
+        "period_id": 5504817,
+        "participant_id": 516,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 28944221,
+        "related_player_id": 125785,
+        "player_name": "Tomer Yosefi",
+        "related_player_name": "Shai Elias",
+        "result": null,
+        "info": null,
+        "addition": "7th Substitution",
+        "minute": 72,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5504817,
+        "rescinded": null,
+        "sort_order": 7,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19194498": [
+      {
+        "id": 118221180,
+        "fixture_id": 19194498,
+        "period_id": 5542071,
+        "participant_id": 3545,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 1148,
+        "related_player_id": 20336073,
+        "player_name": "Matěj Vydra",
+        "related_player_name": "Daniel Vasulin",
+        "result": null,
+        "info": null,
+        "addition": "4th Substitution",
+        "minute": 71,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5542071,
+        "rescinded": null,
+        "sort_order": 4,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 118221181,
+        "fixture_id": 19194498,
+        "period_id": 5542071,
+        "participant_id": 6403,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37317381,
+        "related_player_id": 37327993,
+        "player_name": "Oleksandr Drambayev",
+        "related_player_name": "Denys Kuzyk",
+        "result": null,
+        "info": null,
+        "addition": "5th Substitution",
+        "minute": 72,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5542071,
+        "rescinded": null,
+        "sort_order": 5,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 118221645,
+        "fixture_id": 19194498,
+        "period_id": 5542071,
+        "participant_id": 6403,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 6974918,
+        "related_player_id": 1548508,
+        "player_name": "Bandeira",
+        "related_player_name": "Andriy Ponedelnik",
+        "result": null,
+        "info": null,
+        "addition": "6th Substitution",
+        "minute": 84,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5542071,
+        "rescinded": null,
+        "sort_order": 6,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "19296517": [
+      {
+        "id": 123264722,
+        "fixture_id": 19296517,
+        "period_id": 5715828,
+        "participant_id": 5909,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37659450,
+        "related_player_id": 15832928,
+        "player_name": "Batyrkhan Mustafin",
+        "related_player_name": "Ramazan Karimov",
+        "result": null,
+        "info": null,
+        "addition": "5th Substitution",
+        "minute": 90,
+        "extra_minute": 1,
+        "injured": false,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5715828,
+        "rescinded": null,
+        "sort_order": 5,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "expected_lineups": {
+    "19136047": [
+      [
+        237188,
+        10
+      ],
+      [
+        28944221,
+        15
+      ],
+      [
+        125785,
+        19
+      ],
+      [
+        126387,
+        24
+      ],
+      [
+        37308565,
+        5
+      ],
+      [
+        68755,
+        27
+      ]
+    ],
+    "19194498": [
+      [
+        1148,
+        11
+      ],
+      [
+        20336073,
+        51
+      ],
+      [
+        1548508,
+        7
+      ],
+      [
+        37317381,
+        15
+      ],
+      [
+        37327993,
+        21
+      ],
+      [
+        6974918,
+        25
+      ]
+    ],
+    "19296517": [
+      [
+        15832928,
+        81
+      ],
+      [
+        37659450,
+        96
+      ]
+    ]
+  }
+}
