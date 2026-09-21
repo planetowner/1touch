@@ -96,9 +96,9 @@ final GoRouter _router = GoRouter(
                 path: ':id',
                 builder: (context, state) {
                   final playerId = state.pathParameters['id']!;
-                  final player = playerRepository.findById(playerId) ??
-                      playerRepository.allPlayers.first;
-                  return PlayerCard(player: player);
+                  final player = playerRepository.findById(playerId);
+                  return PlayerCard(
+                      player: player, playerId: int.tryParse(playerId));
                 },
               ),
             ],

@@ -1,474 +1,354 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
-import 'package:onetouch/features/player_image.dart';
-import 'package:onetouch/features/player/rating_level_ring.dart';
+import 'package:onetouch/data/players/player_indicators_repository.dart';
+import 'package:onetouch/data/players/player_indicators_repository_provider.dart';
+import 'package:onetouch/features/player/player_indicator_value.dart';
+import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/models/player_indicators.dart';
+import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/player.dart';
-import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 
 class PlayerOverviewTab extends StatelessWidget {
-  final Player player;
-
-  const PlayerOverviewTab({super.key, required this.player});
-
+  const PlayerOverviewTab(
+      {super.key, this.player, this.playerId, this.onMatches});
+  final Player? player;
+  final int? playerId;
+  int? get id => playerId ?? player?.externalPlayerId;
+  final VoidCallback? onMatches;
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Content on top of background
-        SingleChildScrollView(
+  Widget build(BuildContext context) => PlayerDetailView(
+      playerId: id,
+      builder: (context, detail) => SingleChildScrollView(
           key: const ValueKey('player-overview-scroll'),
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTopBlock(context, player),
-              const SizedBox(height: 48),
-              _buildBioStatsBlock(context),
-              const SizedBox(height: 48),
-              _buildCompetitionsBlock(context),
-              const SizedBox(height: 48),
-              _buildMatchSummaryBlock(context),
-              const SizedBox(height: 48),
-              _buildClubHistoryBlock(context),
-              const SizedBox(height: 144),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopBlock(BuildContext context, Player player) {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    return Row(
-      key: const ValueKey('player-overview-top-block'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${player.jerseyNumber}',
-              style: Heading1.style.copyWith(color: foreground),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              player.positionLabel,
-              style: Body1.style.copyWith(color: foreground),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              player.teamName,
-              style: Body1.style.copyWith(color: foreground),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${player.nationality} ${player.nationalityFlag}',
-              style: Body1.style.copyWith(color: foreground),
-            ),
-          ],
-        ),
-        const Spacer(),
-        SizedBox(
-          width: 145,
-          height: 145,
-          child: PlayerImage(
-            player: player,
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBioStatsBlock(BuildContext context) {
-    return PlayerBioStatsBlock(player: player);
-  }
-
-  Widget _buildCompetitionsBlock(BuildContext context) {
-    final appColors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppPalette.darkGrey : AppPalette.white;
-    final badgeColor =
-        isDark ? const Color(0xFF3D3D3D) : appColors.subtleBackground;
-    final season = player.seasonStats;
-    final winRate = (52 + player.rankingScore % 30).round();
-    final competitions = [
-      {
-        "name": player.leagueCode,
-        "mp": "${season.appearances}",
-        "wr": "$winRate%",
-        "rating": season.rating.toStringAsFixed(1),
-      },
-      {
-        "name": "UCL",
-        "mp": "${(season.appearances * 0.30).round()}",
-        "wr": "${(winRate - 3).clamp(0, 100)}%",
-        "rating": (season.rating - 0.1).toStringAsFixed(1),
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("COMPETITION STATS", style: Body2_b.style),
-        const SizedBox(height: 16),
-        Container(
-          key: const ValueKey('player-competition-stats-card'),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
-          ),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-          child: Column(
-            children: [
-              // Header row
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        "League",
-                        style: Body2.style
-                            .copyWith(color: appColors.mutedForeground),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text("MP",
-                          textAlign: TextAlign.center,
-                          style: Body2.style
-                              .copyWith(color: appColors.mutedForeground)),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text("WR",
-                          textAlign: TextAlign.center,
-                          style: Body2.style
-                              .copyWith(color: appColors.mutedForeground)),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text("Rating",
-                          textAlign: TextAlign.right,
-                          style: Body2.style
-                              .copyWith(color: appColors.mutedForeground)),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(color: appColors.divider, height: 1),
-              // Stat rows
-              ...competitions.asMap().entries.map((entry) {
-                final comp = entry.value;
-                final isLast = entry.key == competitions.length - 1;
-
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Text(comp["name"]!, style: Heading5.style),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(comp["mp"]!,
-                                textAlign: TextAlign.center,
-                                style: Heading5.style),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(comp["wr"]!,
-                                textAlign: TextAlign.center,
-                                style: Heading5.style),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: badgeColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(comp["rating"]!,
-                                    style: Heading5.style),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!isLast) Divider(color: appColors.divider, height: 1),
-                  ],
-                );
-              }),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMatchSummaryBlock(BuildContext context) {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    final matches = playerRepository.recentMatchesFor(player.id);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("MATCHES", style: Body2_b.style),
-            Icon(Icons.chevron_right, color: foreground, size: 20),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // Each match is its own card (shared with the Matches tab).
-        ...matches.map((match) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: PlayerMatchCard(
-              result: match.result,
-              score: match.score,
-              competition: match.competition,
-              againstLogo: match.opponentLogoAsset,
-              stats: [
-                {'label': 'Goal', 'value': '${match.goals}'},
-                {'label': 'Assist', 'value': '${match.assists}'},
-                {'label': 'Pass', 'value': '${match.passes}'},
-              ],
-              rating: match.rating.toStringAsFixed(1),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildClubHistoryBlock(BuildContext context) {
-    final history = player.clubHistory;
-    final appColors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppPalette.darkGrey : AppPalette.white;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("CLUB HISTORY", style: Body2_b.style),
-        const SizedBox(height: 16),
-        Container(
-          key: const ValueKey('player-club-history-card'),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
-          ),
-          child: Column(
-            children: history.map((club) {
-              return Column(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 144),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(
+                key: const ValueKey('player-overview-top-block'),
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        // Team logo
-                        SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: club.logoAsset == null
-                                ? Icon(
-                                    Icons.shield_outlined,
-                                    color: appColors.mutedForeground,
-                                  )
-                                : Image.asset(
-                                    club.logoAsset!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        const SizedBox(),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Club name
-                        Expanded(
-                          child: Text(club.club, style: Heading5.style),
-                        ),
-                        // Year
-                        Text(
-                          club.seasonLabel,
-                          style: Body1.style,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
+                  Expanded(
+                      child: DefaultTextStyle(
+                          style: Body1.style.copyWith(color: Colors.white),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${detail.profile.jerseyNumber ?? '—'}',
+                                    style: Heading1.style
+                                        .copyWith(color: Colors.white)),
+                                const SizedBox(height: 8),
+                                Text(detail.currentPosition ?? '—'),
+                                const SizedBox(height: 8),
+                                Text(detail.profile.teamName ?? '—'),
+                                const SizedBox(height: 4),
+                                Text(detail.profile.nationality ?? '—'),
+                              ]))),
+                  PlayerRemoteImage(detail.profile.image, size: 130)
+                ]),
+            const SizedBox(height: 48),
+            PlayerBioStatsBlock(
+                player: player, playerId: id, profile: detail.profile),
+            const SizedBox(height: 48),
+            PlayerSection(
+                title: 'COMPETITION STATS',
+                child: PlayerCompetitionTable(
+                    key: const ValueKey('player-competition-stats-card'),
+                    competitions: detail.competitions)),
+            const SizedBox(height: 48),
+            PlayerSection(
+                title: 'MATCHES',
+                trailing: IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    tooltip: 'All matches',
+                    onPressed: onMatches),
+                child: Column(children: [
+                  if (detail.matches.isEmpty)
+                    const Text('No appearances this season'),
+                  for (final match in detail.matches.take(3))
+                    PlayerDetailMatchCard(match: match),
+                ])),
+            const SizedBox(height: 48),
+            PlayerSection(
+                title: 'CLUB HISTORY',
+                child: PlayerSurface(
+                    key: const ValueKey('player-club-history-card'),
+                    child: Column(children: [
+                      if (detail.clubs.isEmpty)
+                        const Text('Club history unavailable'),
+                      for (final club in detail.clubs)
+                        Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(children: [
+                              PlayerRemoteImage(club.teamImage),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                  child: Text(club.teamName ?? '—',
+                                      style: Body2_b.style)),
+                              const SizedBox(width: 8),
+                              Text(
+                                  '${club.startDate?.year ?? '—'}–${club.endDate?.year ?? ''}',
+                                  style: Body2.style)
+                            ])),
+                    ]))),
+          ])));
 }
 
-class PlayerBioStatsBlock extends StatelessWidget {
-  final Player player;
+class PlayerBioStatsBlock extends StatefulWidget {
+  final Player? player;
+  final int? playerId;
+  int? get id => playerId ?? player?.externalPlayerId;
+  final PlayerIndicatorsRepository? repository;
+  final PlayerDetailProfile? profile;
 
-  const PlayerBioStatsBlock({super.key, required this.player});
+  const PlayerBioStatsBlock({
+    super.key,
+    this.player,
+    this.playerId,
+    this.repository,
+    this.profile,
+  });
+
+  @override
+  State<PlayerBioStatsBlock> createState() => _PlayerBioStatsBlockState();
+}
+
+class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
+  PlayerIndicators? _indicators;
+  bool _loading = false;
+  bool _failed = false;
+  int _requestId = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(PlayerBioStatsBlock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.id != widget.id ||
+        oldWidget.repository != widget.repository) {
+      _load();
+    }
+  }
+
+  void _load() {
+    final requestId = ++_requestId;
+    final playerId = widget.id;
+    _indicators = null;
+    _failed = false;
+    _loading = playerId != null;
+    if (playerId != null) unawaited(_fetch(playerId, requestId));
+  }
+
+  Future<void> _fetch(int playerId, int requestId) async {
+    try {
+      final result = await (widget.repository ?? playerIndicatorsRepository)
+          .loadCurrent(playerId);
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _indicators = result;
+        _loading = false;
+      });
+    } on Object {
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _failed = true;
+        _loading = false;
+      });
+    }
+  }
+
+  String _explanation({required bool cost}) {
+    final score = cost ? _indicators?.costEffectiveness : _indicators?.form;
+    final definition = cost
+        ? 'Compares season rating and share of playing time with expectations '
+            "for the player's estimated gross wage, club wage level, league "
+            'and position. The two differences carry equal weight. '
+            'Fair means within the usual prediction error; higher grades mean '
+            'more return for the wage. Transfer fees are not included.'
+        : 'Recent performance over the latest 5 league appearances this season, '
+            'weighted by playing time and calibrated recency. '
+            'Compared with all positions across the five leagues.';
+    final season = _indicators?.seasonName;
+    final scope =
+        season == null ? 'Current season only.' : 'Current season: $season.';
+    final evidence = score?.grade == null
+        ? switch (score?.unavailableReason) {
+            'wage_unavailable' => 'Wage data is unavailable.',
+            'no_rated_matches' => 'No rated appearances are available.',
+            _ => _failed
+                ? 'Could not load the indicators. Tap retry to try again.'
+                : 'An indicator is shown when enough data is available.',
+          }
+        : '${score!.ratedMatches} rated appearances. '
+            '${score.referenceCount} players across the five leagues. '
+            '${cost ? 'Grades are based on prediction error, not equal-sized groups.' : ''}';
+    return '$definition\n\n$scope $evidence';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final player = widget.player;
     final appColors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppPalette.darkGrey : AppPalette.white;
-    final birthDate = DateTime.parse(player.dateOfBirth);
+    final birthDate = widget.profile == null
+        ? DateTime.tryParse(player?.dateOfBirth ?? '')
+        : widget.profile!.birthDate;
     final now = DateTime.now();
-    final age = now.year -
-        birthDate.year -
-        ((now.month < birthDate.month ||
-                (now.month == birthDate.month && now.day < birthDate.day))
-            ? 1
-            : 0);
-    final columns = [
-      [
-        _PlayerInfo(label: 'Height', value: '${player.heightCm}cm'),
-        _PlayerInfo(label: 'Age', value: '$age yrs'),
-        _PlayerInfo(label: 'Form', value: player.form, showRating: true),
-      ],
-      [
-        _PlayerInfo(label: 'Weight', value: '${player.weightKg}kg'),
-        _PlayerInfo(label: 'Squad Role', value: player.squadRole),
-        const _PlayerInfo(
-          label: 'Cost-Effectiveness',
-          value: 'Very Good',
-          showRating: true,
-          showInfo: true,
+    final age = birthDate == null
+        ? null
+        : now.year -
+            birthDate.year -
+            ((now.month < birthDate.month ||
+                    (now.month == birthDate.month && now.day < birthDate.day))
+                ? 1
+                : 0);
+    final stats = <({String label, Widget value, String? explanation})>[
+      (
+        label: 'Height',
+        value: Text(
+            widget.profile == null
+                ? (player == null ? '—' : '${player.heightCm}cm')
+                : widget.profile!.heightCm == null
+                    ? '—'
+                    : '${widget.profile!.heightCm}cm',
+            style: Heading5.style),
+        explanation: null
+      ),
+      (
+        label: 'Weight',
+        value: Text(
+            widget.profile == null
+                ? (player == null ? '—' : '${player.weightKg}kg')
+                : widget.profile!.weightKg == null
+                    ? '—'
+                    : '${widget.profile!.weightKg}kg',
+            style: Heading5.style),
+        explanation: null
+      ),
+      (
+        label: 'Age',
+        value: Text(age == null ? '—' : '$age yrs', style: Heading5.style),
+        explanation: null
+      ),
+      (
+        label: 'Squad Role',
+        value: PlayerIndicatorValue(
+          key: const ValueKey('player-squad-role'),
+          label: _indicators?.squadRole,
+          loading: _loading,
+          failed: _failed,
+          explanation:
+              'Based on league playing time while available at this club, '
+              'excluding recorded injuries and suspensions. '
+              'Prospect means low usage and age 21 or younger on the date the '
+              'role is calculated. A role is shown after it has been calculated '
+              'from verified data.',
+          onRetry: () => setState(_load),
         ),
-      ],
+        explanation: null
+      ),
+      for (final cost in [false, true])
+        (
+          label: cost ? 'Cost-Effectiveness' : 'Form',
+          value: PlayerIndicatorValue(
+            key: ValueKey(cost ? 'player-cost-effectiveness' : 'player-form'),
+            score: cost ? _indicators?.costEffectiveness : _indicators?.form,
+            loading: _loading,
+            failed: _failed,
+            explanation: _explanation(cost: cost),
+            onRetry: () => setState(_load),
+          ),
+          explanation: cost ? _explanation(cost: true) : null,
+        ),
     ];
-
     return Container(
       key: const ValueKey('player-bio-stats-card'),
       decoration: BoxDecoration(
-        color: cardColor,
+        color: appColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: appCardShadows(context),
       ),
       padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          for (var columnIndex = 0;
-              columnIndex < columns.length;
-              columnIndex++) ...[
-            if (columnIndex > 0) const SizedBox(width: 16),
-            Expanded(
-              child: Column(
+          for (var index = 0; index < stats.length; index += 2)
+            Padding(
+              padding:
+                  EdgeInsets.only(bottom: index + 2 < stats.length ? 24 : 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (var itemIndex = 0;
-                      itemIndex < columns[columnIndex].length;
-                      itemIndex++) ...[
-                    if (itemIndex > 0)
-                      Divider(
-                        color: appColors.divider,
-                        height: 34,
-                        thickness: 2,
+                  for (var offset = 0; offset < 2; offset++) ...[
+                    if (offset > 0) const SizedBox(width: 16),
+                    Expanded(
+                      child: _PlayerBioCell(
+                        label: stats[index + offset].label,
+                        value: stats[index + offset].value,
+                        explanation: stats[index + offset].explanation,
                       ),
-                    _PlayerInfoCell(info: columns[columnIndex][itemIndex]),
+                    ),
                   ],
                 ],
               ),
             ),
-          ],
         ],
       ),
     );
   }
 }
 
-class _PlayerInfo {
-  const _PlayerInfo({
-    required this.label,
-    required this.value,
-    this.showRating = false,
-    this.showInfo = false,
-  });
+class _PlayerBioCell extends StatelessWidget {
+  const _PlayerBioCell(
+      {required this.label, required this.value, this.explanation});
 
   final String label;
-  final String value;
-  final bool showRating;
-  final bool showInfo;
-}
-
-class _PlayerInfoCell extends StatelessWidget {
-  const _PlayerInfoCell({required this.info});
-
-  final _PlayerInfo info;
+  final Widget value;
+  final String? explanation;
 
   @override
   Widget build(BuildContext context) {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: double.infinity,
-          height: 18,
-          child: FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  info.label,
-                  key: ValueKey('player-info-label-${info.label}'),
-                  style: Body1.style.copyWith(color: foreground),
-                ),
-                if (info.showInfo) ...[
-                  const SizedBox(width: 4),
-                  Icon(Icons.help_outline, size: 18, color: foreground),
-                ],
-              ],
-            ),
-          ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+            top: BorderSide(color: AppColors.of(context).divider, width: 2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+                width: double.infinity,
+                height: 18,
+                child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(label, style: Body1.style),
+                        if (explanation != null)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Tooltip(
+                              message: explanation!,
+                              triggerMode: TooltipTriggerMode.tap,
+                              child: const Icon(Icons.help_outline, size: 16),
+                            ),
+                          ),
+                      ],
+                    ))),
+            const SizedBox(height: 10),
+            SizedBox(width: double.infinity, height: 22, child: value),
+          ],
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          height: 22,
-          child: FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(info.value, style: Heading5.style),
-                if (info.showRating) ...[
-                  const SizedBox(width: 8),
-                  RatingLevelRing(rating: info.value),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

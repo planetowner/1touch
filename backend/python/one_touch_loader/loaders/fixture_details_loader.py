@@ -12,6 +12,7 @@ from ..core.player_match_metrics import STORED_STAT_TYPE_IDS
 from .players_loader import insert_missing_player_profiles
 from .team_squad_members_loader import SPORTMONKS_DUPLICATE_PLAYER_IDS
 from . import player_rating_rankings_loader as player_rankings
+from . import squad_roles_loader as squad_roles
 
 
 # 2026-09-17 Sportmonks Core /types에서 확인한 코드예요. 팀·선수 통계가 같은 사전을 써요.
@@ -197,6 +198,8 @@ def replace_fixture_detail_rows(
     with transaction() as connection:
         with player_rankings.refresh_player_ratings_after_fixture(
             connection, fixture_id, lineups_changed="lineups" in rows,
+        ), squad_roles.refresh_squad_roles_after_fixture(
+            connection, fixture_id, records_changed='lineups' in rows or 'events' in rows,
         ):
             with connection.cursor() as cursor:
                 return write_fixture_detail_rows(

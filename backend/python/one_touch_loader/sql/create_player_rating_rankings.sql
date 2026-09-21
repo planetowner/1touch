@@ -1,10 +1,10 @@
--- 기준 표본은 한 번 저장한 뒤 유지해요. 시즌 점수 갱신으로 다시 만들지 않아요.
+-- 리그별 적재 범위를 저장해요. 점수는 모든 리그를 합쳐 2017/18~평가 시즌과 비교해요.
 CREATE TABLE IF NOT EXISTS player_rating_references (
     competition_id BIGINT UNSIGNED NOT NULL,
     start_season_name VARCHAR(120) NOT NULL,
     end_season_name VARCHAR(120) NOT NULL,
     minimum_rated_matches SMALLINT UNSIGNED NOT NULL,
-    frozen_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (competition_id),
     CONSTRAINT fk_player_rating_reference_competition FOREIGN KEY (competition_id)
         REFERENCES competitions (competition_id) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS player_rating_reference_samples (
     rated_matches SMALLINT UNSIGNED NOT NULL,
     rating_sum DECIMAL(10,2) NOT NULL,
     PRIMARY KEY (competition_id, season_id, player_id),
-    CONSTRAINT chk_player_rating_reference_matches CHECK (rated_matches >= 10),
+    CONSTRAINT chk_player_rating_reference_matches CHECK (rated_matches >= 1),
     CONSTRAINT fk_player_rating_sample_reference FOREIGN KEY (competition_id)
         REFERENCES player_rating_references (competition_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_player_rating_sample_season FOREIGN KEY (season_id)

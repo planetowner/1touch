@@ -1,4 +1,4 @@
-"""고정한 과거 선수·시즌 평균 평점으로 백분위를 계산해요."""
+"""5대 리그의 2017/18~평가 시즌 평균 평점으로 백분위를 계산해요."""
 from __future__ import annotations
 
 from bisect import bisect_left, bisect_right
@@ -7,8 +7,10 @@ from fractions import Fraction
 from typing import Iterable
 
 
-REFERENCE_SEASON_NAMES = tuple(f"{year}/{year + 1}" for year in range(2020, 2025))
+RATING_COMPETITION_IDS = (8, 82, 301, 384, 564)
+REFERENCE_START_SEASON_NAME = "2017/2018"
 MINIMUM_RATED_MATCHES = 10
+DISPLAY_SCORE_ANCHORS = ((0, 0), (50, 50), (90, 70), (99, 90), (100, 100))
 
 
 def average_rating(rating_sum: Decimal, rated_matches: int) -> Fraction:
@@ -29,8 +31,37 @@ class HistoricalPercentile:
         return Decimal(50 * (below + through_equal)) / len(self.reference)
 
 
+def score_season_records(rows: list[dict]) -> list[dict]:
+    """각 시즌은 자기 시즌까지의 모든 리그 표본과 비교하고, 이후 시즌은 제외해요."""
+    by_season: dict[str, list[dict]] = {}
+    for row in rows:
+        by_season.setdefault(row["season_name"], []).append(row)
+    reference = []
+    result = []
+    for season_name in sorted(by_season):
+        season_rows = by_season[season_name]
+        # 같은 시즌의 다른 리그와 자기 기록도 비교 집단에 포함해요.
+        reference.extend(average_rating(row["rating_sum"], row["rated_matches"]) for row in season_rows)
+        distribution = HistoricalPercentile(reference)
+        result.extend({
+            **row,
+            "percentile_score": distribution.score(average_rating(row["rating_sum"], row["rated_matches"])),
+        } for row in season_rows)
+    return result
+
+
 def display_score(score: Decimal) -> float:
-    return float(score.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
+    # 모든 시즌에 같은 환산표를 써서 상위권 간격을 넓혀요. 저장 백분위와 순위는 유지해요.
+    # 먼저 백분위를 반올림하면 상위권 차이가 사라지므로 환산을 마친 뒤 한 자리로 표시해요.
+    for (lower_percentile, lower_score), (upper_percentile, upper_score) in zip(
+        DISPLAY_SCORE_ANCHORS, DISPLAY_SCORE_ANCHORS[1:],
+    ):
+        if lower_percentile <= score <= upper_percentile:
+            converted = lower_score + (score - lower_percentile) * (upper_score - lower_score) / (
+                upper_percentile - lower_percentile
+            )
+            return float(converted.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
+    raise ValueError("Percentile score must be between 0 and 100")
 
 
 def rank_players(rows: list[dict]) -> list[dict]:
