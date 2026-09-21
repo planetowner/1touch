@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from ..core.db import fetch_all, transaction
 from ..core.fixture_states import LIVE_STATE_IDS
 from ..core.sportmonks import SportmonksClient
-from .fixture_details_loader import _normalize_fixture_details, write_fixture_detail_rows
+from .fixture_details_loader import _normalize_fixture_details, verified_event_player_profiles, write_fixture_detail_rows
 from . import player_rating_rankings_loader as player_rankings
 from . import squad_roles_loader as squad_roles
 from .fixtures_loader import (
@@ -50,15 +50,15 @@ def validate_fixture_participants(fixture: dict, home_team_id: int, away_team_id
 
 
 def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
-                       sampled_at: datetime) -> None:
+                       sampled_at: datetime, *, detail_keys: tuple[str, ...] | None = None) -> None:
     validate_fixture_participants(fixture, home_team_id, away_team_id)
     current = _score_pair(fixture, home_team_id, away_team_id, SPORTMONKS_CURRENT_SCORE_TYPE_ID)
     penalties = _score_pair(fixture, home_team_id, away_team_id, SPORTMONKS_PENALTY_SCORE_TYPE_ID)
     rows = _normalize_fixture_details(fixture, fixture["id"])
-    profiles = {
-        e["verified_player_profile"]["id"]: e["verified_player_profile"]
-        for e in fixture["events"] if "verified_player_profile" in e
-    }
+    if detail_keys is not None:
+        # 확인된 이벤트·결과만 보충할 때는 이미 저장한 선수 통계를 유지해요.
+        rows = {key: rows[key] for key in detail_keys}
+    profiles = verified_event_player_profiles(fixture)
     with transaction() as connection:
         with player_rankings.refresh_player_ratings_after_fixture(
             connection, fixture["id"], state_id=fixture["state_id"],
@@ -78,10 +78,15 @@ def refresh_live_fixtures(*, apply: bool = False) -> dict:
     fixtures = client.get_livescores()
     sampled_at = datetime.now(timezone.utc).replace(tzinfo=None)
     by_id = {f["id"]: (f, sampled_at) for f in fixtures}
-    # 라이브 목록에서 사라진 경기도 DB에 진행 중으로 남았다면 종료 상태를 확인해요.
+    # 수집 실패로 NS에 남은 현재 시즌 경기도 시작 시각이 지나면 다시 확인해요.
+    # 라이브 목록에서 사라진 경기의 종료 상태도 같은 경로로 갱신해요.
     pending = fetch_all(
-        "SELECT fixture_id FROM fixtures WHERE state_id IN ("
-        + ",".join(["%s"] * len(LIVE_STATE_IDS)) + ")", LIVE_STATE_IDS,
+        "SELECT f.fixture_id FROM fixtures f "
+        "JOIN stages st ON st.stage_id=f.stage_id "
+        "JOIN seasons s ON s.season_id=st.season_id "
+        "WHERE f.state_id IN (" + ",".join(["%s"] * len(LIVE_STATE_IDS)) + ") "
+        "OR (s.is_current=1 AND f.state_id=1 AND f.starting_at<=UTC_TIMESTAMP())",
+        LIVE_STATE_IDS,
     )
     for (fixture_id,) in pending:
         if fixture_id not in by_id:

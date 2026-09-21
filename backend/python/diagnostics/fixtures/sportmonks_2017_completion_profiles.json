@@ -1,0 +1,414 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 2571789,
+        "lineups": [],
+        "events": [
+          {
+            "id": 31938112,
+            "fixture_id": 2571789,
+            "period_id": 365115,
+            "participant_id": 2825,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 189725,
+            "related_player_id": null,
+            "player_name": "Nils-Eric Johansson",
+            "related_player_name": null,
+            "result": "1-0",
+            "info": null,
+            "addition": "1st Goal",
+            "minute": 48,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 31938118,
+            "fixture_id": 2571789,
+            "period_id": 365115,
+            "participant_id": 2825,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 184993,
+            "related_player_id": null,
+            "player_name": "Henok Goitom",
+            "related_player_name": null,
+            "result": "2-0",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 85,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 31938126,
+            "fixture_id": 2571789,
+            "period_id": 365115,
+            "participant_id": 3293,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 67362,
+            "related_player_id": 66179,
+            "player_name": "Sinan Ramović",
+            "related_player_name": "Z. Zeba",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 68,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 31938135,
+            "fixture_id": 2571789,
+            "period_id": 365115,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 24696,
+            "related_player_id": 91539,
+            "player_name": "Denni Avdić",
+            "related_player_name": "Eero Markkanen",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 80,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 31938156,
+            "fixture_id": 2571789,
+            "period_id": 2795780,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 189844,
+            "related_player_id": null,
+            "player_name": "Per Karlsson",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 30,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 2,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 31938163,
+            "fixture_id": 2571789,
+            "period_id": 2795780,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 189725,
+            "related_player_id": null,
+            "player_name": "Nils-Eric Johansson",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 41,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 3,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 31938197,
+            "fixture_id": 2571789,
+            "period_id": 365115,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 184993,
+            "related_player_id": null,
+            "player_name": "Henok Goitom",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 90,
+            "extra_minute": 2,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 9,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "31938112": [
+          189725
+        ],
+        "31938118": [
+          184993
+        ],
+        "31938126": [
+          67362
+        ],
+        "31938135": [
+          24696,
+          91539
+        ],
+        "31938156": [
+          189844
+        ],
+        "31938163": [
+          189725
+        ],
+        "31938197": [
+          184993
+        ]
+      }
+    }
+  ],
+  "profiles": {
+    "24696": {
+      "id": 24696,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 39429,
+      "position_id": 27,
+      "detailed_position_id": null,
+      "type_id": 27,
+      "common_name": "D. Avdić",
+      "firstname": "Denni Robin",
+      "lastname": "Avdić",
+      "name": "Denni Robin Avdić",
+      "display_name": "Denni Avdić",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/24/24696.png",
+      "height": 190,
+      "weight": 80,
+      "date_of_birth": "1988-09-05",
+      "gender": "male"
+    },
+    "91539": {
+      "id": 91539,
+      "sport_id": 1,
+      "country_id": 1233,
+      "nationality_id": 1233,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": 27,
+      "common_name": "E. Markkanen",
+      "firstname": "Eero",
+      "lastname": "Markkanen",
+      "name": "Eero Markkanen",
+      "display_name": "Eero Markkanen",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/19/91539.png",
+      "height": 197,
+      "weight": 97,
+      "date_of_birth": "1991-07-03",
+      "gender": "male"
+    },
+    "67362": {
+      "id": 67362,
+      "sport_id": 1,
+      "country_id": 507,
+      "nationality_id": 507,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 150,
+      "type_id": 26,
+      "common_name": "S. Ramović",
+      "firstname": "Sinan",
+      "lastname": "Ramović",
+      "name": "Sinan Ramović",
+      "display_name": "Sinan Ramović",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 186,
+      "weight": null,
+      "date_of_birth": "1992-10-13",
+      "gender": "male"
+    },
+    "184993": {
+      "id": 184993,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 43321,
+      "city_id": 86542,
+      "position_id": null,
+      "detailed_position_id": null,
+      "type_id": 27,
+      "common_name": "H. Goitom",
+      "firstname": "Henok",
+      "lastname": "Goitom",
+      "name": "Henok Goitom",
+      "display_name": "Henok Goitom",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/1/184993.png",
+      "height": 189,
+      "weight": 74,
+      "date_of_birth": "1984-09-22",
+      "gender": "male"
+    },
+    "189725": {
+      "id": 189725,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 86542,
+      "position_id": 221,
+      "detailed_position_id": null,
+      "type_id": 25,
+      "common_name": "N. Johansson",
+      "firstname": "Nils-Eric",
+      "lastname": "Johansson",
+      "name": "Nils-Eric Johansson",
+      "display_name": "Nils-Eric Johansson",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/29/189725.png",
+      "height": 187,
+      "weight": 83,
+      "date_of_birth": "1980-01-13",
+      "gender": "male"
+    },
+    "189844": {
+      "id": 189844,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 86542,
+      "position_id": null,
+      "detailed_position_id": null,
+      "type_id": 25,
+      "common_name": "P. Karlsson",
+      "firstname": "Per",
+      "lastname": "Karlsson",
+      "name": "Per Karlsson",
+      "display_name": "Per Karlsson",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/20/189844.png",
+      "height": 184,
+      "weight": 81,
+      "date_of_birth": "1986-01-02",
+      "gender": "male"
+    }
+  },
+  "verified_source": {
+    "1818647": {
+      "sources": [
+        "https://www-assets.palloliitto.fi/62562/1650977144-jalkapallokirja_2017.pdf",
+        "https://www.veikkausliiga.com/pelaajat/54275/amani-rezgar"
+      ],
+      "verified": "PZPN의 실제5번 Amani/Kangaskolkka86분 교체와 원래 명단91467의 정확한 성명·팀·등번호 대조. 중복 프로필9611526을 만들지 않고 실제 명단의91467로 이벤트를 통일. 공식협회/리그 생일1992-06-01로 경기용 프로필 교정, 원래4분 유지."
+    },
+    "2571789": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4350",
+        "https://fkzeljeznicar.ba/en/foto-sinan-ramovic-novi-fudbaler-zeljeznicara-2/44769/",
+        "https://fkzeljeznicar.ba/sinan-ramovic-odigrao-50-utakmicu-u-dresu-zelje/38720/",
+        "https://fkzeljeznicar.ba/foto-zeljeznicar-se-porazom-u-stockholmu-oprostio-od-evropske-lige/27285/",
+        "https://isport.blesk.cz/fotbal/evropska-liga-predkola-2017-2018/stockholm-zeljeznicar-sarajevo/online-prenos?match=262392"
+      ],
+      "verified": "AIK 공식 전체명단·실제48/85골·80Avdic/Markkanen 교체, 공식Zeljeznicar Ramovic데뷔/1992-10-13/68분 투입을 대조해6명 프로필 보충. 한 교체의 두 배우는 같은 tuple계약 사용. 공급자에없는AIK명단·분·통계는 생성하지 않음. Radinovic/Graovac의45분 및89분 카드 충돌은 증거부족으로 원문을 보존하며 검증 완료로 취급하지 않음. HNS1경기징계는 경고누적 가능성이 있어 퇴장 증거로 사용하지 않음.",
+      "followup": "2026-09-21 추가 확인: iSport 당시 중계는 Graovac 45+2 경고, Radinovic 90 경고와 90+4 슈팅을 기록한다. 이는 Radinovic 89분 퇴장 주장에 반하는 구체적 근거다. 구단 기사 및 Sky와의 충돌이 남으므로 카드 유형·분·출전 통계는 확정 보정하지 않는다."
+    },
+    "5512563": {
+      "sources": [
+        "https://www.beneventocalcio.club/news/notizie/607/benevento-perugia-i-convocati.shtml",
+        "https://www.gazzetta.it/Calcio/12-08-2017/coppa-italia-bologna-cittadella-0-3-espulso-verdi-5-210958004912.shtml",
+        "https://www.sportsmole.co.uk/football/coppa-italia/benevento-vs-perugia_game_65396.html"
+      ],
+      "verified": "경기전날 공식 소집명단의Brignola99번 확인. 실제80분투입99번슬롯4581360의10분·통계는 유지하고 통계없는25번중복만 제거. 당시기사와경기표의Cataldi44분직접퇴장/그전Cerri1골 확인해 기존119=44,88=1로 교정. 공급자에없는퇴장행·85통계는 만들지 않음."
+    }
+  }
+}

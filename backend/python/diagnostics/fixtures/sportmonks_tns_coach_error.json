@@ -1,0 +1,71 @@
+{
+  "source": {
+    "raw_source": "20260920-2024-detail-error-provider-profiles.json",
+    "verification": "20260920-2024-two-coach-verified-repairs.json",
+    "correct_coach": {
+      "id": 455867,
+      "player_id": 455867,
+      "sport_id": 1,
+      "country_id": 462,
+      "nationality_id": 462,
+      "city_id": null,
+      "common_name": "C. Harrison",
+      "firstname": "Craig",
+      "lastname": "Harrison",
+      "name": "Craig Harrison",
+      "display_name": "Craig Harrison",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 183,
+      "weight": null,
+      "date_of_birth": "1977-11-10",
+      "gender": "male",
+      "meta": {
+        "fixture_id": 19296510,
+        "coach_id": 455867,
+        "participant_id": 579
+      }
+    }
+  },
+  "fixture": {
+    "id": 19296510,
+    "events": [
+      {
+        "id": 156508154,
+        "fixture_id": 19296510,
+        "period_id": 5685721,
+        "participant_id": 579,
+        "type_id": 19,
+        "section": "event",
+        "player_id": 201384,
+        "related_player_id": null,
+        "player_name": "Özgür Özkaya",
+        "related_player_name": null,
+        "result": null,
+        "info": null,
+        "addition": "1st Yellowcard",
+        "minute": 43,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5685721,
+        "rescinded": false,
+        "sort_order": 1,
+        "type": {
+          "id": 19,
+          "name": "Yellowcard",
+          "code": "yellowcard",
+          "developer_name": "YELLOWCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "statistics": [],
+    "lineups": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  }
+}

@@ -1,0 +1,263 @@
+[
+  {
+    "fixture": {
+      "id": 18533253,
+      "lineups": [
+        {
+          "id": 6692218096,
+          "sport_id": 1,
+          "fixture_id": 18533253,
+          "player_id": 449353,
+          "team_id": 5447,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Manu Heredia",
+          "jersey_number": 44,
+          "details": [],
+          "player": {
+            "id": 449353,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 32,
+            "city_id": 41480,
+            "position_id": 26,
+            "detailed_position_id": null,
+            "type_id": 26,
+            "common_name": "M. Heredia Montoya",
+            "firstname": "Manuel",
+            "lastname": "Heredia Montoya",
+            "name": "Manuel Heredia Montoya",
+            "display_name": "Manu Heredia",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": null,
+            "gender": "male"
+          }
+        }
+      ],
+      "events": [],
+      "coaches": [],
+      "statistics": [],
+      "formations": [],
+      "pressure": []
+    },
+    "team_id": 5447,
+    "verified_source": {
+      "sources": [
+        "https://www.fotmob.com/en-GB/matches/buducnost-podgorica-vs-llapi/40l4nalo",
+        "https://fk-buducnost.me/plavi-odradili-prvi-trening-na-zlatiboru-foto/",
+        "https://www.uefa.com/european-qualifiers/teams/players/250166669--marko-perovic/"
+      ],
+      "verified": "실제44번 미출전 Marko Perovic은2006-03-05 몬테네그로 선수37598758. 구단2022준비명단·UEFA생일·해당경기전체벤치명단 대조. 잘못된Heredia449353슬롯만 정정. 기존빈통계 유지."
+    },
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "6692218096": {
+        "player_id": 37598758
+      }
+    },
+    "minutes_overrides": {},
+    "stat_overrides": {},
+    "profiles": {
+      "37598758": {
+        "id": 37598758,
+        "sport_id": 1,
+        "country_id": 998,
+        "nationality_id": 998,
+        "city_id": null,
+        "position_id": 26,
+        "detailed_position_id": 157,
+        "type_id": 26,
+        "common_name": "M. Perović",
+        "firstname": "Marko",
+        "lastname": "Perović",
+        "name": "Marko Perović",
+        "display_name": "Marko Perovic",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/players/6/37598758.png",
+        "height": 179,
+        "weight": 73,
+        "date_of_birth": "2006-03-05",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "raw_duplicate": false
+  },
+  {
+    "fixture": {
+      "id": 18533255,
+      "lineups": [
+        {
+          "id": 6260860126,
+          "sport_id": 1,
+          "fixture_id": 18533255,
+          "player_id": 449353,
+          "team_id": 6791,
+          "position_id": 26,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Manu Heredia",
+          "jersey_number": 21,
+          "details": [],
+          "player": {
+            "id": 449353,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 32,
+            "city_id": 41480,
+            "position_id": 26,
+            "detailed_position_id": null,
+            "type_id": 26,
+            "common_name": "M. Heredia Montoya",
+            "firstname": "Manuel",
+            "lastname": "Heredia Montoya",
+            "name": "Manuel Heredia Montoya",
+            "display_name": "Manu Heredia",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": null,
+            "gender": "male"
+          }
+        }
+      ],
+      "events": [],
+      "coaches": [],
+      "statistics": [],
+      "formations": [],
+      "pressure": []
+    },
+    "team_id": 6791,
+    "verified_source": {
+      "sources": [
+        "https://www.mackolik.com/mac/atl%C3%A8tic-club-escaldes-vs-gzira-united/3nh0xsty2z2te6esz1mvwwjdg",
+        "https://www.bdfutbol.com/j/j50043.html",
+        "https://www.sofascore.com/football/player/jean-paul-attard/1006025"
+      ],
+      "verified": "실제Gzira21번미출전Attard37590595는2001-05-28 MaltaMF;전체경기명단과BDF생일·Sofa2022Gzira이적대조. 잘못된Heredia449353슬롯만 정정. 포지션세부미제공 유지."
+    },
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "6260860126": {
+        "player_id": 37590595
+      }
+    },
+    "minutes_overrides": {},
+    "stat_overrides": {},
+    "profiles": {
+      "37590595": {
+        "id": 37590595,
+        "sport_id": 1,
+        "country_id": 2756,
+        "nationality_id": 2756,
+        "city_id": null,
+        "position_id": 26,
+        "detailed_position_id": null,
+        "type_id": 26,
+        "common_name": "J. Attard",
+        "firstname": "Jean Paul",
+        "lastname": "Attard",
+        "name": "Jean Paul Attard",
+        "display_name": "Jean Paul Attard",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "2001-05-28",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "raw_duplicate": false
+  },
+  {
+    "fixture": {
+      "id": 18533267,
+      "lineups": [
+        {
+          "id": 6692195737,
+          "sport_id": 1,
+          "fixture_id": 18533267,
+          "player_id": 449353,
+          "team_id": 8655,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Manu Heredia",
+          "jersey_number": 3,
+          "details": [],
+          "player": {
+            "id": 449353,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 32,
+            "city_id": 41480,
+            "position_id": 26,
+            "detailed_position_id": null,
+            "type_id": 26,
+            "common_name": "M. Heredia Montoya",
+            "firstname": "Manuel",
+            "lastname": "Heredia Montoya",
+            "name": "Manuel Heredia Montoya",
+            "display_name": "Manu Heredia",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": null,
+            "gender": "male"
+          }
+        }
+      ],
+      "events": [],
+      "coaches": [],
+      "statistics": [],
+      "formations": [],
+      "pressure": []
+    },
+    "team_id": 8655,
+    "verified_source": {
+      "sources": [
+        "https://www.fotmob.com/matches/vikingur-vs-europa-fc/1xehr0f1",
+        "https://www.sofascore.com/football/player/signar-a-brunni/1029339",
+        "https://www.fsf.fo/wp-content/uploads/2024/02/FSF_Arsfragreiding_2023_19-02-2024.pdf"
+      ],
+      "verified": "실제Vikingur3번미출전Signar37490756,2002-11-19. 전체경기벤치명단·선수프로필과FSF연보 일치. 잘못된Heredia449353슬롯만 정정. 빈통계 유지."
+    },
+    "removed_lineup_ids": [],
+    "lineup_overrides": {
+      "6692195737": {
+        "player_id": 37490756
+      }
+    },
+    "minutes_overrides": {},
+    "stat_overrides": {},
+    "profiles": {
+      "37490756": {
+        "id": 37490756,
+        "sport_id": 1,
+        "country_id": 2154,
+        "nationality_id": 2154,
+        "city_id": null,
+        "position_id": 25,
+        "detailed_position_id": 148,
+        "type_id": 25,
+        "common_name": "S. á Brúnni",
+        "firstname": "Signar",
+        "lastname": "á Brúnni",
+        "name": "Signar á Brúnni",
+        "display_name": "Signar á Brúnni",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/players/4/37490756.png",
+        "height": null,
+        "weight": null,
+        "date_of_birth": "2002-11-19",
+        "gender": "male"
+      }
+    },
+    "stat_player_overrides": {},
+    "raw_duplicate": false
+  }
+]
