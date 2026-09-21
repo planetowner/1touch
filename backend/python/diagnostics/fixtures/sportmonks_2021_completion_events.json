@@ -1,0 +1,614 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 18151414,
+        "lineups": [],
+        "events": [
+          {
+            "id": 35446115,
+            "fixture_id": 18151414,
+            "period_id": 3965311,
+            "participant_id": 5284,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 86061,
+            "related_player_id": 86653,
+            "player_name": "O. Færø",
+            "related_player_name": "Andras Frederiksberg",
+            "result": "1-1",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 16,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 35446118,
+            "fixture_id": 18151414,
+            "period_id": 3965311,
+            "participant_id": 5284,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 178500,
+            "related_player_id": 86653,
+            "player_name": "D. Pavlović",
+            "related_player_name": "Andras Frederiksberg",
+            "result": "2-3",
+            "info": null,
+            "addition": "5th Goal",
+            "minute": 45,
+            "extra_minute": 2,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 35446115,
+          "fixture_id": 18151414,
+          "period_id": 3965311,
+          "participant_id": 5284,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 86061,
+          "related_player_id": 86656,
+          "player_name": "O. Færø",
+          "related_player_name": "Árni Frederiksberg",
+          "result": "1-1",
+          "info": null,
+          "addition": "2nd Goal",
+          "minute": 16,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 35446118,
+          "fixture_id": 18151414,
+          "period_id": 3965311,
+          "participant_id": 5284,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 178500,
+          "related_player_id": 86656,
+          "player_name": "D. Pavlović",
+          "related_player_name": "Árni Frederiksberg",
+          "result": "2-3",
+          "info": null,
+          "addition": "5th Goal",
+          "minute": 45,
+          "extra_minute": 2,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 18396095,
+        "lineups": [],
+        "events": [
+          {
+            "id": 29593007,
+            "fixture_id": 18396095,
+            "period_id": 175536,
+            "participant_id": 571,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37375845,
+            "related_player_id": 125850,
+            "player_name": "A. Azrual",
+            "related_player_name": "R. Meir",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 59,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 29593007,
+          "fixture_id": 18396095,
+          "period_id": 175536,
+          "participant_id": 571,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37595854,
+          "related_player_id": 125850,
+          "player_name": "Adar Azruel",
+          "related_player_name": "R. Meir",
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 59,
+          "extra_minute": null,
+          "injured": false,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 18449032,
+        "lineups": [],
+        "events": [
+          {
+            "id": 29532965,
+            "fixture_id": 18449032,
+            "period_id": 169140,
+            "participant_id": 259822,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37610176,
+            "related_player_id": 33176991,
+            "player_name": "Sergio San José Brañas",
+            "related_player_name": "Chechu",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 87,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 9,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 29532518,
+            "fixture_id": 18449032,
+            "period_id": 169140,
+            "participant_id": 259822,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37608326,
+            "related_player_id": null,
+            "player_name": "Rubén Pérez",
+            "related_player_name": null,
+            "result": null,
+            "info": "Argument",
+            "addition": "6th Yellow Card",
+            "minute": 90,
+            "extra_minute": 5,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1497,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 6,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 87835564,
+            "fixture_id": 18449032,
+            "period_id": 169120,
+            "participant_id": 259822,
+            "type_id": 19,
+            "section": "event",
+            "player_id": null,
+            "related_player_id": null,
+            "player_name": "Gonzalo del Valle",
+            "related_player_name": null,
+            "result": null,
+            "info": "Argument",
+            "addition": null,
+            "minute": 19,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": 1497,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 29532965,
+          "fixture_id": 18449032,
+          "period_id": 169140,
+          "participant_id": 259822,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37608480,
+          "related_player_id": 33176991,
+          "player_name": "Sergio Sanz",
+          "related_player_name": "Chechu",
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 87,
+          "extra_minute": null,
+          "injured": false,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 9,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 29532518,
+          "fixture_id": 18449032,
+          "period_id": 169140,
+          "participant_id": 2975,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 445425,
+          "related_player_id": null,
+          "player_name": "Luis Rioja",
+          "related_player_name": null,
+          "result": null,
+          "info": "Argument",
+          "addition": "6th Yellow Card",
+          "minute": 90,
+          "extra_minute": 5,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1497,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 6,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 87835564,
+          "fixture_id": 18449032,
+          "period_id": 169120,
+          "participant_id": 259822,
+          "type_id": 19,
+          "section": "event",
+          "player_id": null,
+          "related_player_id": null,
+          "player_name": "Gonzalo del Valle",
+          "related_player_name": null,
+          "result": null,
+          "info": "Argument",
+          "addition": null,
+          "minute": 72,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": true,
+          "coach_id": null,
+          "sub_type_id": 1497,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 18451737,
+        "lineups": [],
+        "events": [
+          {
+            "id": 87833940,
+            "fixture_id": 18451737,
+            "period_id": 179919,
+            "participant_id": 9972,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 188316,
+            "related_player_id": null,
+            "player_name": "Raúl González Robles",
+            "related_player_name": null,
+            "result": null,
+            "info": "Argument",
+            "addition": null,
+            "minute": 99,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": 1497,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [],
+      "raw_actor_error": true
+    }
+  ],
+  "known_player_ids": [
+    86061,
+    86656,
+    125850,
+    178500,
+    445425,
+    33176991,
+    37595854,
+    37608480
+  ],
+  "verified_source": {
+    "18224992": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2021-2022-europa-conference-league-maribor-hammarby-if-4",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2021/Rotblau_UECA_Hammarby_IF_2021_low.pdf",
+        "https://fantasy.mlssoccer.com/players/david-accam/"
+      ],
+      "verified": "Accam 5분 득점·46분 교체, Khalili 77분 투입. 실제 선수의 생일·등번호는 FCB 프로그램 p7에서 확인. 프로필만 보충하며 이벤트·명단·통계 행을 생성하지 않음. FCB PDF는 현재 원문 다운로드가 404여서 검색에 보존된 문서 본문을 사용했으며 이미지 검증 완료로 표시하지 않음."
+    },
+    "18224993": {
+      "sources": [
+        "https://globalsportsarchive.com/en/soccer/match/2021-07-22/hammarby-fotboll-vs-nk-maribor/2385427",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2021/Rotblau_UECA_Hammarby_IF_2021_low.pdf",
+        "https://fantasy.mlssoccer.com/players/david-accam/"
+      ],
+      "verified": "Ludwigson 64분 도움, Rodic 90+1분 교체. 실제 선수의 생일·등번호는 FCB 프로그램 p7에서 확인. 프로필만 보충하며 이벤트·명단·통계 행을 생성하지 않음. FCB PDF는 현재 원문 다운로드가 404여서 검색에 보존된 문서 본문을 사용했으며 이미지 검증 완료로 표시하지 않음."
+    },
+    "18320079": {
+      "sources": [
+        "https://mobile.sportdc.net/vest/lige-srbije/134016-cukaricki-evropski-put-zavrsio-u-stokholmu-hamarbi-ubedljiv-u-revansu",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2021/Rotblau_UECA_Hammarby_IF_2021_low.pdf",
+        "https://fantasy.mlssoccer.com/players/david-accam/"
+      ],
+      "verified": "Jeahze 12분 득점·67/72분 도움, Paulsen 44분 득점/Fenger 도움. Rodic·Khalili·Accam·Ludwigson의 교체와 카드 대조. 실제 선수의 생일·등번호는 FCB 프로그램 p7에서 확인. 프로필만 보충하며 이벤트·명단·통계 행을 생성하지 않음. FCB PDF는 현재 원문 다운로드가 404여서 검색에 보존된 문서 본문을 사용했으며 이미지 검증 완료로 표시하지 않음."
+    },
+    "18320080": {
+      "sources": [
+        "https://donfutbolisto.com/en/game/cukaricki-hammarby-conference-league-05-08-2021/",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2021/Rotblau_UECA_Hammarby_IF_2021_low.pdf",
+        "https://fantasy.mlssoccer.com/players/david-accam/"
+      ],
+      "verified": "Ludwigson 25분 득점, 54분 Accam/Ludwigson과 Ouattara/Khalili 교체, Jeahze 15분 경고. 실제 선수의 생일·등번호는 FCB 프로그램 p7에서 확인. 프로필만 보충하며 이벤트·명단·통계 행을 생성하지 않음. FCB PDF는 현재 원문 다운로드가 404여서 검색에 보존된 문서 본문을 사용했으며 이미지 검증 완료로 표시하지 않음."
+    },
+    "18357351": {
+      "sources": [
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_Magazin/2021/Rotblau_Magazin_49_2021_1_low.pdf",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2021/Rotblau_UECA_Hammarby_IF_2021_low.pdf",
+        "https://fantasy.mlssoccer.com/players/david-accam/"
+      ],
+      "verified": "Fjoluson 두 골의 Paulsen·Jeahze 도움, 전체 교체, 승부차기 Accam·Fenger 성공을 구단 공식 경기표와 대조. 실제 선수의 생일·등번호는 FCB 프로그램 p7에서 확인. 프로필만 보충하며 이벤트·명단·통계 행을 생성하지 않음. FCB PDF는 현재 원문 다운로드가 404여서 검색에 보존된 문서 본문을 사용했으며 이미지 검증 완료로 표시하지 않음."
+    },
+    "18357352": {
+      "sources": [
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_Magazin/2021/Rotblau_Magazin_49_2021_1_low.pdf",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2021/Rotblau_UECA_Hammarby_IF_2021_low.pdf",
+        "https://fantasy.mlssoccer.com/players/david-accam/"
+      ],
+      "verified": "Khalili 68분 투입·71분 득점, Accam 80분 투입, Rodic 81분 교체. 추가시간·분 반올림 표기는 원문 유지. Stocker 이름만 있는 도움 ID는 NULL 유지. 실제 선수의 생일·등번호는 FCB 프로그램 p7에서 확인. 프로필만 보충하며 이벤트·명단·통계 행을 생성하지 않음. FCB PDF는 현재 원문 다운로드가 404여서 검색에 보존된 문서 본문을 사용했으며 이미지 검증 완료로 표시하지 않음."
+    },
+    "18125931": {
+      "sources": [
+        "https://www.fsgc.sm/wp-content/uploads/2022/01/UCL-2022_FOL-PRI_220621.pdf",
+        "https://www.folgorecalcio.com/index.php/2021/06/22/folgore-prishtina/",
+        "https://www.marchesport.info/tuttocalcio/info_giocatore.php?anno=2013&id=20256"
+      ],
+      "verified": "UEFA 경기표의 GK 25번 Emanuele Semprini(1988-12-25), 90+2분 Alessandro Semprini 교체 확인. 명단이 없어 이벤트 프로필만 보충. 전체 득점·교체·카드는 UEFA 본문과 일치. 현재 PDF 다운로드는404여서 검색에 보존된 본문 대조."
+    },
+    "18151414": {
+      "sources": [
+        "https://fbref.com/en/squads/7c90642e/2021-2022/goallogs/c882/RFS-Goal-Logs-Conference-League",
+        "https://redscores.com/match/ki-rigas-fs/tMAxOXA"
+      ],
+      "verified": "16분 Faero·45+2분 Pavlovic 득점의 도움은 실제 7번 Arni Frederiksberg86656(1992-06-13). Andras86653를 교정. 같은 선수의70분 경고 및 전체 연장 경기 기록 대조."
+    },
+    "18320049": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2021-2022-europa-conference-league-copenhague-lokomotiv-plovdiv-6",
+        "https://www.statscrew.com/worldfootball/roster/t-LOKPL249/y-2021"
+      ],
+      "verified": "67분 Ruane 대신 투입된 Shaquill Sno28135(1996-01-05)의 프로필만 보충. 없는 선수 슬롯을 만들거나 Vidol Seymenski7번 슬롯을 바꾸지 않음."
+    },
+    "18396095": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2021-2022-europa-conference-league-feyenoord-maccabi-haifa-14",
+        "https://www.bdfutbol.com/es/j/j51289.html"
+      ],
+      "verified": "59분 Raz Meir 교체는 Adar Azruel(2002-02-15). 같은 생일·경력의 중복 프로필37375845 대신 실제36번 명단1094618의37595854로 이벤트를 연결. 전역 선수 병합 없음."
+    },
+    "18449023": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2021-2022-copa-del-rey-huracan-melilla-levante-ud-1",
+        "https://espndeportes.espn.com/futbol/jugador/_/id/332005/amin-mohamed",
+        "https://www.bdfutbol.com/es/j/j205122.html",
+        "https://as.com/resultados/futbol/copa_del_rey/2021_2022/directo/primera_eliminatoria_a_1_393285/alineaciones/",
+        "https://www.bdfutbol.com/en/p/p.php?id=504990"
+      ],
+      "verified": "실제12번 Amin Mohamed Mohamed(1996-07-15)와 후반 시작 교체를 공식 중계로 확인해33587165 중복 명단을37608671로 연결. 기존45분은 유지. 공식 상세 중계의 실제5교체와 AS·BDF의 미출전 벤치를 대조하여 Melik16번의 잘못된11945를0으로 교정. LaLiga 상단 요약의 Melik 교체 표기는 상세 중계·명단과 충돌하므로 근거에서 구분."
+    },
+    "18449032": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2021-2022-copa-del-rey-unami-cp-deportivo-alaves-1",
+        "https://as.com/futbol/2021/11/30/copa_del_rey/1638290309_521236.html",
+        "https://www.futbolfantasy.com/laliga/noticias/88945-ficha-tecnica-de-la-copa-unami-0-3-alaves"
+      ],
+      "verified": "공식 LaLiga 명단18번·87분 Chechu 교체는 Sergio Sanz이며 당시 AS 실황도 같은 이름. 기존 명단37608480으로 이벤트를 연결하고 생일NULL 유지. Brañas로 적힌 BDF/다른 피드의 신원을 Sanz에게 덮어쓰지 않음. 감독 Gonzalo의 경고는19분이 아니라72분이며 선수ID NULL 유지. 종료 직전 경고는Rubén Pérez가 아니라Alaves Luis Rioja로 공식 중계·요약·AS 일치."
+    },
+    "18451729": {
+      "sources": [
+        "https://as.com/futbol/2021/12/16/copa_del_rey/1639686465_597409.html",
+        "https://www.lapreferente.com/J81659C6334/c-marino-de-luanco/omar-sampedro.html"
+      ],
+      "verified": "11번은 Omar Sampedro Bernardo185827(1985-06-05).60분 Javi Sanchez 대신 출전. Daniel Sampedro29312450은 다른 사람. 실제 기존11930과 다른 통계 유지."
+    },
+    "18451737": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2021-2022-copa-del-rey-alcoyano-levante-ud-2"
+      ],
+      "verified": "99분 경고 실제 선수는5번 Raul Gonzalez Valls446701(1992-11-13),72분 교체 투입. 정상 이벤트29627266은 유지하고 동명이인188316에게 붙은 같은99분 중복87833940만 제거."
+    },
+    "18452170": {
+      "sources": [
+        "https://www.skysports.com/football/chelsea-vs-chesterfield/report/461005",
+        "https://www.playmakerstats.com/player/jeff-king/595038?epoca_id=153",
+        "https://www.sofascore.com/football/player/jeff-king/891786"
+      ],
+      "verified": "실제20번 Jeff Francis King14955(1995-12-19),29분 경고·하프타임 Calvin Miller로 교체. 생일없는중복4916224 명단을14955로 연결하고 잘못된90분을공급자교체표기46으로 교정. 퇴장아님. 교체 전4실점이므로기존88은5에서4로 교정. 없는84 상세는 만들지 않음."
+    },
+    "18453094": {
+      "sources": [
+        "https://www.fotmob.com/matches/leicester-city-vs-randers-fc/2a3yay",
+        "https://randersfc.dk/nyheder-superliga/2022/01-januar-2022/mattias-andersson-pa-kontrakt-i-randers-fc"
+      ],
+      "verified": "Randers가2022년1월영입한23세 Mattias Andersson192243(1998-03-13)이 실제3번·61분투입.1989년생149814연결교정.기존11929유지."
+    }
+  }
+}

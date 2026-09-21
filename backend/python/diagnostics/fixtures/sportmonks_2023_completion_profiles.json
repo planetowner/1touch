@@ -1,0 +1,481 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 18845803,
+        "lineups": [],
+        "events": [
+          {
+            "id": 88840515,
+            "fixture_id": 18845803,
+            "period_id": 4899250,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37595901,
+            "related_player_id": 37549063,
+            "player_name": "M. Rafferty",
+            "related_player_name": "V. Đukanović",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 62,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 88841181,
+            "fixture_id": 18845803,
+            "period_id": 4899250,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37620786,
+            "related_player_id": 4997513,
+            "player_name": "A. Demirol",
+            "related_player_name": "F. Hammar",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 90,
+            "extra_minute": 1,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 7,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "88840515": [
+          37595901
+        ],
+        "88841181": [
+          37620786,
+          4997513
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18845804,
+        "lineups": [],
+        "events": [
+          {
+            "id": 89049488,
+            "fixture_id": 18845804,
+            "period_id": 4908525,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37549063,
+            "related_player_id": 4997513,
+            "player_name": "V. Đukanović",
+            "related_player_name": "F. Hammar",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 73,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 89050131,
+            "fixture_id": 18845804,
+            "period_id": 4908525,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 196419,
+            "related_player_id": 197007,
+            "player_name": "J. Nilsson",
+            "related_player_name": "A. Nalić",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 90,
+            "extra_minute": 1,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 7,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 89051755,
+            "fixture_id": 18845804,
+            "period_id": 4908581,
+            "participant_id": 2353,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37595901,
+            "related_player_id": 190658,
+            "player_name": "M. Rafferty",
+            "related_player_name": "L. Sadiku",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 105,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 10,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 89051042,
+            "fixture_id": 18845804,
+            "period_id": 4908581,
+            "participant_id": 2353,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 190658,
+            "related_player_id": null,
+            "player_name": "L. Sadiku",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": null,
+            "minute": 99,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1496,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 4,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "89049488": [
+          4997513
+        ],
+        "89050131": [
+          196419
+        ],
+        "89051755": [
+          37595901,
+          190658
+        ],
+        "89051042": [
+          190658
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18882134,
+        "lineups": [],
+        "events": [
+          {
+            "id": 88805494,
+            "fixture_id": 18882134,
+            "period_id": 4898096,
+            "participant_id": 18968,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37705392,
+            "related_player_id": 514046,
+            "player_name": "Dennis Scoccimarro",
+            "related_player_name": "Luca Ceccaroli",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 57,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "88805494": [
+          37705392
+        ]
+      },
+      "expected_profile_requests": 0
+    }
+  ],
+  "profiles": {
+    "37595901": {
+      "id": 37595901,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": 26,
+      "common_name": "M. Rafferty",
+      "firstname": "Marcus",
+      "lastname": "Rafferty",
+      "name": "Marcus Rafferty",
+      "display_name": "Marcus Rafferty",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 180,
+      "weight": null,
+      "date_of_birth": "2004-10-01",
+      "gender": "male"
+    },
+    "37620786": {
+      "id": 37620786,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": null,
+      "common_name": "A. Demirol",
+      "firstname": "Alper",
+      "lastname": "Demirol",
+      "name": "Alper Demirol",
+      "display_name": "Alper Demirol",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/18/37620786.png",
+      "height": 184,
+      "weight": null,
+      "date_of_birth": "2002-10-01",
+      "gender": null
+    },
+    "4997513": {
+      "id": 4997513,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 149,
+      "type_id": 26,
+      "common_name": "F. Hammar",
+      "firstname": "Fredrik",
+      "lastname": "Hammar",
+      "name": "Fredrik Hammar",
+      "display_name": "Fredrik Hammar ",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/4997513.png",
+      "height": 182,
+      "weight": null,
+      "date_of_birth": "2001-02-26",
+      "gender": "male"
+    },
+    "196419": {
+      "id": 196419,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 156,
+      "type_id": 26,
+      "common_name": "J. Nilsson",
+      "firstname": "Joel",
+      "lastname": "Nilsson",
+      "name": "Joel Nilsson",
+      "display_name": "Joel Nilsson",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 180,
+      "weight": 75,
+      "date_of_birth": "1994-07-11",
+      "gender": "male"
+    },
+    "190658": {
+      "id": 190658,
+      "sport_id": 1,
+      "country_id": 122,
+      "nationality_id": 122,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 149,
+      "type_id": 26,
+      "common_name": "L. Sadiku",
+      "firstname": "Loret",
+      "lastname": "Sadiku",
+      "name": "Loret Sadiku",
+      "display_name": "Loret Sadiku",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/2/190658.png",
+      "height": 181,
+      "weight": 67,
+      "date_of_birth": "1991-07-28",
+      "gender": "male"
+    },
+    "37705392": {
+      "id": 37705392,
+      "sport_id": 1,
+      "country_id": 251,
+      "nationality_id": 251,
+      "city_id": null,
+      "position_id": null,
+      "detailed_position_id": null,
+      "type_id": null,
+      "common_name": "D. Scoccimarro",
+      "firstname": "Dennis",
+      "lastname": "Scoccimarro",
+      "name": "Dennis Scoccimarro",
+      "display_name": "Dennis Scoccimarro",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 178,
+      "weight": null,
+      "date_of_birth": null,
+      "gender": "male"
+    }
+  },
+  "verified_source": {
+    "18845803": {
+      "sources": [
+        "https://www.skysports.com/football/fc-twente-vs-hammarby-if/teams/483529",
+        "https://fctwente.nl/nieuws/fc-twente-wint-thuis-van-hammarby-if"
+      ],
+      "verified": "공식 경기표와 실제33 Hammar/34 Demirol/45 Rafferty 교체를 대조. 62분·90+1분의 해당 이벤트 프로필만 보충. Hammarby 미제공 명단·통계 생성 없음."
+    },
+    "18845804": {
+      "sources": [
+        "https://www.fotmob.com/matches/hammarby-vs-fc-twente/2cmc71",
+        "https://fctwente.nl/nieuws/europese-zege-met-schaduwzijde",
+        "https://www.fcupdate.nl/voetbalcompetities/internationaal/uefa-europa-conference-league/programma-uitslagen/2023-2024/hammarby-if-twente-03-08"
+      ],
+      "verified": "18 Sadiku·22 Nilsson·33 Hammar·45 Rafferty의 실제 교체와 경고를 대조. 103분 Unuvar 경고는 한 번이므로 중복89051453 제거, 기존84=2를1로 교정. 105/106분·90+1분 표현 차이는 원문 유지. 115분 득점자는 구단 공식 Steijn으로 원문 유지."
+    },
+    "18845818": {
+      "sources": [
+        "https://www.live-result.com/football/matches/match1384522_Tobol_Kostanay-Basel-online",
+        "https://www.fcb.ch/fileadmin/Static_Pages/Rotblau_International/2023/RB_International_2324_1_Tobol_Kostanay.pdf",
+        "https://www.sahadan.com/mac/tobol-vs-basel/cpmh3elkqnrf7q0joagapqw44"
+      ],
+      "verified": "101148은 실제 조회상 Dimitri Boudaud1987-02-10으로 감독과 다른 사람. 같은 팀 감독86260 Milic Curcic1981-01-26 및 Basel 공식 프로그램으로 확인. 상세 중계96분과 Sahadan90+6분이 일치하여 잘못된11분을90+6으로 정정. 선수 행 생성 없음."
+    },
+    "18845830": {
+      "sources": [
+        "https://www.live-result.com/football/matches/match1381888_AEK_Larnaca-Torpedo_Zhodino-online",
+        "https://www.transfermarkt.co.uk/aek-larnaka-torpedo-belaz-zhodino/index/spielbericht/4138012",
+        "https://news.sportbox.ru/Vidy_sporta/Futbol/Evropejskie_chempionaty/Liga_konferencij/stats/turnir_20975/game_1380871693"
+      ],
+      "verified": "90+8 Gorbachik 도움은 실제10번 Dmitriy Lisakovich2206769. 61분 투입/72분 경고/29분 명단과 모두 일치. 다른 선수 Ruslan24081874 연결만 정정."
+    },
+    "18882134": {
+      "sources": [
+        "https://www.fsgc.sm/it/notizia/tre-penne-proud-and-disciplined-valmiera-superior-sharpness-makes-the-difference/664",
+        "https://www.lega-pro.com/com/1819-53L.pdf",
+        "https://www.sofascore.com/sl/football/player/scoccimarro-dennis/917260"
+      ],
+      "verified": "FSGC 공식 경기표는57분 Ceccaroli 대신 Scoccimarro 투입을 확인. 원문에16번 명단 자체가 없어 프로필만 보충. 공급자1999-04-14와 Lega Pro 공식등록1999-04-16이 충돌하므로 신규 프로필 생일은 NULL. 명단·분·통계 생성 없음."
+    },
+    "19024882": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2023-2024-copa-del-rey-hernan-cortes-real-betis-2",
+        "https://www.vi.nl/spelers/sergio-alvarez-bastida/info",
+        "https://theanalyst.com/players/16427/enrique-esono",
+        "https://www.resultados-futbol.com/equipo/hernan-cortes/2024"
+      ],
+      "verified": "21 Sergio Alvarez1984-10-21은73분 교체되어 기존90→73/12실점→10. 17 Enrique Esono Lottar Eyang2003-10-17은선발90분. 실제7 Enrique Marquez Nieto의55분 득점ID를 같은 정상 명단37728177로 연결. 득점 도움Ilyasse는기존ID유지. 다른13골/교체/승부차기아닌PK실축 기록 대조."
+    },
+    "19032647": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2023-2024-copa-del-rey-atl-astorga-sevilla-fc-3",
+        "https://www.rtve.es/deportes/20231206/astorga-sevilla-copa-rey-resultado/2464322.shtml",
+        "https://www.bdfutbol.com/es/a/j___leon_FED.html"
+      ],
+      "verified": "실제7번 Diego Pelaez Pelaez1988-03-11을 SergioSantaCruz 대신 연결하고77분교체로90→77. LaLiga 전체중계의25 ChristianBueno/40 JaviAmor/72 Misffut 세 경고를 유지하며 Misffut중복93380844만제거,기존84를1로정정. RTVE 교체상대·경고 요약과 상세 중계의 충돌은 보존하고 다른 교체를 임의변경하지 않음."
+    },
+    "19032650": {
+      "sources": [
+        "https://www.fotmob.com/matches/villanovense-vs-real-betis/2c7wg9",
+        "https://fbref.com/en/players/f3d39b6c/German-Rodriguez-Rojas"
+      ],
+      "verified": "14 Germán Ezequiel Rodriguez Rojas1990-01-05는85분 MarioGonzalez 대신투입. 잘못된Buonanotte연결을실제이벤트ID211387로맞추고기존14분을5분으로교정.89/90+3실점2유지. 다른득점·도움·전체교체와카드대조."
+    }
+  }
+}
