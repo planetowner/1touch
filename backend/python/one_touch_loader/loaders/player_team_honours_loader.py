@@ -22,8 +22,12 @@ INSERT INTO player_team_honours (
   player_id,
   team_id,
   competition_id,
-  season_id
-) VALUES (%s,%s,%s,%s)
+  season_id,
+  team_name,
+  team_image_path,
+  competition_name,
+  season_name
+) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
 EXPECTED_RESULT_MAPPINGS = {
@@ -85,7 +89,22 @@ def _winner_rows(payload: Dict, player_id: int) -> Tuple[List[Tuple], int]:
         if result_mapping[2] != 1:
             continue
 
-        row = (player_id, team_id, competition_id, season_id)
+        # 수집 대상 밖의 과거 대회는 마스터에 없어요. 제공된 표시 정보만 우승 기록에 보존해요.
+        def metadata(field, expected_id, key):
+            value = item.get(field)
+            if value is None:
+                return None
+            value = _require_dict(value, f"trophy.{field}")
+            if value.get("id") != expected_id:
+                raise ValueError(f"trophy.{field} id mismatch")
+            result = value.get(key)
+            if result is None:
+                return None
+            return _require_string(result, f"trophy.{field}.{key}")
+
+        row = (player_id, team_id, competition_id, season_id,
+               metadata("team", team_id, "name"), metadata("team", team_id, "image_path"),
+               metadata("league", competition_id, "name"), metadata("season", season_id, "name"))
         rows.append(row)
 
     return rows, len(trophies)

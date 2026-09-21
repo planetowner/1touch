@@ -92,16 +92,7 @@ FixtureDetail fixtureDetailFromApiResponse(
                     label: category.label,
                     metrics: category.metrics
                         .map(
-                          (metric) => FixturePlayerStatMetric(
-                            code: metric.code,
-                            label: metric.label,
-                            kind: metric.kind,
-                            source: metric.source,
-                            statTypeIds: metric.statTypeIds,
-                            value: metric.value,
-                            numerator: metric.numerator,
-                            denominator: metric.denominator,
-                          ),
+                          fixturePlayerMetricFromResponse,
                         )
                         .toList(growable: false),
                   ),
@@ -154,3 +145,15 @@ FixtureDetail fixtureDetailFromApiResponse(
         .toList(growable: false),
   );
 }
+
+FixturePlayerStatMetric fixturePlayerMetricFromResponse(
+        ApiFixturePlayerStatMetricResponse metric) =>
+    FixturePlayerStatMetric(
+        code: metric.code,
+        label: metric.label,
+        kind: metric.kind,
+        source: metric.source,
+        statTypeIds: metric.statTypeIds,
+        value: metric.value,
+        numerator: metric.numerator,
+        denominator: metric.denominator);
