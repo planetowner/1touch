@@ -123,6 +123,8 @@ class DatabaseFlowTests(unittest.TestCase):
             CREATE TABLE fixture_lineups (fixture_id BIGINT, team_id BIGINT, player_id BIGINT, lineup_type_id INT, formation_field TEXT, PRIMARY KEY(fixture_id,team_id,player_id));
             CREATE TABLE players (player_id BIGINT PRIMARY KEY, display_name TEXT, image_path TEXT, position_id INT);
             CREATE TABLE positions (position_id INT PRIMARY KEY, position_group_code TEXT, position_code TEXT);
+            CREATE TABLE team_squad_members (team_id BIGINT, season_id BIGINT, player_id BIGINT,
+                jersey_number INT, PRIMARY KEY(team_id,season_id,player_id));
             INSERT INTO seasons VALUES (100,8,'2025/2026'), (200,2,'2025/2026'), (300,8,'2024/2025');
             INSERT INTO stages VALUES (10,100), (20,200), (30,300);
             INSERT INTO team_seasons VALUES (10,100);
@@ -228,6 +230,21 @@ class DatabaseFlowTests(unittest.TestCase):
         self.assertEqual(row["player_name"], "Updated name")
         self.assertEqual((row["position_group_code"], row["position_code"]), ("GK", "GK"))
         self.assertNotIn("total_minutes", row)
+
+    def test_jersey_number_uses_selected_team_season_and_preserves_missing_players(self):
+        self.add_fixture(1)
+        loader.rebuild_best_eleven("2025/2026")
+        self.sql.executemany("INSERT INTO team_squad_members VALUES (?,?,?,?)", [
+            (10, 100, 1, 27), (20, 100, 1, 9), (10, 300, 1, 17),
+            (10, 100, 2, None), (20, 100, 3, 10), (10, 300, 3, 11),
+        ])
+        result = BestElevenResponse.model_validate(self.api())
+        self.assertEqual(len(result.players), 11)
+        self.assertEqual(result.players[0].jersey_number, 27)
+        self.assertIsNone(result.players[1].jersey_number)
+        self.assertIsNone(result.players[2].jersey_number)
+        self.sql.execute("UPDATE team_squad_members SET jersey_number=28 WHERE team_id=10 AND season_id=100 AND player_id=1")
+        self.assertEqual(self.api()["players"][0]["jersey_number"], 28)
 
     def test_unavailable_formation_returns_none(self):
         self.assertIsNone(self.api())
