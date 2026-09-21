@@ -20,6 +20,7 @@ List<Standing> standingsFromApiResponse(
       groupName: '',
       teamId: row.teamId,
       teamName: row.teamName,
+      teamShortName: row.teamShortName,
       teamLogo: row.teamLogo,
       position: row.position,
       rankDelta: row.rankDelta,

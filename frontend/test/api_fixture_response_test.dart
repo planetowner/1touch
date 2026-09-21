@@ -1,8 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
+import 'package:onetouch/data/fixtures/api/api_fixture_mapper.dart';
+import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
+import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 
 void main() {
   group('ApiFixtureResponse', () {
+    test('carries database short names through the fixture to displayed teams',
+        () {
+      final json = _fixtureJson(
+          homeTeamName: 'FC Barcelona', awayTeamName: 'FC Augsburg')
+        ..['home_team_id'] = 83
+        ..['away_team_id'] = 90
+        ..['home_team_short_name'] = 'Barcelona'
+        ..['away_team_short_name'] = null;
+      final fixture = fixtureFromApiResponse(ApiFixtureResponse.fromJson(json));
+      final repository = MockTeamRepository(teams: const []);
+      expect(fixtureHomeTeam(fixture, repository).displayName, 'Barcelona');
+      expect(fixtureAwayTeam(fixture, repository).displayName, 'FC Augsburg');
+      expect(fixture.homeTeamName, 'FC Barcelona');
+      expect(fixture.awayTeamName, 'FC Augsburg');
+    });
+
     test('parses the current backend FixtureOut shape', () {
       final fixture = ApiFixtureResponse.fromJson(_fixtureJson());
 
