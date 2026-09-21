@@ -1,0 +1,529 @@
+{
+  "fixture": {
+    "id": 19320855,
+    "sport_id": 1,
+    "league_id": 570,
+    "season_id": 24526,
+    "state_id": 5,
+    "name": "Vic vs Atlético Madrid",
+    "starting_at": "2024-10-31 18:00:00",
+    "lineups": [
+      {
+        "id": 13454844342,
+        "sport_id": 1,
+        "fixture_id": 19320855,
+        "player_id": 37787565,
+        "team_id": 265921,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Sergi Taulats",
+        "jersey_number": 1,
+        "details": [
+          {
+            "id": 1998811770,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 119,
+            "data": {
+              "value": 46
+            }
+          },
+          {
+            "id": 1998811829,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 80,
+            "data": {
+              "value": 11
+            }
+          },
+          {
+            "id": 1998811852,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 116,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 1998811922,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 101,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 1998811993,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 106,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 1998811801,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 57,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 1998812009,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 27273,
+            "data": {
+              "value": 3
+            }
+          },
+          {
+            "id": 1998811968,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 107,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 1998811865,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 122,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 1998811878,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 123,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 1998811901,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 120,
+            "data": {
+              "value": 15
+            }
+          },
+          {
+            "id": 1998811942,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 27271,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 1998812063,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 104,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 1998812050,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 118,
+            "data": {
+              "value": 6.85
+            }
+          },
+          {
+            "id": 1998812086,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 1584,
+            "data": {
+              "value": 73
+            }
+          },
+          {
+            "id": 1998812102,
+            "fixture_id": 19320855,
+            "player_id": 37787565,
+            "team_id": 265921,
+            "lineup_id": 13454844342,
+            "type_id": 27270,
+            "data": {
+              "value": 40
+            }
+          }
+        ],
+        "player": {
+          "id": 37787565,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": null,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": null,
+          "type_id": null,
+          "common_name": "S. Taulats Canudas",
+          "firstname": "Sergi",
+          "lastname": "Taulats Canudas",
+          "name": "Sergi Taulats Canudas",
+          "display_name": "Sergi Taulats",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 187,
+          "weight": 80,
+          "date_of_birth": null,
+          "gender": "male"
+        }
+      },
+      {
+        "id": 13452865153,
+        "sport_id": 1,
+        "fixture_id": 19320855,
+        "player_id": 37787564,
+        "team_id": 265921,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": 1,
+        "player_name": "Agustín Mora",
+        "jersey_number": 13,
+        "details": [
+          {
+            "id": 1262651563,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 1262689888,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 103,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 1262653078,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 106,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 1262653079,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 57,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 1262653075,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 101,
+            "data": {
+              "value": 4
+            }
+          },
+          {
+            "id": 1262653083,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 107,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 1262653084,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 104,
+            "data": {
+              "value": 4
+            }
+          },
+          {
+            "id": 1262653086,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 123,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 1262653076,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 80,
+            "data": {
+              "value": 23
+            }
+          },
+          {
+            "id": 1262653081,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 120,
+            "data": {
+              "value": 37
+            }
+          },
+          {
+            "id": 1262653077,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 116,
+            "data": {
+              "value": 5
+            }
+          },
+          {
+            "id": 1262653082,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 118,
+            "data": {
+              "value": 7.21
+            }
+          },
+          {
+            "id": 1262653085,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 122,
+            "data": {
+              "value": 15
+            }
+          },
+          {
+            "id": 1262742266,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 1535,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 1998813889,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 27273,
+            "data": {
+              "value": 10
+            }
+          },
+          {
+            "id": 1998813917,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 27270,
+            "data": {
+              "value": 33
+            }
+          },
+          {
+            "id": 1998813913,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 1584,
+            "data": {
+              "value": 57
+            }
+          },
+          {
+            "id": 1998813870,
+            "fixture_id": 19320855,
+            "player_id": 37787564,
+            "team_id": 265921,
+            "lineup_id": 13452865153,
+            "type_id": 27271,
+            "data": {
+              "value": 9
+            }
+          }
+        ],
+        "player": {
+          "id": 37787564,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": null,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": null,
+          "type_id": null,
+          "common_name": "A. Mora Gil",
+          "firstname": "Agustín",
+          "lastname": "Mora Gil",
+          "name": "Agustín Mora Gil",
+          "display_name": "Agustín Mora",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 182,
+          "weight": 82,
+          "date_of_birth": "2000-08-09",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 14673342218,
+        "sport_id": 1,
+        "fixture_id": 19320855,
+        "player_id": 37787565,
+        "team_id": 265921,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Sergi Taulats",
+        "jersey_number": 99,
+        "details": [],
+        "player": {
+          "id": 37787565,
+          "sport_id": 1,
+          "country_id": 32,
+          "nationality_id": null,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": null,
+          "type_id": null,
+          "common_name": "S. Taulats Canudas",
+          "firstname": "Sergi",
+          "lastname": "Taulats Canudas",
+          "name": "Sergi Taulats Canudas",
+          "display_name": "Sergi Taulats",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 187,
+          "weight": 80,
+          "date_of_birth": null,
+          "gender": "male"
+        }
+      }
+    ],
+    "formations": [
+      {
+        "id": 8317637,
+        "fixture_id": 19320855,
+        "participant_id": 7980,
+        "formation": "3-4-2-1",
+        "location": "away"
+      },
+      {
+        "id": 8317638,
+        "fixture_id": 19320855,
+        "participant_id": 265921,
+        "formation": "4-3-3",
+        "location": "home"
+      }
+    ],
+    "events": []
+  },
+  "verified_lineup": {
+    "player_id": 37787565,
+    "jersey_number": 1,
+    "kept_lineup_id": 13454844342,
+    "removed_lineup_id": 14673342218
+  },
+  "team_id": 265921,
+  "removed_lineup_ids": [
+    14673342218
+  ],
+  "lineup_overrides": {
+    "13454844342": {
+      "details": []
+    }
+  },
+  "profiles": {},
+  "stat_player_overrides": {},
+  "discarded_stat_player_ids": [
+    37787565
+  ],
+  "source": "Affected lineup subset and original formations from 20260920-2024-detail-error-provider-profiles.json"
+}

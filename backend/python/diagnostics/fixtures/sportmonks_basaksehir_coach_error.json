@@ -1,0 +1,71 @@
+{
+  "source": {
+    "raw_source": "20260920-2024-detail-error-provider-profiles.json",
+    "verification": "20260920-2024-two-coach-verified-repairs.json",
+    "correct_coach": {
+      "id": 30462,
+      "player_id": 30462,
+      "sport_id": 1,
+      "country_id": 404,
+      "nationality_id": 404,
+      "city_id": 40832,
+      "common_name": "Ç. Atan",
+      "firstname": "Çagdas",
+      "lastname": "Atan",
+      "name": "Çagdas Atan",
+      "display_name": "Çagdas Atan",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/coaches/30/30462.png",
+      "height": 187,
+      "weight": 85,
+      "date_of_birth": "1980-02-29",
+      "gender": "male",
+      "meta": {
+        "fixture_id": 19296501,
+        "coach_id": 30462,
+        "participant_id": 3702
+      }
+    }
+  },
+  "fixture": {
+    "id": 19296501,
+    "events": [
+      {
+        "id": 156508153,
+        "fixture_id": 19296501,
+        "period_id": 5685536,
+        "participant_id": 3702,
+        "type_id": 20,
+        "section": "event",
+        "player_id": 93877,
+        "related_player_id": null,
+        "player_name": "T. Hiltunen",
+        "related_player_name": null,
+        "result": null,
+        "info": null,
+        "addition": "1st Redcard",
+        "minute": 79,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5685536,
+        "rescinded": false,
+        "sort_order": 1,
+        "type": {
+          "id": 20,
+          "name": "Redcard",
+          "code": "redcard",
+          "developer_name": "REDCARD",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ],
+    "statistics": [],
+    "lineups": [],
+    "formations": [],
+    "coaches": [],
+    "pressure": []
+  }
+}

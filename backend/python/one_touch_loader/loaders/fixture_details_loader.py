@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from ..core.db import fetch_all, transaction
+from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient
 from ..core.player_match_metrics import STORED_STAT_TYPE_IDS
 from .players_loader import insert_missing_player_profiles
@@ -23,7 +24,7 @@ SPORTMONKS_RATING_TYPE_ID = 118
 SPORTMONKS_MINUTES_PLAYED_TYPE_ID = 119
 
 SQL_SELECT_ALL_FIXTURES = """
-SELECT f.fixture_id
+SELECT f.fixture_id, s.is_current
 FROM fixtures f
 JOIN stages st ON st.stage_id = f.stage_id
 JOIN seasons s ON s.season_id = st.season_id
@@ -31,7 +32,7 @@ ORDER BY s.name, s.competition_id, f.starting_at, f.fixture_id
 """
 
 SQL_SELECT_SCOPED_FIXTURES = """
-SELECT f.fixture_id
+SELECT f.fixture_id, s.is_current
 FROM fixtures f
 JOIN stages st ON st.stage_id = f.stage_id
 JOIN seasons s ON s.season_id = st.season_id
@@ -258,6 +259,8 @@ def _load_scope(
     season_name: Optional[str] = None,
     competition_ids: Optional[List[int]] = None,
     fixture_id: Optional[int] = None,
+    *,
+    completed_current_seasons: bool = False,
 ) -> List[int]:
     if fixture_id is not None:
         rows = fetch_all("SELECT fixture_id FROM fixtures WHERE fixture_id = %s", (fixture_id,))
@@ -273,7 +276,28 @@ def _load_scope(
         raise ValueError("season_name and at least one competition_id must be provided together")
     if not rows:
         raise ValueError("No fixtures found for fixture-details scope")
-    return [row[0] for row in rows]
+    scope = [row[0] for row in rows]
+    if completed_current_seasons and fixture_id is None:
+        current_ids = [row[0] for row in rows if row[1]]
+        if current_ids:
+            client = SportmonksClient()
+            completed = set()
+            for offset in range(0, len(current_ids), 50):
+                for fixture in client.get_fixtures_batch(current_ids[offset:offset + 50], include="state"):
+                    if fixture["state_id"] in COMPLETED_STATE_IDS:
+                        completed.add(fixture["id"])
+            # DB에 NS로 남은 종료 경기도 포함해요. 과거 시즌과 기존 재개 순서는 유지해요.
+            current = set(current_ids)
+            scope = [fid for fid in scope if fid not in current or fid in completed]
+            print(f"Completed current-season scope: candidates={len(current_ids)} "
+                  f"completed={len(completed)} fixture_ids={json.dumps(scope)}", flush=True)
+    return scope
+
+
+def verified_event_player_profiles(payload: Dict) -> Dict[int, Dict]:
+    # 한 교체에 투입·아웃 프로필이 함께 없을 수 있어요. 검증된 목록만 모든 저장 경로에서 같이 써요.
+    return {profile["id"]: profile for event in payload["events"]
+            for profile in event.get("verified_player_profiles", [])}
 
 
 def _collect_fixture_details(
@@ -283,7 +307,8 @@ def _collect_fixture_details(
     player_stats_only: bool = False,
     from_fixture_id: Optional[int] = None,
 ) -> Dict[str, int]:
-    scope = _load_scope(season_name, competition_ids, fixture_id)
+    scope = _load_scope(season_name, competition_ids, fixture_id,
+                        completed_current_seasons=player_stats_only)
     if from_fixture_id is not None:
         if from_fixture_id not in scope:
             raise ValueError(f"Resume fixture {from_fixture_id} is not in the selected fixture-details scope")
@@ -311,11 +336,7 @@ def _collect_fixture_details(
                 rows = {key: normalized[key] for key in ("lineups", "player_stats")}
             else:
                 rows = _normalize_fixture_details(payload, fixture_id)
-                event_profiles = {
-                    event["verified_player_profile"]["id"]: event["verified_player_profile"]
-                    for event in payload["events"]
-                    if "verified_player_profile" in event
-                }
+                event_profiles = verified_event_player_profiles(payload)
             totals["players"] += replace_fixture_detail_rows(
                 fixture_id, rows, payload["lineups"], event_profiles,
             )
