@@ -37,7 +37,7 @@ void main() {
     (
       name: 'light',
       theme: app_style.whitetheme,
-      headerColor: app_style.AppPalette.white,
+      headerColor: app_style.AppPalette.black,
       tabColor: app_style.AppPalette.black,
     ),
     (
@@ -93,6 +93,13 @@ void main() {
         _effectiveTextColor(
           tester,
           find.byKey(const ValueKey('community-team-name')),
+        ),
+        testCase.headerColor,
+      );
+      expect(
+        _effectiveTextColor(
+          tester,
+          find.byKey(const ValueKey('community-follower-count')),
         ),
         testCase.headerColor,
       );
