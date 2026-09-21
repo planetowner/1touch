@@ -1,0 +1,1363 @@
+{
+  "source": "20260920-2024-detail-error-provider-profiles.json",
+  "evidence": "20260920-2024-salamanca-verified-repairs.json",
+  "fixtures": [
+    {
+      "id": 19332449,
+      "events": [
+        {
+          "id": 147349957,
+          "fixture_id": 19332449,
+          "period_id": 5766786,
+          "participant_id": 29606,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37651991,
+          "related_player_id": 383699,
+          "player_name": "Jesús Ares",
+          "related_player_name": "Álex Caramelo",
+          "result": null,
+          "info": null,
+          "addition": "3rd Substitution",
+          "minute": 57,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5766786,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147351114,
+          "fixture_id": 19332449,
+          "period_id": 5766786,
+          "participant_id": 29606,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 10647528,
+          "related_player_id": 188794,
+          "player_name": "Oscar Lorenzo",
+          "related_player_name": "Stéphane Emaná",
+          "result": null,
+          "info": null,
+          "addition": "9th Substitution",
+          "minute": 76,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5766786,
+          "rescinded": null,
+          "sort_order": 10,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "lineups": [
+        {
+          "id": 14152461785,
+          "sport_id": 1,
+          "fixture_id": 19332449,
+          "player_id": 37651991,
+          "team_id": 29606,
+          "position_id": null,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Jesús Ares",
+          "jersey_number": 17,
+          "details": [
+            {
+              "id": 1321780483,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 118,
+              "data": {
+                "value": 6.38
+              }
+            },
+            {
+              "id": 1321811544,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 41,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321793113,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 42,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321745203,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 120,
+              "data": {
+                "value": 9
+              }
+            },
+            {
+              "id": 1321745201,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 80,
+              "data": {
+                "value": 6
+              }
+            },
+            {
+              "id": 1321745202,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 116,
+              "data": {
+                "value": 6
+              }
+            },
+            {
+              "id": 1321741000,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 119,
+              "data": {
+                "value": 33
+              }
+            },
+            {
+              "id": 1321761703,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 107,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321761701,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 106,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321761702,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 105,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 1321773648,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 1491,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321773649,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 27266,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321850311,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 101,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321850312,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 51,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321946089,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 96,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000059833,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 27271,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000059880,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 27275,
+              "data": {
+                "value": 33
+              }
+            },
+            {
+              "id": 2000059888,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 27276,
+              "data": {
+                "value": 100
+              }
+            },
+            {
+              "id": 2000059854,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 27274,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2000059843,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 27272,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2000059872,
+              "fixture_id": 19332449,
+              "player_id": 37651991,
+              "team_id": 29606,
+              "lineup_id": 14152461785,
+              "type_id": 1584,
+              "data": {
+                "value": 100
+              }
+            }
+          ],
+          "player": {
+            "id": 37651991,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 32,
+            "city_id": null,
+            "position_id": 27,
+            "detailed_position_id": null,
+            "type_id": null,
+            "common_name": "J. Ares Maneiro",
+            "firstname": "Jesús",
+            "lastname": "Ares Maneiro",
+            "name": "Jesús Ares Maneiro",
+            "display_name": "Jesús Ares",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "2003-02-10",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14152461800,
+          "sport_id": 1,
+          "fixture_id": 19332449,
+          "player_id": 188794,
+          "team_id": 29606,
+          "position_id": 27,
+          "formation_field": "5:1",
+          "type_id": 11,
+          "formation_position": 11,
+          "player_name": "Stéphane Emaná",
+          "jersey_number": 18,
+          "details": [
+            {
+              "id": 1321393439,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 116,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 1321393443,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 123,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321393447,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 122,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321364847,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 120,
+              "data": {
+                "value": 22
+              }
+            },
+            {
+              "id": 1321364848,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 100,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321377099,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 80,
+              "data": {
+                "value": 9
+              }
+            },
+            {
+              "id": 1321406158,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 101,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321397841,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 118,
+              "data": {
+                "value": 7.06
+              }
+            },
+            {
+              "id": 1321424527,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 1491,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 1321424528,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 105,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 1321424529,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 94,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321363623,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 119,
+              "data": {
+                "value": 76
+              }
+            },
+            {
+              "id": 1321436430,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 42,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 1321436427,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 106,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 1321436431,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 41,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321436428,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 107,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 1321541644,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 56,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321689086,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 58,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321690030,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 117,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321576153,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 64,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321745204,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 78,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000059918,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 108,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000059929,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 27273,
+              "data": {
+                "value": 10
+              }
+            },
+            {
+              "id": 2000059960,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 1584,
+              "data": {
+                "value": 44
+              }
+            },
+            {
+              "id": 2000059901,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 27271,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000059950,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 9706,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000059905,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 27272,
+              "data": {
+                "value": 4
+              }
+            },
+            {
+              "id": 2000059967,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 27270,
+              "data": {
+                "value": 100
+              }
+            },
+            {
+              "id": 2000059943,
+              "fixture_id": 19332449,
+              "player_id": 188794,
+              "team_id": 29606,
+              "lineup_id": 14152461800,
+              "type_id": 97,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": {
+            "id": 188794,
+            "sport_id": 1,
+            "country_id": 593,
+            "nationality_id": 593,
+            "city_id": 100725,
+            "position_id": 27,
+            "detailed_position_id": 151,
+            "type_id": 27,
+            "common_name": "S. Emaná",
+            "firstname": "Stephane Onesime",
+            "lastname": "Emaná",
+            "name": "Stephane Onesime Emaná",
+            "display_name": "Stéphane Emaná",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/26/188794.png",
+            "height": 180,
+            "weight": 72,
+            "date_of_birth": "1994-06-17",
+            "gender": "male"
+          }
+        },
+        {
+          "id": 14152461802,
+          "sport_id": 1,
+          "fixture_id": 19332449,
+          "player_id": null,
+          "team_id": 29606,
+          "position_id": 27,
+          "formation_field": "4:1",
+          "type_id": 11,
+          "formation_position": 8,
+          "player_name": "Alejandro Caramelo Carrasco",
+          "jersey_number": 20,
+          "details": [
+            {
+              "id": 1321397790,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 106,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 1321397801,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 122,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 1321397783,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 123,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321397797,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 96,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321363630,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 119,
+              "data": {
+                "value": 57
+              }
+            },
+            {
+              "id": 1321416591,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 56,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321397784,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 80,
+              "data": {
+                "value": 13
+              }
+            },
+            {
+              "id": 1321397798,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 116,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321397800,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 120,
+              "data": {
+                "value": 25
+              }
+            },
+            {
+              "id": 1321436439,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 100,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321397799,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 1491,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 1321397791,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 118,
+              "data": {
+                "value": 6.6
+              }
+            },
+            {
+              "id": 1321509844,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 78,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321480862,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 41,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 1321480861,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 42,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2000060122,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 581,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060171,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 1584,
+              "data": {
+                "value": 85
+              }
+            },
+            {
+              "id": 2000060179,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 27270,
+              "data": {
+                "value": 67
+              }
+            },
+            {
+              "id": 2000059986,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 27267,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060088,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 110,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2000060107,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 27272,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 2000060128,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 108,
+              "data": {
+                "value": 2
+              }
+            },
+            {
+              "id": 2000060139,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 27273,
+              "data": {
+                "value": 5
+              }
+            },
+            {
+              "id": 1321436440,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 94,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060022,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 27269,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060100,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 27271,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2000060131,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 109,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060162,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461802,
+              "type_id": 27268,
+              "data": {
+                "value": 100
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14152461788,
+          "sport_id": 1,
+          "fixture_id": 19332449,
+          "player_id": null,
+          "team_id": 29606,
+          "position_id": null,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Óscar Lorenzo Díaz",
+          "jersey_number": 21,
+          "details": [
+            {
+              "id": 1321971020,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 106,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321915195,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 118,
+              "data": {
+                "value": 6.78
+              }
+            },
+            {
+              "id": 1321870713,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 119,
+              "data": {
+                "value": 14
+              }
+            },
+            {
+              "id": 1321885593,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 80,
+              "data": {
+                "value": 8
+              }
+            },
+            {
+              "id": 1321885596,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 122,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321885597,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 123,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321971023,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 117,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060200,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 27269,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060255,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 27273,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060248,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 109,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060232,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 27272,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2000060244,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 108,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2000060288,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 27270,
+              "data": {
+                "value": 100
+              }
+            },
+            {
+              "id": 1321885594,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 116,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 1321885595,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 120,
+              "data": {
+                "value": 9
+              }
+            },
+            {
+              "id": 2000060280,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 1584,
+              "data": {
+                "value": 100
+              }
+            },
+            {
+              "id": 2000060268,
+              "fixture_id": 19332449,
+              "player_id": null,
+              "team_id": 29606,
+              "lineup_id": 14152461788,
+              "type_id": 98,
+              "data": {
+                "value": 1
+              }
+            }
+          ],
+          "player": null
+        }
+      ],
+      "coaches": [],
+      "statistics": [],
+      "pressure": [],
+      "formations": []
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 383699,
+      "sport_id": 1,
+      "country_id": 32,
+      "nationality_id": 32,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": null,
+      "type_id": 27,
+      "common_name": "A. Caramelo Carrasco",
+      "firstname": "Alejandro",
+      "lastname": "Caramelo Carrasco",
+      "name": "Alejandro Caramelo Carrasco",
+      "display_name": "Álex Caramelo",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "1995-02-21",
+      "gender": "male",
+      "teams": []
+    },
+    {
+      "id": 10647528,
+      "sport_id": 1,
+      "country_id": 32,
+      "nationality_id": 32,
+      "city_id": 28695,
+      "position_id": 27,
+      "detailed_position_id": null,
+      "type_id": 27,
+      "common_name": "Ó. Lorenzo Díaz",
+      "firstname": "Óscar",
+      "lastname": "Lorenzo Díaz",
+      "name": "Óscar Lorenzo Díaz",
+      "display_name": "Oscar Lorenzo",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 178,
+      "weight": 72,
+      "date_of_birth": "2000-03-28",
+      "gender": "male",
+      "teams": []
+    }
+  ],
+  "expected_events": {
+    "19332449": [
+      {
+        "id": 147349957,
+        "fixture_id": 19332449,
+        "period_id": 5766786,
+        "participant_id": 29606,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 37651991,
+        "related_player_id": 383699,
+        "player_name": "Jesús Ares",
+        "related_player_name": "Álex Caramelo",
+        "result": null,
+        "info": null,
+        "addition": "3rd Substitution",
+        "minute": 57,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5766786,
+        "rescinded": null,
+        "sort_order": 3,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      },
+      {
+        "id": 147351114,
+        "fixture_id": 19332449,
+        "period_id": 5766786,
+        "participant_id": 29606,
+        "type_id": 18,
+        "section": "event",
+        "player_id": 10647528,
+        "related_player_id": 188794,
+        "player_name": "Oscar Lorenzo",
+        "related_player_name": "Stéphane Emaná",
+        "result": null,
+        "info": null,
+        "addition": "9th Substitution",
+        "minute": 76,
+        "extra_minute": null,
+        "injured": null,
+        "on_bench": false,
+        "coach_id": null,
+        "sub_type_id": null,
+        "detailed_period_id": 5766786,
+        "rescinded": null,
+        "sort_order": 10,
+        "type": {
+          "id": 18,
+          "name": "Substitution",
+          "code": "substitution",
+          "developer_name": "SUBSTITUTION",
+          "model_type": "event",
+          "stat_group": null
+        }
+      }
+    ]
+  },
+  "expected_lineups": {
+    "19332449": [
+      [
+        37651991,
+        17
+      ],
+      [
+        188794,
+        18
+      ],
+      [
+        383699,
+        20
+      ],
+      [
+        10647528,
+        21
+      ]
+    ]
+  },
+  "expected_profile_requests": {
+    "19332449": 2
+  }
+}
