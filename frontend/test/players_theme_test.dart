@@ -1,252 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
-import 'package:onetouch/features/PlayerScreenFeatures.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
-
-Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
-  final element = tester.element(finder);
-  final text = tester.widget<Text>(finder);
-  return DefaultTextStyle.of(element).style.merge(text.style).color;
-}
-
-BoxDecoration _decorationFor(WidgetTester tester, String key) {
-  final container = tester.widget<Container>(
-    find.byKey(ValueKey(key)).first,
-  );
-  return container.decoration! as BoxDecoration;
-}
-
-void _usePhone(WidgetTester tester, Size size) {
-  tester.view.physicalSize = size;
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.resetPhysicalSize);
-  addTearDown(tester.view.resetDevicePixelRatio);
-}
-
-Future<void> _pumpPlayers(
-  WidgetTester tester, {
-  required ThemeData theme,
-  Size size = const Size(393, 852),
-}) async {
-  _usePhone(tester, size);
-  await tester.pumpWidget(
-    MaterialApp(theme: theme, home: const Players()),
-  );
-  await tester.pump();
-}
+import 'package:onetouch/features/player/player_following_controller.dart';
+import 'support/player_detail_fixture.dart';
+import 'support/player_directory_fixture.dart';
 
 void main() {
-  testWidgets('player filter pills uppercase mixed-case labels',
-      (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: Scaffold(
-          body: FilterPill(label: 'Premier League', onTap: () {}),
-        ),
-      ),
-    );
-
-    expect(find.text('PREMIER LEAGUE'), findsOneWidget);
-    expect(find.text('Premier League'), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  for (final width in [320.0, 375.0, 393.0]) {
-    testWidgets('Players light mode fits ${width}px', (tester) async {
-      await _pumpPlayers(
-        tester,
-        theme: app_style.whitetheme,
-        size: Size(width, width == 320 ? 568 : 852),
-      );
-
-      expect(tester.takeException(), isNull);
-    });
-  }
-
-  testWidgets('Players uses a solid page background', (tester) async {
-    await _pumpPlayers(
-      tester,
-      theme: app_style.whitetheme,
-      size: const Size(393, 852),
-    );
-
-    expect(find.byKey(const ValueKey('players-brand-gradient')), findsNothing);
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is DecoratedBox &&
-            widget.decoration is BoxDecoration &&
-            (widget.decoration as BoxDecoration).gradient != null,
-      ),
-      findsNothing,
-    );
-    expect(tester.takeException(), isNull);
-  });
-
-  for (final testCase in <({
-    String name,
-    ThemeData theme,
-    Color page,
-    Color ranking,
-    Color badge,
-    Color pill,
-    Color watchImage,
-    Color watchInfo,
-    Color foreground,
-  })>[
-    (
-      name: 'light',
-      theme: app_style.whitetheme,
-      page: app_style.AppPalette.lightModeDarkGrey,
-      ranking: app_style.AppPalette.white,
-      badge: app_style.AppPalette.white,
-      pill: app_style.AppPalette.lightGreyBox,
-      watchImage: app_style.AppPalette.lightGreyBox,
-      watchInfo: app_style.AppPalette.white,
-      foreground: app_style.AppPalette.black,
-    ),
-    (
-      name: 'dark',
-      theme: app_style.darktheme,
-      page: app_style.AppPalette.black,
-      ranking: app_style.AppPalette.darkGrey,
-      badge: app_style.AppPalette.lightGrey,
-      pill: app_style.AppPalette.lightGrey,
-      watchImage: app_style.AppPalette.darkGrey,
-      watchInfo: app_style.AppPalette.lightGrey,
-      foreground: app_style.AppPalette.white,
-    ),
-  ]) {
-    testWidgets('Players surfaces follow the ${testCase.name} theme',
-        (tester) async {
-      await _pumpPlayers(tester, theme: testCase.theme);
-
-      expect(
-        tester.widget<Scaffold>(find.byType(Scaffold).first).backgroundColor,
-        testCase.page,
-      );
-      expect(_decorationFor(tester, 'players-ranking-card').color,
-          testCase.ranking);
-      expect(
-        _decorationFor(tester, 'players-ranking-card').boxShadow,
-        testCase.name == 'light' ? app_style.lightModeCardShadows : isEmpty,
-      );
-      expect(
-        _decorationFor(tester, 'ones-to-watch-card').boxShadow,
-        testCase.name == 'light' ? app_style.lightModeCardShadows : isEmpty,
-      );
-      expect(_decorationFor(tester, 'favorite-player-number-badge').color,
-          testCase.badge);
-      expect(
-        _decorationFor(tester, 'players-filter-pill-PREMIER LEAGUE').color,
-        testCase.pill,
-      );
-      expect(
-        tester
-            .widget<Container>(
-              find.byKey(const ValueKey('ones-to-watch-image-surface')).first,
-            )
-            .color,
-        testCase.watchImage,
-      );
-      expect(
-        tester
-            .widget<Container>(
-              find.byKey(const ValueKey('ones-to-watch-info-surface')).first,
-            )
-            .color,
-        testCase.watchInfo,
-      );
-      expect(
-        _effectiveTextColor(tester, find.text('1TOUCH RANKING')),
-        testCase.foreground,
-      );
-      expect(tester.widget<Icon>(find.byIcon(Icons.tune)).color,
-          testCase.foreground);
-      expect(tester.widget<Icon>(find.byIcon(Icons.search).first).color,
-          testCase.foreground);
-      expect(
-        tester.widget<Icon>(find.byIcon(Icons.safety_divider)).color,
-        testCase.foreground,
-      );
-      expect(
-        tester.widget<Icon>(find.byIcon(Icons.account_circle_outlined)).color,
-        testCase.foreground,
-      );
-      expect(tester.takeException(), isNull);
-    });
-  }
-
-  testWidgets('Players light-mode sheets use light surfaces', (tester) async {
-    await _pumpPlayers(tester, theme: app_style.whitetheme);
-
-    await tester.tap(find.byIcon(Icons.tune));
+  Future<void> pump(WidgetTester tester,
+      {Size size = const Size(430, 932),
+      bool dark = false,
+      FakePlayerDirectoryRepository? repository,
+      FakeFollowingPlayersRepository? following}) async {
+    await tester.binding.setSurfaceSize(size);
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+        theme: dark ? app_style.darktheme : app_style.whitetheme,
+        home: Players(
+            repository: repository ?? FakePlayerDirectoryRepository(),
+            detailRepository: FakePlayerDetailRepository(),
+            followingController: PlayerFollowingController(
+                repository: following ?? FakeFollowingPlayersRepository()))));
     await tester.pumpAndSettle();
-    expect(tester.widget<BottomSheet>(find.byType(BottomSheet)).backgroundColor,
-        app_style.AppPalette.white);
-    expect(_effectiveTextColor(tester, find.text('FILTER')),
-        app_style.AppPalette.black);
-    expect(
-      find.descendant(
-        of: find.byType(BottomSheet),
-        matching: find.text('PREMIER LEAGUE'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byType(BottomSheet),
-        matching: find.text('Premier League'),
-      ),
-      findsNothing,
-    );
-    expect(tester.widget<Icon>(find.byIcon(Icons.check).first).color,
-        app_style.AppPalette.black);
-    final filterButton = tester.widget<ElevatedButton>(
-      find.widgetWithText(ElevatedButton, 'UPDATE FILTER'),
-    );
-    expect(
-      filterButton.style?.backgroundColor?.resolve({}),
-      app_style.AppPalette.black,
-    );
+  }
+
+  for (final size in [const Size(320, 568), const Size(430, 932)]) {
+    for (final dark in [false, true]) {
+      testWidgets('real player directory fits $size dark=$dark',
+          (tester) async {
+        await pump(tester, size: size, dark: dark);
+        expect(find.text('Favorite player'), findsOneWidget);
+        expect(find.text('Ranked player 1'), findsOneWidget);
+        expect(find.text('Ranked player 6'), findsNothing);
+        expect(find.text('All seasons'), findsNothing);
+        expect(find.textContaining('Ranking data unavailable: Bundesliga'),
+            findsOneWidget);
+        await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
+        await tester.pumpAndSettle();
+        expect(find.text('Improving player'), findsOneWidget);
+        expect(find.text('+2.20'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+  testWidgets(
+      'league and position filters reach the API and unavailable league stays empty',
+      (tester) async {
+    final repository = FakePlayerDirectoryRepository();
+    await pump(tester, repository: repository);
+    expect(repository.calls.single, (league: null, position: null, offset: 0));
+    await tester.tap(find.byTooltip('Ranking filters'));
+    await tester.pumpAndSettle();
+    tester
+        .widget<DropdownButtonFormField<int>>(
+            find.byType(DropdownButtonFormField<int>))
+        .onChanged!(82);
+    tester
+        .widget<DropdownButtonFormField<String>>(
+            find.byType(DropdownButtonFormField<String>))
+        .onChanged!('GK');
+    await tester.tap(find.text('Apply'));
+    await tester.pumpAndSettle();
+    expect(repository.calls.last, (league: 82, position: 'GK', offset: 0));
+    expect(find.text('No ranking data for these filters'), findsOneWidget);
+    expect(find.text('Ranked player 1'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+      'favorite editor cancels without saving and saves authoritative list',
+      (tester) async {
+    final following = FakeFollowingPlayersRepository();
+    await pump(tester, following: following);
+    await tester.tap(find.byTooltip('Edit favorites'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Remove player'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();
-
-    await tester.tap(find.byIcon(Icons.border_color));
+    expect(following.saved, isNull);
+    expect(find.text('Favorite player'), findsOneWidget);
+    await tester.tap(find.byTooltip('Edit favorites'));
     await tester.pumpAndSettle();
-    expect(
-      _decorationFor(tester, 'following-players-sheet').color,
-      app_style.AppPalette.white,
-    );
-    expect(
-      _decorationFor(tester, 'following-players-search').color,
-      app_style.AppPalette.lightGreyBox,
-    );
-    expect(_effectiveTextColor(tester, find.text('Following Players')),
-        app_style.AppPalette.black);
-    expect(tester.takeException(), isNull);
+    await tester.tap(find.byTooltip('Remove player'));
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(following.saved, isEmpty);
+    expect(find.text('Add favorite players'), findsOneWidget);
   });
-
-  testWidgets('full ranking popup uses a white light-mode surface',
-      (tester) async {
-    await _pumpPlayers(tester, theme: app_style.whitetheme);
-
-    await tester.ensureVisible(find.text('See All'));
+  testWidgets('directory retry restores real results', (tester) async {
+    final repository = FakePlayerDirectoryRepository()..fail = true;
+    await pump(tester, repository: repository);
+    expect(find.text('Could not load ranking · Retry'), findsOneWidget);
+    expect(find.text('Ranked player 1'), findsNothing);
+    repository.fail = false;
+    await tester.tap(find.text('Could not load ranking · Retry'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('See All'));
-    await tester.pumpAndSettle();
-
-    expect(
-      tester
-          .widget<Scaffold>(find.byKey(const ValueKey('full-ranking-sheet')))
-          .backgroundColor,
-      app_style.AppPalette.white,
-    );
-    expect(_effectiveTextColor(tester, find.text('1Touch Ranking')),
-        app_style.AppPalette.black);
-    expect(tester.takeException(), isNull);
+    expect(find.text('Ranked player 1'), findsOneWidget);
   });
 }

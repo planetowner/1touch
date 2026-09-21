@@ -1,171 +1,152 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
+import 'package:onetouch/features/player/player_picker_sheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
-import 'package:onetouch/models/player.dart';
+import 'package:onetouch/data/players/player_detail_repository.dart';
+import 'package:onetouch/data/players/player_detail_repository_provider.dart';
+import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/models/player_detail.dart';
 
-part 'comparison_card.dart';
 part 'comparison_header.dart';
-part 'comparison_mock_data.dart';
-part 'comparison_models.dart';
-part 'comparison_picker_sheets.dart';
-part 'comparison_stats.dart';
-part 'radar_chart.dart';
 
 class PlayerComparisonScreen extends StatefulWidget {
-  /// Pass a player ID only when entering from a specific player page.
+  const PlayerComparisonScreen(
+      {super.key, this.initialPlayerId, this.repository});
   final String? initialPlayerId;
-
-  const PlayerComparisonScreen({super.key, this.initialPlayerId});
-
+  final PlayerDetailRepository? repository;
   @override
   State<PlayerComparisonScreen> createState() => _PlayerComparisonScreenState();
 }
 
 class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
-  late final ScrollController _scrollController;
-
-  ComparisonPlayer? _p1;
-  ComparisonPlayer? _p2;
-  String? _s1;
-  String? _s2;
-
-  bool get _bothReady => _p1 != null && _p2 != null;
-
+  final List<PlayerDetail?> _players = [null, null];
+  bool _loading = false;
+  String? _error;
+  int _request = 0;
+  PlayerDetailRepository get _repository =>
+      widget.repository ?? playerDetailRepository;
+  bool get _ready =>
+      _players.every((p) => p != null) &&
+      _players[0]!.analysis?.position != null &&
+      _players[0]!.analysis?.position == _players[1]!.analysis?.position;
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _selectInitialPlayer();
+    final raw = widget.initialPlayerId;
+    final id = raw == null
+        ? null
+        : int.tryParse(raw) ?? playerRepository.findById(raw)?.externalPlayerId;
+    if (id != null) _load(0, id);
   }
 
-  void _selectInitialPlayer() {
-    final initialPlayerId = widget.initialPlayerId;
-    if (initialPlayerId == null) return;
-
-    _p1 = _findById(initialPlayerId);
-    _s1 = _latestSeason(_p1);
-  }
-
-  String? _latestSeason(ComparisonPlayer? player) {
-    if (player == null || player.clubSeasons.isEmpty) return null;
-    return player.clubSeasons.values.first.last;
-  }
-
-  void _openPlayerPicker(int slot) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _PlayerPickerSheet(
-        slot: slot,
-        excludedId: slot == 1 ? _p2?.id : _p1?.id,
-        onPick: (player) {
-          Navigator.pop(context);
-          _openSeasonPicker(slot, player);
-        },
-      ),
-    );
-  }
-
-  void _openSeasonPicker(int slot, ComparisonPlayer player) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _SeasonPickerSheet(
-        player: player,
-        onPick: (season) {
-          Navigator.pop(context);
-          setState(() {
-            if (slot == 1) {
-              _p1 = player;
-              _s1 = season;
-            } else {
-              _p2 = player;
-              _s2 = season;
-            }
-          });
-        },
-      ),
-    );
-  }
-
-  void _selectPair(ComparisonPlayer p1, ComparisonPlayer p2) {
+  Future<void> _load(int slot, int id, {int? seasonId}) async {
+    final request = ++_request;
     setState(() {
-      _p1 = p1;
-      _s1 = _latestSeason(p1);
-      _p2 = p2;
-      _s2 = _latestSeason(p2);
+      _loading = true;
+      _error = null;
     });
+    try {
+      final player = await _repository.load(id, seasonId: seasonId);
+      if (!mounted || request != _request) return;
+      final other = _players[1 - slot];
+      final position = player.analysis?.position;
+      setState(() => _players[slot] = player);
+      // 프로필 포지션으로 추정하지 않고 선택한 시즌의 실제 최다 출전 포지션을 비교해요.
+      if (other != null &&
+          (position == null || position != other.analysis?.position)) {
+        setState(() => _error =
+            'Select a player with the same season position (${other.analysis?.position ?? 'unavailable'}).');
+      }
+    } on Object {
+      if (mounted && request == _request) {
+        setState(() => _error =
+            'Could not load player data. Please select the player again.');
+      }
+    } finally {
+      if (mounted && request == _request) setState(() => _loading = false);
+    }
   }
 
-  void _handleBack() {
-    if (!_bothReady) {
-      if (Navigator.of(context).canPop()) {
-        context.pop();
-      } else {
-        context.go('/players');
-      }
+  Future<void> _pick(int slot) async {
+    final candidate = await showModalBottomSheet<PlayerCandidate>(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => PlayerPickerSheet(
+            repository: _repository, excludedId: _players[1 - slot]?.playerId));
+    if (candidate != null && mounted) await _load(slot, candidate.id);
+  }
+
+  void _back() {
+    if (_ready) {
+      setState(() {
+        _request++;
+        _loading = false;
+        _players[1] = null;
+      });
       return;
     }
-
-    setState(() {
-      _p2 = null;
-      _s2 = null;
-    });
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOut,
-      );
+    if (Navigator.of(context).canPop()) {
+      context.pop();
+    } else {
+      context.go('/players');
     }
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       key: const ValueKey('player-comparison-scaffold'),
-      backgroundColor:
-          isDark ? const Color(0xFF0A0A0A) : AppPalette.lightModeDarkGrey,
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _HeaderArea(
-                  p1: _p1,
-                  p2: _p2,
-                  s1: _s1,
-                  s2: _s2,
-                  onBack: _handleBack,
-                  onSearch: () => context.push('/search'),
-                  onTap1: () => _openPlayerPicker(1),
-                  onTap2: () => _openPlayerPicker(2),
-                ),
-                if (_bothReady)
-                  _ComparisonContent(p1: _p1!, p2: _p2!)
-                else
-                  _MostComparedSection(onTapPair: _selectPair),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+      backgroundColor: mainPageBackground(context),
+      body: SafeArea(
+          child: SingleChildScrollView(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+            _HeaderArea(
+                p1: _players[0],
+                p2: _players[1],
+                onBack: _back,
+                onSearch: () {
+                  if (!_loading) _pick(_players[0] == null ? 0 : 1);
+                },
+                onTap1: _loading ? null : () => _pick(0),
+                onTap2: _loading ? null : () => _pick(1)),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_loading) const LinearProgressIndicator(),
+                      if (_error != null)
+                        Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Text(_error!)),
+                      for (var slot = 0; slot < 2; slot++)
+                        if (_players[slot] != null)
+                          Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: PlayerSeasonSelector(
+                                  key: ValueKey(
+                                      'comparison-season-$slot-${_players[slot]!.selectedSeason?.id}'),
+                                  detail: _players[slot]!,
+                                  onChanged: (season) => _loading
+                                      ? null
+                                      : _load(slot, _players[slot]!.playerId,
+                                          seasonId: season))),
+                      if (_ready) ...[
+                        Text(
+                            '${_players[0]!.analysis?.position ?? '—'} · Season totals',
+                            style: Body2_b.style),
+                        const SizedBox(height: 16),
+                        PlayerStatCategories(
+                            categories: _players[0]!.analysis?.categories ?? [],
+                            comparison:
+                                _players[1]!.analysis?.categories ?? []),
+                      ] else if (!_loading)
+                        const Text(
+                            'Select two players with the same season position to compare.'),
+                    ])),
+          ]))));
 }
