@@ -13,9 +13,11 @@ void main() {
   ];
   final salah = playerRepository.findById('mohamed-salah')!;
 
-  test('player gradient ends below the full overview top block', () {
+  test('player gradient heights follow the visible header content', () {
     expect(playerDetailOverviewGradientHeight(20), 329);
     expect(playerDetailOverviewGradientHeight(59), 368);
+    expect(playerDetailTabGradientHeight(20), 168);
+    expect(playerDetailTabGradientHeight(59), 207);
   });
 
   for (final size in phoneSizes) {
@@ -111,9 +113,11 @@ void main() {
         matching: find.byType(Icon),
       ),
     );
-    final solidBackground = tester.widget<ColoredBox>(
-      find.byKey(const ValueKey('player-detail-solid-background')),
+    final gradientBox = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('player-detail-gradient')),
     );
+    final gradient =
+        (gradientBox.decoration as BoxDecoration).gradient! as LinearGradient;
     final topBlock = find.byKey(const ValueKey('player-overview-top-block'));
 
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
@@ -138,13 +142,16 @@ void main() {
     );
     expect(nestedScroll.physics, isA<ClampingScrollPhysics>());
     expect(overviewScroll.physics, isA<ClampingScrollPhysics>());
-    expect(solidBackground.color, app_style.AppPalette.lightModeDarkGrey);
+    expect(gradient.begin, Alignment.bottomCenter);
+    expect(gradient.end, Alignment.topCenter);
+    expect(
+      gradient.colors,
+      const [Color(0x333D3D3D), Color(0x003D3D3D)],
+    );
     await tester.pumpAndSettle();
     expect(
       tester
-          .getSize(
-            find.byKey(const ValueKey('player-detail-solid-background')),
-          )
+          .getSize(find.byKey(const ValueKey('player-detail-gradient')))
           .height,
       closeTo(368, 0.01),
     );
@@ -156,6 +163,38 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(topBlock).dy, closeTo(topBeforeDrag, 0.01));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('non-overview gradients stop at the bottom of the tab bar',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(393, 852),
+            padding: EdgeInsets.only(top: 59),
+          ),
+          child: PlayerCard(player: salah),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.text('Analysis'));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('player-detail-gradient')))
+          .height,
+      closeTo(207, 0.01),
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -221,7 +260,7 @@ void main() {
     expect(tester.takeException(), isNull, reason: 'Career must not overflow');
   });
 
-  testWidgets('player detail uses a solid background in dark mode',
+  testWidgets('player detail uses the dark-mode neutral gradient',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -234,10 +273,22 @@ void main() {
     );
     await tester.pump();
 
-    final solidBackground = tester.widget<ColoredBox>(
-      find.byKey(const ValueKey('player-detail-solid-background')),
+    final gradientBox = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('player-detail-gradient')),
     );
-    expect(solidBackground.color, app_style.AppPalette.black);
+    final gradient =
+        (gradientBox.decoration as BoxDecoration).gradient! as LinearGradient;
+    expect(gradient.begin, Alignment.bottomCenter);
+    expect(gradient.end, Alignment.topCenter);
+    expect(
+      gradient.colors,
+      const [Color(0xFF282929), Color(0x00282929)],
+    );
+    expect(
+        tester
+            .getSize(find.byKey(const ValueKey('player-detail-gradient')))
+            .height,
+        closeTo(309, 0.01));
     expect(tester.takeException(), isNull);
   });
 

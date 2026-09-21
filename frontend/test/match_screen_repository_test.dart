@@ -310,6 +310,10 @@ void main() {
     ]);
     expect(yellowCards.homePercent, 2);
     expect(yellowCards.awayPercent, 0);
+    expect(statistics.homeColor, const Color(0xFFD92455));
+    expect(statistics.awayColor, const Color(0xFF18539F));
+    expect(momentum.homeColor, const Color(0xFFD92455));
+    expect(momentum.awayColor, const Color(0xFF18539F));
     expect(
       tester
           .widget<Container>(
@@ -318,7 +322,7 @@ void main() {
             ),
           )
           .color,
-      const Color(0xFFFF5C5C),
+      statistics.homeColor,
     );
     expect(
       tester
@@ -328,7 +332,7 @@ void main() {
             ),
           )
           .color,
-      Colors.white,
+      statistics.awayColor,
     );
     expect(momentum.values[10], 0.7);
     expect(momentum.values[20], -0.4);
