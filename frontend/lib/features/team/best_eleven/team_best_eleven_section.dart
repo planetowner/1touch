@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
+import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 
 part 'best_eleven_formation_filter.dart';
@@ -195,7 +197,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: BestElevenPitch(players: players),
+      child: BestElevenPitch(teamId: widget.teamId!, players: players),
     );
   }
 
@@ -252,7 +254,10 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
               child: Text('No best eleven available', style: Body2.style),
             )
           else
-            BestElevenPitch(players: _lineup!.players),
+            BestElevenPitch(
+              teamId: widget.teamId!,
+              players: _lineup!.players,
+            ),
         ],
       ),
     );
