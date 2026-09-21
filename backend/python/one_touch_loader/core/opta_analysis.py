@@ -12,6 +12,7 @@ from .player_match_metrics import POSITION_GROUPS
 
 
 RECOVERY_KIND = "recovery"
+RECOVERY_THIRDS = ("defensive", "middle", "attacking")
 ANALYSIS_EVENTS = {
     "Successful passes": "completed_pass", "Key Passes": "key_pass", "Assists": "assist",
     "Tackles won": "tackle_won", "Tackles lost": "tackle_lost",
@@ -146,13 +147,58 @@ def defensive_metrics(events: list[dict], side: str) -> dict:
                "percentage": round(100 * value / total, 2) if complete and total else None}
               for half, value in (("own", total - high_regains if complete else None),
                                   ("opponent", high_regains))]
+    # 공격 방향을 맞춘 뒤 3등분하고 경계 위의 점은 다음 구역에 포함해요.
+    third_counts = Counter(RECOVERY_THIRDS[0 if a["attacking_position"]["x"] < 100 / 3
+                                          else 1 if a["attacking_position"]["x"] < 200 / 3 else 2]
+                           for a in actions)
+    thirds = [{"third": third, "count": third_counts[third] if complete else None,
+               "percentage": round(100 * third_counts[third] / total, 6) if complete and total else None}
+              for third in RECOVERY_THIRDS]
     # 지도·평균선·진영 비중은 모두 같은 필드 선수 Recovery만 써요. 태클 등 다른 행동은 섞지 않아요.
     return {"complete": complete, "missing_position_count": missing_position_count,
             "action_count": total, "actions": actions,
-            "recoveries": count, "high_regains": high_regains, "halves": halves,
+            "recoveries": count, "high_regains": high_regains, "halves": halves, "thirds": thirds,
             "average_regain_x": round(mean_x, 6) if mean_x is not None else None,
             "average_regain_height_m": round(mean_x * PITCH_LENGTH_M / 100, 2) if mean_x is not None else None}
 
 
 def team_analysis(events: list[dict], side: str) -> dict:
     return {**passing_metrics(events, side), "defensive_activity": defensive_metrics(events, side)}
+
+
+def recovery_baseline(matches: list[dict], target_fixture_id: int) -> dict:
+    """같은 시즌·기준 시각 범위의 팀별 회수 비중을 동일 가중치로 평균내요."""
+    totals = [0.0] * len(RECOVERY_THIRDS)
+    collected = included = incomplete = team_count = zero_count = recovery_count = 0
+    included_target = False
+    for match in matches:
+        if not match["collected_at"]:
+            continue
+        collected += 1
+        metrics = [team["defensive_activity"] for team in match["teams"].values()]
+        # 시연과 같이 한 팀의 포지션이 불완전해도 그 경기의 양 팀을 비교에서 제외해요.
+        if any(not metric["complete"] for metric in metrics):
+            incomplete += 1
+            continue
+        eligible = [metric for metric in metrics if metric["recoveries"]]
+        zero_count += len(metrics) - len(eligible)
+        if eligible:
+            included += 1
+            included_target |= match["fixture_id"] == target_fixture_id
+        for metric in eligible:
+            team_count += 1
+            recovery_count += metric["recoveries"]
+            for i, third in enumerate(metric["thirds"]):
+                # 회수 횟수가 많은 팀에 가중치를 주거나 반올림한 비중을 다시 평균내지 않아요.
+                totals[i] += 100 * third["count"] / metric["recoveries"]
+    return {
+        "method": "equal_weight_mean_of_team_match_outfield_recovery_shares",
+        "finished_fixture_count": len(matches), "collected_fixture_count": collected,
+        "uncollected_fixture_count": len(matches) - collected,
+        "included_fixture_count": included, "team_match_count": team_count,
+        "excluded_position_incomplete_fixture_count": incomplete,
+        "excluded_zero_recovery_team_match_count": zero_count,
+        "recovery_count": recovery_count, "includes_target": included_target,
+        "thirds": [{"third": third, "percentage": totals[i] / team_count if team_count else None}
+                   for i, third in enumerate(RECOVERY_THIRDS)],
+    }
