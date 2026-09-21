@@ -96,6 +96,7 @@ class CommunityTeamHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isLight = Theme.of(context).brightness == Brightness.light;
+    final foreground = Theme.of(context).colorScheme.onSurface;
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -131,7 +132,7 @@ class CommunityTeamHeader extends StatelessWidget {
                           team.name,
                           key: const ValueKey('community-team-name'),
                           style: Heading4.style.copyWith(
-                            color: AppPalette.white,
+                            color: foreground,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -163,7 +164,8 @@ class CommunityTeamHeader extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     _formatFollowers(followerCount),
-                    style: Body2.style.copyWith(color: AppPalette.white),
+                    key: const ValueKey('community-follower-count'),
+                    style: Body2.style.copyWith(color: foreground),
                   ),
                 ],
               ),
