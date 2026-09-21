@@ -9,6 +9,7 @@ class BestElevenPitch extends StatelessWidget {
             (player) => _BestElevenPitchPlayer(
               slotKey: player.slotKey,
               playerName: player.playerName,
+              jerseyNumber: player.jerseyNumber,
             ),
           ),
         );
@@ -145,7 +146,7 @@ class _BestElevenPlayerDot extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Text(
-              '##',
+              player.jerseyNumber?.toString() ?? '##',
               style: Heading5.style.copyWith(color: colors.onPrimary),
             ),
           ),
@@ -167,8 +168,10 @@ class _BestElevenPitchPlayer {
   const _BestElevenPitchPlayer({
     required this.slotKey,
     required this.playerName,
+    required this.jerseyNumber,
   });
 
   final String slotKey;
   final String? playerName;
+  final int? jerseyNumber;
 }
