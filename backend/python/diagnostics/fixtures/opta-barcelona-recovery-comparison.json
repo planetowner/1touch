@@ -1,0 +1,2440 @@
+{
+  "fixture_id": 19732687,
+  "extracted_at": "2026-09-19T13:09:03.025215-04:00",
+  "source_url": "https://dataviz.theanalyst.com/opta-football-match-centre/?competitionId=34pl8szyvrbwcmfkuocjm3r6t&seasonId=830epggffy1nfkfyrtpqdwhlg&matchId=7h4zres5o8hqsaici9wxjwx04",
+  "baseline": {
+    "method": "equal_weight_mean_of_team_match_outfield_recovery_shares",
+    "season": "2026/2027",
+    "through": "2026-09-16 19:30:00",
+    "finished_fixture_count": 57,
+    "collected_fixture_count": 57,
+    "included_fixture_count": 57,
+    "team_match_count": 114,
+    "excluded_position_incomplete": 0,
+    "recovery_count": 4278,
+    "shares": [
+      44.559771082634285,
+      45.605376191739325,
+      9.834852725626387
+    ],
+    "includes_target": true
+  },
+  "barcelona": {
+    "fixture_id": 19732687,
+    "team_id": 83,
+    "side": "home",
+    "complete": true,
+    "missing_position_count": 0,
+    "count": 42,
+    "thirds": [
+      10,
+      29,
+      3
+    ],
+    "shares": [
+      23.809523809523807,
+      69.04761904761905,
+      7.142857142857142
+    ],
+    "points": [
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-5",
+        "player": "Karim Adeyemi",
+        "minute": 1,
+        "extra": 0,
+        "x": 49.6,
+        "y": 42.4
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-9",
+        "player": "Rodri",
+        "minute": 1,
+        "extra": 0,
+        "x": 49.5,
+        "y": 70.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-45",
+        "player": "Pedri",
+        "minute": 4,
+        "extra": 0,
+        "x": 55.9,
+        "y": 22.6
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-72",
+        "player": "Dani Olmo",
+        "minute": 5,
+        "extra": 0,
+        "x": 70.4,
+        "y": 61.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-77",
+        "player": "Gerard Martín",
+        "minute": 6,
+        "extra": 0,
+        "x": 44.3,
+        "y": 65.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-99",
+        "player": "Pedri",
+        "minute": 7,
+        "extra": 0,
+        "x": 53.0,
+        "y": 27.3
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-111",
+        "player": "João Cancelo",
+        "minute": 9,
+        "extra": 0,
+        "x": 38.8,
+        "y": 24.0
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-141",
+        "player": "Pedri",
+        "minute": 12,
+        "extra": 0,
+        "x": 31.3,
+        "y": 82.5
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-171",
+        "player": "Rodri",
+        "minute": 15,
+        "extra": 0,
+        "x": 33.8,
+        "y": 11.1
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-184",
+        "player": "Pedri",
+        "minute": 16,
+        "extra": 0,
+        "x": 61.7,
+        "y": 95.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-218",
+        "player": "Karim Adeyemi",
+        "minute": 18,
+        "extra": 0,
+        "x": 58.7,
+        "y": 23.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-247",
+        "player": "Dani Olmo",
+        "minute": 19,
+        "extra": 0,
+        "x": 65.6,
+        "y": 55.3
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-254",
+        "player": "Dani Olmo",
+        "minute": 20,
+        "extra": 0,
+        "x": 56.4,
+        "y": 89.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-277",
+        "player": "Eric García",
+        "minute": 22,
+        "extra": 0,
+        "x": 30.4,
+        "y": 89.7
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-289",
+        "player": "Pedri",
+        "minute": 26,
+        "extra": 0,
+        "x": 58.6,
+        "y": 9.6
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-321",
+        "player": "Pedri",
+        "minute": 29,
+        "extra": 0,
+        "x": 61.7,
+        "y": 71.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-326",
+        "player": "Eric García",
+        "minute": 29,
+        "extra": 0,
+        "x": 76.4,
+        "y": 90.4
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-349",
+        "player": "Lamine Yamal",
+        "minute": 33,
+        "extra": 0,
+        "x": 3.8,
+        "y": 94.6
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-359",
+        "player": "Andreas Christensen",
+        "minute": 33,
+        "extra": 0,
+        "x": 48.7,
+        "y": 56.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-387",
+        "player": "Eric García",
+        "minute": 37,
+        "extra": 0,
+        "x": 43.3,
+        "y": 91.9
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-425",
+        "player": "Rodri",
+        "minute": 41,
+        "extra": 0,
+        "x": 45.8,
+        "y": 44.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-439",
+        "player": "Andreas Christensen",
+        "minute": 41,
+        "extra": 0,
+        "x": 42.0,
+        "y": 55.6
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-442",
+        "player": "Rodri",
+        "minute": 42,
+        "extra": 0,
+        "x": 53.8,
+        "y": 35.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-480",
+        "player": "Pedri",
+        "minute": 45,
+        "extra": 1,
+        "x": 46.0,
+        "y": 83.7
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-485",
+        "player": "Gerard Martín",
+        "minute": 45,
+        "extra": 2,
+        "x": 51.8,
+        "y": 3.3
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-531",
+        "player": "João Cancelo",
+        "minute": 45,
+        "extra": 5,
+        "x": 34.0,
+        "y": 27.9
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-605",
+        "player": "João Cancelo",
+        "minute": 49,
+        "extra": 0,
+        "x": 30.9,
+        "y": 29.1
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-637",
+        "player": "Eric García",
+        "minute": 54,
+        "extra": 0,
+        "x": 32.4,
+        "y": 76.6
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-671",
+        "player": "Eric García",
+        "minute": 56,
+        "extra": 0,
+        "x": 65.9,
+        "y": 97.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-674",
+        "player": "Andreas Christensen",
+        "minute": 57,
+        "extra": 0,
+        "x": 33.1,
+        "y": 74.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-752",
+        "player": "Karim Adeyemi",
+        "minute": 70,
+        "extra": 0,
+        "x": 7.6,
+        "y": 13.5
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-801",
+        "player": "Karim Adeyemi",
+        "minute": 74,
+        "extra": 0,
+        "x": 60.2,
+        "y": 26.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-845",
+        "player": "João Cancelo",
+        "minute": 77,
+        "extra": 0,
+        "x": 93.6,
+        "y": 6.7
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-865",
+        "player": "Eric García",
+        "minute": 80,
+        "extra": 0,
+        "x": 42.9,
+        "y": 93.6
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-882",
+        "player": "Eric García",
+        "minute": 81,
+        "extra": 0,
+        "x": 64.3,
+        "y": 95.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-892",
+        "player": "Andreas Christensen",
+        "minute": 81,
+        "extra": 0,
+        "x": 33.4,
+        "y": 93.6
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-896",
+        "player": "Andreas Christensen",
+        "minute": 81,
+        "extra": 0,
+        "x": 8.6,
+        "y": 68.5
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-929",
+        "player": "Eric García",
+        "minute": 84,
+        "extra": 0,
+        "x": 28.5,
+        "y": 64.8
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-967",
+        "player": "Alejandro Balde",
+        "minute": 88,
+        "extra": 0,
+        "x": 56.4,
+        "y": 11.7
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-981",
+        "player": "Karim Adeyemi",
+        "minute": 89,
+        "extra": 0,
+        "x": 51.5,
+        "y": 13.2
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-986",
+        "player": "Eric García",
+        "minute": 90,
+        "extra": 1,
+        "x": 30.3,
+        "y": 89.1
+      },
+      {
+        "id": "7h4zres5o8hqsaici9wxjwx04-agh9ifb2mw3ivjusgedj7c3fe-1008",
+        "player": "Andreas Christensen",
+        "minute": 90,
+        "extra": 3,
+        "x": 37.6,
+        "y": 35.4
+      }
+    ],
+    "raw_recoveries": 46,
+    "goalkeeper_excluded": 4,
+    "average_height_m": 48.56
+  },
+  "team_match_evidence": [
+    {
+      "fixture_id": 19732742,
+      "team_id": 2975,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 26,
+      "thirds": [
+        10,
+        11,
+        5
+      ],
+      "shares": [
+        38.46153846153847,
+        42.30769230769231,
+        19.230769230769234
+      ]
+    },
+    {
+      "fixture_id": 19732742,
+      "team_id": 106,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 23,
+      "thirds": [
+        15,
+        7,
+        1
+      ],
+      "shares": [
+        65.21739130434783,
+        30.434782608695656,
+        4.3478260869565215
+      ]
+    },
+    {
+      "fixture_id": 19732734,
+      "team_id": 676,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 43,
+      "thirds": [
+        15,
+        23,
+        5
+      ],
+      "shares": [
+        34.883720930232556,
+        53.48837209302325,
+        11.627906976744185
+      ]
+    },
+    {
+      "fixture_id": 19732734,
+      "team_id": 377,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 38,
+      "thirds": [
+        20,
+        16,
+        2
+      ],
+      "shares": [
+        52.63157894736842,
+        42.10526315789473,
+        5.263157894736842
+      ]
+    },
+    {
+      "fixture_id": 19732736,
+      "team_id": 9818,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        26,
+        11,
+        5
+      ],
+      "shares": [
+        61.904761904761905,
+        26.190476190476193,
+        11.904761904761903
+      ]
+    },
+    {
+      "fixture_id": 19732736,
+      "team_id": 3477,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        20,
+        19,
+        3
+      ],
+      "shares": [
+        47.61904761904761,
+        45.23809523809524,
+        7.142857142857142
+      ]
+    },
+    {
+      "fixture_id": 19732738,
+      "team_id": 528,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        14,
+        21,
+        4
+      ],
+      "shares": [
+        35.8974358974359,
+        53.84615384615385,
+        10.256410256410255
+      ]
+    },
+    {
+      "fixture_id": 19732738,
+      "team_id": 3457,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 34,
+      "thirds": [
+        10,
+        21,
+        3
+      ],
+      "shares": [
+        29.411764705882355,
+        61.76470588235294,
+        8.823529411764707
+      ]
+    },
+    {
+      "fixture_id": 19732739,
+      "team_id": 429,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 30,
+      "thirds": [
+        11,
+        16,
+        3
+      ],
+      "shares": [
+        36.666666666666664,
+        53.333333333333336,
+        10.0
+      ]
+    },
+    {
+      "fixture_id": 19732739,
+      "team_id": 1099,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        22,
+        15,
+        4
+      ],
+      "shares": [
+        53.65853658536586,
+        36.58536585365854,
+        9.75609756097561
+      ]
+    },
+    {
+      "fixture_id": 19732741,
+      "team_id": 7980,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 44,
+      "thirds": [
+        7,
+        26,
+        11
+      ],
+      "shares": [
+        15.909090909090908,
+        59.09090909090909,
+        25.0
+      ]
+    },
+    {
+      "fixture_id": 19732741,
+      "team_id": 126,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 35,
+      "thirds": [
+        23,
+        8,
+        4
+      ],
+      "shares": [
+        65.71428571428571,
+        22.857142857142858,
+        11.428571428571429
+      ]
+    },
+    {
+      "fixture_id": 19732724,
+      "team_id": 377,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 38,
+      "thirds": [
+        18,
+        17,
+        3
+      ],
+      "shares": [
+        47.368421052631575,
+        44.73684210526316,
+        7.894736842105263
+      ]
+    },
+    {
+      "fixture_id": 19732724,
+      "team_id": 2975,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        16,
+        21,
+        4
+      ],
+      "shares": [
+        39.02439024390244,
+        51.21951219512195,
+        9.75609756097561
+      ]
+    },
+    {
+      "fixture_id": 19732730,
+      "team_id": 485,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 52,
+      "thirds": [
+        18,
+        30,
+        4
+      ],
+      "shares": [
+        34.61538461538461,
+        57.692307692307686,
+        7.6923076923076925
+      ]
+    },
+    {
+      "fixture_id": 19732730,
+      "team_id": 594,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        24,
+        13,
+        2
+      ],
+      "shares": [
+        61.53846153846154,
+        33.33333333333333,
+        5.128205128205128
+      ]
+    },
+    {
+      "fixture_id": 19732732,
+      "team_id": 13258,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        13,
+        24,
+        4
+      ],
+      "shares": [
+        31.70731707317073,
+        58.536585365853654,
+        9.75609756097561
+      ]
+    },
+    {
+      "fixture_id": 19732732,
+      "team_id": 676,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        18,
+        20,
+        1
+      ],
+      "shares": [
+        46.15384615384615,
+        51.28205128205128,
+        2.564102564102564
+      ]
+    },
+    {
+      "fixture_id": 19732723,
+      "team_id": 214,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 37,
+      "thirds": [
+        17,
+        17,
+        3
+      ],
+      "shares": [
+        45.94594594594595,
+        45.94594594594595,
+        8.108108108108109
+      ]
+    },
+    {
+      "fixture_id": 19732723,
+      "team_id": 36,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        17,
+        19,
+        3
+      ],
+      "shares": [
+        43.58974358974359,
+        48.717948717948715,
+        7.6923076923076925
+      ]
+    },
+    {
+      "fixture_id": 19732728,
+      "team_id": 528,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 32,
+      "thirds": [
+        18,
+        14,
+        0
+      ],
+      "shares": [
+        56.25,
+        43.75,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732728,
+      "team_id": 3468,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 29,
+      "thirds": [
+        7,
+        20,
+        2
+      ],
+      "shares": [
+        24.137931034482758,
+        68.96551724137932,
+        6.896551724137931
+      ]
+    },
+    {
+      "fixture_id": 19732731,
+      "team_id": 7980,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 47,
+      "thirds": [
+        21,
+        19,
+        7
+      ],
+      "shares": [
+        44.680851063829785,
+        40.42553191489361,
+        14.893617021276595
+      ]
+    },
+    {
+      "fixture_id": 19732731,
+      "team_id": 3477,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 43,
+      "thirds": [
+        22,
+        18,
+        3
+      ],
+      "shares": [
+        51.162790697674424,
+        41.86046511627907,
+        6.976744186046512
+      ]
+    },
+    {
+      "fixture_id": 19732727,
+      "team_id": 106,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 45,
+      "thirds": [
+        24,
+        18,
+        3
+      ],
+      "shares": [
+        53.333333333333336,
+        40.0,
+        6.666666666666667
+      ]
+    },
+    {
+      "fixture_id": 19732727,
+      "team_id": 9818,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 34,
+      "thirds": [
+        13,
+        19,
+        2
+      ],
+      "shares": [
+        38.23529411764706,
+        55.88235294117647,
+        5.88235294117647
+      ]
+    },
+    {
+      "fixture_id": 19732729,
+      "team_id": 1099,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 40,
+      "thirds": [
+        19,
+        16,
+        5
+      ],
+      "shares": [
+        47.5,
+        40.0,
+        12.5
+      ]
+    },
+    {
+      "fixture_id": 19732729,
+      "team_id": 83,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 33,
+      "thirds": [
+        13,
+        16,
+        4
+      ],
+      "shares": [
+        39.39393939393939,
+        48.484848484848484,
+        12.121212121212121
+      ]
+    },
+    {
+      "fixture_id": 19732725,
+      "team_id": 459,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 21,
+      "thirds": [
+        6,
+        13,
+        2
+      ],
+      "shares": [
+        28.57142857142857,
+        61.904761904761905,
+        9.523809523809524
+      ]
+    },
+    {
+      "fixture_id": 19732725,
+      "team_id": 3457,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 22,
+      "thirds": [
+        6,
+        15,
+        1
+      ],
+      "shares": [
+        27.27272727272727,
+        68.18181818181817,
+        4.545454545454546
+      ]
+    },
+    {
+      "fixture_id": 19732726,
+      "team_id": 126,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 34,
+      "thirds": [
+        15,
+        17,
+        2
+      ],
+      "shares": [
+        44.11764705882353,
+        50.0,
+        5.88235294117647
+      ]
+    },
+    {
+      "fixture_id": 19732726,
+      "team_id": 429,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 32,
+      "thirds": [
+        12,
+        18,
+        2
+      ],
+      "shares": [
+        37.5,
+        56.25,
+        6.25
+      ]
+    },
+    {
+      "fixture_id": 19732733,
+      "team_id": 214,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 40,
+      "thirds": [
+        13,
+        22,
+        5
+      ],
+      "shares": [
+        32.5,
+        55.00000000000001,
+        12.5
+      ]
+    },
+    {
+      "fixture_id": 19732733,
+      "team_id": 485,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 51,
+      "thirds": [
+        19,
+        29,
+        3
+      ],
+      "shares": [
+        37.254901960784316,
+        56.86274509803921,
+        5.88235294117647
+      ]
+    },
+    {
+      "fixture_id": 19732735,
+      "team_id": 3468,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        15,
+        19,
+        7
+      ],
+      "shares": [
+        36.58536585365854,
+        46.34146341463415,
+        17.073170731707318
+      ]
+    },
+    {
+      "fixture_id": 19732735,
+      "team_id": 594,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 26,
+      "thirds": [
+        17,
+        7,
+        2
+      ],
+      "shares": [
+        65.38461538461539,
+        26.923076923076923,
+        7.6923076923076925
+      ]
+    },
+    {
+      "fixture_id": 19732740,
+      "team_id": 36,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 35,
+      "thirds": [
+        14,
+        18,
+        3
+      ],
+      "shares": [
+        40.0,
+        51.42857142857142,
+        8.571428571428571
+      ]
+    },
+    {
+      "fixture_id": 19732740,
+      "team_id": 459,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 51,
+      "thirds": [
+        23,
+        24,
+        4
+      ],
+      "shares": [
+        45.09803921568628,
+        47.05882352941176,
+        7.8431372549019605
+      ]
+    },
+    {
+      "fixture_id": 19732737,
+      "team_id": 83,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 27,
+      "thirds": [
+        5,
+        22,
+        0
+      ],
+      "shares": [
+        18.51851851851852,
+        81.48148148148148,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732737,
+      "team_id": 13258,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 25,
+      "thirds": [
+        15,
+        6,
+        4
+      ],
+      "shares": [
+        60.0,
+        24.0,
+        16.0
+      ]
+    },
+    {
+      "fixture_id": 19732716,
+      "team_id": 9818,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        19,
+        16,
+        4
+      ],
+      "shares": [
+        48.717948717948715,
+        41.02564102564102,
+        10.256410256410255
+      ]
+    },
+    {
+      "fixture_id": 19732716,
+      "team_id": 1099,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 37,
+      "thirds": [
+        11,
+        19,
+        7
+      ],
+      "shares": [
+        29.72972972972973,
+        51.35135135135135,
+        18.91891891891892
+      ]
+    },
+    {
+      "fixture_id": 19732722,
+      "team_id": 2975,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 38,
+      "thirds": [
+        22,
+        13,
+        3
+      ],
+      "shares": [
+        57.89473684210527,
+        34.21052631578947,
+        7.894736842105263
+      ]
+    },
+    {
+      "fixture_id": 19732722,
+      "team_id": 3477,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 29,
+      "thirds": [
+        6,
+        20,
+        3
+      ],
+      "shares": [
+        20.689655172413794,
+        68.96551724137932,
+        10.344827586206897
+      ]
+    },
+    {
+      "fixture_id": 19732718,
+      "team_id": 3457,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 28,
+      "thirds": [
+        8,
+        10,
+        10
+      ],
+      "shares": [
+        28.57142857142857,
+        35.714285714285715,
+        35.714285714285715
+      ]
+    },
+    {
+      "fixture_id": 19732718,
+      "team_id": 485,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        17,
+        19,
+        3
+      ],
+      "shares": [
+        43.58974358974359,
+        48.717948717948715,
+        7.6923076923076925
+      ]
+    },
+    {
+      "fixture_id": 19732714,
+      "team_id": 594,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 49,
+      "thirds": [
+        14,
+        31,
+        4
+      ],
+      "shares": [
+        28.57142857142857,
+        63.26530612244898,
+        8.16326530612245
+      ]
+    },
+    {
+      "fixture_id": 19732714,
+      "team_id": 528,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        22,
+        14,
+        3
+      ],
+      "shares": [
+        56.41025641025641,
+        35.8974358974359,
+        7.6923076923076925
+      ]
+    },
+    {
+      "fixture_id": 19732713,
+      "team_id": 676,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 37,
+      "thirds": [
+        13,
+        15,
+        9
+      ],
+      "shares": [
+        35.13513513513514,
+        40.54054054054054,
+        24.324324324324326
+      ]
+    },
+    {
+      "fixture_id": 19732713,
+      "team_id": 7980,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 34,
+      "thirds": [
+        18,
+        16,
+        0
+      ],
+      "shares": [
+        52.94117647058824,
+        47.05882352941176,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732715,
+      "team_id": 3468,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        19,
+        17,
+        6
+      ],
+      "shares": [
+        45.23809523809524,
+        40.476190476190474,
+        14.285714285714285
+      ]
+    },
+    {
+      "fixture_id": 19732715,
+      "team_id": 126,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        21,
+        18,
+        0
+      ],
+      "shares": [
+        53.84615384615385,
+        46.15384615384615,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732720,
+      "team_id": 429,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 33,
+      "thirds": [
+        18,
+        15,
+        0
+      ],
+      "shares": [
+        54.54545454545454,
+        45.45454545454545,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732720,
+      "team_id": 214,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 36,
+      "thirds": [
+        14,
+        14,
+        8
+      ],
+      "shares": [
+        38.88888888888889,
+        38.88888888888889,
+        22.22222222222222
+      ]
+    },
+    {
+      "fixture_id": 19732721,
+      "team_id": 36,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 30,
+      "thirds": [
+        19,
+        10,
+        1
+      ],
+      "shares": [
+        63.33333333333333,
+        33.33333333333333,
+        3.3333333333333335
+      ]
+    },
+    {
+      "fixture_id": 19732721,
+      "team_id": 13258,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 46,
+      "thirds": [
+        16,
+        24,
+        6
+      ],
+      "shares": [
+        34.78260869565217,
+        52.17391304347826,
+        13.043478260869565
+      ]
+    },
+    {
+      "fixture_id": 19732717,
+      "team_id": 459,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 45,
+      "thirds": [
+        26,
+        17,
+        2
+      ],
+      "shares": [
+        57.77777777777777,
+        37.77777777777778,
+        4.444444444444445
+      ]
+    },
+    {
+      "fixture_id": 19732717,
+      "team_id": 106,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 44,
+      "thirds": [
+        18,
+        23,
+        3
+      ],
+      "shares": [
+        40.909090909090914,
+        52.27272727272727,
+        6.8181818181818175
+      ]
+    },
+    {
+      "fixture_id": 19732719,
+      "team_id": 83,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 45,
+      "thirds": [
+        11,
+        27,
+        7
+      ],
+      "shares": [
+        24.444444444444443,
+        60.0,
+        15.555555555555555
+      ]
+    },
+    {
+      "fixture_id": 19732719,
+      "team_id": 377,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 31,
+      "thirds": [
+        14,
+        11,
+        6
+      ],
+      "shares": [
+        45.16129032258064,
+        35.483870967741936,
+        19.35483870967742
+      ]
+    },
+    {
+      "fixture_id": 19732683,
+      "team_id": 594,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 45,
+      "thirds": [
+        22,
+        14,
+        9
+      ],
+      "shares": [
+        48.888888888888886,
+        31.11111111111111,
+        20.0
+      ]
+    },
+    {
+      "fixture_id": 19732683,
+      "team_id": 36,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        22,
+        13,
+        7
+      ],
+      "shares": [
+        52.38095238095239,
+        30.952380952380953,
+        16.666666666666664
+      ]
+    },
+    {
+      "fixture_id": 19732710,
+      "team_id": 485,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        31,
+        7,
+        3
+      ],
+      "shares": [
+        75.60975609756098,
+        17.073170731707318,
+        7.317073170731707
+      ]
+    },
+    {
+      "fixture_id": 19732710,
+      "team_id": 3468,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        18,
+        18,
+        5
+      ],
+      "shares": [
+        43.90243902439025,
+        43.90243902439025,
+        12.195121951219512
+      ]
+    },
+    {
+      "fixture_id": 19732711,
+      "team_id": 13258,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 28,
+      "thirds": [
+        16,
+        11,
+        1
+      ],
+      "shares": [
+        57.14285714285714,
+        39.285714285714285,
+        3.571428571428571
+      ]
+    },
+    {
+      "fixture_id": 19732711,
+      "team_id": 7980,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        17,
+        20,
+        5
+      ],
+      "shares": [
+        40.476190476190474,
+        47.61904761904761,
+        11.904761904761903
+      ]
+    },
+    {
+      "fixture_id": 19732705,
+      "team_id": 377,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 43,
+      "thirds": [
+        15,
+        23,
+        5
+      ],
+      "shares": [
+        34.883720930232556,
+        53.48837209302325,
+        11.627906976744185
+      ]
+    },
+    {
+      "fixture_id": 19732705,
+      "team_id": 9818,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 28,
+      "thirds": [
+        19,
+        6,
+        3
+      ],
+      "shares": [
+        67.85714285714286,
+        21.428571428571427,
+        10.714285714285714
+      ]
+    },
+    {
+      "fixture_id": 19732703,
+      "team_id": 3477,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 36,
+      "thirds": [
+        14,
+        17,
+        5
+      ],
+      "shares": [
+        38.88888888888889,
+        47.22222222222222,
+        13.88888888888889
+      ]
+    },
+    {
+      "fixture_id": 19732703,
+      "team_id": 429,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 38,
+      "thirds": [
+        27,
+        9,
+        2
+      ],
+      "shares": [
+        71.05263157894737,
+        23.684210526315788,
+        5.263157894736842
+      ]
+    },
+    {
+      "fixture_id": 19732704,
+      "team_id": 214,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 32,
+      "thirds": [
+        26,
+        6,
+        0
+      ],
+      "shares": [
+        81.25,
+        18.75,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732704,
+      "team_id": 83,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 43,
+      "thirds": [
+        16,
+        20,
+        7
+      ],
+      "shares": [
+        37.2093023255814,
+        46.51162790697674,
+        16.27906976744186
+      ]
+    },
+    {
+      "fixture_id": 19732706,
+      "team_id": 126,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 35,
+      "thirds": [
+        14,
+        17,
+        4
+      ],
+      "shares": [
+        40.0,
+        48.57142857142857,
+        11.428571428571429
+      ]
+    },
+    {
+      "fixture_id": 19732706,
+      "team_id": 3457,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 34,
+      "thirds": [
+        18,
+        12,
+        4
+      ],
+      "shares": [
+        52.94117647058824,
+        35.294117647058826,
+        11.76470588235294
+      ]
+    },
+    {
+      "fixture_id": 19732712,
+      "team_id": 2975,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 27,
+      "thirds": [
+        13,
+        11,
+        3
+      ],
+      "shares": [
+        48.148148148148145,
+        40.74074074074074,
+        11.11111111111111
+      ]
+    },
+    {
+      "fixture_id": 19732712,
+      "team_id": 459,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 20,
+      "thirds": [
+        8,
+        9,
+        3
+      ],
+      "shares": [
+        40.0,
+        45.0,
+        15.0
+      ]
+    },
+    {
+      "fixture_id": 19732708,
+      "team_id": 528,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 25,
+      "thirds": [
+        11,
+        10,
+        4
+      ],
+      "shares": [
+        44.0,
+        40.0,
+        16.0
+      ]
+    },
+    {
+      "fixture_id": 19732708,
+      "team_id": 676,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 38,
+      "thirds": [
+        12,
+        20,
+        6
+      ],
+      "shares": [
+        31.57894736842105,
+        52.63157894736842,
+        15.789473684210526
+      ]
+    },
+    {
+      "fixture_id": 19732707,
+      "team_id": 106,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 35,
+      "thirds": [
+        16,
+        17,
+        2
+      ],
+      "shares": [
+        45.714285714285715,
+        48.57142857142857,
+        5.714285714285714
+      ]
+    },
+    {
+      "fixture_id": 19732707,
+      "team_id": 36,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 35,
+      "thirds": [
+        13,
+        19,
+        3
+      ],
+      "shares": [
+        37.142857142857146,
+        54.285714285714285,
+        8.571428571428571
+      ]
+    },
+    {
+      "fixture_id": 19732709,
+      "team_id": 1099,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 44,
+      "thirds": [
+        22,
+        18,
+        4
+      ],
+      "shares": [
+        50.0,
+        40.909090909090914,
+        9.090909090909092
+      ]
+    },
+    {
+      "fixture_id": 19732709,
+      "team_id": 594,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 40,
+      "thirds": [
+        16,
+        21,
+        3
+      ],
+      "shares": [
+        40.0,
+        52.5,
+        7.5
+      ]
+    },
+    {
+      "fixture_id": 19732694,
+      "team_id": 676,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 47,
+      "thirds": [
+        14,
+        25,
+        8
+      ],
+      "shares": [
+        29.78723404255319,
+        53.191489361702125,
+        17.02127659574468
+      ]
+    },
+    {
+      "fixture_id": 19732694,
+      "team_id": 214,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        23,
+        15,
+        1
+      ],
+      "shares": [
+        58.97435897435898,
+        38.46153846153847,
+        2.564102564102564
+      ]
+    },
+    {
+      "fixture_id": 19732697,
+      "team_id": 9818,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        17,
+        21,
+        3
+      ],
+      "shares": [
+        41.46341463414634,
+        51.21951219512195,
+        7.317073170731707
+      ]
+    },
+    {
+      "fixture_id": 19732697,
+      "team_id": 2975,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        17,
+        22,
+        3
+      ],
+      "shares": [
+        40.476190476190474,
+        52.38095238095239,
+        7.142857142857142
+      ]
+    },
+    {
+      "fixture_id": 19732698,
+      "team_id": 459,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        15,
+        21,
+        6
+      ],
+      "shares": [
+        35.714285714285715,
+        50.0,
+        14.285714285714285
+      ]
+    },
+    {
+      "fixture_id": 19732698,
+      "team_id": 528,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 38,
+      "thirds": [
+        16,
+        21,
+        1
+      ],
+      "shares": [
+        42.10526315789473,
+        55.26315789473685,
+        2.631578947368421
+      ]
+    },
+    {
+      "fixture_id": 19732702,
+      "team_id": 13258,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 41,
+      "thirds": [
+        15,
+        22,
+        4
+      ],
+      "shares": [
+        36.58536585365854,
+        53.65853658536586,
+        9.75609756097561
+      ]
+    },
+    {
+      "fixture_id": 19732702,
+      "team_id": 1099,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        27,
+        12,
+        0
+      ],
+      "shares": [
+        69.23076923076923,
+        30.76923076923077,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732696,
+      "team_id": 3468,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 35,
+      "thirds": [
+        15,
+        17,
+        3
+      ],
+      "shares": [
+        42.857142857142854,
+        48.57142857142857,
+        8.571428571428571
+      ]
+    },
+    {
+      "fixture_id": 19732696,
+      "team_id": 377,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        20,
+        13,
+        6
+      ],
+      "shares": [
+        51.28205128205128,
+        33.33333333333333,
+        15.384615384615385
+      ]
+    },
+    {
+      "fixture_id": 19732701,
+      "team_id": 36,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 47,
+      "thirds": [
+        16,
+        25,
+        6
+      ],
+      "shares": [
+        34.04255319148936,
+        53.191489361702125,
+        12.76595744680851
+      ]
+    },
+    {
+      "fixture_id": 19732701,
+      "team_id": 126,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 30,
+      "thirds": [
+        15,
+        15,
+        0
+      ],
+      "shares": [
+        50.0,
+        50.0,
+        0.0
+      ]
+    },
+    {
+      "fixture_id": 19732699,
+      "team_id": 3457,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 43,
+      "thirds": [
+        20,
+        17,
+        6
+      ],
+      "shares": [
+        46.51162790697674,
+        39.53488372093023,
+        13.953488372093023
+      ]
+    },
+    {
+      "fixture_id": 19732699,
+      "team_id": 83,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 43,
+      "thirds": [
+        20,
+        21,
+        2
+      ],
+      "shares": [
+        46.51162790697674,
+        48.837209302325576,
+        4.651162790697675
+      ]
+    },
+    {
+      "fixture_id": 19732700,
+      "team_id": 106,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 29,
+      "thirds": [
+        8,
+        18,
+        3
+      ],
+      "shares": [
+        27.586206896551722,
+        62.06896551724138,
+        10.344827586206897
+      ]
+    },
+    {
+      "fixture_id": 19732700,
+      "team_id": 429,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 34,
+      "thirds": [
+        14,
+        19,
+        1
+      ],
+      "shares": [
+        41.17647058823529,
+        55.88235294117647,
+        2.941176470588235
+      ]
+    },
+    {
+      "fixture_id": 19732695,
+      "team_id": 594,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 37,
+      "thirds": [
+        6,
+        26,
+        5
+      ],
+      "shares": [
+        16.216216216216218,
+        70.27027027027027,
+        13.513513513513514
+      ]
+    },
+    {
+      "fixture_id": 19732695,
+      "team_id": 7980,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 33,
+      "thirds": [
+        21,
+        11,
+        1
+      ],
+      "shares": [
+        63.63636363636363,
+        33.33333333333333,
+        3.0303030303030303
+      ]
+    },
+    {
+      "fixture_id": 19732693,
+      "team_id": 3477,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 47,
+      "thirds": [
+        22,
+        19,
+        6
+      ],
+      "shares": [
+        46.808510638297875,
+        40.42553191489361,
+        12.76595744680851
+      ]
+    },
+    {
+      "fixture_id": 19732693,
+      "team_id": 485,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 47,
+      "thirds": [
+        29,
+        16,
+        2
+      ],
+      "shares": [
+        61.702127659574465,
+        34.04255319148936,
+        4.25531914893617
+      ]
+    },
+    {
+      "fixture_id": 19732684,
+      "team_id": 377,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 39,
+      "thirds": [
+        17,
+        19,
+        3
+      ],
+      "shares": [
+        43.58974358974359,
+        48.717948717948715,
+        7.6923076923076925
+      ]
+    },
+    {
+      "fixture_id": 19732684,
+      "team_id": 528,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 32,
+      "thirds": [
+        13,
+        18,
+        1
+      ],
+      "shares": [
+        40.625,
+        56.25,
+        3.125
+      ]
+    },
+    {
+      "fixture_id": 19732692,
+      "team_id": 2975,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 37,
+      "thirds": [
+        10,
+        22,
+        5
+      ],
+      "shares": [
+        27.027027027027028,
+        59.45945945945946,
+        13.513513513513514
+      ]
+    },
+    {
+      "fixture_id": 19732692,
+      "team_id": 214,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 40,
+      "thirds": [
+        26,
+        11,
+        3
+      ],
+      "shares": [
+        65.0,
+        27.500000000000004,
+        7.5
+      ]
+    },
+    {
+      "fixture_id": 19732688,
+      "team_id": 1099,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 30,
+      "thirds": [
+        14,
+        11,
+        5
+      ],
+      "shares": [
+        46.666666666666664,
+        36.666666666666664,
+        16.666666666666664
+      ]
+    },
+    {
+      "fixture_id": 19732688,
+      "team_id": 3468,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 44,
+      "thirds": [
+        21,
+        13,
+        10
+      ],
+      "shares": [
+        47.72727272727273,
+        29.545454545454547,
+        22.727272727272727
+      ]
+    },
+    {
+      "fixture_id": 19732689,
+      "team_id": 429,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 37,
+      "thirds": [
+        24,
+        11,
+        2
+      ],
+      "shares": [
+        64.86486486486487,
+        29.72972972972973,
+        5.405405405405405
+      ]
+    },
+    {
+      "fixture_id": 19732689,
+      "team_id": 676,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 55,
+      "thirds": [
+        21,
+        29,
+        5
+      ],
+      "shares": [
+        38.18181818181819,
+        52.72727272727272,
+        9.090909090909092
+      ]
+    },
+    {
+      "fixture_id": 19732691,
+      "team_id": 7980,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 49,
+      "thirds": [
+        20,
+        23,
+        6
+      ],
+      "shares": [
+        40.816326530612244,
+        46.93877551020408,
+        12.244897959183673
+      ]
+    },
+    {
+      "fixture_id": 19732691,
+      "team_id": 459,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 36,
+      "thirds": [
+        20,
+        12,
+        4
+      ],
+      "shares": [
+        55.55555555555556,
+        33.33333333333333,
+        11.11111111111111
+      ]
+    },
+    {
+      "fixture_id": 19732687,
+      "team_id": 83,
+      "side": "home",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 42,
+      "thirds": [
+        10,
+        29,
+        3
+      ],
+      "shares": [
+        23.809523809523807,
+        69.04761904761905,
+        7.142857142857142
+      ]
+    },
+    {
+      "fixture_id": 19732687,
+      "team_id": 9818,
+      "side": "away",
+      "complete": true,
+      "missing_position_count": 0,
+      "count": 21,
+      "thirds": [
+        10,
+        9,
+        2
+      ],
+      "shares": [
+        47.61904761904761,
+        42.857142857142854,
+        9.523809523809524
+      ]
+    }
+  ],
+  "delta_pp": [
+    -20.750247273110478,
+    23.442242855879726,
+    -2.6919955827692448
+  ]
+}

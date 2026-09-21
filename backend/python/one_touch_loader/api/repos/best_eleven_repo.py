@@ -9,16 +9,19 @@ from ..db import fetch_all_dict
 
 # 요약과 선수 행을 한 SELECT로 읽어, 재계산 중에도 두 화면에 같은 시점의 결과를 줘요.
 # 프로필은 players에서 읽으므로 선수 이름·사진이 바뀌면 재계산 없이 조회에 반영돼요.
+# 등번호는 해당 팀·시즌의 스쿼드에서 읽어요. 이적 후 번호나 다른 시즌 번호를 섞지 않아요.
 SQL_BEST_ELEVEN = """
 SELECT ff.formation, ff.matches_used,
        be.slot_key, be.player_id, be.starts,
        p.display_name AS player_name, p.image_path AS player_image,
-       pos.position_group_code, pos.position_code
+       pos.position_group_code, pos.position_code, sm.jersey_number
 FROM team_best_eleven_formations ff
 LEFT JOIN team_best_eleven be
   ON be.team_id = ff.team_id AND be.season_id = ff.season_id AND be.formation = ff.formation
 LEFT JOIN players p ON p.player_id = be.player_id
 LEFT JOIN positions pos ON pos.position_id = p.position_id
+LEFT JOIN team_squad_members sm
+  ON sm.team_id = be.team_id AND sm.season_id = be.season_id AND sm.player_id = be.player_id
 WHERE ff.team_id = %s AND ff.season_id = %s
 """
 
@@ -39,7 +42,7 @@ def get_best_eleven(
         if row["player_id"] is not None:
             players_by_formation[name].append({key: row[key] for key in (
                 "slot_key", "player_id", "player_name", "player_image",
-                "position_group_code", "position_code", "starts",
+                "position_group_code", "position_code", "starts", "jersey_number",
             )})
 
     # 사용률의 분모는 실제로 계산에 사용한 경기 수이며 시즌 전체 경기 수가 아니에요.
