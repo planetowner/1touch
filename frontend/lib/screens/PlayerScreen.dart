@@ -117,7 +117,7 @@ class _PlayersState extends State<Players> {
                 flexibleSpace: ColoredBox(color: pageBackground),
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 24, top: 30),
+                  padding: const EdgeInsets.only(left: 24),
                   child: SvgPicture.asset(
                     'assets/app_logo.svg',
                     height: 23,
@@ -130,7 +130,7 @@ class _PlayersState extends State<Players> {
                 ),
                 actions: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 8, top: 30),
+                    padding: const EdgeInsets.only(right: 8),
                     child: Row(
                       children: [
                         IconButton(

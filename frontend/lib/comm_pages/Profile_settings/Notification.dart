@@ -47,29 +47,20 @@ class _NotificationListPageState extends State<NotificationListPage> {
             floating: true,
             snap: true,
             toolbarHeight: 80,
-            title: const Padding(
-              padding: EdgeInsets.only(top: 30),
-              child: Text("Notifications", style: Body1.style),
-            ),
-            leading: Padding(
-              padding: const EdgeInsets.only(top: 30),
-              child: IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                onPressed: () => Navigator.of(context).pop(),
+            title: const Text("Notifications", style: Body1.style),
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_new,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
+              onPressed: () => Navigator.of(context).pop(),
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(top: 30),
-                child: IconButton(
-                  onPressed: () => context.push('/search'),
-                  icon: Icon(
-                    Icons.search,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+              IconButton(
+                onPressed: () => context.push('/search'),
+                icon: Icon(
+                  Icons.search,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -250,29 +241,20 @@ class _TeamNotificationDetailPageState
                 snap: true,
                 toolbarHeight: 80,
                 // FlexibleSpace Removed
-                title: Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: Text("Notifications", style: Body1.style),
-                ),
-                leading: Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
+                title: const Text("Notifications", style: Body1.style),
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
                 actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 30),
-                    child: IconButton(
-                      onPressed: () => context.push('/search'),
-                      icon: Icon(
-                        Icons.search,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                  IconButton(
+                    onPressed: () => context.push('/search'),
+                    icon: Icon(
+                      Icons.search,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -435,29 +417,20 @@ class _PlayerNotificationDetailPageState
                 snap: true,
                 toolbarHeight: 80,
                 // FlexibleSpace Removed
-                title: Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: Text("Notifications", style: Body1.style),
-                ),
-                leading: Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
+                title: const Text("Notifications", style: Body1.style),
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
                 actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 30),
-                    child: IconButton(
-                      onPressed: () => context.push('/search'),
-                      icon: Icon(
-                        Icons.search,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                  IconButton(
+                    onPressed: () => context.push('/search'),
+                    icon: Icon(
+                      Icons.search,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
