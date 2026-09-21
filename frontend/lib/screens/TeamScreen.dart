@@ -232,20 +232,24 @@ class _TeamScreenState extends State<TeamScreen>
                 toolbarHeight: 80,
                 flexibleSpace: ColoredBox(color: pageBackground),
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 8, top: 30),
+                  padding: const EdgeInsets.only(left: 8),
                   child: Row(
                     children: [
                       GestureDetector(
                         onTap: isTeamPageSupported(displayedTeamId)
                             ? () => openTeamPage(context, displayedTeamId)
                             : null,
-                        child: Image.network(
-                          team?['logo'],
-                          height: 52,
-                          width: 53,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) =>
-                              teamLogoFallback(team!['id'] as int, size: 52),
+                        child: SizedBox.square(
+                          key: const ValueKey('team-app-bar-logo'),
+                          dimension: 48,
+                          child: Image.network(
+                            team?['logo'],
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => teamLogoFallback(
+                              team!['id'] as int,
+                              size: 48,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -311,7 +315,7 @@ class _TeamScreenState extends State<TeamScreen>
                 ),
                 actions: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 8, top: 30),
+                    padding: const EdgeInsets.only(right: 8),
                     child: IconButton(
                       key: const Key('team-search-button'),
                       onPressed: () => context.push('/search'),
