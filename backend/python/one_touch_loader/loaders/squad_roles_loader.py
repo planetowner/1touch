@@ -131,14 +131,20 @@ def collect_fixture_absences(fixtures: list[dict], *, client=None, progress=None
 
 
 def save_current_squad_roles(rows: list[dict], *, connection=None) -> int:
-    # 계산을 모두 끝낸 뒤 역할 컬럼만 한 번에 바꿔요. 알 수 없는 역할은 이전 값 대신 NULL로 남겨요.
+    if not rows:
+        return 0
+    # UPDATE executemany는 선수마다 왕복해 초기 2,596명 저장에 수분이 걸려요. 같은 갱신을 한 문장으로 보내요.
+    first = 'SELECT %s AS squad_role, %s AS team_id, %s AS season_id, %s AS player_id'
+    values_sql = ' UNION ALL '.join([first] + ['SELECT %s,%s,%s,%s'] * (len(rows)-1))
+    values = tuple(value for r in rows for value in (r['role'], r['team_id'], r['season_id'], r['player_id']))
     with (transaction() if connection is None else nullcontext(connection)) as conn:
         with conn.cursor() as cur:
-            cur.executemany("""
+            cur.execute(f"""
                 UPDATE team_squad_members sm JOIN seasons s ON s.season_id=sm.season_id
-                SET sm.squad_role=%s
-                WHERE sm.team_id=%s AND sm.season_id=%s AND sm.player_id=%s AND s.is_current=1
-            """, [(r['role'], r['team_id'], r['season_id'], r['player_id']) for r in rows])
+                JOIN ({values_sql}) incoming ON incoming.team_id=sm.team_id
+                  AND incoming.season_id=sm.season_id AND incoming.player_id=sm.player_id
+                SET sm.squad_role=incoming.squad_role WHERE s.is_current=1
+            """, values)
             return cur.rowcount
 
 
