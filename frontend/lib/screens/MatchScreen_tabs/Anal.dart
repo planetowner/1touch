@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
 import 'package:onetouch/data/match_analysis/match_analysis_repository_provider.dart';
@@ -284,8 +285,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  static const Color _homeColor = Color(0xFFFF5C5C);
-
   String get _homeCode {
     final team = fixtureHomeTeam(widget.fixture, teamRepository);
     return team.shortCode?.trim().isNotEmpty == true
@@ -331,6 +330,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
   Widget _buildAttackBlock(({double home, double away})? keyPasses) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
+    final cardBackground = isDark ? AppPalette.darkGrey : AppPalette.white;
+    final comparisonColors = _comparisonColors(cardBackground);
+    final selectedTeamColor =
+        showHome ? comparisonColors.anchor : comparisonColors.opponent;
     final homeShots = _shotMap?.homeCount;
     final awayShots = _shotMap?.awayCount;
     final homeGoals = _goalCount(widget.fixture.homeTeamId);
@@ -347,7 +350,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             key: const ValueKey('match-analysis-attack-card'),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: isDark ? AppPalette.darkGrey : AppPalette.white,
+              color: cardBackground,
               borderRadius: BorderRadius.circular(16),
               boxShadow: appCardShadows(context),
             ),
@@ -359,7 +362,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 if (_shotMap?.available == true) ...[
                   ShotMapDiagram(
                     shots: _selectedShotPlots,
-                    color: showHome ? _homeColor : foreground,
+                    color: selectedTeamColor,
                     lineColor: foreground.withValues(alpha: 0.30),
                   ),
                   const SizedBox(height: 24),
@@ -429,6 +432,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _buildPossessionBar(num home, num away) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final comparisonColors = _comparisonColors(
+      isDark ? AppPalette.darkGrey : AppPalette.white,
+    );
     final total = home + away;
     final fraction = total <= 0 ? 0.5 : (home / total).clamp(0.0, 1.0);
     return Padding(
@@ -445,9 +451,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 children: [
                   ColoredBox(
                     key: const ValueKey('match-possession-away-fill'),
-                    color: isDark
-                        ? AppPalette.white
-                        : AppPalette.lightModeDarkGrey,
+                    color: comparisonColors.opponent,
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -455,7 +459,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                       key: const ValueKey('match-possession-home-fill'),
                       widthFactor: fraction,
                       heightFactor: 1,
-                      child: const ColoredBox(color: Color(0xFFFF5C5C)),
+                      child: ColoredBox(color: comparisonColors.anchor),
                     ),
                   ),
                   Padding(
@@ -466,14 +470,16 @@ class _AnalysisTabState extends State<AnalysisTab> {
                         Text(
                           _formatNumber(home, suffix: '%'),
                           style: Heading4.style.copyWith(
-                            color: isDark && fraction != 0
-                                ? AppPalette.white
-                                : AppPalette.black,
+                            color: _readableTextColor(comparisonColors.anchor),
                           ),
                         ),
                         Text(
                           _formatNumber(away, suffix: '%'),
-                          style: Heading4.style.copyWith(color: Colors.black),
+                          style: Heading4.style.copyWith(
+                            color: _readableTextColor(
+                              comparisonColors.opponent,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -487,8 +493,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
+  Color _readableTextColor(Color background) {
+    final blackContrast =
+        ColorUtils.getContrastRatio(background, AppPalette.black);
+    final whiteContrast =
+        ColorUtils.getContrastRatio(background, AppPalette.white);
+    return blackContrast >= whiteContrast ? AppPalette.black : AppPalette.white;
+  }
+
   Widget _buildProgressionBlock() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBackground = isDark ? AppPalette.darkGrey : AppPalette.white;
+    final comparisonColors = _comparisonColors(cardBackground);
+    final selectedTeamColor =
+        showHome ? comparisonColors.anchor : comparisonColors.opponent;
     final selected = _selectedAnalysis?.progression;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,7 +516,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? AppPalette.darkGrey : AppPalette.white,
+            color: cardBackground,
             borderRadius: BorderRadius.circular(16),
             boxShadow: appCardShadows(context),
           ),
@@ -509,8 +527,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
               ProgressionDiagram(
                 lanePercents: _channelPercentages(selected),
                 rightToLeft: !showHome,
-                color: showHome ? _homeColor : Colors.white,
-                labelColor: showHome ? Colors.white : Colors.black,
+                color: selectedTeamColor,
+                labelColor: _readableTextColor(selectedTeamColor),
               ),
               const SizedBox(height: 24),
               _buildStatRow(
@@ -532,6 +550,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
           ),
         ),
       ],
+    );
+  }
+
+  TeamComparisonColors _comparisonColors(Color background) {
+    final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
+    final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
+    return TeamComparisonColorResolver.resolve(
+      anchorTeamName: homeTeam.name,
+      anchorPrimaryFallback: Color(homeTeam.primaryColor),
+      opponentTeamName: awayTeam.name,
+      opponentPrimaryFallback: Color(awayTeam.primaryColor),
+      background: background,
     );
   }
 
@@ -1015,7 +1045,7 @@ class _ShotMapPainter extends CustomPainter {
       ..color = color.withValues(alpha: 0.5)
       ..strokeWidth = 1;
     final dotPaint = Paint()..color = color;
-    final goalPaint = Paint()..color = const Color(0xFFFF5C5C);
+    final goalPaint = Paint()..color = color;
 
     for (final shot in shots) {
       final start = Offset(
