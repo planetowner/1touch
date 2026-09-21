@@ -1,9 +1,12 @@
 """폼·가성비의 비교 범위, 누락값, 시간 범위와 읽기 전용 API를 검증해요."""
 from copy import deepcopy
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
+import json
 import math
 import re
 import sqlite3
+from threading import Barrier
 import unittest
 from unittest.mock import patch
 
@@ -226,6 +229,14 @@ class ReadOnlyRepositoryTests(unittest.TestCase):
         patcher = patch.object(repo, "get_conn", return_value=self)
         patcher.start()
         self.addCleanup(patcher.stop)
+        for name, value in (("_snapshot_inputs", None), ("_snapshot_items", {})):
+            cache = patch.object(repo, name, value)
+            cache.start()
+            self.addCleanup(cache.stop)
+        clock = patch.object(repo, "datetime")
+        self.clock = clock.start()
+        self.clock.now.return_value = NOW
+        self.addCleanup(clock.stop)
 
     def start_transaction(self, **kwargs):
         self.assertEqual(kwargs, dict(readonly=True, consistent_snapshot=True))
@@ -275,34 +286,128 @@ class ReadOnlyRepositoryTests(unittest.TestCase):
             with patch.object(route, "get_current_player_indicators", return_value=None):
                 self.assertEqual(client.get("/v1/players/2/indicators").status_code, 404)
 
-    def test_one_snapshot_is_shared_between_players_and_expires(self):
-        repo._cached_current_snapshot.cache_clear()
-        self.addCleanup(repo._cached_current_snapshot.cache_clear)
-        with patch.object(repo, "_build_current_snapshot", return_value={1: {"player_id": 1}, 2: {"player_id": 2}}) as build:
-            with patch.object(repo, "time", return_value=600):
-                self.assertEqual(repo.get_current_player_indicators(1)["player_id"], 1)
-                self.assertEqual(repo.get_current_player_indicators(2)["player_id"], 2)
-                self.assertEqual(build.call_count, 1)
-            with patch.object(repo, "time", return_value=660):
-                repo.get_current_player_indicators(1)
-                self.assertEqual(build.call_count, 2)
+    def change(self, sql):
+        self.db.execute(sql)
+        self.db.commit()
 
-    def test_slow_calculation_does_not_expire_before_the_next_player_request(self):
-        repo._cached_current_snapshot.cache_clear()
-        self.addCleanup(repo._cached_current_snapshot.cache_clear)
-        clock = [600]
-        def slow_build(_):
-            clock[0] += 125
-            return {1: {"player_id": 1}, 2: {"player_id": 2}}
-        with patch.object(repo, "time", side_effect=lambda: clock[0]), \
-                patch.object(repo, "_build_current_snapshot", side_effect=slow_build) as build:
-            self.assertEqual(repo.get_current_player_indicators(1)["player_id"], 1)
-            clock[0] = 784
-            self.assertEqual(repo.get_current_player_indicators(2)["player_id"], 2)
+    def test_one_snapshot_is_shared_between_players_without_time_expiry(self):
+        self.change("UPDATE fixtures SET state_id=2 WHERE fixture_id=4")
+        self.change("INSERT INTO team_squad_members VALUES (4,8,1,25,NULL)")
+        with patch.object(repo, "_calculate_current_snapshot", wraps=repo._calculate_current_snapshot) as build:
+            first = repo.get_current_player_indicators(1)
+            self.clock.now.return_value = NOW + timedelta(days=30)
+            self.assertEqual(repo.get_current_player_indicators(4)["player_id"], 4)
+            self.assertIs(repo.get_current_player_indicators(1), first)
             self.assertEqual(build.call_count, 1)
-            clock[0] = 785
+
+    def test_model_and_response_input_changes_refresh_the_shared_snapshot(self):
+        edits = [
+            "UPDATE fixture_lineups SET rating=8 WHERE fixture_id=1",
+            "UPDATE fixture_lineups SET minutes_played=45 WHERE fixture_id=1",
+            "UPDATE player_wages SET estimated_weekly_gross_eur=20000",
+            "UPDATE team_squad_members SET position_group_id=27 WHERE player_id=1",
+            "UPDATE team_squad_members SET squad_role='important' WHERE player_id=1",
+            "INSERT INTO team_squad_members VALUES (4,8,1,25,NULL)",
+            "UPDATE fixtures SET home_team_id=10 WHERE fixture_id=1",
+            "UPDATE fixtures SET state_id=5 WHERE fixture_id=2",
+        ]
+        with patch.object(repo, "_calculate_current_snapshot", wraps=repo._calculate_current_snapshot) as build:
             repo.get_current_player_indicators(1)
-            self.assertEqual(build.call_count, 2)
+            for calls, sql in enumerate(edits, start=2):
+                with self.subTest(sql=sql):
+                    self.change(sql)
+                    repo.get_current_player_indicators(1)
+                    repo.get_current_player_indicators(1)
+                    self.assertEqual(build.call_count, calls)
+
+    def test_unchanged_and_out_of_scope_records_do_not_refresh(self):
+        with patch.object(repo, "_calculate_current_snapshot", wraps=repo._calculate_current_snapshot) as build:
+            first = repo.get_current_player_indicators(1)
+            # 적재 시 삭제 후 다시 넣어도 실제 입력이 같으면 같은 계산을 유지해요.
+            self.change("DELETE FROM fixture_lineups WHERE fixture_id=1")
+            self.change("INSERT INTO fixture_lineups VALUES (1,1,8,90,7)")
+            for fid in (2, 3, 4, 5, 6):
+                self.change(f"UPDATE fixture_lineups SET rating=9 WHERE fixture_id={fid}")
+                self.assertIs(repo.get_current_player_indicators(1), first)
+            self.assertEqual(build.call_count, 1)
+
+    def test_completion_reversal_and_deleted_rating_are_reflected(self):
+        first = repo.get_current_player_indicators(1)
+        self.assertEqual(first["form"]["raw_score"], 7)
+        self.change("UPDATE fixtures SET state_id=2 WHERE fixture_id=1")
+        cancelled = repo.get_current_player_indicators(1)
+        self.assertEqual(cancelled["cost_effectiveness"]["available_minutes"], 0)
+        self.assertIsNone(cancelled["form"]["grade"])
+        self.change("UPDATE fixtures SET state_id=5 WHERE fixture_id=1")
+        self.change("UPDATE fixture_lineups SET rating=NULL WHERE fixture_id=1")
+        missing = repo.get_current_player_indicators(1)
+        self.assertEqual(missing["cost_effectiveness"]["minutes_played"], 90)
+        self.assertIsNone(missing["form"]["grade"])
+        self.change("DELETE FROM fixture_lineups WHERE fixture_id=1")
+        self.assertEqual(repo.get_current_player_indicators(1)["cost_effectiveness"]["minutes_played"], 0)
+        self.change("DELETE FROM fixtures WHERE fixture_id=1")
+        self.assertEqual(repo.get_current_player_indicators(1)["cost_effectiveness"]["available_minutes"], 0)
+
+    def test_another_teams_completed_match_refreshes_the_population(self):
+        self.change("INSERT INTO team_squad_members VALUES (4,10,1,27,NULL)")
+        self.change("INSERT INTO team_squad_members VALUES (5,9,1,25,NULL)")
+        self.change("INSERT INTO fixture_lineups VALUES (1,5,9,90,7)")
+        self.change("UPDATE fixtures SET home_team_id=10,away_team_id=11 WHERE fixture_id=2")
+        self.change("UPDATE fixture_lineups SET player_id=4,team_id=10,rating=9 WHERE fixture_id=2")
+        first = repo.get_current_player_indicators(1)
+        self.assertEqual(first["form"]["reference_count"], 2)
+        self.change("UPDATE fixtures SET state_id=5 WHERE fixture_id=2")
+        changed = repo.get_current_player_indicators(1)
+        self.assertEqual(changed["form"]["reference_count"], 3)
+        self.assertNotEqual(first["form"]["percentile"], changed["form"]["percentile"])
+
+    def test_future_fixture_is_included_when_its_time_arrives(self):
+        self.assertEqual(repo.get_current_player_indicators(1)["form"]["rated_matches"], 1)
+        self.clock.now.return_value = NOW + timedelta(days=2)
+        self.assertEqual(repo.get_current_player_indicators(1)["form"]["rated_matches"], 2)
+
+    def test_season_switch_and_empty_roster_do_not_keep_previous_players(self):
+        self.assertIsNotNone(repo.get_current_player_indicators(1))
+        self.change("UPDATE seasons SET is_current=CASE WHEN season_id=2 THEN 1 ELSE 0 END")
+        self.assertIsNone(repo.get_current_player_indicators(1))
+        self.assertEqual(repo.get_current_player_indicators(2)["season_name"], "2025/2026")
+        self.change("DELETE FROM team_squad_members")
+        self.assertIsNone(repo.get_current_player_indicators(2))
+
+    def test_calibration_changes_refresh_without_a_match_change(self):
+        calibration = json.loads(repo.CALIBRATION_PATH.read_text(encoding="utf-8"))
+        with patch.object(repo, "CALIBRATION_PATH") as path:
+            path.read_text.return_value = json.dumps(calibration)
+            self.assertEqual(repo.get_current_player_indicators(1)["form"]["raw_score"], 7)
+            path.read_text.return_value = json.dumps({**calibration, "applies_to_season": "2027/2028"})
+            self.assertIsNone(repo.get_current_player_indicators(1)["form"]["raw_score"])
+
+    def test_failed_recalculation_does_not_mark_new_inputs_as_cached(self):
+        first = repo.get_current_player_indicators(1)
+        self.change("UPDATE fixture_lineups SET rating=8 WHERE fixture_id=1")
+        with patch.object(repo, "_calculate_current_snapshot", side_effect=RuntimeError("calculation failed")):
+            with self.assertRaisesRegex(RuntimeError, "calculation failed"):
+                repo.get_current_player_indicators(1)
+        self.assertEqual(first["form"]["raw_score"], 7)
+        self.assertEqual(repo.get_current_player_indicators(1)["form"]["raw_score"], 8)
+
+    def test_explicit_as_of_does_not_replace_current_cache(self):
+        first = repo.get_current_player_indicators(1)
+        self.assertEqual(repo.get_current_player_indicators(1, as_of=NOW-timedelta(days=2))["form"]["rated_matches"], 0)
+        self.assertIs(repo.get_current_player_indicators(1), first)
+
+    def test_concurrent_player_requests_share_one_calculation(self):
+        inputs = repo._read_current_inputs(NOW)
+        ready = Barrier(2)
+        def request(player):
+            ready.wait(timeout=5)
+            return repo.get_current_player_indicators(player)
+        with patch.object(repo, "_read_current_inputs", side_effect=lambda _: deepcopy(inputs)), \
+                patch.object(repo, "_calculate_current_snapshot", wraps=repo._calculate_current_snapshot) as build:
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                first, second = list(executor.map(request, (1, 1)))
+            self.assertIs(first, second)
+            self.assertEqual(build.call_count, 1)
 
 
 if __name__ == "__main__":
