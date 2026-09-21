@@ -45,10 +45,10 @@ void main() {
           playerId: 2,
           playerName: 'Defender',
           playerImage: 'https://example.com/2.png',
-          jerseyNumber: 4,
           positionGroupCode: 'DEF',
           positionCode: 'LB',
           starts: 18,
+          jerseyNumber: 27,
         ),
       ],
     );
@@ -68,9 +68,9 @@ void main() {
     expect(result.players.map((player) => player.slotKey), ['1:1', '2:1']);
     expect(result.players.first.playerName, isNull);
     expect(result.players.first.jerseyNumber, isNull);
-    expect(result.players.last.jerseyNumber, 4);
     expect(result.players.last.positionGroupCode, 'DEF');
     expect(result.players.last.positionCode, 'LB');
+    expect(result.players.last.jerseyNumber, 27);
     expect(() => result.players.clear(), throwsUnsupportedError);
   });
 }

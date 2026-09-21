@@ -39,10 +39,16 @@ class MemoryCursor:
         self.cursor.close()
 
     def execute(self, sql, params=()):
-        self.cursor.execute(sql.replace("%s", "?").replace(" FOR UPDATE", ""), params)
+        self.cursor.execute(self.sql(sql), params)
+
+    @staticmethod
+    def sql(sql):
+        sql = sql.replace("%s", "?").replace(" FOR UPDATE", "")
+        sql = sql.replace("ON DUPLICATE KEY UPDATE", "ON CONFLICT DO UPDATE SET")
+        return re.sub(r"VALUES\((\w+)\)", r"excluded.\1", sql)
 
     def executemany(self, sql, rows):
-        self.cursor.executemany(sql.replace("%s", "?"), [
+        self.cursor.executemany(self.sql(sql), [
             tuple(str(value) if isinstance(value, Decimal) else value for value in row) for row in rows
         ])
 
@@ -71,18 +77,18 @@ class PlayerRatingRankingsTests(unittest.TestCase):
             CREATE TABLE players (player_id INTEGER PRIMARY KEY, display_name TEXT, image_path TEXT);
             CREATE TABLE player_rating_references (competition_id INTEGER PRIMARY KEY,
                 start_season_name TEXT, end_season_name TEXT, minimum_rated_matches INTEGER,
-                frozen_at TEXT DEFAULT CURRENT_TIMESTAMP);
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
             CREATE TABLE player_rating_reference_samples (competition_id INTEGER, season_id INTEGER,
-                player_id INTEGER, rated_matches INTEGER CHECK(rated_matches >= 10), rating_sum NUMERIC,
+                player_id INTEGER, rated_matches INTEGER CHECK(rated_matches >= 1), rating_sum NUMERIC,
                 PRIMARY KEY (competition_id, season_id, player_id));
             CREATE TABLE player_rating_scores (competition_id INTEGER, season_id INTEGER, player_id INTEGER,
                 rated_matches INTEGER CHECK(rated_matches >= 1), rating_sum NUMERIC, percentile_score NUMERIC,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (season_id, player_id));
-            INSERT INTO competitions VALUES (8,'league'), (564,'league'), (999,'domestic_cup');
+            INSERT INTO competitions VALUES (8,'league'), (82,'league'), (301,'league'), (384,'league'), (564,'league'), (999,'domestic_cup');
             INSERT INTO rounds VALUES (1,'1'), (2,'Play-offs');
         """)
-        for competition_id in (8, 564):
-            for year in range(2020, 2027):
+        for competition_id in loader.RATING_COMPETITION_IDS:
+            for year in range(2017, 2027):
                 season_id = competition_id * 10000 + year
                 self.db.execute("INSERT INTO seasons VALUES (?,?,?)", (season_id, competition_id, f"{year}/{year + 1}"))
                 self.db.execute("INSERT INTO stages VALUES (?,?)", (season_id, season_id))
@@ -91,12 +97,14 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.sequence = 0
         self.target = 82025
         self.next_season = 82026
-        for year in range(2020, 2025):
-            self.add_matches(80000 + year, 1, rating=6)
-            self.add_matches(80000 + year, 2, rating=8)
+        for competition_id in loader.RATING_COMPETITION_IDS:
+            for year in range(2017, 2025):
+                self.add_matches(competition_id * 10000 + year, 1, rating=6)
+                self.add_matches(competition_id * 10000 + year, 2, rating=8)
         self.db.commit()
         for owner, name, replacement in (
             (loader, "transaction", self.transaction),
+            (loader, "get_conn", lambda: self),
             (repo, "fetch_all_dict", self.fetch_all),
             (repo, "fetch_one_dict", self.fetch_one),
         ):
@@ -106,6 +114,10 @@ class PlayerRatingRankingsTests(unittest.TestCase):
 
     def cursor(self, **kwargs):
         return MemoryCursor(self.db)
+
+    def close(self):
+        # 연결 수명만 흉내 내고 실제 메모리 DB는 addCleanup에서 닫아요.
+        pass
 
     @contextmanager
     def transaction(self):
@@ -130,13 +142,13 @@ class PlayerRatingRankingsTests(unittest.TestCase):
     def add_matches(self, season_id, player_id, *, count=10, rating=7, minutes=90, team=1, position=24, state=5, round_id=1):
         for _ in range(count):
             self.sequence += 1
-            self.db.execute("INSERT INTO fixtures VALUES (?,?,?,?)", (self.sequence, season_id, round_id, state))
-            self.db.execute("INSERT INTO fixture_lineups VALUES (?,?,?,?,?,?)", (
+            self.db.execute("INSERT INTO fixtures (fixture_id,stage_id,round_id,state_id) VALUES (?,?,?,?)", (self.sequence, season_id, round_id, state))
+            self.db.execute("INSERT INTO fixture_lineups (fixture_id,team_id,player_id,rating,minutes_played,match_position_id) VALUES (?,?,?,?,?,?)", (
                 self.sequence, team, player_id, rating, minutes, position,
             ))
 
-    def freeze(self):
-        self.assertEqual(loader.freeze_player_rating_reference(8), 10)
+    def initialize(self):
+        return loader.rebuild_player_rating_scores(apply=True)
 
     def add_scheduled_rounds(self, season_id, *, total_rounds=38, completed_rounds=0):
         # 기존 경기의 1라운드에 나머지 일정을 더해, 시즌 중반 전후를 실제 상태로 재현해요.
@@ -150,8 +162,8 @@ class PlayerRatingRankingsTests(unittest.TestCase):
             fixtures[number] = self.sequence
         return fixtures
 
-    def test_early_season_includes_one_rating_without_changing_historical_reference(self):
-        self.freeze()
+    def test_early_season_includes_one_rating_in_scores_and_reference(self):
+        self.initialize()
         reference = self.fetch_all("SELECT * FROM player_rating_reference_samples")
         self.add_matches(self.target, 3, count=1, rating=7)
         self.add_matches(self.target, 4, count=1, rating=None)
@@ -165,10 +177,12 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.assertEqual(data["items"][0]["rated_matches"], 1)
         self.assertEqual(data["items"][0]["display_score"], 50)
         self.assertEqual(data["reference"]["minimum_rated_matches"], 10)
-        self.assertEqual(reference, self.fetch_all("SELECT * FROM player_rating_reference_samples"))
+        self.assertEqual(len(reference) + 1, len(self.fetch_all("SELECT * FROM player_rating_reference_samples")))
+        self.assertEqual(data["reference"]["sample_count"], 81)
+        self.assertEqual(data["reference"]["early_season_minimum_rated_matches"], 1)
 
     def test_half_of_rounds_restores_standard_minimum_and_rebuilds_entire_season(self):
-        self.freeze()
+        self.initialize()
         self.add_matches(self.target, 3, count=1)
         self.add_matches(self.target, 4, count=10)
         schedule = self.add_scheduled_rounds(self.target, completed_rounds=18)
@@ -178,7 +192,8 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.assertEqual(loader.build_player_rating_scores(self.target), 2)
         self.db.execute("UPDATE fixtures SET state_id=5 WHERE fixture_id=?", (schedule[19],))
         self.assertEqual(loader.build_player_rating_scores(self.target), 1)
-        self.assertEqual(self.fetch_one("SELECT player_id FROM player_rating_scores")["player_id"], 4)
+        self.assertEqual(self.fetch_one("SELECT player_id FROM player_rating_scores WHERE season_id=%s", (self.target,))["player_id"], 4)
+        self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_reference_samples WHERE season_id=%s", (self.target,))["n"], 1)
 
     def test_odd_round_count_rounds_up_and_nonregular_round_does_not_affect_cutoff(self):
         self.add_matches(self.target, 3, count=1)
@@ -205,73 +220,112 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.assertEqual((row["rated_matches"], row["rating_sum"]), (10, Decimal(70)))
 
     def test_transfer_position_and_minutes_do_not_split_or_weight_the_player_mean(self):
-        self.freeze()
+        self.initialize()
         self.add_matches(self.target, 3, count=5, rating=6, minutes=90)
         self.add_matches(self.target, 3, count=5, rating=8, minutes=1, team=2, position=27, state=8)
         self.assertEqual(loader.build_player_rating_scores(self.target), 1)
-        row, = self.fetch_all("SELECT * FROM player_rating_scores")
+        row, = self.fetch_all("SELECT * FROM player_rating_scores WHERE season_id=%s", (self.target,))
         self.assertEqual((row["rated_matches"], row["rating_sum"], row["percentile_score"]), (10, 70, 50))
 
-    def test_repeated_freeze_and_target_updates_keep_reference_unchanged(self):
-        self.freeze()
-        snapshot = self.fetch_all("SELECT * FROM player_rating_reference_samples")
-        self.add_matches(self.target, 3)
-        loader.build_player_rating_scores(self.target)
-        first = self.fetch_one("SELECT percentile_score FROM player_rating_scores WHERE player_id=3")
-        self.add_matches(82020, 4, rating=10.08)
-        self.add_matches(self.target, 4, rating=10.08)
-        self.freeze()
-        self.assertEqual(snapshot, self.fetch_all("SELECT * FROM player_rating_reference_samples"))
-        loader.build_player_rating_scores(self.target)
-        self.assertEqual(first, self.fetch_one("SELECT percentile_score FROM player_rating_scores WHERE player_id=3"))
-        self.assertEqual(self.fetch_one("SELECT percentile_score FROM player_rating_scores WHERE player_id=4")["percentile_score"], 100)
+    def test_reference_includes_target_and_does_not_include_later_seasons(self):
+        self.add_matches(self.target, 3, rating=9)
+        self.initialize()
+        first = self.fetch_one("SELECT * FROM player_rating_scores WHERE season_id=%s", (self.target,))
+        self.assertAlmostEqual(float(first["percentile_score"]), 100 * 80.5 / 81)
+        self.add_matches(self.next_season, 4, rating=10.08)
+        loader.build_player_rating_scores(self.next_season)
+        self.assertEqual(first, self.fetch_one("SELECT * FROM player_rating_scores WHERE season_id=%s", (self.target,)))
+        self.assertLess(self.fetch_one("SELECT percentile_score FROM player_rating_scores WHERE player_id=4")["percentile_score"], 100)
 
-    def test_missing_reference_season_and_empty_reference_season_do_not_save_partial_reference(self):
-        self.db.execute("DELETE FROM seasons WHERE season_id=82020")
-        with self.assertRaisesRegex(ValueError, "All five"):
-            loader.freeze_player_rating_reference(8)
-        with self.assertRaisesRegex(ValueError, "Every reference season"):
-            loader.freeze_player_rating_reference(564)
+    def test_missing_league_season_does_not_save_partial_reference(self):
+        self.db.execute("DELETE FROM seasons WHERE season_id=822017")
+        with self.assertRaisesRegex(ValueError, "all five"):
+            self.initialize()
         self.assertEqual(self.fetch_all("SELECT * FROM player_rating_references"), [])
 
-    def test_invalid_league_and_unfrozen_or_unknown_season_are_rejected(self):
-        for competition_id in (999, 1000):
-            with self.assertRaises(ValueError):
-                loader.freeze_player_rating_reference(competition_id)
+    def test_uninitialized_or_unknown_season_is_rejected(self):
         for season_id in (self.target, 123):
             with self.assertRaises(ValueError):
                 loader.build_player_rating_scores(season_id)
+        self.initialize()
+        with self.assertRaises(ValueError):
+            loader.build_player_rating_scores(123)
 
-    def test_leagues_use_separate_references(self):
-        self.freeze()
-        for year in range(2020, 2025):
-            self.add_matches(5640000 + year, 1, rating=8)
-        self.assertEqual(loader.freeze_player_rating_reference(564), 5)
-        self.add_matches(self.target, 3)
-        self.add_matches(5642025, 3)
-        loader.build_player_rating_scores(self.target)
-        loader.build_player_rating_scores(5642025)
-        rows = self.fetch_all("SELECT competition_id, percentile_score FROM player_rating_scores ORDER BY competition_id")
-        self.assertEqual([(row["competition_id"], row["percentile_score"]) for row in rows], [(8, 50), (564, 0)])
+    def test_old_fixed_reference_is_not_presented_as_cumulative_scores(self):
+        self.db.execute("""INSERT INTO player_rating_references
+            (competition_id,start_season_name,end_season_name,minimum_rated_matches)
+            VALUES (8,'2020/2021','2024/2025',10)""")
+        self.assertIsNone(repo.get_player_rankings(self.target))
+        with self.assertRaisesRegex(ValueError, "rebuild"):
+            loader.build_player_rating_scores(self.target)
+
+    def test_rebuild_excludes_before_2017_and_other_competitions(self):
+        for season_id, competition, name in ((82016, 8, '2016/2017'), (9992025, 999, '2025/2026')):
+            self.db.execute("INSERT INTO seasons VALUES (?,?,?)", (season_id, competition, name))
+            self.db.execute("INSERT INTO stages VALUES (?,?)", (season_id, season_id))
+            self.add_matches(season_id, 9, rating=10)
+        report = self.initialize()
+        self.assertEqual(report['scores'], 80)
+        self.assertEqual(report['seasons'][0]['season_name'], '2017/2018')
+        self.assertEqual(self.fetch_all("SELECT * FROM player_rating_scores WHERE player_id=9"), [])
+
+    def test_all_five_leagues_use_one_reference_and_keep_transfer_records_separate(self):
+        for competition in loader.RATING_COMPETITION_IDS:
+            self.add_matches(competition * 10000 + 2025, 3, rating=7)
+        self.initialize()
+        rows = self.fetch_all("SELECT competition_id, percentile_score FROM player_rating_scores WHERE player_id=3")
+        self.assertEqual(len(rows), 5)
+        self.assertEqual({row["percentile_score"] for row in rows}, {50})
+        data = repo.get_player_rankings(self.target)
+        self.assertEqual(data["reference"]["sample_count"], 85)
+        self.assertEqual(data["reference"]["end_season_name"], "2025/2026")
 
     def test_refresh_removes_ineligible_player_and_preserves_other_seasons(self):
-        self.freeze()
+        self.initialize()
         for season in (self.target, self.next_season):
             self.add_matches(season, 3)
             loader.build_player_rating_scores(season)
-        self.db.execute("UPDATE fixture_lineups SET rating=NULL WHERE fixture_id=?", (101,))
+        self.db.execute("UPDATE fixture_lineups SET rating=NULL WHERE fixture_id=(SELECT MIN(fixture_id) FROM fixtures WHERE stage_id=?)", (self.target,))
         self.assertEqual(loader.build_player_rating_scores(self.target), 0)
-        self.assertEqual([row["season_id"] for row in self.fetch_all("SELECT * FROM player_rating_scores")], [self.next_season])
+        self.assertEqual([row["season_id"] for row in self.fetch_all("SELECT * FROM player_rating_scores WHERE player_id=3")], [self.next_season])
 
     def test_failed_replacement_rolls_back_deleted_scores(self):
-        self.freeze()
+        self.initialize()
         self.add_matches(self.target, 3)
         loader.build_player_rating_scores(self.target)
         before = self.fetch_all("SELECT * FROM player_rating_scores")
+        reference = self.fetch_all("SELECT * FROM player_rating_reference_samples")
         with patch.object(MemoryCursor, "executemany", side_effect=RuntimeError("insert failed")):
             with self.assertRaisesRegex(RuntimeError, "insert failed"):
                 loader.build_player_rating_scores(self.target)
         self.assertEqual(before, self.fetch_all("SELECT * FROM player_rating_scores"))
+        self.assertEqual(reference, self.fetch_all("SELECT * FROM player_rating_reference_samples"))
+
+    def test_correction_refreshes_other_leagues_and_later_seasons_but_preserves_earlier_seasons(self):
+        self.add_matches(self.target, 3, rating=6)
+        self.add_matches(5642025, 4, rating=7.5)
+        self.add_matches(self.next_season, 5, rating=7.5)
+        self.initialize()
+        earlier = self.fetch_all("SELECT * FROM player_rating_scores WHERE season_id=82024")
+        before = {row["player_id"]: row["percentile_score"] for row in self.fetch_all("SELECT * FROM player_rating_scores WHERE player_id IN (4,5)")}
+        self.db.execute("UPDATE fixture_lineups SET rating=9 WHERE fixture_id IN (SELECT fixture_id FROM fixtures WHERE stage_id=?)", (self.target,))
+        loader.build_player_rating_scores(self.target)
+        after = {row["player_id"]: row["percentile_score"] for row in self.fetch_all("SELECT * FROM player_rating_scores WHERE player_id IN (4,5)")}
+        self.assertLess(after[4], before[4])
+        self.assertLess(after[5], before[5])
+        self.assertEqual(earlier, self.fetch_all("SELECT * FROM player_rating_scores WHERE season_id=82024"))
+
+    def test_check_mode_does_not_write_or_lock_and_rebuild_is_repeatable(self):
+        with patch.object(MemoryCursor, "executemany", side_effect=AssertionError("write in check")), patch.object(loader, "_lock_rating_pool") as lock:
+            report = loader.rebuild_player_rating_scores()
+        lock.assert_not_called()
+        self.assertFalse(report["apply"])
+        self.assertEqual(report["scores"], 80)
+        self.assertEqual(self.fetch_all("SELECT * FROM player_rating_references"), [])
+        self.initialize()
+        scores = self.fetch_all("SELECT * FROM player_rating_scores")
+        self.initialize()
+        self.assertEqual(scores, self.fetch_all("SELECT * FROM player_rating_scores"))
 
     def client(self):
         app = create_app()
@@ -281,7 +335,7 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         return client, app
 
     def test_api_paginates_original_mean_order_and_returns_reference_and_score(self):
-        self.freeze()
+        self.initialize()
         for player, rating in ((3, 7), (4, 7.5), (5, 7.5)):
             self.add_matches(self.target, player, rating=rating)
         loader.build_player_rating_scores(self.target)
@@ -290,19 +344,26 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200, response.text)
         data = response.json()
         self.assertEqual(data["total"], 3)
-        self.assertEqual(data["method"], "fixed_historical_percentile")
+        self.assertEqual(data["method"], "cumulative_all_leagues_percentile")
         self.assertEqual([row["player_id"] for row in data["items"]], [5, 3])
         self.assertEqual([row["rank"] for row in data["items"]], [1, 3])
-        self.assertEqual([row["display_score"] for row in data["items"]], [50, 50])
-        self.assertEqual(data["reference"]["sample_count"], 10)
-        self.assertTrue(data["reference"]["frozen_at"].endswith("Z"))
+        self.assertEqual([row["display_score"] for row in data["items"]], [50.3, 48.8])
+        self.assertAlmostEqual(data["items"][0]["percentile_score"], 4200 / 83)
+        stored = self.fetch_one("SELECT percentile_score FROM player_rating_scores WHERE season_id=%s AND player_id=5", (self.target,))
+        self.assertAlmostEqual(float(stored["percentile_score"]), 4200 / 83)
+        self.assertEqual(data["reference"]["sample_count"], 83)
+        self.assertEqual(data["reference"]["competition_ids"], [8, 82, 301, 384, 564])
+        self.assertEqual(data["reference"]["start_season_name"], "2017/2018")
+        self.assertEqual(data["reference"]["end_season_name"], "2025/2026")
+        self.assertTrue(data["reference"]["updated_at"].endswith("Z"))
+        self.assertNotIn("frozen_at", data["reference"])
         self.assertNotIn("rating_sum", data["items"][0])
         self.assertEqual(client.get(f"/v1/players/rankings?season_id={self.target}&offset=99").json()["items"], [])
 
     def test_api_unknown_reference_empty_scores_validation_auth_and_openapi(self):
         client, app = self.client()
         self.assertEqual(client.get(f"/v1/players/rankings?season_id={self.target}").status_code, 404)
-        self.freeze()
+        self.initialize()
         response = client.get(f"/v1/players/rankings?season_id={self.target}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["items"], [])
@@ -316,17 +377,18 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.headers["WWW-Authenticate"], "Bearer")
 
-    def test_cli_routes_reference_and_season_ids_to_the_selected_loader(self):
+    def test_cli_routes_rebuild_and_season_ids_to_the_selected_loader(self):
         from one_touch_loader import cli
 
-        for subcommand, function_name, target in (
-            ("freeze-reference", "freeze_player_rating_reference", 8),
-            ("build-scores", "build_player_rating_scores", 25583),
-        ):
-            with self.subTest(subcommand=subcommand), patch.object(cli, function_name, return_value=10) as run:
-                with patch("sys.argv", ["cli", "player-rankings", subcommand, str(target)]), patch("builtins.print"):
+        for args, apply in (([], False), (["--check"], False), (["--apply"], True)):
+            with patch.object(cli, "rebuild_player_rating_scores", return_value={}) as run:
+                with patch("sys.argv", ["cli", "player-rankings", "rebuild", *args]), patch("builtins.print"):
                     cli.main()
-                run.assert_called_once_with(target)
+                run.assert_called_once_with(apply=apply)
+        with patch.object(cli, "build_player_rating_scores", return_value=10) as run:
+            with patch("sys.argv", ["cli", "player-rankings", "build-scores", "25583"]), patch("builtins.print"):
+                cli.main()
+            run.assert_called_once_with(25583)
 
 
 if __name__ == "__main__":

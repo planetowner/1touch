@@ -29,6 +29,7 @@ PlayerCareerSeason _careerSeason(
 
 Player _player({
   required String id,
+  required int externalPlayerId,
   required String name,
   required String shortName,
   List<String> aliases = const [],
@@ -76,6 +77,7 @@ Player _player({
 
   return Player(
     id: id,
+    externalPlayerId: externalPlayerId,
     fullName: name,
     shortName: shortName,
     searchAliases: aliases,
@@ -154,6 +156,7 @@ final List<Player> mockPlayerCatalog2526 = [
   // Premier League
   _player(
     id: 'alisson-becker',
+    externalPlayerId: 129820,
     name: 'Alisson Becker',
     shortName: 'ALISSON',
     teamId: 8,
@@ -179,6 +182,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'virgil-van-dijk',
+    externalPlayerId: 1743,
     name: 'Virgil van Dijk',
     shortName: 'V. VAN DIJK',
     teamId: 8,
@@ -205,6 +209,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'cole-palmer',
+    externalPlayerId: 28912747,
     name: 'Cole Palmer',
     shortName: 'C. PALMER',
     teamId: 18,
@@ -231,6 +236,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'florian-wirtz',
+    externalPlayerId: 37429246,
     name: 'Florian Wirtz',
     shortName: 'F. WIRTZ',
     teamId: 8,
@@ -258,6 +264,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'mohamed-salah',
+    externalPlayerId: 4125,
     name: 'Mohamed Salah',
     shortName: 'M. SALAH',
     aliases: const ['Mo Salah'],
@@ -346,6 +353,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'erling-haaland',
+    externalPlayerId: 154421,
     name: 'Erling Haaland',
     shortName: 'E. HAALAND',
     teamId: 9,
@@ -375,6 +383,7 @@ final List<Player> mockPlayerCatalog2526 = [
   // La Liga
   _player(
     id: 'thibaut-courtois',
+    externalPlayerId: 1314,
     name: 'Thibaut Courtois',
     shortName: 'T. COURTOIS',
     teamId: 3468,
@@ -400,6 +409,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'antonio-rudiger',
+    externalPlayerId: 31837,
     name: 'Antonio Rüdiger',
     shortName: 'A. RÜDIGER',
     aliases: const ['Antonio Rudiger'],
@@ -426,6 +436,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'pedri',
+    externalPlayerId: 37288001,
     name: 'Pedri',
     shortName: 'PEDRI',
     aliases: const ['Pedro González'],
@@ -452,6 +463,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'jude-bellingham',
+    externalPlayerId: 37255840,
     name: 'Jude Bellingham',
     shortName: 'J. BELLINGHAM',
     teamId: 3468,
@@ -477,6 +489,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'lamine-yamal',
+    externalPlayerId: 37656179,
     name: 'Lamine Yamal',
     shortName: 'L. YAMAL',
     teamId: 83,
@@ -512,6 +525,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'kylian-mbappe',
+    externalPlayerId: 96611,
     name: 'Kylian Mbappé',
     shortName: 'K. MBAPPÉ',
     aliases: const ['Kylian Mbappe'],
@@ -540,6 +554,7 @@ final List<Player> mockPlayerCatalog2526 = [
   // Bundesliga
   _player(
     id: 'manuel-neuer',
+    externalPlayerId: 30642,
     name: 'Manuel Neuer',
     shortName: 'M. NEUER',
     teamId: 503,
@@ -565,6 +580,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'jonathan-tah',
+    externalPlayerId: 31836,
     name: 'Jonathan Tah',
     shortName: 'J. TAH',
     teamId: 503,
@@ -590,6 +606,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'kim-min-jae',
+    externalPlayerId: 322964,
     name: 'Kim Min-jae',
     shortName: 'M. J. KIM',
     aliases: const ['Minjae Kim', 'Kim Minjae', '김민재'],
@@ -675,6 +692,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'joshua-kimmich',
+    externalPlayerId: 32362,
     name: 'Joshua Kimmich',
     shortName: 'J. KIMMICH',
     teamId: 503,
@@ -700,6 +718,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'jamal-musiala',
+    externalPlayerId: 33186829,
     name: 'Jamal Musiala',
     shortName: 'J. MUSIALA',
     teamId: 503,
@@ -725,6 +744,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'harry-kane',
+    externalPlayerId: 997,
     name: 'Harry Kane',
     shortName: 'H. KANE',
     teamId: 503,
@@ -808,6 +828,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'serhou-guirassy',
+    externalPlayerId: 32695,
     name: 'Serhou Guirassy',
     shortName: 'S. GUIRASSY',
     teamId: 68,
@@ -835,6 +856,7 @@ final List<Player> mockPlayerCatalog2526 = [
   // Ligue 1
   _player(
     id: 'lucas-chevalier',
+    externalPlayerId: 17187774,
     name: 'Lucas Chevalier',
     shortName: 'L. CHEVALIER',
     teamId: 591,
@@ -860,6 +882,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'marquinhos',
+    externalPlayerId: 96208,
     name: 'Marquinhos',
     shortName: 'MARQUINHOS',
     teamId: 591,
@@ -885,6 +908,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'vitinha',
+    externalPlayerId: 4545430,
     name: 'Vitinha',
     shortName: 'VITINHA',
     aliases: const ['Vítor Ferreira'],
@@ -911,6 +935,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'lee-kang-in',
+    externalPlayerId: 9967153,
     name: 'Lee Kang-in',
     shortName: 'K. I. LEE',
     aliases: const ['Kang-in Lee', 'Kangin Lee', 'Lee Kangin', '이강인'],
@@ -996,6 +1021,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'bradley-barcola',
+    externalPlayerId: 37317369,
     name: 'Bradley Barcola',
     shortName: 'B. BARCOLA',
     teamId: 591,
@@ -1022,6 +1048,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'ousmane-dembele',
+    externalPlayerId: 32403,
     name: 'Ousmane Dembélé',
     shortName: 'O. DEMBÉLÉ',
     aliases: const ['Ousmane Dembele'],
@@ -1048,6 +1075,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'desire-doue',
+    externalPlayerId: 37590938,
     name: 'Désiré Doué',
     shortName: 'D. DOUÉ',
     aliases: const ['Desire Doue'],
@@ -1078,6 +1106,7 @@ final List<Player> mockPlayerCatalog2526 = [
   // Serie A
   _player(
     id: 'yann-sommer',
+    externalPlayerId: 32193,
     name: 'Yann Sommer',
     shortName: 'Y. SOMMER',
     teamId: 2930,
@@ -1103,6 +1132,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'alessandro-bastoni',
+    externalPlayerId: 133797,
     name: 'Alessandro Bastoni',
     shortName: 'A. BASTONI',
     teamId: 2930,
@@ -1128,6 +1158,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'scott-mctominay',
+    externalPlayerId: 455376,
     name: 'Scott McTominay',
     shortName: 'S. MCTOMINAY',
     aliases: const ['Scott Mctominay'],
@@ -1173,6 +1204,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'nicolo-barella',
+    externalPlayerId: 130117,
     name: 'Nicolò Barella',
     shortName: 'N. BARELLA',
     aliases: const ['Nicolo Barella'],
@@ -1199,6 +1231,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'lautaro-martinez',
+    externalPlayerId: 333594,
     name: 'Lautaro Martínez',
     shortName: 'L. MARTÍNEZ',
     aliases: const ['Lautaro Martinez'],
@@ -1225,6 +1258,7 @@ final List<Player> mockPlayerCatalog2526 = [
   ),
   _player(
     id: 'jonathan-david',
+    externalPlayerId: 16827175,
     name: 'Jonathan David',
     shortName: 'J. DAVID',
     teamId: 625,

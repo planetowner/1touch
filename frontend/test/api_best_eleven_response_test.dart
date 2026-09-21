@@ -13,10 +13,10 @@ void main() {
     expect(response.usagePercentage, 66.67);
     expect(response.formations.single.isDefault, isTrue);
     expect(response.players.single.playerName, 'Player Name');
-    expect(response.players.single.jerseyNumber, 4);
     expect(response.players.single.positionGroupCode, 'DEF');
     expect(response.players.single.positionCode, 'CB');
     expect(response.players.single.starts, 18);
+    expect(response.players.single.jerseyNumber, 27);
     expect(() => response.players.clear(), throwsUnsupportedError);
   });
 
@@ -26,17 +26,26 @@ void main() {
     player
       ..['player_name'] = null
       ..['player_image'] = null
-      ..['jersey_number'] = null
       ..['position_group_code'] = null
-      ..['position_code'] = null;
+      ..['position_code'] = null
+      ..['jersey_number'] = null;
 
     final result = ApiBestElevenResponse.fromJson(json).players.single;
 
     expect(result.playerName, isNull);
     expect(result.playerImage, isNull);
-    expect(result.jerseyNumber, isNull);
     expect(result.positionGroupCode, isNull);
     expect(result.positionCode, isNull);
+    expect(result.jerseyNumber, isNull);
+  });
+
+  test('accepts responses from the server before jersey numbers were added',
+      () {
+    final json = _responseJson();
+    ((json['players'] as List).single as Map<String, dynamic>)
+        .remove('jersey_number');
+    expect(ApiBestElevenResponse.fromJson(json).players.single.jerseyNumber,
+        isNull);
   });
 
   test('accepts integer usage percentages', () {
@@ -77,7 +86,7 @@ void main() {
         ],
       _responseJson()
         ..['players'] = [
-          {...jsonPlayer, 'jersey_number': '4'},
+          {...jsonPlayer, 'jersey_number': '27'},
         ],
       _responseJson()
         ..['formations'] = [
@@ -106,10 +115,10 @@ const jsonPlayer = <String, dynamic>{
   'player_id': 100,
   'player_name': 'Player Name',
   'player_image': 'https://example.com/player.png',
-  'jersey_number': 4,
   'position_group_code': 'DEF',
   'position_code': 'CB',
   'starts': 18,
+  'jersey_number': 27,
 };
 
 Map<String, dynamic> _responseJson() {

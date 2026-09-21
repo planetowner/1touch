@@ -10,6 +10,49 @@ import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart
 import 'package:onetouch/models/team_best_eleven.dart';
 
 void main() {
+  void useScreen(WidgetTester tester, Size size) {
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  }
+
+  for (final variant in TeamBestElevenVariant.values) {
+    for (final size in [const Size(320, 568), const Size(430, 932)]) {
+      for (final dark in [false, true]) {
+        testWidgets('jersey numbers in $variant at $size dark=$dark',
+            (tester) async {
+          useScreen(tester, size);
+          final repository = _TestBestElevenRepository((query) async => _lineup(
+                teamId: query.teamId,
+                playerPrefix: 'Number',
+                jerseyNumbers: const {0: 1, 1: 27, 10: 99},
+              ));
+          addTearDown(repository.dispose);
+          await tester.pumpWidget(MaterialApp(
+            theme: dark ? darktheme : whitetheme,
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: TeamBestElevenSection(
+                  teamId: 503,
+                  variant: variant,
+                  repository: repository,
+                ),
+              ),
+            ),
+          ));
+          await tester.pumpAndSettle();
+          expect(find.text('1'), findsOneWidget);
+          expect(find.text('27'), findsOneWidget);
+          expect(find.text('99'), findsOneWidget);
+          expect(find.text('—'), findsNWidgets(8));
+          expect(find.text('##'), findsNothing);
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
+  }
+
   Widget buildSubject({
     required int teamId,
     required BestElevenRepository repository,
@@ -46,13 +89,6 @@ void main() {
         ),
       ),
     );
-  }
-
-  void useScreen(WidgetTester tester, Size size) {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
   }
 
   testWidgets('loads and renders repository players at compact width',
@@ -338,6 +374,7 @@ TeamBestEleven _lineup({
   required String playerPrefix,
   String formation = '4-3-3',
   List<BestElevenFormationOption>? formations,
+  Map<int, int> jerseyNumbers = const {},
 }) {
   const slots = [
     '1:1',
@@ -370,8 +407,9 @@ TeamBestEleven _lineup({
           slotIndex: index,
           playerId: 100 + index,
           playerName: '$playerPrefix$index',
-          jerseyNumber: index + 1,
           starts: 10,
+          jerseyNumber:
+              jerseyNumbers.isEmpty ? index + 1 : jerseyNumbers[index],
         ),
     ],
   );

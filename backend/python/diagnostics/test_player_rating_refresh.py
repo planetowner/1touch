@@ -1,5 +1,6 @@
 """실제 경기 저장 경로에서 종료·정정·실패 시 시즌 랭킹을 함께 확인해요."""
 from datetime import datetime
+from contextlib import nullcontext
 import sqlite3
 import unittest
 from unittest.mock import patch
@@ -37,7 +38,8 @@ class PlayerRatingRefreshTests(unittest.TestCase):
     transaction = ranking_tests.PlayerRatingRankingsTests.transaction
     add_matches = ranking_tests.PlayerRatingRankingsTests.add_matches
     add_scheduled_rounds = ranking_tests.PlayerRatingRankingsTests.add_scheduled_rounds
-    freeze = ranking_tests.PlayerRatingRankingsTests.freeze
+    initialize = ranking_tests.PlayerRatingRankingsTests.initialize
+    close = ranking_tests.PlayerRatingRankingsTests.close
 
     def cursor(self, **kwargs):
         return RefreshCursor(self.db, **kwargs)
@@ -73,7 +75,12 @@ class PlayerRatingRefreshTests(unittest.TestCase):
             patcher = patch.object(owner, "transaction", self.transaction)
             patcher.start()
             self.addCleanup(patcher.stop)
-        self.freeze()
+        # 스쿼드 역할은 별도 테스트에서 검증해요. 여기서는 평점 저장의 원자성을 확인해요.
+        role_patch = patch.object(details.squad_roles, "refresh_squad_roles_after_fixture",
+                                  side_effect=lambda *args, **kwargs: nullcontext())
+        role_patch.start()
+        self.addCleanup(role_patch.stop)
+        self.initialize()
         # 기반 픽스처의 INSERT는 추가한 점수 필드도 명시하도록 이 테스트에서만 맞춰요.
         self.seed_matches(self.target, count=9)
         self.fixture_id = self.sequence + 1
@@ -144,17 +151,17 @@ class PlayerRatingRefreshTests(unittest.TestCase):
             SELECT fixture_id,10,4,7,90,27 FROM fixtures WHERE stage_id=? AND round_id=1 LIMIT 1""", (self.target,))
         self.assertEqual(rankings.build_player_rating_scores(self.target), 2)
         self.store(state=2)
-        self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_scores")["n"], 2)
+        self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_scores WHERE season_id=%s", (self.target,))["n"], 2)
         self.store()
         self.assertEqual(self.score()["rated_matches"], 10)
-        self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_scores")["n"], 1)
+        self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_scores WHERE season_id=%s", (self.target,))["n"], 1)
 
-    def test_finished_rating_correction_refreshes_score_without_changing_reference(self):
-        reference = self.fetch_all("SELECT * FROM player_rating_reference_samples")
+    def test_finished_rating_correction_updates_score_and_reference_together(self):
         self.store()
         self.store(rating=6)
-        self.assertEqual(self.score()["percentile_score"], 25)
-        self.assertEqual(reference, self.fetch_all("SELECT * FROM player_rating_reference_samples"))
+        self.assertAlmostEqual(float(self.score()["percentile_score"]), 100 * 20.5 / 81)
+        sample = self.fetch_one("SELECT * FROM player_rating_reference_samples WHERE season_id=%s", (self.target,))
+        self.assertEqual((sample["rating_sum"], sample["rated_matches"]), (60, 10))
 
     def test_missing_or_removed_rating_removes_newly_ineligible_player(self):
         self.store()
@@ -171,16 +178,18 @@ class PlayerRatingRefreshTests(unittest.TestCase):
         self.assertEqual(self.score()["rated_matches"], 9)
         self.assertEqual(self.score()["rating_sum"], 54)
 
-    def test_league_without_reference_and_nonregular_round_still_save_match(self):
+    def test_cup_and_nonregular_round_still_save_match_without_rating_refresh(self):
+        self.db.execute("INSERT INTO seasons VALUES (9992025,999,'2025/2026')")
+        self.db.execute("INSERT INTO stages VALUES (9992025,9992025)")
         with patch.object(rankings, "_write_player_rating_scores", wraps=rankings._write_player_rating_scores) as score:
-            self.db.execute("UPDATE fixtures SET stage_id=5642025 WHERE fixture_id=?", (self.fixture_id,))
+            self.db.execute("UPDATE fixtures SET stage_id=9992025 WHERE fixture_id=?", (self.fixture_id,))
             self.store()
             score.assert_not_called()
             self.assertEqual(self.fetch_one("SELECT state_id FROM fixtures WHERE fixture_id=%s", (self.fixture_id,))["state_id"], 5)
             self.db.execute("UPDATE fixtures SET stage_id=?,round_id=2 WHERE fixture_id=?", (self.target, self.fixture_id))
             self.store()
             score.assert_not_called()
-        self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_references")["n"], 1)
+        self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_references")["n"], 5)
 
     def test_team_statistics_only_do_not_recalculate_player_rankings(self):
         self.store()

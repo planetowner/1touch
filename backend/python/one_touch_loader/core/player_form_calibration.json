@@ -1,0 +1,12 @@
+{
+  "trained_on_season": "2025/2026",
+  "applies_to_season": "2026/2027",
+  "method": "walk_forward_next_match_minutes_weighted_mse",
+  "training_cutoff_utc": "2026-08-15T17:30:00",
+  "match_limit": 5,
+  "decay_per_day": 0.0,
+  "validation_pairs": 49989,
+  "weighted_mse": 0.31925399236096164,
+  "no_decay_mse": 0.31925399236096164,
+  "seven_day_half_life_mse": 0.36990613792769517
+}

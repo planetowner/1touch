@@ -7,6 +7,7 @@ import 'package:onetouch/features/KaneRest.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
+import 'package:onetouch/features/player/player_stat_value.dart';
 
 import '../../models/match_data.dart';
 import 'match_event_view_data.dart';
@@ -25,26 +26,9 @@ class MatchInfoTab extends StatelessWidget {
 
   bool get isLive => matchStatus == 'live';
 
-  String _formatMetricNumber(double value) {
-    if (value == value.roundToDouble()) return value.toInt().toString();
-    return value
-        .toStringAsFixed(2)
-        .replaceFirst(RegExp(r'0+$'), '')
-        .replaceFirst(RegExp(r'\.$'), '');
-  }
-
   String? _metricValue(FixturePlayerStatMetric metric) {
-    if (metric.kind == 'pair') {
-      final numerator = metric.numerator;
-      final denominator = metric.denominator;
-      if (numerator == null || denominator == null) return null;
-      return '${_formatMetricNumber(numerator)} / '
-          '${_formatMetricNumber(denominator)}';
-    }
-    final value = metric.value;
-    if (value == null) return null;
-    final formatted = _formatMetricNumber(value);
-    return metric.kind == 'percentage' ? '$formatted%' : formatted;
+    final value = playerMetricValue(metric);
+    return value == '—' ? null : value;
   }
 
   PlayerMatchStatData? _playerMatchStats({
