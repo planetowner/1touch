@@ -14,8 +14,43 @@ from ..repos.player_indicators_repo import get_current_player_indicators
 from ..schemas.player_indicators import PlayerIndicatorsResponse
 from ..services.media_storage import player_image_content
 from ...core.player_images import IMAGE_ROUTE
+from ..repos.player_detail_repo import get_player_detail, list_player_comparison_candidates
+from ..repos.player_directory_repo import get_current_ranking, get_ones_to_watch
+from typing import Literal
 
 router = APIRouter()
+
+
+@router.get('/players/ranking-current')
+def current_ranking(competition_id: int | None = Query(default=None, gt=0),
+                    position: Literal['GK', 'DF', 'MF', 'FW'] | None = None,
+                    limit: int = Query(default=20, ge=1, le=100), offset: int = Query(default=0, ge=0),
+                    user_id: int = Depends(get_user_id)):
+    if competition_id is not None and competition_id not in (8, 82, 301, 384, 564):
+        raise HTTPException(422, 'Unsupported league')
+    return get_current_ranking(competition_id, position, limit=limit, offset=offset)
+
+
+@router.get('/players/ones-to-watch')
+def ones_to_watch(user_id: int = Depends(get_user_id)):
+    return get_ones_to_watch()
+
+
+@router.get("/players/comparison-candidates")
+def comparison_candidates(q: str = Query(default="", max_length=100), user_id: int = Depends(get_user_id)):
+    return {"players": list_player_comparison_candidates(q)}
+
+
+@router.get("/players/{player_id}/detail")
+def player_detail(player_id: int = Path(gt=0), season_id: int | None = Query(default=None, gt=0),
+                  user_id: int = Depends(get_user_id)):
+    try:
+        result = get_player_detail(player_id, season_id)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    if result is None:
+        raise HTTPException(404, "Player not found")
+    return result
 
 
 @router.get("/players/{player_id}/indicators", response_model=PlayerIndicatorsResponse)
@@ -42,13 +77,13 @@ def player_rankings(
 ):
     """포지션 구분 없이 저장된 시즌 랭킹을 조회해요. 조회 시 평점이나 기준을 갱신하지 않아요.
 
-    Sportmonks 경기 평점만 사용하며, 평점이 있는 10경기 이상이 대상이에요.
-    기준은 같은 리그의 2020/21~2024/25 선수·시즌 평균 분포예요.
-    점수는 리그 간 절대 능력 비교값이 아니며 화면에는 display_score를 한 자리로 표시해요.
+    Sportmonks 경기 평점만 사용하며, 시즌 중반 전에는 1경기, 이후에는 10경기 이상이 대상이에요.
+    목록은 선택한 리그·시즌이지만 점수는 5대 리그를 합친 2017/18~해당 시즌 기록과 비교해요.
+    이후 시즌은 비교에 넣지 않으며 화면에는 display_score를 한 자리로 표시해요.
     """
     result = get_player_rankings(season_id, limit=limit, offset=offset)
     if result is None:
-        raise HTTPException(404, "Season or fixed historical rating reference not found")
+        raise HTTPException(404, "Season or cumulative five-league rating reference not found")
     return result
 
 
