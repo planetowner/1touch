@@ -1,0 +1,155 @@
+{
+  "description": "구단 경기 기록과 단건·현재 소속으로 확인한 후보 5번의 null 선수 연결만 복원해요.",
+  "sources": [
+    "https://the-nomads.co.uk/matches/first-team/2026-07-16/fc-ballkani/",
+    "https://the-nomads.co.uk/news/2026-06-01/welcome-back-alex-hughes/",
+    "https://theanalyst.com/players/12214/alex-hughes"
+  ],
+  "fixtures": [
+    {
+      "id": 19719433,
+      "events": [],
+      "lineups": [
+        {
+          "id": 14674158335,
+          "sport_id": 1,
+          "fixture_id": 19719433,
+          "player_id": null,
+          "team_id": 1294,
+          "position_id": 25,
+          "formation_field": null,
+          "type_id": 12,
+          "formation_position": null,
+          "player_name": "Alex Hughes",
+          "jersey_number": 5,
+          "details": [
+            {
+              "id": 2128425963,
+              "fixture_id": 19719433,
+              "player_id": null,
+              "team_id": 1294,
+              "lineup_id": 14674158335,
+              "type_id": 117172,
+              "data": {
+                "value": 29
+              }
+            }
+          ],
+          "player": null
+        },
+        {
+          "id": 14674158336,
+          "sport_id": 1,
+          "fixture_id": 19719433,
+          "player_id": 14816,
+          "team_id": 1294,
+          "position_id": 25,
+          "formation_field": "2:3",
+          "type_id": 11,
+          "formation_position": 3,
+          "player_name": "Dan Cowan",
+          "jersey_number": 6,
+          "details": [
+            {
+              "id": 2128402071,
+              "fixture_id": 19719433,
+              "player_id": 14816,
+              "team_id": 1294,
+              "lineup_id": 14674158336,
+              "type_id": 117172,
+              "data": {
+                "value": 68
+              }
+            },
+            {
+              "id": 2128402072,
+              "fixture_id": 19719433,
+              "player_id": 14816,
+              "team_id": 1294,
+              "lineup_id": 14674158336,
+              "type_id": 118,
+              "data": {
+                "value": 5.86
+              }
+            },
+            {
+              "id": 2128404603,
+              "fixture_id": 19719433,
+              "player_id": 14816,
+              "team_id": 1294,
+              "lineup_id": 14674158336,
+              "type_id": 88,
+              "data": {
+                "value": 3
+              }
+            },
+            {
+              "id": 2128427965,
+              "fixture_id": 19719433,
+              "player_id": 14816,
+              "team_id": 1294,
+              "lineup_id": 14674158336,
+              "type_id": 84,
+              "data": {
+                "value": 1
+              }
+            },
+            {
+              "id": 2128427964,
+              "fixture_id": 19719433,
+              "player_id": 14816,
+              "team_id": 1294,
+              "lineup_id": 14674158336,
+              "type_id": 119,
+              "data": {
+                "value": 66
+              }
+            }
+          ],
+          "player": {
+            "id": 14816,
+            "sport_id": 1,
+            "country_id": 462,
+            "nationality_id": 462,
+            "city_id": 53061,
+            "position_id": 25,
+            "detailed_position_id": 148,
+            "type_id": 25,
+            "common_name": "D. Cowan",
+            "firstname": "Dan",
+            "lastname": "Cowan",
+            "name": "Dan Cowan",
+            "display_name": "Dan Cowan",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+            "height": 187,
+            "weight": null,
+            "date_of_birth": "1996-02-18",
+            "gender": "male"
+          }
+        }
+      ]
+    }
+  ],
+  "correct_players": [
+    {
+      "id": 38219298,
+      "sport_id": 1,
+      "country_id": 515,
+      "nationality_id": 462,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 154,
+      "type_id": null,
+      "common_name": "A. Hughes",
+      "firstname": "Alex",
+      "lastname": "Hughes",
+      "name": "Alex Hughes",
+      "display_name": "Alex Hughes",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": null,
+      "weight": null,
+      "date_of_birth": "2006-09-26",
+      "gender": "male"
+    }
+  ]
+}

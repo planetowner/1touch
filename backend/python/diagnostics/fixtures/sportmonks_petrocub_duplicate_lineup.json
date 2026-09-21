@@ -1,0 +1,1088 @@
+{
+  "source": "Sportmonks fixture 10336772, retrieved 2026-09-17",
+  "verified_source": "https://www.uefa.com/uefaeuropaleague/match/2024723--osijek-vs-petrocub/lineups/",
+  "verified_lineup": {
+    "player_id": 14772003,
+    "jersey_number": 33,
+    "kept_lineup_id": 885975121,
+    "removed_lineup_id": 6911001837
+  },
+  "fixture": {
+    "id": 10336772,
+    "lineups": [
+      {
+        "id": 5278261,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 146053,
+        "team_id": 6131,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Dumitru Celeadnic",
+        "jersey_number": 1,
+        "details": [
+          {
+            "id": 199307715,
+            "fixture_id": 10336772,
+            "player_id": 146053,
+            "team_id": 6131,
+            "lineup_id": 5278261,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 199307812,
+            "fixture_id": 10336772,
+            "player_id": 146053,
+            "team_id": 6131,
+            "lineup_id": 5278261,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 619243754,
+            "fixture_id": 10336772,
+            "player_id": 146053,
+            "team_id": 6131,
+            "lineup_id": 5278261,
+            "type_id": 1535,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 146053,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "D. Celeadnic",
+          "firstname": "Dumitru",
+          "lastname": "Celeadnic",
+          "name": "Dumitru Celeadnic",
+          "display_name": "Dumitru Celeadnic",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/5/146053.png",
+          "height": 192,
+          "weight": 79,
+          "date_of_birth": "1992-04-23",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 885975224,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 527194,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Jacques Ndzomo",
+        "jersey_number": 2,
+        "details": [
+          {
+            "id": 199307760,
+            "fixture_id": 10336772,
+            "player_id": 527194,
+            "team_id": 6131,
+            "lineup_id": 885975224,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 527194,
+          "sport_id": 1,
+          "country_id": 593,
+          "nationality_id": 593,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "J. Onana Ndzomo",
+          "firstname": "Jacques Ghislain",
+          "lastname": "Onana Ndzomo",
+          "name": "Jacques Ghislain Onana Ndzomo",
+          "display_name": "Jacques Ndzomo",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1993-08-23",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278281,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 145514,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "I. Sandu",
+        "jersey_number": 3,
+        "details": [
+          {
+            "id": 199307763,
+            "fixture_id": 10336772,
+            "player_id": 145514,
+            "team_id": 6131,
+            "lineup_id": 5278281,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 199307717,
+            "fixture_id": 10336772,
+            "player_id": 145514,
+            "team_id": 6131,
+            "lineup_id": 5278281,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 145514,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "I. Sandu",
+          "firstname": "Ion",
+          "lastname": "Sandu",
+          "name": "Ion Sandu",
+          "display_name": "Ion Sandu",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 183,
+          "weight": 78,
+          "date_of_birth": "1993-03-09",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278311,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 145828,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "V. Mudrac",
+        "jersey_number": 4,
+        "details": [
+          {
+            "id": 199307767,
+            "fixture_id": 10336772,
+            "player_id": 145828,
+            "team_id": 6131,
+            "lineup_id": 5278311,
+            "type_id": 84,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199307829,
+            "fixture_id": 10336772,
+            "player_id": 145828,
+            "team_id": 6131,
+            "lineup_id": 5278311,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 199307735,
+            "fixture_id": 10336772,
+            "player_id": 145828,
+            "team_id": 6131,
+            "lineup_id": 5278311,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 145828,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": 148,
+          "type_id": 25,
+          "common_name": "V. Mudrac",
+          "firstname": "Victor",
+          "lastname": "Mudrac",
+          "name": "Victor Mudrac",
+          "display_name": "Victor Mudrac",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/4/145828.png",
+          "height": 188,
+          "weight": 77,
+          "date_of_birth": "1994-03-03",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 885975210,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 146529,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Arcadie Rusu",
+        "jersey_number": 5,
+        "details": [
+          {
+            "id": 199307769,
+            "fixture_id": 10336772,
+            "player_id": 146529,
+            "team_id": 6131,
+            "lineup_id": 885975210,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 146529,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "A. Rusu",
+          "firstname": "Arcadie",
+          "lastname": "Rusu",
+          "name": "Arcadie Rusu",
+          "display_name": "Arcadie Rusu",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 172,
+          "weight": 61,
+          "date_of_birth": "1993-06-28",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278343,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 146080,
+        "team_id": 6131,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Dan Taras",
+        "jersey_number": 6,
+        "details": [
+          {
+            "id": 199307737,
+            "fixture_id": 10336772,
+            "player_id": 146080,
+            "team_id": 6131,
+            "lineup_id": 5278343,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199307771,
+            "fixture_id": 10336772,
+            "player_id": 146080,
+            "team_id": 6131,
+            "lineup_id": 5278343,
+            "type_id": 119,
+            "data": {
+              "value": 60
+            }
+          },
+          {
+            "id": 199307841,
+            "fixture_id": 10336772,
+            "player_id": 146080,
+            "team_id": 6131,
+            "lineup_id": 5278343,
+            "type_id": 84,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 146080,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "D. Taras",
+          "firstname": "Dan",
+          "lastname": "Taras",
+          "name": "Dan Taras",
+          "display_name": "Dan Taras",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1994-02-13",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 885973997,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 145948,
+        "team_id": 6131,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Sergiu Matei",
+        "jersey_number": 7,
+        "details": [
+          {
+            "id": 199307845,
+            "fixture_id": 10336772,
+            "player_id": 145948,
+            "team_id": 6131,
+            "lineup_id": 885973997,
+            "type_id": 119,
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "player": {
+          "id": 145948,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": null,
+          "type_id": 27,
+          "common_name": "S. Matei",
+          "firstname": "Sergiu",
+          "lastname": "Matei",
+          "name": "Sergiu Matei",
+          "display_name": "Sergiu Matei",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 168,
+          "weight": 59,
+          "date_of_birth": "1992-04-23",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 885975218,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 56181,
+        "team_id": 6131,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "A. Pătraş",
+        "jersey_number": 8,
+        "details": [
+          {
+            "id": 199307777,
+            "fixture_id": 10336772,
+            "player_id": 56181,
+            "team_id": 6131,
+            "lineup_id": 885975218,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199307741,
+            "fixture_id": 10336772,
+            "player_id": 56181,
+            "team_id": 6131,
+            "lineup_id": 885975218,
+            "type_id": 119,
+            "data": {
+              "value": 30
+            }
+          }
+        ],
+        "player": {
+          "id": 56181,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "A. Pătraş",
+          "firstname": "Artur",
+          "lastname": "Pătraş",
+          "name": "Artur Pătraş",
+          "display_name": "Artur Pătraş",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/21/56181.png",
+          "height": 175,
+          "weight": 71,
+          "date_of_birth": "1988-10-01",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278369,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 146195,
+        "team_id": 6131,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "V. Ambros",
+        "jersey_number": 9,
+        "details": [
+          {
+            "id": 331221889,
+            "fixture_id": 10336772,
+            "player_id": 146195,
+            "team_id": 6131,
+            "lineup_id": 5278369,
+            "type_id": 52,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199307781,
+            "fixture_id": 10336772,
+            "player_id": 146195,
+            "team_id": 6131,
+            "lineup_id": 5278369,
+            "type_id": 111,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199307856,
+            "fixture_id": 10336772,
+            "player_id": 146195,
+            "team_id": 6131,
+            "lineup_id": 5278369,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 199307782,
+            "fixture_id": 10336772,
+            "player_id": 146195,
+            "team_id": 6131,
+            "lineup_id": 5278369,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 146195,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 151,
+          "type_id": 26,
+          "common_name": "V. Ambros",
+          "firstname": "Vladimir",
+          "lastname": "Ambros",
+          "name": "Vladimir Ambros",
+          "display_name": "Vladimir Ambros ",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/19/146195.png",
+          "height": 180,
+          "weight": null,
+          "date_of_birth": "1993-12-30",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278395,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 146410,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Vladislav Slivca",
+        "jersey_number": 11,
+        "details": [
+          {
+            "id": 199307722,
+            "fixture_id": 10336772,
+            "player_id": 146410,
+            "team_id": 6131,
+            "lineup_id": 5278395,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 199307784,
+            "fixture_id": 10336772,
+            "player_id": 146410,
+            "team_id": 6131,
+            "lineup_id": 5278395,
+            "type_id": 119,
+            "data": {
+              "value": 70
+            }
+          }
+        ],
+        "player": {
+          "id": 146410,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "V. Slivca",
+          "firstname": "Vladislav",
+          "lastname": "Slivca",
+          "name": "Vladislav Slivca",
+          "display_name": "Vladislav Slivca",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1998-09-10",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 6911001837,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 14772003,
+        "team_id": 6131,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Victor Straistari",
+        "jersey_number": 12,
+        "details": [],
+        "player": {
+          "id": 14772003,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "V. Straistari",
+          "firstname": "Victor",
+          "lastname": "Straistari",
+          "name": "Victor Straistari",
+          "display_name": "Victor Straistari",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/3/14772003.png",
+          "height": 188,
+          "weight": null,
+          "date_of_birth": "1999-06-21",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 885975228,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 20326216,
+        "team_id": 6131,
+        "position_id": 27,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Grigore Coscodan",
+        "jersey_number": 19,
+        "details": [
+          {
+            "id": 199307866,
+            "fixture_id": 10336772,
+            "player_id": 20326216,
+            "team_id": 6131,
+            "lineup_id": 885975228,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 20326216,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "G. Coșcodan",
+          "firstname": "Grigore",
+          "lastname": "Coșcodan",
+          "name": "Grigore Coșcodan",
+          "display_name": "Grigore Coșcodan",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "2000-01-26",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278428,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 527192,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "D. Douanla",
+        "jersey_number": 20,
+        "details": [
+          {
+            "id": 199307792,
+            "fixture_id": 10336772,
+            "player_id": 527192,
+            "team_id": 6131,
+            "lineup_id": 5278428,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 199307872,
+            "fixture_id": 10336772,
+            "player_id": 527192,
+            "team_id": 6131,
+            "lineup_id": 5278428,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 527192,
+          "sport_id": 1,
+          "country_id": 593,
+          "nationality_id": 593,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "D. Douanla",
+          "firstname": "Donalio Melachio",
+          "lastname": "Douanla",
+          "name": "Donalio Melachio Douanla",
+          "display_name": "Donalio Melachio Douanla",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/24/527192.png",
+          "height": null,
+          "weight": null,
+          "date_of_birth": "1997-09-24",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278454,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 57825,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "M. Potîrniche",
+        "jersey_number": 21,
+        "details": [
+          {
+            "id": 199307794,
+            "fixture_id": 10336772,
+            "player_id": 57825,
+            "team_id": 6131,
+            "lineup_id": 5278454,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          },
+          {
+            "id": 199307879,
+            "fixture_id": 10336772,
+            "player_id": 57825,
+            "team_id": 6131,
+            "lineup_id": 5278454,
+            "type_id": 84,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199307748,
+            "fixture_id": 10336772,
+            "player_id": 57825,
+            "team_id": 6131,
+            "lineup_id": 5278454,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 57825,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 25,
+          "detailed_position_id": null,
+          "type_id": 25,
+          "common_name": "M. Potîrniche",
+          "firstname": "Maxim",
+          "lastname": "Potîrniche",
+          "name": "Maxim Potîrniche",
+          "display_name": "Maxim Potirniche",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/1/57825.png",
+          "height": 185,
+          "weight": 75,
+          "date_of_birth": "1989-06-13",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 885974294,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 144959,
+        "team_id": 6131,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "Alexandru Vremea",
+        "jersey_number": 26,
+        "details": [
+          {
+            "id": 199307726,
+            "fixture_id": 10336772,
+            "player_id": 144959,
+            "team_id": 6131,
+            "lineup_id": 885974294,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          },
+          {
+            "id": 199307882,
+            "fixture_id": 10336772,
+            "player_id": 144959,
+            "team_id": 6131,
+            "lineup_id": 885974294,
+            "type_id": 119,
+            "data": {
+              "value": 36
+            }
+          }
+        ],
+        "player": {
+          "id": 144959,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": 39549,
+          "position_id": 26,
+          "detailed_position_id": null,
+          "type_id": 26,
+          "common_name": "A. Vremea",
+          "firstname": "Alexandru",
+          "lastname": "Vremea",
+          "name": "Alexandru Vremea",
+          "display_name": "Alexandru Vremea",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 180,
+          "weight": 70,
+          "date_of_birth": "1991-11-03",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 885975121,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 14772003,
+        "team_id": 6131,
+        "position_id": 24,
+        "formation_field": null,
+        "type_id": 12,
+        "formation_position": null,
+        "player_name": "V. Straistari",
+        "jersey_number": 33,
+        "details": [
+          {
+            "id": 199307799,
+            "fixture_id": 10336772,
+            "player_id": 14772003,
+            "team_id": 6131,
+            "lineup_id": 885975121,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          }
+        ],
+        "player": {
+          "id": 14772003,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 24,
+          "detailed_position_id": 24,
+          "type_id": 24,
+          "common_name": "V. Straistari",
+          "firstname": "Victor",
+          "lastname": "Straistari",
+          "name": "Victor Straistari",
+          "display_name": "Victor Straistari",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/3/14772003.png",
+          "height": 188,
+          "weight": null,
+          "date_of_birth": "1999-06-21",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278478,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 7346249,
+        "team_id": 6131,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Jessie Jensen Guera Djou",
+        "jersey_number": 44,
+        "details": [
+          {
+            "id": 199307703,
+            "fixture_id": 10336772,
+            "player_id": 7346249,
+            "team_id": 6131,
+            "lineup_id": 5278478,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 199307802,
+            "fixture_id": 10336772,
+            "player_id": 7346249,
+            "team_id": 6131,
+            "lineup_id": 5278478,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 7346249,
+          "sport_id": 1,
+          "country_id": 593,
+          "nationality_id": 593,
+          "city_id": null,
+          "position_id": 26,
+          "detailed_position_id": 149,
+          "type_id": 26,
+          "common_name": "J. Guera Djou",
+          "firstname": "Jessie",
+          "lastname": "Guera Djou",
+          "name": "Jessie Guera Djou",
+          "display_name": "Jessie Guera Djou",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/7346249.png",
+          "height": 185,
+          "weight": null,
+          "date_of_birth": "1997-05-03",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278499,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 145546,
+        "team_id": 6131,
+        "position_id": 26,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "Vladislav Ivanov",
+        "jersey_number": 90,
+        "details": [
+          {
+            "id": 199307899,
+            "fixture_id": 10336772,
+            "player_id": 145546,
+            "team_id": 6131,
+            "lineup_id": 5278499,
+            "type_id": 119,
+            "data": {
+              "value": 54
+            }
+          },
+          {
+            "id": 199307756,
+            "fixture_id": 10336772,
+            "player_id": 145546,
+            "team_id": 6131,
+            "lineup_id": 5278499,
+            "type_id": 88,
+            "data": {
+              "value": 1
+            }
+          }
+        ],
+        "player": {
+          "id": 145546,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": null,
+          "type_id": 27,
+          "common_name": "V. Ivanov",
+          "firstname": "Vladislav",
+          "lastname": "Ivanov",
+          "name": "Vladislav Ivanov",
+          "display_name": "Vladislav Ivanov",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+          "height": 183,
+          "weight": 66,
+          "date_of_birth": "1990-05-07",
+          "gender": "male"
+        }
+      },
+      {
+        "id": 5278519,
+        "sport_id": 1,
+        "fixture_id": 10336772,
+        "player_id": 146465,
+        "team_id": 6131,
+        "position_id": 25,
+        "formation_field": null,
+        "type_id": 11,
+        "formation_position": null,
+        "player_name": "M. Cojocaru",
+        "jersey_number": 98,
+        "details": [
+          {
+            "id": 199307807,
+            "fixture_id": 10336772,
+            "player_id": 146465,
+            "team_id": 6131,
+            "lineup_id": 5278519,
+            "type_id": 88,
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "id": 199307701,
+            "fixture_id": 10336772,
+            "player_id": 146465,
+            "team_id": 6131,
+            "lineup_id": 5278519,
+            "type_id": 119,
+            "data": {
+              "value": 90
+            }
+          }
+        ],
+        "player": {
+          "id": 146465,
+          "sport_id": 1,
+          "country_id": 2345,
+          "nationality_id": 2345,
+          "city_id": null,
+          "position_id": 27,
+          "detailed_position_id": 156,
+          "type_id": 25,
+          "common_name": "M. Cojocaru",
+          "firstname": "Maxim",
+          "lastname": "Cojocaru",
+          "name": "Maxim Cojocaru",
+          "display_name": "Maxim Cojocaru",
+          "image_path": "https://cdn.sportmonks.com/images/soccer/players/1/146465.png",
+          "height": 177,
+          "weight": null,
+          "date_of_birth": "1998-01-13",
+          "gender": "male"
+        }
+      }
+    ],
+    "events": [],
+    "formations": []
+  }
+}

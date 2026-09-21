@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
+from copy import deepcopy
+import json
+from pathlib import Path
 import sqlite3
 import unittest
 from unittest.mock import Mock, patch
@@ -90,6 +93,66 @@ class LiveStorageTests(unittest.TestCase):
         fixture["lineups"] = []
         live.store_live_fixture(fixture, 10, 20, OBSERVED_AT)
         self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_player_stats").fetchone(), (0,))
+
+    def test_real_substitution_both_profiles_share_live_transaction(self):
+        sample = json.loads((Path(__file__).parent / "fixtures/sportmonks_2017_braga_home_missing_lineups.json").read_text(encoding="utf-8"))
+        fixture = sample["cases"][0]["fixture"]
+        fid = fixture["id"]
+        profiles = {int(pid): profile for pid, profile in sample["profiles"].items()}
+        lineup_profiles = {row["player_id"]: row["player"] for row in fixture["lineups"] if row["player"]}
+        self.connection.execute("INSERT INTO fixtures(fixture_id) VALUES (?)", (fid,))
+        self.connection.executemany("INSERT OR IGNORE INTO teams VALUES (?)", [(p["id"],) for p in fixture["participants"]])
+        self.connection.executemany("INSERT OR IGNORE INTO positions VALUES (?)", {
+            (p["detailed_position_id"],) for p in [*profiles.values(), *lineup_profiles.values()] if p["detailed_position_id"] is not None})
+        existing = {pid for event in fixture["events"] for pid in (event["player_id"], event["related_player_id"])
+                    if pid is not None} - profiles.keys() - lineup_profiles.keys()
+        self.connection.executemany("INSERT OR IGNORE INTO players(player_id) VALUES (?)", [(pid,) for pid in existing])
+        self.connection.commit()
+        before, before_players = self.snapshot(), self.connection.execute("SELECT * FROM players ORDER BY player_id").fetchall()
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+            live.store_live_fixture(fixture, 2825, 884, OBSERVED_AT)
+        self.assertEqual(self.snapshot(), before)
+        self.assertEqual(self.connection.execute("SELECT * FROM players ORDER BY player_id").fetchall(), before_players)
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._get = Mock(side_effect=lambda path: {"data": deepcopy(sample["profiles"][path.split("/")[1]])})
+        corrected = client.correct_fixture_details(deepcopy(fixture))
+        self.assertEqual(corrected, sample["cases"][0]["expected"])
+        bad_clock = deepcopy(corrected)
+        bad_clock["periods"][-1]["seconds"] = 60
+        with self.assertRaises(sqlite3.IntegrityError):
+            live.store_live_fixture(bad_clock, 2825, 884, OBSERVED_AT)
+        self.assertEqual(self.snapshot(), before)
+        self.assertEqual(self.connection.execute("SELECT * FROM players ORDER BY player_id").fetchall(), before_players)
+        live.store_live_fixture(corrected, 2825, 884, OBSERVED_AT)
+        after = self.snapshot()
+        for pid in profiles:
+            self.connection.execute("UPDATE players SET display_name='기존 검증 이름' WHERE player_id=?", (pid,))
+        self.connection.commit()
+        live.store_live_fixture(corrected, 2825, 884, OBSERVED_AT)
+        self.assertEqual(self.snapshot(), after)
+        self.assertEqual(self.connection.execute("SELECT player_id,related_player_id,minute FROM fixture_events WHERE event_id=31998460").fetchone(), (91539, 184993, 89))
+        for pid, profile in profiles.items():
+            self.assertEqual(self.connection.execute("SELECT display_name,date_of_birth FROM players WHERE player_id=?", (pid,)).fetchone(), ("기존 검증 이름", profile["date_of_birth"]))
+            for table in ("fixture_lineups", "fixture_player_stats"):
+                self.assertEqual(self.connection.execute(f"SELECT COUNT(*) FROM {table} WHERE fixture_id=? AND player_id=?", (fid, pid)).fetchone(), (0,))
+
+    def test_result_and_events_repair_preserves_existing_player_rows(self):
+        fixture = live_payload()
+        fixture["lineups"][0]["details"].append({"type_id": 120, "data": {"value": 12}})
+        live.store_live_fixture(fixture, 10, 20, OBSERVED_AT)
+        before = {table: self.connection.execute(f"SELECT * FROM {table}").fetchall()
+                  for table in ("fixture_lineups", "fixture_player_stats")}
+        fixture["state_id"] = 5
+        fixture["state"] = {"id": 5, "state": "FT", "name": "Full Time"}
+        fixture["scores"][0]["score"]["goals"] = 2
+        fixture["events"] = []
+        fixture["lineups"][0]["details"][-1]["data"]["value"] = 99
+        live.store_live_fixture(fixture, 10, 20, OBSERVED_AT,
+                                detail_keys=("event_types", "events", "coaches", "fixture_coaches"))
+        for table, rows in before.items():
+            self.assertEqual(self.connection.execute(f"SELECT * FROM {table}").fetchall(), rows)
+        self.assertEqual(self.connection.execute("SELECT state_id,home_score FROM fixtures").fetchone(), (5, 2))
+        self.assertEqual(self.connection.execute("SELECT COUNT(*) FROM fixture_events").fetchone(), (0,))
 
     def test_different_participants_do_not_modify_existing_match(self):
         before = self.snapshot()

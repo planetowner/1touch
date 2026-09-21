@@ -431,6 +431,8 @@ def _collect_and_upsert(
     season: SeasonRow,
     stored_team_ids: Set[int],
     progress: Optional[Tuple[int, int]] = None,
+    *,
+    fixture_ids: Optional[Set[int]] = None,
 ) -> Dict[str, object]:
     season_id, competition_id, season_name, is_current = season
     base_competition_id = CUP_BASE_COMPETITION_IDS.get(competition_id)
@@ -458,6 +460,9 @@ def _collect_and_upsert(
         include=FIXTURE_INCLUDE,
     ):
         provider_fixture_count += 1
+        # 누락 점검에서 확인한 경기만 보충할 때도 기존 컵·참가 팀 검증을 공유해요.
+        if fixture_ids is not None and raw_fixture["id"] not in fixture_ids:
+            continue
         normalized = _normalize_fixture(
             raw_fixture,
             season_id,
@@ -502,7 +507,9 @@ def _collect_and_upsert(
         states[int(normalized["state"][0])] = normalized["state"]
         fixtures[int(fixture_row[0])] = fixture_row
 
-    if not fixtures and not is_current:
+    if fixture_ids is not None and set(fixtures) != fixture_ids:
+        raise ValueError(f"Selected fixture IDs differ from requested repair IDs: {sorted(fixture_ids - set(fixtures))}")
+    if not fixtures and not is_current and fixture_ids is None:
         raise ValueError(
             f"No fixtures selected for season={season_name!r}, "
             f"competition_id={competition_id}, season_id={season_id}"

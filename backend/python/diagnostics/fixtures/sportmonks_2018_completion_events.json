@@ -1,0 +1,221 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 10331707,
+        "events": [
+          {
+            "id": 32411868,
+            "fixture_id": 10331707,
+            "period_id": 375774,
+            "participant_id": 1232,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 210659,
+            "related_player_id": null,
+            "player_name": "Rob Pearson",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 80,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 3,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 32411868,
+          "fixture_id": 10331707,
+          "period_id": 375774,
+          "participant_id": 1232,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 210659,
+          "related_player_id": null,
+          "player_name": "Rob Pearson",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 79,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 3,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": false
+    },
+    {
+      "fixture": {
+        "id": 10410548,
+        "events": [
+          {
+            "id": 32662665,
+            "fixture_id": 10410548,
+            "period_id": 398237,
+            "participant_id": 3678,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 31490,
+            "related_player_id": 429993,
+            "player_name": "Christoph Knasmüllner",
+            "related_player_name": "Laurentiu Ivan",
+            "result": "2-0",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 79,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "lineups": [],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 32662665,
+          "fixture_id": 10410548,
+          "period_id": 398237,
+          "participant_id": 3678,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 31490,
+          "related_player_id": 165211,
+          "player_name": "Christoph Knasmüllner",
+          "related_player_name": "Andrei Ivan",
+          "result": "2-0",
+          "info": null,
+          "addition": "2nd Goal",
+          "minute": 79,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ],
+  "verified_source": {
+    "10331707": {
+      "sources": [
+        "https://www.fsgc.sm/assets/documents/541.pdf",
+        "https://www.wrexhamafcarchive.co.uk/player.php?id=231"
+      ],
+      "verified": "UEFA 경기표 전체와 PDF 화면 대조. Mangan 54분 아웃, Kieran Smith 67분 아웃, Stuart John Jones 88분 투입. Pearson 경고는 79분. Sky의 Sean Smith/Joshua Jones 표기가 틀렸음. Mangan의 이름·생일·Bala 경력 일치.",
+      "unavailable": "공급자에 Mangan 명단 행이 없어 만들지 않음. 이벤트 프로필만 보충."
+    },
+    "10410548": {
+      "sources": [
+        "https://www.derstandard.at/story/2000085490073/rapid-mit-40-einen-schritt-naeher-an-europa-league",
+        "https://isport.blesk.cz/fotbal/evropska-liga-predkola-2018-2019/rapid-viden-slovan-bratislava/online-prenos?match=276669"
+      ],
+      "verified": "당일 기사와 전체 중계의 79분 Knasmullner 득점 도움은 Andrei Ivan. 1979년생 Laurentiu Ivan이 아닌 명단의 1997-01-04 Andrei Virgil Ivan 165211. 다른 득점·교체·카드 유지."
+    },
+    "10411326": {
+      "sources": [
+        "https://sport.sky.it/calcio/coppa-italia/2018/08/10/genoa-lecce-liverani-possiamo-farcela",
+        "https://www.wlecce.it/page.php?action=partita&id_partita=4011&pg=archivio",
+        "https://www.numericalcio.it/coppa-italia/coppa-italia-segui-i-live-di-udinese-benevento-e-genoa-lecce/3/",
+        "https://tribuna.com/it/match/15270774/"
+      ],
+      "verified": "경기 전 공식 소집 번호와 당일 전체 경기표 대조. Palombi는 경기 전 부상으로 Torromino가 대체 선발, Haye와 72분 교체. #4 Petriccione 유지, 다른 중복 슬롯은 #8 Mancosu. GK 위치·1535 상세가 있는 슬롯은 #22 Vigorito, 수비수 슬롯은 #27 Calderoni. 상세의 366496은 Bleve이므로 대체 ID로 사용하지 않음. Genoa Marchetti/Lazovic의 GK/MF 위치 혼합과 실제 등번호도 교정.",
+      "unavailable": "원문에 없는 Gunter·Bleve 명단 행과 Gunter 31분 통계는 생성하지 않음. Romulo의 기존 90분은 실제 출전과 일치."
+    },
+    "10430058": {
+      "sources": [
+        "https://www.skysports.com/football/genoa-vs-virtus-entella/teams/401252",
+        "https://globalsportsarchive.com/match/soccer/2018-12-06/genoa-cfc-vs-virtus-entella/1416695/"
+      ],
+      "verified": "전체 명단·4교체·카드·득점 대조. #7 Mota 56분, #23 Paolucci 26분, #29 Baroni 44분과 기존 상세 보존. 미출전 #14 Puntoriere·#26 Di Cosmo 유지. 같은 선수의 별도 빈 중복만 제거. Cleur 30/Di Paola 19/Icardi 24 등번호 확인."
+    },
+    "11325856": {
+      "sources": [
+        "https://www.skysports.com/football/c-palace-vs-grimsby/teams/403464",
+        "https://www.skysports.com/football/player/111383/mitchell-rose"
+      ],
+      "verified": "실제 #8은 1994-07-04 Mitchell Rose, 74분 경고. Ahkeem Rose(1998-11-27) 프로필만 교체하고 통계 모두 보존."
+    },
+    "11428444": {
+      "sources": [
+        "https://www.skysports.com/football/blackpool-vs-arsenal/teams/403482",
+        "https://www.skysports.com/football/player/5586/chris-taylor"
+      ],
+      "verified": "실제 #19는 1986-12-20 Chris Taylor, 62분 Pritchard와 교체. 1993년생 동명이인 프로필만 교체하고 통계 모두 보존."
+    },
+    "10336747": {
+      "sources": [
+        "https://heritage.shamrockrovers.ie/index.php/Detail/occurrences/103",
+        "https://www.rte.ie/sport/soccer/2018/0712/978318-aik-claim-lead-over-shamrock-rovers-in-tallaght/"
+      ],
+      "verified": "구단 역사 기록과 당일 RTE 기사에서 Rovers 3교체와 AIK 2교체 확인. Sky의 Kavanagh·Hussein 연결은 채택하지 않음. 원문의 정확한 배우와 이벤트를 유지하며 공급자 분 표기와 기사의 1분 차이는 별도 기록."
+    }
+  },
+  "known_player_ids": [
+    210659,
+    31490,
+    165211
+  ]
+}

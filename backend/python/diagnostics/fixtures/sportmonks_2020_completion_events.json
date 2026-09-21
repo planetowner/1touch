@@ -1,0 +1,537 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 16858568,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34721196,
+            "fixture_id": 16858568,
+            "period_id": 3723396,
+            "participant_id": 8643,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 87092,
+            "related_player_id": 86653,
+            "player_name": "M. Przybylski",
+            "related_player_name": "Andras Frederiksberg",
+            "result": "0-1",
+            "info": null,
+            "addition": "1st Goal",
+            "minute": 28,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 34721196,
+          "fixture_id": 16858568,
+          "period_id": 3723396,
+          "participant_id": 8643,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 87092,
+          "related_player_id": 86656,
+          "player_name": "M. Przybylski",
+          "related_player_name": "Árni Frederiksberg",
+          "result": "0-1",
+          "info": null,
+          "addition": "1st Goal",
+          "minute": 28,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 16865259,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34724757,
+            "fixture_id": 16865259,
+            "period_id": 3724328,
+            "participant_id": 5447,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 147110,
+            "related_player_id": 147334,
+            "player_name": "I. Ćuković",
+            "related_player_name": "Nikola Vukcevic",
+            "result": "1-2",
+            "info": null,
+            "addition": "3rd Goal",
+            "minute": 31,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 34724757,
+          "fixture_id": 16865259,
+          "period_id": 3724328,
+          "participant_id": 5447,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 147110,
+          "related_player_id": 19960414,
+          "player_name": "I. Ćuković",
+          "related_player_name": "Petar Vukčević",
+          "result": "1-2",
+          "info": null,
+          "addition": "3rd Goal",
+          "minute": 31,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 16905170,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34742705,
+            "fixture_id": 16905170,
+            "period_id": 3731154,
+            "participant_id": 2566,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 114032,
+            "related_player_id": null,
+            "player_name": "Zsolt Nagy",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 32,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 2,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 88042823,
+            "fixture_id": 16905170,
+            "period_id": 3731154,
+            "participant_id": 2566,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 114032,
+            "related_player_id": null,
+            "player_name": "Zsolt Nagy",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 34,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": true,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 34742705,
+          "fixture_id": 16905170,
+          "period_id": 3731154,
+          "participant_id": 2566,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 114032,
+          "related_player_id": null,
+          "player_name": "Zsolt Nagy",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": null,
+          "minute": 33,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 2,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": false
+    },
+    {
+      "fixture": {
+        "id": 16996211,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34782210,
+            "fixture_id": 16996211,
+            "period_id": 460152,
+            "participant_id": 2604,
+            "type_id": 17,
+            "section": "event",
+            "player_id": 328443,
+            "related_player_id": null,
+            "player_name": "Baha' Abdel-Rahman",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Missed Penalty",
+            "minute": 78,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 17,
+              "name": "Missed Penalty",
+              "code": "missed_penalty",
+              "developer_name": "MISSED_PENALTY",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 34782210,
+          "fixture_id": 16996211,
+          "period_id": 460152,
+          "participant_id": 2604,
+          "type_id": 17,
+          "section": "event",
+          "player_id": 474354,
+          "related_player_id": null,
+          "player_name": "Mousa Al Tamari",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Missed Penalty",
+          "minute": 78,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 17,
+            "name": "Missed Penalty",
+            "code": "missed_penalty",
+            "developer_name": "MISSED_PENALTY",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    },
+    {
+      "fixture": {
+        "id": 17055757,
+        "lineups": [],
+        "events": [
+          {
+            "id": 34809443,
+            "fixture_id": 17055757,
+            "period_id": 528864,
+            "participant_id": 463,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 537552,
+            "related_player_id": 310384,
+            "player_name": "Jan Matousek",
+            "related_player_name": "Fahad Al Hardan",
+            "result": "1-5",
+            "info": null,
+            "addition": "6th Goal",
+            "minute": 90,
+            "extra_minute": 3,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "expected_events": [
+        {
+          "id": 34809443,
+          "fixture_id": 17055757,
+          "period_id": 528864,
+          "participant_id": 463,
+          "type_id": 14,
+          "section": "event",
+          "player_id": 537552,
+          "related_player_id": 311129,
+          "player_name": "Jan Matousek",
+          "related_player_name": "Abdulla Yusuf Helal",
+          "result": "1-5",
+          "info": null,
+          "addition": "6th Goal",
+          "minute": 90,
+          "extra_minute": 3,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 14,
+            "name": "Goal",
+            "code": "goal",
+            "developer_name": "GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ],
+      "raw_actor_error": true
+    }
+  ],
+  "known_player_ids": [
+    86656,
+    87092,
+    114032,
+    147110,
+    311129,
+    474354,
+    537552,
+    19960414
+  ],
+  "verified_source": {
+    "16858568": {
+      "sources": [
+        "https://www.fsf.fo/wp-content/uploads/2021/02/Arsfragreidingin_2020_16-02-2021_KL_2318.pdf",
+        "https://portal.fo/roysni-32542/b36-er-vidari.grein"
+      ],
+      "verified": "FSF 204쪽 경기표 화면 전체와 당일 기사 대조. 28분 Przybylski 득점 도움은 Árni Frederiksberg 86656(1992-06-13). Andras 86653은 다른 선수. 원문의 다른 득점·교체·카드 유지. 31은 득점 분이 아닌 Przybylski 등번호."
+    },
+    "16865259": {
+      "sources": [
+        "https://www.sofascore.com/football/match/ludogorets-fk-buducnost-podgorica/TccsPBr",
+        "https://fbref.com/en/squads/f4f98e1c/2020-2021/goallogs/c8/Buducnost-Podgorica-Goal-Logs-Champions-League",
+        "https://fscg.me/en/players/petar-vukcevic-109047/"
+      ],
+      "verified": "31분 Ćuković 득점 도움은 Petar Vukčević. FSCG 공식 생일 2001-03-02와 공급자 19960414 일치. Nikola 147334를 실제 명단의 Petar로 교정."
+    },
+    "16905170": {
+      "sources": [
+        "https://puskasakademia.hu/cdn/publication/file/2025-11/pafc_ujpest_08_30_web.pdf",
+        "https://www.national-football-teams.com/old/club/2416/2020_2/Hammarby_If.html",
+        "https://www.e-nepujsag.ro/storage/pdf/2020/08/augusztus31hetfo2020.pdf"
+      ],
+      "verified": "Puskás 공식 프로그램 20쪽의 전체 득점·카드와 동시대 전체 교체 기록 대조. Nagy의 실제 경고는 한 번(33분)이므로 원래 경고의 분을 바로잡고 추가된 34분 중복만 제거. Rodic 1993-09-07, Khalili 1992-06-07, Jeahze 1997-04-10과 2020 Hammarby 경력 일치. Bojanic 득점 raw32/프로그램31, Rodic 경고 raw89/프로그램88은 표기 차이로 기록하고 원문 유지.",
+      "unavailable": "Hammarby 명단이 없어 이벤트 프로필만 보충. NULL 도움은 유지."
+    },
+    "16996211": {
+      "sources": [
+        "https://kallxo.com/sport/gjilani-mposhtet-nga-apoel-pas-vazhdimeve-dhe-eliminohet-nga-liga-e-europes/",
+        "https://www.arbresh.info/sport/apoel-i-ne-vazhdime-triumfon-ndaj-gjilani-t/",
+        "https://www.skysports.com/football/gjilani-vs-apoel-nicosia/teams/428204"
+      ],
+      "verified": "78분 페널티킥 실축은 Mousa Al Tamari. 90분 Efrem과 교체된 실제 #11, 1997-06-10의 명단 프로필 474354와 일치. Baha Abdel-Rahman 328443 연결만 교정."
+    },
+    "17054974": {
+      "sources": [
+        "https://www.laczynaspilka.pl/biblioteka/mecze/hammarby-if-lech-poznan-03-16092020",
+        "https://www.national-football-teams.com/old/club/2416/2020_2/Hammarby_If.html",
+        "https://www.aikstats.se/player.php?id=819",
+        "https://www.statscrew.com/worldfootball/roster/t-HAMIF263/y-2021"
+      ],
+      "verified": "PZPN 전체 경기표에서 Magyar/Fallman 46분 교체, Jeahze14·Ngouali47·Khalili81 경고 확인. Richard Magyar 1991-05-03, David Fallman 1990-02-04, Ngouali 1992-01-23 및 앞 경기 프로필과 일치. Ousted80 경고를 Ludwigson으로 바꾸지 않음.",
+      "unavailable": "Hammarby 명단 행을 만들지 않음."
+    },
+    "17055757": {
+      "sources": [
+        "https://www.idnes.cz/fotbal/online-futbolo-klubas-riteriai-fc-slovan-liberec.BU189387",
+        "https://en.fcslovanliberec.cz/clanek.asp?id=2944"
+      ],
+      "verified": "iDNES 전체 중계의 90+3분 Matousek 득점 직전 Yusuf 패스 확인. 실제 명단 #21 Abdulla Yusuf Helal 311129(1993-06-12)로 도움 연결. Fahad Al Hardan 310384는 다른 선수."
+    },
+    "17323700": {
+      "sources": [
+        "https://www.skysports.com/football/cagliari-vs-cremonese/teams/438802",
+        "https://www.mackolik.com/mac/cagliari-vs-cremonese/acdlwbwv7raappqc5u1r5qd5g",
+        "https://www.datasport.it/calcio/calciatori/Nardi-Filippo-10567.html"
+      ],
+      "verified": "실제 #30 Filippo Nardi 1998-03-03, Deli와 59분 교체 확인. 원문 득점·교체·카드를 보존.",
+      "unavailable": "공급자에 없는 Nardi 명단·통계는 생성하지 않음. Carboni 84분 교체가 외부 기록에 있지만 공급자에 없어 이벤트를 생성하지 않음."
+    },
+    "17323704": {
+      "sources": [
+        "https://www.bolognafc.it/bologna-reggina-2-0/",
+        "https://www.ntacalabria.it/sport-calabrese/calcio/coppa-italia-bologna-reggina-2-0-70%E2%80%B2-vignato73%E2%80%B2-orsolini.html",
+        "https://www.cesenafc.com/it/society/news/nicolo-bianchi-in-bianconero-per-le-prossime-due-stagioni"
+      ],
+      "verified": "실제 Nicolò Bianchi(1992-02-24), Faty와26분 교체 및 Reggina 경력 확인. 실제 개최일은2020-10-27. 기존 이벤트 배우는 유지.",
+      "unavailable": "없는 Bianchi 명단·통계와 공급자에 없는 De Rose 경고는 생성하지 않음."
+    },
+    "17324351": {
+      "sources": [
+        "https://www.udinese.it/Apps/WebObjects/Udinese.woa/wa/viewSection?id=46612&lang=esp",
+        "https://www.footballdatabase.eu/en/match/overview/2093412-udinese-vicenza",
+        "https://www.calciomagazine.net/squalificati-dopo-3-turno-coppa-italia-2020-2021-128628.html",
+        "https://www.messinacalcio.org/2021/08/11/altri-due-ingaggi-del-messina-dal-vicenza-arrivano-busatto-e-fantoni/"
+      ],
+      "verified": "Nicholas Fantoni 2002-10-04, Vandeputte와60분 교체와76분 경고 확인. 징계 공고 전재에 Barlocco/Bizzotto/Da Riva/Fantoni/Forestieri가 있어 잘못 기재된 Zonta로 바꾸지 않음. Udinese 공식에서 Samir/De Maio64 확인. 교체 배우·카드 원문 유지.",
+      "unavailable": "없는 Fantoni 명단·통계는 생성하지 않음."
+    },
+    "17633389": {
+      "sources": [
+        "https://www.ilcosenza.it/2020/11/25/parma-cosenza-2-1-i-lupi-escono-a-testa-alta-dalla-coppa-italia/",
+        "https://www.calcio-risultati.com/diretta/887852001290592741-parma-vs-cosenza",
+        "https://www.calciomagazine.net/parma-cosenza-cronaca-diretta-25-novembre-2020-130266.html",
+        "https://therangersarchives.co.uk/alves-bruno/"
+      ],
+      "verified": "Gagliolo로 중복 연결된 #5는 1988-06-05 Matteo Scozzarella이며59분 Brugman과 교체. #7 Gagliolo60분 슬롯은 유지. #5를MF로 바로잡고 이미 존재하는119를90-59=31분으로 교정. #22는 Bruno Alves(1981-11-27); 공급자 full name은 맞고 display name만 감독 Mikael Stahre로 잘못됨. 기존 선수 프로필은 이 작업의 경기 저장에서 덮어쓰지 않음."
+    },
+    "17746677": {
+      "sources": [
+        "https://redscores.com/match/manchester-city-cheltenham-town/ExXC",
+        "https://www.fotmob.com/en-GB/matches/manchester-city-vs-cheltenham-town/2ff9b4",
+        "https://www.sofascore.com/football/player/george-lloyd/894222"
+      ],
+      "verified": "#19 George Lloyd는 2000-02-11 출생28551735. 1983년생18232 연결만 교정. 59분 May 도움과68분 Sean Long 교체 대조. 기존119의90을68로 바로잡고 다른 상세 통계는 모두 유지."
+    }
+  }
+}

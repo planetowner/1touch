@@ -1,0 +1,4953 @@
+{
+  "source": "20260920-2024-detail-error-provider-profiles.json",
+  "evidence": "20260921-2024-orihuela-verified-repairs.json",
+  "cases": [
+    {
+      "fixture": {
+        "id": 19332462,
+        "sport_id": 1,
+        "league_id": 570,
+        "season_id": 24526,
+        "stage_id": 77473736,
+        "group_id": null,
+        "aggregate_id": null,
+        "round_id": null,
+        "state_id": 8,
+        "venue_id": 6750,
+        "name": "Orihuela vs Getafe",
+        "starting_at": "2024-12-05 18:00:00",
+        "result_info": "Getafe won after penalties.",
+        "leg": "1/1",
+        "details": null,
+        "length": 90,
+        "placeholder": false,
+        "has_odds": true,
+        "has_premium_odds": true,
+        "starting_at_timestamp": 1733421600,
+        "participants": [
+          {
+            "id": 106,
+            "sport_id": 1,
+            "country_id": 32,
+            "venue_id": 9351,
+            "gender": "male",
+            "name": "Getafe",
+            "short_code": "GET",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/10/106.png",
+            "founded": 1983,
+            "type": "domestic",
+            "placeholder": false,
+            "last_played_at": "2026-09-20 12:00:00",
+            "meta": {
+              "location": "away",
+              "winner": true,
+              "position": 2
+            }
+          },
+          {
+            "id": 10246,
+            "sport_id": 1,
+            "country_id": 32,
+            "venue_id": 6750,
+            "gender": "male",
+            "name": "Orihuela",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/6/10246.png",
+            "founded": 1993,
+            "type": "domestic",
+            "placeholder": false,
+            "last_played_at": "2026-09-20 09:00:00",
+            "meta": {
+              "location": "home",
+              "winner": false,
+              "position": 1
+            }
+          }
+        ],
+        "state": {
+          "id": 8,
+          "state": "FT_PEN",
+          "name": "After Penalties",
+          "short_name": "FTP",
+          "developer_name": "FT_PEN"
+        },
+        "scores": [
+          {
+            "id": 15304165,
+            "fixture_id": 19332462,
+            "type_id": 1,
+            "participant_id": 106,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "1ST_HALF"
+          },
+          {
+            "id": 15304164,
+            "fixture_id": 19332462,
+            "type_id": 1,
+            "participant_id": 10246,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "1ST_HALF"
+          },
+          {
+            "id": 15304229,
+            "fixture_id": 19332462,
+            "type_id": 2,
+            "participant_id": 106,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "2ND_HALF"
+          },
+          {
+            "id": 15304228,
+            "fixture_id": 19332462,
+            "type_id": 2,
+            "participant_id": 10246,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "2ND_HALF"
+          },
+          {
+            "id": 15304363,
+            "fixture_id": 19332462,
+            "type_id": 3,
+            "participant_id": 106,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "ET"
+          },
+          {
+            "id": 15304362,
+            "fixture_id": 19332462,
+            "type_id": 3,
+            "participant_id": 10246,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "ET"
+          },
+          {
+            "id": 15304427,
+            "fixture_id": 19332462,
+            "type_id": 5,
+            "participant_id": 106,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            },
+            "description": "PENALTY_SHOOTOUT"
+          },
+          {
+            "id": 15304426,
+            "fixture_id": 19332462,
+            "type_id": 5,
+            "participant_id": 10246,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "PENALTY_SHOOTOUT"
+          },
+          {
+            "id": 15304167,
+            "fixture_id": 19332462,
+            "type_id": 1525,
+            "participant_id": 106,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 15304166,
+            "fixture_id": 19332462,
+            "type_id": 1525,
+            "participant_id": 10246,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "CURRENT"
+          },
+          {
+            "id": 15871971,
+            "fixture_id": 19332462,
+            "type_id": 48996,
+            "participant_id": 106,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            },
+            "description": "2ND_HALF_ONLY"
+          },
+          {
+            "id": 15871970,
+            "fixture_id": 19332462,
+            "type_id": 48996,
+            "participant_id": 10246,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            },
+            "description": "2ND_HALF_ONLY"
+          }
+        ],
+        "periods": [
+          {
+            "id": 5770810,
+            "fixture_id": 19332462,
+            "type_id": 1,
+            "started": 1733421611,
+            "ended": 1733424358,
+            "counts_from": 0,
+            "ticking": false,
+            "sort_order": 1,
+            "description": "1st-half",
+            "time_added": 0,
+            "period_length": 45,
+            "minutes": 45,
+            "seconds": 47,
+            "has_timer": false
+          },
+          {
+            "id": 5771000,
+            "fixture_id": 19332462,
+            "type_id": 2,
+            "started": 1733429543,
+            "ended": 1733431182,
+            "counts_from": 45,
+            "ticking": false,
+            "sort_order": 2,
+            "description": "2nd-half",
+            "time_added": 3,
+            "period_length": 45,
+            "minutes": 72,
+            "seconds": 19,
+            "has_timer": false
+          },
+          {
+            "id": 5771046,
+            "fixture_id": 19332462,
+            "type_id": 3,
+            "started": 1733425220,
+            "ended": 1733430638,
+            "counts_from": 90,
+            "ticking": false,
+            "sort_order": 3,
+            "description": "extra-time",
+            "time_added": 2,
+            "period_length": 30,
+            "minutes": 123,
+            "seconds": 15,
+            "has_timer": false
+          },
+          {
+            "id": 5771068,
+            "fixture_id": 19332462,
+            "type_id": 5,
+            "started": null,
+            "ended": null,
+            "counts_from": null,
+            "ticking": false,
+            "sort_order": 4,
+            "description": "penalties",
+            "time_added": null,
+            "period_length": null,
+            "minutes": null,
+            "seconds": 0,
+            "has_timer": false
+          }
+        ],
+        "events": [
+          {
+            "id": 147424479,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 106,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37678216,
+            "related_player_id": 537056,
+            "player_name": "Christantus Uche",
+            "related_player_name": "Carles Pérez",
+            "result": null,
+            "info": null,
+            "addition": "1st Substitution",
+            "minute": 60,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424485,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 106,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37564744,
+            "related_player_id": 530758,
+            "player_name": "Coba da Costa",
+            "related_player_name": "Álex Sola",
+            "result": null,
+            "info": null,
+            "addition": "2nd Substitution",
+            "minute": 60,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424653,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 106,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 445827,
+            "related_player_id": 37601803,
+            "player_name": "Juan Iglesias",
+            "related_player_name": "Álvaro Rodríguez",
+            "result": null,
+            "info": null,
+            "addition": "3rd Substitution",
+            "minute": 60,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424731,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 106,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 382624,
+            "related_player_id": 37549065,
+            "player_name": "Luis Milla",
+            "related_player_name": "John Patrick",
+            "result": null,
+            "info": null,
+            "addition": "4th Substitution",
+            "minute": 66,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424780,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 10246,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 333726,
+            "related_player_id": 37412546,
+            "player_name": "Eugenio Isnaldo",
+            "related_player_name": "Fran Franco",
+            "result": null,
+            "info": null,
+            "addition": "5th Substitution",
+            "minute": 69,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424911,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 106,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37593283,
+            "related_player_id": 63020,
+            "player_name": "Nabil Aberdin",
+            "related_player_name": "Dakonam Djené",
+            "result": null,
+            "info": null,
+            "addition": "6th Substitution",
+            "minute": 73,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147425615,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 10246,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 380611,
+            "related_player_id": 37262591,
+            "player_name": "Héctor Ayodele",
+            "related_player_name": "Juan Carlos Fernández Pitu",
+            "result": null,
+            "info": null,
+            "addition": "7th Substitution",
+            "minute": 90,
+            "extra_minute": 3,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 7,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147426038,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 10246,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37543800,
+            "related_player_id": 218953,
+            "player_name": "Runy",
+            "related_player_name": "Miguel Bianconi",
+            "result": null,
+            "info": null,
+            "addition": "8th Substitution",
+            "minute": 97,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 8,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147426456,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 106,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 1281,
+            "related_player_id": 37316517,
+            "player_name": "Allan Nyom",
+            "related_player_name": "Peter Federico",
+            "result": null,
+            "info": null,
+            "addition": "9th Substitution",
+            "minute": 106,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 9,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147426455,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 10246,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37359749,
+            "related_player_id": 37297037,
+            "player_name": "Jaime Escobar",
+            "related_player_name": "Ignacio Pastor",
+            "result": null,
+            "info": null,
+            "addition": "10th Substitution",
+            "minute": 106,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 10,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147426591,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 10246,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 4715,
+            "related_player_id": 7687952,
+            "player_name": "Kevin Toner",
+            "related_player_name": "Alusine Pagal Koroma",
+            "result": null,
+            "info": null,
+            "addition": "11th Substitution",
+            "minute": 106,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1523,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 11,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147426801,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 10246,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37619809,
+            "related_player_id": 382306,
+            "player_name": "Adrián Morales",
+            "related_player_name": "Mohamed Kamal",
+            "result": null,
+            "info": null,
+            "addition": "12th Substitution",
+            "minute": 115,
+            "extra_minute": null,
+            "injured": true,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": 1524,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 12,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424273,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 106,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37601803,
+            "related_player_id": null,
+            "player_name": "Álvaro Rodríguez",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "1st Yellowcard",
+            "minute": 53,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771000,
+            "rescinded": false,
+            "sort_order": 1,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424804,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 10246,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 7687952,
+            "related_player_id": null,
+            "player_name": "Alusine Pagal Koroma",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "2nd Yellowcard",
+            "minute": 71,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771000,
+            "rescinded": false,
+            "sort_order": 2,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147425863,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 106,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37564744,
+            "related_player_id": null,
+            "player_name": "Coba da Costa",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "3rd Yellowcard",
+            "minute": 93,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 3,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147425914,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 10246,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 218953,
+            "related_player_id": null,
+            "player_name": "Miguel Bianconi",
+            "related_player_name": null,
+            "result": null,
+            "info": "Argument",
+            "addition": "4th Yellowcard",
+            "minute": 93,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 4,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147426592,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 106,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37593283,
+            "related_player_id": null,
+            "player_name": "Nabil Aberdin",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "5th Yellowcard",
+            "minute": 109,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 5,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 156516234,
+            "fixture_id": 19332462,
+            "period_id": 5771046,
+            "participant_id": 10246,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37359749,
+            "related_player_id": null,
+            "player_name": "Jaime Escobar",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "6th Yellowcard",
+            "minute": 119,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 6,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147427144,
+            "fixture_id": 19332462,
+            "period_id": 5771068,
+            "participant_id": 106,
+            "type_id": 23,
+            "section": "event",
+            "player_id": 382624,
+            "related_player_id": null,
+            "player_name": "Luis Milla",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Getafe - Score 1st Penalty",
+            "minute": 1,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771068,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 23,
+              "name": "Penalty Shootout Goal",
+              "code": "pen_shootout_goal",
+              "developer_name": "PENALTY_SHOOTOUT_GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147427175,
+            "fixture_id": 19332462,
+            "period_id": 5771068,
+            "participant_id": 10246,
+            "type_id": 22,
+            "section": "event",
+            "player_id": 333726,
+            "related_player_id": null,
+            "player_name": "Eugenio Isnaldo",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Penalty",
+            "minute": 2,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771068,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 22,
+              "name": "Penalty Shootout Miss",
+              "code": "pen_shootout_miss",
+              "developer_name": "PENALTY_SHOOTOUT_MISS",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147427209,
+            "fixture_id": 19332462,
+            "period_id": 5771068,
+            "participant_id": 106,
+            "type_id": 23,
+            "section": "event",
+            "player_id": 37619814,
+            "related_player_id": null,
+            "player_name": "Yellu Santiago",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Getafe - Score 3rd Penalty",
+            "minute": 3,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771068,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 23,
+              "name": "Penalty Shootout Goal",
+              "code": "pen_shootout_goal",
+              "developer_name": "PENALTY_SHOOTOUT_GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147427240,
+            "fixture_id": 19332462,
+            "period_id": 5771068,
+            "participant_id": 10246,
+            "type_id": 22,
+            "section": "event",
+            "player_id": 37619814,
+            "related_player_id": null,
+            "player_name": "Yellu Santiago",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Penalty",
+            "minute": 4,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771068,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 22,
+              "name": "Penalty Shootout Miss",
+              "code": "pen_shootout_miss",
+              "developer_name": "PENALTY_SHOOTOUT_MISS",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147427270,
+            "fixture_id": 19332462,
+            "period_id": 5771068,
+            "participant_id": 106,
+            "type_id": 23,
+            "section": "event",
+            "player_id": 445827,
+            "related_player_id": null,
+            "player_name": "Juan Iglesias",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Getafe - Score 5th Penalty",
+            "minute": 5,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771068,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 23,
+              "name": "Penalty Shootout Goal",
+              "code": "pen_shootout_goal",
+              "developer_name": "PENALTY_SHOOTOUT_GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147427296,
+            "fixture_id": 19332462,
+            "period_id": 5771068,
+            "participant_id": 10246,
+            "type_id": 22,
+            "section": "event",
+            "player_id": 445827,
+            "related_player_id": null,
+            "player_name": "Juan Iglesias",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Penalty",
+            "minute": 6,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771068,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 22,
+              "name": "Penalty Shootout Miss",
+              "code": "pen_shootout_miss",
+              "developer_name": "PENALTY_SHOOTOUT_MISS",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 147424182,
+            "fixture_id": 19332462,
+            "period_id": 5771000,
+            "participant_id": 106,
+            "type_id": 17,
+            "section": "event",
+            "player_id": 34873979,
+            "related_player_id": null,
+            "player_name": "Bertuğ Yıldırım",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "Missed Penalty",
+            "minute": 51,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": 5771000,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 17,
+              "name": "Missed Penalty",
+              "code": "missed_penalty",
+              "developer_name": "MISSED_PENALTY",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "statistics": [
+          {
+            "id": 174383020,
+            "fixture_id": 19332462,
+            "type_id": 34,
+            "participant_id": 106,
+            "data": {
+              "value": 6
+            },
+            "location": "away",
+            "type": {
+              "id": 34,
+              "name": "Corners",
+              "code": "corners",
+              "developer_name": "CORNERS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382220,
+            "fixture_id": 19332462,
+            "type_id": 34,
+            "participant_id": 10246,
+            "data": {
+              "value": 4
+            },
+            "location": "home",
+            "type": {
+              "id": 34,
+              "name": "Corners",
+              "code": "corners",
+              "developer_name": "CORNERS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382856,
+            "fixture_id": 19332462,
+            "type_id": 41,
+            "participant_id": 106,
+            "data": {
+              "value": 11
+            },
+            "location": "away",
+            "type": {
+              "id": 41,
+              "name": "Shots Off Target",
+              "code": "shots-off-target",
+              "developer_name": "SHOTS_OFF_TARGET",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382112,
+            "fixture_id": 19332462,
+            "type_id": 41,
+            "participant_id": 10246,
+            "data": {
+              "value": 2
+            },
+            "location": "home",
+            "type": {
+              "id": 41,
+              "name": "Shots Off Target",
+              "code": "shots-off-target",
+              "developer_name": "SHOTS_OFF_TARGET",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174375347,
+            "fixture_id": 19332462,
+            "type_id": 42,
+            "participant_id": 106,
+            "data": {
+              "value": 24
+            },
+            "location": "away",
+            "type": {
+              "id": 42,
+              "name": "Shots Total",
+              "code": "shots-total",
+              "developer_name": "SHOTS_TOTAL",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174375346,
+            "fixture_id": 19332462,
+            "type_id": 42,
+            "participant_id": 10246,
+            "data": {
+              "value": 9
+            },
+            "location": "home",
+            "type": {
+              "id": 42,
+              "name": "Shots Total",
+              "code": "shots-total",
+              "developer_name": "SHOTS_TOTAL",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382488,
+            "fixture_id": 19332462,
+            "type_id": 43,
+            "participant_id": 106,
+            "data": {
+              "value": 154
+            },
+            "location": "away",
+            "type": {
+              "id": 43,
+              "name": "Attacks",
+              "code": "attacks",
+              "developer_name": "ATTACKS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382218,
+            "fixture_id": 19332462,
+            "type_id": 43,
+            "participant_id": 10246,
+            "data": {
+              "value": 135
+            },
+            "location": "home",
+            "type": {
+              "id": 43,
+              "name": "Attacks",
+              "code": "attacks",
+              "developer_name": "ATTACKS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382515,
+            "fixture_id": 19332462,
+            "type_id": 44,
+            "participant_id": 106,
+            "data": {
+              "value": 92
+            },
+            "location": "away",
+            "type": {
+              "id": 44,
+              "name": "Dangerous Attacks",
+              "code": "dangerous-attacks",
+              "developer_name": "DANGEROUS_ATTACKS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382352,
+            "fixture_id": 19332462,
+            "type_id": 44,
+            "participant_id": 10246,
+            "data": {
+              "value": 71
+            },
+            "location": "home",
+            "type": {
+              "id": 44,
+              "name": "Dangerous Attacks",
+              "code": "dangerous-attacks",
+              "developer_name": "DANGEROUS_ATTACKS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174384492,
+            "fixture_id": 19332462,
+            "type_id": 45,
+            "participant_id": 106,
+            "data": {
+              "value": 66
+            },
+            "location": "away",
+            "type": {
+              "id": 45,
+              "name": "Ball Possession %",
+              "code": "ball-possession",
+              "developer_name": "BALL_POSSESSION",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174384491,
+            "fixture_id": 19332462,
+            "type_id": 45,
+            "participant_id": 10246,
+            "data": {
+              "value": 34
+            },
+            "location": "home",
+            "type": {
+              "id": 45,
+              "name": "Ball Possession %",
+              "code": "ball-possession",
+              "developer_name": "BALL_POSSESSION",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174416401,
+            "fixture_id": 19332462,
+            "type_id": 46,
+            "participant_id": 106,
+            "data": {
+              "value": 109
+            },
+            "location": "away",
+            "type": {
+              "id": 46,
+              "name": "Ball Safe",
+              "code": "ball-safe",
+              "developer_name": "BALL_SAFE",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174416400,
+            "fixture_id": 19332462,
+            "type_id": 46,
+            "participant_id": 10246,
+            "data": {
+              "value": 107
+            },
+            "location": "home",
+            "type": {
+              "id": 46,
+              "name": "Ball Safe",
+              "code": "ball-safe",
+              "developer_name": "BALL_SAFE",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174382620,
+            "fixture_id": 19332462,
+            "type_id": 47,
+            "participant_id": 106,
+            "data": {
+              "value": 1
+            },
+            "location": "away",
+            "type": {
+              "id": 47,
+              "name": "Penalties",
+              "code": "penalties",
+              "developer_name": "PENALTIES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382165,
+            "fixture_id": 19332462,
+            "type_id": 47,
+            "participant_id": 10246,
+            "data": {
+              "value": 0
+            },
+            "location": "home",
+            "type": {
+              "id": 47,
+              "name": "Penalties",
+              "code": "penalties",
+              "developer_name": "PENALTIES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174384820,
+            "fixture_id": 19332462,
+            "type_id": 49,
+            "participant_id": 106,
+            "data": {
+              "value": 13
+            },
+            "location": "away",
+            "type": {
+              "id": 49,
+              "name": "Shots Insidebox",
+              "code": "shots-insidebox",
+              "developer_name": "SHOTS_INSIDEBOX",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174384814,
+            "fixture_id": 19332462,
+            "type_id": 49,
+            "participant_id": 10246,
+            "data": {
+              "value": 3
+            },
+            "location": "home",
+            "type": {
+              "id": 49,
+              "name": "Shots Insidebox",
+              "code": "shots-insidebox",
+              "developer_name": "SHOTS_INSIDEBOX",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174384821,
+            "fixture_id": 19332462,
+            "type_id": 50,
+            "participant_id": 106,
+            "data": {
+              "value": 11
+            },
+            "location": "away",
+            "type": {
+              "id": 50,
+              "name": "Shots Outsidebox",
+              "code": "shots-outsidebox",
+              "developer_name": "SHOTS_OUTSIDEBOX",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174384817,
+            "fixture_id": 19332462,
+            "type_id": 50,
+            "participant_id": 10246,
+            "data": {
+              "value": 6
+            },
+            "location": "home",
+            "type": {
+              "id": 50,
+              "name": "Shots Outsidebox",
+              "code": "shots-outsidebox",
+              "developer_name": "SHOTS_OUTSIDEBOX",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174452496,
+            "fixture_id": 19332462,
+            "type_id": 51,
+            "participant_id": 106,
+            "data": {
+              "value": 1
+            },
+            "location": "away",
+            "type": {
+              "id": 51,
+              "name": "Offsides",
+              "code": "offsides",
+              "developer_name": "OFFSIDES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174452495,
+            "fixture_id": 19332462,
+            "type_id": 51,
+            "participant_id": 10246,
+            "data": {
+              "value": 3
+            },
+            "location": "home",
+            "type": {
+              "id": 51,
+              "name": "Offsides",
+              "code": "offsides",
+              "developer_name": "OFFSIDES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174396678,
+            "fixture_id": 19332462,
+            "type_id": 53,
+            "participant_id": 106,
+            "data": {
+              "value": 8
+            },
+            "location": "away",
+            "type": {
+              "id": 53,
+              "name": "Goal Kicks",
+              "code": "goals-kicks",
+              "developer_name": "GOAL_KICKS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174396677,
+            "fixture_id": 19332462,
+            "type_id": 53,
+            "participant_id": 10246,
+            "data": {
+              "value": 18
+            },
+            "location": "home",
+            "type": {
+              "id": 53,
+              "name": "Goal Kicks",
+              "code": "goals-kicks",
+              "developer_name": "GOAL_KICKS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 837293759,
+            "fixture_id": 19332462,
+            "type_id": 55,
+            "participant_id": 106,
+            "data": {
+              "value": 20
+            },
+            "location": "away",
+            "type": {
+              "id": 55,
+              "name": "Free Kicks",
+              "code": "free-kicks",
+              "developer_name": "FREE_KICKS",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 837293756,
+            "fixture_id": 19332462,
+            "type_id": 55,
+            "participant_id": 10246,
+            "data": {
+              "value": 21
+            },
+            "location": "home",
+            "type": {
+              "id": 55,
+              "name": "Free Kicks",
+              "code": "free-kicks",
+              "developer_name": "FREE_KICKS",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174385856,
+            "fixture_id": 19332462,
+            "type_id": 56,
+            "participant_id": 106,
+            "data": {
+              "value": 21
+            },
+            "location": "away",
+            "type": {
+              "id": 56,
+              "name": "Fouls",
+              "code": "fouls",
+              "developer_name": "FOULS",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174385854,
+            "fixture_id": 19332462,
+            "type_id": 56,
+            "participant_id": 10246,
+            "data": {
+              "value": 21
+            },
+            "location": "home",
+            "type": {
+              "id": 56,
+              "name": "Fouls",
+              "code": "fouls",
+              "developer_name": "FOULS",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174391580,
+            "fixture_id": 19332462,
+            "type_id": 57,
+            "participant_id": 106,
+            "data": {
+              "value": 4
+            },
+            "location": "away",
+            "type": {
+              "id": 57,
+              "name": "Saves",
+              "code": "saves",
+              "developer_name": "SAVES",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174391579,
+            "fixture_id": 19332462,
+            "type_id": 57,
+            "participant_id": 10246,
+            "data": {
+              "value": 8
+            },
+            "location": "home",
+            "type": {
+              "id": 57,
+              "name": "Saves",
+              "code": "saves",
+              "developer_name": "SAVES",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174384818,
+            "fixture_id": 19332462,
+            "type_id": 58,
+            "participant_id": 106,
+            "data": {
+              "value": 5
+            },
+            "location": "away",
+            "type": {
+              "id": 58,
+              "name": "Shots Blocked",
+              "code": "shots-blocked",
+              "developer_name": "SHOTS_BLOCKED",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174384813,
+            "fixture_id": 19332462,
+            "type_id": 58,
+            "participant_id": 10246,
+            "data": {
+              "value": 3
+            },
+            "location": "home",
+            "type": {
+              "id": 58,
+              "name": "Shots Blocked",
+              "code": "shots-blocked",
+              "developer_name": "SHOTS_BLOCKED",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174383171,
+            "fixture_id": 19332462,
+            "type_id": 59,
+            "participant_id": 106,
+            "data": {
+              "value": 6
+            },
+            "location": "away",
+            "type": {
+              "id": 59,
+              "name": "Substitutions",
+              "code": "substitutions",
+              "developer_name": "SUBSTITUTIONS",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174382381,
+            "fixture_id": 19332462,
+            "type_id": 59,
+            "participant_id": 10246,
+            "data": {
+              "value": 6
+            },
+            "location": "home",
+            "type": {
+              "id": 59,
+              "name": "Substitutions",
+              "code": "substitutions",
+              "developer_name": "SUBSTITUTIONS",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174385637,
+            "fixture_id": 19332462,
+            "type_id": 60,
+            "participant_id": 106,
+            "data": {
+              "value": 30
+            },
+            "location": "away",
+            "type": {
+              "id": 60,
+              "name": "Throwins",
+              "code": "throwins",
+              "developer_name": "THROWINS",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174385636,
+            "fixture_id": 19332462,
+            "type_id": 60,
+            "participant_id": 10246,
+            "data": {
+              "value": 36
+            },
+            "location": "home",
+            "type": {
+              "id": 60,
+              "name": "Throwins",
+              "code": "throwins",
+              "developer_name": "THROWINS",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 837293785,
+            "fixture_id": 19332462,
+            "type_id": 62,
+            "participant_id": 106,
+            "data": {
+              "value": 76
+            },
+            "location": "away",
+            "type": {
+              "id": 62,
+              "name": "Long Passes",
+              "code": "long-passes",
+              "developer_name": "LONG_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 837293783,
+            "fixture_id": 19332462,
+            "type_id": 62,
+            "participant_id": 10246,
+            "data": {
+              "value": 88
+            },
+            "location": "home",
+            "type": {
+              "id": 62,
+              "name": "Long Passes",
+              "code": "long-passes",
+              "developer_name": "LONG_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174386699,
+            "fixture_id": 19332462,
+            "type_id": 78,
+            "participant_id": 106,
+            "data": {
+              "value": 26
+            },
+            "location": "away",
+            "type": {
+              "id": 78,
+              "name": "Tackles",
+              "code": "tackles",
+              "developer_name": "TACKLES",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174386698,
+            "fixture_id": 19332462,
+            "type_id": 78,
+            "participant_id": 10246,
+            "data": {
+              "value": 24
+            },
+            "location": "home",
+            "type": {
+              "id": 78,
+              "name": "Tackles",
+              "code": "tackles",
+              "developer_name": "TACKLES",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174384819,
+            "fixture_id": 19332462,
+            "type_id": 80,
+            "participant_id": 106,
+            "data": {
+              "value": 594
+            },
+            "location": "away",
+            "type": {
+              "id": 80,
+              "name": "Passes",
+              "code": "passes",
+              "developer_name": "PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174384816,
+            "fixture_id": 19332462,
+            "type_id": 80,
+            "participant_id": 10246,
+            "data": {
+              "value": 308
+            },
+            "location": "home",
+            "type": {
+              "id": 80,
+              "name": "Passes",
+              "code": "passes",
+              "developer_name": "PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174384822,
+            "fixture_id": 19332462,
+            "type_id": 81,
+            "participant_id": 106,
+            "data": {
+              "value": 491
+            },
+            "location": "away",
+            "type": {
+              "id": 81,
+              "name": "Successful Passes",
+              "code": "successful-passes",
+              "developer_name": "SUCCESSFUL_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174384812,
+            "fixture_id": 19332462,
+            "type_id": 81,
+            "participant_id": 10246,
+            "data": {
+              "value": 190
+            },
+            "location": "home",
+            "type": {
+              "id": 81,
+              "name": "Successful Passes",
+              "code": "successful-passes",
+              "developer_name": "SUCCESSFUL_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174383539,
+            "fixture_id": 19332462,
+            "type_id": 82,
+            "participant_id": 106,
+            "data": {
+              "value": 83
+            },
+            "location": "away",
+            "type": {
+              "id": 82,
+              "name": "Successful Passes Percentage",
+              "code": "successful-passes-percentage",
+              "developer_name": "SUCCESSFUL_PASSES_PERCENTAGE",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174382472,
+            "fixture_id": 19332462,
+            "type_id": 82,
+            "participant_id": 10246,
+            "data": {
+              "value": 62
+            },
+            "location": "home",
+            "type": {
+              "id": 82,
+              "name": "Successful Passes Percentage",
+              "code": "successful-passes-percentage",
+              "developer_name": "SUCCESSFUL_PASSES_PERCENTAGE",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174383407,
+            "fixture_id": 19332462,
+            "type_id": 84,
+            "participant_id": 106,
+            "data": {
+              "value": 3
+            },
+            "location": "away",
+            "type": {
+              "id": 84,
+              "name": "Yellowcards",
+              "code": "yellowcards",
+              "developer_name": "YELLOWCARDS",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174382408,
+            "fixture_id": 19332462,
+            "type_id": 84,
+            "participant_id": 10246,
+            "data": {
+              "value": 3
+            },
+            "location": "home",
+            "type": {
+              "id": 84,
+              "name": "Yellowcards",
+              "code": "yellowcards",
+              "developer_name": "YELLOWCARDS",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174382777,
+            "fixture_id": 19332462,
+            "type_id": 86,
+            "participant_id": 106,
+            "data": {
+              "value": 8
+            },
+            "location": "away",
+            "type": {
+              "id": 86,
+              "name": "Shots On Target",
+              "code": "shots-on-target",
+              "developer_name": "SHOTS_ON_TARGET",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174382353,
+            "fixture_id": 19332462,
+            "type_id": 86,
+            "participant_id": 10246,
+            "data": {
+              "value": 4
+            },
+            "location": "home",
+            "type": {
+              "id": 86,
+              "name": "Shots On Target",
+              "code": "shots-on-target",
+              "developer_name": "SHOTS_ON_TARGET",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388644,
+            "fixture_id": 19332462,
+            "type_id": 98,
+            "participant_id": 106,
+            "data": {
+              "value": 30
+            },
+            "location": "away",
+            "type": {
+              "id": 98,
+              "name": "Total Crosses",
+              "code": "total-crosses",
+              "developer_name": "TOTAL_CROSSES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388643,
+            "fixture_id": 19332462,
+            "type_id": 98,
+            "participant_id": 10246,
+            "data": {
+              "value": 19
+            },
+            "location": "home",
+            "type": {
+              "id": 98,
+              "name": "Total Crosses",
+              "code": "total-crosses",
+              "developer_name": "TOTAL_CROSSES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388782,
+            "fixture_id": 19332462,
+            "type_id": 99,
+            "participant_id": 106,
+            "data": {
+              "value": 7
+            },
+            "location": "away",
+            "type": {
+              "id": 99,
+              "name": "Accurate Crosses",
+              "code": "accurate-crosses",
+              "developer_name": "ACCURATE_CROSSES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388778,
+            "fixture_id": 19332462,
+            "type_id": 99,
+            "participant_id": 10246,
+            "data": {
+              "value": 0
+            },
+            "location": "home",
+            "type": {
+              "id": 99,
+              "name": "Accurate Crosses",
+              "code": "accurate-crosses",
+              "developer_name": "ACCURATE_CROSSES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174385857,
+            "fixture_id": 19332462,
+            "type_id": 100,
+            "participant_id": 106,
+            "data": {
+              "value": 5
+            },
+            "location": "away",
+            "type": {
+              "id": 100,
+              "name": "Interceptions",
+              "code": "interceptions",
+              "developer_name": "INTERCEPTIONS",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 174385855,
+            "fixture_id": 19332462,
+            "type_id": 100,
+            "participant_id": 10246,
+            "data": {
+              "value": 9
+            },
+            "location": "home",
+            "type": {
+              "id": 100,
+              "name": "Interceptions",
+              "code": "interceptions",
+              "developer_name": "INTERCEPTIONS",
+              "model_type": "statistic",
+              "stat_group": "defensive"
+            }
+          },
+          {
+            "id": 837293802,
+            "fixture_id": 19332462,
+            "type_id": 106,
+            "participant_id": 106,
+            "data": {
+              "value": 82
+            },
+            "location": "away",
+            "type": {
+              "id": 106,
+              "name": "Duels Won",
+              "code": "duels-won",
+              "developer_name": "DUELS_WON",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 837293800,
+            "fixture_id": 19332462,
+            "type_id": 106,
+            "participant_id": 10246,
+            "data": {
+              "value": 71
+            },
+            "location": "home",
+            "type": {
+              "id": 106,
+              "name": "Duels Won",
+              "code": "duels-won",
+              "developer_name": "DUELS_WON",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388779,
+            "fixture_id": 19332462,
+            "type_id": 108,
+            "participant_id": 106,
+            "data": {
+              "value": 24
+            },
+            "location": "away",
+            "type": {
+              "id": 108,
+              "name": "Dribble Attempts",
+              "code": "dribble-attempts",
+              "developer_name": "DRIBBLED_ATTEMPTS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388775,
+            "fixture_id": 19332462,
+            "type_id": 108,
+            "participant_id": 10246,
+            "data": {
+              "value": 24
+            },
+            "location": "home",
+            "type": {
+              "id": 108,
+              "name": "Dribble Attempts",
+              "code": "dribble-attempts",
+              "developer_name": "DRIBBLED_ATTEMPTS",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388780,
+            "fixture_id": 19332462,
+            "type_id": 109,
+            "participant_id": 106,
+            "data": {
+              "value": 13
+            },
+            "location": "away",
+            "type": {
+              "id": 109,
+              "name": "Successful Dribbles",
+              "code": "successful-dribbles",
+              "developer_name": "SUCCESSFUL_DRIBBLES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388777,
+            "fixture_id": 19332462,
+            "type_id": 109,
+            "participant_id": 10246,
+            "data": {
+              "value": 10
+            },
+            "location": "home",
+            "type": {
+              "id": 109,
+              "name": "Successful Dribbles",
+              "code": "successful-dribbles",
+              "developer_name": "SUCCESSFUL_DRIBBLES",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174399604,
+            "fixture_id": 19332462,
+            "type_id": 117,
+            "participant_id": 106,
+            "data": {
+              "value": 14
+            },
+            "location": "away",
+            "type": {
+              "id": 117,
+              "name": "Key Passes",
+              "code": "key-passes",
+              "developer_name": "KEY_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 174399603,
+            "fixture_id": 19332462,
+            "type_id": 117,
+            "participant_id": 10246,
+            "data": {
+              "value": 2
+            },
+            "location": "home",
+            "type": {
+              "id": 117,
+              "name": "Key Passes",
+              "code": "key-passes",
+              "developer_name": "KEY_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 837293772,
+            "fixture_id": 19332462,
+            "type_id": 580,
+            "participant_id": 106,
+            "data": {
+              "value": 2
+            },
+            "location": "away",
+            "type": {
+              "id": 580,
+              "name": "Big Chances Created",
+              "code": "big-chances-created",
+              "developer_name": "BIG_CHANCES_CREATED",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 837293769,
+            "fixture_id": 19332462,
+            "type_id": 580,
+            "participant_id": 10246,
+            "data": {
+              "value": 0
+            },
+            "location": "home",
+            "type": {
+              "id": 580,
+              "name": "Big Chances Created",
+              "code": "big-chances-created",
+              "developer_name": "BIG_CHANCES_CREATED",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 837293776,
+            "fixture_id": 19332462,
+            "type_id": 581,
+            "participant_id": 106,
+            "data": {
+              "value": 2
+            },
+            "location": "away",
+            "type": {
+              "id": 581,
+              "name": "Big Chances Missed",
+              "code": "big-chances-missed",
+              "developer_name": "BIG_CHANCES_MISSED",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 837293774,
+            "fixture_id": 19332462,
+            "type_id": 581,
+            "participant_id": 10246,
+            "data": {
+              "value": 0
+            },
+            "location": "home",
+            "type": {
+              "id": 581,
+              "name": "Big Chances Missed",
+              "code": "big-chances-missed",
+              "developer_name": "BIG_CHANCES_MISSED",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388781,
+            "fixture_id": 19332462,
+            "type_id": 1605,
+            "participant_id": 106,
+            "data": {
+              "value": 54
+            },
+            "location": "away",
+            "type": {
+              "id": 1605,
+              "name": "Successful Dribbles Percentage",
+              "code": "successful-dribbles-percentage",
+              "developer_name": "SUCCESSFUL_DRIBBLES_PERCENTAGE",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 174388776,
+            "fixture_id": 19332462,
+            "type_id": 1605,
+            "participant_id": 10246,
+            "data": {
+              "value": 42
+            },
+            "location": "home",
+            "type": {
+              "id": 1605,
+              "name": "Successful Dribbles Percentage",
+              "code": "successful-dribbles-percentage",
+              "developer_name": "SUCCESSFUL_DRIBBLES_PERCENTAGE",
+              "model_type": "statistic",
+              "stat_group": "offensive"
+            }
+          },
+          {
+            "id": 837293791,
+            "fixture_id": 19332462,
+            "type_id": 27264,
+            "participant_id": 106,
+            "data": {
+              "value": 43
+            },
+            "location": "away",
+            "type": {
+              "id": 27264,
+              "name": "Successful Long Passes",
+              "code": "successful-long-passes",
+              "developer_name": "SUCCESSFUL_LONG_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 837293788,
+            "fixture_id": 19332462,
+            "type_id": 27264,
+            "participant_id": 10246,
+            "data": {
+              "value": 25
+            },
+            "location": "home",
+            "type": {
+              "id": 27264,
+              "name": "Successful Long Passes",
+              "code": "successful-long-passes",
+              "developer_name": "SUCCESSFUL_LONG_PASSES",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 837293817,
+            "fixture_id": 19332462,
+            "type_id": 27265,
+            "participant_id": 106,
+            "data": {
+              "value": 57
+            },
+            "location": "away",
+            "type": {
+              "id": 27265,
+              "name": "Successful Long Passes Percentage",
+              "code": "successful-long-passes-percentage",
+              "developer_name": "SUCCESSFUL_LONG_PASSES_PERCENTAGE",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          },
+          {
+            "id": 837293816,
+            "fixture_id": 19332462,
+            "type_id": 27265,
+            "participant_id": 10246,
+            "data": {
+              "value": 28
+            },
+            "location": "home",
+            "type": {
+              "id": 27265,
+              "name": "Successful Long Passes Percentage",
+              "code": "successful-long-passes-percentage",
+              "developer_name": "SUCCESSFUL_LONG_PASSES_PERCENTAGE",
+              "model_type": "statistic",
+              "stat_group": "overall"
+            }
+          }
+        ],
+        "lineups": [],
+        "formations": [
+          {
+            "id": 8369155,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "formation": "4-4-2",
+            "location": "away"
+          },
+          {
+            "id": 8369156,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "formation": "4-5-1",
+            "location": "home"
+          }
+        ],
+        "coaches": [
+          {
+            "id": 524009,
+            "player_id": 524009,
+            "sport_id": 1,
+            "country_id": 32,
+            "nationality_id": 32,
+            "city_id": null,
+            "common_name": "J. Bordalás Jiménez",
+            "firstname": "José",
+            "lastname": "Bordalás Jiménez",
+            "name": "José Bordalás Jiménez",
+            "display_name": "José Bordalás Jiménez",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/9/524009.png",
+            "height": null,
+            "weight": null,
+            "date_of_birth": "1964-03-05",
+            "gender": "male",
+            "meta": {
+              "fixture_id": 19332462,
+              "coach_id": 524009,
+              "participant_id": 106
+            }
+          }
+        ],
+        "pressure": [
+          {
+            "id": 4538371056,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 1,
+            "pressure": 0
+          },
+          {
+            "id": 4538374823,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 2,
+            "pressure": 0
+          },
+          {
+            "id": 4538374824,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 3,
+            "pressure": 34.68
+          },
+          {
+            "id": 4538378837,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 4,
+            "pressure": 22.74
+          },
+          {
+            "id": 4538378838,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 5,
+            "pressure": 20.02
+          },
+          {
+            "id": 4538382731,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 6,
+            "pressure": 16.2
+          },
+          {
+            "id": 4538382732,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 7,
+            "pressure": 7.38
+          },
+          {
+            "id": 4538387049,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 8,
+            "pressure": 12.8
+          },
+          {
+            "id": 4538387050,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 9,
+            "pressure": 0
+          },
+          {
+            "id": 4538391971,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 10,
+            "pressure": 0
+          },
+          {
+            "id": 4538391972,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 11,
+            "pressure": 0
+          },
+          {
+            "id": 4538396753,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 12,
+            "pressure": 0
+          },
+          {
+            "id": 4538396754,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 13,
+            "pressure": 0
+          },
+          {
+            "id": 4538403759,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 14,
+            "pressure": 1.02
+          },
+          {
+            "id": 4538403760,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 15,
+            "pressure": 22.38
+          },
+          {
+            "id": 4538409827,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 16,
+            "pressure": 18.11
+          },
+          {
+            "id": 4538409828,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 17,
+            "pressure": 30.22
+          },
+          {
+            "id": 4538416013,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 18,
+            "pressure": 23.69
+          },
+          {
+            "id": 4538416014,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 19,
+            "pressure": 10.4
+          },
+          {
+            "id": 4538422703,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 20,
+            "pressure": 20.73
+          },
+          {
+            "id": 4538422704,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 21,
+            "pressure": 43.47
+          },
+          {
+            "id": 4538427859,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 22,
+            "pressure": 24.9
+          },
+          {
+            "id": 4538427860,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 23,
+            "pressure": 23.23
+          },
+          {
+            "id": 4538432566,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 24,
+            "pressure": 0
+          },
+          {
+            "id": 4538433616,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 25,
+            "pressure": 0
+          },
+          {
+            "id": 4538438335,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 26,
+            "pressure": 1.11
+          },
+          {
+            "id": 4538438336,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 27,
+            "pressure": 7.75
+          },
+          {
+            "id": 4538443391,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 28,
+            "pressure": 0
+          },
+          {
+            "id": 4538443392,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 29,
+            "pressure": 0.87
+          },
+          {
+            "id": 4538449953,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 30,
+            "pressure": 0
+          },
+          {
+            "id": 4538449954,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 31,
+            "pressure": 7.46
+          },
+          {
+            "id": 4538455367,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 32,
+            "pressure": 12.81
+          },
+          {
+            "id": 4538455368,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 33,
+            "pressure": 0.56
+          },
+          {
+            "id": 4538462367,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 34,
+            "pressure": 0
+          },
+          {
+            "id": 4538462368,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 35,
+            "pressure": 9.07
+          },
+          {
+            "id": 4538469283,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 36,
+            "pressure": 13.96
+          },
+          {
+            "id": 4538469284,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 37,
+            "pressure": 10.35
+          },
+          {
+            "id": 4538476005,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 38,
+            "pressure": 2.47
+          },
+          {
+            "id": 4538476006,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 39,
+            "pressure": 8.84
+          },
+          {
+            "id": 4538482053,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 40,
+            "pressure": 23.68
+          },
+          {
+            "id": 4538482054,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 41,
+            "pressure": 11.21
+          },
+          {
+            "id": 4538489169,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 42,
+            "pressure": 0.1
+          },
+          {
+            "id": 4538489170,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 43,
+            "pressure": 0
+          },
+          {
+            "id": 4538495636,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 44,
+            "pressure": 0
+          },
+          {
+            "id": 4538557546,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 45,
+            "pressure": 8.6
+          },
+          {
+            "id": 4538569942,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 46,
+            "pressure": 4.3
+          },
+          {
+            "id": 4538569943,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 47,
+            "pressure": 0
+          },
+          {
+            "id": 4538569944,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 48,
+            "pressure": 5.15
+          },
+          {
+            "id": 4538577176,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 49,
+            "pressure": 2.58
+          },
+          {
+            "id": 4538579160,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 50,
+            "pressure": 4.2
+          },
+          {
+            "id": 4538586787,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 51,
+            "pressure": 30.35
+          },
+          {
+            "id": 4538586788,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 52,
+            "pressure": 23.74
+          },
+          {
+            "id": 4538595623,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 53,
+            "pressure": 23.25
+          },
+          {
+            "id": 4538595624,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 54,
+            "pressure": 3.26
+          },
+          {
+            "id": 4538604394,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 55,
+            "pressure": 10.77
+          },
+          {
+            "id": 4538605478,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 56,
+            "pressure": 0
+          },
+          {
+            "id": 4538614721,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 57,
+            "pressure": 0
+          },
+          {
+            "id": 4538614722,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 58,
+            "pressure": 0
+          },
+          {
+            "id": 4538624659,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 59,
+            "pressure": 5.41
+          },
+          {
+            "id": 4538624660,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 60,
+            "pressure": 12.75
+          },
+          {
+            "id": 4538634779,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 61,
+            "pressure": 11.74
+          },
+          {
+            "id": 4538634780,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 62,
+            "pressure": 9.36
+          },
+          {
+            "id": 4538645147,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 63,
+            "pressure": 0
+          },
+          {
+            "id": 4538645148,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 64,
+            "pressure": 0
+          },
+          {
+            "id": 4538656037,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 65,
+            "pressure": 13.95
+          },
+          {
+            "id": 4538656038,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 66,
+            "pressure": 41.87
+          },
+          {
+            "id": 4538665516,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 67,
+            "pressure": 33.15
+          },
+          {
+            "id": 4538667700,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 68,
+            "pressure": 36.21
+          },
+          {
+            "id": 4538677412,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 69,
+            "pressure": 20.19
+          },
+          {
+            "id": 4538679807,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 70,
+            "pressure": 0
+          },
+          {
+            "id": 4538689015,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 71,
+            "pressure": 15.63
+          },
+          {
+            "id": 4538689016,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 72,
+            "pressure": 21.08
+          },
+          {
+            "id": 4538702047,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 73,
+            "pressure": 18.89
+          },
+          {
+            "id": 4538702049,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 74,
+            "pressure": 30.48
+          },
+          {
+            "id": 4538713745,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 75,
+            "pressure": 28.97
+          },
+          {
+            "id": 4538713746,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 76,
+            "pressure": 33.49
+          },
+          {
+            "id": 4538726459,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 77,
+            "pressure": 36.09
+          },
+          {
+            "id": 4538726460,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 78,
+            "pressure": 32.79
+          },
+          {
+            "id": 4538739205,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 79,
+            "pressure": 31.62
+          },
+          {
+            "id": 4538739206,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 80,
+            "pressure": 9.03
+          },
+          {
+            "id": 4538750209,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 81,
+            "pressure": 13.3
+          },
+          {
+            "id": 4538750210,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 82,
+            "pressure": 18.56
+          },
+          {
+            "id": 4538764409,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 83,
+            "pressure": 19.41
+          },
+          {
+            "id": 4538764410,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 84,
+            "pressure": 12
+          },
+          {
+            "id": 4538775651,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 85,
+            "pressure": 22.19
+          },
+          {
+            "id": 4538775652,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 86,
+            "pressure": 46.17
+          },
+          {
+            "id": 4538787153,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 87,
+            "pressure": 39.56
+          },
+          {
+            "id": 4538787154,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 88,
+            "pressure": 69.58
+          },
+          {
+            "id": 4538802440,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 89,
+            "pressure": 82.33
+          },
+          {
+            "id": 4538805810,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 90,
+            "pressure": 56.71
+          },
+          {
+            "id": 4538818293,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 91,
+            "pressure": 72.17
+          },
+          {
+            "id": 4538818294,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 92,
+            "pressure": 100
+          },
+          {
+            "id": 4538882760,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 93,
+            "pressure": 79.11
+          },
+          {
+            "id": 4538889088,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 94,
+            "pressure": 72.25
+          },
+          {
+            "id": 4538904901,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 95,
+            "pressure": 78.19
+          },
+          {
+            "id": 4538904902,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 96,
+            "pressure": 88.35
+          },
+          {
+            "id": 4538915965,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 97,
+            "pressure": 80.97
+          },
+          {
+            "id": 4538915966,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 98,
+            "pressure": 97.71
+          },
+          {
+            "id": 4538928827,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 99,
+            "pressure": 100
+          },
+          {
+            "id": 4538928828,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 100,
+            "pressure": 100
+          },
+          {
+            "id": 4538941781,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 101,
+            "pressure": 100
+          },
+          {
+            "id": 4538941782,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 102,
+            "pressure": 100
+          },
+          {
+            "id": 4538955205,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 103,
+            "pressure": 100
+          },
+          {
+            "id": 4538955206,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 104,
+            "pressure": 100
+          },
+          {
+            "id": 4538966566,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 105,
+            "pressure": 100
+          },
+          {
+            "id": 4538969458,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 106,
+            "pressure": 100
+          },
+          {
+            "id": 4539001118,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 107,
+            "pressure": 100
+          },
+          {
+            "id": 4539009642,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 108,
+            "pressure": 100
+          },
+          {
+            "id": 4539023344,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 109,
+            "pressure": 100
+          },
+          {
+            "id": 4539026222,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 110,
+            "pressure": 100
+          },
+          {
+            "id": 4539040453,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 111,
+            "pressure": 100
+          },
+          {
+            "id": 4539040454,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 112,
+            "pressure": 100
+          },
+          {
+            "id": 4539057283,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 113,
+            "pressure": 100
+          },
+          {
+            "id": 4539057284,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 114,
+            "pressure": 100
+          },
+          {
+            "id": 4539070652,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 115,
+            "pressure": 100
+          },
+          {
+            "id": 4539074114,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 116,
+            "pressure": 100
+          },
+          {
+            "id": 4539087953,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 117,
+            "pressure": 100
+          },
+          {
+            "id": 4539087954,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 118,
+            "pressure": 100
+          },
+          {
+            "id": 4539102187,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 119,
+            "pressure": 100
+          },
+          {
+            "id": 4539102188,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 120,
+            "pressure": 100
+          },
+          {
+            "id": 4539115637,
+            "fixture_id": 19332462,
+            "participant_id": 106,
+            "minute": 121,
+            "pressure": 0
+          },
+          {
+            "id": 4538371055,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 1,
+            "pressure": 38.61
+          },
+          {
+            "id": 4538374820,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 2,
+            "pressure": 19.01
+          },
+          {
+            "id": 4538374821,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 3,
+            "pressure": 0
+          },
+          {
+            "id": 4538378832,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 4,
+            "pressure": 0
+          },
+          {
+            "id": 4538378833,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 5,
+            "pressure": 0
+          },
+          {
+            "id": 4538382724,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 6,
+            "pressure": 0
+          },
+          {
+            "id": 4538382725,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 7,
+            "pressure": 0
+          },
+          {
+            "id": 4538387040,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 8,
+            "pressure": 0
+          },
+          {
+            "id": 4538387041,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 9,
+            "pressure": 0.87
+          },
+          {
+            "id": 4538391960,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 10,
+            "pressure": 17.69
+          },
+          {
+            "id": 4538391961,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 11,
+            "pressure": 3.12
+          },
+          {
+            "id": 4538396740,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 12,
+            "pressure": 2.18
+          },
+          {
+            "id": 4538396741,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 13,
+            "pressure": 17.03
+          },
+          {
+            "id": 4538403744,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 14,
+            "pressure": 0
+          },
+          {
+            "id": 4538403745,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 15,
+            "pressure": 0
+          },
+          {
+            "id": 4538409810,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 16,
+            "pressure": 0
+          },
+          {
+            "id": 4538409811,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 17,
+            "pressure": 0
+          },
+          {
+            "id": 4538415994,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 18,
+            "pressure": 0
+          },
+          {
+            "id": 4538415995,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 19,
+            "pressure": 0
+          },
+          {
+            "id": 4538422682,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 20,
+            "pressure": 0
+          },
+          {
+            "id": 4538422683,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 21,
+            "pressure": 0
+          },
+          {
+            "id": 4538427836,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 22,
+            "pressure": 0
+          },
+          {
+            "id": 4538427837,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 23,
+            "pressure": 0
+          },
+          {
+            "id": 4538432542,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 24,
+            "pressure": 2.56
+          },
+          {
+            "id": 4538433591,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 25,
+            "pressure": 3.52
+          },
+          {
+            "id": 4538438308,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 26,
+            "pressure": 0
+          },
+          {
+            "id": 4538438309,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 27,
+            "pressure": 0
+          },
+          {
+            "id": 4538443362,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 28,
+            "pressure": 2.02
+          },
+          {
+            "id": 4538443363,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 29,
+            "pressure": 0
+          },
+          {
+            "id": 4538449922,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 30,
+            "pressure": 3.09
+          },
+          {
+            "id": 4538449923,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 31,
+            "pressure": 0
+          },
+          {
+            "id": 4538455334,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 32,
+            "pressure": 0
+          },
+          {
+            "id": 4538455335,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 33,
+            "pressure": 0
+          },
+          {
+            "id": 4538462332,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 34,
+            "pressure": 0.5
+          },
+          {
+            "id": 4538462333,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 35,
+            "pressure": 0
+          },
+          {
+            "id": 4538469246,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 36,
+            "pressure": 0
+          },
+          {
+            "id": 4538469247,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 37,
+            "pressure": 0
+          },
+          {
+            "id": 4538475966,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 38,
+            "pressure": 0
+          },
+          {
+            "id": 4538475967,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 39,
+            "pressure": 0
+          },
+          {
+            "id": 4538482012,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 40,
+            "pressure": 0
+          },
+          {
+            "id": 4538482013,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 41,
+            "pressure": 0
+          },
+          {
+            "id": 4538489126,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 42,
+            "pressure": 0
+          },
+          {
+            "id": 4538489127,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 43,
+            "pressure": 0.29
+          },
+          {
+            "id": 4538495592,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 44,
+            "pressure": 2.53
+          },
+          {
+            "id": 4538557501,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 45,
+            "pressure": 0
+          },
+          {
+            "id": 4538569894,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 46,
+            "pressure": 2.01
+          },
+          {
+            "id": 4538569895,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 47,
+            "pressure": 4.02
+          },
+          {
+            "id": 4538569896,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 48,
+            "pressure": 0
+          },
+          {
+            "id": 4538577127,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 49,
+            "pressure": 0
+          },
+          {
+            "id": 4538579110,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 50,
+            "pressure": 0
+          },
+          {
+            "id": 4538586735,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 51,
+            "pressure": 0
+          },
+          {
+            "id": 4538586736,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 52,
+            "pressure": 0
+          },
+          {
+            "id": 4538595569,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 53,
+            "pressure": 0
+          },
+          {
+            "id": 4538595570,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 54,
+            "pressure": 0
+          },
+          {
+            "id": 4538604306,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 55,
+            "pressure": 0
+          },
+          {
+            "id": 4538605422,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 56,
+            "pressure": 5.43
+          },
+          {
+            "id": 4538614663,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 57,
+            "pressure": 0.97
+          },
+          {
+            "id": 4538614664,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 58,
+            "pressure": 8.61
+          },
+          {
+            "id": 4538624599,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 59,
+            "pressure": 0
+          },
+          {
+            "id": 4538624600,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 60,
+            "pressure": 0
+          },
+          {
+            "id": 4538634717,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 61,
+            "pressure": 0
+          },
+          {
+            "id": 4538634718,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 62,
+            "pressure": 0
+          },
+          {
+            "id": 4538645083,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 63,
+            "pressure": 1.79
+          },
+          {
+            "id": 4538645084,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 64,
+            "pressure": 10.3
+          },
+          {
+            "id": 4538655971,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 65,
+            "pressure": 0
+          },
+          {
+            "id": 4538655972,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 66,
+            "pressure": 0
+          },
+          {
+            "id": 4538665449,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 67,
+            "pressure": 0
+          },
+          {
+            "id": 4538667632,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 68,
+            "pressure": 0
+          },
+          {
+            "id": 4538677343,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 69,
+            "pressure": 0
+          },
+          {
+            "id": 4538679732,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 70,
+            "pressure": 6.5
+          },
+          {
+            "id": 4538688943,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 71,
+            "pressure": 0
+          },
+          {
+            "id": 4538688944,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 72,
+            "pressure": 0
+          },
+          {
+            "id": 4538701905,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 73,
+            "pressure": 0
+          },
+          {
+            "id": 4538701909,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 74,
+            "pressure": 0
+          },
+          {
+            "id": 4538713669,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 75,
+            "pressure": 0
+          },
+          {
+            "id": 4538713670,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 76,
+            "pressure": 0
+          },
+          {
+            "id": 4538726381,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 77,
+            "pressure": 0
+          },
+          {
+            "id": 4538726382,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 78,
+            "pressure": 0
+          },
+          {
+            "id": 4538739125,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 79,
+            "pressure": 0
+          },
+          {
+            "id": 4538739126,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 80,
+            "pressure": 0
+          },
+          {
+            "id": 4538750127,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 81,
+            "pressure": 0
+          },
+          {
+            "id": 4538750128,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 82,
+            "pressure": 0
+          },
+          {
+            "id": 4538764325,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 83,
+            "pressure": 0
+          },
+          {
+            "id": 4538764326,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 84,
+            "pressure": 0
+          },
+          {
+            "id": 4538775565,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 85,
+            "pressure": 0
+          },
+          {
+            "id": 4538775566,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 86,
+            "pressure": 0
+          },
+          {
+            "id": 4538787065,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 87,
+            "pressure": 0
+          },
+          {
+            "id": 4538787066,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 88,
+            "pressure": 0
+          },
+          {
+            "id": 4538802351,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 89,
+            "pressure": 0
+          },
+          {
+            "id": 4538805720,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 90,
+            "pressure": 0
+          },
+          {
+            "id": 4538818201,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 91,
+            "pressure": 0
+          },
+          {
+            "id": 4538818202,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 92,
+            "pressure": 0
+          },
+          {
+            "id": 4538882667,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 93,
+            "pressure": 0
+          },
+          {
+            "id": 4538888994,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 94,
+            "pressure": 0
+          },
+          {
+            "id": 4538904805,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 95,
+            "pressure": 0
+          },
+          {
+            "id": 4538904806,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 96,
+            "pressure": 0
+          },
+          {
+            "id": 4538915867,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 97,
+            "pressure": 0
+          },
+          {
+            "id": 4538915868,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 98,
+            "pressure": 0
+          },
+          {
+            "id": 4538928727,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 99,
+            "pressure": 0
+          },
+          {
+            "id": 4538928728,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 100,
+            "pressure": 0
+          },
+          {
+            "id": 4538941679,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 101,
+            "pressure": 0
+          },
+          {
+            "id": 4538941680,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 102,
+            "pressure": 0
+          },
+          {
+            "id": 4538955101,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 103,
+            "pressure": 0
+          },
+          {
+            "id": 4538955102,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 104,
+            "pressure": 0
+          },
+          {
+            "id": 4538966363,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 105,
+            "pressure": 0
+          },
+          {
+            "id": 4538969352,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 106,
+            "pressure": 0
+          },
+          {
+            "id": 4539000801,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 107,
+            "pressure": 0
+          },
+          {
+            "id": 4539009534,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 108,
+            "pressure": 0
+          },
+          {
+            "id": 4539023235,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 109,
+            "pressure": 0
+          },
+          {
+            "id": 4539026112,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 110,
+            "pressure": 0
+          },
+          {
+            "id": 4539040341,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 111,
+            "pressure": 0
+          },
+          {
+            "id": 4539040342,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 112,
+            "pressure": 0
+          },
+          {
+            "id": 4539057169,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 113,
+            "pressure": 0
+          },
+          {
+            "id": 4539057170,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 114,
+            "pressure": 0
+          },
+          {
+            "id": 4539070537,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 115,
+            "pressure": 0
+          },
+          {
+            "id": 4539073998,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 116,
+            "pressure": 0
+          },
+          {
+            "id": 4539087835,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 117,
+            "pressure": 0
+          },
+          {
+            "id": 4539087836,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 118,
+            "pressure": 0
+          },
+          {
+            "id": 4539102067,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 119,
+            "pressure": 0
+          },
+          {
+            "id": 4539102068,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 120,
+            "pressure": 0
+          },
+          {
+            "id": 4539115403,
+            "fixture_id": 19332462,
+            "participant_id": 10246,
+            "minute": 121,
+            "pressure": 100
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "id": 147424479,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 106,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37678216,
+          "related_player_id": 537056,
+          "player_name": "Christantus Uche",
+          "related_player_name": "Carles Pérez",
+          "result": null,
+          "info": null,
+          "addition": "1st Substitution",
+          "minute": 60,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424485,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 106,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37564744,
+          "related_player_id": 530758,
+          "player_name": "Coba da Costa",
+          "related_player_name": "Álex Sola",
+          "result": null,
+          "info": null,
+          "addition": "2nd Substitution",
+          "minute": 60,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424653,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 106,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 445827,
+          "related_player_id": 37601803,
+          "player_name": "Juan Iglesias",
+          "related_player_name": "Álvaro Rodríguez",
+          "result": null,
+          "info": null,
+          "addition": "3rd Substitution",
+          "minute": 60,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424731,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 106,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 382624,
+          "related_player_id": 37549065,
+          "player_name": "Luis Milla",
+          "related_player_name": "John Patrick",
+          "result": null,
+          "info": null,
+          "addition": "4th Substitution",
+          "minute": 66,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424780,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 10246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 333726,
+          "related_player_id": 37412546,
+          "player_name": "Eugenio Isnaldo",
+          "related_player_name": "Fran Franco",
+          "result": null,
+          "info": null,
+          "addition": "5th Substitution",
+          "minute": 69,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424911,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 106,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37593283,
+          "related_player_id": 63020,
+          "player_name": "Nabil Aberdin",
+          "related_player_name": "Dakonam Djené",
+          "result": null,
+          "info": null,
+          "addition": "6th Substitution",
+          "minute": 73,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147425615,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 10246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 380611,
+          "related_player_id": 37262591,
+          "player_name": "Héctor Ayodele",
+          "related_player_name": "Juan Carlos Fernández Pitu",
+          "result": null,
+          "info": null,
+          "addition": "7th Substitution",
+          "minute": 90,
+          "extra_minute": 3,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 7,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147426038,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 10246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37543800,
+          "related_player_id": 218953,
+          "player_name": "Runy",
+          "related_player_name": "Miguel Bianconi",
+          "result": null,
+          "info": null,
+          "addition": "8th Substitution",
+          "minute": 97,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 8,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147426456,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 106,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 1281,
+          "related_player_id": 37316517,
+          "player_name": "Allan Nyom",
+          "related_player_name": "Peter Federico",
+          "result": null,
+          "info": null,
+          "addition": "9th Substitution",
+          "minute": 106,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 9,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147426455,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 10246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37359749,
+          "related_player_id": 37297037,
+          "player_name": "Jaime Escobar",
+          "related_player_name": "Ignacio Pastor",
+          "result": null,
+          "info": null,
+          "addition": "10th Substitution",
+          "minute": 106,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 10,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147426591,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 10246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 4715,
+          "related_player_id": 7687952,
+          "player_name": "Kevin Toner",
+          "related_player_name": "Alusine Pagal Koroma",
+          "result": null,
+          "info": null,
+          "addition": "11th Substitution",
+          "minute": 106,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1523,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 11,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147426801,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 10246,
+          "type_id": 18,
+          "section": "event",
+          "player_id": 37619809,
+          "related_player_id": 382306,
+          "player_name": "Adrián Morales",
+          "related_player_name": "Mohamed Kamal",
+          "result": null,
+          "info": null,
+          "addition": "12th Substitution",
+          "minute": 115,
+          "extra_minute": null,
+          "injured": true,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": 1524,
+          "detailed_period_id": null,
+          "rescinded": null,
+          "sort_order": 12,
+          "type": {
+            "id": 18,
+            "name": "Substitution",
+            "code": "substitution",
+            "developer_name": "SUBSTITUTION",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424273,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 106,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 37601803,
+          "related_player_id": null,
+          "player_name": "Álvaro Rodríguez",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "1st Yellowcard",
+          "minute": 53,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771000,
+          "rescinded": false,
+          "sort_order": 1,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424804,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 10246,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 7687952,
+          "related_player_id": null,
+          "player_name": "Alusine Pagal Koroma",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "2nd Yellowcard",
+          "minute": 71,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771000,
+          "rescinded": false,
+          "sort_order": 2,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147425863,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 106,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 37564744,
+          "related_player_id": null,
+          "player_name": "Coba da Costa",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "3rd Yellowcard",
+          "minute": 93,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 3,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147425914,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 10246,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 218953,
+          "related_player_id": null,
+          "player_name": "Miguel Bianconi",
+          "related_player_name": null,
+          "result": null,
+          "info": "Argument",
+          "addition": "4th Yellowcard",
+          "minute": 93,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 4,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147426592,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 106,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 37593283,
+          "related_player_id": null,
+          "player_name": "Nabil Aberdin",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "5th Yellowcard",
+          "minute": 109,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 5,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 156516234,
+          "fixture_id": 19332462,
+          "period_id": 5771046,
+          "participant_id": 10246,
+          "type_id": 19,
+          "section": "event",
+          "player_id": 37359749,
+          "related_player_id": null,
+          "player_name": "Jaime Escobar",
+          "related_player_name": null,
+          "result": null,
+          "info": "Foul",
+          "addition": "6th Yellowcard",
+          "minute": 119,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": null,
+          "rescinded": false,
+          "sort_order": 6,
+          "type": {
+            "id": 19,
+            "name": "Yellowcard",
+            "code": "yellowcard",
+            "developer_name": "YELLOWCARD",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147427144,
+          "fixture_id": 19332462,
+          "period_id": 5771068,
+          "participant_id": 106,
+          "type_id": 23,
+          "section": "event",
+          "player_id": 382624,
+          "related_player_id": null,
+          "player_name": "Luis Milla",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Getafe - Score 1st Penalty",
+          "minute": 1,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771068,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 23,
+            "name": "Penalty Shootout Goal",
+            "code": "pen_shootout_goal",
+            "developer_name": "PENALTY_SHOOTOUT_GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147427175,
+          "fixture_id": 19332462,
+          "period_id": 5771068,
+          "participant_id": 10246,
+          "type_id": 22,
+          "section": "event",
+          "player_id": 333726,
+          "related_player_id": null,
+          "player_name": "Eugenio Isnaldo",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Penalty",
+          "minute": 2,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771068,
+          "rescinded": null,
+          "sort_order": 2,
+          "type": {
+            "id": 22,
+            "name": "Penalty Shootout Miss",
+            "code": "pen_shootout_miss",
+            "developer_name": "PENALTY_SHOOTOUT_MISS",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147427209,
+          "fixture_id": 19332462,
+          "period_id": 5771068,
+          "participant_id": 106,
+          "type_id": 23,
+          "section": "event",
+          "player_id": 37619814,
+          "related_player_id": null,
+          "player_name": "Yellu Santiago",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Getafe - Score 3rd Penalty",
+          "minute": 3,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771068,
+          "rescinded": null,
+          "sort_order": 3,
+          "type": {
+            "id": 23,
+            "name": "Penalty Shootout Goal",
+            "code": "pen_shootout_goal",
+            "developer_name": "PENALTY_SHOOTOUT_GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147427240,
+          "fixture_id": 19332462,
+          "period_id": 5771068,
+          "participant_id": 10246,
+          "type_id": 22,
+          "section": "event",
+          "player_id": 380611,
+          "related_player_id": null,
+          "player_name": "Héctor Ayodele",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Penalty",
+          "minute": 4,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771068,
+          "rescinded": null,
+          "sort_order": 4,
+          "type": {
+            "id": 22,
+            "name": "Penalty Shootout Miss",
+            "code": "pen_shootout_miss",
+            "developer_name": "PENALTY_SHOOTOUT_MISS",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147427270,
+          "fixture_id": 19332462,
+          "period_id": 5771068,
+          "participant_id": 106,
+          "type_id": 23,
+          "section": "event",
+          "player_id": 445827,
+          "related_player_id": null,
+          "player_name": "Juan Iglesias",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Getafe - Score 5th Penalty",
+          "minute": 5,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771068,
+          "rescinded": null,
+          "sort_order": 5,
+          "type": {
+            "id": 23,
+            "name": "Penalty Shootout Goal",
+            "code": "pen_shootout_goal",
+            "developer_name": "PENALTY_SHOOTOUT_GOAL",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147427296,
+          "fixture_id": 19332462,
+          "period_id": 5771068,
+          "participant_id": 10246,
+          "type_id": 22,
+          "section": "event",
+          "player_id": 31625657,
+          "related_player_id": null,
+          "player_name": "Goyo",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Penalty",
+          "minute": 6,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771068,
+          "rescinded": null,
+          "sort_order": 6,
+          "type": {
+            "id": 22,
+            "name": "Penalty Shootout Miss",
+            "code": "pen_shootout_miss",
+            "developer_name": "PENALTY_SHOOTOUT_MISS",
+            "model_type": "event",
+            "stat_group": null
+          }
+        },
+        {
+          "id": 147424182,
+          "fixture_id": 19332462,
+          "period_id": 5771000,
+          "participant_id": 106,
+          "type_id": 17,
+          "section": "event",
+          "player_id": 34873979,
+          "related_player_id": null,
+          "player_name": "Bertuğ Yıldırım",
+          "related_player_name": null,
+          "result": null,
+          "info": null,
+          "addition": "Missed Penalty",
+          "minute": 51,
+          "extra_minute": null,
+          "injured": null,
+          "on_bench": false,
+          "coach_id": null,
+          "sub_type_id": null,
+          "detailed_period_id": 5771000,
+          "rescinded": null,
+          "sort_order": 1,
+          "type": {
+            "id": 17,
+            "name": "Missed Penalty",
+            "code": "missed_penalty",
+            "developer_name": "MISSED_PENALTY",
+            "model_type": "event",
+            "stat_group": null
+          }
+        }
+      ]
+    }
+  ]
+}

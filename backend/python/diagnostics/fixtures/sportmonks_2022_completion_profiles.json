@@ -1,0 +1,1635 @@
+{
+  "cases": [
+    {
+      "fixture": {
+        "id": 18534883,
+        "lineups": [],
+        "events": [
+          {
+            "id": 36225757,
+            "fixture_id": 18534883,
+            "period_id": 4212936,
+            "participant_id": 2825,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 194922,
+            "related_player_id": 110003,
+            "player_name": "Axel Björnström",
+            "related_player_name": "Sotirios Papagiannopoulos",
+            "result": "2-0",
+            "info": null,
+            "addition": "1st Goal ET",
+            "minute": 107,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36225763,
+            "fixture_id": 18534883,
+            "period_id": 4212769,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 2823522,
+            "related_player_id": 333588,
+            "player_name": "B. Mbunga-Kimpioka",
+            "related_player_name": "Nicolás Stefanelli",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 103,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36225764,
+            "fixture_id": 18534883,
+            "period_id": 4212769,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37537029,
+            "related_player_id": 37602227,
+            "player_name": "Erik Ring",
+            "related_player_name": "Joe Mendes",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 103,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 7,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36225765,
+            "fixture_id": 18534883,
+            "period_id": 4212936,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 32514,
+            "related_player_id": 3923,
+            "player_name": "Nabil Bahoui",
+            "related_player_name": "John Guidetti",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 105,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 8,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36225766,
+            "fixture_id": 18534883,
+            "period_id": 4212936,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37439044,
+            "related_player_id": 37562870,
+            "player_name": "Jesper Ceesay",
+            "related_player_name": "Collins Sichenje",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 105,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 9,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36225773,
+            "fixture_id": 18534883,
+            "period_id": 4212936,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 32514,
+            "related_player_id": null,
+            "player_name": "Nabil Bahoui",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 117,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 7,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36225775,
+            "fixture_id": 18534883,
+            "period_id": 4212936,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 3533335,
+            "related_player_id": null,
+            "player_name": "Bilal Hussein",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 120,
+            "extra_minute": 1,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 9,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "36225757": [
+          194922
+        ],
+        "36225763": [
+          2823522
+        ],
+        "36225764": [
+          37537029
+        ],
+        "36225765": [
+          32514
+        ],
+        "36225766": [
+          37439044
+        ],
+        "36225773": [
+          32514
+        ],
+        "36225775": [
+          3533335
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18534884,
+        "lineups": [],
+        "events": [
+          {
+            "id": 36183313,
+            "fixture_id": 18534884,
+            "period_id": 4203815,
+            "participant_id": 2825,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 333588,
+            "related_player_id": 3533335,
+            "player_name": "Nicolás Stefanelli",
+            "related_player_name": "Bilal Hussein",
+            "result": "1-1",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 17,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36183574,
+            "fixture_id": 18534884,
+            "period_id": 4203815,
+            "participant_id": 2825,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 597,
+            "related_player_id": 37602227,
+            "player_name": "Sebastian Larsson",
+            "related_player_name": "Joe Mendes",
+            "result": "2-2",
+            "info": null,
+            "addition": "4th Goal",
+            "minute": 44,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36183868,
+            "fixture_id": 18534884,
+            "period_id": 4203850,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 3923,
+            "related_player_id": 2823522,
+            "player_name": "John Guidetti",
+            "related_player_name": "B. Mbunga-Kimpioka",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 58,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36184253,
+            "fixture_id": 18534884,
+            "period_id": 4203850,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37537029,
+            "related_player_id": 150122,
+            "player_name": "Erik Ring",
+            "related_player_name": "Mikael Lustig",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 88,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36183560,
+            "fixture_id": 18534884,
+            "period_id": 4203850,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 597,
+            "related_player_id": null,
+            "player_name": "Sebastian Larsson",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "3rd Yellow Card",
+            "minute": 54,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 3,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36184066,
+            "fixture_id": 18534884,
+            "period_id": 4203850,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 37537029,
+            "related_player_id": null,
+            "player_name": "Erik Ring",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "6th Yellow Card",
+            "minute": 90,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 6,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 79682441,
+            "fixture_id": 18534884,
+            "period_id": 4203850,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 32470,
+            "related_player_id": null,
+            "player_name": "A. Milošević",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 90,
+            "extra_minute": 2,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 8,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "36183313": [
+          3533335
+        ],
+        "36183574": [
+          597
+        ],
+        "36183868": [
+          2823522
+        ],
+        "36184253": [
+          37537029
+        ],
+        "36183560": [
+          597
+        ],
+        "36184066": [
+          37537029
+        ],
+        "79682441": [
+          32470
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18601665,
+        "lineups": [],
+        "events": [
+          {
+            "id": 36428082,
+            "fixture_id": 18601665,
+            "period_id": 4225690,
+            "participant_id": 2825,
+            "type_id": 14,
+            "section": "event",
+            "player_id": 3923,
+            "related_player_id": 597,
+            "player_name": "John Guidetti",
+            "related_player_name": "Sebastian Larsson",
+            "result": "1-1",
+            "info": null,
+            "addition": "2nd Goal",
+            "minute": 17,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 2,
+            "type": {
+              "id": 14,
+              "name": "Goal",
+              "code": "goal",
+              "developer_name": "GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36455868,
+            "fixture_id": 18601665,
+            "period_id": 4225738,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 2823522,
+            "related_player_id": 37526157,
+            "player_name": "B. Mbunga-Kimpioka",
+            "related_player_name": "Yasin Ayari",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 71,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 5,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 36455869,
+            "fixture_id": 18601665,
+            "period_id": 4225738,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37537029,
+            "related_player_id": 37602227,
+            "player_name": "Erik Ring",
+            "related_player_name": "Joe Mendes",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 71,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "36428082": [
+          597
+        ],
+        "36455868": [
+          2823522
+        ],
+        "36455869": [
+          37537029
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18601666,
+        "lineups": [],
+        "events": [
+          {
+            "id": 38187647,
+            "fixture_id": 18601666,
+            "period_id": 4239767,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37603838,
+            "related_player_id": 2823522,
+            "player_name": "A. Ahmed Fatah",
+            "related_player_name": "B. Mbunga-Kimpioka",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 79,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 3,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38187650,
+            "fixture_id": 18601666,
+            "period_id": 4239836,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 194922,
+            "related_player_id": 608198,
+            "player_name": "Axel Björnström",
+            "related_player_name": "Erick Otieno",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 90,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 6,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38187651,
+            "fixture_id": 18601666,
+            "period_id": 4239836,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37537029,
+            "related_player_id": 37526157,
+            "player_name": "Erik Ring",
+            "related_player_name": "Yasin Ayari",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 90,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 7,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38187653,
+            "fixture_id": 18601666,
+            "period_id": 4239836,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 37563216,
+            "related_player_id": 581096,
+            "player_name": "Henry Atola Meja",
+            "related_player_name": "Zack Elbouzedi",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 105,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 9,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38152188,
+            "fixture_id": 18601666,
+            "period_id": 4239767,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 597,
+            "related_player_id": null,
+            "player_name": "Sebastian Larsson",
+            "related_player_name": null,
+            "result": null,
+            "info": null,
+            "addition": "4th Yellow Card",
+            "minute": 75,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 4,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38162320,
+            "fixture_id": 18601666,
+            "period_id": 4239836,
+            "participant_id": 2825,
+            "type_id": 19,
+            "section": "event",
+            "player_id": 194922,
+            "related_player_id": null,
+            "player_name": "Axel Björnström",
+            "related_player_name": null,
+            "result": null,
+            "info": "Foul",
+            "addition": "1st Yellow Card ET",
+            "minute": 95,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": false,
+            "sort_order": 7,
+            "type": {
+              "id": 19,
+              "name": "Yellowcard",
+              "code": "yellowcard",
+              "developer_name": "YELLOWCARD",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38174811,
+            "fixture_id": 18601666,
+            "period_id": 4239767,
+            "participant_id": 2825,
+            "type_id": 22,
+            "section": "event",
+            "player_id": 597,
+            "related_player_id": null,
+            "player_name": "Sebastian Larsson",
+            "related_player_name": null,
+            "result": "0-0",
+            "info": null,
+            "addition": "AIK - Miss 1st Penalty",
+            "minute": 1,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 22,
+              "name": "Penalty Shootout Miss",
+              "code": "pen_shootout_miss",
+              "developer_name": "PENALTY_SHOOTOUT_MISS",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38174814,
+            "fixture_id": 18601666,
+            "period_id": 4239767,
+            "participant_id": 2825,
+            "type_id": 23,
+            "section": "event",
+            "player_id": 3533335,
+            "related_player_id": null,
+            "player_name": "Bilal Hussein",
+            "related_player_name": null,
+            "result": "1-1",
+            "info": null,
+            "addition": "Shkendija Tetovo - Miss 2nd Penalty",
+            "minute": 2,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 23,
+              "name": "Penalty Shootout Goal",
+              "code": "pen_shootout_goal",
+              "developer_name": "PENALTY_SHOOTOUT_GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38174817,
+            "fixture_id": 18601666,
+            "period_id": 4239767,
+            "participant_id": 2825,
+            "type_id": 23,
+            "section": "event",
+            "player_id": 194922,
+            "related_player_id": null,
+            "player_name": "Axel Björnström",
+            "related_player_name": null,
+            "result": "1-3",
+            "info": null,
+            "addition": "AIK - Score 4th Penalty",
+            "minute": 4,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 7,
+            "type": {
+              "id": 23,
+              "name": "Penalty Shootout Goal",
+              "code": "pen_shootout_goal",
+              "developer_name": "PENALTY_SHOOTOUT_GOAL",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 38174820,
+            "fixture_id": 18601666,
+            "period_id": 4239767,
+            "participant_id": 2825,
+            "type_id": 22,
+            "section": "event",
+            "player_id": 37537029,
+            "related_player_id": null,
+            "player_name": "Erik Ring",
+            "related_player_name": null,
+            "result": "2-3",
+            "info": null,
+            "addition": "Shkendija Tetovo - Miss 5th Penalty",
+            "minute": 5,
+            "extra_minute": null,
+            "injured": null,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 10,
+            "type": {
+              "id": 22,
+              "name": "Penalty Shootout Miss",
+              "code": "pen_shootout_miss",
+              "developer_name": "PENALTY_SHOOTOUT_MISS",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "38187647": [
+          2823522
+        ],
+        "38187650": [
+          194922
+        ],
+        "38187651": [
+          37537029
+        ],
+        "38187653": [
+          37563216
+        ],
+        "38152188": [
+          597
+        ],
+        "38162320": [
+          194922
+        ],
+        "38174811": [
+          597
+        ],
+        "38174814": [
+          3533335
+        ],
+        "38174817": [
+          194922
+        ],
+        "38174820": [
+          37537029
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18634431,
+        "lineups": [],
+        "events": [
+          {
+            "id": 39739635,
+            "fixture_id": 18634431,
+            "period_id": 4256706,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 32514,
+            "related_player_id": 37537029,
+            "player_name": "Nabil Bahoui",
+            "related_player_name": "Erik Ring",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 74,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 39744225,
+            "fixture_id": 18634431,
+            "period_id": 4256706,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 2823522,
+            "related_player_id": 150122,
+            "player_name": "B. Mbunga-Kimpioka",
+            "related_player_name": "Mikael Lustig",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 83,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 8,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "39739635": [
+          32514,
+          37537029
+        ],
+        "39744225": [
+          2823522
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18634432,
+        "lineups": [],
+        "events": [
+          {
+            "id": 41013438,
+            "fixture_id": 18634432,
+            "period_id": 4274142,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 608198,
+            "related_player_id": 194922,
+            "player_name": "Erick Otieno",
+            "related_player_name": "Axel Björnström",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 46,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 1,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          },
+          {
+            "id": 41020568,
+            "fixture_id": 18634432,
+            "period_id": 4274142,
+            "participant_id": 2825,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 2823522,
+            "related_player_id": 32514,
+            "player_name": "B. Mbunga-Kimpioka",
+            "related_player_name": "Nabil Bahoui",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 66,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 9,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "41013438": [
+          194922
+        ],
+        "41020568": [
+          2823522,
+          32514
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "id": 18533233,
+        "lineups": [],
+        "events": [
+          {
+            "id": 36140238,
+            "fixture_id": 18533233,
+            "period_id": 4194537,
+            "participant_id": 5495,
+            "type_id": 18,
+            "section": "event",
+            "player_id": 236073,
+            "related_player_id": 49942,
+            "player_name": "Fabio Burbano",
+            "related_player_name": "Artak Yedigaryan",
+            "result": null,
+            "info": null,
+            "addition": null,
+            "minute": 76,
+            "extra_minute": null,
+            "injured": false,
+            "on_bench": false,
+            "coach_id": null,
+            "sub_type_id": null,
+            "detailed_period_id": null,
+            "rescinded": null,
+            "sort_order": 4,
+            "type": {
+              "id": 18,
+              "name": "Substitution",
+              "code": "substitution",
+              "developer_name": "SUBSTITUTION",
+              "model_type": "event",
+              "stat_group": null
+            }
+          }
+        ],
+        "coaches": [],
+        "statistics": [],
+        "formations": [],
+        "pressure": []
+      },
+      "event_profile_ids": {
+        "36140238": [
+          236073
+        ]
+      }
+    }
+  ],
+  "profiles": {
+    "194922": {
+      "id": 194922,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": 25,
+      "detailed_position_id": 155,
+      "type_id": 25,
+      "common_name": "A. Björnström",
+      "firstname": "Axel",
+      "lastname": "Björnström",
+      "name": "Axel Björnström",
+      "display_name": "Axel Björnström",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 176,
+      "weight": 68,
+      "date_of_birth": "1995-09-10",
+      "gender": "male"
+    },
+    "2823522": {
+      "id": 2823522,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 45217,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": 26,
+      "common_name": "B. Mbunga-Kimpioka",
+      "firstname": "Benjamin",
+      "lastname": "Mbunga-Kimpioka",
+      "name": "Benjamin Mbunga-Kimpioka",
+      "display_name": "B. Kimpioka",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 183,
+      "weight": 73,
+      "date_of_birth": "2000-02-21",
+      "gender": "male"
+    },
+    "37537029": {
+      "id": 37537029,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": 152,
+      "type_id": 27,
+      "common_name": "E. Ring",
+      "firstname": "Erik",
+      "lastname": "Ring",
+      "name": "Erik Ring",
+      "display_name": "Erik Ring",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 185,
+      "weight": 75,
+      "date_of_birth": "2002-04-24",
+      "gender": "male"
+    },
+    "32514": {
+      "id": 32514,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 86542,
+      "position_id": 27,
+      "detailed_position_id": 151,
+      "type_id": 26,
+      "common_name": "N. Bahoui",
+      "firstname": "Nabil",
+      "lastname": "Bahoui",
+      "name": "Nabil Bahoui",
+      "display_name": "Nabil Bahoui",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/2/32514.png",
+      "height": 188,
+      "weight": 84,
+      "date_of_birth": "1991-02-05",
+      "gender": "male"
+    },
+    "37439044": {
+      "id": 37439044,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 2507,
+      "city_id": null,
+      "position_id": 26,
+      "detailed_position_id": 149,
+      "type_id": 25,
+      "common_name": "J. Ceesay",
+      "firstname": "Jesper",
+      "lastname": "Ceesay",
+      "name": "Jesper Ceesay",
+      "display_name": "Jesper Ceesay",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/4/37439044.png",
+      "height": 193,
+      "weight": null,
+      "date_of_birth": "2001-10-20",
+      "gender": "male"
+    },
+    "3533335": {
+      "id": 3533335,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 86542,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "B. Hussein",
+      "firstname": "Bilal",
+      "lastname": "Hussein",
+      "name": "Bilal Hussein",
+      "display_name": "Bilal Hussein",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 173,
+      "weight": 70,
+      "date_of_birth": "2000-04-22",
+      "gender": "male"
+    },
+    "597": {
+      "id": 597,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 27390,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 26,
+      "common_name": "S. Larsson",
+      "firstname": "Sebastian",
+      "lastname": "Larsson",
+      "name": "Sebastian Larsson",
+      "display_name": "Sebastian Larsson",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/21/597.png",
+      "height": 178,
+      "weight": 70,
+      "date_of_birth": "1985-06-06",
+      "gender": "male"
+    },
+    "32470": {
+      "id": 32470,
+      "sport_id": 1,
+      "country_id": 47,
+      "nationality_id": 47,
+      "city_id": 86542,
+      "position_id": 25,
+      "detailed_position_id": 148,
+      "type_id": 25,
+      "common_name": "A. Milosevic",
+      "firstname": "Alexander",
+      "lastname": "Milosevic",
+      "name": "Alexander Milosevic",
+      "display_name": "Alexander Milošević",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/players/22/32470.png",
+      "height": 193,
+      "weight": 82,
+      "date_of_birth": "1992-01-30",
+      "gender": "male"
+    },
+    "37563216": {
+      "id": 37563216,
+      "sport_id": 1,
+      "country_id": 1179,
+      "nationality_id": 1179,
+      "city_id": 42427,
+      "position_id": 26,
+      "detailed_position_id": 153,
+      "type_id": 27,
+      "common_name": "H. Meja",
+      "firstname": "Henry",
+      "lastname": "Meja",
+      "name": "Henry Meja",
+      "display_name": "Henry Atola Meja",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 182,
+      "weight": null,
+      "date_of_birth": "2001-12-21",
+      "gender": "male"
+    },
+    "236073": {
+      "id": 236073,
+      "sport_id": 1,
+      "country_id": 353,
+      "nationality_id": 353,
+      "city_id": null,
+      "position_id": 27,
+      "detailed_position_id": null,
+      "type_id": 26,
+      "common_name": "F. Burbano Castillo",
+      "firstname": "Fáider Fabio",
+      "lastname": "Burbano Castillo",
+      "name": "Fáider Fabio Burbano Castillo",
+      "display_name": "Fabio Burbano",
+      "image_path": "https://cdn.sportmonks.com/images/soccer/placeholder.png",
+      "height": 170,
+      "weight": 70,
+      "date_of_birth": "1992-06-19",
+      "gender": "male"
+    }
+  },
+  "verified_source": {
+    "18534883": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4838",
+        "https://www.aikstats.se/player.php?id=1451",
+        "https://fbref.com/en/players/606c9990/goallogs/dom_lg/Jesper-Ceesay-Goal-Log",
+        "https://www.aikfotboll.se/media/swqiemf2/230321-jesper-ceesay-la-mnar-aik-fotboll.pdf"
+      ],
+      "verified": "AIK 공식 통계의 실제 선발·교체 명단, 득점·도움·카드·승부차기와 대조. Larsson, Milosevic, Bahoui, Bjornstrom, Hussein, Kimpioka, Ceesay, Ring, Henry Atola의 해당 이벤트 프로필만 보충. AIK 명단 자체가 없는 원문에 명단·분·통계를 만들지 않음. 105/106분 및 추가시간 표기 차이는 원문 유지."
+    },
+    "18534884": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4836",
+        "https://www.aikstats.se/player.php?id=1451",
+        "https://fbref.com/en/players/606c9990/goallogs/dom_lg/Jesper-Ceesay-Goal-Log",
+        "https://www.aikfotboll.se/media/swqiemf2/230321-jesper-ceesay-la-mnar-aik-fotboll.pdf"
+      ],
+      "verified": "AIK 공식 통계의 실제 선발·교체 명단, 득점·도움·카드·승부차기와 대조. Larsson, Milosevic, Bahoui, Bjornstrom, Hussein, Kimpioka, Ceesay, Ring, Henry Atola의 해당 이벤트 프로필만 보충. AIK 명단 자체가 없는 원문에 명단·분·통계를 만들지 않음. 105/106분 및 추가시간 표기 차이는 원문 유지."
+    },
+    "18601665": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4839",
+        "https://www.aikstats.se/player.php?id=1451",
+        "https://fbref.com/en/players/606c9990/goallogs/dom_lg/Jesper-Ceesay-Goal-Log",
+        "https://www.aikfotboll.se/media/swqiemf2/230321-jesper-ceesay-la-mnar-aik-fotboll.pdf"
+      ],
+      "verified": "AIK 공식 통계의 실제 선발·교체 명단, 득점·도움·카드·승부차기와 대조. Larsson, Milosevic, Bahoui, Bjornstrom, Hussein, Kimpioka, Ceesay, Ring, Henry Atola의 해당 이벤트 프로필만 보충. AIK 명단 자체가 없는 원문에 명단·분·통계를 만들지 않음. 105/106분 및 추가시간 표기 차이는 원문 유지."
+    },
+    "18601666": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4841",
+        "https://www.aikstats.se/player.php?id=1451",
+        "https://fbref.com/en/players/606c9990/goallogs/dom_lg/Jesper-Ceesay-Goal-Log",
+        "https://www.aikfotboll.se/media/swqiemf2/230321-jesper-ceesay-la-mnar-aik-fotboll.pdf"
+      ],
+      "verified": "AIK 공식 통계의 실제 선발·교체 명단, 득점·도움·카드·승부차기와 대조. Larsson, Milosevic, Bahoui, Bjornstrom, Hussein, Kimpioka, Ceesay, Ring, Henry Atola의 해당 이벤트 프로필만 보충. AIK 명단 자체가 없는 원문에 명단·분·통계를 만들지 않음. 105/106분 및 추가시간 표기 차이는 원문 유지."
+    },
+    "18634431": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4843",
+        "https://www.aikstats.se/player.php?id=1451",
+        "https://fbref.com/en/players/606c9990/goallogs/dom_lg/Jesper-Ceesay-Goal-Log",
+        "https://www.aikfotboll.se/media/swqiemf2/230321-jesper-ceesay-la-mnar-aik-fotboll.pdf"
+      ],
+      "verified": "AIK 공식 통계의 실제 선발·교체 명단, 득점·도움·카드·승부차기와 대조. Larsson, Milosevic, Bahoui, Bjornstrom, Hussein, Kimpioka, Ceesay, Ring, Henry Atola의 해당 이벤트 프로필만 보충. AIK 명단 자체가 없는 원문에 명단·분·통계를 만들지 않음. 105/106분 및 추가시간 표기 차이는 원문 유지."
+    },
+    "18634432": {
+      "sources": [
+        "https://www.aikstats.se/matches.php?id=4845",
+        "https://www.aikstats.se/player.php?id=1451",
+        "https://fbref.com/en/players/606c9990/goallogs/dom_lg/Jesper-Ceesay-Goal-Log",
+        "https://www.aikfotboll.se/media/swqiemf2/230321-jesper-ceesay-la-mnar-aik-fotboll.pdf"
+      ],
+      "verified": "AIK 공식 통계의 실제 선발·교체 명단, 득점·도움·카드·승부차기와 대조. Larsson, Milosevic, Bahoui, Bjornstrom, Hussein, Kimpioka, Ceesay, Ring, Henry Atola의 해당 이벤트 프로필만 보충. AIK 명단 자체가 없는 원문에 명단·분·통계를 만들지 않음. 105/106분 및 추가시간 표기 차이는 원문 유지."
+    },
+    "18533233": {
+      "sources": [
+        "https://redscores.com/match/hamrun-spartans-alashkert/0cxCOA",
+        "https://colombia.as.com/resultados/ficha/deportista/faider_burbano/28813/"
+      ],
+      "verified": "76분 Artak Yedigaryan 대신 투입된 Fabio Burbano236073 확인. 1992-06-19는 AS·Transfermarkt·Sofascore 일치. 없는 명단은 만들지 않음. 전체 득점·교체·카드는 경기표 대조."
+    },
+    "18601653": {
+      "sources": [
+        "https://www.bdfutbol.com/es/p/p.php?id=351611",
+        "https://www.nordportal.net/httpwwwnordportalnet/archives/08-2022"
+      ],
+      "verified": "88분 Klettskard의 도움은 실제8번 Jakup Biskopsto Andreasen87172. 당시 지역 보도는 Arni의 프리킥을 Jakup이 연결하고 Pall이 득점한 과정을 명시. 은퇴한 Jan86333와 혼동한 관련ID만 교정."
+    },
+    "18601654": {
+      "sources": [
+        "https://www.skysports.com/football/ki-klaksvik-vs-ballkani/teams/476260",
+        "https://fbref.com/en/squads/1ebfb2aa/2022-2023/goallogs/all_comps/KF-Ballkani-Therande-Goal-Logs-All-Competitions"
+      ],
+      "verified": "56분 Mikkelsen의 도움은 실제7번 Arni Frederiksberg86656. Andras86653와 혼동한ID만 교정. 전체 연장·승부차기 대조."
+    },
+    "18601720": {
+      "sources": [
+        "https://www.fotmob.com/en-GB/matches/sutjeska-vs-klaksvik/vwicy"
+      ],
+      "verified": "66분 Klettskard 도움은 실제7번 Arni Frederiksberg86656. 같은78분 교체와 일치. Andras86653 관련ID만 교정."
+    },
+    "18634419": {
+      "sources": [
+        "https://www.sportsmole.co.uk/football/lineups/partizan-vs-hamrun-spartans_game_18634419_sl.html",
+        "https://fbref.com/en/players/4a838b45/goallogs/intl_cup/Matthew-Guillaumier-Goal-Log",
+        "https://www.fussballtransfers.com/spieler/ederson-bruno-domingos/"
+      ],
+      "verified": "52분 Guillaumier의 도움은 원문명단3번 Eder225494, Ederson Bruno Domingos1989-08-21. Geder Korte Voigt458010는 다른 사람. 경기의72분 Eder/Montebello 교체와도 일치. 이벤트 관련ID만 교정."
+    },
+    "18717981": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2022-2023-copa-del-rey-velarde-sevilla-fc-1",
+        "https://www.bdfutbol.com/es/j/j304427.html"
+      ],
+      "verified": "14번 Portu(Joaquin Teixeira Dominguez),23번 Antonio Millan Carretero로 각각 연결. Portu54분교체/그전1실점에 맞춰 기존11990→54·882→1. Millan은미출전이고생일NULL유지. 상단 교체요약과 상세교체 상대가 다르므로 다른 이벤트 연결은 임의교정하지 않음."
+    },
+    "18717983": {
+      "sources": [
+        "https://www.skysports.com/football/rincon-vs-espanyol/teams/478738",
+        "https://www.laliga.com/partido/temporada-2022-2023-copa-del-rey-cd-rincon-rcd-espanyol-de-barcelona-1"
+      ],
+      "verified": "1번Joki/2번Chechu/18번Rowley/20번Yerai의실제명단을대조. Chechu61분과KennethSoler80분의각1회경고를두번쓴이벤트64240486·64241384만제거. GK90분유지,빈벤치통계생성없음."
+    },
+    "18717984": {
+      "sources": [
+        "https://www.skysports.com/football/autol-vs-real-mallorca/teams/478731",
+        "https://www.futbolbalear.es/2022/11/12/cronica-copa-sm-el-reyprimera-eliminatoria-cd-autol-0-6-rcd-mallorca/"
+      ],
+      "verified": "3번ChristianMontes1999-03-22와5번JoseLuisGilMoron으로연결. Montes62분교체와그전4실점으로119·88교정. Sky의Calvo교체표기는당시현지경기기사및원문과충돌하므로Calvo/NachoGil의기존90분은유지. Gil생일NULL유지."
+    },
+    "18717990": {
+      "sources": [
+        "https://www.cadistas1910.com/ficha_partido.php?idcronica=3538"
+      ],
+      "verified": "Cadiz35번JoseAntonioAngel은미출전,37번LautaroSpatz는선발90분. RealUnion5번IvanPerezCuevas는선발90분·79분득점. 중복집합밖의잘못된Liam슬롯도같이교정. 같은명단번호와프로필신원대조."
+    },
+    "18717991": {
+      "sources": [
+        "https://algecirasclubdefutbol.com/manin-nuevo-jugador-del-algeciras-c-f/",
+        "https://www.laliga.com/partido/temporada-2022-2023-copa-del-rey-cd-arenteiro-ud-almeria-1"
+      ],
+      "verified": "Almeria전19번Manin(LuisGonzagaDelageCruzado2000-01-13),71분JordanSanchez교체. 잘못된Liam명단ID와기존90분을71분으로교정."
+    },
+    "18717995": {
+      "sources": [
+        "https://es.besoccer.com/partido/almazan/atletico-madrid/2023512328/alineaciones",
+        "https://www.lapreferente.com/J205668C15008/sd-almazan/khalifa.html",
+        "https://www.besoccer.com/player/fonseca-460352"
+      ],
+      "verified": "실제17번Khalifa는FabioWilliamFonsecaVieira1997-08-28,67분JesusSanchez교체. Liam명단만실제이벤트선수ID로교정,기존23분유지."
+    },
+    "18727841": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2022-2023-copa-del-rey-cd-arenteiro-atletico-de-madrid-2",
+        "https://algecirasclubdefutbol.com/manin-nuevo-jugador-del-algeciras-c-f/"
+      ],
+      "verified": "19번Manin80분교체,21번MartinLamelas미출전. Manin의기존90분→80및3실점→2교정. Lamelas1993-07-21·Arenteiro경력과시즌21번명단대조. 없는통계생성없음."
+    },
+    "18727842": {
+      "sources": [
+        "https://www.fotmob.com/es/matches/real-valladolid-vs-arenas-getxo/96h6gyb",
+        "https://www.bdfutbol.com/es/j/j300690.html"
+      ],
+      "verified": "6번GuillermoAlonsoArroyo1996-08-29선발90분·86분경고. 다른선수Latona명단을정상경고선수ID에연결. 기존통계유지."
+    },
+    "18727844": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2022-2023-copa-del-rey-juventud-torremolinos-sevilla-fc-2"
+      ],
+      "verified": "6번Caturla75분교체,11번FranLopez90분/전반경고,16번AlexisChamorro하프타임교체. 기존90분과실점만실제교체전2/1실점으로교정. 빈통계추가없음."
+    },
+    "18727845": {
+      "sources": [
+        "https://www.mackolik.com/index.php/mac/arnedo-vs-osasuna/ekllfwpd5uup0cy8bm9fztmhg",
+        "https://www.lapreferente.com/J224824C14976/cd-arnedo/david-ruiz.html"
+      ],
+      "verified": "6번Arpon68분·10번Michel58분교체.24번DavidRuizPerez는미출전이며68분투입된20번DavidSevilla와다름.24번에잘못복사된22분만0으로교정. 생일NULL유지."
+    },
+    "18727847": {
+      "sources": [
+        "https://www.rayovallecano.es/partidos/temporada-2022-2023-copa-del-rey-3-atletico-saguntino-vs-rayo-vallecano",
+        "https://golsmedia.com/comunidad-valenciana/futbol/atletico-saguntino/2021/07/01/atletico-saguntino-da-golpe-mesa-primer-fichaje/?p=426472"
+      ],
+      "verified": "4번EnriqueJoseSampedroAlcaraz1988-04-07선발120분,14번LeoRamirez1992-06-20미출전. 각프로필연결,통계유지."
+    },
+    "18727848": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2022-2023-copa-del-rey-cd-guijuelo-villarreal-cf-2",
+        "https://www.skysports.com/football/guijuelo-vs-villarreal/teams/479121"
+      ],
+      "verified": "7번Piojo는79분투입으로41분,8번PepeCarmona는14분득점·79분교체로79분/교체전1실점.17번ManoTata는미출전. 세슬롯에복사된103분을각각41/79/0으로교정. Tata의미제공생일유지."
+    },
+    "18727851": {
+      "sources": [
+        "https://www.skysports.com/football/diocesano-vs-getafe/teams/479117",
+        "https://rfef.es/sites/default/files/sanciones/Resoluci%C3%B3n%20Juez%20de%20Competici%C3%B3n.pdf"
+      ],
+      "verified": "11번Pitu(JonatanVieraOtero)는63분교체,17번Dieguito는80분투입,24번GermanMartinMateos는경기표미출전.각프로필연결,기존Pitu90분만63분으로교정.생일NULL및빈상세유지."
+    },
+    "18727853": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2022-2023-copa-del-rey-cp-cacereno-girona-fc-2"
+      ],
+      "verified": "5번AlbertCaparrosGuzman과19번MiguelGarciaLucio는서로다른선수이고각각90분출전. 두Carausu명단을실제인물로교정하고기존통계유지."
+    },
+    "18760967": {
+      "sources": [
+        "https://www.skysports.com/football/cacereno-vs-real-madrid/teams/480597",
+        "https://cpcacereno.com/jugadores/miguel-nieto/",
+        "https://fbref.com/en/players/c47b229d/"
+      ],
+      "verified": "실제5Capa/10Carmelo/18Traore/19Garci/20Karim/25Santamaria/30Nieto로각각연결. Carmelo는하프타임교체로45분/0실점,Garci72분투입18분및Karim45분기존통계유지. 미출전4명빈상세유지."
+    },
+    "18760971": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2022-2023-copa-del-rey-ud-logrones-real-sociedad-3",
+        "https://golsmedia.com/la-rioja/futbol/ud-logrones-b/2022/07/26/8-nuevos-talentos-filial-ud-logrones-para-segunda-federacion/"
+      ],
+      "verified": "25번은골키퍼가아닌미드필더BoubacarKeita2000-04-05,90분출전.26번CurroBonilla(FranciscoBonillaMartinez2003-01-13)는미출전. 정확포지션과명단번호대조후각ID연결."
+    },
+    "18760978": {
+      "sources": [
+        "https://www.skysports.com/football/gimnastic-vs-osasuna/teams/480602",
+        "https://www.besoccer.es/jugador/parra-471368"
+      ],
+      "verified": "13번선발GK는DanielParraBove2000-03-14이며120분/2실점.11번벤치AndyEscudero540554는다른선수라유지. 선수ID중복이라는이유로11번을삭제하지않음."
+    }
+  }
+}
