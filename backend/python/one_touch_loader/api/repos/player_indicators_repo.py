@@ -35,14 +35,20 @@ def fetch_indicator_matches(cur, season_ids: list[int], as_of: datetime) -> list
 
 
 def get_current_player_indicators(player_id: int, *, as_of: datetime | None = None) -> dict | None:
-    items = _build_current_snapshot(as_of) if as_of is not None else _cached_current_snapshot(int(time() // 60))
+    if as_of is not None:
+        return _build_current_snapshot(as_of).get(player_id)
+    expires_at, items = _cached_current_snapshot()
+    if time() >= expires_at:
+        _cached_current_snapshot.cache_clear()
+        _, items = _cached_current_snapshot()
     return items.get(player_id)
 
 
 @lru_cache(maxsize=1)
-def _cached_current_snapshot(minute: int) -> dict[int, dict]:
-    # 전체 비교 집단의 조회와 모델 계산을 선수마다 반복하지 않고 최대 1분 공유해요.
-    return _build_current_snapshot(datetime.now(timezone.utc).replace(tzinfo=None))
+def _cached_current_snapshot() -> tuple[float, dict[int, dict]]:
+    # 운영 첫 계산이 1분을 넘어요. 완료 시점부터 세어야 다음 조회가 같은 계산을 반복하지 않아요.
+    items = _build_current_snapshot(datetime.now(timezone.utc).replace(tzinfo=None))
+    return time() + 60, items
 
 
 def _build_current_snapshot(as_of: datetime) -> dict[int, dict]:
