@@ -8,6 +8,7 @@ from ..core.fixture_states import LIVE_STATE_IDS
 from ..core.sportmonks import SportmonksClient
 from .fixture_details_loader import _normalize_fixture_details, write_fixture_detail_rows
 from . import player_rating_rankings_loader as player_rankings
+from . import squad_roles_loader as squad_roles
 from .fixtures_loader import (
     SPORTMONKS_CURRENT_SCORE_TYPE_ID, SPORTMONKS_PENALTY_SCORE_TYPE_ID,
     SQL_UPSERT_FIXTURE_STATE, _score_pair,
@@ -61,6 +62,8 @@ def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
     with transaction() as connection:
         with player_rankings.refresh_player_ratings_after_fixture(
             connection, fixture["id"], state_id=fixture["state_id"],
+        ), squad_roles.refresh_squad_roles_after_fixture(
+            connection, fixture['id'], state_id=fixture['state_id'],
         ):
             with connection.cursor() as cursor:
                 state = fixture["state"]

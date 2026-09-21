@@ -23,6 +23,7 @@ class PlayerIndicators {
     required this.asOf,
     required this.form,
     required this.costEffectiveness,
+    this.squadRole,
   });
 
   final int playerId;
@@ -30,4 +31,5 @@ class PlayerIndicators {
   final DateTime asOf;
   final PlayerIndicatorScore form;
   final PlayerIndicatorScore costEffectiveness;
+  final String? squadRole;
 }
