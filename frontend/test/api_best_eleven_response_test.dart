@@ -16,6 +16,7 @@ void main() {
     expect(response.players.single.positionGroupCode, 'DEF');
     expect(response.players.single.positionCode, 'CB');
     expect(response.players.single.starts, 18);
+    expect(response.players.single.jerseyNumber, 27);
     expect(() => response.players.clear(), throwsUnsupportedError);
   });
 
@@ -26,7 +27,8 @@ void main() {
       ..['player_name'] = null
       ..['player_image'] = null
       ..['position_group_code'] = null
-      ..['position_code'] = null;
+      ..['position_code'] = null
+      ..['jersey_number'] = null;
 
     final result = ApiBestElevenResponse.fromJson(json).players.single;
 
@@ -34,6 +36,16 @@ void main() {
     expect(result.playerImage, isNull);
     expect(result.positionGroupCode, isNull);
     expect(result.positionCode, isNull);
+    expect(result.jerseyNumber, isNull);
+  });
+
+  test('accepts responses from the server before jersey numbers were added',
+      () {
+    final json = _responseJson();
+    ((json['players'] as List).single as Map<String, dynamic>)
+        .remove('jersey_number');
+    expect(ApiBestElevenResponse.fromJson(json).players.single.jerseyNumber,
+        isNull);
   });
 
   test('accepts integer usage percentages', () {
@@ -73,6 +85,10 @@ void main() {
           {...jsonPlayer, 'starts': '18'},
         ],
       _responseJson()
+        ..['players'] = [
+          {...jsonPlayer, 'jersey_number': '27'},
+        ],
+      _responseJson()
         ..['formations'] = [
           {...jsonFormation, 'is_default': 1},
         ],
@@ -102,6 +118,7 @@ const jsonPlayer = <String, dynamic>{
   'position_group_code': 'DEF',
   'position_code': 'CB',
   'starts': 18,
+  'jersey_number': 27,
 };
 
 Map<String, dynamic> _responseJson() {
