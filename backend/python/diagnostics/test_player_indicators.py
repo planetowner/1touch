@@ -286,6 +286,23 @@ class ReadOnlyRepositoryTests(unittest.TestCase):
                 repo.get_current_player_indicators(1)
                 self.assertEqual(build.call_count, 2)
 
+    def test_slow_calculation_does_not_expire_before_the_next_player_request(self):
+        repo._cached_current_snapshot.cache_clear()
+        self.addCleanup(repo._cached_current_snapshot.cache_clear)
+        clock = [600]
+        def slow_build(_):
+            clock[0] += 125
+            return {1: {"player_id": 1}, 2: {"player_id": 2}}
+        with patch.object(repo, "time", side_effect=lambda: clock[0]), \
+                patch.object(repo, "_build_current_snapshot", side_effect=slow_build) as build:
+            self.assertEqual(repo.get_current_player_indicators(1)["player_id"], 1)
+            clock[0] = 784
+            self.assertEqual(repo.get_current_player_indicators(2)["player_id"], 2)
+            self.assertEqual(build.call_count, 1)
+            clock[0] = 785
+            repo.get_current_player_indicators(1)
+            self.assertEqual(build.call_count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
