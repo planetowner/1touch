@@ -78,6 +78,7 @@ class ApiBestElevenPlayerResponse {
     required this.positionGroupCode,
     required this.positionCode,
     required this.starts,
+    this.jerseyNumber,
   });
 
   final String slotKey;
@@ -88,6 +89,7 @@ class ApiBestElevenPlayerResponse {
   final String? positionGroupCode;
   final String? positionCode;
   final int starts;
+  final int? jerseyNumber;
 
   factory ApiBestElevenPlayerResponse.fromJson(Map<String, dynamic> json) {
     return ApiBestElevenPlayerResponse(
@@ -99,6 +101,7 @@ class ApiBestElevenPlayerResponse {
       positionGroupCode: _nullableString(json, 'position_group_code'),
       positionCode: _nullableString(json, 'position_code'),
       starts: _requiredInt(json, 'starts'),
+      jerseyNumber: _nullableInt(json, 'jersey_number'),
     );
   }
 }
@@ -107,6 +110,12 @@ int _requiredInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is int) return value;
   throw FormatException('Expected required integer field "$key".');
+}
+
+int? _nullableInt(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value == null || value is int) return value as int?;
+  throw FormatException('Expected nullable integer field "$key".');
 }
 
 double _requiredDouble(Map<String, dynamic> json, String key) {
