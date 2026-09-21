@@ -55,6 +55,7 @@ class BestElevenEntry {
     required this.starts,
     this.playerName,
     this.playerImage,
+    this.jerseyNumber,
     this.positionGroupCode,
     this.positionCode,
   });
@@ -64,6 +65,7 @@ class BestElevenEntry {
   final int playerId;
   final String? playerName;
   final String? playerImage;
+  final int? jerseyNumber;
   final String? positionGroupCode;
   final String? positionCode;
   final int starts;
