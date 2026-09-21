@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
@@ -80,6 +81,22 @@ void main() {
     expect(
       (bestElevenCard.decoration as BoxDecoration).boxShadow,
       lightModeCardShadows,
+    );
+    final playerDot = tester.widget<Container>(
+      find.byKey(const ValueKey('best-eleven-player-dot-1:1')),
+    );
+    final playerDotColor = (playerDot.decoration as BoxDecoration).color!;
+    final jerseyNumber = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('best-eleven-player-dot-1:1')),
+        matching: find.text('1'),
+      ),
+    );
+    expect(playerDotColor, const Color(0xFF5FAFF1));
+    expect(jerseyNumber.style!.color, AppPalette.black);
+    expect(
+      ColorUtils.getContrastRatio(playerDotColor, jerseyNumber.style!.color!),
+      greaterThanOrEqualTo(4.5),
     );
     expect(tester.takeException(), isNull);
   });
