@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 
 /// Five separated, flat-ended arcs showing an existing qualitative rating.
 class RatingLevelRing extends StatelessWidget {
-  const RatingLevelRing({super.key, required this.rating, this.size = 18});
+  const RatingLevelRing(
+      {super.key, required this.rating, this.size = 18, this.levelOverride});
 
   final String rating;
   final double size;
+  // 폼과 가성비는 최고 등급 이름이 달라 서버가 정한 단계를 그대로 표시해요.
+  final int? levelOverride;
 
-  int get level => switch (rating.trim().toLowerCase()) {
+  int get level =>
+      levelOverride ??
+      switch (rating.trim().toLowerCase()) {
         'poor' => 1,
         'fair' || 'average' => 2,
         'good' => 3,
@@ -53,8 +58,8 @@ class _RatingLevelPainter extends CustomPainter {
       ..strokeCap = StrokeCap.butt;
     for (var index = 0; index < 5; index++) {
       paint.color = index < level ? const Color(0xFF20B972) : inactiveColor;
-      canvas.drawArc(bounds, -math.pi / 2 + index * step + gap / 2,
-          step - gap, false, paint);
+      canvas.drawArc(bounds, -math.pi / 2 + index * step + gap / 2, step - gap,
+          false, paint);
     }
   }
 
