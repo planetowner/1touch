@@ -42,6 +42,7 @@ class ApiXgStandingRowResponse {
     required this.position,
     required this.teamId,
     required this.teamName,
+    this.teamShortName,
     required this.teamLogo,
     required this.matchesPlayed,
     required this.xg,
@@ -52,6 +53,7 @@ class ApiXgStandingRowResponse {
   final int position;
   final int teamId;
   final String teamName;
+  final String? teamShortName;
   final String? teamLogo;
   final int matchesPlayed;
   final double xg;
@@ -63,6 +65,9 @@ class ApiXgStandingRowResponse {
       position: _requiredInt(json, 'position'),
       teamId: _requiredInt(json, 'team_id'),
       teamName: _requiredString(json, 'team_name'),
+      teamShortName: json.containsKey('team_short_name')
+          ? _nullableString(json, 'team_short_name')
+          : null,
       teamLogo: _nullableString(json, 'team_logo'),
       matchesPlayed: _requiredInt(json, 'matches_played'),
       xg: _requiredDouble(json, 'xg'),

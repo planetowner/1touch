@@ -182,8 +182,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           MatchAttributeComparison(
             homeTeamId: widget.fixture.homeTeamId,
             awayTeamId: widget.fixture.awayTeamId,
-            homeTeamName: homeTeam.name,
-            awayTeamName: awayTeam.name,
+            homeTeamName: homeTeam.displayName,
+            awayTeamName: awayTeam.displayName,
             repository: widget.attributeRepository,
           ),
           const SizedBox(height: 48),
@@ -216,7 +216,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       children: [
         Expanded(
           child: _buildTeamBlock(
-            home.name,
+            home.displayName,
             home.imagePath ?? '',
             home.teamId,
           ),
@@ -241,7 +241,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         ),
         Expanded(
           child: _buildTeamBlock(
-            away.name,
+            away.displayName,
             away.imagePath ?? '',
             away.teamId,
           ),
