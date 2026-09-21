@@ -52,6 +52,11 @@ class PlayerRatingRefreshTests(unittest.TestCase):
         return rows[0] if rows else None
 
     def setUp(self):
+        from contextlib import nullcontext
+        role_refresh = patch.object(details.squad_roles, 'refresh_squad_roles_after_fixture',
+                                    side_effect=lambda *args, **kwargs: nullcontext())
+        role_refresh.start()
+        self.addCleanup(role_refresh.stop)
         self.setUp_rankings()
         for name in ("home_score", "away_score", "home_penalty_score", "away_penalty_score"):
             self.db.execute(f"ALTER TABLE fixtures ADD COLUMN {name} INTEGER")

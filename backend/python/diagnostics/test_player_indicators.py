@@ -202,7 +202,7 @@ class ReadOnlyRepositoryTests(unittest.TestCase):
         self.db.create_function("REGEXP", 2, lambda pattern, value: re.search(pattern, value) is not None)
         self.db.executescript("""
           CREATE TABLE seasons (season_id INTEGER,competition_id INTEGER,name TEXT,is_current INTEGER);
-          CREATE TABLE team_squad_members (player_id INTEGER,team_id INTEGER,season_id INTEGER,position_group_id INTEGER);
+          CREATE TABLE team_squad_members (player_id INTEGER,team_id INTEGER,season_id INTEGER,position_group_id INTEGER,squad_role TEXT);
           CREATE TABLE player_wages (player_id INTEGER,team_id INTEGER,season_id INTEGER,estimated_weekly_gross_eur INTEGER);
           CREATE TABLE stages (stage_id INTEGER,season_id INTEGER);
           CREATE TABLE rounds (round_id INTEGER,name TEXT);
@@ -210,7 +210,7 @@ class ReadOnlyRepositoryTests(unittest.TestCase):
               starting_at TIMESTAMP,home_team_id INTEGER,away_team_id INTEGER);
           CREATE TABLE fixture_lineups (fixture_id INTEGER,player_id INTEGER,team_id INTEGER,minutes_played INTEGER,rating REAL);
           INSERT INTO seasons VALUES (1,8,'2026/2027',1),(2,8,'2025/2026',0),(3,999,'2026/2027',1);
-          INSERT INTO team_squad_members VALUES (1,8,1,25),(2,8,2,25),(3,8,3,25);
+          INSERT INTO team_squad_members VALUES (1,8,1,25,'rotation'),(2,8,2,25,NULL),(3,8,3,25,NULL);
           INSERT INTO player_wages VALUES (1,8,1,10000);
           INSERT INTO stages VALUES (1,1),(2,2),(3,3);
           INSERT INTO rounds VALUES (1,'1'),(2,'Play-offs');
@@ -269,6 +269,7 @@ class ReadOnlyRepositoryTests(unittest.TestCase):
             with patch.object(route, "get_current_player_indicators", return_value=result):
                 response = client.get("/v1/players/1/indicators")
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()["squad_role"], "rotation")
             self.assertIsNone(response.json()["cost_effectiveness"]["grade"])
             self.assertEqual(response.json()["comparison_scope"], "current_season_big_five_all_positions")
             with patch.object(route, "get_current_player_indicators", return_value=None):

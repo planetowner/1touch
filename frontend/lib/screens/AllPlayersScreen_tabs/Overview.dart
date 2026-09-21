@@ -140,30 +140,40 @@ class PlayerOverviewTab extends StatelessWidget {
                       flex: 3,
                       child: Text(
                         "League",
-                        style: Body2.style
-                            .copyWith(color: appColors.mutedForeground),
+                        style: Body2.style.copyWith(
+                          color: appColors.mutedForeground,
+                        ),
                       ),
                     ),
                     Expanded(
                       flex: 2,
-                      child: Text("MP",
-                          textAlign: TextAlign.center,
-                          style: Body2.style
-                              .copyWith(color: appColors.mutedForeground)),
+                      child: Text(
+                        "MP",
+                        textAlign: TextAlign.center,
+                        style: Body2.style.copyWith(
+                          color: appColors.mutedForeground,
+                        ),
+                      ),
                     ),
                     Expanded(
                       flex: 2,
-                      child: Text("WR",
-                          textAlign: TextAlign.center,
-                          style: Body2.style
-                              .copyWith(color: appColors.mutedForeground)),
+                      child: Text(
+                        "WR",
+                        textAlign: TextAlign.center,
+                        style: Body2.style.copyWith(
+                          color: appColors.mutedForeground,
+                        ),
+                      ),
                     ),
                     Expanded(
                       flex: 2,
-                      child: Text("Rating",
-                          textAlign: TextAlign.right,
-                          style: Body2.style
-                              .copyWith(color: appColors.mutedForeground)),
+                      child: Text(
+                        "Rating",
+                        textAlign: TextAlign.right,
+                        style: Body2.style.copyWith(
+                          color: appColors.mutedForeground,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -186,15 +196,19 @@ class PlayerOverviewTab extends StatelessWidget {
                           ),
                           Expanded(
                             flex: 2,
-                            child: Text(comp["mp"]!,
-                                textAlign: TextAlign.center,
-                                style: Heading5.style),
+                            child: Text(
+                              comp["mp"]!,
+                              textAlign: TextAlign.center,
+                              style: Heading5.style,
+                            ),
                           ),
                           Expanded(
                             flex: 2,
-                            child: Text(comp["wr"]!,
-                                textAlign: TextAlign.center,
-                                style: Heading5.style),
+                            child: Text(
+                              comp["wr"]!,
+                              textAlign: TextAlign.center,
+                              style: Heading5.style,
+                            ),
                           ),
                           Expanded(
                             flex: 2,
@@ -202,13 +216,17 @@ class PlayerOverviewTab extends StatelessWidget {
                               alignment: Alignment.centerRight,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: badgeColor,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Text(comp["rating"]!,
-                                    style: Heading5.style),
+                                child: Text(
+                                  comp["rating"]!,
+                                  style: Heading5.style,
+                                ),
                               ),
                             ),
                           ),
@@ -311,14 +329,9 @@ class PlayerOverviewTab extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         // Club name
-                        Expanded(
-                          child: Text(club.club, style: Heading5.style),
-                        ),
+                        Expanded(child: Text(club.club, style: Heading5.style)),
                         // Year
-                        Text(
-                          club.seasonLabel,
-                          style: Body1.style,
-                        ),
+                        Text(club.seasonLabel, style: Body1.style),
                       ],
                     ),
                   ),
@@ -336,11 +349,7 @@ class PlayerBioStatsBlock extends StatefulWidget {
   final Player player;
   final PlayerIndicatorsRepository? repository;
 
-  const PlayerBioStatsBlock({
-    super.key,
-    required this.player,
-    this.repository,
-  });
+  const PlayerBioStatsBlock({super.key, required this.player, this.repository});
 
   @override
   State<PlayerBioStatsBlock> createState() => _PlayerBioStatsBlockState();
@@ -457,7 +466,21 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
       ],
       [
         _PlayerInfo(label: 'Weight', value: '${player.weightKg}kg'),
-        _PlayerInfo(label: 'Squad Role', value: player.squadRole),
+        _PlayerInfo(
+          label: 'Squad Role',
+          valueWidget: PlayerIndicatorValue(
+            key: const ValueKey('player-squad-role'),
+            label: _indicators?.squadRole,
+            loading: _loading,
+            failed: _failed,
+            explanation:
+                'Based on league playing time while available at this club, '
+                'excluding recorded injuries and suspensions. '
+                'Prospect means low usage and age 21 or younger when calculated. '
+                'Updated after completed league matches.',
+            onRetry: () => setState(_load),
+          ),
+        ),
         _indicatorInfo(cost: true),
       ],
     ];
@@ -545,8 +568,11 @@ class _PlayerInfoCell extends StatelessWidget {
                   Tooltip(
                     message: info.explanation!,
                     triggerMode: TooltipTriggerMode.tap,
-                    child:
-                        Icon(Icons.help_outline, size: 18, color: foreground),
+                    child: Icon(
+                      Icons.help_outline,
+                      size: 18,
+                      color: foreground,
+                    ),
                   ),
                 ],
               ],
