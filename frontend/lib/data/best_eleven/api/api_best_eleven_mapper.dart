@@ -28,6 +28,7 @@ TeamBestEleven teamBestElevenFromApiResponse(ApiBestElevenResponse response) {
             playerId: player.playerId,
             playerName: player.playerName,
             playerImage: player.playerImage,
+            jerseyNumber: player.jerseyNumber,
             positionGroupCode: player.positionGroupCode,
             positionCode: player.positionCode,
             starts: player.starts,
