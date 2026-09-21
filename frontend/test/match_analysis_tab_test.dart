@@ -76,6 +76,14 @@ void main() {
 
     expect(find.byType(ShotMapDiagram), findsOneWidget);
     expect(find.byType(ProgressionDiagram), findsOneWidget);
+    expect(
+      tester.widget<ShotMapDiagram>(find.byType(ShotMapDiagram)).color,
+      const Color(0xFF5FAFF1),
+    );
+    expect(
+      tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram)).color,
+      const Color(0xFF5FAFF1),
+    );
     expect(find.byType(DefensiveActivityDiagram), findsOneWidget);
     expect(find.text('DEFENSE'), findsOneWidget);
     expect(find.text('PRESSURE'), findsOneWidget);
@@ -90,6 +98,17 @@ void main() {
       find.byKey(const ValueKey('match-possession-home-fill')),
     );
     expect(possessionFill.widthFactor, 0.61);
+    expect(
+      tester
+          .widget<ColoredBox>(
+            find.descendant(
+              of: find.byKey(const ValueKey('match-possession-home-fill')),
+              matching: find.byType(ColoredBox),
+            ),
+          )
+          .color,
+      const Color(0xFF5FAFF1),
+    );
     final homeToggle = tester.widget<Container>(
       find.byKey(const ValueKey('match-analysis-home-toggle')).first,
     );
@@ -109,8 +128,21 @@ void main() {
     );
     expect(
       awayPossessionFill.color,
-      app_style.AppPalette.lightModeDarkGrey,
+      const Color(0xFFEF2C34),
     );
+
+    await tester.tap(
+      find.byKey(const ValueKey('match-analysis-away-toggle')).first,
+    );
+    await tester.pump();
+    expect(
+      tester.widget<ShotMapDiagram>(find.byType(ShotMapDiagram)).color,
+      const Color(0xFFEF2C34),
+    );
+    final awayProgression =
+        tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram));
+    expect(awayProgression.color, const Color(0xFFEF2C34));
+    expect(awayProgression.rightToLeft, isTrue);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(
