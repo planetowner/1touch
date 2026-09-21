@@ -1,644 +1,192 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
-import 'package:onetouch/data/team_trophies/team_trophy_repository_provider.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
-import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player.dart';
-import 'package:onetouch/models/team.dart';
-import 'package:onetouch/models/team_trophy.dart';
+import 'package:onetouch/models/player_detail.dart';
 
 class CareerTab extends StatefulWidget {
-  final Player player;
-
-  const CareerTab({super.key, required this.player});
-
+  const CareerTab({super.key, this.player, this.playerId});
+  final Player? player;
+  final int? playerId;
+  int? get id => playerId ?? player?.externalPlayerId;
   @override
   State<CareerTab> createState() => _CareerTabState();
 }
 
 class _CareerTabState extends State<CareerTab> {
-  static const _allCompetitions = 'ALL LEAGUES';
-
-  String _competitionFilter = _allCompetitions;
-  final Set<String> _expandedSeasons = {};
-
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-  AppColors get _appColors => AppColors.of(context);
-  Color get _foreground => Theme.of(context).colorScheme.onSurface;
-  Color get _sectionSurface =>
-      _isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
-
-  @override
-  void initState() {
-    super.initState();
-    _expandNewestSeason();
-  }
-
+  int? _competition;
+  final Set<String> _collapsed = {};
+  final Set<String> _expanded = {};
   @override
   void didUpdateWidget(covariant CareerTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.player.id != widget.player.id) {
-      _competitionFilter = _allCompetitions;
-      _expandedSeasons.clear();
-      _expandNewestSeason();
+    if (oldWidget.id != widget.id) {
+      _competition = null;
+      _collapsed.clear();
+      _expanded.clear();
     }
-  }
-
-  void _expandNewestSeason() {
-    if (widget.player.careerSeasons.isNotEmpty) {
-      _expandedSeasons.add(_seasonKey(widget.player.careerSeasons.first));
-    }
-  }
-
-  String _seasonKey(PlayerCareerSeason season) =>
-      '${season.teamId}-${season.seasonLabel}';
-
-  Team? _teamFor(int teamId) => teamRepository.findById(teamId);
-
-  List<String> get _competitionOptions {
-    final codes = widget.player.careerSeasons
-        .expand((season) => season.competitions)
-        .map((competition) => competition.competitionCode)
-        .toSet()
-        .toList()
-      ..sort();
-    return [_allCompetitions, ...codes];
-  }
-
-  List<PlayerCareerSeason> get _visibleSeasons {
-    if (_competitionFilter == _allCompetitions) {
-      return widget.player.careerSeasons;
-    }
-    return widget.player.careerSeasons
-        .where(
-          (season) => season.competitions.any(
-            (competition) => competition.competitionCode == _competitionFilter,
-          ),
-        )
-        .toList(growable: false);
-  }
-
-  List<_TeamTrophyGroup> get _teamTrophyGroups {
-    final queriedTeamSeasons = <String>{};
-    final relevant = <TeamTrophy>[];
-    final careerSeasons = [...widget.player.careerSeasons]
-      ..sort((a, b) => a.seasonLabel.compareTo(b.seasonLabel));
-    for (final season in careerSeasons) {
-      final key = '${season.teamId}-${season.seasonLabel}';
-      if (!queriedTeamSeasons.add(key)) continue;
-      relevant.addAll(
-        teamTrophyRepository.forTeamSeason(season.teamId, season.seasonLabel),
-      );
-    }
-    final byTeam = <int, List<TeamTrophy>>{};
-    for (final trophy in relevant) {
-      byTeam.putIfAbsent(trophy.teamId, () => []).add(trophy);
-    }
-
-    final teamOrder = widget.player.careerSeasons
-        .map((season) => season.teamId)
-        .toSet()
-        .toList(growable: false);
-    return teamOrder
-        .where(byTeam.containsKey)
-        .map(
-          (teamId) => _TeamTrophyGroup(
-            team: _teamFor(teamId),
-            teamId: teamId,
-            trophies: byTeam[teamId]!,
-          ),
-        )
-        .toList(growable: false);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      key: const ValueKey('player-career-scroll'),
-      physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 144),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTrophyBlock(),
-          const SizedBox(height: 48),
-          _buildHistoryBlock(),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => PlayerDetailView(
+      playerId: widget.id,
+      builder: (context, detail) => SingleChildScrollView(
+          key: const ValueKey('player-career-scroll'),
+          physics: const ClampingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 144),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            PlayerSection(
+                title: 'TROPHIES',
+                trailing: Text('TEAM', style: Body2_b.style),
+                child: _trophies(detail.honours)),
+            const SizedBox(height: 48),
+            _history(detail.career),
+          ])));
 
-  Widget _buildTrophyBlock() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('TROPHIES', style: Body2_b.style),
-        const SizedBox(height: 16),
-        Container(
-          key: const ValueKey('player-career-trophies-card'),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: _sectionSurface,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          child: _buildTeamTrophies(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTeamTrophies() {
-    final groups = _teamTrophyGroups;
-    if (groups.isEmpty) {
-      return _emptyMessage('No team trophies for these career seasons');
+  Widget _trophies(List<PlayerHonour> honours) {
+    final teams = <int, List<PlayerHonour>>{};
+    for (final item in honours) {
+      teams.putIfAbsent(item.teamId, () => []).add(item);
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var index = 0; index < groups.length; index++) ...[
-          _buildTeamTrophyGroup(groups[index]),
-          if (index != groups.length - 1)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              child: Divider(color: _appColors.divider, height: 1),
-            ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildTeamTrophyGroup(_TeamTrophyGroup group) {
-    final byName = <String, List<TeamTrophy>>{};
-    for (final trophy in group.trophies) {
-      byName.putIfAbsent(trophy.name, () => []).add(trophy);
-    }
-    final namedGroups = byName.entries
-        .map((entry) => _NamedTrophyGroup(entry.key, entry.value))
-        .toList(growable: false);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildClubHeader(
-          teamId: group.teamId,
-          name: (group.team?.name ?? 'Team ${group.teamId}').toUpperCase(),
-          count: group.trophies.length,
-        ),
-        const SizedBox(height: 18),
-        for (var index = 0; index < namedGroups.length; index++)
-          Padding(
-            padding: EdgeInsets.only(
-              bottom: index == namedGroups.length - 1 ? 0 : 18,
-            ),
-            child: _buildTrophyItem(
-              namedGroups[index].name,
-              namedGroups[index]
-                  .trophies
-                  .map((trophy) => trophy.seasonLabel)
-                  .toList(growable: false),
-            ),
-          ),
-      ],
-    );
-  }
-
-  // TODO: Reconnect this content to a TEAM / PERSONAL trophy filter when the
-  // personal-trophy experience is added to the Career tab.
-  // ignore: unused_element
-  Widget _buildPersonalAwards() {
-    final awards = widget.player.personalAwards;
-    if (awards.isEmpty) {
-      return _emptyMessage('No personal awards in the mock dataset');
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var index = 0; index < awards.length; index++)
-          Padding(
-            padding: EdgeInsets.only(
-              bottom: index == awards.length - 1 ? 0 : 18,
-            ),
-            child: _buildTrophyItem(
-              awards[index].name,
-              awards[index].seasons,
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _emptyMessage(String message) => Text(
-        message,
-        style: Body1.style.copyWith(color: _appColors.mutedForeground),
-      );
-
-  Widget _buildClubHeader({
-    required int teamId,
-    required String name,
-    required int count,
-  }) {
-    final logo = teamLogoAsset(teamId);
-    return Row(
-      children: [
-        SizedBox(
-          width: 28,
-          height: 28,
-          child: logo == null
-              ? Icon(
-                  Icons.shield_outlined,
-                  color: _appColors.mutedForeground,
-                  size: 24,
-                )
-              : Image.asset(logo, fit: BoxFit.contain),
-        ),
-        const SizedBox(width: 10),
-        Expanded(child: Text(name, style: Body2_b.style)),
-        Text('$count', style: Body2_b.style),
-      ],
-    );
-  }
-
-  Widget _buildTrophyItem(String title, List<String> seasons) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.emoji_events_outlined,
-              color: _foreground,
-              size: 18,
-            ),
-            const SizedBox(width: 6),
-            Expanded(child: Text(title, style: Heading5.style)),
+    return PlayerSurface(
+        key: const ValueKey('player-career-trophies-card'),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (teams.isEmpty) const Text('Team trophy records unavailable'),
+          for (final entry in teams.entries) ...[
+            if (entry.key != teams.keys.first) const Divider(height: 36),
+            Row(children: [
+              PlayerRemoteImage(entry.value.first.teamImage),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: Text(entry.value.first.teamName ?? 'Team unavailable',
+                      style: Body2_b.style)),
+              Text('${entry.value.length}', style: Body2_b.style)
+            ]),
+            const SizedBox(height: 16),
+            for (final competition
+                in entry.value.map((h) => h.competitionId).toSet()) ...[
+              Row(children: [
+                const Icon(Icons.emoji_events_outlined, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Text(
+                        entry.value
+                                .firstWhere(
+                                    (h) => h.competitionId == competition)
+                                .competitionName ??
+                            'Competition unavailable',
+                        style: Heading5.style))
+              ]),
+              const SizedBox(height: 8),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                for (final h
+                    in entry.value.where((h) => h.competitionId == competition))
+                  Chip(label: Text(h.season ?? '—')),
+              ]),
+              const SizedBox(height: 16),
+            ],
           ],
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: seasons
-              .map(
-                (season) => Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppPalette.black,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    season,
-                    style: Body2.style.copyWith(color: AppPalette.white),
-                  ),
-                ),
-              )
-              .toList(growable: false),
-        ),
-      ],
-    );
+        ]));
   }
 
-  Widget _buildHistoryBlock() {
-    final seasons = _visibleSeasons;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('HISTORY', style: Body2_b.style),
-            _FilterButton(
-              key: const Key('career-competition-filter'),
-              label: _competitionFilter,
-              onTap: () => _showFilterSheet(
-                options: _competitionOptions,
-                selected: _competitionFilter,
-                onSelected: (option) => setState(() {
-                  _competitionFilter = option;
-                }),
-              ),
-            ),
+  Widget _history(List<PlayerCareerRecord> history) {
+    final competitions = <int, String>{};
+    for (final season in history) {
+      for (final c in season.competitions) {
+        competitions[c.id] = c.name;
+      }
+    }
+    final visible = history
+        .where((s) =>
+            _competition == null ||
+            s.competitions.any((c) => c.id == _competition))
+        .toList();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('HISTORY', style: Body2_b.style),
+      const SizedBox(height: 12),
+      DropdownButtonFormField<int>(
+          key: const Key('career-competition-filter'),
+          initialValue: _competition ?? 0,
+          isExpanded: true,
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+          items: [
+            const DropdownMenuItem(value: 0, child: Text('ALL LEAGUES')),
+            for (final entry in competitions.entries)
+              DropdownMenuItem(
+                  value: entry.key,
+                  child: Text(entry.value,
+                      maxLines: 1, overflow: TextOverflow.ellipsis))
           ],
-        ),
-        const SizedBox(height: 16),
-        Container(
+          onChanged: (value) =>
+              setState(() => _competition = value == 0 ? null : value)),
+      const SizedBox(height: 16),
+      PlayerSurface(
           key: const ValueKey('player-career-history-card'),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: _sectionSurface,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: seasons.isEmpty
-              ? _emptyMessage('No history for this competition')
-              : Column(
-                  children: [
-                    _buildTableHeader(),
-                    const SizedBox(height: 8),
-                    for (var index = 0; index < seasons.length; index++)
-                      _buildSeasonGroup(
-                        season: seasons[index],
-                        nextSeason: index + 1 < seasons.length
-                            ? seasons[index + 1]
-                            : null,
-                      ),
-                  ],
-                ),
-        ),
-      ],
-    );
+          padding: const EdgeInsets.all(12),
+          child: Column(children: [
+            const PlayerRecordRow(
+                label: Text('Season / Team'), record: null, header: true),
+            if (visible.isEmpty) const Text('No history available'),
+            for (var index = 0; index < visible.length; index++)
+              _season(visible[index], index == 0),
+          ])),
+    ]);
   }
 
-  Widget _buildTableHeader() {
-    final style = Body2.style.copyWith(color: _appColors.mutedForeground);
-    return Row(
-      children: [
-        Expanded(flex: 2, child: Text('Season', style: style)),
-        Expanded(flex: 3, child: Text('Team', style: style)),
-        Expanded(
-          flex: 2,
-          child: Text('MP', textAlign: TextAlign.center, style: style),
-        ),
-        Expanded(
-          flex: 2,
-          child: Text('WR', textAlign: TextAlign.center, style: style),
-        ),
-        Expanded(
-          flex: 2,
-          child: Text('Rating', textAlign: TextAlign.center, style: style),
-        ),
-        const SizedBox(width: 22),
-      ],
-    );
-  }
-
-  Widget _buildSeasonGroup({
-    required PlayerCareerSeason season,
-    required PlayerCareerSeason? nextSeason,
-  }) {
-    final key = _seasonKey(season);
-    final isExpanded = _expandedSeasons.contains(key);
-    final team = _teamFor(season.teamId);
-    final competitions = _competitionFilter == _allCompetitions
-        ? season.competitions
-        : season.competitions
-            .where(
-              (competition) =>
-                  competition.competitionCode == _competitionFilter,
-            )
-            .toList(growable: false);
-    final selectedCompetition =
-        _competitionFilter == _allCompetitions ? null : competitions.first;
-    final appearances = selectedCompetition?.appearances ?? season.appearances;
-    final winRate =
-        selectedCompetition?.winRatePercent ?? season.winRatePercent;
-    final rating = selectedCompetition?.rating ?? season.rating;
-    final changesClub =
-        nextSeason != null && nextSeason.teamId != season.teamId;
-
-    return Column(
-      children: [
-        InkWell(
+  Widget _season(PlayerCareerRecord season, bool newest) {
+    final key = '${season.season}-${season.teamId}';
+    final isExpanded =
+        _expanded.contains(key) || (newest && !_collapsed.contains(key));
+    final competitions = season.competitions
+        .where((c) => _competition == null || c.id == _competition)
+        .toList();
+    final record =
+        _competition == null ? season.record : competitions.first.record;
+    return Column(children: [
+      InkWell(
           key: Key('career-season-$key'),
           onTap: () => setState(() {
-            if (isExpanded) {
-              _expandedSeasons.remove(key);
-            } else {
-              _expandedSeasons.add(key);
-            }
-          }),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(season.seasonLabel, style: Body2_b.style),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Row(
-                    children: [
-                      _buildTeamLogo(season.teamId),
-                      const SizedBox(width: 6),
+                if (isExpanded) {
+                  _expanded.remove(key);
+                  _collapsed.add(key);
+                } else {
+                  _collapsed.remove(key);
+                  _expanded.add(key);
+                }
+              }),
+          child: PlayerRecordRow(
+              record: record,
+              label: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(season.season, style: Body2.style),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      PlayerRemoteImage(season.teamImage, size: 20),
+                      const SizedBox(width: 4),
                       Flexible(
-                        child: Text(
-                          team?.shortCode ?? '${season.teamId}',
-                          overflow: TextOverflow.ellipsis,
-                          style: Body2_b.style,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                _tableValue('$appearances'),
-                _tableValue('$winRate%'),
-                Expanded(
-                  flex: 2,
-                  child: Center(child: _ratingBadge(rating)),
-                ),
-                SizedBox(
-                  width: 22,
-                  child: Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: _foreground,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (isExpanded)
-          for (final competition in competitions)
-            _buildCompetitionRow(season, competition),
-        if (changesClub)
-          Divider(color: _appColors.divider, height: 1)
-        else
-          const SizedBox(height: 2),
-      ],
-    );
+                          child: Text(season.teamCode ?? season.teamName,
+                              style: Body2_b.style,
+                              overflow: TextOverflow.ellipsis)),
+                      Icon(
+                          isExpanded
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                          size: 18)
+                    ]),
+                  ]))),
+      if (isExpanded)
+        for (final c in competitions)
+          PlayerRecordRow(
+              key: Key('career-competition-$key-${c.id}'),
+              label: Text(c.name, style: Body2.style),
+              record: c.record),
+      Divider(color: AppColors.of(context).divider, height: 1),
+    ]);
   }
-
-  Widget _buildCompetitionRow(
-    PlayerCareerSeason season,
-    PlayerCompetitionStats competition,
-  ) {
-    return Padding(
-      key: Key(
-        'career-competition-${_seasonKey(season)}-${competition.competitionCode}',
-      ),
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 5,
-            child: Text(
-              competition.competitionName,
-              overflow: TextOverflow.ellipsis,
-              style: Body2_b.style.copyWith(color: _appColors.mutedForeground),
-            ),
-          ),
-          _tableValue(
-            '${competition.appearances}',
-            color: _appColors.mutedForeground,
-          ),
-          _tableValue(
-            '${competition.winRatePercent}%',
-            color: _appColors.mutedForeground,
-          ),
-          Expanded(
-            flex: 2,
-            child: Center(child: _ratingBadge(competition.rating)),
-          ),
-          const SizedBox(width: 22),
-        ],
-      ),
-    );
-  }
-
-  Widget _tableValue(String value, {Color? color}) {
-    return Expanded(
-      flex: 2,
-      child: Text(
-        value,
-        textAlign: TextAlign.center,
-        style: Body2_b.style.copyWith(color: color ?? _foreground),
-      ),
-    );
-  }
-
-  Widget _ratingBadge(double rating) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppPalette.black,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        rating.toStringAsFixed(1),
-        style: Body2_b.style.copyWith(color: AppPalette.white),
-      ),
-    );
-  }
-
-  Widget _buildTeamLogo(int teamId) {
-    final logo = teamLogoAsset(teamId);
-    return SizedBox(
-      width: 22,
-      height: 22,
-      child: logo == null
-          ? Icon(
-              Icons.shield_outlined,
-              color: _appColors.mutedForeground,
-              size: 18,
-            )
-          : Image.asset(logo, fit: BoxFit.contain),
-    );
-  }
-
-  Future<void> _showFilterSheet({
-    required List<String> options,
-    required String selected,
-    required ValueChanged<String> onSelected,
-  }) {
-    return showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: _isDark ? AppPalette.darkGrey : AppPalette.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          children: options
-              .map(
-                (option) => ListTile(
-                  title: Text(
-                    option.toUpperCase(),
-                    style: Body2_b.style.copyWith(
-                      color: selected == option
-                          ? _foreground
-                          : _appColors.mutedForeground,
-                    ),
-                  ),
-                  trailing: selected == option
-                      ? Icon(Icons.check, color: _foreground)
-                      : null,
-                  onTap: () {
-                    onSelected(option);
-                    Navigator.pop(sheetContext);
-                  },
-                ),
-              )
-              .toList(growable: false),
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _FilterButton({super.key, required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    return Material(
-      color: isDark ? const Color(0xFF3D3D3D) : AppPalette.white,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label.toUpperCase(),
-                style: Body2_b.style.copyWith(color: foreground),
-              ),
-              const SizedBox(width: 2),
-              Icon(
-                Icons.keyboard_arrow_down,
-                color: foreground,
-                size: 18,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TeamTrophyGroup {
-  final Team? team;
-  final int teamId;
-  final List<TeamTrophy> trophies;
-
-  const _TeamTrophyGroup({
-    required this.team,
-    required this.teamId,
-    required this.trophies,
-  });
-}
-
-class _NamedTrophyGroup {
-  final String name;
-  final List<TeamTrophy> trophies;
-
-  const _NamedTrophyGroup(this.name, this.trophies);
 }

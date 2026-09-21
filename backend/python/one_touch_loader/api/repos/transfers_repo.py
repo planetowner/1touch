@@ -35,10 +35,13 @@ def get_team_transfers_by_window(team_id: int, season_id: int, window: dict, as_
     return [row for row in rows if row["player_id"] not in WITHHELD_PLAYER_MOVEMENTS]
 
 
-def get_player_club_history(player_id: int, as_of: date) -> dict:
+def get_player_club_history(player_id: int, as_of: date, *, query=None) -> dict:
     if player_id in WITHHELD_PLAYER_MOVEMENTS:
         return {"player_id": player_id, "clubs": []}
-    rows = fetch_all_dict(f"SELECT {TRANSFER_COLUMNS} {TRANSFER_FROM}" + """
+    fetch = query or fetch_all_dict
+    rows = fetch(f"SELECT {TRANSFER_COLUMNS} {TRANSFER_FROM}" + """
         WHERE tr.player_id=%s AND tr.transfer_date<=%s ORDER BY tr.transfer_date, tr.transfer_id
     """, (player_id, as_of))
-    return {"player_id": player_id, "clubs": build_club_history(rows, load_senior_team_ids())}
+    # 선수 상세에서는 같은 읽기 전용 연결을 공유해 원격 DB 재연결을 줄여요.
+    senior_ids = load_senior_team_ids(query=lambda sql: [(row['team_id'],) for row in fetch(sql)]) if query else load_senior_team_ids()
+    return {"player_id": player_id, "clubs": build_club_history(rows, senior_ids)}
