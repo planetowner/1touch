@@ -75,6 +75,7 @@ class ApiBestElevenPlayerResponse {
     required this.playerId,
     required this.playerName,
     required this.playerImage,
+    required this.jerseyNumber,
     required this.positionGroupCode,
     required this.positionCode,
     required this.starts,
@@ -85,6 +86,7 @@ class ApiBestElevenPlayerResponse {
   final int playerId;
   final String? playerName;
   final String? playerImage;
+  final int? jerseyNumber;
   final String? positionGroupCode;
   final String? positionCode;
   final int starts;
@@ -96,6 +98,7 @@ class ApiBestElevenPlayerResponse {
       playerId: _requiredInt(json, 'player_id'),
       playerName: _nullableString(json, 'player_name'),
       playerImage: _nullableString(json, 'player_image'),
+      jerseyNumber: _nullableInt(json, 'jersey_number'),
       positionGroupCode: _nullableString(json, 'position_group_code'),
       positionCode: _nullableString(json, 'position_code'),
       starts: _requiredInt(json, 'starts'),
@@ -107,6 +110,12 @@ int _requiredInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is int) return value;
   throw FormatException('Expected required integer field "$key".');
+}
+
+int? _nullableInt(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value == null || value is int) return value as int?;
+  throw FormatException('Expected nullable integer field "$key".');
 }
 
 double _requiredDouble(Map<String, dynamic> json, String key) {
