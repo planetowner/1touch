@@ -208,7 +208,7 @@ class _ProfileState extends State<Profile> {
                 titleSpacing: 0,
                 clipBehavior: Clip.antiAlias,
                 title: Padding(
-                  padding: const EdgeInsets.only(left: 24, top: 30),
+                  padding: const EdgeInsets.only(left: 24),
                   child: SvgPicture.asset(
                     'assets/app_logo.svg',
                     height: 23,
@@ -220,7 +220,7 @@ class _ProfileState extends State<Profile> {
                 ),
                 actions: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 8, top: 30),
+                    padding: const EdgeInsets.only(right: 8),
                     child: Row(
                       children: [
                         // Bell icon with unread badge
