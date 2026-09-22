@@ -3,10 +3,35 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
+class EmailRegistrationDraft {
+  const EmailRegistrationDraft({
+    required this.firstName,
+    required this.lastName,
+    required this.username,
+    required this.email,
+    required this.password,
+    required this.challengeId,
+    required this.expiresInSeconds,
+  });
+
+  final String firstName;
+  final String lastName;
+  final String username;
+  final String email;
+  final String password;
+  final String challengeId;
+  final int expiresInSeconds;
+}
+
 class EmailVerifyScreen extends StatefulWidget {
   final String email;
+  final EmailRegistrationDraft? registrationDraft;
 
-  const EmailVerifyScreen({super.key, required this.email});
+  const EmailVerifyScreen({
+    super.key,
+    required this.email,
+    this.registrationDraft,
+  });
 
   @override
   State<EmailVerifyScreen> createState() => _EmailVerifyScreenState();

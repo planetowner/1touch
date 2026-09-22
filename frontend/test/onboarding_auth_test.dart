@@ -7,6 +7,7 @@ import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
+import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 
 void main() {
@@ -171,4 +172,15 @@ class _FakeAuthRepository implements AuthRepository {
     receivedIdTokens.add(idToken);
     return _signInWithGoogle(idToken);
   }
+
+  @override
+  Future<String> signInWithPassword({
+    required String username,
+    required String password,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
+      throw UnimplementedError();
 }
