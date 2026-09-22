@@ -506,7 +506,7 @@ class _PlayersToWatchState extends State<PlayersToWatch> {
         Row(
           children: [
             const Text('ONES TO WATCH', style: Body2_b.style),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             Icon(Icons.help_outline, size: 16, color: colors.onSurface),
           ],
         ),
