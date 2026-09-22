@@ -33,9 +33,10 @@ void main() {
         expect(find.text('Ranked player 1'), findsOneWidget);
         expect(find.text('Ranked player 6'), findsNothing);
         expect(find.text('FAVORITE PLAYERS'), findsOneWidget);
-        expect(find.text('ALL LEAGUES'), findsOneWidget);
-        expect(find.text('2026/2027'), findsOneWidget);
-        expect(find.text('ALL POSITIONS'), findsOneWidget);
+        expect(find.byKey(const ValueKey('active-ranking-league-filter')),
+            findsNothing);
+        expect(find.byKey(const ValueKey('active-ranking-position-filter')),
+            findsNothing);
         expect(
             find.byKey(const ValueKey('players-brand-gradient')), findsNothing);
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
@@ -69,13 +70,27 @@ void main() {
     await tester.tap(find.byTooltip('Ranking filters'));
     await tester.pumpAndSettle();
     expect(find.text('Filter'), findsOneWidget);
+    expect(find.byIcon(Icons.expand_more), findsNothing);
     await tester.tap(find.text('Bundesliga'));
     await tester.tap(find.text('Goalkeeper'));
     await tester.tap(find.text('UPDATE FILTER'));
     await tester.pumpAndSettle();
     expect(repository.calls.last, (league: 82, position: 'GK', offset: 0));
+    expect(find.byKey(const ValueKey('active-ranking-league-filter')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('active-ranking-position-filter')),
+        findsOneWidget);
+    expect(find.text('BUNDESLIGA'), findsOneWidget);
+    expect(find.text('GOALKEEPER'), findsOneWidget);
+    expect(find.byIcon(Icons.keyboard_arrow_down), findsNothing);
     expect(find.text('No ranking data for these filters'), findsOneWidget);
     expect(find.text('Ranked player 1'), findsNothing);
+    await tester
+        .tap(find.byKey(const ValueKey('active-ranking-position-filter')));
+    await tester.pumpAndSettle();
+    expect(repository.calls.last, (league: 82, position: null, offset: 0));
+    expect(find.byKey(const ValueKey('active-ranking-position-filter')),
+        findsNothing);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
