@@ -12,7 +12,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('PLAYER 1'), findsOneWidget);
     expect(find.text('PLAYER 2'), findsOneWidget);
-    expect(find.text('MOST COMPARED'), findsNothing);
+    expect(find.text('MOST COMPARED'), findsOneWidget);
   });
   testWidgets('back clears comparison before returning to origin',
       (tester) async {
@@ -38,11 +38,31 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Player 3'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('26/27'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
     await tester.pumpAndSettle();
     expect(find.text('PLAYER 2'), findsOneWidget);
     await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
     await tester.pumpAndSettle();
     expect(find.text('Open comparison'), findsOneWidget);
+  });
+
+  testWidgets('selected player chip reloads the chosen API season',
+      (tester) async {
+    final repository = FakePlayerDetailRepository();
+    await tester.pumpWidget(MaterialApp(
+        home: PlayerComparisonScreen(
+            initialPlayerId: '1', repository: repository)));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Player 1').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Player 1').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('25/26'));
+    await tester.pumpAndSettle();
+
+    expect(repository.calls.last, (playerId: 1, seasonId: 25651));
   });
 }
