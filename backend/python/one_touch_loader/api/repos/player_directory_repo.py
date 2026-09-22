@@ -6,28 +6,13 @@ from decimal import Decimal
 
 from ..db import get_conn
 from .player_detail_repo import APPEARED, COMPLETED, MATCH_FROM
-from ...core.player_detail import dominant_position
-from ...core.player_match_metrics import POSITION_GROUPS
+from ...core.player_ranking import merge_current_scores, rank_current_scores, season_player_positions
 from ...core.player_rating_percentile import (
     HistoricalPercentile, RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME,
-    average_rating, display_score, rank_players,
+    average_rating, display_score,
 )
 
 LEAGUES = ','.join(map(str, RATING_COMPETITION_IDS))
-
-
-def merge_current_scores(rows, distribution):
-    grouped = {}
-    for row in rows:
-        pid = row['player_id']
-        if pid not in grouped:
-            grouped[pid] = {**row, 'rating_sum': Decimal(0), 'rated_matches': 0}
-        grouped[pid]['rating_sum'] += row['rating_sum']
-        grouped[pid]['rated_matches'] += row['rated_matches']
-    # 이적 선수도 한 줄로 표시해요. 리그 평균을 평균내지 않고 경기 수로 가중해요.
-    for row in grouped.values():
-        row['percentile_score'] = distribution.score(average_rating(row['rating_sum'], row['rated_matches']))
-    return list(grouped.values())
 
 
 def watch_players(rows):
@@ -78,11 +63,7 @@ def get_current_ranking(competition_id=None, position=None, *, limit=20, offset=
                 if len(names) > 1:
                     raise ValueError('Current league seasons do not match')
                 season_name = next(iter(names), leagues[0]['season_name'] if leagues else None)
-                matches = fetch("SELECT fl.player_id,fl.match_position_id,fl.minutes_played,f.starting_at,f.state_id "
-                    + MATCH_FROM + f" WHERE s.name=%s AND f.state_id IN ({COMPLETED}) AND f.starting_at<=%s AND {APPEARED}", (season_name, now))
-                by_player = defaultdict(list)
-                for row in matches:
-                    by_player[row['player_id']].append(row)
+                positions = season_player_positions(fetch, season_name, now)
                 if competition_id is None and scores:
                     samples = fetch(f"""SELECT sample.rating_sum,sample.rated_matches
                         FROM player_rating_reference_samples sample JOIN seasons s ON s.season_id=sample.season_id
@@ -91,8 +72,8 @@ def get_current_ranking(competition_id=None, position=None, *, limit=20, offset=
                     distribution = HistoricalPercentile(average_rating(r['rating_sum'], r['rated_matches']) for r in samples)
                     scores = merge_current_scores(scores, distribution)
                 for row in scores:
-                    row['position'] = POSITION_GROUPS.get(dominant_position(by_player[row['player_id']]))
-                ranked = rank_players([r for r in scores if position is None or r['position'] == position])
+                    row['position'] = positions.get(row['player_id'])
+                ranked = rank_current_scores(scores, position)
                 items = []
                 for row in ranked[offset:offset + limit]:
                     items.append({k: v for k, v in row.items() if k not in ('rating_sum', 'percentile_score')} |

@@ -2145,6 +2145,16 @@ SPORTMONKS_FIXTURE_TEAM_ID_OVERRIDES = {
 }
 
 
+def correct_event_metadata(events):
+    """경기 저장과 UEFA 징계 계산에 같은 검증된 이벤트 정정을 적용해요."""
+    result = [event for event in events if event['id'] not in SPORTMONKS_DUPLICATE_EVENT_IDS]
+    for event in result:
+        correction = SPORTMONKS_EVENT_OVERRIDES.get(event['id'])
+        if correction is not None:
+            event.update(correction)
+    return result
+
+
 class SportmonksClient:
     """
     Sportmonks Football API v3 클라이언트예요.
@@ -2364,6 +2374,9 @@ class SportmonksClient:
             },
         )
 
+    def get_season_bracket(self, season_id: int) -> Dict:
+        return self._get(f"seasons/{season_id}/brackets")["data"]
+
     def iter_team_fixtures_between_dates(
         self,
         team_id: int,
@@ -2431,13 +2444,8 @@ class SportmonksClient:
             for coach in fixture.get("coaches", [])
         }
         lineup_actors = {(row["player_id"], row["team_id"]) for row in fixture["lineups"]}
-        fixture["events"] = [
-            event for event in fixture["events"] if event["id"] not in SPORTMONKS_DUPLICATE_EVENT_IDS
-        ]
+        fixture["events"] = correct_event_metadata(fixture["events"])
         for event in fixture["events"]:
-            correction = SPORTMONKS_EVENT_OVERRIDES.get(event["id"])
-            if correction is not None:
-                event.update(correction)
             actor = (event["player_id"], event["participant_id"])
             # Bordalás·Ingolitsch 경고처럼 감독 ID가 선수 칸에 올 수 있어요.
             # 이 경기의 같은 팀 감독으로 확인될 때만 선수 연결을 비우고 경고는 남겨요.

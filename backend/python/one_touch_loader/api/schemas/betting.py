@@ -59,6 +59,7 @@ class ParticipationResponse(BaseModel):
 
 class BettingMarketResponse(BaseModel):
     fixture_id: int
+    settlement_rule: Literal['single_match_final_v1']
     available: bool
     can_bet: bool
     can_cancel: bool
