@@ -4,7 +4,7 @@ import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
-  testWidgets('same position restores comparison design with pending radar',
+  testWidgets('same position shows the unavailable attribute message',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
         home: PlayerComparisonScreen(
@@ -18,6 +18,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('comparison-attribute-pending')),
         findsOneWidget);
+    expect(find.text('아직 준비중이에요 ㅠㅠ'), findsOneWidget);
+    expect(find.text('Pace'), findsNothing);
+    expect(find.text('Shooting'), findsNothing);
     expect(find.text('FINISH'), findsOneWidget);
     expect(find.text('xG'), findsOneWidget);
     expect(tester.takeException(), isNull);
