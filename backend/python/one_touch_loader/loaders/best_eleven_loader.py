@@ -27,7 +27,8 @@ ORDER BY s.name, ts.team_id
 # 결과는 그 팀의 Big 5 정규리그 시즌 ID에 저장해요. 선발과 포메이션을 한 번에
 # 읽어 사용 경기 수와 선수 횟수가 서로 다른 자료를 집계하지 않게 해요.
 SQL_SOURCE_LINEUPS = f"""
-SELECT f.fixture_id, ff.formation, fl.player_id, fl.formation_field
+SELECT f.fixture_id, ff.formation, fl.player_id, fl.formation_field,
+       (f.home_team_id = ff.team_id) AS is_home
 FROM seasons canonical_season
 JOIN seasons source_season ON source_season.name = canonical_season.name
 JOIN stages st ON st.season_id = source_season.season_id
@@ -64,15 +65,15 @@ FROM team_best_eleven WHERE team_id = %s AND season_id = %s
 def build_best_eleven_rows(team_id: int, season_id: int, source_rows: list[tuple]) -> dict:
     """같은 유효 경기로 포메이션 사용 횟수와 자리별 선발 횟수를 함께 계산해요."""
     fixtures = defaultdict(list)
-    for fixture_id, formation, player_id, slot in source_rows:
-        fixtures[fixture_id].append((formation, player_id, slot))
+    for fixture_id, formation, player_id, slot, is_home in source_rows:
+        fixtures[fixture_id].append((formation, player_id, slot, is_home))
 
     counts = Counter()
     appearances = defaultdict(Counter)
     excluded = []
     for fixture_id, lineup in sorted(fixtures.items()):
-        formation = lineup[0][0]
-        starters = [(player_id, slot) for _, player_id, slot in lineup if player_id is not None]
+        formation, _, _, is_home = lineup[0]
+        starters = [(player_id, slot) for _, player_id, slot, _ in lineup if player_id is not None]
         reason = None
         if not formation:
             reason = "missing_formation"
@@ -89,7 +90,14 @@ def build_best_eleven_rows(team_id: int, season_id: int, source_rows: list[tuple
             continue
 
         counts[formation] += 1
+        row_widths = [1, *map(int, formation.split("-"))]
         for player_id, slot in starters:
+            # Sportmonks의 홈 좌표는 오른쪽부터, 원정 좌표는 왼쪽부터예요.
+            # 원본은 보존하고 집계 전에 골키퍼가 아래인 화면의 왼쪽부터로 맞춰요.
+            # https://docs.sportmonks.com/v3/tutorials-and-guides/tutorials/lineups-and-formations
+            if is_home:
+                row, column = map(int, slot.split(":"))
+                slot = f"{row}:{row_widths[row - 1] + 1 - column}"
             appearances[formation][slot, player_id] += 1
 
     formations = []

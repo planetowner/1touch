@@ -11,7 +11,7 @@ from .users_repo import lock_user, require_profile
 def get_team(team_id: int) -> Optional[Dict[str, Any]]:
     return fetch_one_dict(
         """
-        SELECT team_id, name, short_code, image_path
+        SELECT team_id, name, short_name, short_code, image_path
         FROM teams
         WHERE team_id=%s
         """,
@@ -25,7 +25,7 @@ def get_teams(team_ids: List[int]) -> List[Dict[str, Any]]:
     placeholders = ",".join(["%s"] * len(team_ids))
     return fetch_all_dict(
         f"""
-        SELECT team_id, name, short_code, image_path
+        SELECT team_id, name, short_name, short_code, image_path
         FROM teams
         WHERE team_id IN ({placeholders})
         ORDER BY name ASC

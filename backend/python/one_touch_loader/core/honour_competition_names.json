@@ -1,0 +1,1025 @@
+{
+  "checked_on": "2026-09-22",
+  "sources": {
+    "coverage_page": "https://www.sportmonks.com/football-api/coverage/",
+    "coverage_document": "https://docs.google.com/spreadsheets/d/1EoyP_GGvi1pUWHnCRJGVou0mDSFg0C4aCMB2bvuyYsk/edit#gid=664279901"
+  },
+  "competitions": {
+    "12": {
+      "name": "League One",
+      "source": "coverage_page"
+    },
+    "14": {
+      "name": "League Two",
+      "source": "coverage_page"
+    },
+    "17": {
+      "name": "National League",
+      "source": "coverage_page"
+    },
+    "23": {
+      "name": "Community Shield",
+      "source": "coverage_page"
+    },
+    "32": {
+      "name": "Premier League Cup",
+      "source": "coverage_page"
+    },
+    "38": {
+      "name": "Premier League International Cup",
+      "source": "coverage_page"
+    },
+    "39": {
+      "name": "EFL Trophy",
+      "source": "coverage_page"
+    },
+    "42": {
+      "name": "Premier League U18",
+      "source": "coverage_page"
+    },
+    "48": {
+      "name": "Professional Development League",
+      "source": "coverage_page"
+    },
+    "74": {
+      "name": "Eerste Divisie",
+      "source": "coverage_page"
+    },
+    "77": {
+      "name": "Tweede Divisie",
+      "source": "coverage_page"
+    },
+    "78": {
+      "name": "KNVB Beker",
+      "source": "coverage_page"
+    },
+    "81": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "85": {
+      "name": "2. Bundesliga",
+      "source": "coverage_page"
+    },
+    "88": {
+      "name": "3. Liga",
+      "source": "coverage_page"
+    },
+    "91": {
+      "name": "Regionalliga: Nord",
+      "source": "coverage_page"
+    },
+    "94": {
+      "name": "Regionalliga: Bayern",
+      "source": "coverage_page"
+    },
+    "103": {
+      "name": "Regionalliga: Südwest",
+      "source": "coverage_page"
+    },
+    "106": {
+      "name": "Regionalliga: West",
+      "source": "coverage_page"
+    },
+    "109": {
+      "name": "DFB Pokal",
+      "source": "coverage_page"
+    },
+    "163": {
+      "name": "Bundesliga Play-offs",
+      "source": "coverage_page"
+    },
+    "166": {
+      "name": "2. Bundesliga Play-offs",
+      "source": "coverage_page"
+    },
+    "169": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "184": {
+      "name": "Erste Liga",
+      "source": "coverage_page"
+    },
+    "187": {
+      "name": "Austrian Cup",
+      "source": "coverage_page"
+    },
+    "211": {
+      "name": "First Division B",
+      "source": "coverage_page"
+    },
+    "214": {
+      "name": "Belgian Cup",
+      "source": "coverage_page"
+    },
+    "223": {
+      "name": "Bosnia Cup",
+      "source": "coverage_page"
+    },
+    "229": {
+      "name": "Parva Liga",
+      "source": "coverage_page"
+    },
+    "241": {
+      "name": "Bulgarian Cup",
+      "source": "coverage_page"
+    },
+    "247": {
+      "name": "2. HNL",
+      "source": "coverage_page"
+    },
+    "250": {
+      "name": "Croatia Cup",
+      "source": "coverage_page"
+    },
+    "253": {
+      "name": "1. Division",
+      "source": "coverage_page"
+    },
+    "262": {
+      "name": "Fortuna Liga",
+      "source": "coverage_page"
+    },
+    "268": {
+      "name": "Czech Cup",
+      "source": "coverage_page"
+    },
+    "274": {
+      "name": "First Division",
+      "source": "coverage_page"
+    },
+    "277": {
+      "name": "Landspokal Cup",
+      "source": "coverage_page"
+    },
+    "292": {
+      "name": "Veikkausliiga",
+      "source": "coverage_page"
+    },
+    "298": {
+      "name": "Finland Cup",
+      "source": "coverage_page"
+    },
+    "304": {
+      "name": "Ligue 2",
+      "source": "coverage_page"
+    },
+    "307": {
+      "name": "Coupe de France",
+      "source": "coverage_page"
+    },
+    "310": {
+      "name": "Coupe de la Ligue",
+      "source": "coverage_page"
+    },
+    "313": {
+      "name": "National",
+      "source": "coverage_page"
+    },
+    "319": {
+      "name": "Crystalbet Erovnuli Liga",
+      "source": "coverage_page"
+    },
+    "325": {
+      "name": "Super League",
+      "source": "coverage_page"
+    },
+    "331": {
+      "name": "Greek Cup",
+      "source": "coverage_page"
+    },
+    "334": {
+      "name": "OTP Bank Liga",
+      "source": "coverage_page"
+    },
+    "345": {
+      "name": "Pepsideild",
+      "source": "coverage_page"
+    },
+    "366": {
+      "name": "FAI Cup",
+      "source": "coverage_page"
+    },
+    "372": {
+      "name": "Ligat ha'Al",
+      "source": "coverage_page"
+    },
+    "378": {
+      "name": "State Cup",
+      "source": "coverage_page"
+    },
+    "381": {
+      "name": "Toto Cup Ligat Al",
+      "source": "coverage_page"
+    },
+    "399": {
+      "name": "Virsliga",
+      "source": "coverage_page"
+    },
+    "426": {
+      "name": "National Division",
+      "source": "coverage_page"
+    },
+    "432": {
+      "name": "First League",
+      "source": "coverage_page"
+    },
+    "438": {
+      "name": "Premiership",
+      "source": "coverage_page"
+    },
+    "447": {
+      "name": "Obos-Ligaen",
+      "source": "coverage_page"
+    },
+    "450": {
+      "name": "NM Cup",
+      "source": "coverage_page"
+    },
+    "459": {
+      "name": "Polish Cup",
+      "source": "coverage_page"
+    },
+    "465": {
+      "name": "Segunda Liga",
+      "source": "coverage_page"
+    },
+    "468": {
+      "name": "Taça De Portugal",
+      "source": "coverage_page"
+    },
+    "471": {
+      "name": "League Cup",
+      "source": "coverage_page"
+    },
+    "474": {
+      "name": "Liga 1",
+      "source": "coverage_page"
+    },
+    "492": {
+      "name": "Russian Cup",
+      "source": "coverage_page"
+    },
+    "504": {
+      "name": "Championship",
+      "source": "coverage_page"
+    },
+    "507": {
+      "name": "Scottish Cup",
+      "source": "coverage_page"
+    },
+    "510": {
+      "name": "League Cup",
+      "source": "coverage_page"
+    },
+    "516": {
+      "name": "League One",
+      "source": "coverage_page"
+    },
+    "519": {
+      "name": "League Two",
+      "source": "coverage_page"
+    },
+    "531": {
+      "name": "Super Liga",
+      "source": "coverage_page"
+    },
+    "540": {
+      "name": "Fortuna Liga",
+      "source": "coverage_page"
+    },
+    "552": {
+      "name": "Slovakia Cup",
+      "source": "coverage_page"
+    },
+    "579": {
+      "name": "Superettan",
+      "source": "coverage_page"
+    },
+    "582": {
+      "name": "Svenska Cupen",
+      "source": "coverage_page"
+    },
+    "594": {
+      "name": "Challenge League",
+      "source": "coverage_page"
+    },
+    "597": {
+      "name": "Swiss Cup",
+      "source": "coverage_page"
+    },
+    "606": {
+      "name": "Turkish Cup",
+      "source": "coverage_page"
+    },
+    "615": {
+      "name": "Ukrainian Cup",
+      "source": "coverage_page"
+    },
+    "636": {
+      "name": "Liga Profesional de Fútbol",
+      "source": "coverage_page"
+    },
+    "642": {
+      "name": "Copa Argentina",
+      "source": "coverage_page"
+    },
+    "648": {
+      "name": "Serie A",
+      "source": "coverage_page"
+    },
+    "651": {
+      "name": "Serie B",
+      "source": "coverage_page"
+    },
+    "654": {
+      "name": "Copa do Brasil",
+      "source": "coverage_page"
+    },
+    "663": {
+      "name": "Primera Division",
+      "source": "coverage_page"
+    },
+    "669": {
+      "name": "Chilean Cup",
+      "source": "coverage_page"
+    },
+    "696": {
+      "name": "Liga Pro",
+      "source": "coverage_page"
+    },
+    "723": {
+      "name": "WC Qualification Oceania",
+      "source": "coverage_page"
+    },
+    "726": {
+      "name": "WC Qualification South America",
+      "source": "coverage_page"
+    },
+    "732": {
+      "name": "World Cup",
+      "source": "coverage_page"
+    },
+    "743": {
+      "name": "Liga MX",
+      "source": "coverage_page"
+    },
+    "746": {
+      "name": "Copa MX",
+      "source": "coverage_page"
+    },
+    "779": {
+      "name": "Major League Soccer",
+      "source": "coverage_document"
+    },
+    "782": {
+      "name": "US Open Cup",
+      "source": "coverage_page"
+    },
+    "791": {
+      "name": "USL Championship",
+      "source": "coverage_page"
+    },
+    "830": {
+      "name": "Premier League",
+      "source": "coverage_page"
+    },
+    "860": {
+      "name": "Botola Pro",
+      "source": "coverage_page"
+    },
+    "944": {
+      "name": "Pro League",
+      "source": "coverage_page"
+    },
+    "950": {
+      "name": "Kings Cup",
+      "source": "coverage_page"
+    },
+    "959": {
+      "name": "Uae League",
+      "source": "coverage_document"
+    },
+    "965": {
+      "name": "Arabian Gulf Cup",
+      "source": "coverage_page"
+    },
+    "968": {
+      "name": "J-League",
+      "source": "coverage_page"
+    },
+    "1022": {
+      "name": "J2-League",
+      "source": "coverage_page"
+    },
+    "1025": {
+      "name": "J3-League",
+      "source": "coverage_page"
+    },
+    "1028": {
+      "name": "Emperor Cup",
+      "source": "coverage_page"
+    },
+    "1031": {
+      "name": "Ybc Levain Cup",
+      "source": "coverage_page"
+    },
+    "1034": {
+      "name": "K-League 1",
+      "source": "coverage_page"
+    },
+    "1101": {
+      "name": "Club Friendlies 1",
+      "source": "coverage_page"
+    },
+    "1103": {
+      "name": "African Nations Championship",
+      "source": "coverage_page"
+    },
+    "1107": {
+      "name": "CAF Champions League",
+      "source": "coverage_page"
+    },
+    "1111": {
+      "name": "CONCACAF Champions League",
+      "source": "coverage_page"
+    },
+    "1112": {
+      "name": "CONCACAF Gold Cup",
+      "source": "coverage_page"
+    },
+    "1113": {
+      "name": "Confederations Cup",
+      "source": "coverage_page"
+    },
+    "1114": {
+      "name": "Copa America",
+      "source": "coverage_page"
+    },
+    "1116": {
+      "name": "Copa Sudamericana",
+      "source": "coverage_page"
+    },
+    "1117": {
+      "name": "Africa Cup of Nations",
+      "source": "coverage_page"
+    },
+    "1119": {
+      "name": "EAFF E-1 Football Championship",
+      "source": "coverage_page"
+    },
+    "1121": {
+      "name": "International Champions Cup",
+      "source": "coverage_page"
+    },
+    "1122": {
+      "name": "Copa Libertadores",
+      "source": "coverage_page"
+    },
+    "1125": {
+      "name": "Olympic Games",
+      "source": "coverage_page"
+    },
+    "1128": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1176": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1177": {
+      "name": "CFA Group A",
+      "source": "coverage_page"
+    },
+    "1178": {
+      "name": "CFA Group B",
+      "source": "coverage_page"
+    },
+    "1179": {
+      "name": "CFA Group C",
+      "source": "coverage_page"
+    },
+    "1180": {
+      "name": "CFA Group D",
+      "source": "coverage_page"
+    },
+    "1181": {
+      "name": "National 3: Auvergne-Rhône-Alpes",
+      "source": "coverage_page"
+    },
+    "1182": {
+      "name": "National 3: Bourgogne-Franche-Comté",
+      "source": "coverage_page"
+    },
+    "1183": {
+      "name": "National 3: Bretagne",
+      "source": "coverage_page"
+    },
+    "1184": {
+      "name": "National 3: Centre-Val de Loire",
+      "source": "coverage_page"
+    },
+    "1185": {
+      "name": "National 3: Grand-Est",
+      "source": "coverage_page"
+    },
+    "1186": {
+      "name": "National 3: Hauts-de-France",
+      "source": "coverage_page"
+    },
+    "1188": {
+      "name": "National 3: Normandie",
+      "source": "coverage_page"
+    },
+    "1202": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1203": {
+      "name": "Serie C: Girone A",
+      "source": "coverage_page"
+    },
+    "1204": {
+      "name": "Serie C: Girone B",
+      "source": "coverage_page"
+    },
+    "1205": {
+      "name": "Serie C: Girone C",
+      "source": "coverage_page"
+    },
+    "1224": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1251": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1252": {
+      "name": "Segunda B - Group 1",
+      "source": "coverage_page"
+    },
+    "1257": {
+      "name": "Tercera - Group 1",
+      "source": "coverage_page"
+    },
+    "1283": {
+      "name": "2. Lig: Kirmizi",
+      "source": "coverage_document"
+    },
+    "1291": {
+      "name": "Baiano 1",
+      "source": "coverage_page"
+    },
+    "1296": {
+      "name": "Carioca 1",
+      "source": "coverage_page"
+    },
+    "1300": {
+      "name": "Cearense 1",
+      "source": "coverage_page"
+    },
+    "1302": {
+      "name": "Gaucho 1",
+      "source": "coverage_page"
+    },
+    "1307": {
+      "name": "Mineiro 1",
+      "source": "coverage_page"
+    },
+    "1311": {
+      "name": "Paranaense 1",
+      "source": "coverage_page"
+    },
+    "1313": {
+      "name": "Paulista A1",
+      "source": "coverage_page"
+    },
+    "1326": {
+      "name": "European Championship",
+      "source": "coverage_page"
+    },
+    "1327": {
+      "name": "Euro U21",
+      "source": "coverage_page"
+    },
+    "1329": {
+      "name": "UEFA Youth League",
+      "source": "coverage_page"
+    },
+    "1351": {
+      "name": "Premier League 2 Divison Two",
+      "source": "coverage_page"
+    },
+    "1354": {
+      "name": "Euro U17",
+      "source": "coverage_page"
+    },
+    "1355": {
+      "name": "Euro U19",
+      "source": "coverage_page"
+    },
+    "1356": {
+      "name": "A-League",
+      "source": "coverage_page"
+    },
+    "1364": {
+      "name": "World Cup U20",
+      "source": "coverage_page"
+    },
+    "1366": {
+      "name": "Premier League Asia Trophy",
+      "source": "coverage_page"
+    },
+    "1368": {
+      "name": "Toulon Tournament",
+      "source": "coverage_page"
+    },
+    "1384": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1385": {
+      "name": "Brasileiro U20",
+      "source": "coverage_page"
+    },
+    "1390": {
+      "name": "World Cup U17",
+      "source": "coverage_page"
+    },
+    "1395": {
+      "name": "Afc Championship U23",
+      "source": "coverage_page"
+    },
+    "1396": {
+      "name": "Emirates Cup",
+      "source": "coverage_page"
+    },
+    "1403": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1422": {
+      "name": "Junioren Bundesliga",
+      "source": "coverage_page"
+    },
+    "1426": {
+      "name": "PrimaVera 1",
+      "source": "coverage_page"
+    },
+    "1432": {
+      "name": "Elite League U20",
+      "source": "coverage_page"
+    },
+    "1434": {
+      "name": "Atlantic Cup",
+      "source": "coverage_page"
+    },
+    "1450": {
+      "name": "Coppa Italia Serie C",
+      "source": "coverage_page"
+    },
+    "1452": {
+      "name": "FIFA Intercontinental Cup",
+      "source": "coverage_page"
+    },
+    "1457": {
+      "name": "Torneos De Verano",
+      "source": "coverage_page"
+    },
+    "1482": {
+      "name": "Concacaf Championship U20",
+      "source": "coverage_page"
+    },
+    "1483": {
+      "name": "Recopa Sudamericana",
+      "source": "coverage_page"
+    },
+    "1486": {
+      "name": "Copa Libertadores U20",
+      "source": "coverage_page"
+    },
+    "1488": {
+      "name": "Superliga",
+      "source": "coverage_page"
+    },
+    "1491": {
+      "name": "Caf Super Cup",
+      "source": "coverage_page"
+    },
+    "1499": {
+      "name": "Viareggio Cup",
+      "source": "coverage_page"
+    },
+    "1501": {
+      "name": "Serbian Cup",
+      "source": "coverage_page"
+    },
+    "1502": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1504": {
+      "name": "National Division",
+      "source": "coverage_page"
+    },
+    "1507": {
+      "name": "China Cup",
+      "source": "coverage_page"
+    },
+    "1515": {
+      "name": "Africa Cup Of Nations U20",
+      "source": "coverage_page"
+    },
+    "1527": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1533": {
+      "name": "Baltic Cup",
+      "source": "coverage_page"
+    },
+    "1538": {
+      "name": "UEFA Nations League",
+      "source": "coverage_page"
+    },
+    "1545": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1549": {
+      "name": "Arab Club Championship",
+      "source": "coverage_page"
+    },
+    "1555": {
+      "name": "Asian Games",
+      "source": "coverage_page"
+    },
+    "1557": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1560": {
+      "name": "Premier League 2 Division One",
+      "source": "coverage_page"
+    },
+    "1586": {
+      "name": "David Kipiani Cup",
+      "source": "coverage_page"
+    },
+    "1594": {
+      "name": "Primavera Cup",
+      "source": "coverage_page"
+    },
+    "1600": {
+      "name": "Florida Cup",
+      "source": "coverage_page"
+    },
+    "1607": {
+      "name": "USL League One",
+      "source": "coverage_page"
+    },
+    "1638": {
+      "name": "National 3: Occitanie",
+      "source": "coverage_page"
+    },
+    "1639": {
+      "name": "National 3: Paris Île-de-France",
+      "source": "coverage_page"
+    },
+    "1642": {
+      "name": "Reserve League",
+      "source": "coverage_page"
+    },
+    "1673": {
+      "name": "Ligue 1 Play-offs",
+      "source": "coverage_page"
+    },
+    "1674": {
+      "name": "Ligue 2 Play-offs",
+      "source": "coverage_page"
+    },
+    "1681": {
+      "name": "Super League Play-offs",
+      "source": "coverage_page"
+    },
+    "1684": {
+      "name": "Paulista U20",
+      "source": "coverage_page"
+    },
+    "1690": {
+      "name": "King's Cup",
+      "source": "coverage_page"
+    },
+    "1706": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1712": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1722": {
+      "name": "Champion of Champions",
+      "source": "coverage_page"
+    },
+    "1726": {
+      "name": "Trofeo Joan Gamper",
+      "source": "coverage_page"
+    },
+    "1741": {
+      "name": "CONCACAF Nations League",
+      "source": "coverage_document"
+    },
+    "1742": {
+      "name": "CONCACAF Nations League Qualification",
+      "source": "coverage_page"
+    },
+    "1753": {
+      "name": "Allsvenskan Play-offs",
+      "source": "coverage_page"
+    },
+    "1790": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1797": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "1798": {
+      "name": "Supercopa do Brasil",
+      "source": "coverage_page"
+    },
+    "1799": {
+      "name": "Supercopa de Catalunya",
+      "source": "coverage_page"
+    },
+    "1939": {
+      "name": "Jugendliga U18",
+      "source": "coverage_page"
+    },
+    "1990": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "2261": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "2296": {
+      "name": "Arab Cup",
+      "source": "coverage_page"
+    },
+    "2334": {
+      "name": "Primera Division RFEF: Group 2",
+      "source": "coverage_page"
+    },
+    "2335": {
+      "name": "Primera Division RFEF: Promotion",
+      "source": "coverage_page"
+    },
+    "2439": {
+      "name": "Montenegro Cup",
+      "source": "coverage_page"
+    },
+    "2450": {
+      "name": "Club Friendlies 2",
+      "source": "coverage_page"
+    },
+    "2451": {
+      "name": "Club Friendlies 3",
+      "source": "coverage_page"
+    },
+    "2499": {
+      "name": "División De Honor Juvenil - Group 5",
+      "source": "coverage_page"
+    },
+    "2544": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "2574": {
+      "name": "Conmebol - UEFA Cup of Champions",
+      "source": "coverage_page"
+    },
+    "2575": {
+      "name": "Kirin Cup",
+      "source": "coverage_page"
+    },
+    "2601": {
+      "name": "Copa Uruguay",
+      "source": "coverage_page"
+    },
+    "2605": {
+      "name": "Queensland Champions Cup",
+      "source": "coverage_page"
+    },
+    "2656": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "2709": {
+      "name": "Copa Catalunya",
+      "source": "coverage_page"
+    },
+    "2788": {
+      "name": "U19 Elite Division",
+      "source": "coverage_page"
+    },
+    "2832": {
+      "name": "Jugendliga U16",
+      "source": "coverage_document"
+    },
+    "2983": {
+      "name": "U18 Premier League Cup",
+      "source": "coverage_page"
+    },
+    "2996": {
+      "name": "Trofeo de Campeones",
+      "source": "coverage_page"
+    },
+    "3007": {
+      "name": "Sydney Super Cup",
+      "source": "coverage_page"
+    },
+    "3013": {
+      "name": "DFB Junioren Pokal",
+      "source": "coverage_page"
+    },
+    "3026": {
+      "name": "Copa del Rey Juvenil",
+      "source": "coverage_page"
+    },
+    "3037": {
+      "name": "Super Copa International",
+      "source": "coverage_page"
+    },
+    "3042": {
+      "name": "Super Cup Primavera",
+      "source": "coverage_page"
+    },
+    "3066": {
+      "name": "AFC U20 Asian Cup",
+      "source": "coverage_page"
+    },
+    "3084": {
+      "name": "CONMEBOL U17",
+      "source": "coverage_page"
+    },
+    "3114": {
+      "name": "CAF U17 Cup of Nations",
+      "source": "coverage_page"
+    },
+    "3135": {
+      "name": "AFC U17 Asian Cup",
+      "source": "coverage_page"
+    },
+    "3147": {
+      "name": "Premier League Summer Series",
+      "source": "coverage_page"
+    },
+    "3201": {
+      "name": "Super Cup",
+      "source": "coverage_page"
+    },
+    "3211": {
+      "name": "Leagues Cup",
+      "source": "coverage_page"
+    },
+    "3212": {
+      "name": "UEFA/CONMEBOL Club Challenge",
+      "source": "coverage_page"
+    },
+    "3213": {
+      "name": "MLS All-Star",
+      "source": "coverage_page"
+    },
+    "3217": {
+      "name": "J. League World Challenge",
+      "source": "coverage_page"
+    },
+    "3222": {
+      "name": "Trofeo Silvio Berlusconi",
+      "source": "coverage_page"
+    },
+    "3341": {
+      "name": "UAE-Qatar Super Shield",
+      "source": "coverage_page"
+    },
+    "3363": {
+      "name": "Puskás Cup",
+      "source": "coverage_document"
+    },
+    "3412": {
+      "name": "FIFA Club World Cup",
+      "source": "coverage_page"
+    },
+    "3487": {
+      "name": "FIFA Club World Cup Play-In",
+      "source": "coverage_page"
+    }
+  }
+}
