@@ -9,6 +9,7 @@ from .highlights import TeamHighlightsResponse
 class TeamOut(BaseModel):
     team_id: int
     name: str
+    short_name: Optional[str] = None
     short_code: Optional[str] = None
     image_path: Optional[str] = None
 
@@ -67,6 +68,8 @@ class FixtureOut(BaseModel):
 
     home_team_name: Optional[str] = None
     away_team_name: Optional[str] = None
+    home_team_short_name: Optional[str] = None
+    away_team_short_name: Optional[str] = None
     home_team_logo: Optional[str] = None
     away_team_logo: Optional[str] = None
 
@@ -77,6 +80,7 @@ class StandingRowOut(BaseModel):
     rank_delta: Optional[int] = None
     team_id: int
     team_name: Optional[str] = None
+    team_short_name: Optional[str] = None
     team_logo: Optional[str] = None
 
     matches_played: int

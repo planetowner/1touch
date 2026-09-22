@@ -2,6 +2,6 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 
-# API와 같은 DB의 학습 모델을 유지하고, 바뀐 리그와 빠진 일별 기록만 계산해요.
+# Ranking을 한 번 읽고 리그·컵·유럽대항전에 같은 전력을 전달해요.
 exec bash compose-production.sh run --rm --no-deps -T api \
-  python -m one_touch_loader.cli probability refresh "$@"
+  python -m one_touch_loader.loaders.probability_refresh "$@"

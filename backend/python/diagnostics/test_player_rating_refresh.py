@@ -179,7 +179,7 @@ class PlayerRatingRefreshTests(unittest.TestCase):
         self.assertEqual(self.score()["rating_sum"], 54)
 
     def test_cup_and_nonregular_round_still_save_match_without_rating_refresh(self):
-        self.db.execute("INSERT INTO seasons VALUES (9992025,999,'2025/2026')")
+        self.db.execute("INSERT INTO seasons (season_id,competition_id,name) VALUES (9992025,999,'2025/2026')")
         self.db.execute("INSERT INTO stages VALUES (9992025,9992025)")
         with patch.object(rankings, "_write_player_rating_scores", wraps=rankings._write_player_rating_scores) as score:
             self.db.execute("UPDATE fixtures SET stage_id=9992025 WHERE fixture_id=?", (self.fixture_id,))
@@ -196,6 +196,29 @@ class PlayerRatingRefreshTests(unittest.TestCase):
         with patch.object(rankings, "_write_player_rating_scores") as score:
             details.replace_fixture_detail_rows(self.fixture_id, {"team_stats": []})
             score.assert_not_called()
+
+    def test_current_cup_refreshes_position_history_without_league_score_refresh(self):
+        self.db.execute("UPDATE seasons SET is_current=1 WHERE name='2025/2026'")
+        self.db.execute("INSERT INTO seasons (season_id,competition_id,name) VALUES (9992025,999,'2025/2026')")
+        self.db.execute("INSERT INTO stages VALUES (9992025,9992025)")
+        self.db.execute("UPDATE fixtures SET stage_id=9992025 WHERE fixture_id=?", (self.fixture_id,))
+        self.capture_history.reset_mock()
+        with patch.object(rankings, '_write_player_rating_scores') as score:
+            self.store()
+        score.assert_not_called()
+        self.capture_history.assert_called_once()
+
+    def test_history_failure_rolls_back_fixture_and_scores_together(self):
+        before = self.fetch_all('SELECT * FROM player_rating_scores')
+        self.capture_history.side_effect = RuntimeError('history write failed')
+        with self.assertRaisesRegex(RuntimeError, 'history write failed'):
+            self.store()
+        self.assertEqual(before, self.fetch_all('SELECT * FROM player_rating_scores'))
+        self.assertEqual(self.fetch_one('SELECT state_id FROM fixtures WHERE fixture_id=%s',
+                                       (self.fixture_id,))['state_id'], 2)
+        self.assertEqual(self.fetch_one('SELECT COUNT(*) AS n FROM fixture_lineups WHERE fixture_id=%s',
+                                       (self.fixture_id,))['n'], 0)
+        self.assertEqual(self.fetch_one('SELECT COUNT(*) AS n FROM fixture_clock')['n'], 0)
 
     def test_ranking_failure_rolls_back_final_state_rating_and_clock_so_live_can_retry(self):
         with patch.object(rankings, "_write_player_rating_scores", side_effect=RuntimeError("score write failed")):

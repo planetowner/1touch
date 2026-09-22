@@ -3,12 +3,14 @@ class ApiTeamResponse {
   const ApiTeamResponse({
     required this.teamId,
     required this.name,
+    this.shortName,
     required this.shortCode,
     required this.imagePath,
   });
 
   final int teamId;
   final String name;
+  final String? shortName;
   final String? shortCode;
   final String? imagePath;
 
@@ -16,6 +18,7 @@ class ApiTeamResponse {
     return ApiTeamResponse(
       teamId: _requiredInt(json, 'team_id'),
       name: _requiredString(json, 'name'),
+      shortName: _optionalString(json, 'short_name'),
       shortCode: _optionalString(json, 'short_code'),
       imagePath: _optionalString(json, 'image_path'),
     );

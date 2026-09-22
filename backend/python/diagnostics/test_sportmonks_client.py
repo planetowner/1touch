@@ -8,6 +8,13 @@ from one_touch_loader.core.sportmonks import SportmonksClient
 
 
 class SportmonksClientTest(unittest.TestCase):
+    def test_bracket_endpoint_preserves_empty_provider_graph(self):
+        client = SportmonksClient.__new__(SportmonksClient)
+        graph = {'stages': [], 'edges': []}
+        client._get = Mock(return_value={'data': graph})
+        self.assertIs(client.get_season_bracket(25580), graph)
+        client._get.assert_called_once_with('seasons/25580/brackets')
+
     def test_get_makes_one_request(self):
         client = SportmonksClient.__new__(SportmonksClient)
         client.base = "https://api.sportmonks.com/v3/football"

@@ -10,6 +10,9 @@ from .identity import normalize_identity_text, validate_external_id_uniqueness
 
 # 구단 프로필과 같은 경기·팀·등번호로 확인한 활동명이에요. DB 이름은 바꾸지 않아요.
 PLAYER_NAME_ALIASES = {
+    # 19662566의 같은 팀·2번 선수예요. 구단이 쓰는 Dani와 전체 이름 Daniel을 대조했어요.
+    # https://www.realmadrid.com/es-ES/el-club/historia/leyendas-futbol/daniel-carvajal-ramos
+    31647: ("Dani Carvajal",),
     # https://comofootball.com/player/tasos-douvikas/
     3188026: ("Tasos Douvikas",),
     # https://www.rcdespanyol.com/en/teams/rcd-espanyol/cala/4106

@@ -51,6 +51,9 @@ HomeData homeDataFromApiResponse(
         name: favoriteIsHome
             ? fixtureResponse.awayTeamName
             : fixtureResponse.homeTeamName,
+        shortName: favoriteIsHome
+            ? fixtureResponse.awayTeamShortName
+            : fixtureResponse.homeTeamShortName,
         imagePath: favoriteIsHome
             ? fixtureResponse.awayTeamLogo
             : fixtureResponse.homeTeamLogo,

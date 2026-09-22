@@ -41,6 +41,23 @@ class Connection:
 
 
 class ProbabilityStorageTests(unittest.TestCase):
+    def test_latest_model_keeps_method_and_timestamp_order_with_large_payloads(self):
+        self.connection.execute('ALTER TABLE probability_models ADD COLUMN created_at TEXT')
+        self.connection.create_function('JSON_UNQUOTE', 1, lambda value: value)
+        records = [('a', 'league', '2026-09-20'), ('b', 'league', '2026-09-21'),
+                   ('c', 'cup', '2026-09-22'), ('d', 'league', '2026-09-21')]
+        for identifier, method, stamp in records:
+            payload = json.dumps({'model_id': identifier, 'method': method, 'training': 'x' * 1000000})
+            self.connection.execute('INSERT INTO probability_models VALUES (?,?,?)', (identifier, payload, stamp))
+        def fetch(sql, params=()):
+            cursor = self.connection.execute(sql.replace('%s', '?'), params)
+            return [dict(zip([c[0] for c in cursor.description], row)) for row in cursor.fetchall()]
+        with patch.object(loader, '_fetch', side_effect=fetch):
+            self.assertEqual(loader.latest_model('league')['model_id'], 'd')
+            self.assertEqual(loader.latest_model('cup')['model_id'], 'c')
+            with self.assertRaisesRegex(ValueError, 'Train and store'):
+                loader.latest_model('absent')
+
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.addCleanup(self.connection.close)

@@ -166,7 +166,7 @@ class MatchCard extends StatelessWidget {
                   Expanded(
                     child: _TeamDisplay(
                       teamId: homeTeam.teamId,
-                      teamName: homeTeam.name,
+                      teamName: homeTeam.displayName,
                       teamLogo: homeTeam.imagePath ?? '',
                       logoSize: compact ? 56 : 72,
                     ),
@@ -181,7 +181,7 @@ class MatchCard extends StatelessWidget {
                   Expanded(
                     child: _TeamDisplay(
                       teamId: awayTeam.teamId,
-                      teamName: awayTeam.name,
+                      teamName: awayTeam.displayName,
                       teamLogo: awayTeam.imagePath ?? '',
                       logoSize: compact ? 56 : 72,
                     ),

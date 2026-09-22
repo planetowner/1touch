@@ -16,7 +16,7 @@ OUTCOMES = ("home_win", "draw", "away_win")
 class WDLModel:
     coefficients: tuple[float, float, float, float]
 
-    def predict(self, elo_differences) -> np.ndarray:
+    def predict(self, elo_differences, *, draw_allowed=True) -> np.ndarray:
         differences = np.asarray(elo_differences, dtype=float)
         if not np.isfinite(differences).all():
             raise ValueError("Elo differences must be finite")
@@ -24,24 +24,30 @@ class WDLModel:
         # 400은 입력 단위 변환이에요. 홈 효과와 Elo의 영향은 계수로 학습해요.
         logits = np.zeros((differences.size, 3))
         logits[:, (0, 2)] = design @ np.asarray(self.coefficients).reshape(2, 2).T
+        logits[~np.broadcast_to(draw_allowed, differences.shape).reshape(-1), 1] = -np.inf
         return np.exp(logits - logsumexp(logits, axis=1, keepdims=True))
 
 
-def fit_wdl(elo_differences, outcomes) -> WDLModel:
+def fit_wdl(elo_differences, outcomes, *, draw_allowed=True) -> WDLModel:
     differences = np.asarray(elo_differences, dtype=float)
     outcomes = np.asarray(outcomes)
     if differences.ndim != 1 or outcomes.shape != differences.shape or not len(outcomes):
         raise ValueError("Training inputs must be nonempty paired vectors")
     if not np.isfinite(differences).all() or set(outcomes.tolist()) != {0, 1, 2}:
         raise ValueError("Training requires finite Elo and all three outcomes")
+    allowed = np.broadcast_to(draw_allowed, differences.shape)
+    if ((outcomes == 1) & ~allowed).any():
+        raise ValueError("A decisive match cannot have a draw outcome")
     design = np.column_stack((np.ones(len(differences)), differences / 400.0))
     observed = np.eye(3)[outcomes.astype(int)]
 
     def loss_gradient(coefficients):
         logits = np.zeros((len(outcomes), 3))
         logits[:, (0, 2)] = design @ coefficients.reshape(2, 2).T
+        # 승자가 반드시 나오는 경기는 학습 때부터 무승부를 선택지에서 빼요.
+        logits[~allowed, 1] = -np.inf
         logs = logits - logsumexp(logits, axis=1, keepdims=True)
-        loss = -float((logs * observed).sum() / len(outcomes))
+        loss = -float(logs[np.arange(len(outcomes)), outcomes.astype(int)].mean())
         gradient = ((np.exp(logs) - observed)[:, (0, 2)].T @ design / len(outcomes)).reshape(-1)
         return loss, gradient
 
@@ -53,9 +59,9 @@ def fit_wdl(elo_differences, outcomes) -> WDLModel:
     return WDLModel(tuple(float(value) for value in result.x))
 
 
-def evaluate_wdl(model: WDLModel, elo_differences, outcomes) -> dict:
+def evaluate_wdl(model: WDLModel, elo_differences, outcomes, *, draw_allowed=True) -> dict:
     actual = np.asarray(outcomes, dtype=int)
-    probabilities = model.predict(elo_differences)
+    probabilities = model.predict(elo_differences, draw_allowed=draw_allowed)
     if len(actual) != len(probabilities) or not len(actual) or not np.isin(actual, (0, 1, 2)).all():
         raise ValueError("Invalid evaluation outcomes")
     return {
