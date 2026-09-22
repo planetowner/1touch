@@ -256,6 +256,18 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
     }
   }
 
+  Future<void> _clearLeague() async {
+    if (_loading || _league == null) return;
+    setState(() => _league = null);
+    await _load();
+  }
+
+  Future<void> _clearPosition() async {
+    if (_loading || _position == null) return;
+    setState(() => _position = null);
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -283,28 +295,30 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _DirectoryFilterPill(
-                label: leagueLabel,
-                onTap: _loading ? null : _filters,
-              ),
-              const SizedBox(width: 12),
-              _DirectoryFilterPill(
-                label: (_page?.season ?? 'ALL SEASONS').toUpperCase(),
-                onTap: _loading ? null : _filters,
-              ),
-              const SizedBox(width: 12),
-              _DirectoryFilterPill(
-                label: (_position ?? 'ALL POSITIONS').toUpperCase(),
-                onTap: _loading ? null : _filters,
-              ),
-            ],
+        if (_league != null || _position != null) ...[
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                if (_league != null)
+                  _ActiveDirectoryFilterChip(
+                    key: const ValueKey('active-ranking-league-filter'),
+                    label: leagueLabel,
+                    onRemove: _loading ? null : _clearLeague,
+                  ),
+                if (_league != null && _position != null)
+                  const SizedBox(width: 12),
+                if (_position != null)
+                  _ActiveDirectoryFilterChip(
+                    key: const ValueKey('active-ranking-position-filter'),
+                    label: _positionLabel(_position!),
+                    onRemove: _loading ? null : _clearPosition,
+                  ),
+              ],
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 16),
         if (_failed)
           TextButton(
@@ -369,18 +383,30 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
   }
 }
 
-class _DirectoryFilterPill extends StatelessWidget {
-  const _DirectoryFilterPill({required this.label, required this.onTap});
+String _positionLabel(String position) => switch (position) {
+      'GK' => 'GOALKEEPER',
+      'DF' => 'DEFENDER',
+      'MF' => 'MIDFIELDER',
+      'FW' => 'FORWARD',
+      _ => position.toUpperCase(),
+    };
+
+class _ActiveDirectoryFilterChip extends StatelessWidget {
+  const _ActiveDirectoryFilterChip({
+    super.key,
+    required this.label,
+    required this.onRemove,
+  });
 
   final String label;
-  final VoidCallback? onTap;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) => Material(
         color: AppColors.of(context).subtleBackground,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          onTap: onTap,
+          onTap: onRemove,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -389,7 +415,7 @@ class _DirectoryFilterPill extends StatelessWidget {
               children: [
                 Text(label, style: Body2_b.style),
                 const SizedBox(width: 6),
-                const Icon(Icons.keyboard_arrow_down, size: 20),
+                const Icon(Icons.close, size: 20),
               ],
             ),
           ),
