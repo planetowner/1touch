@@ -201,7 +201,7 @@ void main() {
     await tester.tap(find.text('Analysis').first);
     await tester.pumpAndSettle();
     expect(find.text('ATTRIBUTES'), findsOneWidget);
-    expect(find.text('아직 준비중이에요ㅠㅠ'), findsOneWidget);
+    expect(find.text('아직 준비중이에요 ㅠㅠ'), findsOneWidget);
     expect(find.text('Minutes Played\nPer Game'), findsOneWidget);
     expect(find.text('Goal\nContributions'), findsOneWidget);
     final selector =
@@ -210,7 +210,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.calls.last.seasonId, selector.detail.seasons.last.id);
     expect(find.text('ATTRIBUTES'), findsOneWidget);
-    expect(find.text('아직 준비중이에요ㅠㅠ'), findsOneWidget);
+    expect(find.text('아직 준비중이에요 ㅠㅠ'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('failed detail has retry without mock competitions',
