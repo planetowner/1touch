@@ -61,6 +61,10 @@ class MemoryCursor:
 
 class PlayerRatingRankingsTests(unittest.TestCase):
     def setUp(self):
+        # 이 테스트는 평점 집계를 검증해요. 일별 이력의 실제 저장은 별도 통합 테스트에서 확인해요.
+        history = patch.object(loader.ranking_history, 'capture_current_ranking')
+        self.capture_history = history.start()
+        self.addCleanup(history.stop)
         self.db = sqlite3.connect(":memory:", check_same_thread=False)
         self.db.row_factory = sqlite3.Row
         self.db.create_function("REGEXP", 2, lambda pattern, value: re.search(pattern, value) is not None)
@@ -68,7 +72,7 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.addCleanup(self.db.close)
         self.db.executescript("""
             CREATE TABLE competitions (competition_id INTEGER PRIMARY KEY, competition_type TEXT);
-            CREATE TABLE seasons (season_id INTEGER PRIMARY KEY, competition_id INTEGER, name TEXT);
+            CREATE TABLE seasons (season_id INTEGER PRIMARY KEY, competition_id INTEGER, name TEXT, is_current INTEGER DEFAULT 0);
             CREATE TABLE stages (stage_id INTEGER PRIMARY KEY, season_id INTEGER);
             CREATE TABLE rounds (round_id INTEGER PRIMARY KEY, name TEXT);
             CREATE TABLE fixtures (fixture_id INTEGER PRIMARY KEY, stage_id INTEGER, round_id INTEGER, state_id INTEGER);
@@ -90,7 +94,7 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         for competition_id in loader.RATING_COMPETITION_IDS:
             for year in range(2017, 2027):
                 season_id = competition_id * 10000 + year
-                self.db.execute("INSERT INTO seasons VALUES (?,?,?)", (season_id, competition_id, f"{year}/{year + 1}"))
+                self.db.execute("INSERT INTO seasons (season_id,competition_id,name) VALUES (?,?,?)", (season_id, competition_id, f"{year}/{year + 1}"))
                 self.db.execute("INSERT INTO stages VALUES (?,?)", (season_id, season_id))
         for player_id in range(1, 10):
             self.db.execute("INSERT INTO players VALUES (?,?,NULL)", (player_id, f"Player {player_id}"))
@@ -261,7 +265,7 @@ class PlayerRatingRankingsTests(unittest.TestCase):
 
     def test_rebuild_excludes_before_2017_and_other_competitions(self):
         for season_id, competition, name in ((82016, 8, '2016/2017'), (9992025, 999, '2025/2026')):
-            self.db.execute("INSERT INTO seasons VALUES (?,?,?)", (season_id, competition, name))
+            self.db.execute("INSERT INTO seasons (season_id,competition_id,name) VALUES (?,?,?)", (season_id, competition, name))
             self.db.execute("INSERT INTO stages VALUES (?,?)", (season_id, season_id))
             self.add_matches(season_id, 9, rating=10)
         report = self.initialize()

@@ -4,14 +4,16 @@ import json
 
 from ..api.db import fetch_all_dict
 from ..api.repos.betting_repo import settle_bet
+from ..core.betting import SETTLEMENT_STATE_IDS
 
 
 def run_cli(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apply', action='store_true')
     args = parser.parse_args(argv)
-    bets = fetch_all_dict('''SELECT b.bet_id FROM fixture_bets b JOIN fixtures f ON f.fixture_id=b.fixture_id
-        WHERE b.status='open' AND f.state_id IN (5,10,12,14,15,17,20) ORDER BY b.bet_id''')
+    marks = ','.join('%s' for _ in SETTLEMENT_STATE_IDS)
+    bets = fetch_all_dict(f'''SELECT b.bet_id FROM fixture_bets b JOIN fixtures f ON f.fixture_id=b.fixture_id
+        WHERE b.status='open' AND f.state_id IN ({marks}) ORDER BY b.bet_id''', SETTLEMENT_STATE_IDS)
     results = []
     for bet in bets:
         result = settle_bet(bet['bet_id'], apply=args.apply)

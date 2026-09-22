@@ -1,0 +1,1636 @@
+{
+  "season_name": "2026/2027",
+  "reference_seasons": [
+    "2021/2022",
+    "2022/2023",
+    "2023/2024",
+    "2024/2025",
+    "2025/2026"
+  ],
+  "source_url": "https://www.uefa.com/nationalassociations/uefarankings/club/?year=2026",
+  "source_updated_at": "2026-07-03 10:22",
+  "verified_at": "2026-09-22",
+  "unlisted_club_rule": "2025/26 complete official table (415 clubs) has no five-season points for these clubs; apply Annex D.4 association minimum. Bournemouth/Sunderland last domestic positions verified in 2025/26 standings.",
+  "teams": {
+    "781": {
+      "team_name": "AEK Athens",
+      "country": "GRE",
+      "coefficient": 24.0,
+      "season_coefficients": [
+        1.5,
+        0.0,
+        3.0,
+        2.0,
+        17.5
+      ],
+      "association_floor": 9.682,
+      "official_rank": 84,
+      "domestic_position": null
+    },
+    "19": {
+      "team_name": "Arsenal",
+      "country": "ENG",
+      "coefficient": 119.0,
+      "season_coefficients": [
+        0.0,
+        17.0,
+        22.0,
+        36.0,
+        44.0
+      ],
+      "association_floor": 23.903,
+      "official_rank": 7,
+      "domestic_position": null
+    },
+    "15": {
+      "team_name": "Aston Villa",
+      "country": "ENG",
+      "coefficient": 83.0,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        17.0,
+        30.25,
+        35.75
+      ],
+      "association_floor": 23.903,
+      "official_rank": 17,
+      "domestic_position": null
+    },
+    "7980": {
+      "team_name": "Atlético de Madrid",
+      "country": "ESP",
+      "coefficient": 104.75,
+      "season_coefficients": [
+        19.0,
+        8.0,
+        24.0,
+        26.5,
+        27.25
+      ],
+      "association_floor": 19.409,
+      "official_rank": 10,
+      "domestic_position": null
+    },
+    "1668": {
+      "team_name": "Bodø / Glimt",
+      "country": "NOR",
+      "coefficient": 64.0,
+      "season_coefficients": [
+        15.0,
+        3.0,
+        8.0,
+        21.0,
+        17.0
+      ],
+      "association_floor": 8.247,
+      "official_rank": 32,
+      "domestic_position": null
+    },
+    "68": {
+      "team_name": "Borussia Dortmund",
+      "country": "GER",
+      "coefficient": 100.75,
+      "season_coefficients": [
+        10.0,
+        18.0,
+        29.0,
+        27.75,
+        16.0
+      ],
+      "association_floor": 18.58,
+      "official_rank": 11,
+      "domestic_position": null
+    },
+    "340": {
+      "team_name": "Club Brugge",
+      "country": "BEL",
+      "coefficient": 75.25,
+      "season_coefficients": [
+        7.0,
+        17.0,
+        21.0,
+        15.75,
+        14.5
+      ],
+      "association_floor": 12.45,
+      "official_rank": 23,
+      "domestic_position": null
+    },
+    "83": {
+      "team_name": "FC Barcelona",
+      "country": "ESP",
+      "coefficient": 113.25,
+      "season_coefficients": [
+        15.0,
+        9.0,
+        23.0,
+        36.25,
+        30.0
+      ],
+      "association_floor": 19.409,
+      "official_rank": 8,
+      "domestic_position": null
+    },
+    "503": {
+      "team_name": "FC Bayern München",
+      "country": "GER",
+      "coefficient": 147.5,
+      "season_coefficients": [
+        26.0,
+        27.0,
+        28.0,
+        27.25,
+        39.25
+      ],
+      "association_floor": 18.58,
+      "official_rank": 1,
+      "domestic_position": null
+    },
+    "88": {
+      "team_name": "Fenerbahçe",
+      "country": "TUR",
+      "coefficient": 57.75,
+      "season_coefficients": [
+        5.0,
+        17.0,
+        14.0,
+        11.25,
+        10.5
+      ],
+      "association_floor": 10.375,
+      "official_rank": 42,
+      "domestic_position": null
+    },
+    "73": {
+      "team_name": "Feyenoord",
+      "country": "NED",
+      "coefficient": 71.0,
+      "season_coefficients": [
+        24.0,
+        17.0,
+        8.0,
+        18.0,
+        4.0
+      ],
+      "association_floor": 13.585,
+      "official_rank": 27,
+      "domestic_position": null
+    },
+    "34": {
+      "team_name": "Galatasaray",
+      "country": "TUR",
+      "coefficient": 53.5,
+      "season_coefficients": [
+        15.0,
+        0.0,
+        8.0,
+        12.75,
+        17.75
+      ],
+      "association_floor": 10.375,
+      "official_rank": 49,
+      "domestic_position": null
+    },
+    "2930": {
+      "team_name": "Inter",
+      "country": "ITA",
+      "coefficient": 127.0,
+      "season_coefficients": [
+        18.0,
+        29.0,
+        20.0,
+        40.25,
+        19.75
+      ],
+      "association_floor": 19.989,
+      "official_rank": 5,
+      "domestic_position": null
+    },
+    "3369": {
+      "team_name": "LASK",
+      "country": "AUT",
+      "coefficient": 21.0,
+      "season_coefficients": [
+        15.0,
+        0.0,
+        3.0,
+        3.0,
+        0.0
+      ],
+      "association_floor": 6.77,
+      "official_rank": 99,
+      "domestic_position": null
+    },
+    "271": {
+      "team_name": "Lens",
+      "country": "FRA",
+      "coefficient": 16.699,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        10.0,
+        2.5,
+        0.0
+      ],
+      "association_floor": 16.699,
+      "official_rank": 120,
+      "domestic_position": null
+    },
+    "8": {
+      "team_name": "Liverpool",
+      "country": "ENG",
+      "coefficient": 130.0,
+      "season_coefficients": [
+        33.0,
+        19.0,
+        20.0,
+        29.5,
+        28.5
+      ],
+      "association_floor": 23.903,
+      "official_rank": 4,
+      "domestic_position": null
+    },
+    "690": {
+      "team_name": "LOSC Lille",
+      "country": "FRA",
+      "coefficient": 68.75,
+      "season_coefficients": [
+        17.0,
+        0.0,
+        17.0,
+        24.0,
+        10.75
+      ],
+      "association_floor": 16.699,
+      "official_rank": 29,
+      "domestic_position": null
+    },
+    "9": {
+      "team_name": "Manchester City",
+      "country": "ENG",
+      "coefficient": 125.5,
+      "season_coefficients": [
+        27.0,
+        33.0,
+        28.0,
+        14.75,
+        22.75
+      ],
+      "association_floor": 23.903,
+      "official_rank": 6,
+      "domestic_position": null
+    },
+    "14": {
+      "team_name": "Manchester United",
+      "country": "ENG",
+      "coefficient": 76.5,
+      "season_coefficients": [
+        18.0,
+        19.0,
+        7.0,
+        32.5,
+        0.0
+      ],
+      "association_floor": 23.903,
+      "official_rank": 21,
+      "domestic_position": null
+    },
+    "597": {
+      "team_name": "Napoli",
+      "country": "ITA",
+      "coefficient": 63.0,
+      "season_coefficients": [
+        9.0,
+        25.0,
+        17.0,
+        0.0,
+        12.0
+      ],
+      "association_floor": 19.989,
+      "official_rank": 34,
+      "domestic_position": null
+    },
+    "591": {
+      "team_name": "Paris Saint Germain",
+      "country": "FRA",
+      "coefficient": 132.0,
+      "season_coefficients": [
+        19.0,
+        19.0,
+        23.0,
+        33.5,
+        37.5
+      ],
+      "association_floor": 16.699,
+      "official_rank": 3,
+      "domestic_position": null
+    },
+    "652": {
+      "team_name": "Porto",
+      "country": "POR",
+      "coefficient": 80.75,
+      "season_coefficients": [
+        10.0,
+        18.0,
+        19.0,
+        9.75,
+        24.0
+      ],
+      "association_floor": 14.633,
+      "official_rank": 20,
+      "domestic_position": null
+    },
+    "682": {
+      "team_name": "PSV",
+      "country": "NED",
+      "coefficient": 71.25,
+      "season_coefficients": [
+        10.0,
+        11.0,
+        17.0,
+        21.25,
+        12.0
+      ],
+      "association_floor": 13.585,
+      "official_rank": 26,
+      "domestic_position": null
+    },
+    "277": {
+      "team_name": "RB Leipzig",
+      "country": "GER",
+      "coefficient": 61.0,
+      "season_coefficients": [
+        17.0,
+        18.0,
+        18.0,
+        8.0,
+        0.0
+      ],
+      "association_floor": 18.58,
+      "official_rank": 37,
+      "domestic_position": null
+    },
+    "485": {
+      "team_name": "Real Betis",
+      "country": "ESP",
+      "coefficient": 74.5,
+      "season_coefficients": [
+        11.0,
+        16.0,
+        6.0,
+        19.25,
+        22.25
+      ],
+      "association_floor": 19.409,
+      "official_rank": 24,
+      "domestic_position": null
+    },
+    "3468": {
+      "team_name": "Real Madrid",
+      "country": "ESP",
+      "coefficient": 144.5,
+      "season_coefficients": [
+        30.0,
+        29.0,
+        34.0,
+        24.5,
+        27.0
+      ],
+      "association_floor": 19.409,
+      "official_rank": 2,
+      "domestic_position": null
+    },
+    "37": {
+      "team_name": "Roma",
+      "country": "ITA",
+      "coefficient": 97.75,
+      "season_coefficients": [
+        23.0,
+        22.0,
+        21.0,
+        14.5,
+        17.25
+      ],
+      "association_floor": 19.989,
+      "official_rank": 13,
+      "domestic_position": null
+    },
+    "138649": {
+      "team_name": "Sabah",
+      "country": "AZE",
+      "coefficient": 6.0,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "association_floor": 4.587,
+      "official_rank": 244,
+      "domestic_position": null
+    },
+    "621": {
+      "team_name": "Shakhtar Donetsk",
+      "country": "UKR",
+      "coefficient": 56.25,
+      "season_coefficients": [
+        6.0,
+        11.0,
+        10.0,
+        11.0,
+        18.25
+      ],
+      "association_floor": 5.182,
+      "official_rank": 45,
+      "domestic_position": null
+    },
+    "216": {
+      "team_name": "Slavia Praha",
+      "country": "CZE",
+      "coefficient": 44.0,
+      "season_coefficients": [
+        10.0,
+        6.0,
+        15.0,
+        4.0,
+        9.0
+      ],
+      "association_floor": 9.705,
+      "official_rank": 59,
+      "domestic_position": null
+    },
+    "2417": {
+      "team_name": "Slovan Bratislava",
+      "country": "SVK",
+      "coefficient": 36.0,
+      "season_coefficients": [
+        6.0,
+        12.0,
+        8.0,
+        6.0,
+        4.0
+      ],
+      "association_floor": 4.475,
+      "official_rank": 65,
+      "domestic_position": null
+    },
+    "58": {
+      "team_name": "Sporting CP",
+      "country": "POR",
+      "coefficient": 84.0,
+      "season_coefficients": [
+        16.0,
+        14.0,
+        12.0,
+        14.5,
+        27.5
+      ],
+      "association_floor": 14.633,
+      "official_rank": 15,
+      "domestic_position": null
+    },
+    "3319": {
+      "team_name": "VfB Stuttgart",
+      "country": "GER",
+      "coefficient": 27.5,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        13.0,
+        14.5
+      ],
+      "association_floor": 18.58,
+      "official_rank": 80,
+      "domestic_position": null
+    },
+    "321": {
+      "team_name": "Viking",
+      "country": "NOR",
+      "coefficient": 8.247,
+      "season_coefficients": [
+        0.0,
+        2.5,
+        0.0,
+        0.0,
+        2.0
+      ],
+      "association_floor": 8.247,
+      "official_rank": 202,
+      "domestic_position": null
+    },
+    "3477": {
+      "team_name": "Villarreal",
+      "country": "ESP",
+      "coefficient": 59.0,
+      "season_coefficients": [
+        24.0,
+        12.0,
+        16.0,
+        0.0,
+        7.0
+      ],
+      "association_floor": 19.409,
+      "official_rank": 39,
+      "domestic_position": null
+    },
+    "113": {
+      "team_name": "AC Milan",
+      "country": "ITA",
+      "coefficient": 66.0,
+      "season_coefficients": [
+        7.0,
+        24.0,
+        16.0,
+        19.0,
+        0.0
+      ],
+      "association_floor": 19.989,
+      "official_rank": 30,
+      "domestic_position": null
+    },
+    "2555": {
+      "team_name": "Anderlecht",
+      "country": "BEL",
+      "coefficient": 30.75,
+      "season_coefficients": [
+        2.5,
+        12.0,
+        0.0,
+        13.75,
+        2.5
+      ],
+      "association_floor": 12.45,
+      "official_rank": 72,
+      "domestic_position": null
+    },
+    "132649": {
+      "team_name": "Ararat-Armenia",
+      "country": "ARM",
+      "coefficient": 7.0,
+      "season_coefficients": [
+        0.0,
+        1.5,
+        1.5,
+        2.0,
+        2.0
+      ],
+      "association_floor": 3.012,
+      "official_rank": 224,
+      "domestic_position": null
+    },
+    "61": {
+      "team_name": "AZ Alkmaar",
+      "country": "NED",
+      "coefficient": 62.875,
+      "season_coefficients": [
+        13.0,
+        19.0,
+        4.0,
+        12.5,
+        14.375
+      ],
+      "association_floor": 13.585,
+      "official_rank": 35,
+      "domestic_position": null
+    },
+    "3321": {
+      "team_name": "Bayer 04 Leverkusen",
+      "country": "GER",
+      "coefficient": 105.0,
+      "season_coefficients": [
+        14.0,
+        19.0,
+        29.0,
+        23.25,
+        19.75
+      ],
+      "association_floor": 18.58,
+      "official_rank": 9,
+      "domestic_position": null
+    },
+    "605": {
+      "team_name": "Benfica",
+      "country": "POR",
+      "coefficient": 90.0,
+      "season_coefficients": [
+        20.0,
+        25.0,
+        14.0,
+        18.75,
+        12.25
+      ],
+      "association_floor": 14.633,
+      "official_rank": 14,
+      "domestic_position": null
+    },
+    "554": {
+      "team_name": "Beşiktaş",
+      "country": "TUR",
+      "coefficient": 15.5,
+      "season_coefficients": [
+        4.0,
+        0.0,
+        3.0,
+        6.0,
+        2.5
+      ],
+      "association_floor": 10.375,
+      "official_rank": 123,
+      "domestic_position": null
+    },
+    "1114": {
+      "team_name": "Celje",
+      "country": "SVN",
+      "coefficient": 23.0,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        2.5,
+        9.5,
+        11.0
+      ],
+      "association_floor": 4.893,
+      "official_rank": 89,
+      "domestic_position": null
+    },
+    "36": {
+      "team_name": "Celta de Vigo",
+      "country": "ESP",
+      "coefficient": 19.409,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        16.25
+      ],
+      "association_floor": 19.409,
+      "official_rank": 104,
+      "domestic_position": null
+    },
+    "53": {
+      "team_name": "Celtic",
+      "country": "SCO",
+      "coefficient": 44.0,
+      "season_coefficients": [
+        6.0,
+        6.0,
+        7.0,
+        16.0,
+        9.0
+      ],
+      "association_floor": 6.41,
+      "official_rank": 58,
+      "domestic_position": null
+    },
+    "51": {
+      "team_name": "Crystal Palace",
+      "country": "ENG",
+      "coefficient": 23.903,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        21.875
+      ],
+      "association_floor": 23.903,
+      "official_rank": 86,
+      "domestic_position": null
+    },
+    "674": {
+      "team_name": "Dinamo Zagreb",
+      "country": "CRO",
+      "coefficient": 46.5,
+      "season_coefficients": [
+        9.0,
+        7.0,
+        9.0,
+        14.0,
+        7.5
+      ],
+      "association_floor": 5.631,
+      "official_rank": 56,
+      "domestic_position": null
+    },
+    "112": {
+      "team_name": "Ferencvárosi",
+      "country": "HUN",
+      "coefficient": 51.25,
+      "season_coefficients": [
+        3.0,
+        12.0,
+        9.0,
+        10.0,
+        17.25
+      ],
+      "association_floor": 5.437,
+      "official_rank": 50,
+      "domestic_position": null
+    },
+    "516": {
+      "team_name": "Hapoel Be'er Sheva",
+      "country": "ISR",
+      "coefficient": 14.0,
+      "season_coefficients": [
+        2.5,
+        6.0,
+        2.0,
+        2.0,
+        1.5
+      ],
+      "association_floor": 5.5,
+      "official_rank": 132,
+      "domestic_position": null
+    },
+    "890": {
+      "team_name": "Jagiellonia Białystok",
+      "country": "POL",
+      "coefficient": 22.0,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        14.0,
+        8.0
+      ],
+      "association_floor": 9.35,
+      "official_rank": 93,
+      "domestic_position": null
+    },
+    "625": {
+      "team_name": "Juventus",
+      "country": "ITA",
+      "coefficient": 72.25,
+      "season_coefficients": [
+        20.0,
+        17.0,
+        0.0,
+        16.25,
+        19.0
+      ],
+      "association_floor": 19.989,
+      "official_rank": 25,
+      "domestic_position": null
+    },
+    "302": {
+      "team_name": "Lech Poznań",
+      "country": "POL",
+      "coefficient": 27.25,
+      "season_coefficients": [
+        0.0,
+        14.0,
+        2.0,
+        0.0,
+        11.25
+      ],
+      "association_floor": 9.35,
+      "official_rank": 81,
+      "domestic_position": null
+    },
+    "3223": {
+      "team_name": "Levski Sofia",
+      "country": "BUL",
+      "coefficient": 7.0,
+      "season_coefficients": [
+        0.0,
+        2.0,
+        2.5,
+        0.0,
+        2.5
+      ],
+      "association_floor": 4.212,
+      "official_rank": 222,
+      "domestic_position": null
+    },
+    "2510": {
+      "team_name": "Lillestrøm",
+      "country": "NOR",
+      "coefficient": 8.247,
+      "season_coefficients": [
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "association_floor": 8.247,
+      "official_rank": 204,
+      "domestic_position": null
+    },
+    "602": {
+      "team_name": "Olympiacos F.C.",
+      "country": "GRE",
+      "coefficient": 62.25,
+      "season_coefficients": [
+        8.0,
+        3.0,
+        17.0,
+        18.5,
+        15.75
+      ],
+      "association_floor": 9.682,
+      "official_rank": 36,
+      "domestic_position": null
+    },
+    "79": {
+      "team_name": "Olympique Lyonnais",
+      "country": "FRA",
+      "coefficient": 65.75,
+      "season_coefficients": [
+        21.0,
+        0.0,
+        0.0,
+        22.75,
+        22.0
+      ],
+      "association_floor": 16.699,
+      "official_rank": 31,
+      "domestic_position": null
+    },
+    "44": {
+      "team_name": "Olympique Marseille",
+      "country": "FRA",
+      "coefficient": 54.0,
+      "season_coefficients": [
+        16.0,
+        8.0,
+        18.0,
+        0.0,
+        12.0
+      ],
+      "association_floor": 16.699,
+      "official_rank": 48,
+      "domestic_position": null
+    },
+    "368": {
+      "team_name": "Omonia Nicosia",
+      "country": "CYP",
+      "coefficient": 21.25,
+      "season_coefficients": [
+        4.0,
+        3.0,
+        2.0,
+        5.375,
+        6.875
+      ],
+      "association_floor": 7.138,
+      "official_rank": 97,
+      "domestic_position": null
+    },
+    "594": {
+      "team_name": "Real Sociedad",
+      "country": "ESP",
+      "coefficient": 57.0,
+      "season_coefficients": [
+        9.0,
+        16.0,
+        18.0,
+        14.0,
+        0.0
+      ],
+      "association_floor": 19.409,
+      "official_rank": 43,
+      "domestic_position": null
+    },
+    "598": {
+      "team_name": "Rennes",
+      "country": "FRA",
+      "coefficient": 35.0,
+      "season_coefficients": [
+        14.0,
+        11.0,
+        10.0,
+        0.0,
+        0.0
+      ],
+      "association_floor": 16.699,
+      "official_rank": 66,
+      "domestic_position": null
+    },
+    "49": {
+      "team_name": "Salzburg",
+      "country": "AUT",
+      "coefficient": 45.0,
+      "season_coefficients": [
+        17.0,
+        9.0,
+        7.0,
+        8.0,
+        4.0
+      ],
+      "association_floor": 6.77,
+      "official_rank": 57,
+      "domestic_position": null
+    },
+    "2727": {
+      "team_name": "Sparta Praha",
+      "country": "CZE",
+      "coefficient": 38.25,
+      "season_coefficients": [
+        5.0,
+        1.5,
+        10.0,
+        9.0,
+        12.75
+      ],
+      "association_floor": 9.705,
+      "official_rank": 64,
+      "domestic_position": null
+    },
+    "3357": {
+      "team_name": "Sturm Graz",
+      "country": "AUT",
+      "coefficient": 28.0,
+      "season_coefficients": [
+        3.0,
+        6.0,
+        4.0,
+        10.0,
+        5.0
+      ],
+      "association_floor": 6.77,
+      "official_rank": 79,
+      "domestic_position": null
+    },
+    "2726": {
+      "team_name": "TSG Hoffenheim",
+      "country": "GER",
+      "coefficient": 18.58,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        7.0,
+        0.0
+      ],
+      "association_floor": 18.58,
+      "official_rank": 112,
+      "domestic_position": null
+    },
+    "3958": {
+      "team_name": "Union Saint-Gilloise",
+      "country": "BEL",
+      "coefficient": 48.0,
+      "season_coefficients": [
+        0.0,
+        19.0,
+        8.0,
+        9.0,
+        12.0
+      ],
+      "association_floor": 12.45,
+      "official_rank": 54,
+      "domestic_position": null
+    },
+    "3545": {
+      "team_name": "Viktoria Plzeň",
+      "country": "CZE",
+      "coefficient": 50.5,
+      "season_coefficients": [
+        2.5,
+        4.0,
+        17.0,
+        13.25,
+        13.75
+      ],
+      "association_floor": 9.705,
+      "official_rank": 51,
+      "domestic_position": null
+    },
+    "2905": {
+      "team_name": "AGF",
+      "country": "DEN",
+      "coefficient": 8.421,
+      "season_coefficients": [
+        1.5,
+        0.0,
+        1.5,
+        0.0,
+        0.0
+      ],
+      "association_floor": 8.421,
+      "official_rank": 197,
+      "domestic_position": null
+    },
+    "629": {
+      "team_name": "Ajax",
+      "country": "NED",
+      "coefficient": 58.25,
+      "season_coefficients": [
+        22.0,
+        8.0,
+        5.0,
+        13.25,
+        10.0
+      ],
+      "association_floor": 13.585,
+      "official_rank": 41,
+      "domestic_position": null
+    },
+    "708": {
+      "team_name": "Atalanta",
+      "country": "ITA",
+      "coefficient": 84.0,
+      "season_coefficients": [
+        16.0,
+        0.0,
+        28.0,
+        21.0,
+        19.0
+      ],
+      "association_floor": 19.989,
+      "official_rank": 16,
+      "domestic_position": null
+    },
+    "3877": {
+      "team_name": "Borac Banja Luka",
+      "country": "BIH",
+      "coefficient": 13.125,
+      "season_coefficients": [
+        1.5,
+        1.0,
+        1.5,
+        8.125,
+        1.0
+      ],
+      "association_floor": 2.743,
+      "official_rank": 140,
+      "domestic_position": null
+    },
+    "2474": {
+      "team_name": "Brann",
+      "country": "NOR",
+      "coefficient": 12.25,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        2.5,
+        2.5,
+        7.25
+      ],
+      "association_floor": 8.247,
+      "official_rank": 148,
+      "domestic_position": null
+    },
+    "78": {
+      "team_name": "Brighton & Hove Albion",
+      "country": "ENG",
+      "coefficient": 23.903,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        16.0,
+        0.0,
+        0.0
+      ],
+      "association_floor": 23.903,
+      "official_rank": 87,
+      "domestic_position": null
+    },
+    "2673": {
+      "team_name": "Crvena Zvezda",
+      "country": "SRB",
+      "coefficient": 46.5,
+      "season_coefficients": [
+        15.0,
+        4.0,
+        5.0,
+        10.0,
+        12.5
+      ],
+      "association_floor": 5.15,
+      "official_rank": 55,
+      "domestic_position": null
+    },
+    "392": {
+      "team_name": "CSKA Sofia",
+      "country": "BUL",
+      "coefficient": 6.5,
+      "season_coefficients": [
+        2.5,
+        2.5,
+        1.5,
+        0.0,
+        0.0
+      ],
+      "association_floor": 4.212,
+      "official_rank": 237,
+      "domestic_position": null
+    },
+    "63383": {
+      "team_name": "Egnatia Rrogozhinë",
+      "country": "ALB",
+      "coefficient": 4.5,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        1.0,
+        1.5,
+        2.0
+      ],
+      "association_floor": 1.625,
+      "official_rank": 310,
+      "domestic_position": null
+    },
+    "6392": {
+      "team_name": "FC Iberia 1999",
+      "country": "GEO",
+      "coefficient": 5.0,
+      "season_coefficients": [
+        0.0,
+        1.5,
+        0.0,
+        2.0,
+        1.5
+      ],
+      "association_floor": 1.2,
+      "official_rank": 289,
+      "domestic_position": null
+    },
+    "85": {
+      "team_name": "FC København",
+      "country": "DEN",
+      "coefficient": 54.375,
+      "season_coefficients": [
+        13.0,
+        7.0,
+        15.0,
+        7.375,
+        12.0
+      ],
+      "association_floor": 8.421,
+      "official_rank": 47,
+      "domestic_position": null
+    },
+    "939": {
+      "team_name": "FC Midtjylland",
+      "country": "DEN",
+      "coefficient": 48.25,
+      "season_coefficients": [
+        7.0,
+        8.0,
+        2.5,
+        9.25,
+        21.5
+      ],
+      "association_floor": 8.421,
+      "official_rank": 52,
+      "domestic_position": null
+    },
+    "593": {
+      "team_name": "FC Twente",
+      "country": "NED",
+      "coefficient": 13.585,
+      "season_coefficients": [
+        0.0,
+        2.5,
+        2.5,
+        8.5,
+        0.0
+      ],
+      "association_floor": 13.585,
+      "official_rank": 136,
+      "domestic_position": null
+    },
+    "2402": {
+      "team_name": "Gent",
+      "country": "BEL",
+      "coefficient": 39.0,
+      "season_coefficients": [
+        11.0,
+        11.0,
+        10.0,
+        7.0,
+        0.0
+      ],
+      "association_floor": 12.45,
+      "official_rank": 61,
+      "domestic_position": null
+    },
+    "906": {
+      "team_name": "Hajduk Split",
+      "country": "CRO",
+      "coefficient": 10.0,
+      "season_coefficients": [
+        1.5,
+        2.5,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "association_floor": 5.631,
+      "official_rank": 172,
+      "domestic_position": null
+    },
+    "314": {
+      "team_name": "Hearts",
+      "country": "SCO",
+      "coefficient": 11.5,
+      "season_coefficients": [
+        0.0,
+        4.0,
+        2.5,
+        5.0,
+        0.0
+      ],
+      "association_floor": 6.41,
+      "official_rank": 154,
+      "domestic_position": null
+    },
+    "17303": {
+      "team_name": "Inter Club d'Escaldes",
+      "country": "AND",
+      "coefficient": 7.5,
+      "season_coefficients": [
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5
+      ],
+      "association_floor": 1.366,
+      "official_rank": 214,
+      "domestic_position": null
+    },
+    "3643": {
+      "team_name": "Jablonec",
+      "country": "CZE",
+      "coefficient": 9.705,
+      "season_coefficients": [
+        5.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "association_floor": 9.705,
+      "official_rank": 181,
+      "domestic_position": null
+    },
+    "3108": {
+      "team_name": "Kairat",
+      "country": "KAZ",
+      "coefficient": 11.0,
+      "season_coefficients": [
+        2.5,
+        1.5,
+        0.0,
+        0.0,
+        7.0
+      ],
+      "association_floor": 2.75,
+      "official_rank": 156,
+      "domestic_position": null
+    },
+    "928": {
+      "team_name": "Kauno Žalgiris",
+      "country": "LTU",
+      "coefficient": 6.0,
+      "season_coefficients": [
+        1.5,
+        1.0,
+        1.5,
+        0.0,
+        2.0
+      ],
+      "association_floor": 1.55,
+      "official_rank": 246,
+      "domestic_position": null
+    },
+    "4323": {
+      "team_name": "KuPS",
+      "country": "FIN",
+      "coefficient": 14.0,
+      "season_coefficients": [
+        2.5,
+        2.0,
+        1.5,
+        1.5,
+        6.5
+      ],
+      "association_floor": 2.8,
+      "official_rank": 130,
+      "domestic_position": null
+    },
+    "10068": {
+      "team_name": "Lincoln Red Imps",
+      "country": "GIB",
+      "coefficient": 13.5,
+      "season_coefficients": [
+        2.5,
+        1.5,
+        2.0,
+        2.5,
+        5.0
+      ],
+      "association_floor": 1.424,
+      "official_rank": 138,
+      "domestic_position": null
+    },
+    "13775": {
+      "team_name": "Lugano",
+      "country": "SUI",
+      "coefficient": 21.25,
+      "season_coefficients": [
+        0.0,
+        2.0,
+        3.0,
+        14.25,
+        2.0
+      ],
+      "association_floor": 6.94,
+      "official_rank": 98,
+      "domestic_position": null
+    },
+    "6789": {
+      "team_name": "Monaco",
+      "country": "FRA",
+      "coefficient": 56.0,
+      "season_coefficients": [
+        15.0,
+        9.0,
+        0.0,
+        17.0,
+        15.0
+      ],
+      "association_floor": 16.699,
+      "official_rank": 46,
+      "domestic_position": null
+    },
+    "2394": {
+      "team_name": "Nordsjælland",
+      "country": "DEN",
+      "coefficient": 8.421,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        7.0,
+        0.0,
+        0.0
+      ],
+      "association_floor": 8.421,
+      "official_rank": 196,
+      "domestic_position": null
+    },
+    "8119": {
+      "team_name": "Pafos FC",
+      "country": "CYP",
+      "coefficient": 24.125,
+      "season_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        11.125,
+        13.0
+      ],
+      "association_floor": 7.138,
+      "official_rank": 83,
+      "domestic_position": null
+    },
+    "57": {
+      "team_name": "Panathinaikos",
+      "country": "GRE",
+      "coefficient": 29.25,
+      "season_coefficients": [
+        0.0,
+        2.0,
+        3.0,
+        11.0,
+        13.25
+      ],
+      "association_floor": 9.682,
+      "official_rank": 76,
+      "domestic_position": null
+    },
+    "3546": {
+      "team_name": "Riga",
+      "country": "LVA",
+      "coefficient": 10.5,
+      "season_coefficients": [
+        2.5,
+        2.0,
+        2.0,
+        1.5,
+        2.5
+      ],
+      "association_floor": 2.575,
+      "official_rank": 162,
+      "domestic_position": null
+    },
+    "3543": {
+      "team_name": "SC Freiburg",
+      "country": "GER",
+      "coefficient": 56.5,
+      "season_coefficients": [
+        0.0,
+        15.0,
+        13.0,
+        0.0,
+        28.5
+      ],
+      "association_floor": 18.58,
+      "official_rank": 44,
+      "domestic_position": null
+    },
+    "884": {
+      "team_name": "Sporting Braga",
+      "country": "POR",
+      "coefficient": 63.75,
+      "season_coefficients": [
+        16.0,
+        7.0,
+        7.0,
+        7.0,
+        26.75
+      ],
+      "association_floor": 14.633,
+      "official_rank": 33,
+      "domestic_position": null
+    },
+    "688": {
+      "team_name": "Trabzonspor",
+      "country": "TUR",
+      "coefficient": 11.0,
+      "season_coefficients": [
+        2.5,
+        6.0,
+        0.0,
+        2.5,
+        0.0
+      ],
+      "association_floor": 10.375,
+      "official_rank": 158,
+      "domestic_position": null
+    },
+    "11676": {
+      "team_name": "Universitatea Craiova",
+      "country": "ROU",
+      "coefficient": 10.5,
+      "season_coefficients": [
+        1.5,
+        2.5,
+        0.0,
+        1.5,
+        5.0
+      ],
+      "association_floor": 5.05,
+      "official_rank": 161,
+      "domestic_position": null
+    },
+    "3": {
+      "team_name": "Sunderland",
+      "country": "ENG",
+      "coefficient": 23.903,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 23.903,
+      "official_rank": null,
+      "domestic_position": 7
+    },
+    "52": {
+      "team_name": "AFC Bournemouth",
+      "country": "ENG",
+      "coefficient": 23.903,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 23.903,
+      "official_rank": null,
+      "domestic_position": 6
+    },
+    "106": {
+      "team_name": "Getafe",
+      "country": "ESP",
+      "coefficient": 19.409,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 19.409,
+      "official_rank": null,
+      "domestic_position": null
+    },
+    "118": {
+      "team_name": "OFI",
+      "country": "GRE",
+      "coefficient": 9.682,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 9.682,
+      "official_rank": null,
+      "domestic_position": null
+    },
+    "268": {
+      "team_name": "Como",
+      "country": "ITA",
+      "coefficient": 19.989,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 19.989,
+      "official_rank": null,
+      "domestic_position": null
+    },
+    "355": {
+      "team_name": "Sint-Truiden",
+      "country": "BEL",
+      "coefficient": 12.45,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 12.45,
+      "official_rank": null,
+      "domestic_position": null
+    },
+    "411": {
+      "team_name": "Mjällby",
+      "country": "SWE",
+      "coefficient": 5.925,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 5.925,
+      "official_rank": null,
+      "domestic_position": null
+    },
+    "494": {
+      "team_name": "NEC Nijmegen",
+      "country": "NED",
+      "coefficient": 13.585,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 13.585,
+      "official_rank": null,
+      "domestic_position": null
+    },
+    "7067": {
+      "team_name": "Torreense",
+      "country": "POR",
+      "coefficient": 14.633,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 14.633,
+      "official_rank": null,
+      "domestic_position": null
+    },
+    "10655": {
+      "team_name": "Thun",
+      "country": "SUI",
+      "coefficient": 6.94,
+      "season_coefficients": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "association_floor": 6.94,
+      "official_rank": null,
+      "domestic_position": null
+    }
+  }
+}
