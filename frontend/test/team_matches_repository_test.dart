@@ -43,8 +43,16 @@ void main() {
 
     pending[FixtureStatus.past]!.complete([_fixture(1, FixtureStatus.past)]);
     pending[FixtureStatus.live]!.complete([_fixture(2, FixtureStatus.live)]);
-    pending[FixtureStatus.upcoming]!
-        .complete([_fixture(3, FixtureStatus.upcoming)]);
+    pending[FixtureStatus.upcoming]!.complete([
+      _fixture(
+        3,
+        FixtureStatus.upcoming,
+        competitionType: CompetitionType.cup,
+        roundName: null,
+        stageName: 'Semi-finals',
+        leg: '2/2',
+      ),
+    ]);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -61,6 +69,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text(':'), findsNothing);
+    expect(find.textContaining('Semi-finals • 2nd Leg'), findsOneWidget);
     final competitionAndRound = find.byKey(
       const ValueKey('match-competition-round-3'),
     );
@@ -255,16 +264,25 @@ Widget _app(MockFixtureRepository repository, {required int teamId}) {
   );
 }
 
-Fixture _fixture(int fixtureId, FixtureStatus status) {
+Fixture _fixture(
+  int fixtureId,
+  FixtureStatus status, {
+  CompetitionType competitionType = CompetitionType.league,
+  String? roundName = '1',
+  String? stageName,
+  String? leg,
+}) {
   return Fixture(
     fixtureId: fixtureId,
     competitionId: 8,
     seasonId: 25583,
-    competitionType: CompetitionType.league,
+    competitionType: competitionType,
     homeTeamId: 9,
     awayTeamId: 8,
     status: status,
-    roundName: '1',
+    roundName: roundName,
+    stageName: stageName,
+    leg: leg,
     startingAt: '2026-09-12 15:00:00',
   );
 }
