@@ -68,15 +68,10 @@ void main() {
     expect(repository.calls.single, (league: null, position: null, offset: 0));
     await tester.tap(find.byTooltip('Ranking filters'));
     await tester.pumpAndSettle();
-    tester
-        .widget<DropdownButtonFormField<int>>(
-            find.byType(DropdownButtonFormField<int>))
-        .onChanged!(82);
-    tester
-        .widget<DropdownButtonFormField<String>>(
-            find.byType(DropdownButtonFormField<String>))
-        .onChanged!('GK');
-    await tester.tap(find.text('Apply'));
+    expect(find.text('Filter'), findsOneWidget);
+    await tester.tap(find.text('Bundesliga'));
+    await tester.tap(find.text('Goalkeeper'));
+    await tester.tap(find.text('UPDATE FILTER'));
     await tester.pumpAndSettle();
     expect(repository.calls.last, (league: 82, position: 'GK', offset: 0));
     expect(find.text('No ranking data for these filters'), findsOneWidget);
@@ -99,7 +94,8 @@ void main() {
     await tester.tap(find.byTooltip('Edit favorites'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Remove player'));
-    await tester.tap(find.text('Save'));
+    await tester.pump();
+    await tester.tap(find.text('UPDATE'));
     await tester.pumpAndSettle();
     expect(following.saved, isEmpty);
     expect(find.text('Add favorite players'), findsOneWidget);
@@ -113,5 +109,18 @@ void main() {
     await tester.tap(find.text('Could not load ranking · Retry'));
     await tester.pumpAndSettle();
     expect(find.text('Ranked player 1'), findsOneWidget);
+  });
+
+  testWidgets('see all opens the restored ranking search sheet',
+      (tester) async {
+    await pump(tester);
+    await tester.tap(find.text('See all'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('full-ranking-sheet')), findsOneWidget);
+    expect(find.text('1Touch Ranking'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'Look for players'), findsOneWidget);
+    expect(find.text('Ranked player 6'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
