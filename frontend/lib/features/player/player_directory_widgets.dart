@@ -6,9 +6,8 @@ import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
-import 'package:onetouch/features/player/player_picker_sheet.dart';
+import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/models/following_player.dart';
-import 'package:onetouch/models/player_detail.dart';
 
 class PlayerFavorites extends StatefulWidget {
   const PlayerFavorites({
@@ -35,7 +34,8 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
     final players = await showModalBottomSheet<List<FollowingPlayer>>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _FavoritesEditor(
+      backgroundColor: Colors.transparent,
+      builder: (_) => FollowingPlayersEditorSheet(
         players: widget.controller.players,
         repository: widget.searchRepository,
       ),
@@ -179,108 +179,21 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
   }
 }
 
-class _FavoritesEditor extends StatefulWidget {
-  const _FavoritesEditor({required this.players, required this.repository});
-
-  final List<FollowingPlayer> players;
-  final PlayerDetailRepository? repository;
-
-  @override
-  State<_FavoritesEditor> createState() => _FavoritesEditorState();
-}
-
-class _FavoritesEditorState extends State<_FavoritesEditor> {
-  late final _players = [...widget.players];
-
-  Future<void> _add() async {
-    final player = await showModalBottomSheet<PlayerCandidate>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => PlayerPickerSheet(repository: widget.repository),
-    );
-    if (player != null &&
-        mounted &&
-        !_players.any((item) => item.playerId == player.id)) {
-      setState(
-        () => _players.add(
-          FollowingPlayer(
-            playerId: player.id,
-            name: player.name,
-            imagePath: player.image,
-          ),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * .75,
-          child: Column(
-            children: [
-              ListTile(
-                title: const Text('FAVORITE PLAYERS'),
-                leading: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-                trailing: TextButton(
-                  onPressed: () => Navigator.pop(context, _players),
-                  child: const Text('Save'),
-                ),
-              ),
-              TextButton.icon(
-                onPressed: _add,
-                icon: const Icon(Icons.add),
-                label: const Text('Add player'),
-              ),
-              Expanded(
-                child: ReorderableListView.builder(
-                  itemCount: _players.length,
-                  onReorderItem: (oldIndex, newIndex) => setState(() {
-                    _players.insert(newIndex, _players.removeAt(oldIndex));
-                  }),
-                  itemBuilder: (_, index) {
-                    final player = _players[index];
-                    return ListTile(
-                      key: ValueKey(player.playerId),
-                      leading: PlayerRemoteImage(player.imagePath),
-                      title: Text(player.name),
-                      trailing: Padding(
-                        padding: const EdgeInsets.only(right: 24),
-                        child: IconButton(
-                          tooltip: 'Remove player',
-                          onPressed: () =>
-                              setState(() => _players.removeAt(index)),
-                          icon: const Icon(Icons.remove_circle_outline),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-}
-
 class PlayerRankingPanel extends StatefulWidget {
   const PlayerRankingPanel({
     super.key,
     required this.repository,
     this.followingController,
+    this.detailRepository,
     this.league,
     this.position,
-    this.full = false,
   });
 
   final PlayerDirectoryRepository repository;
   final PlayerFollowingController? followingController;
+  final PlayerDetailRepository? detailRepository;
   final int? league;
   final String? position;
-  final bool full;
 
   @override
   State<PlayerRankingPanel> createState() => _PlayerRankingPanelState();
@@ -325,67 +238,20 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
   }
 
   Future<void> _filters() async {
-    var league = _league;
-    var position = _position;
-    final applied = await showModalBottomSheet<bool>(
+    final selection = await showModalBottomSheet<PlayerRankingFilterSelection>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<int>(
-                  initialValue: league ?? 0,
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'League'),
-                  items: [
-                    const DropdownMenuItem(
-                      value: 0,
-                      child: Text('All leagues'),
-                    ),
-                    for (final item in _page?.leagues ?? <PlayerLeague>[])
-                      DropdownMenuItem(
-                        value: item.id,
-                        child: Text(item.name),
-                      ),
-                  ],
-                  onChanged: (value) =>
-                      update(() => league = value == 0 ? null : value),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: position ?? 'ALL',
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Position'),
-                  items: [
-                    for (final item in ['ALL', 'GK', 'DF', 'MF', 'FW'])
-                      DropdownMenuItem(
-                        value: item,
-                        child: Text(
-                          item == 'ALL' ? 'All positions' : item,
-                        ),
-                      ),
-                  ],
-                  onChanged: (value) => update(
-                    () => position = value == 'ALL' ? null : value,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Apply'),
-                ),
-              ],
-            ),
-          ),
-        ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => PlayerRankingFilterSheet(
+        leagues: _page?.leagues ?? const [],
+        season: _page?.season,
+        initialLeague: _league,
+        initialPosition: _position,
       ),
     );
-    if (applied == true && mounted) {
-      _league = league;
-      _position = position;
+    if (selection != null && mounted) {
+      _league = selection.league;
+      _position = selection.position;
       await _load();
     }
   }
@@ -469,41 +335,26 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
           ),
           child: Column(
             children: [
-              for (final player in widget.full ? _items : _items.take(5))
+              for (final player in _items.take(5))
                 _RankingRow(
                   player: player,
                   isFollowing:
                       widget.followingController?.contains(player.id) ?? false,
                 ),
               const SizedBox(height: 8),
-              if (!widget.full)
-                GestureDetector(
-                  onTap: () => showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (_) => SafeArea(
-                      child: SizedBox(
-                        height: MediaQuery.sizeOf(context).height * .85,
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(24),
-                          child: PlayerRankingPanel(
-                            repository: widget.repository,
-                            followingController: widget.followingController,
-                            league: _league,
-                            position: _position,
-                            full: true,
-                          ),
-                        ),
-                      ),
-                    ),
+              GestureDetector(
+                onTap: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => PlayerFullRankingSheet(
+                    players: _items,
+                    followingController: widget.followingController,
+                    detailRepository: widget.detailRepository,
                   ),
-                  child: Text('See all', style: Body2.style),
                 ),
-              if (widget.full && _items.length < (_page?.total ?? 0))
-                TextButton(
-                  onPressed: () => _load(more: true),
-                  child: const Text('Load more'),
-                ),
+                child: Text('See all', style: Body2.style),
+              ),
             ],
           ),
         );
