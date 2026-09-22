@@ -1,6 +1,7 @@
 """팀·언어·기간 경계와 수집 실패를 운영 DB 변경 없이 검증해요."""
 from datetime import datetime, timedelta, timezone
 import json
+from pathlib import Path
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
@@ -8,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from one_touch_loader.core.news import (
     ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, canonical_url, load_sources,
-    news_language, parse_feed, select_news,
+    news_language, parse_article_page, parse_feed, select_news,
 )
 from one_touch_loader.loaders import news_loader as loader
 
@@ -61,6 +62,76 @@ class SelectionTests(unittest.TestCase):
 
 
 class FeedTests(unittest.TestCase):
+    def test_euc_kr_and_numeric_publication_formats(self):
+        cases = [('20260921013544+0900', '%Y%m%d%H%M%S%z', datetime(2026, 9, 20, 16, 35, 44, tzinfo=timezone.utc)),
+                 ('Sun, 20 09 2026 23:10:46 +0900', '%a, %d %m %Y %H:%M:%S %z',
+                  datetime(2026, 9, 20, 14, 10, 46, tzinfo=timezone.utc))]
+        for value, date_format, expected in cases:
+            feed = f'''<?xml version="1.0" encoding="euc-kr"?><rss><channel><language>ko</language><item>
+              <title>바르셀로나 경기 소식</title><link>https://example.com/1</link>
+              <pubDate>{value}</pubDate></item></channel></rss>'''.encode('euc-kr')
+            with self.subTest(date_format=date_format):
+                row, = parse_feed(feed, {**SOURCE, 'date_format': date_format})
+                self.assertEqual(row['title'], '바르셀로나 경기 소식')
+                self.assertEqual(row['published_at'], expected)
+
+    def test_dublin_core_date_and_configured_local_timezone(self):
+        for value in ('2026-09-21T01:16:00+09:00', '2026-09-21 01:16:00'):
+            feed = f'''<rss xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><item>
+              <title>맨시티 소식</title><link>https://example.com/1</link>
+              <dc:date>{value}</dc:date></item></channel></rss>'''.encode()
+            with self.subTest(value=value):
+                row, = parse_feed(feed, SOURCE)
+                self.assertEqual(row['published_at'], datetime(2026, 9, 20, 16, 16, tzinfo=timezone.utc))
+
+    def test_confirmed_feed_language_metadata_exception_is_source_specific(self):
+        feed = b'''<rss><channel><language>de</language><item><title>Bayern sign a player</title>
+          <link>https://example.com/1</link><pubDate>Sun, 20 Sep 2026 16:18:46 +0000</pubDate>
+          </item></channel></rss>'''
+        with self.assertRaises(ValueError):
+            parse_feed(feed, {**SOURCE, 'language': 'en'})
+        row, = parse_feed(feed, {**SOURCE, 'language': 'en', 'feed_language': 'de'})
+        self.assertEqual(row['language'], 'en')
+
+    def test_news_sitemap_uses_publication_date_and_filters_language(self):
+        feed = '''<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+          xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+          <url><loc>https://example.com/1?utm_source=feed</loc><lastmod>2026-09-21</lastmod><news:news>
+            <news:publication><news:name>공급자</news:name><news:language>ko</news:language></news:publication>
+            <news:publication_date>2026-09-20T22:00:00+09:00</news:publication_date>
+            <news:title>맨시티 경기 소식</news:title><news:keywords>바르셀로나, 뮌헨</news:keywords>
+          </news:news></url>
+          <url><loc>https://example.com/2</loc><lastmod>2026-09-21</lastmod></url>
+          <url><loc>https://example.com/3</loc><news:news>
+            <news:publication><news:language>fr</news:language></news:publication>
+            <news:publication_date>2026-09-20T23:00:00+09:00</news:publication_date>
+            <news:title>Barcelona</news:title></news:news></url></urlset>'''.encode()
+        row, = parse_feed(feed, {**SOURCE, 'format': 'news_sitemap'})
+        self.assertEqual(row['published_at'], datetime(2026, 9, 20, 13, tzinfo=timezone.utc))
+        self.assertEqual(row['url'], 'https://example.com/1')
+        self.assertEqual(row['categories'], [])
+
+    def test_articles_with_unreadable_dates_are_reported_as_failure(self):
+        feed = b'''<rss><channel><item><title>Barcelona</title><link>https://example.com/1</link>
+          <pubDate>unknown</pubDate></item></channel></rss>'''
+        with self.assertRaises(ValueError):
+            parse_feed(feed, SOURCE)
+        self.assertEqual(parse_feed(b'<rss><channel/></rss>', SOURCE), [])
+
+    def test_html_article_metadata_preserves_publication_time_and_not_body(self):
+        page = '''<html lang="ko"><head><meta property="og:title" content="맨시티 &amp; 바르셀로나">
+          <meta property="article:published_time" content="2026-09-20T22:00:00+09:00">
+          <meta property="article:modified_time" content="2026-09-21T01:00:00+09:00">
+          <meta property="og:image" content="https://example.com/image.jpg"></head><body>기사 본문</body></html>'''.encode()
+        row = parse_article_page(page, SOURCE, 'https://example.com/1')
+        self.assertEqual(row['published_at'], datetime(2026, 9, 20, 13, tzinfo=timezone.utc))
+        self.assertEqual(row['title'], '맨시티 & 바르셀로나')
+        self.assertEqual(row['image_url'], 'https://example.com/image.jpg')
+        self.assertNotIn('body', row)
+        self.assertNotIn('description', row)
+        with self.assertRaises(ValueError):
+            parse_article_page(page.replace(b'lang="ko"', b'lang="fr"'), SOURCE, 'https://example.com/1')
+
     def test_korean_datetime_and_description_image(self):
         feed = '''<rss><channel><language>ko</language><item>
           <title>토트넘 &amp; 아스널</title><link>https://example.com/a?idxno=1&amp;utm_source=feed</link>
@@ -95,18 +166,114 @@ class FeedTests(unittest.TestCase):
         aliases = json.loads(ALIASES_PATH.read_text(encoding='utf-8'))['teams']
         teams = [{'team_id': i, 'competition_id': league} for i, league in [(6, 8), (14, 8), (591, 301), (4508, 301), (2930, 384)]]
         matcher = TeamNewsMatcher(teams, aliases)
-        self.assertEqual(matcher.match({**article(1, title='토트넘은 맨유와 맞붙는다')}, [8]), [6, 14])
-        self.assertEqual(matcher.match({**article(1, title='선수의 이적 소식')}, [8]), [])
-        self.assertEqual(matcher.match({**article(1, title='PSG sign a player', language='en')}, [301]), [591])
-        self.assertEqual(matcher.match({**article(1, title='Paris FC sign a player', language='en')}, [301]), [4508])
-        self.assertEqual(matcher.match({**article(1, title='Inter Miami sign a player', language='en')}, [384]), [])
-        self.assertEqual(matcher.match({**article(1, title='토트넘 소식')}, [564]), [])
+        self.assertEqual(matcher.match(article(1, title='토트넘은 맨유와 맞붙는다')), [6, 14])
+        self.assertEqual(matcher.match(article(1, title='선수의 이적 소식')), [])
+        self.assertEqual(matcher.match(article(1, title='PSG sign a player', language='en')), [591])
+        self.assertEqual(matcher.match(article(1, title='Paris FC sign a player', language='en')), [4508])
+        self.assertEqual(matcher.match(article(1, title='Inter Miami sign a player', language='en')), [])
         tagged = {**article(1, title='토트넘 소식'), 'categories': ['맨유']}
-        self.assertEqual(matcher.match(tagged, [8]), [6])
-        self.assertEqual(matcher.match({**article(1), 'categories': ['토트넘', '맨유']}, [8]), [])
+        self.assertEqual(matcher.match(tagged), [6])
+        self.assertEqual(matcher.match({**article(1), 'categories': ['토트넘', '맨유']}), [])
+
+
+class TeamMatchingRegressionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fixture = json.loads((Path(__file__).parent / 'fixtures/news_team_matching.json').read_text(encoding='utf-8'))
+        cls.aliases = json.loads(ALIASES_PATH.read_text(encoding='utf-8'))['teams']
+        cls.matcher = TeamNewsMatcher(cls.fixture['teams'], cls.aliases)
+
+    def test_audited_article_titles_and_tags(self):
+        for row in self.fixture['articles']:
+            with self.subTest(article_id=row['snapshot_article_id'], title=row['title']):
+                self.assertEqual(sorted(self.matcher.match(row)), row['expected_team_ids'])
+
+    def test_registered_names_for_all_current_teams(self):
+        self.assertEqual(len(self.fixture['teams']), 96)
+        for team in self.fixture['teams']:
+            saved = self.aliases[str(team['team_id'])]
+            for language in ('ko', 'en'):
+                for term in saved[language]:
+                    # Nice는 형용사와 구분할 태그가 있어야 짧은 구단명으로 사용할 수 있어요.
+                    categories = [term] if term in saved.get('title_requires_category', []) else []
+                    with self.subTest(team_id=team['team_id'], term=term):
+                        self.assertEqual(self.matcher.match({'title': term, 'language': language,
+                                                             'categories': categories}), [team['team_id']])
+
+    def test_long_names_do_not_match_a_different_club_inside_them(self):
+        cases = [
+            ('Inter Milan sign a defender', [2930]),
+            ('인테르 밀란의 이적 소식', [2930]),
+            ('RCD Espanyol de Barcelona sign a player', [528]),
+            ('Deportivo Alavés sign a player', [2975]),
+            ('보루시아 뮌헨글라트바흐 소식', [683]),
+            ('보루시아 뮌헨글라드바흐 소식', [683]),
+            ('Inter Milan face AC Milan', [113, 2930]),
+            ('RCD Espanyol de Barcelona face Barcelona', [83, 528]),
+            ('보루시아 뮌헨글라트바흐와 뮌헨의 경기', [503, 683]),
+        ]
+        for title, expected in cases:
+            with self.subTest(title=title):
+                self.assertEqual(sorted(self.matcher.match(article(1, title=title))), expected)
+
+    def test_ambiguous_phrases_do_not_select_an_unrelated_team(self):
+        for title in ('선수의 리즈 시절을 돌아본다', '리즈시절의 활약',
+                      'Inter Miami sign a player', 'Villa Valle sign a player',
+                      'A very nice evening', 'Nice evening'):
+            with self.subTest(title=title):
+                self.assertEqual(self.matcher.match(article(1, title=title)), [])
+        self.assertEqual(self.matcher.match({**article(1, title='Inter Miami sign a player'),
+                                             'categories': ['Inter']}), [])
+        self.assertEqual(self.matcher.match(article(1, title='리즈가 영입한 선수의 리즈 시절')), [71])
+        self.assertEqual(self.matcher.match(article(1, title='Inter face Inter Miami')), [2930])
+        self.assertEqual(self.matcher.match(article(1, title='OGC Nice sign a player')), [450])
+        self.assertEqual(self.matcher.match({**article(1, title='Nice sign a player'),
+                                             'categories': ['OGC Nice']}), [450])
+
+    def test_korean_particles_mixed_names_and_word_boundaries(self):
+        cases = [('PSG는 인테르와 맞붙는다', [591, 2930]),
+                 ('맨체스터 유나이티드vs리버풀', [8, 14]),
+                 ('뮌헨글라트바흐 소식', []), ('그리즈만 소식', []),
+                 ('Liverpoolian perspective', []), ('Parish news', [])]
+        for title, expected in cases:
+            with self.subTest(title=title):
+                self.assertEqual(sorted(self.matcher.match(article(1, title=title))), expected)
 
 
 class LoaderTests(unittest.TestCase):
+    def test_shared_html_reader_deduplicates_links_and_uses_configured_selector(self):
+        source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
+        listing = b'''<div class="news"><a href="/1">Title</a><a href="/1">Image</a></div>
+          <aside><a href="/unrelated">Other</a></aside>'''
+        page = b'''<html lang="ko"><meta property="og:title" content="Barcelona">
+          <meta property="article:published_time" content="2026-09-20T22:00:00+09:00"></html>'''
+        session = Mock()
+        session.get.side_effect = [Mock(content=listing), Mock(content=page)]
+        rows = loader.read_source(session, source)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['url'], 'https://example.com/1')
+        self.assertEqual(session.get.call_count, 2)
+
+    def test_empty_html_list_is_a_source_failure_and_does_not_write(self):
+        session = Mock()
+        session.get.return_value.content = b'<html><body>No article list</body></html>'
+        source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
+        with patch.object(loader, 'save_articles') as save:
+            report = loader.refresh(apply=False, sources=[source], teams=[], session=session, now=NOW)
+        self.assertEqual(report['sources'][0]['error'], 'ValueError')
+        save.assert_not_called()
+
+    def test_cross_league_title_is_matched_through_refresh(self):
+        session = Mock()
+        session.get.return_value.content = '''<rss><channel><language>ko</language><item>
+          <title>바르사, 토트넘과 맞붙는다</title><link>https://example.com/cross-league</link>
+          <pubDate>Sat, 19 Sep 2026 17:00:00 GMT</pubDate>
+        </item></channel></rss>'''.encode()
+        teams = [{'team_id': 6, 'competition_id': 8}, {'team_id': 83, 'competition_id': 564}]
+        report = loader.refresh(apply=False, sources=[SOURCE], teams=teams, session=session, now=NOW)
+        self.assertEqual(report['sources'][0]['team_ids'], [6, 83])
+        self.assertIsNone(report['sources'][0]['error'])
+
     def test_check_is_read_only_and_source_failures_are_separate(self):
         session = Mock()
         good = Mock(content=b'<rss><channel/></rss>')
