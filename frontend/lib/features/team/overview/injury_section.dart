@@ -143,8 +143,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
 
   Widget _buildInjuryTile(InjuredTeamPlayer player) {
     final appColors = AppColors.of(context);
-    return Container(
-      key: ValueKey('injured-player-${player.playerId}'),
+    final content = Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -210,6 +209,15 @@ class _InjuryStatusState extends State<InjuryStatus> {
             ),
           ),
         ],
+      ),
+    );
+    return Semantics(
+      button: true,
+      label: 'Open ${player.playerName}',
+      child: InkWell(
+        key: ValueKey('injured-player-${player.playerId}'),
+        onTap: () => openPlayerPage(context, player.playerId.toString()),
+        child: content,
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
@@ -55,6 +56,40 @@ void main() {
     expect(find.textContaining('Back in'), findsNothing);
     expect(find.byKey(const ValueKey('injury-5001')), findsOneWidget);
     expect(find.byKey(const ValueKey('injury-5002')), findsOneWidget);
+  });
+
+  testWidgets('injured player opens the player page', (tester) async {
+    final repository = _TestTeamInjuryRepository(
+      (teamId) async => _report(teamId: teamId),
+    );
+    addTearDown(repository.dispose);
+    final router = GoRouter(
+      initialLocation: '/team',
+      routes: [
+        GoRoute(
+          path: '/team',
+          builder: (_, __) => Scaffold(
+            body: InjuryStatus(
+              teams: const <String, dynamic>{'id': 83},
+              repository: repository,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/players/:id',
+          builder: (_, state) => Text('Player ${state.pathParameters['id']}'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('injured-player-1001')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Player 1001'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('shows the API empty state', (tester) async {

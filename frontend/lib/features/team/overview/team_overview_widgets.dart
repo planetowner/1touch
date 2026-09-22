@@ -15,8 +15,7 @@ class TransferTile extends StatelessWidget {
     final isLoan = (transfer.displayType ?? '').contains('Loan');
     final appColors = AppColors.of(context);
 
-    return Container(
-      key: ValueKey('transfer-${transfer.transferId}'),
+    final content = Container(
       margin: const EdgeInsets.only(left: 24, right: 24, bottom: 16, top: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -127,6 +126,15 @@ class TransferTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+    return Semantics(
+      button: true,
+      label: 'Open ${transfer.playerName ?? 'player'}',
+      child: InkWell(
+        key: ValueKey('transfer-${transfer.transferId}'),
+        onTap: () => openPlayerPage(context, transfer.playerId.toString()),
+        child: content,
       ),
     );
   }
