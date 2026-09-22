@@ -134,6 +134,26 @@ void main() {
     expect(defenseTerritoryOpacity(-20.8), closeTo(0.292, 0.0001));
     expect(defenseTerritoryOpacity(23.4), closeTo(0.734, 0.0001));
     expect(defenseTerritoryOpacity(-2.7), closeTo(0.473, 0.0001));
+    final arrowShaft = defenseTerritoryArrowShaftRect(
+      const Size(334, 208.75),
+    );
+    expect(arrowShaft.width, 233);
+    expect(arrowShaft.height, 28);
+    expect(arrowShaft.left, lessThan(334 / 3));
+    expect(arrowShaft.right, greaterThan(334 * 2 / 3));
+    expect(arrowShaft.top, 208.75 / 2);
+    final arrowHeadTop = arrowShaft.center.dy - 208.75 * 0.18;
+    final alignedLabelTop = defenseTerritoryLabelTop(
+      labelHeight: 24,
+      arrowHeadTop: arrowHeadTop,
+    );
+    expect(alignedLabelTop + 24, arrowHeadTop - 8);
+
+    final compactArrowShaft = defenseTerritoryArrowShaftRect(
+      const Size(224, 140),
+    );
+    expect(compactArrowShaft.left, 8);
+    expect(compactArrowShaft.right, greaterThan(224 * 2 / 3));
     expect(find.text('DEFENSE'), findsOneWidget);
     expect(find.text('PRESSURE'), findsNothing);
     expect(find.text('Tackles Won'), findsOneWidget);
