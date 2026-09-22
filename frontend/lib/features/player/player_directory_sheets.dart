@@ -445,25 +445,28 @@ class _SearchPlayerRow extends StatelessWidget {
   final VoidCallback? onSelect;
   @override
   Widget build(BuildContext context) => Column(children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(children: [
-            ClipOval(
-                child: ColoredBox(
-              color: AppColors.of(context).subtleBackground,
-              child: PlayerRemoteImage(player.image, size: 56),
-            )),
-            const SizedBox(width: 16),
-            Expanded(child: _PlayerIdentity(name: player.name)),
-            IconButton(
-              onPressed: onSelect,
-              icon: Icon(
-                  selected
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                  size: 28),
-            ),
-          ]),
+        InkWell(
+          onTap: onSelect,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(children: [
+              ClipOval(
+                  child: ColoredBox(
+                color: AppColors.of(context).subtleBackground,
+                child: PlayerRemoteImage(player.image, size: 56),
+              )),
+              const SizedBox(width: 16),
+              Expanded(child: _PlayerIdentity(name: player.name)),
+              IconButton(
+                onPressed: onSelect,
+                icon: Icon(
+                    selected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    size: 28),
+              ),
+            ]),
+          ),
         ),
         Divider(color: divider, height: 1),
       ]);

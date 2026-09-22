@@ -307,7 +307,15 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
         final isSelected = _selectedPlayerId == player.id;
         final alreadyFollowed =
             _followedPlayers.any((entry) => entry.id == player.id);
+        void selectPlayer() {
+          setState(() {
+            _selectedPlayerId = player.id;
+            _updateEnabled = true;
+          });
+        }
+
         return ListTile(
+          onTap: alreadyFollowed ? null : selectPlayer,
           contentPadding: EdgeInsets.zero,
           leading: SizedBox(
             width: 52,
@@ -326,21 +334,13 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          trailing: GestureDetector(
-            onTap: alreadyFollowed
-                ? null
-                : () => setState(() {
-                      _selectedPlayerId = player.id;
-                      _updateEnabled = true;
-                    }),
-            child: Icon(
-              isSelected || alreadyFollowed
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_off,
-              color: alreadyFollowed
-                  ? AppColors.of(context).mutedForeground
-                  : Theme.of(context).colorScheme.onSurface,
-            ),
+          trailing: Icon(
+            isSelected || alreadyFollowed
+                ? Icons.radio_button_checked
+                : Icons.radio_button_off,
+            color: alreadyFollowed
+                ? AppColors.of(context).mutedForeground
+                : Theme.of(context).colorScheme.onSurface,
           ),
         );
       },
