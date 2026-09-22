@@ -28,7 +28,7 @@ bool hasEuropeanKnockoutStage(Iterable<Fixture> fixtures) {
   return fixtures.any(
     (fixture) =>
         fixture.competitionType == CompetitionType.europe &&
-        knockoutRoundFromName(fixture.roundName) != null,
+        knockoutRoundFromName(fixture.roundOrStageName) != null,
   );
 }
 
@@ -99,7 +99,9 @@ class KnockoutBracket extends StatelessWidget {
 
   List<Fixture> _fixturesFor(KnockoutRound round) {
     final matches = fixtures
-        .where((fixture) => knockoutRoundFromName(fixture.roundName) == round)
+        .where(
+          (fixture) => knockoutRoundFromName(fixture.roundOrStageName) == round,
+        )
         .toList()
       ..sort((a, b) {
         final aKickoff = a.kickoff;

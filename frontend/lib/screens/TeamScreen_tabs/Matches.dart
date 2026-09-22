@@ -372,10 +372,9 @@ class _MatchesTabState extends State<MatchesTab> {
     final leagueName =
         competitionRepository.findById(fixture.competitionId)?.name ??
             'Unknown';
-    final roundName = fixture.roundName?.trim();
-    final competitionAndRound = roundName?.isNotEmpty ?? false
-        ? '$leagueName • $roundName'
-        : leagueName;
+    final roundLabel = fixture.displayRoundLabel;
+    final competitionAndRound =
+        roundLabel != null ? '$leagueName • $roundLabel' : leagueName;
     final kickoff = fixture.kickoff?.toLocal();
 
     return GestureDetector(

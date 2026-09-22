@@ -379,7 +379,7 @@ class MatchInfoTab extends StatelessWidget {
             homeScore: homeScore,
             awayScore: awayScore,
             statusLabel: isLive ? 'Live' : 'Final',
-            roundLabel: fixture.roundName,
+            roundLabel: fixture.displayRoundLabel,
             venueLabel: detail?.venueName,
           ),
           if (matchEvents.isNotEmpty) ...[
