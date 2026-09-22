@@ -128,6 +128,7 @@ class _PlayersState extends State<Players> {
                     PlayerRankingPanel(
                         repository:
                             widget.repository ?? playerDirectoryRepository,
+                        detailRepository: widget.detailRepository,
                         followingController: widget.followingController ??
                             playerFollowingController),
                     const SizedBox(height: 48),
