@@ -197,3 +197,41 @@ def refresh_squad_roles_after_fixture(connection, fixture_id: int, *,
         if scope is not None and before != _fixture_usage_snapshot(cur, fixture_id):
             refresh_current_squad_roles(connection=connection,
                                         team_ids=sorted({scope['home_team_id'], scope['away_team_id']}))
+
+
+def collect_squad_role_absences(data: dict, *, cache: dict | None = None,
+                               refresh_training: bool = False, client=None, progress=None) -> tuple[list, dict]:
+    cache = cache or {}
+    previous = cache.get('historical_absences', {}) if (
+        not refresh_training and cache.get('absence_cache_version') == 1
+        and cache.get('current_season') == data['current_season']) else {}
+    training_ids = {s['season_id'] for s in data['seasons'] if s['season_name'] in data['training_seasons']}
+    history, records, pending = {}, {}, []
+    fixture_keys = {}
+    for fixture in data['fixtures']:
+        fid = str(fixture['fixture_id'])
+        key = [fixture['season_id'], fixture['home_team_id'], fixture['away_team_id'],
+               fixture['starting_at'].isoformat()]
+        fixture_keys[fid] = key
+        saved = previous.get(fid)
+        if fixture['season_id'] in training_ids and saved is not None and saved['fixture_key'] == key:
+            # 현재 시즌은 매번 조회하고, 완료된 학습 시즌의 결장 응답만 재사용해요.
+            record = dict(saved['record'], absences=[dict(row, **{
+                field: date.fromisoformat(row[field]) if isinstance(row.get(field), str) else row.get(field)
+                for field in ('start_date', 'end_date')}) for row in saved['record']['absences']])
+            records[fid] = record
+            history[fid] = {**saved, 'record': record}
+        else:
+            pending.append(fixture)
+    reused = len(history)
+    fetched = collect_fixture_absences(pending, client=client, progress=progress) if pending else []
+    records.update({str(row['fixture_id']): row for row in fetched})
+    for fixture in pending:
+        fid = str(fixture['fixture_id'])
+        if fixture['season_id'] in training_ids:
+            history[fid] = dict(fixture_key=fixture_keys[fid], record=records[fid], checked_at=data['as_of'].isoformat())
+    # 부상이 시즌 경계를 넘을 수 있어 과거·현재 응답을 함께 계산기에 넘겨요.
+    absences = [records[str(f['fixture_id'])] for f in data['fixtures']]
+    return absences, dict(absence_cache_version=1, current_season=data['current_season'],
+                         historical_absences=history, historical_fixtures_reused=reused,
+                         absence_fixtures_fetched=len(pending))

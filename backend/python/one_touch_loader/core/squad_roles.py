@@ -3,9 +3,12 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from datetime import date
+import hashlib
+import json
 from math import log
 
 import numpy as np
+import sklearn
 from sklearn.mixture import GaussianMixture
 from threadpoolctl import threadpool_limits
 
@@ -16,6 +19,8 @@ from .transfer_source_rules import WITHHELD_PLAYER_MOVEMENTS
 USAGE_ROLES = ('sporadic', 'rotation', 'important', 'crucial')
 PROSPECT_MAX_AGE = 21
 MODEL_SEED = 20260920
+# 학습 방식이 바뀌면 이전 경계를 재사용하지 않도록 버전을 올려요.
+CALIBRATION_VERSION = 1
 
 
 def age_at(birth_date: date, reference_date: date) -> int:
@@ -183,21 +188,36 @@ def classify_usage(row: dict, model: dict) -> dict:
     return result
 
 
-def calculate_squad_roles(data: dict, *, model: dict | None = None) -> dict:
+def calculate_squad_roles(data: dict, *, model: dict | None = None,
+                          calibration: dict | None = None) -> dict:
     rows = build_usage_rows(data)
     training = [r for r in rows if r['season_name'] in data['training_seasons']]
-    if model is None:
-        model = fit_usage_model(training)
-        model.update(training_seasons=data['training_seasons'], applies_to_season=data['current_season'])
-        # 시즌별 경계는 학습 안정성 진단이에요. 경기마다 과거 시즌을 다시 학습하지 않아요.
-        stability = {season: fit_usage_model([r for r in training if r['season_name'] == season])
-                     for season in data['training_seasons']}
-    else:
+    if model is not None:
+        # 경기 저장 경로는 배포된 모델과 최신 출전 기록을 사용하고 과거 학습을 반복하지 않아요.
         if model['applies_to_season'] != data['current_season']:
             raise ValueError('Recalibrate squad roles for the current season before applying them')
-        stability = {}
+        stability, signature, reused = {}, None, False
+    else:
+        # DB의 과거 기록도 매번 다시 계산해 정정을 반영해요. 학습에 쓰는 값이 같을 때만 경계를 재사용해요.
+        signature = hashlib.sha256(json.dumps(dict(
+            version=CALIBRATION_VERSION, seed=MODEL_SEED, sklearn=sklearn.__version__,
+            current_season=data['current_season'], training_seasons=data['training_seasons'],
+            samples={season: sorted(r['usage_rate'] for r in training
+                                    if r['season_name'] == season and r['usage_rate'] is not None)
+                     for season in data['training_seasons']},
+        ), sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        reused = calibration is not None and calibration.get('training_signature') == signature
+        if reused:
+            model, stability = calibration['model'], calibration['season_stability']
+        else:
+            model = fit_usage_model(training)
+            model.update(training_seasons=data['training_seasons'], applies_to_season=data['current_season'])
+            # 시즌별 경계는 안정성 진단이에요. 그 시즌 선수에게 미래 시즌의 경계를 소급 적용하지 않아요.
+            stability = {season: fit_usage_model([r for r in training if r['season_name'] == season])
+                         for season in data['training_seasons']}
     current = [classify_usage(r, model) for r in rows if r['current_roster']]
     return dict(as_of=data['as_of'].isoformat(), model=model, season_stability=stability,
+                training_signature=signature, calibration_reused=reused,
                 training_unavailable=dict(Counter(r['unavailable_reason'] for r in training if r['usage_rate'] is None)),
                 role_counts=dict(Counter(r['role'] or 'unavailable' for r in current)),
                 current_unavailable=dict(Counter(r['unavailable_reason'] for r in current if r['role'] is None)),

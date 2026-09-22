@@ -66,7 +66,7 @@ def _previous_positions(
     finished_rounds.sort(key=lambda row: int(row["name"]))
 
     # 현재 분데스리가처럼 완료 라운드가 하나뿐이면 비교할 직전 순위가 없어요.
-    if len(finished_rounds) == 1:
+    if len(finished_rounds) < 2:
         return {}
 
     previous_round_id = finished_rounds[-2]["id"]
@@ -79,11 +79,13 @@ def _previous_positions(
 def _standing_rows(
     sm: SportmonksClient,
     season_id: int,
+    *, standings=None, previous_positions=None,
 ) -> List[Tuple]:
-    previous_positions = _previous_positions(sm, season_id)
+    if previous_positions is None:
+        previous_positions = _previous_positions(sm, season_id)
     rows: List[Tuple] = []
 
-    for standing in sm.get_standings_for_season(season_id):
+    for standing in sm.get_standings_for_season(season_id) if standings is None else standings:
         details = {
             detail["type"]["code"]: detail["value"]
             for detail in standing["details"]
@@ -107,11 +109,36 @@ def _standing_rows(
     return rows
 
 
-def _replace_season(season_id: int, rows: List[Tuple]) -> None:
+def _replace_season(season_id: int, rows: List[Tuple], *, live: bool = False, clear_live: bool = False) -> None:
+    # 경기 중 임시 승점을 공식 순위와 분리해 팀 특성 학습·집계에 섞이지 않게 해요.
+    table = 'live_standings' if live else 'standings'
     with transaction() as connection:
         with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM standings WHERE season_id = %s", (season_id,))
-            cursor.executemany(SQL_INSERT_STANDING, rows)
+            if clear_live:
+                # 종료 후 임시 표를 지워 다음 경기 시작 때 이전 경기의 라이브 순위를 보여주지 않아요.
+                cursor.execute('DELETE FROM live_standings WHERE season_id=%s', (season_id,))
+            cursor.execute(f"DELETE FROM {table} WHERE season_id = %s", (season_id,))
+            if rows:
+                cursor.executemany(SQL_INSERT_STANDING.replace('INSERT INTO standings', f'INSERT INTO {table}'), rows)
+
+
+def refresh_current_table(season_id: int, competition_id: int, *, live: bool, apply: bool,
+                          clear_live: bool = False) -> dict:
+    client = SportmonksClient()
+    source = client.get_live_standings(competition_id) if live else client.get_standings_for_season(season_id)
+    if not source:
+        raise ValueError(f'Standings are not available: {competition_id} {season_id}')
+    if any(row['season_id'] != season_id for row in source):
+        raise ValueError('Standings source season differs from the requested season')
+    expected = {r[0] for r in fetch_all('SELECT team_id FROM team_seasons WHERE season_id=%s', (season_id,))}
+    if {r['participant_id'] for r in source} != expected or len(source) != len(expected):
+        raise ValueError('Standings must cover every season participant exactly once')
+    previous = dict(fetch_all('SELECT team_id,previous_position FROM standings WHERE season_id=%s',
+                              (season_id,))) if live else None
+    rows = _standing_rows(client, season_id, standings=source, previous_positions=previous)
+    if apply:
+        _replace_season(season_id, rows, live=live, clear_live=clear_live)
+    return {'season_id': season_id, 'live': live, 'rows': len(rows)}
 
 
 def collect_standings(

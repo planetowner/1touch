@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from ..core.db import transaction
 from ..core.understat import UnderstatClient
 from .understat_common import (
-    load_external_ids, load_understat_scope, select_understat_matches, write_understat_report,
+    load_external_ids, load_understat_scope, select_understat_matches, select_fixture_source, write_understat_report,
 )
+from .understat_ids_loader import collect_understat_ids
 
 
 def normalize_understat_match(match: dict, details: dict, fixture_id: int,
@@ -66,17 +69,22 @@ def replace_understat_rows(batch: list[dict]) -> None:
 
 
 def collect_understat(season_name: str | None = None, competition_ids: list[int] | None = None,
-                      *, check: bool = False) -> dict:
-    scope = load_understat_scope(season_name, competition_ids)
-    fixture_ids = load_external_ids("fixture")
-    team_ids = load_external_ids("team")
-    player_ids = load_external_ids("player")
-    client = UnderstatClient()
+                      *, check: bool = False, client=None, scope=None, known=None, fixture_ids=None) -> dict:
+    scope = load_understat_scope(season_name, competition_ids) if scope is None else scope
+    known = {kind: load_external_ids(kind) for kind in ("fixture", "team", "player")} if known is None else known
+    mapped_fixtures, team_ids, player_ids = (known[kind] for kind in ("fixture", "team", "player"))
+    owns_client = client is None
+    client = UnderstatClient() if owns_client else client
     totals = {"fixtures": 0, "players": 0, "shots": 0, "unavailable": 0}
+    processed, withheld = [], []
     try:
         for season in scope:
-            source = client.get_season(season["competition_id"], season["name"])
+            source = select_fixture_source(client.get_season(season['competition_id'], season['name']),
+                                           season['season_id'], fixture_ids, known)
             matches, unavailable = select_understat_matches(source)
+            mapped = source.get('_fixture_ids', known['fixture'])
+            withheld.extend(mapped[r['external_fixture_id']] for r in unavailable
+                            if r['external_fixture_id'] in mapped)
             totals["unavailable"] += len(unavailable)
             if unavailable:
                 path = write_understat_report("unavailable", {**season, "fixtures": unavailable})
@@ -86,17 +94,21 @@ def collect_understat(season_name: str | None = None, competition_ids: list[int]
             for index, match in enumerate(matches, 1):
                 external_id = str(match["id"])
                 details = client.get_match(external_id)
+                if fixture_ids is not None and not all(details['rosters'].get(side) for side in ('h', 'a')):
+                    # 종료 직후 명단이 비어 있으면 xG만 저장해 수집 완료로 표시하지 않아요.
+                    continue
                 roster_ids = {str(p["player_id"]) for roster in details["rosters"].values() for p in roster.values()}
                 shot_ids = {str(p["player_id"]) for shots in details["shots"].values() for p in shots}
-                missing = {"fixture": [] if external_id in fixture_ids else [external_id],
+                missing = {"fixture": [] if external_id in mapped_fixtures else [external_id],
                            "teams": [str(match[s]["id"]) for s in ("h", "a") if str(match[s]["id"]) not in team_ids],
                            "players": sorted((roster_ids | shot_ids) - player_ids.keys())}
                 if any(missing.values()):
                     path = write_understat_report("unmapped", {**season, "match_id": external_id, "missing": missing})
                     raise ValueError(f"Understat IDs need mapping: {missing}. Report: {path}")
-                fixture_id = fixture_ids[external_id]
+                fixture_id = mapped_fixtures[external_id]
                 rows = normalize_understat_match(match, details, fixture_id, team_ids, player_ids)
                 batch.append(rows)
+                processed.append(fixture_id)
                 totals["fixtures"] += 1
                 totals["players"] += len(rows["player_expected_goals"])
                 totals["shots"] += len(rows["shots"])
@@ -109,5 +121,29 @@ def collect_understat(season_name: str | None = None, competition_ids: list[int]
                 print(f"[understat stored] {season['name']} competition_id={season['competition_id']} "
                       f"fixtures={len(batch)}", flush=True)
     finally:
-        client.close()
+        if owns_client:
+            client.close()
+    if fixture_ids is not None:
+        totals.update(processed_fixture_ids=processed, withheld_fixture_ids=withheld,
+                      pending_fixture_ids=sorted(set(fixture_ids) - set(processed) - set(withheld)))
     return totals
+
+
+def refresh_understat(season_name: str | None = None, competition_ids: list[int] | None = None,
+                      *, check: bool = False, fixture_ids=None) -> dict:
+    scope = load_understat_scope(season_name, competition_ids)
+    known = {kind: load_external_ids(kind) for kind in ("team", "fixture", "player")}
+    # 전체 과거 시즌을 요청해도 응답을 메모리에 모두 쌓지 않아요.
+    # 뒤 시즌에서 앞 시즌의 미연결 선수가 확인될 수 있어 ID 연결을 먼저 끝내요.
+    with TemporaryDirectory(prefix='onetouch-understat-') as folder:
+        client = UnderstatClient(cache_directory=Path(folder))
+        try:
+            selection = {} if fixture_ids is None else {'fixture_ids': set(fixture_ids)}
+            mappings = collect_understat_ids(check=check, client=client, scope=scope, known=known, **selection)
+            if mappings['pending']:
+                raise ValueError(f"Understat IDs still have {mappings['pending']} unresolved mappings; xG refresh stopped")
+            # --check도 같은 실행에서 확인한 ID를 사용하지만 DB에는 저장하지 않아요.
+            totals = collect_understat(check=check, client=client, scope=scope, known=known, **selection)
+            return {**totals, 'mappings': mappings}
+        finally:
+            client.close()
