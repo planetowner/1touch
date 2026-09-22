@@ -1,6 +1,6 @@
 {
   "verified_at": "2026-09-19",
-  "note": "현재 DB의 팀 ID·리그와 Wikidata의 구단명·국가를 대조했어요. 선수 이름과 일반 별명으로는 팀을 추정하지 않아요.",
+  "note": "현재 DB의 팀 ID·리그와 Wikidata의 구단명·국가를 대조하고, 2026-09-19 수집 기사의 제목·태그에서 확인한 표기를 보완했어요. 선수 이름으로 팀을 추정하지 않아요. excluded_phrases는 다른 구단·일반 표현을 제외하고, title_requires_category는 일반 단어와 겹치는 이름에 구단 태그를 요구해요.",
   "teams": {
     "3": {
       "name": "Sunderland",
@@ -109,7 +109,13 @@
       ],
       "ko": [
         "아스톤 빌라 FC",
-        "아스톤 빌라"
+        "아스톤 빌라",
+        "애스턴 빌라",
+        "애스턴빌라",
+        "빌라"
+      ],
+      "excluded_phrases": [
+        "Villa Valle"
       ]
     },
     "18": {
@@ -302,10 +308,12 @@
         "리즈 유나이티드 FC",
         "리즈 유나이티드",
         "리즈 유나이티드 A.F.C.",
-        "리즈시절",
-        "리즈 시절",
         "리즈 유나이티드 AFC",
         "리즈"
+      ],
+      "excluded_phrases": [
+        "리즈시절",
+        "리즈 시절"
       ]
     },
     "78": {
@@ -319,7 +327,8 @@
       "ko": [
         "브라이턴 앤 호브 앨비언 FC",
         "브라이턴 앤 호브 앨비언",
-        "브라이턴"
+        "브라이턴",
+        "브라이튼"
       ]
     },
     "79": {
@@ -343,7 +352,8 @@
       "en": [
         "Werder Bremen",
         "SV Werder Bremen",
-        "Werder"
+        "Werder",
+        "Bremen"
       ],
       "ko": [
         "SV 베르더 브레멘",
@@ -361,14 +371,16 @@
       "ko": [
         "FC 바르셀로나",
         "바르샤",
-        "바르셀로나"
+        "바르셀로나",
+        "바르사"
       ]
     },
     "90": {
       "name": "FC Augsburg",
       "wikidata": "Q15755",
       "en": [
-        "FC Augsburg"
+        "FC Augsburg",
+        "Augsburg"
       ],
       "ko": [
         "FC 아우크스부르크",
@@ -483,7 +495,8 @@
       ],
       "ko": [
         "브렌트퍼드 FC",
-        "브렌트퍼드"
+        "브렌트퍼드",
+        "브렌트포드"
       ]
     },
     "266": {
@@ -532,7 +545,8 @@
       "wikidata": "Q191843",
       "en": [
         "Lens",
-        "R.C. Lens"
+        "R.C. Lens",
+        "RC Lens"
       ],
       "ko": [
         "RC 랑스",
@@ -636,6 +650,9 @@
       "ko": [
         "OGC 니스",
         "니스"
+      ],
+      "title_requires_category": [
+        "Nice"
       ]
     },
     "459": {
@@ -669,7 +686,9 @@
       "en": [
         "FC Bayern München",
         "FC Bayern Munich",
-        "Bayern"
+        "Bayern",
+        "FC Bayern",
+        "Bayern Munich"
       ],
       "ko": [
         "FC 바이에른 뮌헨",
@@ -985,7 +1004,8 @@
       "wikidata": "Q631",
       "en": [
         "Inter Milan",
-        "Internazionale"
+        "Internazionale",
+        "Inter"
       ],
       "ko": [
         "FC 인테르나치오날레 밀라노",
@@ -993,6 +1013,9 @@
         "인테르",
         "인테르나치오날레",
         "인테르나치오날레 밀라노"
+      ],
+      "excluded_phrases": [
+        "Inter Miami"
       ]
     },
     "2975": {
@@ -1028,7 +1051,8 @@
         "FC Köln",
         "1. FC Köln",
         "Koln",
-        "Cologne"
+        "Cologne",
+        "Köln"
       ],
       "ko": [
         "1. FC 쾰른",
@@ -1205,11 +1229,15 @@
         "Atlético de Madrid",
         "Atlético Madrid",
         "Atletico",
-        "Atleti"
+        "Atleti",
+        "Atlético",
+        "Atletico Madrid"
       ],
       "ko": [
         "아틀레티코 마드리드",
-        "아틀레티코"
+        "아틀레티코",
+        "AT 마드리드",
+        "ATL"
       ]
     },
     "8513": {
