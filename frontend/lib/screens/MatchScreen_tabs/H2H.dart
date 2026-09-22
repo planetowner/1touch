@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
@@ -244,11 +245,11 @@ class _H2HTabState extends State<H2HTab> {
             child: SizedBox(
               key: const ValueKey('match-h2h-limit-dropdown'),
               width: 152,
-              height: 40,
+              height: AppDropdownTokens.height,
               child: Container(
                 decoration: BoxDecoration(
                   color: surface,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
@@ -256,10 +257,11 @@ class _H2HTabState extends State<H2HTab> {
                     isDense: true,
                     value: _selectedMatches,
                     dropdownColor: surface,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius:
+                        BorderRadius.circular(AppDropdownTokens.radius),
                     icon: Padding(
-                      padding: const EdgeInsets.only(right: 4),
-                      child: Icon(Icons.keyboard_arrow_down, color: foreground),
+                      padding: const EdgeInsets.only(right: 8),
+                      child: AppDropdownChevron(color: foreground),
                     ),
                     style: Body2_b.style.copyWith(color: foreground),
                     onChanged: (val) {
@@ -271,7 +273,7 @@ class _H2HTabState extends State<H2HTab> {
                       return DropdownMenuItem<int>(
                         value: n,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 12),
+                          padding: const EdgeInsets.only(left: 16),
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
@@ -289,7 +291,7 @@ class _H2HTabState extends State<H2HTab> {
                       return Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 12),
+                          padding: const EdgeInsets.only(left: 16),
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,

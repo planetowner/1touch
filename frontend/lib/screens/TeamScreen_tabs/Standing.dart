@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
@@ -598,17 +599,21 @@ class _StandingTabState extends State<StandingTab> {
 
     return Container(
       key: const ValueKey('standing-league-filter-shell'),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: AppDropdownTokens.height,
+      padding: const EdgeInsets.only(left: 16, right: 8),
       decoration: ShapeDecoration(
         color: appColors.subtleBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
+        ),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           key: const ValueKey('standing-league-filter'),
           value: selectedLeagueId,
           isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
+          isDense: true,
+          icon: AppDropdownChevron(color: colors.onSurface),
           dropdownColor: appColors.cardBackground,
           style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (val) {
@@ -652,17 +657,21 @@ class _StandingTabState extends State<StandingTab> {
 
     return Container(
       key: const ValueKey('standing-season-filter-shell'),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: AppDropdownTokens.height,
+      padding: const EdgeInsets.only(left: 16, right: 8),
       decoration: ShapeDecoration(
         color: appColors.subtleBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
+        ),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           key: const ValueKey('standing-season-filter'),
           value: selectedSeasonId,
           isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: colors.onSurface),
+          isDense: true,
+          icon: AppDropdownChevron(color: colors.onSurface),
           dropdownColor: appColors.cardBackground,
           style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: (val) {
