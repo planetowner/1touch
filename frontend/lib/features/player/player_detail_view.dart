@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/models/player_detail.dart';
@@ -88,19 +90,38 @@ class PlayerSeasonSelector extends StatelessWidget {
   final PlayerDetail detail;
   final ValueChanged<int?> onChanged;
   @override
-  Widget build(BuildContext context) => DropdownButtonFormField<int>(
-        initialValue: detail.selectedSeason?.id,
-        isExpanded: true,
-        decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16)),
-        hint: const Text('Select a season'),
-        items: detail.seasons
-            .map((season) => DropdownMenuItem(
-                value: season.id,
-                child: Text('${season.name} · ${season.competitionName}',
-                    maxLines: 1, overflow: TextOverflow.ellipsis)))
-            .toList(),
-        onChanged: onChanged,
-      );
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: appCardShadows(context),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: detail.selectedSeason?.id,
+          isExpanded: true,
+          dropdownColor: surface,
+          icon: Icon(Icons.keyboard_arrow_down, color: foreground, size: 24),
+          style: Body2_b.style.copyWith(color: foreground),
+          hint: const Text('SELECT A SEASON'),
+          items: detail.seasons
+              .map((season) => DropdownMenuItem(
+                    value: season.id,
+                    child: Text(
+                      '${season.name} · ${season.competitionName}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ))
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
 }
