@@ -7,6 +7,7 @@ Team teamFromApiResponse(ApiTeamResponse response) {
   return Team(
     teamId: response.teamId,
     name: response.name,
+    shortName: response.shortName,
     shortCode: response.shortCode,
     imagePath: response.imagePath,
   );

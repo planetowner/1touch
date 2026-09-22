@@ -11,7 +11,11 @@ def order_formations(matches_used: dict[str, int]) -> list[str]:
 
 
 def formation_slots(formation: str) -> list[str]:
-    """공급자의 행:열 자리에서 1행은 골키퍼, 2행부터는 포메이션 숫자 순서예요."""
+    """1행은 골키퍼, 2행부터는 포메이션 숫자 순서예요.
+
+    저장 결과의 열은 골키퍼가 아래인 화면의 왼쪽부터예요.
+    공급자의 홈·원정 좌표는 로더에서 이 방향으로 맞춘 뒤 집계해요.
+    """
     slots = ["1:1"]
     for row, count in enumerate(formation.split("-"), start=2):
         slots.extend(f"{row}:{column}" for column in range(1, int(count) + 1))
@@ -42,8 +46,8 @@ def select_players(
     """서로 다른 선수로 모든 자리를 채우고, 해당 자리 선발 횟수 합을 최대화해요.
 
     SciPy의 Jonker–Volgenant 선형 배정 알고리즘으로 전체 조합을 비교해요.
-    앞자리를 먼저 채우던 방식은
-    25/26 웨스트햄처럼 두 선수의 자리만 바꿔도 선발 횟수 합이 늘어나는 경우를 놓쳤어요.
+    한 선수가 여러 자리에서 선발된 경우, 앞자리부터 배정하면
+    다른 조합의 선발 횟수 합이 더 큰 경우를 놓칠 수 있어요.
     출전 시간은 미제공 경기가 있어 비교에 쓰지 않고 원본 라인업에만 보존해요.
     """
     player_ids = sorted({player_id for _, player_id in starts_by_slot_player})

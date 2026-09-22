@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from ..db import fetch_all_dict, fetch_one_dict
 from ...core.fixture_states import COMPLETED_STATE_IDS
+from ...core.football_names import korean_name_ids
 
 
 BIG5_COMPETITION_IDS = (8, 82, 301, 384, 564)
@@ -148,6 +149,8 @@ def list_current_form_options(
 ) -> List[Dict[str, Any]]:
     """계산할 리그 경기 결과가 있는 Big 5 팀 시즌을 조회해요."""
     normalized_search = (search or "").strip()
+    team_ids = korean_name_ids("teams", normalized_search)
+    korean_condition = (" OR t.team_id IN (" + ",".join(["%s"] * len(team_ids)) + ")") if team_ids else ""
     rows = fetch_all_dict(
         f"""
         SELECT
@@ -177,6 +180,7 @@ def list_current_form_options(
             %s = ''
             OR t.name LIKE CONCAT('%%', %s, '%%')
             OR COALESCE(t.short_code, '') LIKE CONCAT('%%', %s, '%%')
+            {korean_condition}
           )
         GROUP BY
           t.team_id, t.name, t.short_code, t.image_path,
@@ -188,6 +192,7 @@ def list_current_form_options(
             normalized_search,
             normalized_search,
             normalized_search,
+            *team_ids,
             limit,
         ),
     )

@@ -9,7 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from ..core.clubelo import ClubEloClient, parse_history, rating_before
+from ..core.clubelo import ClubEloClient, parse_history, parse_ranking, ranking_ratings, rating_before
 from ..core.fixture_states import LIVE_STATE_IDS
 from ..core.identity import validate_external_id_uniqueness
 from ..core.probability_forecast import forecast_day, forecast_dates
@@ -85,13 +85,13 @@ def sync_elo(mapping_file: Path, *, cache_dir: Path | None, apply: bool) -> dict
     if any(slug in existing and existing[slug] != team_id for slug, team_id in mapping.items()):
         raise ValueError("Mapping conflicts with an existing ClubElo team")
     validate_external_id_uniqueness("ClubElo", combined)
-    rows = collect_elo(mapping, cache_dir=cache_dir)
+    rows = collect_history(mapping, cache_dir=cache_dir)
     if apply:
         save_elo(mapping, rows)
     return {"teams": len(mapping), "ratings": len(rows), "applied": apply}
 
 
-def collect_elo(mapping, *, cache_dir=None):
+def collect_history(mapping, *, cache_dir=None):
     client, rows = ClubEloClient(), []
     try:
         for i, (slug, team_id) in enumerate(sorted(mapping.items()), 1):
@@ -112,6 +112,53 @@ def collect_elo(mapping, *, cache_dir=None):
     return rows
 
 
+def collect_elo(mapping, *, cache_dir=None):
+    """정기 갱신은 Ranking 한 페이지의 현재 전력을 함께 읽어요."""
+    if not mapping:
+        return []
+    if cache_dir:
+        path = Path(cache_dir) / "Ranking.html"
+        html = path.read_text(encoding="utf-8")
+        fetched_at = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).replace(tzinfo=None)
+    else:
+        client = ClubEloClient()
+        try:
+            html = client.get_html("Ranking")
+        finally:
+            client.close()
+        fetched_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    snapshot = parse_ranking(html)
+    if date.fromisoformat(snapshot["date"]) > fetched_at.date():
+        raise ValueError("ClubElo Ranking publication date is in the future")
+    ratings = ranking_ratings(snapshot, mapping)
+    source_hash = hashlib.sha256(html.encode()).hexdigest()
+    # 오늘 표의 값을 과거 날짜로 복사하면 학습에 미래 정보가 섞여요.
+    return [(team_id, snapshot["date"], elo, source_hash, fetched_at) for team_id, elo in ratings.items()]
+
+
+def read_clubelo_mapping(team_ids=None):
+    existing = {r["external_team_id"]: r["team_id"] for r in _fetch(
+        "SELECT external_team_id,team_id FROM team_external_ids WHERE provider='clubelo'")}
+    verified = _read(Path(__file__).parents[1] / "core/clubelo_europe_teams.json")["teams"]
+    # 확인한 참가 팀을 코드와 함께 배포해요. 예약 실행에 로컬 PC 파일은 필요하지 않아요.
+    reverse = {team: identifier for identifier, team in existing.items()}
+    for row in verified:
+        identifier, team = row["external_team_id"], row["team_id"]
+        if team_ids is not None and team not in team_ids:
+            continue
+        if team in reverse:
+            if reverse[team].casefold() != identifier.casefold():
+                raise ValueError(f"ClubElo mapping conflicts with verified team: {team}")
+            continue
+        conflicts = [t for key, t in existing.items() if key.casefold() == identifier.casefold()]
+        if conflicts:
+            raise ValueError(f"ClubElo identifier already maps to another team: {identifier}")
+        existing[identifier] = team
+    mapping = {key: team for key, team in existing.items() if team_ids is None or team in team_ids}
+    validate_external_id_uniqueness("ClubElo", mapping)
+    return mapping
+
+
 def save_elo(mapping, rows):
     from ..core.db import transaction
     with transaction() as connection, connection.cursor() as cursor:
@@ -126,6 +173,16 @@ def save_elo(mapping, rows):
             ON DUPLICATE KEY UPDATE source_sha256=VALUES(source_sha256),fetched_at=VALUES(fetched_at)""", list(sources.values()))
 
 
+def refresh_histories(mapping, *, apply, cache_dir=None):
+    rows = collect_elo(mapping, cache_dir=cache_dir) if mapping else []
+    histories = {t: {p['date']: p for p in history} for t, history in read_histories().items()}
+    for team, day, elo, *_ in rows:
+        histories.setdefault(team, {})[str(day)] = {'date': str(day), 'elo': elo}
+    if apply and rows:
+        save_elo(mapping, rows)
+    return {team: sorted(points.values(), key=lambda p: p['date']) for team, points in histories.items()}
+
+
 def input_fingerprint(fixtures, team_elos):
     return hashlib.sha256(_dump({"fixtures": fixtures, "team_elos": team_elos}).encode()).hexdigest()
 
@@ -138,11 +195,14 @@ def prepare_run(**kwargs):
     return run
 
 
-def latest_model():
-    selected = _fetch("SELECT model_id FROM probability_models ORDER BY created_at DESC,model_id DESC LIMIT 1")
-    if not selected:
+def latest_model(method='multinomial_logistic_elo_difference_v1'):
+    # 큰 학습 JSON을 조건으로 정렬하면 MySQL 정렬 메모리가 부족해요. 작은 메타데이터만 비교해요.
+    candidates = _fetch("""SELECT model_id,created_at FROM probability_models
+        WHERE JSON_UNQUOTE(JSON_EXTRACT(payload,'$.method'))=%s""", (method,))
+    if not candidates:
         raise ValueError("Train and store the Probability model before refreshing")
-    return json.loads(_fetch("SELECT payload FROM probability_models WHERE model_id=%s", (selected[0]["model_id"],))[0]["payload"])
+    selected = max(candidates, key=lambda row: (row['created_at'], row['model_id']))
+    return json.loads(_fetch("SELECT payload FROM probability_models WHERE model_id=%s", (selected["model_id"],))[0]["payload"])
 
 
 def latest_run(season_id):
@@ -178,22 +238,16 @@ def refresh_league(*, competition_id, season_id, teams, fixtures, histories, mod
     return runs, {"season_id": season_id, "status": "updated", "daily_snapshots": len(missing), "current_snapshots": 1}
 
 
-def refresh(*, apply, simulations=100000, seed=20260917, cache_dir=None):
+def refresh(*, apply, simulations=100000, seed=20260917, cache_dir=None, histories=None):
     report, teams = latest_model(), read_teams()
     current_ids = {t["team_id"] for t in teams}
     # 최초에 검증·저장한 팀 매칭을 재사용해요. 서버는 로컬 PC의 매핑 파일에 의존하지 않아요.
-    mapping = {r["external_team_id"]: r["team_id"] for r in _fetch(
-        "SELECT external_team_id,team_id FROM team_external_ids WHERE provider='clubelo'") if r["team_id"] in current_ids}
+    mapping = read_clubelo_mapping(current_ids)
     validate_external_id_uniqueness("ClubElo", mapping)
     if set(mapping.values()) != current_ids or not current_ids:
         raise ValueError("Verified ClubElo mappings are required for every current team")
-    rows = collect_elo(mapping, cache_dir=cache_dir)
-    histories = {t: {p["date"]: p for p in history} for t, history in read_histories().items()}
-    for t, day, elo, *_ in rows:
-        histories.setdefault(t, {})[str(day)] = {"date": str(day), "elo": elo}
-    histories = {t: sorted(points.values(), key=lambda p: p["date"]) for t, points in histories.items()}
-    if apply:
-        save_elo(mapping, rows)
+    if histories is None:
+        histories = refresh_histories(mapping, apply=apply, cache_dir=cache_dir)
     fixtures = read_fixtures(("2026/2027",))
     observed_at = datetime.now(timezone.utc)
     results = []

@@ -26,11 +26,15 @@ class ProbabilityApiTests(unittest.TestCase):
         self.addCleanup(self.db.close)
         self.db.row_factory = sqlite3.Row
         self.db.create_function("UNIX_TIMESTAMP", 1, lambda value: datetime.fromisoformat(value).timestamp())
+        self.db.create_function('JSON_UNQUOTE', 1, lambda value: value)
+        self.db.create_function('JSON_LENGTH', 1, lambda value: len(json.loads(value)) if value else None)
         self.db.executescript("""
             CREATE TABLE teams (team_id INTEGER PRIMARY KEY,name TEXT);
-            CREATE TABLE seasons (season_id INTEGER PRIMARY KEY,competition_id INTEGER,name TEXT);
+            CREATE TABLE seasons (season_id INTEGER PRIMARY KEY,competition_id INTEGER,name TEXT,is_current INTEGER DEFAULT 1);
+            CREATE TABLE stages (stage_id INTEGER PRIMARY KEY,season_id INTEGER,stage_type_id INTEGER);
+            CREATE TABLE tournament_brackets (season_id INTEGER PRIMARY KEY,input_sha256 TEXT,payload TEXT,fetched_at TEXT);
             CREATE TABLE rounds (round_id INTEGER PRIMARY KEY,name TEXT);
-            CREATE TABLE fixtures (fixture_id INTEGER PRIMARY KEY,home_team_id INTEGER,away_team_id INTEGER,starting_at TEXT,round_id INTEGER);
+            CREATE TABLE fixtures (fixture_id INTEGER PRIMARY KEY,home_team_id INTEGER,away_team_id INTEGER,starting_at TEXT,round_id INTEGER,stage_id INTEGER);
             CREATE TABLE probability_team_results (run_id TEXT,team_id INTEGER,next_fixture_id INTEGER,payload TEXT,PRIMARY KEY(run_id,team_id));
             CREATE TABLE probability_models (model_id TEXT PRIMARY KEY,payload TEXT);
             CREATE TABLE probability_runs (run_id TEXT PRIMARY KEY,model_id TEXT,season_id INTEGER,as_of TEXT,payload TEXT,created_at TEXT);
@@ -38,9 +42,9 @@ class ProbabilityApiTests(unittest.TestCase):
         self.model_id = "a" * 64
         self.db.execute("INSERT INTO probability_models VALUES (?,?)", (self.model_id, json.dumps({"method": "multinomial_logistic_elo_difference_v1", "validation": {"metrics": {"fixtures": 1713, "log_loss": 0.9997}}})))
         args = league_input()
-        self.db.execute("INSERT INTO seasons VALUES (1,82,'2026/2027')")
+        self.db.execute("INSERT INTO seasons VALUES (1,82,'2026/2027',1)")
         self.db.executemany('INSERT INTO teams VALUES (?,?)', [(t['team_id'],t['name']) for t in args['teams']])
-        self.db.executemany('INSERT INTO fixtures VALUES (?,?,?,?,NULL)', [(f['fixture_id'],f['home_team_id'],f['away_team_id'],f['starting_at']) for f in args['fixtures']])
+        self.db.executemany('INSERT INTO fixtures VALUES (?,?,?,?,NULL,NULL)', [(f['fixture_id'],f['home_team_id'],f['away_team_id'],f['starting_at']) for f in args['fixtures']])
         args["fixtures"][0].update(starting_at="2026-09-09 14:00:00", state_id=5, home_score=1, away_score=0)
         args["as_of"] = date(2026, 9, 9)
         self.previous = forecast_day(**args)
@@ -134,6 +138,68 @@ class ProbabilityApiTests(unittest.TestCase):
         route = schema["paths"]["/v1/teams/{team_id}/probability"]["get"]
         self.assertEqual(route["security"], [{"HTTPBearer": []}])
         self.assertIn("TeamProbabilityResponse", schema["components"]["schemas"])
+
+    def add_european_run(self, competition_id=5, event='uel_winner'):
+        self.db.execute("INSERT INTO seasons VALUES (2,?,'2026/2027',1)", (competition_id,))
+        payload = {'outcome_kind': 'european_title_v1', 'simulations': 100000,
+            'probability_method': 'european_title_poisson_elo_v1',
+            'strength_source_url': 'https://clubelo.com/Ranking',
+            'coefficient_source_url': 'https://www.uefa.com/nationalassociations/uefarankings/club/?year=2026',
+            'validation': {'score_log_loss': 2.92}, 'limitations': ['Undrawn knockout paths']}
+        self.db.execute('INSERT INTO probability_runs VALUES (?,?,?,?,?,?)', (
+            'europe', 'europe-model', 2, '2026-09-21 12:00:00', json.dumps(payload), '2026-09-21 12:00:00'))
+        self.db.execute('INSERT INTO probability_team_results VALUES (?,?,NULL,?)', (
+            'europe', 1, json.dumps({'event': event, 'probability': .13, 'sampling_standard_error_pp': .1})))
+
+    def test_european_competition_card_uses_own_model_and_does_not_mix_history(self):
+        for competition, event in ((2, 'ucl_winner'), (5, 'uel_winner'), (2286, 'uecl_winner')):
+            with self.subTest(competition=competition):
+                self.add_european_run(competition, event)
+                response = self.client.get('/v1/teams/1/probability')
+                self.assertEqual(response.status_code, 200, response.text)
+                body = response.json()
+                euro = body['european_title']
+                self.assertEqual(euro['competition_id'], competition)
+                self.assertEqual(euro['model_id'], 'europe-model')
+                self.assertEqual(body['model_id'], self.model_id)
+                self.assertEqual(len(body['history']), 2)
+                card = next(c for c in body['cards'] if c['event'] == event)
+                self.assertEqual(card['probability'], .13)
+                self.assertIsNone(card['change_pp'])
+                self.assertNotIn('european_title', body['pending_outcomes'])
+                self.db.execute("DELETE FROM seasons WHERE season_id=2")
+                self.db.execute("DELETE FROM probability_runs WHERE run_id='europe'")
+                self.db.execute("DELETE FROM probability_team_results WHERE run_id='europe'")
+
+    def test_missing_inactive_other_season_or_drawn_europe_is_not_a_zero_card(self):
+        self.assertIsNone(self.client.get('/v1/teams/1/probability').json()['european_title'])
+        self.add_european_run()
+        for change in ("UPDATE seasons SET is_current=0 WHERE season_id=2",
+                       "UPDATE seasons SET name='2025/2026' WHERE season_id=2"):
+            self.db.execute(change)
+            self.assertIsNone(self.client.get('/v1/teams/1/probability').json()['european_title'])
+            self.db.execute("UPDATE seasons SET is_current=1,name='2026/2027' WHERE season_id=2")
+        self.db.execute('INSERT INTO stages VALUES (200,2,224)')
+        self.db.execute("INSERT INTO fixtures VALUES (999,1,2,'2027-02-01',NULL,200)")
+        body = self.client.get('/v1/teams/1/probability').json()
+        self.assertIsNone(body['european_title'])
+        self.assertFalse(any(c['event']=='uel_winner' for c in body['cards']))
+
+    def test_drawn_title_requires_current_bracket_fingerprint(self):
+        self.add_european_run()
+        self.db.execute('INSERT INTO stages VALUES (200,2,224)')
+        self.db.execute("INSERT INTO fixtures VALUES (999,1,2,'2027-02-01',NULL,200)")
+        self.db.execute('INSERT INTO tournament_brackets VALUES (?,?,?,?)',
+                        (2, 'confirmed', json.dumps({'stages': [{'key': 'final'}]}), '2027-05-01'))
+        payload = json.loads(self.db.execute("SELECT payload FROM probability_runs WHERE run_id='europe'").fetchone()[0])
+        payload['bracket_input_sha256'] = 'confirmed'
+        self.db.execute("UPDATE probability_runs SET payload=? WHERE run_id='europe'", (json.dumps(payload),))
+        self.assertIsNotNone(self.client.get('/v1/teams/1/probability').json()['european_title'])
+        self.db.execute("UPDATE tournament_brackets SET input_sha256='new-result'")
+        self.assertIsNone(self.client.get('/v1/teams/1/probability').json()['european_title'])
+        # 전체 대진에 새 추첨이 있고 기존 fixtures에는 아직 없어도 예전 추첨 전 확률을 숨겨요.
+        self.db.execute('DELETE FROM fixtures WHERE fixture_id=999')
+        self.assertIsNone(self.client.get('/v1/teams/1/probability').json()['european_title'])
 
 
 if __name__ == "__main__":

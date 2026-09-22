@@ -92,7 +92,8 @@ class ProbabilityRefreshTests(unittest.TestCase):
              patch.object(loader, "read_teams", return_value=self.args["teams"]), \
              patch.object(loader, "read_histories", return_value=self.args["histories"]), \
              patch.object(loader, "read_fixtures", return_value=self.args["fixtures"]), \
-             patch.object(loader, "_fetch", side_effect=[mappings, [{"day": d} for d in self.args["stored_days"]]]), \
+             patch.object(loader, "read_clubelo_mapping", return_value={r['external_team_id']: r['team_id'] for r in mappings}), \
+             patch.object(loader, "_fetch", return_value=[{"day": d} for d in self.args["stored_days"]]), \
              patch.object(loader, "latest_run", return_value=self.previous), \
              patch.object(loader, "collect_elo", return_value=rows), \
              patch.object(loader, "save_elo") as save, patch.object(loader, "store_runs") as store, \
@@ -120,7 +121,8 @@ class ProbabilityRefreshTests(unittest.TestCase):
              patch.object(loader, "read_teams", return_value=teams), \
              patch.object(loader, "read_histories", return_value={}), \
              patch.object(loader, "read_fixtures", return_value=[]), \
-             patch.object(loader, "_fetch", side_effect=[mappings, [], []]), \
+             patch.object(loader, "read_clubelo_mapping", return_value={r['external_team_id']: r['team_id'] for r in mappings}), \
+             patch.object(loader, "_fetch", return_value=[]), \
              patch.object(loader, "latest_run", return_value=None), \
              patch.object(loader, "collect_elo", return_value=[]), \
              patch.object(loader, "save_elo"), patch.object(loader, "store_runs") as store, \

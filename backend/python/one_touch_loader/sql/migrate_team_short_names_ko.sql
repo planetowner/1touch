@@ -1,0 +1,1 @@
+ALTER TABLE teams ADD COLUMN short_name_ko VARCHAR(64) NULL;
