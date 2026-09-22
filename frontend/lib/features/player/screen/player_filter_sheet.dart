@@ -202,10 +202,10 @@ class FilterPill extends StatelessWidget {
       onTap: onTap,
       child: Container(
         key: ValueKey('players-filter-pill-$label'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: AppDropdownTokens.triggerPadding,
         decoration: BoxDecoration(
           color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -214,12 +214,8 @@ class FilterPill extends StatelessWidget {
               label.toUpperCase(),
               style: Body2_b.style.copyWith(color: colors.onSurface),
             ),
-            const SizedBox(width: 6),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 24,
-              color: colors.onSurface,
-            ),
+            const SizedBox(width: AppDropdownTokens.gap),
+            AppDropdownChevron(color: colors.onSurface),
           ],
         ),
       ),

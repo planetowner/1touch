@@ -321,12 +321,12 @@ class _AttributesSectionState extends State<AttributesSection> {
           )
           .toList(),
       child: Container(
-        height: 44,
+        height: AppDropdownTokens.height,
         constraints: const BoxConstraints(minWidth: 86),
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        padding: AppDropdownTokens.triggerPadding,
         decoration: BoxDecoration(
           color: AppColors.of(context).subtleBackground,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -337,12 +337,8 @@ class _AttributesSectionState extends State<AttributesSection> {
               label,
               style: Body2_b.style.copyWith(color: colors.onSurface),
             ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 24,
-              color: colors.onSurface,
-            ),
+            const SizedBox(width: AppDropdownTokens.gap),
+            AppDropdownChevron(color: colors.onSurface),
           ],
         ),
       ),
