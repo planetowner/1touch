@@ -11,6 +11,7 @@ with patch("mysql.connector.pooling.MySQLConnectionPool") as pool:
     from diagnostics import migrate_team_short_names_ko as short_migration
     from diagnostics import migrate_team_short_names as english_migration
     from diagnostics import correct_serie_a_names_ko as correction
+    from diagnostics import migrate_sportmonks_names as multilingual
 
 
 class FootballNamesTests(unittest.TestCase):
@@ -161,6 +162,45 @@ class MigrationTests(unittest.TestCase):
             migration.migrate_data(self.connection)
         self.assertIsNone(self.db.execute("SELECT name_ko FROM teams WHERE team_id=8").fetchone()[0])
 
+    def test_multiple_languages_preserve_existing_columns_and_are_repeatable(self):
+        for table, prefix in [('teams', 'name'), ('players', 'display_name')]:
+            for locale in ('ja', 'zh'):
+                self.db.execute(f'ALTER TABLE {table} ADD COLUMN {prefix}_{locale} TEXT')
+        self.db.execute("UPDATE teams SET name_ko='리버풀' WHERE team_id=8")
+        self.db.execute("UPDATE players SET display_name_ko='해리 케인' WHERE player_id=997")
+        self.db.commit()
+        before = {table: self.db.execute(f'SELECT * FROM {table} ORDER BY 1').fetchall()
+                  for table in ('teams', 'players')}
+        reviewed = {'teams': [{'team_id': 8, 'ja': 'リヴァプール', 'zh': '利物浦'}],
+                    'players': [{'player_id': 997, 'ja': 'ハリー・ケイン', 'zh': '哈里·凯恩'}]}
+        with patch.object(multilingual, 'reviewed_rows', return_value=reviewed):
+            multilingual.migrate_data(self.connection)
+            first = {table: self.db.execute(f'SELECT * FROM {table} ORDER BY 1').fetchall() for table in before}
+            multilingual.migrate_data(self.connection)
+        for table in before:
+            after = self.db.execute(f'SELECT * FROM {table} ORDER BY 1').fetchall()
+            self.assertEqual(after, first[table])
+            self.assertEqual([row[:-2] for row in after], [row[:-2] for row in before[table]])
+            selected = reviewed[table][0]
+            self.assertEqual(next(row[-2:] for row in after if row[0] == selected[next(iter(selected))]),
+                             (selected['ja'], selected['zh']))
+            self.assertTrue(all(row[-2:] == (None, None) for row in after if row[0] != selected[next(iter(selected))]))
+
+    def test_second_language_conflict_rolls_back_both_tables(self):
+        for table, prefix in [('teams', 'name'), ('players', 'display_name')]:
+            for locale in ('ja', 'zh'):
+                self.db.execute(f'ALTER TABLE {table} ADD COLUMN {prefix}_{locale} TEXT')
+        self.db.execute("UPDATE players SET display_name_zh='다른 저장값' WHERE player_id=997")
+        self.db.commit()
+        before = {table: self.db.execute(f'SELECT * FROM {table} ORDER BY 1').fetchall()
+                  for table in ('teams', 'players')}
+        reviewed = {'teams': [{'team_id': 8, 'ja': 'リヴァプール', 'zh': '利物浦'}],
+                    'players': [{'player_id': 997, 'ja': 'ハリー・ケイン', 'zh': '哈里·凯恩'}]}
+        with patch.object(multilingual, 'reviewed_rows', return_value=reviewed), self.assertRaises(ValueError):
+            multilingual.migrate_data(self.connection)
+        for table, original in before.items():
+            self.assertEqual(self.db.execute(f'SELECT * FROM {table} ORDER BY 1').fetchall(), original)
+
     def test_provider_refresh_leaves_localized_columns_untouched(self):
         from one_touch_loader.loaders.teams_loader import SQL_UPSERT_TEAM
         from one_touch_loader.loaders.players_loader import SQL_UPSERT_PLAYER
@@ -192,15 +232,17 @@ class MigrationTests(unittest.TestCase):
 
     def test_short_name_seed_and_current_membership_check(self):
         rows = short_migration.reviewed_rows()
-        self.assertEqual(len(rows), 135)
+        self.assertEqual(len(rows), 159)
         self.assertEqual({key: sum(row["competition_id"] == key for row in rows) for key in (8, 82, 301, 384, 564)},
                          {8: 20, 82: 18, 301: 18, 384: 20, 564: 20})
         reviewed = {row["team_id"]: row["short_name_ko"] for row in rows}
         self.assertEqual({key: reviewed[key] for key in (9, 7980, 591, 90)},
                          {9: "맨시티", 7980: "AT 마드리드", 591: "PSG", 90: "아우크스부르크"})
-        current = [(row["competition_id"], row["season_id"], row["season"], row["team_id"], row["name"]) for row in rows]
-        with patch.object(short_migration, "fetch_all", side_effect=[[], current, [(key, None) for key in reviewed]]):
-            self.assertEqual(short_migration.preview(), (False, {"reviewed": 135, "updates": 135}))
+        current = [(row["competition_id"], row["season_id"], row["season"], row["team_id"], row["name"])
+                   for row in rows if row["competition_id"] is not None]
+        teams = [(row["team_id"], row["name"], None) for row in rows]
+        with patch.object(short_migration, "fetch_all", side_effect=[[], current, teams]):
+            self.assertEqual(short_migration.preview(), (False, {"reviewed": 159, "updates": 159}))
         with patch.object(short_migration, "fetch_all", side_effect=[[], current[:-1]]), self.assertRaises(ValueError):
             short_migration.preview()
 
@@ -216,10 +258,29 @@ class MigrationTests(unittest.TestCase):
                          ("NK Celje", 30, 29))
         self.assertEqual(by_id[61]["short_name_ko"], "알크마르 잔스트리크")
         self.assertEqual(by_id[138649]["short_name"], "Sabah")
-        current = [(row["competition_id"], row["season_id"], row["season"], row["team_id"], row["name"]) for row in rows]
+        current = [(row["competition_id"], row["season_id"], row["season"], row["team_id"], row["name"])
+                   for row in rows if row["competition_id"] is not None]
         current.append((5, 27913, "2026/2027", 62, "Rangers"))
-        with patch.object(short_migration, "fetch_all", side_effect=[[], current, [(row['team_id'], None) for row in rows]]):
-            self.assertEqual(short_migration.preview()[1]['reviewed'], 135)
+        with patch.object(short_migration, "fetch_all", side_effect=[[], current, [(row['team_id'], row['name'], None) for row in rows]]):
+            self.assertEqual(short_migration.preview()[1]['reviewed'], 159)
+
+    def test_pdf_teams_without_imported_league_still_require_exact_identity(self):
+        rows = short_migration.reviewed_rows()
+        current = [(row["competition_id"], row["season_id"], row["season"], row["team_id"], row["name"])
+                   for row in rows if row["competition_id"] is not None]
+        extra = [row for row in rows if row["competition_id"] is None]
+        self.assertEqual(len(extra), 24)
+        self.assertTrue(all(row["season_id"] is None for row in extra))
+        teams = [(row["team_id"], row["name"], None if row in extra else row["short_name_ko"]) for row in rows]
+        schema = [("varchar(64)", "YES")]
+        with patch.object(short_migration, "fetch_all", side_effect=[schema, current, teams]):
+            self.assertEqual(short_migration.preview(), (True, {"reviewed": 159, "updates": 24}))
+        # '셰필드'를 Wednesday로 잘못 연결하거나 팀 ID가 없으면 저장 전에 멈춰요.
+        for invalid in ([row for row in teams if row[0] != 21],
+                        [(key, "Sheffield Wednesday" if key == 21 else name, ko) for key, name, ko in teams]):
+            with patch.object(short_migration, "fetch_all", side_effect=[schema, current, invalid]), \
+                    self.assertRaisesRegex(ValueError, "Team identity.*21"):
+                short_migration.preview()
 
     def test_english_extension_preserves_previous_names_and_other_rows(self):
         self.db.execute("UPDATE teams SET short_name=NULL WHERE team_id=9")
@@ -234,6 +295,32 @@ class MigrationTests(unittest.TestCase):
         with patch.object(english_migration, "short_names", return_value={8: "Wrong replacement"}), self.assertRaises(ValueError):
             english_migration.migrate_data(self.connection)
         self.assertEqual(self.db.execute("SELECT * FROM teams ORDER BY team_id").fetchall(), before)
+
+    def test_sky_correction_preserves_korean_names_and_unselected_rows(self):
+        self.db.execute("ALTER TABLE teams ADD COLUMN short_name_ko TEXT")
+        previous = english_migration.previous_names()
+        reviewed = {row["team_id"]: row for row in english_migration.reviewed_rows()}
+        korean = {row["team_id"]: row for row in short_migration.reviewed_rows()}
+        for key, old in previous.items():
+            self.db.execute("INSERT INTO teams VALUES (?, ?, ?, ?, ?)",
+                            (key, reviewed[key]["name"], old, korean[key]["name_ko"], korean[key]["short_name_ko"]))
+        self.db.commit()
+        before = self.db.execute("SELECT * FROM teams ORDER BY team_id").fetchall()
+        players_before = self.db.execute("SELECT * FROM players ORDER BY player_id").fetchall()
+        targets = {key: reviewed[key]["short_name"] for key in previous}
+        with patch.object(english_migration, "short_names", return_value=targets):
+            english_migration.migrate_data(self.connection)
+            english_migration.migrate_data(self.connection)
+        expected = [(key, name, targets.get(key, short), ko, short_ko) for key, name, short, ko, short_ko in before]
+        self.assertEqual(self.db.execute("SELECT * FROM teams ORDER BY team_id").fetchall(), expected)
+        self.assertEqual(self.db.execute("SELECT * FROM players ORDER BY player_id").fetchall(), players_before)
+        # 적용 직전 다른 값으로 수정된 행은 확인한 이전 값으로 간주하지 않아요.
+        self.db.execute("UPDATE teams SET short_name='별도 수정' WHERE team_id=49")
+        self.db.commit()
+        changed = self.db.execute("SELECT * FROM teams ORDER BY team_id").fetchall()
+        with patch.object(english_migration, "short_names", return_value=targets), self.assertRaises(ValueError):
+            english_migration.migrate_data(self.connection)
+        self.assertEqual(self.db.execute("SELECT * FROM teams ORDER BY team_id").fetchall(), changed)
 
     def test_requested_full_name_correction_preserves_both_short_names(self):
         self.db.execute("ALTER TABLE teams ADD COLUMN short_name_ko TEXT")
