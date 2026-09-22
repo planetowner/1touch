@@ -1,0 +1,2041 @@
+[
+  {
+    "season_id": 25580,
+    "fixtures": [
+      {
+        "id": 19683229,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60305,
+        "starting_at": "2026-04-14 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 591
+        },
+        "participants": [
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 8,
+            "name": "Liverpool",
+            "short_code": "LIV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 8,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683230,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60307,
+        "starting_at": "2026-04-15 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 19
+        },
+        "participants": [
+          {
+            "id": 58,
+            "name": "Sporting CP",
+            "short_code": "SCP",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/26/58.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 19,
+            "name": "Arsenal",
+            "short_code": "ARS",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/19.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 19,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 58,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683231,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60306,
+        "starting_at": "2026-04-14 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 7980
+        },
+        "participants": [
+          {
+            "id": 83,
+            "name": "FC Barcelona",
+            "short_code": "BAR",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/83.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 83,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683232,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60304,
+        "starting_at": "2026-04-15 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 503
+        },
+        "participants": [
+          {
+            "id": 3468,
+            "name": "Real Madrid",
+            "short_code": "RMA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/3468.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 4,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 3468,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683233,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60307,
+        "starting_at": "2026-04-07 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 19
+        },
+        "participants": [
+          {
+            "id": 19,
+            "name": "Arsenal",
+            "short_code": "ARS",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/19.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 58,
+            "name": "Sporting CP",
+            "short_code": "SCP",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/26/58.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 19,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 58,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683234,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60306,
+        "starting_at": "2026-04-08 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 7980
+        },
+        "participants": [
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 83,
+            "name": "FC Barcelona",
+            "short_code": "BAR",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/83.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 83,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683235,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60304,
+        "starting_at": "2026-04-07 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 503
+        },
+        "participants": [
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 3468,
+            "name": "Real Madrid",
+            "short_code": "RMA",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/3468.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 3468,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683236,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480821,
+        "aggregate_id": 60305,
+        "starting_at": "2026-04-08 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480821,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 591
+        },
+        "participants": [
+          {
+            "id": 8,
+            "name": "Liverpool",
+            "short_code": "LIV",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 8,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683237,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480822,
+        "aggregate_id": 60339,
+        "starting_at": "2026-05-05 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480822,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 19
+        },
+        "participants": [
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 19,
+            "name": "Arsenal",
+            "short_code": "ARS",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/19.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 19,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683238,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480822,
+        "aggregate_id": 60340,
+        "starting_at": "2026-05-06 19:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480822,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 591
+        },
+        "participants": [
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683239,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480822,
+        "aggregate_id": 60339,
+        "starting_at": "2026-04-29 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480822,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 19
+        },
+        "participants": [
+          {
+            "id": 19,
+            "name": "Arsenal",
+            "short_code": "ARS",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/19.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 19,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683240,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480822,
+        "aggregate_id": 60340,
+        "starting_at": "2026-04-28 19:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480822,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 9
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": {
+          "winner_participant_id": 591
+        },
+        "participants": [
+          {
+            "id": 503,
+            "name": "FC Bayern München",
+            "short_code": "FCB",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/23/503.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 503,
+            "score": {
+              "goals": 4,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 5,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19683241,
+        "league_id": 2,
+        "season_id": 25580,
+        "stage_id": 77480823,
+        "aggregate_id": null,
+        "starting_at": "2026-05-30 16:00:00",
+        "state_id": 8,
+        "leg": "1/1",
+        "stage": {
+          "id": 77480823,
+          "name": "Final",
+          "type_id": 224,
+          "sort_order": 10
+        },
+        "state": {
+          "developer_name": "FT_PEN"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 19,
+            "name": "Arsenal",
+            "short_code": "ARS",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/19.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 591,
+            "name": "Paris Saint Germain",
+            "short_code": "PSG",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/15/591.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 5,
+            "participant_id": 19,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 5,
+            "participant_id": 591,
+            "score": {
+              "goals": 4,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 19,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 591,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "season_id": 25642,
+    "fixtures": [
+      {
+        "id": 19431119,
+        "league_id": 390,
+        "season_id": 25642,
+        "stage_id": 77476910,
+        "aggregate_id": null,
+        "starting_at": "2025-08-10 18:30:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "stage": {
+          "id": 77476910,
+          "name": "Preliminary Round",
+          "type_id": 224,
+          "sort_order": 1
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 6911,
+            "name": "Avellino",
+            "short_code": "AVE",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/31/6911.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 133057,
+            "name": "Audace Cerignola",
+            "short_code": "AUD",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/1/133057.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 6911,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 133057,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19534994,
+        "league_id": 390,
+        "season_id": 25642,
+        "stage_id": 77477579,
+        "aggregate_id": null,
+        "starting_at": "2025-08-18 16:00:00",
+        "state_id": 8,
+        "leg": "1/1",
+        "stage": {
+          "id": 77477579,
+          "name": "1st Round",
+          "type_id": 224,
+          "sort_order": 2
+        },
+        "state": {
+          "developer_name": "FT_PEN"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 1123,
+            "name": "Hellas Verona",
+            "short_code": "VER",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/3/1123.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 133057,
+            "name": "Audace Cerignola",
+            "short_code": "AUD",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/1/133057.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 5,
+            "participant_id": 1123,
+            "score": {
+              "goals": 4,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 5,
+            "participant_id": 133057,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 1123,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 133057,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "season_id": 26557,
+    "fixtures": [
+      {
+        "id": 19583084,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77478291,
+        "aggregate_id": null,
+        "starting_at": "2025-09-27 15:15:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "stage": {
+          "id": 77478291,
+          "name": "Preliminary Round",
+          "type_id": 224,
+          "sort_order": 1
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 29887,
+            "name": "Alberite",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/31/29887.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 274180,
+            "name": "Puerto de Vega",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 29887,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 274180,
+            "score": {
+              "goals": 4,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19583085,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77478291,
+        "aggregate_id": null,
+        "starting_at": "2025-09-27 18:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "stage": {
+          "id": 77478291,
+          "name": "Preliminary Round",
+          "type_id": 224,
+          "sort_order": 1
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 266019,
+            "name": "Universitario FC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/3/266019.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 274158,
+            "name": "Inter de Valdemoro",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 266019,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 274158,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19583097,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77478291,
+        "aggregate_id": null,
+        "starting_at": "2025-10-04 14:45:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "stage": {
+          "id": 77478291,
+          "name": "Preliminary Round",
+          "type_id": 224,
+          "sort_order": 1
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 274180,
+            "name": "Puerto de Vega",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 29887,
+            "name": "Alberite",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/31/29887.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 29887,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 274180,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19583099,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77478291,
+        "aggregate_id": null,
+        "starting_at": "2025-10-04 18:00:00",
+        "state_id": 7,
+        "leg": "1/1",
+        "stage": {
+          "id": 77478291,
+          "name": "Preliminary Round",
+          "type_id": 224,
+          "sort_order": 1
+        },
+        "state": {
+          "developer_name": "AET"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 274158,
+            "name": "Inter de Valdemoro",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 266019,
+            "name": "Universitario FC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/3/266019.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 266019,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 274158,
+            "score": {
+              "goals": 3,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19588577,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77478639,
+        "aggregate_id": null,
+        "starting_at": "2025-10-30 18:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "stage": {
+          "id": 77478639,
+          "name": "Round 1",
+          "type_id": 224,
+          "sort_order": 2
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 36,
+            "name": "Celta de Vigo",
+            "short_code": "CEL",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/36.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 274180,
+            "name": "Puerto de Vega",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 36,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 274180,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19588581,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77478639,
+        "aggregate_id": null,
+        "starting_at": "2025-10-28 19:00:00",
+        "state_id": 5,
+        "leg": "1/1",
+        "stage": {
+          "id": 77478639,
+          "name": "Round 1",
+          "type_id": 224,
+          "sort_order": 2
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 106,
+            "name": "Getafe",
+            "short_code": "GET",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/10/106.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 274158,
+            "name": "Inter de Valdemoro",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 106,
+            "score": {
+              "goals": 11,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 274158,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19664689,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77480430,
+        "aggregate_id": null,
+        "starting_at": "2026-03-04 20:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480430,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 13258,
+            "name": "Athletic Club",
+            "short_code": "ATH",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/10/13258.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 594,
+            "name": "Real Sociedad",
+            "short_code": "RSO",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/18/594.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 594,
+            "score": {
+              "goals": 1,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 13258,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19664690,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77480430,
+        "aggregate_id": null,
+        "starting_at": "2026-03-03 20:00:00",
+        "state_id": 5,
+        "leg": "2/2",
+        "stage": {
+          "id": 77480430,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 83,
+            "name": "FC Barcelona",
+            "short_code": "BAR",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/83.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 83,
+            "score": {
+              "goals": 3,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19664691,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77480430,
+        "aggregate_id": null,
+        "starting_at": "2026-02-11 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480430,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 594,
+            "name": "Real Sociedad",
+            "short_code": "RSO",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/18/594.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 13258,
+            "name": "Athletic Club",
+            "short_code": "ATH",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/10/13258.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 594,
+            "score": {
+              "goals": 1,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 13258,
+            "score": {
+              "goals": 0,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19664692,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77480430,
+        "aggregate_id": null,
+        "starting_at": "2026-02-12 20:00:00",
+        "state_id": 5,
+        "leg": "1/2",
+        "stage": {
+          "id": 77480430,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 7
+        },
+        "state": {
+          "developer_name": "FT"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 83,
+            "name": "FC Barcelona",
+            "short_code": "BAR",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/19/83.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 1525,
+            "participant_id": 83,
+            "score": {
+              "goals": 0,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 4,
+              "participant": "home"
+            }
+          }
+        ]
+      },
+      {
+        "id": 19664693,
+        "league_id": 570,
+        "season_id": 26557,
+        "stage_id": 77480431,
+        "aggregate_id": null,
+        "starting_at": "2026-04-18 19:00:00",
+        "state_id": 8,
+        "leg": "1/1",
+        "stage": {
+          "id": 77480431,
+          "name": "Final",
+          "type_id": 224,
+          "sort_order": 8
+        },
+        "state": {
+          "developer_name": "FT_PEN"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 594,
+            "name": "Real Sociedad",
+            "short_code": "RSO",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/18/594.png",
+            "placeholder": false,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 7980,
+            "name": "Atlético de Madrid",
+            "short_code": "ATM",
+            "image_path": "https://cdn.sportmonks.com/images/soccer/teams/12/7980.png",
+            "placeholder": false,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": [
+          {
+            "type_id": 5,
+            "participant_id": 594,
+            "score": {
+              "goals": 4,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 5,
+            "participant_id": 7980,
+            "score": {
+              "goals": 3,
+              "participant": "home"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 594,
+            "score": {
+              "goals": 2,
+              "participant": "away"
+            }
+          },
+          {
+            "type_id": 1525,
+            "participant_id": 7980,
+            "score": {
+              "goals": 2,
+              "participant": "home"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "season_id": 28279,
+    "fixtures": [
+      {
+        "id": 19728374,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482639,
+        "aggregate_id": null,
+        "starting_at": "2027-02-03 00:00:00",
+        "state_id": 1,
+        "leg": "1/1",
+        "stage": {
+          "id": 77482639,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 5
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728375,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482639,
+        "aggregate_id": null,
+        "starting_at": "2027-02-03 00:00:00",
+        "state_id": 1,
+        "leg": "1/1",
+        "stage": {
+          "id": 77482639,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 5
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728376,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482639,
+        "aggregate_id": null,
+        "starting_at": "2027-02-03 00:00:00",
+        "state_id": 1,
+        "leg": "1/1",
+        "stage": {
+          "id": 77482639,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 5
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728377,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482639,
+        "aggregate_id": null,
+        "starting_at": "2027-02-03 00:00:00",
+        "state_id": 1,
+        "leg": "1/1",
+        "stage": {
+          "id": 77482639,
+          "name": "Quarter-finals",
+          "type_id": 224,
+          "sort_order": 5
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728378,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482640,
+        "aggregate_id": null,
+        "starting_at": "2027-04-21 00:00:00",
+        "state_id": 1,
+        "leg": "2/2",
+        "stage": {
+          "id": 77482640,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 6
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260287,
+            "name": "Winner Quarter-final 4",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260286,
+            "name": "Winner Quarter-final 3",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728379,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482640,
+        "aggregate_id": null,
+        "starting_at": "2027-04-21 00:00:00",
+        "state_id": 1,
+        "leg": "2/2",
+        "stage": {
+          "id": 77482640,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 6
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260285,
+            "name": "Winner Quarter-final 2",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260284,
+            "name": "Winner Quarter-final 1",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728380,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482640,
+        "aggregate_id": null,
+        "starting_at": "2027-03-03 00:00:00",
+        "state_id": 1,
+        "leg": "1/2",
+        "stage": {
+          "id": 77482640,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 6
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260286,
+            "name": "Winner Quarter-final 3",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260287,
+            "name": "Winner Quarter-final 4",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728381,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482640,
+        "aggregate_id": null,
+        "starting_at": "2027-03-03 00:00:00",
+        "state_id": 1,
+        "leg": "1/2",
+        "stage": {
+          "id": 77482640,
+          "name": "Semi-finals",
+          "type_id": 224,
+          "sort_order": 6
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260284,
+            "name": "Winner Quarter-final 1",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260285,
+            "name": "Winner Quarter-final 2",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      },
+      {
+        "id": 19728382,
+        "league_id": 390,
+        "season_id": 28279,
+        "stage_id": 77482641,
+        "aggregate_id": null,
+        "starting_at": "2027-05-19 00:00:00",
+        "state_id": 1,
+        "leg": "1/1",
+        "stage": {
+          "id": 77482641,
+          "name": "Final",
+          "type_id": 224,
+          "sort_order": 1
+        },
+        "state": {
+          "developer_name": "NS"
+        },
+        "aggregate": null,
+        "participants": [
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "away"
+            }
+          },
+          {
+            "id": 260131,
+            "name": "TBC",
+            "short_code": null,
+            "image_path": "https://cdn.sportmonks.com/images/soccer/team_placeholder.png",
+            "placeholder": true,
+            "meta": {
+              "location": "home"
+            }
+          }
+        ],
+        "scores": []
+      }
+    ]
+  }
+]

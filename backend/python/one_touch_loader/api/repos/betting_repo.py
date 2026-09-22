@@ -11,14 +11,17 @@ from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.community_periods import utc_now
 from .users_repo import lock_user
-from ...core.betting import (OPEN_STATE_IDS, WELCOME_POINTS, prediction_options,
+from ...core.betting import (OPEN_STATE_IDS, SETTLEMENT_RULE, WELCOME_POINTS, prediction_options,
                              settlement, total_return)
+from ...core.cup_betting import CUP_COMPETITION_IDS, fixture_context
+from ...core.fixture_states import COMPLETED_STATE_IDS
 from ...core.db_json import decoded
 from ...core.probability import OUTCOMES
 from ...core.probability_forecast import LEAGUE_RULES
 
 FIXTURE_SQL = '''SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at,
-    f.state_id,fs.state_code,f.home_score,f.away_score,st.season_id,st.stage_type_id,
+    f.state_id,fs.state_code,f.home_score,f.away_score,f.home_penalty_score,f.away_penalty_score,
+    f.leg,f.aggregate_id,st.name AS stage_name,st.season_id,st.stage_type_id,
     s.competition_id,s.name AS season_name FROM fixtures f
     JOIN fixture_states fs ON fs.state_id=f.state_id JOIN stages st ON st.stage_id=f.stage_id
     JOIN seasons s ON s.season_id=st.season_id WHERE f.fixture_id=%s'''
@@ -75,9 +78,9 @@ def _entry(cur, user_id, bet_id, request_id, request_hash, kind, amount, balance
 
 
 def _supported(fixture):
-    # 현재 예측 모델이 제공하는 정규 리그 범위를 그대로 사용해요.
-    return (fixture['competition_id'] in LEAGUE_RULES and fixture['season_name'] == '2026/2027'
-            and fixture['stage_type_id'] == 223)
+    return fixture['season_name'] == '2026/2027' and (
+        fixture['competition_id'] in CUP_COMPETITION_IDS or
+        (fixture['competition_id'] in LEAGUE_RULES and fixture['stage_type_id'] == 223))
 
 
 def _before_start(fixture, now):
@@ -90,13 +93,28 @@ def _prediction(read_one, fixture, now):
         return None
     # 지난 경기 화면에서도 경기 후 전력이나 사후 복원 예측을 경기 전 배당처럼 보여주지 않아요.
     cutoff = min(now, fixture['starting_at'])
+    cup = fixture['competition_id'] in CUP_COMPETITION_IDS
+    scope = ("AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.market_kind'))=%s" if cup else
+             "AND JSON_EXTRACT(payload,'$.market_kind') IS NULL")
     selected = read_one('''SELECT run_id FROM probability_runs
         WHERE season_id=%s AND as_of<=%s AND as_of<%s
           AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.history_kind'))='observed_calculation'
-        ORDER BY as_of DESC,created_at DESC,run_id DESC LIMIT 1''',
-        (fixture['season_id'], cutoff, fixture['starting_at']))
+        ''' + scope + ''' ORDER BY as_of DESC,created_at DESC,run_id DESC LIMIT 1''',
+        (fixture['season_id'], cutoff, fixture['starting_at'], *((SETTLEMENT_RULE,) if cup else ())))
     if selected is None:
         return None
+    if cup:
+        row = read_one('SELECT run_id,as_of,payload FROM probability_runs WHERE run_id=%s', (selected['run_id'],))
+        quote = decoded(row['payload'])['fixture_markets'].get(str(fixture['fixture_id']))
+        if quote is None or quote['fixture'] != fixture_context(fixture):
+            return None
+        if quote['first_leg'] is not None:
+            first = read_one(FIXTURE_SQL, (quote['first_leg']['fixture_id'],))
+            if (first is None or first['state_id'] not in COMPLETED_STATE_IDS or
+                    any(first[key] != value for key, value in quote['first_leg'].items())):
+                return None
+        return {'prediction_run_id': row['run_id'], 'prediction_as_of': _stamp(row['as_of']),
+                'options': quote['options']}
     row = read_one('''SELECT r.run_id,r.as_of,
         JSON_EXTRACT(m.payload,'$.forecast_model.coefficients') AS coefficients,
         JSON_EXTRACT(h.payload,'$.elo') AS home_elo,JSON_EXTRACT(a.payload,'$.elo') AS away_elo
@@ -126,7 +144,7 @@ def get_market(user_id, fixture_id):
     reason = ('unsupported_competition' if not _supported(fixture) else
               'kickoff_unconfirmed' if fixture['starting_at'] is None else
               'betting_closed' if not open_now else 'prediction_unavailable' if prediction is None else None)
-    return {'fixture_id': fixture_id, 'available': prediction is not None,
+    return {'fixture_id': fixture_id, 'settlement_rule': SETTLEMENT_RULE, 'available': prediction is not None,
             'can_bet': reason is None and (bet is None or bet['status'] in ('open', 'cancelled', 'refunded')),
             'can_cancel': open_now and bet is not None and bet['status'] == 'open',
             'unavailable_reason': reason, 'closes_at': _stamp(fixture['starting_at']),
@@ -183,7 +201,9 @@ def mutate_bet(user_id, fixture_id, body, *, cancel=False):
                 raise HTTPException(409, {'code': 'prediction_unavailable', 'message': 'Prediction is unavailable'})
             if body['prediction_run_id'] != prediction['prediction_run_id']:
                 raise HTTPException(409, {'code': 'prediction_changed', 'message': 'Review the updated odds'})
-            option = next(o for o in prediction['options'] if o['outcome'] == body['outcome'])
+            option = next((o for o in prediction['options'] if o['outcome'] == body['outcome']), None)
+            if option is None:
+                raise HTTPException(409, {'code': 'outcome_unavailable', 'message': 'This result is not offered'})
             probability = Decimal(option['probability'])
             stake = body['stake']
             if stake > wallet['balance'] + old_stake:
@@ -220,7 +240,12 @@ def settle_bet(bet_id, *, apply=False):
         bet = _read_one(cur, 'SELECT * FROM fixture_bets WHERE bet_id=%s FOR UPDATE', (bet_id,))
         if bet is None or bet['status'] != 'open':
             return None
-        result = settlement(fixture, bet)
+        draw_allowed = True
+        if fixture['competition_id'] in CUP_COMPETITION_IDS:
+            run = _read_one(cur, 'SELECT payload FROM probability_runs WHERE run_id=%s', (bet['prediction_run_id'],))
+            quote = decoded(run['payload'])['fixture_markets'][str(fixture['fixture_id'])]
+            draw_allowed = quote['draw_allowed']
+        result = settlement(fixture, bet, draw_allowed=draw_allowed)
         if result is None or not apply:
             return {'bet_id': bet_id, **result} if result else None
         wallet = _read_one(cur, 'SELECT balance FROM user_point_wallets WHERE user_id=%s', (owner['user_id'],))

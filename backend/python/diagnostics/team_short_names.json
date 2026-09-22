@@ -378,5 +378,200 @@
   {
     "team_id": 7047,
     "short_name": "Troyes"
+  },
+  {
+    "team_id": 58,
+    "name": "Sporting CP",
+    "short_name": "Sporting Lisbon"
+  },
+  {
+    "team_id": 781,
+    "name": "AEK Athens",
+    "short_name": "AEK Athens"
+  },
+  {
+    "team_id": 621,
+    "name": "Shakhtar Donetsk",
+    "short_name": "Shakhtar Donetsk"
+  },
+  {
+    "team_id": 88,
+    "name": "Fenerbahçe",
+    "short_name": "Fenerbahce"
+  },
+  {
+    "team_id": 682,
+    "name": "PSV",
+    "short_name": "PSV Eindhoven"
+  },
+  {
+    "team_id": 340,
+    "name": "Club Brugge",
+    "short_name": "Club Brugge"
+  },
+  {
+    "team_id": 216,
+    "name": "Slavia Praha",
+    "short_name": "Slavia Prague"
+  },
+  {
+    "team_id": 3369,
+    "name": "LASK",
+    "short_name": "Linz ASK"
+  },
+  {
+    "team_id": 34,
+    "name": "Galatasaray",
+    "short_name": "Galatasaray"
+  },
+  {
+    "team_id": 321,
+    "name": "Viking",
+    "short_name": "Viking"
+  },
+  {
+    "team_id": 652,
+    "name": "Porto",
+    "short_name": "FC Porto"
+  },
+  {
+    "team_id": 73,
+    "name": "Feyenoord",
+    "short_name": "Feyenoord"
+  },
+  {
+    "team_id": 138649,
+    "name": "Sabah",
+    "short_name": "Sabah"
+  },
+  {
+    "team_id": 2417,
+    "name": "Slovan Bratislava",
+    "short_name": "SK Slovan Bratislava"
+  },
+  {
+    "team_id": 1668,
+    "name": "Bodø / Glimt",
+    "short_name": "Bodo/Glimt"
+  },
+  {
+    "team_id": 2727,
+    "name": "Sparta Praha",
+    "short_name": "Sparta Prague"
+  },
+  {
+    "team_id": 554,
+    "name": "Beşiktaş",
+    "short_name": "Besiktas"
+  },
+  {
+    "team_id": 3958,
+    "name": "Union Saint-Gilloise",
+    "short_name": "Union Saint-Gilloise"
+  },
+  {
+    "team_id": 112,
+    "name": "Ferencvárosi",
+    "short_name": "Ferencvaros"
+  },
+  {
+    "team_id": 605,
+    "name": "Benfica",
+    "short_name": "Benfica"
+  },
+  {
+    "team_id": 118,
+    "name": "OFI",
+    "short_name": "OFI"
+  },
+  {
+    "team_id": 7067,
+    "name": "Torreense",
+    "short_name": "Torreense"
+  },
+  {
+    "team_id": 602,
+    "name": "Olympiacos F.C.",
+    "short_name": "Olympiakos FC"
+  },
+  {
+    "team_id": 49,
+    "name": "Salzburg",
+    "short_name": "Red Bull Salzburg"
+  },
+  {
+    "team_id": 368,
+    "name": "Omonia Nicosia",
+    "short_name": "Omonia Nicosia"
+  },
+  {
+    "team_id": 674,
+    "name": "Dinamo Zagreb",
+    "short_name": "Dinamo Zagreb"
+  },
+  {
+    "team_id": 516,
+    "name": "Hapoel Be'er Sheva",
+    "short_name": "Hapoel Beer-Sheva"
+  },
+  {
+    "team_id": 3357,
+    "name": "Sturm Graz",
+    "short_name": "Sturm Graz"
+  },
+  {
+    "team_id": 890,
+    "name": "Jagiellonia Białystok",
+    "short_name": "Jagiellonia Bialystok"
+  },
+  {
+    "team_id": 2555,
+    "name": "Anderlecht",
+    "short_name": "Anderlecht"
+  },
+  {
+    "team_id": 2510,
+    "name": "Lillestrøm",
+    "short_name": "Lillestrom"
+  },
+  {
+    "team_id": 61,
+    "name": "AZ Alkmaar",
+    "short_name": "AZ Alkmaar"
+  },
+  {
+    "team_id": 3223,
+    "name": "Levski Sofia",
+    "short_name": "Levski Sofia"
+  },
+  {
+    "team_id": 53,
+    "name": "Celtic",
+    "short_name": "Celtic"
+  },
+  {
+    "team_id": 1114,
+    "name": "Celje",
+    "short_name": "NK Celje"
+  },
+  {
+    "team_id": 132649,
+    "name": "Ararat-Armenia",
+    "short_name": "Ararat-Armenia"
+  },
+  {
+    "team_id": 3545,
+    "name": "Viktoria Plzeň",
+    "short_name": "FC Viktoria Plzen"
+  },
+  {
+    "team_id": 302,
+    "name": "Lech Poznań",
+    "short_name": "Lech Poznan"
+  },
+  {
+    "team_id": 494,
+    "name": "NEC Nijmegen",
+    "short_name": "NEC Nijmegen"
   }
 ]

@@ -131,10 +131,11 @@ class PointsPaceRepositoryTests(unittest.TestCase):
             }
         ]
 
-        result = points_pace_repo.list_current_form_options(
-            search=" Test ",
-            limit=5,
-        )
+        with patch("one_touch_loader.api.repos.points_pace_repo.korean_name_ids", return_value=()):
+            result = points_pace_repo.list_current_form_options(
+                search=" Test ",
+                limit=5,
+            )
 
         self.assertEqual(result[0]["rounds_available"], 3)
         self.assertEqual(result[0]["latest_round"], 3)

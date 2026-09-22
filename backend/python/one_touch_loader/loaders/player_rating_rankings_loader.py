@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections import Counter
 from contextlib import closing, contextmanager
 import re
+from . import player_ranking_history_loader as ranking_history
 
 from one_touch_loader.core.db import get_conn, transaction
 from one_touch_loader.core.fixture_states import COMPLETED_STATE_IDS
@@ -148,6 +149,7 @@ def rebuild_player_rating_scores(*, apply: bool = False) -> dict:
                 ids = [row["season_id"] for row in seasons]
                 _replace_samples(cur, ids, rows)
                 _replace_scores(cur, ids, scored)
+                ranking_history.capture_current_ranking(cur)
     counts = Counter(row["season_name"] for row in rows)
     cumulative = 0
     reports = []
@@ -184,6 +186,7 @@ def _write_player_rating_scores(cur, season_id: int) -> int:
     affected = [row["season_id"] for row in seasons if row["season_name"] >= target["season_name"]]
     _replace_scores(cur, affected, scored)
     _save_reference_metadata(cur, seasons)
+    ranking_history.capture_current_ranking(cur)
     return sum(row["season_id"] == season_id for row in rows)
 
 
@@ -205,7 +208,17 @@ def refresh_player_ratings_after_fixture(connection, fixture_id: int, *,
               AND s.name >= %s AND (f.state_id IN ({completed}) OR %s IN ({completed}))""",
                     (fixture_id, *RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME, state_id))
         scope = cur.fetchone()
-        ready = scope is not None and _pool_is_ready(cur)
+        # 포지션은 전체 대회 출전으로 정해져요. 컵 결과도 포지션별 순위 이력에 반영해요.
+        cur.execute(f'''SELECT s.name FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
+            JOIN seasons s ON s.season_id=st.season_id WHERE f.fixture_id=%s
+            AND (f.state_id IN ({completed}) OR %s IN ({completed}))
+            AND s.name IN (SELECT name FROM seasons WHERE is_current=1
+                          AND competition_id IN ({','.join(['%s'] * len(RATING_COMPETITION_IDS))}))''',
+            (fixture_id, state_id, *RATING_COMPETITION_IDS))
+        position_scope = cur.fetchone()
+        ready = (scope is not None or position_scope is not None) and _pool_is_ready(cur)
         yield
-        if ready:
+        if ready and scope is not None:
             _write_player_rating_scores(cur, scope["season_id"])
+        elif ready:
+            ranking_history.capture_current_ranking(cur)
