@@ -20,7 +20,10 @@ class _ComparisonPlayerPickerSheet extends StatefulWidget {
 
 class _ComparisonPlayerPickerSheetState
     extends State<_ComparisonPlayerPickerSheet> {
+  static const _searchDebounceDuration = Duration(milliseconds: 300);
+
   final _query = TextEditingController();
+  Timer? _searchDebounce;
   late Future<List<PlayerDetail>> _players;
 
   @override
@@ -51,8 +54,16 @@ class _ComparisonPlayerPickerSheetState
         .toList();
   }
 
+  void _scheduleSearch(String _) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(_searchDebounceDuration, _submitSearch);
+  }
+
   void _submitSearch() {
-    setState(() => _players = _search());
+    _searchDebounce?.cancel();
+    setState(() {
+      _players = _search();
+    });
   }
 
   void _clearSearch() {
@@ -62,6 +73,7 @@ class _ComparisonPlayerPickerSheetState
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _query.dispose();
     super.dispose();
   }
@@ -116,8 +128,10 @@ class _ComparisonPlayerPickerSheetState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: TextField(
+                key: const ValueKey('comparison-player-search-field'),
                 controller: _query,
                 autofocus: true,
+                onChanged: _scheduleSearch,
                 onSubmitted: (_) => _submitSearch(),
                 style: TextStyle(color: foreground, fontSize: 17),
                 decoration: InputDecoration(
