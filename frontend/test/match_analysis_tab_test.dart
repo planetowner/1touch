@@ -7,17 +7,10 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
-import 'package:onetouch/features/match_info/match_info_features.dart';
 
 void main() {
   testWidgets('renders real tactical values without the former pressure mocks',
       (tester) async {
-    final scoreHeader = tester.widget<MatchScoreHeader>(
-      find.byType(MatchScoreHeader),
-    );
-
-    expect(scoreHeader.homeTeamName, 'Man City');
-    expect(scoreHeader.awayTeamName, 'Arsenal');
     final fixture = mockFixtures.first;
     final analysis = MatchTacticalAnalysis(
       fixtureId: fixture.fixtureId,
@@ -141,6 +134,13 @@ void main() {
     expect(defenseTerritoryOpacity(-20.8), closeTo(0.292, 0.0001));
     expect(defenseTerritoryOpacity(23.4), closeTo(0.734, 0.0001));
     expect(defenseTerritoryOpacity(-2.7), closeTo(0.473, 0.0001));
+    expect(shotMapMarkerRadius, 5);
+    expect(defenseTerritoryArrowGradient.begin, Alignment.centerLeft);
+    expect(defenseTerritoryArrowGradient.end, Alignment.centerRight);
+    expect(
+      defenseTerritoryArrowGradient.colors,
+      const [Color(0x00FFFFFF), Color(0x7AFFFFFF)],
+    );
     final arrowShaft = defenseTerritoryArrowShaftRect(
       const Size(334, 208.75),
     );
