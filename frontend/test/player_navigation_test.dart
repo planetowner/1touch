@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/features/PlayerScreenFeatures.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
+import 'package:onetouch/models/player_detail.dart';
 
 void main() {
   testWidgets('opening a player outside the shell selects the Players branch',
@@ -159,6 +161,50 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Player ${player.id}'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('completed player match opens the past match route',
+      (tester) async {
+    final match = PlayerDetailMatch(
+      id: 123,
+      date: DateTime.utc(2026, 9, 20),
+      live: false,
+      competition: 'Premier League',
+      round: '5',
+      opponent: 'Opponent',
+      opponentImage: null,
+      result: 'W',
+      homeScore: 2,
+      awayScore: 1,
+      rating: 8,
+      metrics: const [],
+    );
+    final router = GoRouter(
+      initialLocation: '/showcase',
+      routes: [
+        GoRoute(
+          path: '/showcase',
+          builder: (_, __) => Scaffold(
+            body: PlayerDetailMatchCard(match: match),
+          ),
+        ),
+        GoRoute(
+          path: '/match/:id',
+          builder: (_, state) => Text(
+            'Match ${state.pathParameters['id']} '
+            '${state.uri.queryParameters['status']}',
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.byType(PlayerDetailMatchCard));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Match 123 past'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
