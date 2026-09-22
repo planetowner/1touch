@@ -561,7 +561,6 @@ class _WatchCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final changeColor =
         player.change >= 0 ? const Color(0xFF31C979) : const Color(0xFFFF5C5C);
-    final changePrefix = player.change >= 0 ? '+' : '';
     return Semantics(
       button: true,
       label: 'Open ${player.name}',
@@ -614,7 +613,7 @@ class _WatchCard extends StatelessWidget {
                                   size: 22,
                                 ),
                                 Text(
-                                  '$changePrefix${player.change.toStringAsFixed(2)}',
+                                  player.change.abs().toStringAsFixed(2),
                                   style: Body2_b.style.copyWith(
                                     color: changeColor,
                                   ),
