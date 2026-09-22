@@ -44,6 +44,9 @@ void main() {
       expect(fixture.awayTeamLogo, isNull);
       expect(fixture.roundName, '3');
       expect(fixture.stageId, 77432101);
+      expect(fixture.stageName, 'Regular Season');
+      expect(fixture.leg, '1/1');
+      expect(fixture.displayRoundLabel, 'Round 3');
       expect(fixture.groupId, 42);
       expect(fixture.startingAt, '2026-08-29T14:00:00.000Z');
       expect(fixture.kickoff, DateTime.utc(2026, 8, 29, 14));
@@ -51,6 +54,23 @@ void main() {
       expect(fixture.awayScore, 1);
       expect(fixture.homePenaltyScore, 5);
       expect(fixture.awayPenaltyScore, 4);
+    });
+
+    test('falls back to stage and keeps a multi-leg label', () {
+      final fixture = fixtureFromApiResponse(
+        _response(
+          competitionType: 'europe',
+          roundName: null,
+          stageName: 'Quarter-finals',
+          leg: '1/2',
+        ),
+      );
+
+      expect(fixture.roundName, isNull);
+      expect(fixture.stageName, 'Quarter-finals');
+      expect(fixture.leg, '1/2');
+      expect(fixture.roundOrStageName, 'Quarter-finals');
+      expect(fixture.displayRoundLabel, 'Quarter-finals • 1st Leg');
     });
 
     test('preserves nullable domain values', () {
@@ -115,6 +135,8 @@ void main() {
 ApiFixtureResponse _response({
   String competitionType = 'league',
   String? roundName = '3',
+  String stageName = 'Regular Season',
+  String leg = '1/1',
   int? groupId = 42,
   String? status = 'upcoming',
   String? startingAt = '2026-08-29 14:00:00',
@@ -130,11 +152,11 @@ ApiFixtureResponse _response({
     competitionType: competitionType,
     roundName: roundName,
     stageId: 77432101,
-    stageName: 'Regular Season',
+    stageName: stageName,
     roundId: 375001,
     groupId: groupId,
     aggregateId: null,
-    leg: '1/1',
+    leg: leg,
     venueId: 206,
     stateId: 1,
     stateCode: 'NS',

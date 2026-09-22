@@ -25,7 +25,9 @@ class Fixture {
   final String? roundName;
   final int? stageTypeId;
   final int? stageId;
+  final String? stageName;
   final int? groupId;
+  final String? leg;
   final int? legNumber; // 1 or 2 only (SQL CHECK constraint)
   final FixtureStatus status;
   // Kept as a string during the incremental repository migration. API mappers
@@ -53,7 +55,9 @@ class Fixture {
     required this.roundName,
     this.stageTypeId,
     this.stageId,
+    this.stageName,
     this.groupId,
+    this.leg,
     this.legNumber,
     required this.status,
     required this.startingAt,
@@ -66,6 +70,29 @@ class Fixture {
   DateTime? get kickoff {
     final value = startingAt;
     return value == null ? null : DateTime.tryParse(value);
+  }
+
+  String? get roundOrStageName {
+    final round = roundName?.trim();
+    if (round?.isNotEmpty ?? false) return round;
+    final stage = stageName?.trim();
+    return stage?.isNotEmpty ?? false ? stage : null;
+  }
+
+  String? get displayRoundLabel {
+    final rawRound = roundName?.trim();
+    final phase = roundOrStageName;
+    if (phase == null) return null;
+
+    final formattedPhase =
+        rawRound?.isNotEmpty == true && int.tryParse(rawRound!) != null
+            ? 'Round $rawRound'
+            : phase;
+    final formattedLeg = _formatFixtureLeg(leg);
+    return [
+      formattedPhase,
+      if (formattedLeg != null) formattedLeg,
+    ].join(' • ');
   }
 
   factory Fixture.fromJson(Map<String, dynamic> json) {
@@ -86,7 +113,9 @@ class Fixture {
       roundName: json['round_name'] as String?,
       stageTypeId: json['stage_type_id'] as int?,
       stageId: json['stage_id'] as int?,
+      stageName: json['stage_name'] as String?,
       groupId: json['group_id'] as int?,
+      leg: json['leg'] as String?,
       legNumber: json['leg_number'] as int?,
       status: _parseStatus(json['status'] as String?),
       startingAt: json['starting_at'] as String?,
@@ -120,4 +149,31 @@ class Fixture {
         return FixtureStatus.unknown;
     }
   }
+}
+
+String? _formatFixtureLeg(String? raw) {
+  final value = raw?.trim();
+  if (value == null || value.isEmpty) return null;
+
+  final parts = value.split('/');
+  if (parts.length == 2) {
+    final current = int.tryParse(parts[0]);
+    final total = int.tryParse(parts[1]);
+    if (current != null && total != null) {
+      if (total <= 1) return null;
+      return '${_ordinal(current)} Leg';
+    }
+  }
+  return value;
+}
+
+String _ordinal(int value) {
+  final lastTwo = value % 100;
+  if (lastTwo >= 11 && lastTwo <= 13) return '${value}th';
+  return switch (value % 10) {
+    1 => '${value}st',
+    2 => '${value}nd',
+    3 => '${value}rd',
+    _ => '${value}th',
+  };
 }

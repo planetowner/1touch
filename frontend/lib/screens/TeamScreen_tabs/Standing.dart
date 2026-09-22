@@ -88,7 +88,9 @@ class _StandingTabState extends State<StandingTab> {
         seasonId: selectedSeasonId,
         competitionType: CompetitionType.europe,
       )
-      .where((fixture) => knockoutRoundFromName(fixture.roundName) != null)
+      .where(
+        (fixture) => knockoutRoundFromName(fixture.roundOrStageName) != null,
+      )
       .toList();
 
   bool get _knockoutBracketAvailable =>
