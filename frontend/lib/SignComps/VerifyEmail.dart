@@ -208,6 +208,14 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/auth/signup');
+    }
+  }
+
   @override
   void dispose() {
     _countdown?.cancel();
@@ -223,7 +231,10 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: BackButton(color: colors.onSurface),
+        leading: BackButton(
+          color: colors.onSurface,
+          onPressed: _goBack,
+        ),
         centerTitle: true,
         title: const Text('Verify your email', style: Body1.style),
       ),

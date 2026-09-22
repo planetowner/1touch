@@ -10,6 +10,7 @@ import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
 import 'package:onetouch/data/community/mock/community_catalog.dart'
     show mockUserProfileById;
+import 'package:onetouch/data/auth/auth_repository_provider.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
@@ -647,6 +648,34 @@ class SettingsList extends StatefulWidget {
 }
 
 class _SettingsListState extends State<SettingsList> {
+  bool _isLoggingOut = false;
+
+  Future<void> _logout() async {
+    if (_isLoggingOut) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('You will need to sign in again to use 1Touch.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _isLoggingOut = true);
+    await authService.logout();
+    if (!mounted) return;
+    context.go('/onboarding');
+  }
+
   Widget _divider() => Divider(
         color: AppColors.of(context).divider,
         thickness: 2,
@@ -716,6 +745,18 @@ class _SettingsListState extends State<SettingsList> {
           onTap: () {
             context.push('/profile/about');
           },
+        ),
+        _divider(),
+        ListTile(
+          key: const ValueKey('profile-logout-button'),
+          leading: const Icon(Icons.logout),
+          title: Text(
+            _isLoggingOut ? 'Logging out...' : 'Log out',
+            style: Body1.style,
+          ),
+          enabled: !_isLoggingOut,
+          onTap: _logout,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
         ),
       ],
     );

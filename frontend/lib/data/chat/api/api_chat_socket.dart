@@ -23,14 +23,21 @@ abstract interface class ChatSocketConnection {
 class ApiChatSocket implements ChatSocket {
   ApiChatSocket({
     required Uri apiBaseUri,
-    required String sessionToken,
+    String? sessionToken,
+    String Function()? sessionTokenProvider,
     ChatSocketConnector? connector,
     Duration handshakeTimeout = const Duration(seconds: 10),
   })  : _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _sessionToken = sessionToken.trim(),
+        _sessionTokenProvider = sessionTokenProvider ?? (() => sessionToken!),
         _connector = connector ?? _WebSocketChannelConnection.connect,
         _handshakeTimeout = handshakeTimeout {
-    if (_sessionToken.length < 40 || _sessionToken.length > 100) {
+    if ((sessionToken == null) == (sessionTokenProvider == null)) {
+      throw ArgumentError(
+        'Provide exactly one of sessionToken or sessionTokenProvider.',
+      );
+    }
+    if (sessionToken != null &&
+        (sessionToken.trim().length < 40 || sessionToken.trim().length > 100)) {
       throw ArgumentError.value(
         sessionToken,
         'sessionToken',
@@ -40,7 +47,7 @@ class ApiChatSocket implements ChatSocket {
   }
 
   final Uri _apiBaseUri;
-  final String _sessionToken;
+  final String Function() _sessionTokenProvider;
   final ChatSocketConnector _connector;
   final Duration _handshakeTimeout;
 
@@ -48,6 +55,10 @@ class ApiChatSocket implements ChatSocket {
   Future<ChatSocketSession> connect(int fixtureId) async {
     if (fixtureId < 1) {
       throw RangeError.value(fixtureId, 'fixtureId', 'Must be positive');
+    }
+    final sessionToken = _sessionTokenProvider().trim();
+    if (sessionToken.length < 40 || sessionToken.length > 100) {
+      throw StateError('A valid authenticated session is required for chat.');
     }
     final httpUri = _apiBaseUri.resolve('fixtures/$fixtureId/chat');
     final socketUri = httpUri.replace(
@@ -62,7 +73,7 @@ class ApiChatSocket implements ChatSocket {
     final session = _ApiChatSocketSession(
       connection: _connector(socketUri),
       fixtureId: fixtureId,
-      sessionToken: _sessionToken,
+      sessionToken: sessionToken,
       apiBaseUri: _apiBaseUri,
       handshakeTimeout: _handshakeTimeout,
     );

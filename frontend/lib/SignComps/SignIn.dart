@@ -60,12 +60,19 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     setState(() => _submitting = true);
 
     try {
-      await _authService.signInWithPassword(
+      final status = await _authService.signInWithPassword(
         username: _username.text.trim(),
         password: _password.text,
+        rememberMe: _rememberMe,
       );
       if (!mounted) return;
-      context.go('/home');
+      context.go(
+        status.onboardingComplete
+            ? '/home'
+            : status.profileComplete
+                ? '/onboarding/welcome'
+                : '/onboarding/profile',
+      );
     } on Object {
       if (!mounted) return;
       ScaffoldMessenger.of(context)

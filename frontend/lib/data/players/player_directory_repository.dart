@@ -45,12 +45,12 @@ final PlayerDirectoryRepository playerDirectoryRepository =
 
 class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
   ApiPlayerDirectoryRepository({http.Client? client, this.config})
-      : client = client ?? http.Client();
+      : client = client ?? ApiConfig.sessionAwareClient();
   final http.Client client;
   final ApiConfig? config;
   Future<Map<String, dynamic>> _get(
       String path, Map<String, String> params) async {
-    final api = config ?? ApiConfig.fromEnvironment();
+    final api = config ?? ApiConfig.unauthenticatedFromEnvironment();
     final uri = api.baseUri
         .resolve(path)
         .replace(queryParameters: params.isEmpty ? null : params);
