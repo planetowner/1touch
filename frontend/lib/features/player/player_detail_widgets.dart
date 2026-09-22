@@ -22,18 +22,36 @@ class PlayerRemoteImage extends StatelessWidget {
 }
 
 class PlayerSection extends StatelessWidget {
-  const PlayerSection(
-      {super.key, required this.title, required this.child, this.trailing});
+  const PlayerSection({
+    super.key,
+    required this.title,
+    required this.child,
+    this.titleAccessory,
+    this.trailing,
+  });
   final String title;
   final Widget child;
+  final Widget? titleAccessory;
   final Widget? trailing;
   @override
   Widget build(BuildContext context) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(child: Text(title, style: Body2_b.style)),
-          if (trailing != null) trailing!
-        ]),
+        Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(child: Text(title, style: Body2_b.style)),
+                  if (titleAccessory != null) ...[
+                    const SizedBox(width: 4),
+                    titleAccessory!,
+                  ],
+                ],
+              ),
+            ),
+            if (trailing != null) trailing!,
+          ],
+        ),
         const SizedBox(height: 16),
         child,
       ]);

@@ -60,6 +60,15 @@ class PlayerOverviewTab extends StatelessWidget {
               const SizedBox(height: 48),
               PlayerSection(
                   title: 'COMPETITION STATS',
+                  titleAccessory: const Tooltip(
+                    message: 'Competition statistics for the selected season.',
+                    triggerMode: TooltipTriggerMode.tap,
+                    child: Icon(
+                      Icons.help_outline,
+                      key: ValueKey('competition-stats-help-icon'),
+                      size: 18,
+                    ),
+                  ),
                   child: PlayerCompetitionTable(
                       key: const ValueKey('player-competition-stats-card'),
                       competitions: detail.competitions)),
