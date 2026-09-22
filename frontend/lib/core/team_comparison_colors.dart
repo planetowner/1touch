@@ -15,6 +15,16 @@ class ColorUtils {
     return (lightest + 0.05) / (darkest + 0.05);
   }
 
+  /// Picks the higher-contrast WCAG text color for [background].
+  ///
+  /// Pure black and white are used here so one candidate always reaches the
+  /// 4.5:1 normal-text threshold for an opaque sRGB background.
+  static Color monochromeTextColor(Color background) {
+    final blackContrast = getContrastRatio(background, Colors.black);
+    final whiteContrast = getContrastRatio(background, Colors.white);
+    return blackContrast >= whiteContrast ? Colors.black : Colors.white;
+  }
+
   /// Perceptual distance between two sRGB colors in OKLab.
   static double okLabDistance(Color first, Color second) {
     final firstLab = _rgbToOkLab(first);

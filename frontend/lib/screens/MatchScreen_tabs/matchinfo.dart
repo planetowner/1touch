@@ -413,6 +413,8 @@ class MatchInfoTab extends StatelessWidget {
             LineupPitch(
               awayRows: awayLineupRows,
               homeRows: homeLineupRows,
+              homeColor: comparisonColors.anchor,
+              awayColor: comparisonColors.opponent,
               onPlayerTap: detail?.playerStatistics.isEmpty ?? true
                   ? null
                   : _openPlayerMatchStats,

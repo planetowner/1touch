@@ -11,6 +11,8 @@ class LineupPitch extends StatelessWidget {
   final void Function(BuildContext context, LineupPlayer player)? onPlayerTap;
   final String? homeFormation;
   final String? awayFormation;
+  final Color homeColor;
+  final Color awayColor;
 
   const LineupPitch({
     super.key,
@@ -19,6 +21,8 @@ class LineupPitch extends StatelessWidget {
     this.onPlayerTap,
     this.homeFormation,
     this.awayFormation,
+    required this.homeColor,
+    required this.awayColor,
   });
 
   static const double _centerGap = 64;
@@ -84,7 +88,7 @@ class LineupPitch extends StatelessWidget {
                           for (final row in awayRows)
                             _PlayerRow(
                               players: row,
-                              isHome: false,
+                              playerCircleColor: awayColor,
                               onTap: onPlayerTap == null
                                   ? null
                                   : (p) => onPlayerTap!(context, p),
@@ -103,7 +107,7 @@ class LineupPitch extends StatelessWidget {
                           for (final row in homeRows)
                             _PlayerRow(
                               players: row,
-                              isHome: true,
+                              playerCircleColor: homeColor,
                               onTap: onPlayerTap == null
                                   ? null
                                   : (p) => onPlayerTap!(context, p),
@@ -126,12 +130,12 @@ class LineupPitch extends StatelessWidget {
 
 class _PlayerRow extends StatelessWidget {
   final List<LineupPlayer> players;
-  final bool isHome;
+  final Color playerCircleColor;
   final void Function(LineupPlayer)? onTap;
 
   const _PlayerRow({
     required this.players,
-    required this.isHome,
+    required this.playerCircleColor,
     required this.onTap,
   });
 
@@ -143,7 +147,7 @@ class _PlayerRow extends StatelessWidget {
       children: players
           .map((p) => _PlayerDot(
                 player: p,
-                isHome: isHome,
+                playerCircleColor: playerCircleColor,
                 onTap: onTap == null ? null : () => onTap!(p),
               ))
           .toList(),
@@ -155,12 +159,12 @@ class _PlayerRow extends StatelessWidget {
 
 class _PlayerDot extends StatelessWidget {
   final LineupPlayer player;
-  final bool isHome;
+  final Color playerCircleColor;
   final VoidCallback? onTap;
 
   const _PlayerDot({
     required this.player,
-    required this.isHome,
+    required this.playerCircleColor,
     required this.onTap,
   });
 
@@ -203,7 +207,10 @@ class _PlayerDot extends StatelessWidget {
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  _PlayerCircle(number: player.number, isHome: isHome),
+                  _PlayerCircle(
+                    number: player.number,
+                    circleColor: playerCircleColor,
+                  ),
                   if (pitchOutEvents.isNotEmpty)
                     Positioned(
                       key: const ValueKey('lineup-pitch-out-badge'),
@@ -259,11 +266,9 @@ class _PlayerDot extends StatelessWidget {
 
 class _PlayerCircle extends StatelessWidget {
   final int? number;
-  final bool isHome;
+  final Color circleColor;
 
-  const _PlayerCircle({required this.number, required this.isHome});
-
-  static const _accent = Color(0xFFD82457);
+  const _PlayerCircle({required this.number, required this.circleColor});
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +277,7 @@ class _PlayerCircle extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: isHome ? _accent : Colors.white,
+        color: circleColor,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -285,7 +290,7 @@ class _PlayerCircle extends StatelessWidget {
       child: Center(
         child: Text(number?.toString() ?? '—',
             style: Heading5.style.copyWith(
-              color: isHome ? Colors.white : Colors.black,
+              color: ColorUtils.monochromeTextColor(circleColor),
             )),
       ),
     );

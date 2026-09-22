@@ -3,12 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
 void main() {
-  Widget subject(List<LineupEvent> events) {
+  Widget subject(
+    List<LineupEvent> events, {
+    Color homeColor = const Color(0xFFD92455),
+  }) {
     return MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
           child: LineupPitch(
             awayRows: const [],
+            homeColor: homeColor,
+            awayColor: const Color(0xFF18539F),
             homeRows: [
               [
                 LineupPlayer(
@@ -25,6 +30,20 @@ void main() {
       ),
     );
   }
+
+  testWidgets('uses accessible jersey text on a mid-tone team color',
+      (tester) async {
+    await tester.pumpWidget(
+      subject(const [], homeColor: const Color(0xFF777777)),
+    );
+
+    final circle = find.byKey(const ValueKey('lineup-player-circle'));
+    final number = tester.widget<Text>(
+      find.descendant(of: circle, matching: find.text('10')),
+    );
+    expect(number.style?.color, Colors.black);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('overlaps repeated event badges', (tester) async {
     await tester.pumpWidget(

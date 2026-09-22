@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
@@ -338,6 +339,22 @@ void main() {
     expect(momentum.values[20], -0.4);
     expect(lineup.homeFormation, '4-3-3');
     expect(lineup.awayFormation, '4-2-3-1');
+    expect(lineup.homeColor, const Color(0xFFD92455));
+    expect(lineup.awayColor, const Color(0xFF18539F));
+    _expectLineupPlayerColors(
+      tester,
+      playerFinder: find.byKey(
+        ValueKey('match-lineup-player-${_fixture.homeTeamId}-101'),
+      ),
+      circleColor: lineup.homeColor,
+    );
+    _expectLineupPlayerColors(
+      tester,
+      playerFinder: find.byKey(
+        ValueKey('match-lineup-player-${_fixture.awayTeamId}-200'),
+      ),
+      circleColor: lineup.awayColor,
+    );
     expect(lineup.homeRows.first.single.name, 'Home Starter');
     expect(
       lineup.homeRows.first.single.events.map((event) => event.type),
@@ -618,6 +635,28 @@ void main() {
     expect(find.byKey(const ValueKey('match-analysis-events')), findsNothing);
     expect(tester.takeException(), isNull);
   });
+}
+
+void _expectLineupPlayerColors(
+  WidgetTester tester, {
+  required Finder playerFinder,
+  required Color circleColor,
+}) {
+  final circleFinder = find.descendant(
+    of: playerFinder,
+    matching: find.byKey(const ValueKey('lineup-player-circle')),
+  );
+  final circle = tester.widget<Container>(circleFinder);
+  expect((circle.decoration! as BoxDecoration).color, circleColor);
+
+  final jerseyNumber = tester.widget<Text>(
+    find.descendant(of: circleFinder, matching: find.byType(Text)),
+  );
+  final jerseyColor = jerseyNumber.style!.color!;
+  expect(
+    ColorUtils.getContrastRatio(circleColor, jerseyColor),
+    greaterThanOrEqualTo(4.5),
+  );
 }
 
 Future<void> _setScreenSize(WidgetTester tester, Size size) async {
