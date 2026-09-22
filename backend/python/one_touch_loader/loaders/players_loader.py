@@ -7,6 +7,7 @@ from typing import DefaultDict, Dict, List, Optional, Set, Tuple
 from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
 from .team_squad_members_loader import (
+    _replace_squad_snapshot,
     load_squad_scope,
     reconstruct_team_season_squad,
 )
@@ -396,6 +397,8 @@ def insert_missing_player_profiles(cursor, profiles: Dict[int, Dict]) -> int:
 def _collect_scope(
     season_name: Optional[str] = None,
     competition_id: Optional[int] = None,
+    *,
+    with_squads: bool = False,
 ) -> Dict[str, object]:
     scope = load_squad_scope(
         season_name=season_name,
@@ -405,6 +408,7 @@ def _collect_scope(
     today = date.today()
     transfers_by_team: Dict[int, List[Dict]] = {}
     completed: List[Dict[str, object]] = []
+    squad_snapshots: List[Tuple[int, int, List[Dict]]] = []
     scope_failures: List[Dict[str, object]] = []
     embedded_profiles_by_player: DefaultDict[
         int, List[Dict[str, object]]
@@ -440,6 +444,8 @@ def _collect_scope(
                 )
             result["selected_players"] = len(team_profiles)
             completed.append(result)
+            if with_squads:
+                squad_snapshots.append((team_id, season_id, reconstructed_squad))
             # PowerShell CP949 로그가 유니코드 팀명 때문에 중단되지 않도록 ID만 표시해요.
             print(
                 f"[players {index}/{len(scope)}] "
@@ -574,6 +580,13 @@ def _collect_scope(
             f"player_samples={player_samples or '-'}"
         )
 
+    if with_squads:
+        # 선수 저장이 모두 성공한 뒤 같은 실행에서 검증한 명단을 재사용해요.
+        # 이적·명단을 다시 조회하지 않아도 FK 검사·기존 역할 보존은 squads와 같아요.
+        stored = [_replace_squad_snapshot(team_id, season_id, squad)
+                  for team_id, season_id, squad in squad_snapshots]
+        summary['stored_squad_members'] = sum(item['squad_members'] for item in stored)
+        print(f"[players+squads] teams={len(stored)} members={summary['stored_squad_members']}")
     return summary
 
 
@@ -585,9 +598,12 @@ def collect_all_players() -> Dict[str, object]:
 def collect_players_for_competition_season(
     season_name: str,
     competition_id: int,
+    *,
+    with_squads: bool = False,
 ) -> Dict[str, object]:
-    """선택한 5대 리그·시즌의 복원된 스쿼드 선수만 저장해요."""
+    """선택한 5대 리그·시즌의 선수를 저장하고, 요청하면 같은 명단도 갱신해요."""
     return _collect_scope(
         season_name=season_name,
         competition_id=competition_id,
+        with_squads=with_squads,
     )

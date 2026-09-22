@@ -96,7 +96,7 @@ class CupBettingTests(unittest.TestCase):
 
     def test_league_latest_model_does_not_select_cup_model(self):
         with patch.object(probability_loader, '_fetch', side_effect=[
-                [{'model_id': 'a'}], [{'payload': '{"method":"league"}'}]]) as fetch:
+                [{'model_id': 'a', 'created_at': NOW}], [{'payload': '{"method":"league"}'}]]) as fetch:
             self.assertEqual(probability_loader.latest_model()['method'], 'league')
             self.assertEqual(fetch.call_args_list[0].args[1], ('multinomial_logistic_elo_difference_v1',))
 

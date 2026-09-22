@@ -163,6 +163,67 @@ class PlayerRatingRefreshTests(unittest.TestCase):
         sample = self.fetch_one("SELECT * FROM player_rating_reference_samples WHERE season_id=%s", (self.target,))
         self.assertEqual((sample["rating_sum"], sample["rated_matches"]), (60, 10))
 
+    def test_repeated_completed_payload_keeps_scores_and_still_captures_history(self):
+        self.store()
+        before = self.score()
+        self.capture_history.reset_mock()
+        with patch.object(rankings, 'score_season_records', wraps=rankings.score_season_records) as calculate, \
+                patch.object(rankings, '_replace_samples', wraps=rankings._replace_samples) as samples:
+            self.store()
+            self.store()
+        calculate.assert_not_called()
+        samples.assert_not_called()
+        self.assertEqual(self.score(), before)
+        self.assertEqual(self.capture_history.call_count, 2)
+
+    def test_same_payload_detects_completion_saved_before_lineup_refresh(self):
+        self.store(state=2)
+        self.db.execute('UPDATE fixtures SET state_id=5 WHERE fixture_id=?', (self.fixture_id,))
+        self.store()
+        self.assertEqual(self.score()['rated_matches'], 10)
+
+    def test_new_season_without_eligible_samples_still_extends_reference_metadata(self):
+        self.db.execute("UPDATE player_rating_references SET end_season_name='2025/2026'")
+        self.db.execute('UPDATE fixtures SET stage_id=? WHERE fixture_id=?', (self.next_season, self.fixture_id))
+        with patch.object(rankings, 'score_season_records', wraps=rankings.score_season_records) as calculate:
+            self.store(rating=None)
+        calculate.assert_not_called()
+        self.assertEqual(self.fetch_all('SELECT DISTINCT end_season_name FROM player_rating_references'),
+                         [dict(end_season_name='2026/2027')])
+
+    def test_same_payload_detects_changed_comparison_sample_in_another_league(self):
+        self.store()
+        before = self.score()['percentile_score']
+        self.seed_matches(822025, count=10)
+        with patch.object(rankings, 'score_season_records', wraps=rankings.score_season_records) as calculate:
+            self.store()
+        calculate.assert_called_once()
+        self.assertNotEqual(before, self.score()['percentile_score'])
+
+    def test_minutes_and_position_updates_remain_inputs_to_rankings_and_history(self):
+        self.store()
+        payload = self.payload()
+        payload['lineups'][0]['position_id'] = 24
+        payload['lineups'][0]['details'][0]['data']['value'] = 60
+        self.capture_history.reset_mock()
+        with patch.object(rankings, 'score_season_records', wraps=rankings.score_season_records) as calculate:
+            live.store_live_fixture(payload, 10, 20, datetime(2026, 9, 18))
+            calculate.assert_not_called()
+            self.capture_history.assert_called_once()
+            row = self.fetch_one('SELECT minutes_played,match_position_id FROM fixture_lineups WHERE fixture_id=%s',
+                                 (self.fixture_id,))
+            self.assertEqual(row, dict(minutes_played=60, match_position_id=24))
+            payload['lineups'][0]['details'][0]['data']['value'] = None
+            live.store_live_fixture(payload, 10, 20, datetime(2026, 9, 18))
+            calculate.assert_called_once()
+            self.assertIsNone(self.score())
+
+    def test_explicit_build_recalculates_even_when_samples_are_unchanged(self):
+        self.store()
+        with patch.object(rankings, 'score_season_records', wraps=rankings.score_season_records) as calculate:
+            rankings.build_player_rating_scores(self.target)
+        calculate.assert_called_once()
+
     def test_missing_or_removed_rating_removes_newly_ineligible_player(self):
         self.store()
         self.store(rating=None)

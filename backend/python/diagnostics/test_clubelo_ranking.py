@@ -73,6 +73,7 @@ class RankingTests(unittest.TestCase):
         histories = {19: [{'date': '2026-09-21', 'elo': 2033}]}
         with patch.object(loader, 'read_clubelo_mapping', return_value={'Arsenal': 19}), \
              patch.object(loader, 'refresh_histories', return_value=histories) as source, \
+             patch.object(probability_refresh.cup_betting_loader, 'read_fixtures', return_value=[]) as fixtures, \
              patch.object(loader, 'refresh', return_value={}) as league, \
              patch.object(probability_refresh.cup_betting_loader, 'refresh', return_value={}) as cup, \
              patch.object(probability_refresh.european_probability_loader, 'refresh', return_value={}) as europe, \
@@ -84,6 +85,8 @@ class RankingTests(unittest.TestCase):
         self.assertFalse(league.call_args.kwargs['apply'])
         self.assertFalse(cup.call_args.kwargs['apply'])
         self.assertIs(europe.call_args.kwargs['histories'], histories)
+        fixtures.assert_called_once_with(current_only=True)
+        self.assertIs(cup.call_args.kwargs['fixtures'], europe.call_args.kwargs['fixtures'])
         self.assertFalse(europe.call_args.kwargs['apply'])
         self.assertEqual(europe.call_args.kwargs['brackets'], [])
         brackets.assert_called_once_with(apply=False)

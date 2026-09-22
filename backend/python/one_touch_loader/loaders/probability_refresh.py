@@ -10,9 +10,11 @@ def refresh(*, apply=False, simulations=100000, seed=20260917, cache_dir=None):
     histories = probability_loader.refresh_histories(mapping, apply=apply, cache_dir=cache_dir)
     brackets = tournament_bracket_loader.refresh(apply=apply)
     league = probability_loader.refresh(apply=apply, simulations=simulations, seed=seed, histories=histories)
-    cup = cup_betting_loader.refresh(apply=apply, histories=histories)
+    # 컵 경기별 배당과 유럽 우승 확률은 같은 현재 시즌 경기 원본을 사용해요.
+    fixtures = cup_betting_loader.read_fixtures(current_only=True)
+    cup = cup_betting_loader.refresh(apply=apply, histories=histories, fixtures=fixtures)
     europe = european_probability_loader.refresh(apply=apply, histories=histories, simulations=simulations,
-                                                  seed=seed, brackets=brackets)
+                                                  seed=seed, brackets=brackets, fixtures=fixtures)
     return {"applied": apply, "strength_source_url": "https://clubelo.com/Ranking",
             "source_teams": len(mapping), "league": league, "cup": cup, "europe": europe,
             "brackets": [{k: b[k] for k in ('season_id', 'status', 'path_status')} for b in brackets]}

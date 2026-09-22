@@ -65,9 +65,10 @@ class WhatIf(BaseModel):
 
 
 class ProbabilityComparison(BaseModel):
-    basis: Literal["previous_league_fixture_utc_day_start"]
+    basis: Literal['previous_league_fixture_pre_match_snapshot', 'previous_european_fixture_pre_match_snapshot']
     available: bool
-    as_of: datetime | None
+    as_of: datetime | None = Field(description='실제 비교에 사용한 경기 전 예측의 기준 시각이에요.')
+    fixture_at: datetime | None = Field(description='이번 예측에 반영된 직전 해당 대회 경기의 킥오프예요.')
 
 
 class EuropeanTitleProbability(BaseModel):
@@ -83,6 +84,8 @@ class EuropeanTitleProbability(BaseModel):
     strength_source_url: str
     coefficient_source_url: str
     sampling_standard_error_pp: float
+    change_pp: float | None
+    comparison: ProbabilityComparison
     validation: dict
     limitations: list[str]
 

@@ -47,6 +47,7 @@ class ForecastPipelineTests(unittest.TestCase):
         self.assertEqual(run["teams"]["1"]["current_points"], 3)
         self.assertEqual(run["teams"]["1"]["played"], 1)
         self.assertEqual(run["teams"]["1"]["previous_fixture_date"], "2026-09-09")
+        self.assertEqual(run['teams']['1']['previous_fixture_at'], '2026-09-09T20:00:00Z')
         self.assertEqual(run["teams"]["1"]["maximum_points"], 102)
 
     def test_observed_snapshot_includes_completed_today_and_known_today_elo(self):
@@ -58,10 +59,12 @@ class ForecastPipelineTests(unittest.TestCase):
         self.assertEqual(run["teams"]["1"]["current_points"], 3)
         self.assertEqual(run["teams"]["1"]["elo"], 3000)
         self.assertEqual(run["cutoff"], "observed_state")
+        self.assertEqual(run['teams']['1']['previous_fixture_at'], '2026-09-10T14:00:00Z')
         self.assertNotEqual(run["teams"]["1"]["what_if"]["fixture"]["fixture_id"], 1)
         args["fixtures"][0]["state_id"] = 2
-        with self.assertRaisesRegex(ValueError, "live"):
-            forecast_day(**args)
+        live = forecast_day(**args)
+        self.assertEqual(live["teams"]["1"]["current_points"], 0)
+        self.assertEqual(live["finished_fixtures"], 0)
 
     def test_incomplete_membership_schedule_and_missing_elo_rejected(self):
         for edit, error in ((lambda a: a["teams"].pop(), "membership"),

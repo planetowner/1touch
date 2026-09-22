@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from ..core.db import fetch_all, transaction
-from ..core.fixture_states import LIVE_STATE_IDS
+from ..core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..core.sportmonks import SportmonksClient
 from .fixture_details_loader import _normalize_fixture_details, verified_event_player_profiles, write_fixture_detail_rows
 from . import player_rating_rankings_loader as player_rankings
@@ -73,6 +73,29 @@ def store_live_fixture(fixture: dict, home_team_id: int, away_team_id: int,
                 cursor.execute(SQL_UPSERT_CLOCK, normalize_clock(fixture, sampled_at))
 
 
+def read_live_fixture_batches(client, fixture_ids):
+    # 종료 확인·명단 보충도 같은 50경기 조회를 써요. 보정은 각 저장 경로에서 한 번만 해요.
+    for offset in range(0, len(fixture_ids), 50):
+        yield from client.get_live_fixtures_batch(fixture_ids[offset:offset + 50])
+
+
+def refresh_completed_details(fixtures: list[dict], *, apply: bool) -> list[dict]:
+    client = SportmonksClient(timeout=20)
+    by_id = {f['fixture_id']: f for f in fixtures}
+    completed = []
+    for raw in read_live_fixture_batches(client, list(by_id)):
+        payload = client.correct_fixture_details(raw)
+        fixture = by_id[payload['id']]
+        validate_fixture_participants(payload, fixture['home_team_id'], fixture['away_team_id'])
+        if payload['state_id'] not in COMPLETED_STATE_IDS:
+            continue
+        if apply:
+            store_live_fixture(payload, fixture['home_team_id'], fixture['away_team_id'],
+                               datetime.now(timezone.utc).replace(tzinfo=None))
+        completed.append(payload)
+    return completed
+
+
 def refresh_live_fixtures(*, apply: bool = False) -> dict:
     client = SportmonksClient(timeout=20)
     fixtures = client.get_livescores()
@@ -88,11 +111,9 @@ def refresh_live_fixtures(*, apply: bool = False) -> dict:
         "OR (s.is_current=1 AND f.state_id=1 AND f.starting_at<=UTC_TIMESTAMP())",
         LIVE_STATE_IDS,
     )
-    for (fixture_id,) in pending:
-        if fixture_id not in by_id:
-            by_id[fixture_id] = (
-                client.get_live_fixture(fixture_id), datetime.now(timezone.utc).replace(tzinfo=None),
-            )
+    missing = [fixture_id for (fixture_id,) in pending if fixture_id not in by_id]
+    for fixture in read_live_fixture_batches(client, missing):
+        by_id[fixture['id']] = (fixture, datetime.now(timezone.utc).replace(tzinfo=None))
     if not by_id:
         return {"apply": apply, "received": 0, "matched": 0, "updated": 0}
     ids = tuple(by_id)

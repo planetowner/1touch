@@ -109,12 +109,8 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
                 )
                 self.assertEqual(result["fixtures"], 2)
                 self.assertEqual([call.args[0] for call in write.call_args_list], scope[1:])
-                if player_stats_only:
-                    client.return_value.get_fixture_details_batch.assert_called_once_with(scope[1:])
-                    client.return_value.get_fixture_details.assert_not_called()
-                else:
-                    self.assertEqual([call.args[0] for call in client.return_value.get_fixture_details.call_args_list], scope[1:])
-                    client.return_value.get_fixture_details_batch.assert_not_called()
+                client.return_value.get_fixture_details_batch.assert_called_once_with(scope[1:])
+                client.return_value.get_fixture_details.assert_not_called()
 
     def test_resume_outside_scope_fails_before_provider_requests_or_writes(self):
         with patch.object(details, "_load_scope", return_value=[500]), \
@@ -140,6 +136,23 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     client.get_fixture_details_batch(ids)
             read.assert_not_called()
+
+    def test_full_details_batches_reads_and_keeps_fixture_storage_and_resume_order(self):
+        ids = list(range(500, 601))
+        with patch.object(details, '_load_scope', return_value=ids), \
+                patch.object(details, 'SportmonksClient') as client, \
+                patch.object(details, 'replace_fixture_detail_rows', return_value=0) as write, \
+                patch('builtins.print'):
+            client.return_value.get_fixture_details_batch.side_effect = lambda group: [
+                dict(_payload(), id=fid) for fid in group]
+            client.return_value.get_fixture_details.side_effect = lambda fid: dict(_payload(), id=fid)
+            result = details.collect_fixture_details_for_competition_season('2026/2027', [8])
+        self.assertEqual(result['fixtures'], 101)
+        self.assertEqual([c.args[0] for c in client.return_value.get_fixture_details_batch.call_args_list],
+                         [ids[:50], ids[50:100]])
+        client.return_value.get_fixture_details.assert_called_once_with(600)
+        self.assertEqual([c.args[:2] for c in write.call_args_list], [
+            (fid, _normalize_fixture_details(dict(_payload(), id=fid), fid)) for fid in ids])
 
     @patch.object(details, "replace_fixture_detail_rows", return_value=0)
     @patch.object(details, "SportmonksClient")
@@ -242,6 +255,39 @@ class FixtureDetailsLoaderTests(unittest.TestCase):
         write.assert_called_once_with(500, {
             "stat_types": expected["stat_types"], "team_stats": expected["team_stats"],
         })
+
+    @patch.object(team_stats_loader, "replace_fixture_detail_rows")
+    @patch.object(team_stats_loader, "SportmonksClient")
+    @patch.object(team_stats_loader, "fetch_all")
+    def test_season_team_stats_batches_reads_and_preserves_every_normalized_fixture(self, read, client, write):
+        ids = list(range(500, 601))
+        read.return_value = [(fid,) for fid in ids]
+        client.return_value.get_fixture_statistics_batch.side_effect = lambda batch: [
+            dict(_payload(), id=fid) for fid in batch]
+        with patch('builtins.print'):
+            team_stats_loader.refresh_fixture_team_stats_for_season(1, only_status='past')
+        self.assertEqual(read.call_count, 1)
+        client.assert_called_once_with()
+        self.assertEqual([c.args[0] for c in client.return_value.get_fixture_statistics_batch.call_args_list],
+                         [ids[:50], ids[50:100], ids[100:]])
+        self.assertEqual([c.args for c in write.call_args_list], [
+            (fid, details.normalize_fixture_statistics(dict(_payload(), id=fid), fid)) for fid in ids])
+
+    @patch.object(team_stats_loader, "SportmonksClient")
+    @patch.object(team_stats_loader, "fetch_all", return_value=[])
+    def test_empty_season_does_not_create_provider_client(self, read, client):
+        with patch('builtins.print'):
+            team_stats_loader.refresh_fixture_team_stats_for_season(1)
+        client.assert_not_called()
+
+    @patch.object(team_stats_loader, "replace_fixture_detail_rows")
+    @patch.object(team_stats_loader, "SportmonksClient")
+    @patch.object(team_stats_loader, "fetch_all", return_value=[(500,), (501,)])
+    def test_incomplete_batch_is_not_saved_as_empty_statistics(self, read, client, write):
+        client.return_value.get_fixture_statistics_batch.side_effect = ValueError('response IDs differ')
+        with self.assertRaisesRegex(ValueError, 'response IDs differ'):
+            team_stats_loader.refresh_fixture_team_stats_for_season(1)
+        write.assert_not_called()
 
     @patch.object(db, "get_conn")
     def test_empty_statistics_clear_old_stats_without_deleting_lineups(self, get_conn) -> None:

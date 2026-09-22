@@ -166,7 +166,7 @@ def build_player_rating_scores(season_id: int) -> int:
             return _write_player_rating_scores(cur, season_id)
 
 
-def _write_player_rating_scores(cur, season_id: int) -> int:
+def _write_player_rating_scores(cur, season_id: int, *, skip_unchanged: bool = False) -> int:
     if not _pool_is_ready(cur):
         raise ValueError("Run player-rankings rebuild --apply to initialize the cumulative five-league reference")
     seasons = _rating_seasons(cur)
@@ -175,13 +175,28 @@ def _write_player_rating_scores(cur, season_id: int) -> int:
         raise ValueError("A five-league season from 2017/2018 is required")
     changed = [row for row in seasons if row["season_name"] == target["season_name"]]
     rows = _eligible_rating_rows(cur, changed)
-    _replace_samples(cur, [row["season_id"] for row in changed], rows)
+    changed_ids = [row["season_id"] for row in changed]
+    if skip_unchanged:
+        cur.execute(f"""SELECT competition_id, season_id, player_id, rated_matches, rating_sum
+            FROM player_rating_reference_samples
+            WHERE season_id IN ({','.join(['%s'] * len(changed_ids))})""", tuple(changed_ids))
+        fields = ("competition_id", "season_id", "player_id", "rated_matches", "rating_sum")
+        saved = sorted(tuple(row[key] for key in fields) for row in cur.fetchall())
+        current = sorted(tuple(row[key] for key in fields) for row in rows)
+        # 경기 응답만 비교하면 별도 적재로 바뀐 종료 상태·출전 기준을 놓쳐요.
+        # 최신 DB 집계가 같을 때만 점수를 재사용하고, 포지션·일별 이력은 계속 갱신해요.
+        if current == saved:
+            # 표본이 없는 새 시즌도 API에서 조회할 수 있도록 적재 범위는 갱신해요.
+            _save_reference_metadata(cur, seasons)
+            ranking_history.capture_current_ranking(cur)
+            return sum(row["season_id"] == season_id for row in rows)
+    _replace_samples(cur, changed_ids, rows)
     cur.execute(f"""SELECT sample.*, s.name AS season_name FROM player_rating_reference_samples sample
         JOIN seasons s ON s.season_id=sample.season_id
         WHERE sample.competition_id IN ({','.join(['%s'] * len(RATING_COMPETITION_IDS))})
           AND s.name >= %s ORDER BY s.name, sample.competition_id, sample.player_id""",
                 (*RATING_COMPETITION_IDS, REFERENCE_START_SEASON_NAME))
-    scored = score_season_records(cur.fetchall())
+    scored = score_season_records(cur.fetchall(), from_season=target["season_name"])
     # 과거 평점 정정은 그 시즌과 이후 시즌의 기준에도 영향을 줘요. 이전 시즌은 건드리지 않아요.
     affected = [row["season_id"] for row in seasons if row["season_name"] >= target["season_name"]]
     _replace_scores(cur, affected, scored)
@@ -219,6 +234,6 @@ def refresh_player_ratings_after_fixture(connection, fixture_id: int, *,
         ready = (scope is not None or position_scope is not None) and _pool_is_ready(cur)
         yield
         if ready and scope is not None:
-            _write_player_rating_scores(cur, scope["season_id"])
+            _write_player_rating_scores(cur, scope["season_id"], skip_unchanged=True)
         elif ready:
             ranking_history.capture_current_ranking(cur)

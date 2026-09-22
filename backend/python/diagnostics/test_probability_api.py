@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from copy import deepcopy
+from datetime import date, datetime, timezone
 import json
 import sqlite3
 import unittest
@@ -25,7 +26,8 @@ class ProbabilityApiTests(unittest.TestCase):
         self.db = sqlite3.connect(":memory:", check_same_thread=False)
         self.addCleanup(self.db.close)
         self.db.row_factory = sqlite3.Row
-        self.db.create_function("UNIX_TIMESTAMP", 1, lambda value: datetime.fromisoformat(value).timestamp())
+        self.db.create_function("UNIX_TIMESTAMP", 1,
+                                lambda value: datetime.fromisoformat(value).replace(tzinfo=timezone.utc).timestamp())
         self.db.create_function('JSON_UNQUOTE', 1, lambda value: value)
         self.db.create_function('JSON_LENGTH', 1, lambda value: len(json.loads(value)) if value else None)
         self.db.executescript("""
@@ -49,6 +51,9 @@ class ProbabilityApiTests(unittest.TestCase):
         args["as_of"] = date(2026, 9, 9)
         self.previous = forecast_day(**args)
         self.add_run("first", self.previous)
+        self.pre_match = deepcopy(self.previous)
+        self.pre_match.update(as_of='2026-09-09T13:30:00Z', cutoff='observed_state', history_kind='observed_calculation')
+        self.add_run('pre-match', self.pre_match)
         args["as_of"] = date(2026, 9, 10)
         args["include_what_if"] = True
         self.latest = forecast_day(**args)
@@ -65,10 +70,11 @@ class ProbabilityApiTests(unittest.TestCase):
         self.client = TestClient(self.app)
         self.addCleanup(self.client.close)
 
-    def add_run(self, run_id, run):
+    def add_run(self, run_id, run, *, created_at=None):
         metadata, rows = split_run(run)
         self.db.execute("INSERT INTO probability_runs VALUES (?,?,?,?,?,?)", (
-            run_id, run["model_id"], 1, run["as_of"].replace('T',' ').removesuffix('Z'), json.dumps(metadata), "2026-09-17T12:00:00+00:00"))
+            run_id, run["model_id"], 1, run["as_of"].replace('T',' ').removesuffix('Z'), json.dumps(metadata),
+            created_at or run['as_of'].replace('Z', '+00:00')))
         self.db.executemany('INSERT INTO probability_team_results VALUES (?,?,?,?)', [(run_id,t,f,json.dumps(p)) for t,f,p in rows])
 
     def fetch_all(self, sql, params=()):
@@ -82,13 +88,14 @@ class ProbabilityApiTests(unittest.TestCase):
         response = self.client.get("/v1/teams/1/probability")
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
-        self.assertEqual(body["comparison"], {"available": True, "basis": "previous_league_fixture_utc_day_start", "as_of": "2026-09-09T00:00:00Z"})
+        self.assertEqual(body['comparison'], {'available': True, 'basis': 'previous_league_fixture_pre_match_snapshot',
+                         'as_of': '2026-09-09T13:30:00Z', 'fixture_at': '2026-09-09T14:00:00Z'})
         self.assertEqual(body["current_points"], 3)
         self.assertEqual(len(body["positions"]), 18)
         self.assertEqual(len(body["history"]), 2)
         self.assertEqual(body["history"][0]["kind"], "reconstructed")
         self.assertEqual(body["projected_points"]["likely_range"]["target_coverage"], .8)
-        previous = {e["event"]: e["probability"] for e in self.previous["teams"]["1"]["events"]}
+        previous = {e["event"]: e["probability"] for e in self.pre_match["teams"]["1"]["events"]}
         for event in body["events"]:
             self.assertAlmostEqual(event["change_pp"], (event["probability"] - previous[event["event"]]) * 100)
         self.assertEqual([s["outcome"] for s in body["what_if"]["scenarios"]], ["win", "draw", "loss"])
@@ -96,27 +103,29 @@ class ProbabilityApiTests(unittest.TestCase):
         self.assertNotIn("training_rows", body)
 
     def test_missing_comparison_is_null_not_zero(self):
-        self.db.execute("DELETE FROM probability_runs WHERE run_id='first'")
+        self.db.execute("DELETE FROM probability_runs WHERE run_id='pre-match'")
         body = self.client.get("/v1/teams/1/probability?season_id=1").json()
         self.assertFalse(body["comparison"]["available"])
         self.assertTrue(all(e["change_pp"] is None for e in body["events"]))
         self.assertIsNone(body["projected_points"]["change_points"])
         self.context.assert_not_called()
 
-    def test_observed_run_compares_to_daily_baseline_not_itself(self):
+    def test_observed_run_compares_to_pre_match_snapshot_not_daily_history_or_post_match(self):
+        post_match = deepcopy(self.latest)
+        post_match.update(as_of='2026-09-09T16:00:00Z', cutoff='observed_state', history_kind='observed_calculation')
+        self.add_run('post-match', post_match)
         self.latest["as_of"] = "2026-09-10T17:00:00Z"
         self.latest["history_kind"] = "observed_calculation"
         self.latest["cutoff"] = "observed_state"
-        self.latest["teams"]["1"]["previous_fixture_date"] = "2026-09-10"
         self.add_run('observed', self.latest)
         body = self.client.get("/v1/teams/1/probability").json()
         self.assertEqual(body["cutoff"], "observed_state")
-        self.assertEqual(body["comparison"]["as_of"], "2026-09-10T00:00:00Z")
+        self.assertEqual(body["comparison"]["as_of"], "2026-09-09T13:30:00Z")
         self.assertTrue(body["comparison"]["available"])
         self.assertEqual([row["kind"] for row in body["history"]], ["reconstructed", "reconstructed", "observed_calculation"])
 
     def test_different_models_are_not_mixed_into_history(self):
-        self.db.execute("UPDATE probability_runs SET model_id='different' WHERE run_id='first'")
+        self.db.execute("UPDATE probability_runs SET model_id='different' WHERE run_id IN ('first','pre-match')")
         body = self.client.get("/v1/teams/1/probability").json()
         self.assertEqual(len(body["history"]), 1)
         self.assertFalse(body["comparison"]["available"])
@@ -126,6 +135,56 @@ class ProbabilityApiTests(unittest.TestCase):
                             ("/v1/teams/1/probability?season_id=2", 404),
                             ("/v1/teams/1/probability?season_id=0", 422)):
             self.assertEqual(self.client.get(url).status_code, status)
+
+    def test_league_latest_pre_match_snapshot_drives_both_event_and_points_changes(self):
+        closer = deepcopy(self.pre_match)
+        closer['as_of'] = '2026-09-09T13:59:00Z'
+        team = closer['teams']['1']
+        team['events'][0]['probability'] = .20
+        team['projected_points']['mean'] = 70
+        self.add_run('closest', closer)
+        response = self.client.get('/v1/teams/1/probability')
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertEqual(body['comparison']['as_of'], '2026-09-09T13:59:00Z')
+        title = next(e for e in body['events'] if e['event'] == 'league_winner')
+        self.assertAlmostEqual(title['change_pp'], (title['probability'] - .20) * 100)
+        self.assertAlmostEqual(body['projected_points']['change_points'], body['projected_points']['mean'] - 70)
+        self.assertEqual(len(body['history']), 2)
+
+    def test_league_rejects_kickoff_late_storage_reconstructed_and_wrong_match_records(self):
+        for sql in (
+            "UPDATE probability_runs SET as_of='2026-09-09 14:00:00' WHERE run_id='pre-match'",
+            "UPDATE probability_runs SET created_at='2026-09-09T14:00:00+00:00' WHERE run_id='pre-match'",
+            "UPDATE probability_runs SET payload=json_set(payload,'$.cutoff','utc_day_start') WHERE run_id='pre-match'",
+            "UPDATE probability_runs SET payload=json_set(payload,'$.outcome_kind','european_title_v1') WHERE run_id='pre-match'",
+            "UPDATE probability_runs SET payload=json_set(payload,'$.market_kind','cup') WHERE run_id='pre-match'",
+            "UPDATE probability_team_results SET payload=json_set(payload,'$.played',1) WHERE run_id='pre-match' AND team_id=1",
+            "UPDATE probability_runs SET season_id=3 WHERE run_id='pre-match'",
+        ):
+            with self.subTest(sql=sql):
+                self.db.execute('SAVEPOINT candidate')
+                self.db.execute(sql)
+                body = self.client.get('/v1/teams/1/probability').json()
+                self.assertFalse(body['comparison']['available'])
+                self.assertIsNone(body['comparison']['as_of'])
+                self.assertTrue(all(e['change_pp'] is None for e in body['events']))
+                self.assertIsNone(body['projected_points']['change_points'])
+                self.db.execute('ROLLBACK TO candidate')
+                self.db.execute('RELEASE candidate')
+
+    def test_league_old_payload_or_no_completed_match_is_unavailable(self):
+        for expression in ("json_remove(payload,'$.previous_fixture_at')",
+                           "json_set(payload,'$.previous_fixture_at',NULL,'$.played',0)"):
+            with self.subTest(expression=expression):
+                self.db.execute('SAVEPOINT current_team')
+                self.db.execute(f"UPDATE probability_team_results SET payload={expression} WHERE run_id='latest' AND team_id=1")
+                body = self.client.get('/v1/teams/1/probability').json()
+                self.assertFalse(body['comparison']['available'])
+                self.assertIsNone(body['comparison']['fixture_at'])
+                self.assertTrue(all(e['change_pp'] is None for e in body['events']))
+                self.db.execute('ROLLBACK TO current_team')
+                self.db.execute('RELEASE current_team')
 
     def test_requires_member_token(self):
         self.app.dependency_overrides.clear()
@@ -139,17 +198,86 @@ class ProbabilityApiTests(unittest.TestCase):
         self.assertEqual(route["security"], [{"HTTPBearer": []}])
         self.assertIn("TeamProbabilityResponse", schema["components"]["schemas"])
 
-    def add_european_run(self, competition_id=5, event='uel_winner'):
-        self.db.execute("INSERT INTO seasons VALUES (2,?,'2026/2027',1)", (competition_id,))
+    def add_european_run(self, competition_id=5, event='uel_winner', *, run_id='europe',
+                         model_id='europe-model', as_of='2026-09-21 12:00:00',
+                         probability=.13, played=None, previous_fixture_at=None):
+        self.db.execute("INSERT OR IGNORE INTO seasons VALUES (2,?,'2026/2027',1)", (competition_id,))
         payload = {'outcome_kind': 'european_title_v1', 'simulations': 100000,
             'probability_method': 'european_title_poisson_elo_v1',
             'strength_source_url': 'https://clubelo.com/Ranking',
             'coefficient_source_url': 'https://www.uefa.com/nationalassociations/uefarankings/club/?year=2026',
             'validation': {'score_log_loss': 2.92}, 'limitations': ['Undrawn knockout paths']}
         self.db.execute('INSERT INTO probability_runs VALUES (?,?,?,?,?,?)', (
-            'europe', 'europe-model', 2, '2026-09-21 12:00:00', json.dumps(payload), '2026-09-21 12:00:00'))
+            run_id, model_id, 2, as_of, json.dumps(payload), as_of))
+        team = {'event': event, 'probability': probability, 'sampling_standard_error_pp': .1}
+        if played is not None:
+            team.update(played=played, previous_fixture_at=previous_fixture_at)
         self.db.execute('INSERT INTO probability_team_results VALUES (?,?,NULL,?)', (
-            'europe', 1, json.dumps({'event': event, 'probability': .13, 'sampling_standard_error_pp': .1})))
+            run_id, 1, json.dumps(team)))
+
+    def test_european_changes_use_latest_snapshot_before_own_match_for_all_competitions(self):
+        for competition, event, probability in ((2, 'ucl_winner', .10), (5, 'uel_winner', .25),
+                                                 (2286, 'uecl_winner', .20)):
+            with self.subTest(competition=competition):
+                self.add_european_run(competition, event, run_id='early', as_of='2026-09-18 12:00:00',
+                                     probability=.18, played=0)
+                self.add_european_run(competition, event, run_id='before', as_of='2026-09-19 18:00:00',
+                                     probability=.20, played=0)
+                self.add_european_run(competition, event, run_id='after', as_of='2026-09-19 22:00:00',
+                                     probability=.22, played=1, previous_fixture_at='2026-09-19T19:00:00Z')
+                self.add_european_run(competition, event, probability=probability, played=1,
+                                     previous_fixture_at='2026-09-19T19:00:00Z')
+                response = self.client.get('/v1/teams/1/probability')
+                self.assertEqual(response.status_code, 200, response.text)
+                body = response.json()
+                euro = body['european_title']
+                self.assertAlmostEqual(euro['change_pp'], (probability - .20) * 100)
+                self.assertEqual(euro['comparison'], {
+                    'basis': 'previous_european_fixture_pre_match_snapshot', 'available': True,
+                    'as_of': '2026-09-19T18:00:00Z', 'fixture_at': '2026-09-19T19:00:00Z'})
+                self.assertEqual(body['comparison']['as_of'], '2026-09-09T13:30:00Z')
+                self.assertEqual(len(body['history']), 2)
+                for key in ('cards', 'events'):
+                    title = next(e for e in body[key] if e['event'] == event)
+                    self.assertEqual(title['change_pp'], euro['change_pp'])
+                self.db.execute('DELETE FROM probability_team_results WHERE run_id IN '
+                                "(SELECT run_id FROM probability_runs WHERE season_id=2)")
+                self.db.execute('DELETE FROM probability_runs WHERE season_id=2')
+                self.db.execute('DELETE FROM seasons WHERE season_id=2')
+
+    def test_european_comparison_rejects_other_model_season_and_stale_match_state(self):
+        self.add_european_run(played=2, previous_fixture_at='2026-09-19T19:00:00Z')
+        self.add_european_run(run_id='before', as_of='2026-09-19 18:00:00', probability=.20, played=1,
+                             previous_fixture_at='2026-09-10T19:00:00Z')
+        self.assertTrue(self.client.get('/v1/teams/1/probability').json()['european_title']['comparison']['available'])
+        for sql in ("UPDATE probability_runs SET model_id='different' WHERE run_id='before'",
+                    "UPDATE probability_runs SET season_id=3 WHERE run_id='before'",
+                    "UPDATE probability_runs SET as_of='2026-09-19 19:00:00' WHERE run_id='before'",
+                    "UPDATE probability_runs SET created_at='2026-09-19 19:00:00' WHERE run_id='before'",
+                    "UPDATE probability_team_results SET payload=json_set(payload,'$.played',0) WHERE run_id='before'",
+                    "UPDATE probability_team_results SET payload=json_remove(payload,'$.played') WHERE run_id='before'",
+                    "UPDATE probability_runs SET payload=json_set(payload,'$.outcome_kind','other') WHERE run_id='before'"):
+            with self.subTest(sql=sql):
+                self.db.execute('SAVEPOINT candidate')
+                self.db.execute(sql)
+                euro = self.client.get('/v1/teams/1/probability').json()['european_title']
+                self.assertIsNone(euro['change_pp'])
+                self.assertFalse(euro['comparison']['available'])
+                self.assertIsNone(euro['comparison']['as_of'])
+                self.db.execute('ROLLBACK TO candidate')
+                self.db.execute('RELEASE candidate')
+
+    def test_european_missing_history_or_first_match_is_null_not_zero(self):
+        for played in (None, 0, 1):
+            with self.subTest(played=played):
+                self.add_european_run(played=played,
+                    previous_fixture_at='2026-09-19T19:00:00Z' if played else None)
+                euro = self.client.get('/v1/teams/1/probability').json()['european_title']
+                self.assertEqual(euro['probability'], .13)
+                self.assertIsNone(euro['change_pp'])
+                self.assertFalse(euro['comparison']['available'])
+                self.db.execute("DELETE FROM probability_runs WHERE run_id='europe'")
+                self.db.execute("DELETE FROM probability_team_results WHERE run_id='europe'")
 
     def test_european_competition_card_uses_own_model_and_does_not_mix_history(self):
         for competition, event in ((2, 'ucl_winner'), (5, 'uel_winner'), (2286, 'uecl_winner')):

@@ -273,14 +273,14 @@ class StorageTests(unittest.TestCase):
         self.conn.executescript("""
             CREATE TABLE seasons(season_id INTEGER PRIMARY KEY, competition_id INTEGER, name TEXT);
             CREATE TABLE stages(stage_id INTEGER PRIMARY KEY, season_id INTEGER REFERENCES seasons);
-            CREATE TABLE teams(team_id INTEGER PRIMARY KEY, name TEXT, image_path TEXT);
+            CREATE TABLE teams(team_id INTEGER PRIMARY KEY, name TEXT, image_path TEXT, short_name TEXT);
             CREATE TABLE players(player_id INTEGER PRIMARY KEY, display_name TEXT);
             CREATE TABLE fixtures(fixture_id INTEGER PRIMARY KEY, stage_id INTEGER REFERENCES stages,
               home_team_id INTEGER, away_team_id INTEGER, home_score INTEGER, away_score INTEGER,
               state_id INTEGER, starting_at TEXT);
             INSERT INTO seasons VALUES(100,564,'2024/2025');
             INSERT INTO stages VALUES(1000,100);
-            INSERT INTO teams VALUES(10,'Home',NULL),(20,'Away',NULL);
+            INSERT INTO teams VALUES(10,'Home',NULL,'HOM'),(20,'Away',NULL,'AWY');
             INSERT INTO fixtures VALUES(1,1000,10,20,4,1,5,'2025-03-30'),(2,1000,10,20,0,0,5,'2025-03-31');
         """)
         # 같은 DDL의 테이블·FK·PK를 SQLite에서도 실행해요. MySQL 전용 문법만 바꿔요.
@@ -526,6 +526,7 @@ class ExecutionTests(unittest.TestCase):
     def test_cli_commands_share_scope_and_check_parsing(self):
         from one_touch_loader import cli
         for command, function in [("understat-ids", "collect_understat_ids"),
+                                  ("understat-refresh", "refresh_understat"),
                                   ("understat", "collect_understat"), ("xg-standings", "build_xg_standings")]:
             with self.subTest(command=command), patch.object(cli, function) as handler:
                 with patch("sys.argv", ["cli", command, "2026/2027", "8", "564", "--check"]):
