@@ -419,11 +419,24 @@ void main() {
     );
     final headerGradient =
         (statHeader.decoration as BoxDecoration).gradient as LinearGradient;
-    expect(headerGradient.colors, const [
-      Color(0xFF6CABDD),
-      Color(0xFF3376A3),
-      Color(0xFF102A43),
+    const teamPrimary = Color(0xFFA50044);
+    expect(headerGradient.colors, [
+      teamPrimary,
+      Color.alphaBlend(
+        Colors.black.withValues(alpha: 0.28),
+        teamPrimary,
+      ),
+      Color.alphaBlend(
+        Colors.black.withValues(alpha: 0.62),
+        teamPrimary,
+      ),
     ]);
+    for (final color in headerGradient.colors) {
+      expect(
+        ColorUtils.getContrastRatio(color, Colors.white),
+        greaterThanOrEqualTo(4.5),
+      );
+    }
     expect(find.text('Home Starter'), findsWidgets);
     expect(find.text('FINISH'), findsOneWidget);
     expect(find.text('Goals'), findsOneWidget);
