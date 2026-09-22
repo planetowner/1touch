@@ -174,7 +174,8 @@ class PlayerDetailMatchCard extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-          onTap: () => context.push('/match/${match.id}'),
+          onTap: () => context.push(
+              '/match/${match.id}?status=${match.live ? 'live' : 'past'}'),
           child: PlayerMatchCard(
               result: match.live ? 'LIVE' : match.result ?? '—',
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
