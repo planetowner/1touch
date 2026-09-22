@@ -56,7 +56,7 @@ void main() {
     final stack = tester.widget<SizedBox>(
       find.byKey(const ValueKey('lineup-event-badge-groups')),
     );
-    expect(stack.width, 19);
+    expect(stack.width, 25);
     expect(
       find.byKey(const ValueKey('lineup-event-assist-0')),
       findsOneWidget,
@@ -113,6 +113,7 @@ void main() {
         LineupEvent(type: LineupEventType.subIn),
         LineupEvent(type: LineupEventType.subOut),
         LineupEvent(type: LineupEventType.injury),
+        LineupEvent(type: LineupEventType.yellowCard),
       ]),
     );
 
@@ -121,6 +122,44 @@ void main() {
     expect(find.byKey(const ValueKey('lineup-sub-in-icon')), findsOneWidget);
     expect(find.byKey(const ValueKey('lineup-sub-out-icon')), findsOneWidget);
     expect(find.byKey(const ValueKey('lineup-injury-icon')), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('lineup-goal-icon'))),
+      const Size.square(16),
+    );
+    expect(
+      find.byKey(const ValueKey('lineup-event-icon-outline')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('lineup-sub-in-icon')),
+        matching: find.byIcon(Icons.arrow_upward_rounded),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('lineup-sub-out-icon')),
+        matching: find.byIcon(Icons.arrow_downward_rounded),
+      ),
+      findsOneWidget,
+    );
+    final yellowCardIcon = tester
+        .widgetList<MatchEventIcon>(find.byType(MatchEventIcon))
+        .singleWhere((icon) => icon.type == LineupEventType.yellowCard);
+    expect(yellowCardIcon.outlined, isTrue);
+    final yellowCard = tester
+        .widgetList<Container>(find.byType(Container))
+        .singleWhere((container) {
+      final decoration = container.decoration;
+      return decoration is BoxDecoration &&
+          decoration.color == const Color(0xFFFFCC00);
+    });
+    final cardDecoration = yellowCard.decoration! as BoxDecoration;
+    expect(tester.getSize(find.byWidget(yellowCard)), const Size(8, 11));
+    expect(cardDecoration.shape, BoxShape.rectangle);
+    expect(cardDecoration.border!.top.color, Colors.black);
+    expect(cardDecoration.border!.top.width, 1);
     expect(find.text('A'), findsOneWidget);
   });
 
@@ -154,7 +193,7 @@ void main() {
     final stack = tester.widget<SizedBox>(
       find.byKey(const ValueKey('lineup-event-badge-groups')),
     );
-    expect(stack.width, 26);
+    expect(stack.width, 34);
     expect(find.byKey(const ValueKey('lineup-event-assist-0')), findsOneWidget);
     expect(find.byKey(const ValueKey('lineup-event-assist-1')), findsOneWidget);
     expect(find.byKey(const ValueKey('lineup-event-goal-2')), findsOneWidget);
