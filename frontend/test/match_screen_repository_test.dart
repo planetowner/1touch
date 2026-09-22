@@ -431,6 +431,16 @@ void main() {
     expect(find.text('xG'), findsOneWidget);
     expect(find.text('0.52'), findsOneWidget);
     expect(find.text('Unavailable metric'), findsNothing);
+    expect(
+      tester
+          .widget<GestureDetector>(
+            find.byKey(
+              const ValueKey('player-match-stat-profile-link'),
+            ),
+          )
+          .onTap,
+      isNotNull,
+    );
     expect(tester.takeException(), isNull);
   });
 

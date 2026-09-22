@@ -301,12 +301,19 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
         final player = _filteredPlayers[index];
         final isSelected = _selectedPlayerId == player.id;
         final alreadyFollowed = _isFollowed(player.id);
+        void selectPlayer() {
+          setState(() {
+            _selectedPlayerId = player.id;
+            _updateEnabled = true;
+          });
+        }
 
         return Opacity(
           opacity: alreadyFollowed ? 0.4 : 1.0,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: ListTile(
+              onTap: alreadyFollowed ? null : selectPlayer,
               contentPadding: EdgeInsets.zero,
               leading: SizedBox(
                 width: 52,
@@ -318,21 +325,11 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                 '${player.teamName} #${player.jerseyNumber}',
                 style: Body2.style,
               ),
-              trailing: GestureDetector(
-                onTap: alreadyFollowed
-                    ? null
-                    : () {
-                        setState(() {
-                          _selectedPlayerId = player.id;
-                          _updateEnabled = true;
-                        });
-                      },
-                child: Icon(
-                  isSelected
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                  color: colors.onSurface,
-                ),
+              trailing: Icon(
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_off,
+                color: colors.onSurface,
               ),
             ),
           ),

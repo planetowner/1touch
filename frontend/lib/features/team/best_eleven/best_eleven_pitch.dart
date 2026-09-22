@@ -9,6 +9,7 @@ class BestElevenPitch extends StatelessWidget {
           players.map(
             (player) => _BestElevenPitchPlayer(
               slotKey: player.slotKey,
+              playerId: player.playerId,
               playerName: player.playerName,
               jerseyNumber: player.jerseyNumber,
             ),
@@ -157,33 +158,42 @@ class _BestElevenPlayerDot extends StatelessWidget {
     final label = playerName == null || playerName.isEmpty
         ? 'Unknown'
         : playerName.split(' ').last;
-    return SizedBox(
-      width: 62,
-      child: Column(
-        children: [
-          Container(
-            key: ValueKey('best-eleven-player-dot-${player.slotKey}'),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: circleColor,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              player.jerseyNumber?.toString() ?? '—',
-              style: Heading5.style.copyWith(color: jerseyNumberColor),
-            ),
+    return Semantics(
+      button: true,
+      label: 'Open $label',
+      child: InkWell(
+        key: ValueKey('best-eleven-player-link-${player.playerId}'),
+        onTap: () => openPlayerPage(context, player.playerId.toString()),
+        borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          width: 62,
+          child: Column(
+            children: [
+              Container(
+                key: ValueKey('best-eleven-player-dot-${player.slotKey}'),
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: circleColor,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  player.jerseyNumber?.toString() ?? '—',
+                  style: Heading5.style.copyWith(color: jerseyNumberColor),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: Eyebrow.style,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: Eyebrow.style,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -192,11 +202,13 @@ class _BestElevenPlayerDot extends StatelessWidget {
 class _BestElevenPitchPlayer {
   const _BestElevenPitchPlayer({
     required this.slotKey,
+    required this.playerId,
     required this.playerName,
     required this.jerseyNumber,
   });
 
   final String slotKey;
+  final int playerId;
   final String? playerName;
   final int? jerseyNumber;
 }

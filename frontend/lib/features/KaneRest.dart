@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
@@ -17,6 +18,7 @@ class PlayerMatchStatSection {
 }
 
 class PlayerMatchStatData {
+  final int? playerId;
   final String name;
   final int? jerseyNumber;
   final List<String> positions;
@@ -28,6 +30,7 @@ class PlayerMatchStatData {
   final List<PlayerMatchStatSection> sections;
 
   const PlayerMatchStatData({
+    this.playerId,
     required this.name,
     required this.jerseyNumber,
     required this.positions,
@@ -131,9 +134,14 @@ class _Header extends StatelessWidget {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        // TODO: navigate to full player profile
-                      },
+                      key: const ValueKey('player-match-stat-profile-link'),
+                      onTap: player.playerId == null
+                          ? null
+                          : () {
+                              final router = GoRouter.of(context);
+                              Navigator.of(context).pop();
+                              router.go('/players/${player.playerId}');
+                            },
                       child: Row(
                         children: [
                           Flexible(
@@ -145,12 +153,14 @@ class _Header extends StatelessWidget {
                                   Heading2.style.copyWith(color: Colors.white),
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          const Icon(
-                            Icons.chevron_right,
-                            color: Colors.white70,
-                            size: 20,
-                          ),
+                          if (player.playerId != null) ...[
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.chevron_right,
+                              color: Colors.white70,
+                              size: 20,
+                            ),
+                          ],
                         ],
                       ),
                     ),
