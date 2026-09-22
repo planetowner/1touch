@@ -69,6 +69,7 @@ class MatchInfoTab extends StatelessWidget {
         : fixtureAwayTeam(fixture, teamRepository);
     return PlayerMatchStatData(
       playerId: playerId,
+      teamPrimaryColor: team.primaryColor,
       name: lineup?.playerName ?? fallbackName,
       jerseyNumber: lineup?.jerseyNumber ?? fallbackJerseyNumber,
       positions: [
