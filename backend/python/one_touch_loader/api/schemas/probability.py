@@ -70,6 +70,23 @@ class ProbabilityComparison(BaseModel):
     as_of: datetime | None
 
 
+class EuropeanTitleProbability(BaseModel):
+    event: Literal['ucl_winner', 'uel_winner', 'uecl_winner']
+    competition_id: int
+    season_id: int
+    season_name: str
+    probability: float = Field(ge=0, le=1)
+    as_of: datetime
+    model_id: str
+    simulations: int
+    probability_method: str
+    strength_source_url: str
+    coefficient_source_url: str
+    sampling_standard_error_pp: float
+    validation: dict
+    limitations: list[str]
+
+
 class TeamProbabilityResponse(BaseModel):
     team_id: int
     team_name: str
@@ -94,6 +111,7 @@ class TeamProbabilityResponse(BaseModel):
     comparison: ProbabilityComparison
     events: list[ProbabilityEvent]
     cards: list[ProbabilityEvent]
+    european_title: EuropeanTitleProbability | None = None
     history: list[ProbabilityHistoryPoint]
     what_if: WhatIf | None
     limitations: list[str]
