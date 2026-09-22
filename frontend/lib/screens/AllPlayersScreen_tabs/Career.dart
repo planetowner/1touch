@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
@@ -387,12 +388,12 @@ class _FilterButton extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: isDark ? AppPalette.lightGrey : AppPalette.white,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+          padding: AppDropdownTokens.triggerPadding,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -404,8 +405,8 @@ class _FilterButton extends StatelessWidget {
                   style: Body2_b.style,
                 ),
               ),
-              const SizedBox(width: 2),
-              const Icon(Icons.keyboard_arrow_down, size: 18),
+              const SizedBox(width: AppDropdownTokens.gap),
+              const AppDropdownChevron(),
             ],
           ),
         ),

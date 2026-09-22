@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
@@ -144,8 +145,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                 _removeOverlay();
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
+                                padding: AppDropdownTokens.triggerPadding,
                                 child: Row(
                                   children: [
                                     Image.network(
@@ -157,24 +157,27 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                               league.competitionId,
                                               size: 24),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(
+                                      width: AppDropdownTokens.gap,
+                                    ),
                                     Expanded(
                                       child: Text(
                                         league.name.toUpperCase(),
                                         style: isSelected
-                                            ? Heading5.style.copyWith(
+                                            ? Body2_b.style.copyWith(
                                                 fontWeight: FontWeight.bold)
-                                            : Heading5.style.copyWith(
+                                            : Body2_b.style.copyWith(
                                                 color:
                                                     appColors.mutedForeground),
                                       ),
                                     ),
                                     if (isSelected)
-                                      Icon(Icons.keyboard_arrow_up,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          size: 20),
+                                      AppDropdownChevron(
+                                        expanded: true,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -528,10 +531,10 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
         onTap: _toggleDropdown,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.6,
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          padding: AppDropdownTokens.triggerPadding,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
             border: Border.all(color: Colors.white12),
           ),
           child: Row(
@@ -551,7 +554,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                     Expanded(
                       child: Text(
                         selectedLeague.toUpperCase(),
-                        style: Heading5.style.copyWith(color: onBrand),
+                        style: Body2_b.style.copyWith(color: onBrand),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -559,11 +562,9 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                _isDropdownOpen
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
+              const SizedBox(width: AppDropdownTokens.gap),
+              AppDropdownChevron(
+                expanded: _isDropdownOpen,
                 color: onBrand,
               ),
             ],
