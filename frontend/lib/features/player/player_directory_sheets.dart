@@ -151,9 +151,6 @@ class _FixedSeasonRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(children: [
             Text(season, style: Body1.style),
-            const SizedBox(width: 8),
-            Icon(Icons.expand_more,
-                color: Theme.of(context).colorScheme.onSurface),
             const Spacer(),
             Icon(Icons.check, color: Theme.of(context).colorScheme.onSurface),
           ]),
