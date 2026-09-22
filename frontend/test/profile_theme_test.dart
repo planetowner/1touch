@@ -43,6 +43,23 @@ void main() {
 
       final playerList =
           find.byKey(const ValueKey('profile-following-player-list'));
+      final playerLinks = find.descendant(
+        of: playerList,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is InkWell &&
+              widget.key is ValueKey<String> &&
+              (widget.key! as ValueKey<String>)
+                  .value
+                  .startsWith('profile-player-link-'),
+        ),
+      );
+      expect(playerLinks, findsWidgets);
+      expect(
+          tester
+              .widgetList<InkWell>(playerLinks)
+              .every((link) => link.onTap != null),
+          isTrue);
       final jerseyBadgeFinder = find
           .descendant(of: playerList, matching: find.byType(CircleAvatar))
           .first;
