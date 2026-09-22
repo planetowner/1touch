@@ -42,7 +42,8 @@ void main() {
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
         await tester.pumpAndSettle();
         expect(find.text('Improving player'), findsOneWidget);
-        expect(find.text('+2.20'), findsOneWidget);
+        expect(find.text('2.20'), findsOneWidget);
+        expect(find.text('+2.20'), findsNothing);
         expect(tester.takeException(), isNull);
       });
     }
