@@ -197,7 +197,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               label: 'Continue with email',
                               backgroundColor: emailButtonBackground,
                               foregroundColor: emailButtonForeground,
-                              onTap: () => context.push('/auth/signup'),
+                              onTap: () => context.push('/auth/signin'),
                             ),
                             const SizedBox(height: 32),
                           ],
