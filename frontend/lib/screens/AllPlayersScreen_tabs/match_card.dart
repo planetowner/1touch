@@ -50,9 +50,13 @@ class PlayerMatchCard extends StatelessWidget {
     // Two separate boxes stacked flush so they read as one connected card:
     // a lighter top box (only the top corners rounded) and a darker bottom box
     // (only the bottom corners rounded). The colour change is the divider.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
+    return Container(
+      key: const ValueKey('player-match-card'),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: appCardShadows(context),
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
         // Top box: opponent crest + result/score + competition.
         Container(
           key: const ValueKey('player-match-card-top'),
@@ -64,14 +68,10 @@ class PlayerMatchCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Container(
+              SizedBox(
+                key: const ValueKey('player-match-logo'),
                 width: 32,
                 height: 32,
-                decoration: BoxDecoration(
-                  color: isDark ? AppPalette.black : appColors.subtleBackground,
-                  shape: BoxShape.circle,
-                ),
-                clipBehavior: Clip.antiAlias,
                 child: againstLogo != null
                     ? remoteLogo
                         ? Image.network(againstLogo!,
@@ -80,7 +80,7 @@ class PlayerMatchCard extends StatelessWidget {
                                 const SizedBox.shrink())
                         : Image.asset(
                             againstLogo!,
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                             errorBuilder: (_, __, ___) =>
                                 const SizedBox.shrink(),
                           )
@@ -88,23 +88,22 @@ class PlayerMatchCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text('$result  ( $score )',
-                              style: Heading5.style)),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${opponentName == null ? '' : '$opponentName · '}$competition',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Eyebrow.style,
-                      ),
-                    ]),
+                flex: 3,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('$result  ( $score )', style: Heading5.style),
+                ),
               ),
+              const SizedBox(width: 8),
+              Expanded(
+                  flex: 2,
+                  child: Text(
+                      '${opponentName == null ? '' : '$opponentName · '}$competition',
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Eyebrow.style)),
             ],
           ),
         ),
@@ -164,7 +163,7 @@ class PlayerMatchCard extends StatelessWidget {
             ],
           ),
         ),
-      ],
+      ]),
     );
   }
 }
