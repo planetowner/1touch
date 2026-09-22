@@ -5,6 +5,7 @@ import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
@@ -14,6 +15,28 @@ void main() {
     expect(playerDetailOverviewGradientHeight(59), 368);
     expect(playerDetailTabGradientHeight(20), 168);
     expect(playerDetailTabGradientHeight(59), 207);
+  });
+
+  testWidgets('match crests render without a background tile', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: const Scaffold(
+        body: PlayerMatchCard(
+          result: 'WIN',
+          score: '1 - 0',
+          competition: 'Bundesliga',
+          stats: [
+            {'label': 'Touches', 'value': '100'},
+          ],
+          rating: '8.0',
+        ),
+      ),
+    ));
+    final backing = tester.widget<SizedBox>(
+      find.byKey(const ValueKey('player-match-logo')),
+    );
+    expect(backing.width, 32);
+    expect(backing.height, 32);
   });
 
   for (final testCase in <({
@@ -151,13 +174,17 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Analysis').first);
     await tester.pumpAndSettle();
+    expect(find.text('ATTRIBUTES'), findsOneWidget);
+    expect(find.text('아직 준비중이에요ㅠㅠ'), findsOneWidget);
+    expect(find.text('Minutes Played\nPer Game'), findsOneWidget);
+    expect(find.text('Goal\nContributions'), findsOneWidget);
     final selector =
         tester.widget<PlayerSeasonSelector>(find.byType(PlayerSeasonSelector));
     selector.onChanged(selector.detail.seasons.last.id);
     await tester.pumpAndSettle();
     expect(repository.calls.last.seasonId, selector.detail.seasons.last.id);
-    expect(find.text('Minutes Played'), findsNothing);
-    expect(find.text('Goal Contributions'), findsNothing);
+    expect(find.text('ATTRIBUTES'), findsOneWidget);
+    expect(find.text('아직 준비중이에요ㅠㅠ'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('failed detail has retry without mock competitions',
