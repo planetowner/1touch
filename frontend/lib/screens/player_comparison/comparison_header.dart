@@ -255,13 +255,34 @@ class _PlayerChip extends StatelessWidget {
 
 class _PlayerPhoto extends StatelessWidget {
   const _PlayerPhoto({required this.player, required this.slot});
+  static const _placeholderAsset =
+      'assets/player_comparison/player_placeholder.png';
   final PlayerDetail? player;
   final int slot;
 
   @override
-  Widget build(BuildContext context) => PlayerRemoteImage(
-        player?.profile.image,
-        key: Key('comparison-header-photo-$slot'),
-        size: 130,
+  Widget build(BuildContext context) {
+    final image = player?.profile.image;
+    return SizedBox(
+      key: Key('comparison-header-photo-$slot'),
+      width: 130,
+      height: 128,
+      child: image == null
+          ? _placeholder()
+          : Image.network(
+              image,
+              key: Key('comparison-header-network-photo-$slot'),
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+              errorBuilder: (_, __, ___) => _placeholder(),
+            ),
+    );
+  }
+
+  Widget _placeholder() => Image.asset(
+        _placeholderAsset,
+        key: Key('comparison-header-placeholder-$slot'),
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
       );
 }
