@@ -321,11 +321,11 @@ def _collect_fixture_details(
         ("fixtures", "events", "team_stats", "lineups", "player_stats", "formations", "fixture_coaches", "pressures", "players"),
         0,
     )
-    # 과거 선수 통계 보충은 검증한 50경기 묶음 조회로 요청 수를 줄여요.
-    batch_size = 50 if player_stats_only else 1
+    # 전체 상세도 선수 통계 보충과 같은 ID 검증·보정이 적용된 묶음 조회를 사용해요.
+    batch_size = 50
     for offset in range(0, len(scope), batch_size):
         group = scope[offset:offset + batch_size]
-        payloads = (client.get_fixture_details_batch(group) if player_stats_only
+        payloads = (client.get_fixture_details_batch(group) if player_stats_only or len(group) > 1
                     else [client.get_fixture_details(group[0])])
         for payload in payloads:
             fixture_id = payload["id"]

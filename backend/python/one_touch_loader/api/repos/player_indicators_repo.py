@@ -6,18 +6,21 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 from threading import Lock
+from time import monotonic
 
 from ..db import get_conn
-from .points_pace_repo import BIG5_COMPETITION_IDS_SQL as LEAGUES_SQL
 from ...core.fixture_states import COMPLETED_STATE_IDS
 from ...core.player_indicators import build_player_indicators
+from ...core.player_rating_percentile import RATING_COMPETITION_IDS
 
 
 CALIBRATION_PATH = Path(__file__).parents[2] / "core" / "player_form_calibration.json"
+LEAGUES_SQL = ",".join(map(str, RATING_COMPETITION_IDS))
 COMPLETED_SQL = ",".join(map(str, COMPLETED_STATE_IDS))
 _snapshot_lock = Lock()
-_snapshot_inputs: tuple | None = None
-_snapshot_items: dict[int, dict] = {}
+_snapshot_inputs = None
+_snapshot: dict[int, dict] = {}
+_snapshot_expires_at = 0.0
 
 
 def fetch_indicator_matches(cur, season_ids: list[int], as_of: datetime) -> list[dict]:
@@ -37,27 +40,27 @@ def fetch_indicator_matches(cur, season_ids: list[int], as_of: datetime) -> list
 
 
 def get_current_player_indicators(player_id: int, *, as_of: datetime | None = None) -> dict | None:
-    if as_of is not None:
-        return _build_current_snapshot(as_of).get(player_id)
-    return _cached_current_snapshot().get(player_id)
+    items = _build_current_snapshot(as_of) if as_of is not None else _cached_current_snapshot()
+    return items.get(player_id)
 
 
 def _cached_current_snapshot() -> dict[int, dict]:
-    global _snapshot_inputs, _snapshot_items
-    # 선수별 동시 조회도 전체 비교 집단의 계산 한 번을 공유해요.
+    global _snapshot_inputs, _snapshot, _snapshot_expires_at
+    # 동시 요청도 같은 계산을 기다려요. 만료는 긴 계산을 마친 뒤부터 1분으로 잡아요.
     with _snapshot_lock:
+        if monotonic() < _snapshot_expires_at:
+            return _snapshot
         as_of = datetime.now(timezone.utc).replace(tzinfo=None)
         inputs = _read_current_inputs(as_of)
-        # 시간이 지나거나 같은 자료를 다시 저장해도 재계산하지 않아요.
-        # 원본 값을 비교하므로 경기 정정·삭제와 급여·명단 변경도 함께 반영돼요.
         if inputs != _snapshot_inputs:
-            items = _calculate_current_snapshot(*inputs, as_of=as_of)
-            _snapshot_inputs, _snapshot_items = inputs, items
-        return _snapshot_items
-
-
-def _build_current_snapshot(as_of: datetime) -> dict[int, dict]:
-    return _calculate_current_snapshot(*_read_current_inputs(as_of), as_of=as_of)
+            snapshot = _build_current_snapshot(as_of, inputs=inputs)
+        else:
+            # 점수는 입력에만 의존해요. 최신 DB 조회가 같으면 모델을 다시 맞추지 않아요.
+            snapshot = {key: {**item, 'as_of': as_of.replace(tzinfo=timezone.utc)}
+                        for key, item in _snapshot.items()}
+        _snapshot_inputs, _snapshot = inputs, snapshot
+        _snapshot_expires_at = monotonic() + 60
+        return _snapshot
 
 
 def _read_current_inputs(as_of: datetime) -> tuple:
@@ -77,7 +80,7 @@ def _read_current_inputs(as_of: datetime) -> tuple:
                 """)
                 roster = cur.fetchall()
                 if not roster:
-                    return [], [], [], None
+                    return ([], [], [], None)
                 seasons = sorted({r["season_id"] for r in roster})
                 matches = fetch_indicator_matches(cur, seasons, as_of)
                 cur.execute(f"""
@@ -100,8 +103,8 @@ def _read_current_inputs(as_of: datetime) -> tuple:
     return roster, matches, fixtures, calibration
 
 
-def _calculate_current_snapshot(roster: list[dict], matches: list[dict], fixtures: list[dict],
-                                calibration: dict | None, *, as_of: datetime) -> dict[int, dict]:
+def _build_current_snapshot(as_of: datetime, *, inputs: tuple | None = None) -> dict[int, dict]:
+    roster, matches, fixtures, calibration = _read_current_inputs(as_of) if inputs is None else inputs
     if not roster:
         return {}
     items = build_player_indicators(roster, matches, fixtures, calibration, as_of=as_of)

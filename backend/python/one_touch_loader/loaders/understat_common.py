@@ -77,6 +77,21 @@ def load_external_ids(entity: str) -> dict[str, int]:
     )}
 
 
+def select_fixture_source(source: dict, season_id: int, fixture_ids, known: dict) -> dict:
+    if fixture_ids is None:
+        return source
+    from .understat_ids_loader import plan_fixture_ids
+
+    # 새 경기 ID도 기존의 팀·맞대결·날짜 검증으로 연결해요. 이름으로 추정하지 않아요.
+    additions, _ = plan_fixture_ids(source, load_mapping_fixtures(season_id),
+                                   known['team'], known['fixture'])
+    mapping = {**known['fixture'], **additions}
+    dates = [m for m in source['dates'] if mapping.get(str(m['id'])) in fixture_ids]
+    teams = {str(m[side]['id']) for m in dates for side in ('h', 'a')}
+    return {**source, 'dates': dates, '_fixture_ids': mapping,
+            'teams': {k: v for k, v in source['teams'].items() if str(k) in teams}}
+
+
 def load_player_observations(season_id: int) -> list[dict]:
     # 24/25 Stansfield·Gollini는 DB 시즌 스쿼드에서 빠졌지만 실제 라인업에 있어요.
     # 과거 경기 매핑은 재계산한 스쿼드뿐 아니라 확인된 출전 명단도 사용해요.

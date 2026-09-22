@@ -5,10 +5,36 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from ..db import fetch_all_dict, fetch_one_dict
-from ...core.probability_forecast import select_cards
+from ...core.probability_forecast import select_cards, with_probability_changes
 from ...core.probability_storage import load_run
 from ...core.db_json import decoded
 from ...core.european_probability import OUTCOME_KIND
+from ...core.cup_betting import utc_datetime
+
+
+def _pre_match_comparison(team_id, run, basis):
+    team = run['teams'][str(team_id)]
+    previous, fixture_at = None, team.get('previous_fixture_at')
+    if fixture_at is not None:
+        kickoff = utc_datetime(fixture_at)
+        # 경기 전 시각으로 복원한 이력은 제외하고, 킥오프 전에 실제 저장한 관측값만 비교해요.
+        # 완료 경기 수가 하나 적어야 중간에 빠진 경기의 변화까지 합산하지 않아요.
+        selected = fetch_one_dict("""SELECT r.run_id FROM probability_runs r
+            JOIN probability_team_results tr ON tr.run_id=r.run_id AND tr.team_id=%s
+            WHERE r.season_id=%s AND r.model_id=%s AND r.as_of<%s
+              AND UNIX_TIMESTAMP(r.created_at)<%s
+              AND JSON_EXTRACT(tr.payload,'$.played')=%s
+              AND JSON_EXTRACT(r.payload,'$.market_kind') IS NULL
+              AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(r.payload,'$.outcome_kind')),'')=%s
+              AND (JSON_UNQUOTE(JSON_EXTRACT(r.payload,'$.cutoff'))='observed_state'
+                   OR JSON_UNQUOTE(JSON_EXTRACT(r.payload,'$.outcome_kind'))=%s)
+            ORDER BY r.as_of DESC,r.created_at DESC,r.run_id DESC LIMIT 1""",
+            (team_id, run['season_id'], run['model_id'], kickoff.replace(tzinfo=None), kickoff.timestamp(),
+             team['played'] - 1, run.get('outcome_kind', ''), OUTCOME_KIND))
+        if selected:
+            previous = load_run(fetch_all_dict, selected['run_id'], team_id)
+    return previous, {'basis': basis, 'available': previous is not None,
+                      'as_of': previous['as_of'] if previous else None, 'fixture_at': fixture_at}
 
 
 def get_european_title(team_id, season_name):
@@ -27,11 +53,17 @@ def get_european_title(team_id, season_name):
         return None
     run = load_run(fetch_all_dict, selected['run_id'], team_id)
     team = run['teams'][str(team_id)]
-    # 대회마다 모델과 계산 시점이 달라 리그 이력·증감과 섞지 않아요.
+    previous, comparison = _pre_match_comparison(team_id, run, 'previous_european_fixture_pre_match_snapshot')
+    event = {key: team[key] for key in ('event', 'probability')} | {'competition_id': run['competition_id']}
+    previous_events = ([{key: previous['teams'][str(team_id)][key] for key in ('event', 'probability')}
+                        | {'competition_id': previous['competition_id']}] if previous else [])
+    change = with_probability_changes([event], previous_events)[0]['change_pp']
+    # 리그 비교 시각과 유럽대항전 비교 시각을 분리해요.
     return {key: run[key] for key in ('competition_id', 'season_id', 'season_name', 'as_of', 'model_id',
         'simulations', 'probability_method', 'strength_source_url', 'coefficient_source_url',
         'validation', 'limitations')} | {'event': team['event'], 'probability': team['probability'],
-        'sampling_standard_error_pp': team['sampling_standard_error_pp']}
+        'sampling_standard_error_pp': team['sampling_standard_error_pp'], 'change_pp': change,
+        'comparison': comparison}
 
 
 def _history_point(snapshot, entry):
@@ -66,7 +98,7 @@ def get_team_probability(team_id: int, season_id: int) -> dict | None:
               AND TIME(as_of)=TIME('00:00:00')
         ) snapshots ON snapshots.run_id=r.run_id WHERE version=1 ORDER BY r.as_of""",
         (team_id, season_id, latest["model_id"], run["as_of"][:10]))
-    history, previous = [], None
+    history = []
     for row in history_rows:
         stamp = row["as_of"]
         if isinstance(stamp, str):
@@ -74,18 +106,16 @@ def get_team_probability(team_id: int, season_id: int) -> dict | None:
         snapshot = {**decoded(row["payload"]), "as_of": stamp.replace(tzinfo=timezone.utc).isoformat().replace('+00:00', 'Z')}
         entry = decoded(row["team_payload"])
         history.append(_history_point(snapshot, entry))
-        if snapshot["as_of"][:10] == team["previous_fixture_date"]:
-            previous = entry
     if run["cutoff"] == "observed_state":
         history.append(_history_point(run, team))
-    previous_events = {e["event"]: e["probability"] for e in previous["events"]} if previous else {}
-    events = [{**event, "change_pp": 100 * (event["probability"] - previous_events[event["event"]])
-               if event["event"] in previous_events else None} for event in team["events"]]
+    previous_run, comparison = _pre_match_comparison(team_id, run, 'previous_league_fixture_pre_match_snapshot')
+    previous = previous_run['teams'][str(team_id)] if previous_run else None
+    events = with_probability_changes(team['events'], previous['events'] if previous else [])
     europe = get_european_title(team_id, run['season_name'])
     card_events = list(events) if run['remaining_fixtures'] else []
     if europe:
-        event = {key: europe[key] for key in ('event', 'competition_id', 'probability')}
-        event.update(category='TITLE', change_pp=None)
+        event = {key: europe[key] for key in ('event', 'competition_id', 'probability', 'change_pp')}
+        event.update(category='TITLE')
         events.append(event)
         card_events.append(event)
     return {
@@ -101,8 +131,7 @@ def get_team_probability(team_id: int, season_id: int) -> dict | None:
         "maximum_points": team["maximum_points"], "positions": team["positions"],
         "projected_points": {**team["projected_points"], "change_points":
                              team["projected_points"]["mean"] - previous["projected_points"]["mean"] if previous else None},
-        "comparison": {"basis": "previous_league_fixture_utc_day_start", "available": previous is not None,
-                       "as_of": team["previous_fixture_date"] + "T00:00:00Z" if team["previous_fixture_date"] else None},
+        "comparison": comparison,
         "events": events, "cards": select_cards(card_events), "european_title": europe,
         "history": history, "what_if": team["what_if"], "limitations": run["limitations"],
         "pending_outcomes": ["ucl_qualification", "europa_qualification", "domestic_cup_winner"]

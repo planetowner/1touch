@@ -162,10 +162,9 @@ def read_clubelo_mapping(team_ids=None):
 def save_elo(mapping, rows):
     from ..core.db import transaction
     with transaction() as connection, connection.cursor() as cursor:
-        for slug, team_id in mapping.items():
-            cursor.execute("""INSERT INTO team_external_ids (team_id,provider,external_team_id)
+        cursor.executemany("""INSERT INTO team_external_ids (team_id,provider,external_team_id)
                               VALUES (%s,'clubelo',%s) ON DUPLICATE KEY UPDATE external_team_id=VALUES(external_team_id)""",
-                           (team_id, slug))
+                           [(team_id, slug) for slug, team_id in mapping.items()])
         cursor.executemany("""INSERT INTO clubelo_ratings (team_id,rating_date,elo) VALUES (%s,%s,%s)
             ON DUPLICATE KEY UPDATE elo=VALUES(elo)""", [row[:3] for row in rows])
         sources = {row[0]: (row[0], row[3], row[4]) for row in rows}
@@ -184,7 +183,10 @@ def refresh_histories(mapping, *, apply, cache_dir=None):
 
 
 def input_fingerprint(fixtures, team_elos):
-    return hashlib.sha256(_dump({"fixtures": fixtures, "team_elos": team_elos}).encode()).hexdigest()
+    # 킥오프 때 다음 경기 시나리오는 바꾸되, 진행 중 득점만으로 다시 계산하지 않아요.
+    normalized = [{**f, 'state_id': 2, 'home_score': None, 'away_score': None}
+                  if f['state_id'] in LIVE_STATE_IDS else f for f in fixtures]
+    return hashlib.sha256(_dump({"fixtures": normalized, "team_elos": team_elos}).encode()).hexdigest()
 
 
 def prepare_run(**kwargs):
@@ -214,12 +216,24 @@ def latest_run(season_id):
     return load_run(_fetch, selected[0]["run_id"])
 
 
+def latest_calculation_inputs(season_id, method):
+    # 같은 UEFA 시즌에 경기별 배당과 우승 확률이 함께 저장돼요. 계산 종류를 구분해서 비교해요.
+    from ..core.db_json import decoded
+    rows = _fetch('''SELECT r.model_id,r.payload FROM probability_runs r
+        JOIN probability_models m ON m.model_id=r.model_id
+        WHERE r.season_id=%s AND JSON_UNQUOTE(JSON_EXTRACT(m.payload,'$.method'))=%s
+        ORDER BY r.as_of DESC,r.created_at DESC,r.run_id DESC LIMIT 1''', (season_id, method))
+    return {**decoded(rows[0]['payload']), 'model_id': rows[0]['model_id']} if rows else None
+
+
+def calculation_unchanged(previous, *, model_id, input_sha256, **settings):
+    # Elo가 같아도 결과·일정·대진·카드 또는 계산 설정이 바뀌면 다시 계산해요.
+    expected = dict(model_id=model_id, input_sha256=input_sha256, **settings)
+    return previous is not None and all(previous.get(key) == value for key, value in expected.items())
+
+
 def refresh_league(*, competition_id, season_id, teams, fixtures, histories, model_report,
                    observed_at, simulations, seed, previous, stored_days):
-    # 진행 중에는 별도 인플레이 모델이 없으므로 기존 예측을 유지해요. 다른 리그는 계속 확인해요.
-    live = [f["fixture_id"] for f in fixtures if f["state_id"] in LIVE_STATE_IDS]
-    if live:
-        return [], {"season_id": season_id, "status": "live", "fixture_ids": live}
     today = observed_at.date()
     missing = [day for day in forecast_dates(fixtures, today) if day not in stored_days]
     elos = {str(t["team_id"]): rating_before(histories.get(t["team_id"], []), today + timedelta(days=1)) for t in teams}
@@ -227,7 +241,9 @@ def refresh_league(*, competition_id, season_id, teams, fixtures, histories, mod
     unchanged = previous is not None and all((
         previous["model_id"] == model_report["model_id"], previous.get("input_sha256") == fingerprint,
         previous["simulations"] == simulations, previous["seed"] == seed,
-        previous["cutoff"] == "observed_state"))
+        previous["cutoff"] == "observed_state",
+        # 기존 저장값에도 직전 경기 킥오프가 채워지도록 최초 한 번 현재 예측을 갱신해요.
+        all('previous_fixture_at' in team for team in previous['teams'].values())))
     if unchanged and not missing:
         return [], {"season_id": season_id, "status": "unchanged"}
     common = dict(competition_id=competition_id, season_id=season_id, teams=teams, fixtures=fixtures,
