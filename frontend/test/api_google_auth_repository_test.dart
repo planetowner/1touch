@@ -144,6 +144,74 @@ void main() {
     );
   });
 
+  test('registers an email account and returns its access token', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/auth/email/register');
+        expect(jsonDecode(request.body), {
+          'challenge_id': 'c' * 40,
+          'code': '373262',
+          'password': 'Password123',
+          'username': 'member',
+          'first_name': 'First',
+          'last_name': 'Last',
+        });
+        return http.Response(
+          jsonEncode({
+            'access_token': 'email-session-token',
+            'token_type': 'bearer',
+          }),
+          201,
+        );
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    final accessToken = await repository.registerWithEmail(
+      challengeId: 'c' * 40,
+      code: '373262',
+      password: 'Password123',
+      username: 'member',
+      firstName: 'First',
+      lastName: 'Last',
+    );
+
+    expect(accessToken, 'email-session-token');
+  });
+
+  test('preserves backend detail when email registration fails', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'detail': 'Invalid, expired, or exhausted verification code',
+          }),
+          400,
+        ),
+      ),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    await expectLater(
+      repository.registerWithEmail(
+        challengeId: 'c' * 40,
+        code: '000000',
+        password: 'Password123',
+        username: 'member',
+        firstName: 'First',
+        lastName: 'Last',
+      ),
+      throwsA(
+        isA<AuthRequestException>().having(
+          (error) => error.displayMessage,
+          'displayMessage',
+          'Invalid, expired, or exhausted verification code (400)',
+        ),
+      ),
+    );
+  });
+
   test('supports a trailing base-URI slash and any successful status',
       () async {
     final repository = ApiGoogleAuthRepository(
