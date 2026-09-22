@@ -196,12 +196,13 @@ def prepare_run(**kwargs):
 
 
 def latest_model(method='multinomial_logistic_elo_difference_v1'):
-    selected = _fetch("""SELECT model_id FROM probability_models
-        WHERE JSON_UNQUOTE(JSON_EXTRACT(payload,'$.method'))=%s
-        ORDER BY created_at DESC,model_id DESC LIMIT 1""", (method,))
-    if not selected:
+    # 큰 학습 JSON을 조건으로 정렬하면 MySQL 정렬 메모리가 부족해요. 작은 메타데이터만 비교해요.
+    candidates = _fetch("""SELECT model_id,created_at FROM probability_models
+        WHERE JSON_UNQUOTE(JSON_EXTRACT(payload,'$.method'))=%s""", (method,))
+    if not candidates:
         raise ValueError("Train and store the Probability model before refreshing")
-    return json.loads(_fetch("SELECT payload FROM probability_models WHERE model_id=%s", (selected[0]["model_id"],))[0]["payload"])
+    selected = max(candidates, key=lambda row: (row['created_at'], row['model_id']))
+    return json.loads(_fetch("SELECT payload FROM probability_models WHERE model_id=%s", (selected["model_id"],))[0]["payload"])
 
 
 def latest_run(season_id):
