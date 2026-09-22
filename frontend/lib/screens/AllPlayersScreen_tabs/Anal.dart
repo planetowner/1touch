@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
@@ -230,27 +229,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
       );
 
   Widget _attributes(PlayerDetail detail) {
-    final team = detail.profile.teamId == null
-        ? null
-        : teamRepository.findById(detail.profile.teamId!);
-    final accent = Color(team?.primaryColor ?? 0xFFFF5C5C);
     return PlayerSection(
       title: 'ATTRIBUTES',
-      trailing: const Icon(Icons.chevron_right),
       child: PlayerSurface(
         key: const ValueKey('player-attributes-card'),
         padding: const EdgeInsets.all(24),
         child: SizedBox(
-          height: 260,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.radar, size: 48, color: accent),
-                const SizedBox(height: 16),
-                const Text('아직 준비중이에요ㅠㅠ', style: Heading5.style),
-              ],
-            ),
+          height: 96,
+          child: const Center(
+            child: Text('아직 준비중이에요 ㅠㅠ', style: Heading5.style),
           ),
         ),
       ),
