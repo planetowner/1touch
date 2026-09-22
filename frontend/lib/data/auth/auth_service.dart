@@ -35,4 +35,23 @@ class AuthService {
 
   Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
       _repository.requestSignUpEmailCode(email: email);
+
+  Future<void> registerWithEmail({
+    required String challengeId,
+    required String code,
+    required String password,
+    required String username,
+    required String firstName,
+    required String lastName,
+  }) async {
+    final accessToken = await _repository.registerWithEmail(
+      challengeId: challengeId,
+      code: code,
+      password: password,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
+    );
+    _session.establish(accessToken);
+  }
 }

@@ -183,4 +183,15 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
       throw UnimplementedError();
+
+  @override
+  Future<String> registerWithEmail({
+    required String challengeId,
+    required String code,
+    required String password,
+    required String username,
+    required String firstName,
+    required String lastName,
+  }) =>
+      throw UnimplementedError();
 }
