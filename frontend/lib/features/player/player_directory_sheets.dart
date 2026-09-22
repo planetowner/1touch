@@ -174,8 +174,8 @@ class _FollowingPlayersEditorSheetState
   final _search = TextEditingController();
   late final List<FollowingPlayer> _players = [...widget.players];
   final Map<int, Future<PlayerDetail?>> _details = {};
-  List<PlayerDetail> _results = [];
-  PlayerDetail? _selected;
+  List<PlayerCandidate> _results = [];
+  PlayerCandidate? _selected;
   bool _searching = false;
   bool _changed = false;
   int _request = 0;
@@ -213,10 +213,11 @@ class _FollowingPlayersEditorSheetState
     setState(() => _searching = true);
     try {
       final candidates = await _repository.search(query);
-      final details = await Future.wait(
-          candidates.take(20).map((candidate) => _loadDetail(candidate.id)));
       if (!mounted || request != _request) return;
-      setState(() => _results = details.whereType<PlayerDetail>().toList());
+      setState(() => _results = candidates
+          .where((candidate) => !_contains(candidate.id))
+          .take(20)
+          .toList());
     } on Object {
       if (mounted && request == _request) setState(() => _results = []);
     }
@@ -226,11 +227,11 @@ class _FollowingPlayersEditorSheetState
 
   void _save() {
     final selected = _selected;
-    if (selected != null && !_contains(selected.playerId)) {
+    if (selected != null && !_contains(selected.id)) {
       _players.add(FollowingPlayer(
-          playerId: selected.playerId,
-          name: selected.profile.name,
-          imagePath: selected.profile.image));
+          playerId: selected.id,
+          name: selected.name,
+          imagePath: selected.image));
     }
     Navigator.pop(context, _players);
   }
@@ -367,17 +368,12 @@ class _FollowingPlayersEditorSheetState
         itemCount: _results.length,
         itemBuilder: (context, index) {
           final player = _results[index];
-          final followed = _contains(player.playerId);
-          final selected = _selected?.playerId == player.playerId;
-          return Opacity(
-            opacity: followed ? .35 : 1,
-            child: _SearchPlayerRow(
-              player: player,
-              divider: divider,
-              selected: selected,
-              onSelect:
-                  followed ? null : () => setState(() => _selected = player),
-            ),
+          final selected = _selected?.id == player.id;
+          return _SearchPlayerRow(
+            player: player,
+            divider: divider,
+            selected: selected,
+            onSelect: () => setState(() => _selected = player),
           );
         },
       );
@@ -443,7 +439,7 @@ class _SearchPlayerRow extends StatelessWidget {
       required this.divider,
       required this.selected,
       required this.onSelect});
-  final PlayerDetail player;
+  final PlayerCandidate player;
   final Color divider;
   final bool selected;
   final VoidCallback? onSelect;
@@ -455,14 +451,10 @@ class _SearchPlayerRow extends StatelessWidget {
             ClipOval(
                 child: ColoredBox(
               color: AppColors.of(context).subtleBackground,
-              child: PlayerRemoteImage(player.profile.image, size: 56),
+              child: PlayerRemoteImage(player.image, size: 56),
             )),
             const SizedBox(width: 16),
-            Expanded(
-                child: _PlayerIdentity(
-                    name: player.profile.name,
-                    team: player.profile.teamName,
-                    number: player.profile.jerseyNumber)),
+            Expanded(child: _PlayerIdentity(name: player.name)),
             IconButton(
               onPressed: onSelect,
               icon: Icon(
