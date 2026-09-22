@@ -10,6 +10,8 @@ Fixture fixtureFromApiResponse(ApiFixtureResponse response) {
     awayTeamId: response.awayTeamId,
     homeTeamName: response.homeTeamName,
     awayTeamName: response.awayTeamName,
+    homeTeamShortName: response.homeTeamShortName,
+    awayTeamShortName: response.awayTeamShortName,
     homeTeamLogo: response.homeTeamLogo,
     awayTeamLogo: response.awayTeamLogo,
     competitionType: _competitionTypeFromApi(response.competitionType),

@@ -23,6 +23,7 @@ from .routes.community import router as community_router
 from .routes.kakao_events import router as kakao_events_router
 from .routes.apple_events import router as apple_events_router
 from .routes.betting import router as betting_router
+from .routes.football_names import router as football_names_router
 
 
 def create_app() -> FastAPI:
@@ -73,6 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(moderation_router, prefix="/v1", tags=["moderation"])
     app.include_router(community_router, prefix="/v1", tags=["community"])
     app.include_router(betting_router, prefix="/v1", tags=["betting"])
+    app.include_router(football_names_router, prefix="/v1", tags=["football-names"])
 
     return app
 
