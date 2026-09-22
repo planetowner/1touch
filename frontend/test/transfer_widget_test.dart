@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
@@ -137,6 +138,53 @@ void main() {
       find.byTooltip('Complete contract dates are currently unavailable.'),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('transfer player opens the player page', (tester) async {
+    final repository = _TestTransferRepository(
+      (teamId) async => TeamTransferWindow(
+        teamId: teamId,
+        windowKey: '2026 summer',
+        incoming: const [
+          TransferEntry(
+            transferId: 1,
+            playerId: 101,
+            playerName: 'Transfer Player',
+            direction: TransferDirection.incoming,
+            typeId: 219,
+          ),
+        ],
+        outgoing: const [],
+      ),
+    );
+    addTearDown(repository.dispose);
+    final router = GoRouter(
+      initialLocation: '/team',
+      routes: [
+        GoRoute(
+          path: '/team',
+          builder: (_, __) => Scaffold(
+            body: Transfer(
+              teams: const <String, dynamic>{'id': 9},
+              repository: repository,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/players/:id',
+          builder: (_, state) => Text('Player ${state.pathParameters['id']}'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('transfer-1')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Player 101'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
