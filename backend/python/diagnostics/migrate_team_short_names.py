@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from one_touch_loader.core.db import fetch_all
+from diagnostics.migrate_football_names import migrate_data as save_names
 
 
 SEED_PATH = Path(__file__).with_name("team_short_names.json")
@@ -14,7 +15,10 @@ SQL_PATH = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_t
 
 def short_names() -> dict[int, str]:
     rows = json.loads(SEED_PATH.read_text(encoding="utf-8"))
-    return {row["team_id"]: row["short_name"] for row in rows}
+    names = {row["team_id"]: row["short_name"] for row in rows}
+    if len(names) != len(rows) or any(not isinstance(name, str) or not name.strip() or len(name) > 64 for name in names.values()):
+        raise ValueError("Invalid or duplicate reviewed short names")
+    return names
 
 
 def verify_schema(*, before: bool) -> bool:
@@ -24,41 +28,46 @@ def verify_schema(*, before: bool) -> bool:
         return False
     if columns != [("varchar(64)", "YES")]:
         raise ValueError("Expected nullable teams.short_name VARCHAR(64)")
-    if not before:
-        saved = dict(fetch_all("SELECT team_id, short_name FROM teams WHERE short_name IS NOT NULL"))
-        if any(saved.get(team_id) != name for team_id, name in short_names().items()):
-            raise ValueError("Saved short names do not match the reviewed list")
     return True
 
 
 def migrate_data(conn):
-    # 공급자 이름이나 리그가 바뀌어도 검증한 팀 ID에만 적용해요.
-    with conn.cursor() as cursor:
-        cursor.executemany("UPDATE teams SET short_name=%s WHERE team_id=%s",
-                           [(name, team_id) for team_id, name in short_names().items()])
-    conn.commit()
+    # 한국어 이름과 같은 저장 경로에서 기존 값 충돌·전체 행 불변성을 확인해요.
+    save_names(conn, names={"teams": short_names()}, columns={"teams": ("team_id", "short_name")})
+
+
+def preview():
+    ready = verify_schema(before=True)
+    names = short_names()
+    teams = {row[0]: row for row in fetch_all("SELECT team_id, name, " + ("short_name" if ready else "NULL") + " FROM teams")}
+    missing = names.keys() - teams.keys()
+    if missing:
+        raise ValueError(f"Missing reviewed team IDs: {sorted(missing)}")
+    for row in json.loads(SEED_PATH.read_text(encoding="utf-8")):
+        if "name" in row and teams[row["team_id"]][1] != row["name"]:
+            raise ValueError(f"Reviewed team identity changed: {row['team_id']}")
+    conflicts = [key for key, name in names.items() if teams[key][2] not in (None, name)]
+    if conflicts:
+        raise ValueError(f"Existing English short names differ: {conflicts}")
+    return ready, {"reviewed": len(names), "updates": sum(teams[key][2] != name for key, name in names.items())}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args()
-    names = short_names()
-    teams = dict(fetch_all("SELECT team_id, name FROM teams"))
-    missing = names.keys() - teams.keys()
-    if missing:
-        raise ValueError(f"Missing reviewed team IDs: {sorted(missing)}")
-    ready = verify_schema(before=True)
-    for team_id, name in names.items():
-        print(f"{team_id}: {teams[team_id]} -> {name}")
-    print(f"Reviewed teams: {len(names)}; other teams keep their original names.")
-    if not args.apply:
-        print("Preview only. Run with --apply to back up teams and save the names.")
+    ready, summary = preview()
+    print(json.dumps({"schema_ready": ready, "teams": summary}, ensure_ascii=False), flush=True)
+    if not args.apply or not summary["updates"]:
         return
     from diagnostics.run_minimal_migration import run_migration
     run_migration(name="team_short_names", tables=("teams",),
                   sql_paths=() if ready else (SQL_PATH,),
                   verify_schema=verify_schema, migrate_data=migrate_data)
+    _, after = preview()
+    if after["updates"]:
+        raise ValueError("Saved English short names differ from reviewed names")
+    print(json.dumps({"verified": after}, ensure_ascii=False), flush=True)
 
 
 if __name__ == "__main__":

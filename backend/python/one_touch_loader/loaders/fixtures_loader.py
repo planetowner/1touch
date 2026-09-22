@@ -27,6 +27,11 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
+from ..core.fixture_scores import (
+    CURRENT_SCORE_TYPE_ID as SPORTMONKS_CURRENT_SCORE_TYPE_ID,
+    PENALTY_SCORE_TYPE_ID as SPORTMONKS_PENALTY_SCORE_TYPE_ID,
+    score_pair as _score_pair,
+)
 from .teams_loader import (
     CUP_BASE_COMPETITION_IDS,
     MIN_SEASON_START_YEAR,
@@ -34,8 +39,6 @@ from .teams_loader import (
 )
 
 
-SPORTMONKS_CURRENT_SCORE_TYPE_ID = 1525
-SPORTMONKS_PENALTY_SCORE_TYPE_ID = 5
 FIXTURE_INCLUDE = "participants;state;scores;round;stage;group;venue;aggregate"
 
 SQL_SELECT_ALL_SCOPE = """
@@ -272,23 +275,6 @@ def _fixture_participants(
             return None
         by_location[participant["meta"]["location"]] = participant["id"]
     return by_location["home"], by_location["away"]
-
-
-def _score_pair(
-    fixture: Dict,
-    home_team_id: int,
-    away_team_id: int,
-    type_id: int,
-) -> Tuple[Optional[int], Optional[int]]:
-    values = {
-        score["participant_id"]: score["score"]["goals"]
-        for score in fixture["scores"]
-        if score["type_id"] == type_id
-    }
-
-    if not values:
-        return None, None
-    return values[home_team_id], values[away_team_id]
 
 
 def _normalize_fixture(

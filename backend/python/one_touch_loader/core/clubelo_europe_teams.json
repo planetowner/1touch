@@ -1,0 +1,763 @@
+{
+  "verified_at": "2026-09-21",
+  "source_url": "https://clubelo.com/Ranking",
+  "identity_source": "Sportmonks teams/seasons with country; explicit reviewed ClubElo names",
+  "teams": [
+    {
+      "team_id": 781,
+      "team_name": "AEK Athens",
+      "country": "GRE",
+      "ranking_name": "AEK",
+      "external_team_id": "AEK"
+    },
+    {
+      "team_id": 19,
+      "team_name": "Arsenal",
+      "country": "ENG",
+      "ranking_name": "Arsenal",
+      "external_team_id": "Arsenal"
+    },
+    {
+      "team_id": 15,
+      "team_name": "Aston Villa",
+      "country": "ENG",
+      "ranking_name": "Aston Villa",
+      "external_team_id": "AstonVilla"
+    },
+    {
+      "team_id": 7980,
+      "team_name": "Atlético de Madrid",
+      "country": "ESP",
+      "ranking_name": "Atlético",
+      "external_team_id": "atletico"
+    },
+    {
+      "team_id": 1668,
+      "team_name": "Bodø / Glimt",
+      "country": "NOR",
+      "ranking_name": "Bodø/Glimt",
+      "external_team_id": "BodoeGlimt"
+    },
+    {
+      "team_id": 68,
+      "team_name": "Borussia Dortmund",
+      "country": "GER",
+      "ranking_name": "Dortmund",
+      "external_team_id": "Dortmund"
+    },
+    {
+      "team_id": 340,
+      "team_name": "Club Brugge",
+      "country": "BEL",
+      "ranking_name": "Brugge",
+      "external_team_id": "Brugge"
+    },
+    {
+      "team_id": 268,
+      "team_name": "Como",
+      "country": "ITA",
+      "ranking_name": "Como",
+      "external_team_id": "Como"
+    },
+    {
+      "team_id": 83,
+      "team_name": "FC Barcelona",
+      "country": "ESP",
+      "ranking_name": "Barcelona",
+      "external_team_id": "Barcelona"
+    },
+    {
+      "team_id": 503,
+      "team_name": "FC Bayern München",
+      "country": "GER",
+      "ranking_name": "Bayern München",
+      "external_team_id": "Bayern"
+    },
+    {
+      "team_id": 88,
+      "team_name": "Fenerbahçe",
+      "country": "TUR",
+      "ranking_name": "Fenerbahçe",
+      "external_team_id": "Fenerbahce"
+    },
+    {
+      "team_id": 73,
+      "team_name": "Feyenoord",
+      "country": "NED",
+      "ranking_name": "Feyenoord",
+      "external_team_id": "Feyenoord"
+    },
+    {
+      "team_id": 34,
+      "team_name": "Galatasaray",
+      "country": "TUR",
+      "ranking_name": "Galatasaray",
+      "external_team_id": "Galatasaray"
+    },
+    {
+      "team_id": 2930,
+      "team_name": "Inter",
+      "country": "ITA",
+      "ranking_name": "Internazionale",
+      "external_team_id": "Inter"
+    },
+    {
+      "team_id": 3369,
+      "team_name": "LASK",
+      "country": "AUT",
+      "ranking_name": "LASK",
+      "external_team_id": "lask"
+    },
+    {
+      "team_id": 271,
+      "team_name": "Lens",
+      "country": "FRA",
+      "ranking_name": "Lens",
+      "external_team_id": "Lens"
+    },
+    {
+      "team_id": 8,
+      "team_name": "Liverpool",
+      "country": "ENG",
+      "ranking_name": "Liverpool",
+      "external_team_id": "Liverpool"
+    },
+    {
+      "team_id": 690,
+      "team_name": "LOSC Lille",
+      "country": "FRA",
+      "ranking_name": "Lille",
+      "external_team_id": "Lille"
+    },
+    {
+      "team_id": 9,
+      "team_name": "Manchester City",
+      "country": "ENG",
+      "ranking_name": "Man City",
+      "external_team_id": "ManCity"
+    },
+    {
+      "team_id": 14,
+      "team_name": "Manchester United",
+      "country": "ENG",
+      "ranking_name": "Man United",
+      "external_team_id": "ManUnited"
+    },
+    {
+      "team_id": 597,
+      "team_name": "Napoli",
+      "country": "ITA",
+      "ranking_name": "Napoli",
+      "external_team_id": "Napoli"
+    },
+    {
+      "team_id": 591,
+      "team_name": "Paris Saint Germain",
+      "country": "FRA",
+      "ranking_name": "Paris SG",
+      "external_team_id": "ParisSG"
+    },
+    {
+      "team_id": 652,
+      "team_name": "Porto",
+      "country": "POR",
+      "ranking_name": "Porto",
+      "external_team_id": "porto"
+    },
+    {
+      "team_id": 682,
+      "team_name": "PSV",
+      "country": "NED",
+      "ranking_name": "PSV",
+      "external_team_id": "PSV"
+    },
+    {
+      "team_id": 277,
+      "team_name": "RB Leipzig",
+      "country": "GER",
+      "ranking_name": "RB Leipzig",
+      "external_team_id": "RBLeipzig"
+    },
+    {
+      "team_id": 485,
+      "team_name": "Real Betis",
+      "country": "ESP",
+      "ranking_name": "Betis",
+      "external_team_id": "Betis"
+    },
+    {
+      "team_id": 3468,
+      "team_name": "Real Madrid",
+      "country": "ESP",
+      "ranking_name": "Real Madrid",
+      "external_team_id": "realmadrid"
+    },
+    {
+      "team_id": 37,
+      "team_name": "Roma",
+      "country": "ITA",
+      "ranking_name": "Roma",
+      "external_team_id": "Roma"
+    },
+    {
+      "team_id": 138649,
+      "team_name": "Sabah",
+      "country": "AZE",
+      "ranking_name": "Sabah FK",
+      "external_team_id": "ranking:AZE:Sabah FK"
+    },
+    {
+      "team_id": 621,
+      "team_name": "Shakhtar Donetsk",
+      "country": "UKR",
+      "ranking_name": "Shakhtar",
+      "external_team_id": "Shakhtar"
+    },
+    {
+      "team_id": 216,
+      "team_name": "Slavia Praha",
+      "country": "CZE",
+      "ranking_name": "Slavia Praha",
+      "external_team_id": "SlaviaPraha"
+    },
+    {
+      "team_id": 2417,
+      "team_name": "Slovan Bratislava",
+      "country": "SVK",
+      "ranking_name": "Slovan",
+      "external_team_id": "SlovanBratislava"
+    },
+    {
+      "team_id": 58,
+      "team_name": "Sporting CP",
+      "country": "POR",
+      "ranking_name": "Sporting",
+      "external_team_id": "Sporting"
+    },
+    {
+      "team_id": 3319,
+      "team_name": "VfB Stuttgart",
+      "country": "GER",
+      "ranking_name": "Stuttgart",
+      "external_team_id": "Stuttgart"
+    },
+    {
+      "team_id": 321,
+      "team_name": "Viking",
+      "country": "NOR",
+      "ranking_name": "Viking",
+      "external_team_id": "Viking"
+    },
+    {
+      "team_id": 3477,
+      "team_name": "Villarreal",
+      "country": "ESP",
+      "ranking_name": "Villarreal",
+      "external_team_id": "Villarreal"
+    },
+    {
+      "team_id": 113,
+      "team_name": "AC Milan",
+      "country": "ITA",
+      "ranking_name": "Milan",
+      "external_team_id": "Milan"
+    },
+    {
+      "team_id": 52,
+      "team_name": "AFC Bournemouth",
+      "country": "ENG",
+      "ranking_name": "Bournemouth",
+      "external_team_id": "Bournemouth"
+    },
+    {
+      "team_id": 2555,
+      "team_name": "Anderlecht",
+      "country": "BEL",
+      "ranking_name": "Anderlecht",
+      "external_team_id": "Anderlecht"
+    },
+    {
+      "team_id": 132649,
+      "team_name": "Ararat-Armenia",
+      "country": "ARM",
+      "ranking_name": "Ararat-Armenia",
+      "external_team_id": "ranking:ARM:Ararat-Armenia"
+    },
+    {
+      "team_id": 61,
+      "team_name": "AZ Alkmaar",
+      "country": "NED",
+      "ranking_name": "AZ",
+      "external_team_id": "Alkmaar"
+    },
+    {
+      "team_id": 3321,
+      "team_name": "Bayer 04 Leverkusen",
+      "country": "GER",
+      "ranking_name": "Leverkusen",
+      "external_team_id": "Leverkusen"
+    },
+    {
+      "team_id": 605,
+      "team_name": "Benfica",
+      "country": "POR",
+      "ranking_name": "Benfica",
+      "external_team_id": "benfica"
+    },
+    {
+      "team_id": 554,
+      "team_name": "Beşiktaş",
+      "country": "TUR",
+      "ranking_name": "Besiktas",
+      "external_team_id": "Besiktas"
+    },
+    {
+      "team_id": 1114,
+      "team_name": "Celje",
+      "country": "SVN",
+      "ranking_name": "Celje",
+      "external_team_id": "ranking:SVN:Celje"
+    },
+    {
+      "team_id": 36,
+      "team_name": "Celta de Vigo",
+      "country": "ESP",
+      "ranking_name": "Celta",
+      "external_team_id": "rc-celta"
+    },
+    {
+      "team_id": 53,
+      "team_name": "Celtic",
+      "country": "SCO",
+      "ranking_name": "Celtic",
+      "external_team_id": "Celtic"
+    },
+    {
+      "team_id": 51,
+      "team_name": "Crystal Palace",
+      "country": "ENG",
+      "ranking_name": "Crystal Palace",
+      "external_team_id": "CrystalPalace"
+    },
+    {
+      "team_id": 674,
+      "team_name": "Dinamo Zagreb",
+      "country": "CRO",
+      "ranking_name": "Dinamo Zagreb",
+      "external_team_id": "DinamoZagreb"
+    },
+    {
+      "team_id": 112,
+      "team_name": "Ferencvárosi",
+      "country": "HUN",
+      "ranking_name": "Ferencvaros",
+      "external_team_id": "Ferencvaros"
+    },
+    {
+      "team_id": 516,
+      "team_name": "Hapoel Be'er Sheva",
+      "country": "ISR",
+      "ranking_name": "Beer-Sheva",
+      "external_team_id": "Beer-Sheva"
+    },
+    {
+      "team_id": 890,
+      "team_name": "Jagiellonia Białystok",
+      "country": "POL",
+      "ranking_name": "Jagiellonia",
+      "external_team_id": "Jagiellonia"
+    },
+    {
+      "team_id": 625,
+      "team_name": "Juventus",
+      "country": "ITA",
+      "ranking_name": "Juventus",
+      "external_team_id": "Juventus"
+    },
+    {
+      "team_id": 302,
+      "team_name": "Lech Poznań",
+      "country": "POL",
+      "ranking_name": "Lech",
+      "external_team_id": "Lech"
+    },
+    {
+      "team_id": 3223,
+      "team_name": "Levski Sofia",
+      "country": "BUL",
+      "ranking_name": "Levski",
+      "external_team_id": "Levski"
+    },
+    {
+      "team_id": 2510,
+      "team_name": "Lillestrøm",
+      "country": "NOR",
+      "ranking_name": "Lillestrøm",
+      "external_team_id": "ranking:NOR:Lillestrøm"
+    },
+    {
+      "team_id": 494,
+      "team_name": "NEC Nijmegen",
+      "country": "NED",
+      "ranking_name": "Nijmegen",
+      "external_team_id": "Nijmegen"
+    },
+    {
+      "team_id": 118,
+      "team_name": "OFI",
+      "country": "GRE",
+      "ranking_name": "OFI",
+      "external_team_id": "ranking:GRE:OFI"
+    },
+    {
+      "team_id": 602,
+      "team_name": "Olympiacos F.C.",
+      "country": "GRE",
+      "ranking_name": "Olympiakos",
+      "external_team_id": "Olympiakos"
+    },
+    {
+      "team_id": 79,
+      "team_name": "Olympique Lyonnais",
+      "country": "FRA",
+      "ranking_name": "Lyon",
+      "external_team_id": "Lyon"
+    },
+    {
+      "team_id": 44,
+      "team_name": "Olympique Marseille",
+      "country": "FRA",
+      "ranking_name": "Marseille",
+      "external_team_id": "Marseille"
+    },
+    {
+      "team_id": 368,
+      "team_name": "Omonia Nicosia",
+      "country": "CYP",
+      "ranking_name": "Omonia",
+      "external_team_id": "Omonia"
+    },
+    {
+      "team_id": 594,
+      "team_name": "Real Sociedad",
+      "country": "ESP",
+      "ranking_name": "Real Sociedad",
+      "external_team_id": "Sociedad"
+    },
+    {
+      "team_id": 598,
+      "team_name": "Rennes",
+      "country": "FRA",
+      "ranking_name": "Rennes",
+      "external_team_id": "Rennes"
+    },
+    {
+      "team_id": 49,
+      "team_name": "Salzburg",
+      "country": "AUT",
+      "ranking_name": "RB Salzburg",
+      "external_team_id": "rbsalzburg"
+    },
+    {
+      "team_id": 2727,
+      "team_name": "Sparta Praha",
+      "country": "CZE",
+      "ranking_name": "Sparta Praha",
+      "external_team_id": "SpartaPraha"
+    },
+    {
+      "team_id": 3357,
+      "team_name": "Sturm Graz",
+      "country": "AUT",
+      "ranking_name": "Sturm Graz",
+      "external_team_id": "SturmGraz"
+    },
+    {
+      "team_id": 3,
+      "team_name": "Sunderland",
+      "country": "ENG",
+      "ranking_name": "Sunderland",
+      "external_team_id": "Sunderland"
+    },
+    {
+      "team_id": 7067,
+      "team_name": "Torreense",
+      "country": "POR",
+      "ranking_name": "Torreense",
+      "external_team_id": "ranking:POR:Torreense"
+    },
+    {
+      "team_id": 2726,
+      "team_name": "TSG Hoffenheim",
+      "country": "GER",
+      "ranking_name": "Hoffenheim",
+      "external_team_id": "Hoffenheim"
+    },
+    {
+      "team_id": 3958,
+      "team_name": "Union Saint-Gilloise",
+      "country": "BEL",
+      "ranking_name": "St Gillis",
+      "external_team_id": "StGillis"
+    },
+    {
+      "team_id": 3545,
+      "team_name": "Viktoria Plzeň",
+      "country": "CZE",
+      "ranking_name": "Viktoria Plzeň",
+      "external_team_id": "ViktoriaPlzen"
+    },
+    {
+      "team_id": 2905,
+      "team_name": "AGF",
+      "country": "DEN",
+      "ranking_name": "Aarhus",
+      "external_team_id": "Aarhus"
+    },
+    {
+      "team_id": 629,
+      "team_name": "Ajax",
+      "country": "NED",
+      "ranking_name": "Ajax",
+      "external_team_id": "Ajax"
+    },
+    {
+      "team_id": 708,
+      "team_name": "Atalanta",
+      "country": "ITA",
+      "ranking_name": "Atalanta",
+      "external_team_id": "atalanta"
+    },
+    {
+      "team_id": 3877,
+      "team_name": "Borac Banja Luka",
+      "country": "BIH",
+      "ranking_name": "Borac Banja Luka",
+      "external_team_id": "ranking:BIH:Borac Banja Luka"
+    },
+    {
+      "team_id": 2474,
+      "team_name": "Brann",
+      "country": "NOR",
+      "ranking_name": "Brann",
+      "external_team_id": "Brann"
+    },
+    {
+      "team_id": 78,
+      "team_name": "Brighton & Hove Albion",
+      "country": "ENG",
+      "ranking_name": "Brighton",
+      "external_team_id": "Brighton"
+    },
+    {
+      "team_id": 2673,
+      "team_name": "Crvena Zvezda",
+      "country": "SRB",
+      "ranking_name": "Crvena Zvezda",
+      "external_team_id": "CrvenaZvezda"
+    },
+    {
+      "team_id": 392,
+      "team_name": "CSKA Sofia",
+      "country": "BUL",
+      "ranking_name": "CSKA Sofia",
+      "external_team_id": "ranking:BUL:CSKA Sofia"
+    },
+    {
+      "team_id": 63383,
+      "team_name": "Egnatia Rrogozhinë",
+      "country": "ALB",
+      "ranking_name": "Egnatia Rrogozhi",
+      "external_team_id": "ranking:ALB:Egnatia Rrogozhi"
+    },
+    {
+      "team_id": 6392,
+      "team_name": "FC Iberia 1999",
+      "country": "GEO",
+      "ranking_name": "FC Iberia 1999",
+      "external_team_id": "ranking:GEO:FC Iberia 1999"
+    },
+    {
+      "team_id": 85,
+      "team_name": "FC København",
+      "country": "DEN",
+      "ranking_name": "FC Kobenhavn",
+      "external_team_id": "FCKobenhavn"
+    },
+    {
+      "team_id": 939,
+      "team_name": "FC Midtjylland",
+      "country": "DEN",
+      "ranking_name": "Midtjylland",
+      "external_team_id": "Midtjylland"
+    },
+    {
+      "team_id": 593,
+      "team_name": "FC Twente",
+      "country": "NED",
+      "ranking_name": "Twente",
+      "external_team_id": "Twente"
+    },
+    {
+      "team_id": 2402,
+      "team_name": "Gent",
+      "country": "BEL",
+      "ranking_name": "Gent",
+      "external_team_id": "Gent"
+    },
+    {
+      "team_id": 106,
+      "team_name": "Getafe",
+      "country": "ESP",
+      "ranking_name": "Getafe",
+      "external_team_id": "Getafe"
+    },
+    {
+      "team_id": 906,
+      "team_name": "Hajduk Split",
+      "country": "CRO",
+      "ranking_name": "Hajduk",
+      "external_team_id": "Hajduk"
+    },
+    {
+      "team_id": 314,
+      "team_name": "Hearts",
+      "country": "SCO",
+      "ranking_name": "Hearts",
+      "external_team_id": "ranking:SCO:Hearts"
+    },
+    {
+      "team_id": 17303,
+      "team_name": "Inter Club d'Escaldes",
+      "country": "AND",
+      "ranking_name": "Escaldes",
+      "external_team_id": "ranking:AND:Escaldes"
+    },
+    {
+      "team_id": 3643,
+      "team_name": "Jablonec",
+      "country": "CZE",
+      "ranking_name": "Jablonec",
+      "external_team_id": "Jablonec"
+    },
+    {
+      "team_id": 3108,
+      "team_name": "Kairat",
+      "country": "KAZ",
+      "ranking_name": "FK Kairat",
+      "external_team_id": "ranking:KAZ:FK Kairat"
+    },
+    {
+      "team_id": 928,
+      "team_name": "Kauno Žalgiris",
+      "country": "LTU",
+      "ranking_name": "Kauno Zalgiris",
+      "external_team_id": "ranking:LTU:Kauno Zalgiris"
+    },
+    {
+      "team_id": 4323,
+      "team_name": "KuPS",
+      "country": "FIN",
+      "ranking_name": "Kuopio",
+      "external_team_id": "ranking:FIN:Kuopio"
+    },
+    {
+      "team_id": 10068,
+      "team_name": "Lincoln Red Imps",
+      "country": "GIB",
+      "ranking_name": "Lincoln",
+      "external_team_id": "ranking:GIB:Lincoln"
+    },
+    {
+      "team_id": 13775,
+      "team_name": "Lugano",
+      "country": "SUI",
+      "ranking_name": "Lugano",
+      "external_team_id": "Lugano"
+    },
+    {
+      "team_id": 411,
+      "team_name": "Mjällby",
+      "country": "SWE",
+      "ranking_name": "Mjällby",
+      "external_team_id": "Mjaellby"
+    },
+    {
+      "team_id": 6789,
+      "team_name": "Monaco",
+      "country": "FRA",
+      "ranking_name": "Monaco",
+      "external_team_id": "Monaco"
+    },
+    {
+      "team_id": 2394,
+      "team_name": "Nordsjælland",
+      "country": "DEN",
+      "ranking_name": "Nordsjaelland",
+      "external_team_id": "Nordsjaelland"
+    },
+    {
+      "team_id": 8119,
+      "team_name": "Pafos FC",
+      "country": "CYP",
+      "ranking_name": "Paphos",
+      "external_team_id": "Paphos"
+    },
+    {
+      "team_id": 57,
+      "team_name": "Panathinaikos",
+      "country": "GRE",
+      "ranking_name": "Panathinaikos",
+      "external_team_id": "Panathinaikos"
+    },
+    {
+      "team_id": 3546,
+      "team_name": "Riga",
+      "country": "LVA",
+      "ranking_name": "FK Riga",
+      "external_team_id": "ranking:LVA:FK Riga"
+    },
+    {
+      "team_id": 3543,
+      "team_name": "SC Freiburg",
+      "country": "GER",
+      "ranking_name": "Freiburg",
+      "external_team_id": "Freiburg"
+    },
+    {
+      "team_id": 355,
+      "team_name": "Sint-Truiden",
+      "country": "BEL",
+      "ranking_name": "St Truiden",
+      "external_team_id": "StTruiden"
+    },
+    {
+      "team_id": 884,
+      "team_name": "Sporting Braga",
+      "country": "POR",
+      "ranking_name": "Braga",
+      "external_team_id": "Braga"
+    },
+    {
+      "team_id": 10655,
+      "team_name": "Thun",
+      "country": "SUI",
+      "ranking_name": "Thun",
+      "external_team_id": "Thun"
+    },
+    {
+      "team_id": 688,
+      "team_name": "Trabzonspor",
+      "country": "TUR",
+      "ranking_name": "Trabzonspor",
+      "external_team_id": "Trabzonspor"
+    },
+    {
+      "team_id": 11676,
+      "team_name": "Universitatea Craiova",
+      "country": "ROU",
+      "ranking_name": "Craiova",
+      "external_team_id": "Craiova"
+    }
+  ]
+}
