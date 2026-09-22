@@ -7,10 +7,17 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
+import 'package:onetouch/features/match_info/match_info_features.dart';
 
 void main() {
   testWidgets('renders real tactical values without the former pressure mocks',
       (tester) async {
+    final scoreHeader = tester.widget<MatchScoreHeader>(
+      find.byType(MatchScoreHeader),
+    );
+
+    expect(scoreHeader.homeTeamName, 'Man City');
+    expect(scoreHeader.awayTeamName, 'Arsenal');
     final fixture = mockFixtures.first;
     final analysis = MatchTacticalAnalysis(
       fixtureId: fixture.fixtureId,
