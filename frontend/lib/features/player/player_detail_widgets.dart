@@ -52,7 +52,8 @@ class PlayerSurface extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
           color: AppColors.of(context).cardBackground,
-          borderRadius: BorderRadius.circular(16)),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: appCardShadows(context)),
       child: child);
 }
 
@@ -90,19 +91,80 @@ class PlayerCompetitionTable extends StatelessWidget {
   const PlayerCompetitionTable({super.key, required this.competitions});
   final List<PlayerCompetitionRecord> competitions;
   @override
-  Widget build(BuildContext context) => PlayerSurface(
-          child: Column(children: [
-        const PlayerRecordRow(
-            label: Text('Competition'), record: null, header: true),
+  Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
+    final badgeColor = Theme.of(context).brightness == Brightness.dark
+        ? AppPalette.lightGrey
+        : appColors.subtleBackground;
+    final muted = Body2.style.copyWith(color: appColors.mutedForeground);
+    return PlayerSurface(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Column(children: [
+        Row(children: [
+          Expanded(flex: 3, child: Text('League', style: muted)),
+          Expanded(
+              flex: 2,
+              child: Text('MP', textAlign: TextAlign.center, style: muted)),
+          Expanded(
+              flex: 2,
+              child: Text('WR', textAlign: TextAlign.center, style: muted)),
+          Expanded(
+              flex: 2,
+              child: Text('Rating', textAlign: TextAlign.right, style: muted)),
+        ]),
+        const SizedBox(height: 12),
+        Divider(color: appColors.divider, height: 1),
         if (competitions.isEmpty)
           const Padding(
               padding: EdgeInsets.all(16),
               child: Text('No competitions this season')),
-        for (final item in competitions)
-          PlayerRecordRow(
-              label: Text(item.name, style: Body2_b.style),
-              record: item.record),
-      ]));
+        for (var index = 0; index < competitions.length; index++) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(children: [
+              Expanded(
+                  flex: 3,
+                  child: Text(competitions[index].name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Heading5.style)),
+              Expanded(
+                  flex: 2,
+                  child: Text('${competitions[index].record.appearances}',
+                      textAlign: TextAlign.center, style: Heading5.style)),
+              Expanded(
+                  flex: 2,
+                  child: Text(
+                      competitions[index].record.winRate == null
+                          ? '—'
+                          : '${playerNumber(competitions[index].record.winRate, decimals: 0)}%',
+                      textAlign: TextAlign.center,
+                      style: Heading5.style)),
+              Expanded(
+                  flex: 2,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                              color: badgeColor,
+                              borderRadius: BorderRadius.circular(8)),
+                          child: Text(
+                              competitions[index]
+                                      .record
+                                      .rating
+                                      ?.toStringAsFixed(1) ??
+                                  '—',
+                              style: Heading5.style)))),
+            ]),
+          ),
+          if (index != competitions.length - 1)
+            Divider(color: appColors.divider, height: 1),
+        ],
+      ]),
+    );
+  }
 }
 
 class PlayerDetailMatchCard extends StatelessWidget {
