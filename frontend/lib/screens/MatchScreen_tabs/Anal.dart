@@ -907,6 +907,8 @@ class ShotMapPlot {
   final bool isGoal;
 }
 
+const double shotMapMarkerRadius = 5;
+
 // Half-pitch shot map: goal along the bottom edge.
 class ShotMapDiagram extends StatelessWidget {
   final List<ShotMapPlot> shots;
@@ -979,7 +981,6 @@ class _ShotMapPainter extends CustomPainter {
       ..color = color.withValues(alpha: 0.5)
       ..strokeWidth = 1;
     final dotPaint = Paint()..color = color;
-    final goalPaint = Paint()..color = color;
 
     for (final shot in shots) {
       final start = Offset(
@@ -991,11 +992,7 @@ class _ShotMapPainter extends CustomPainter {
         shot.end.dy * size.height,
       );
       _drawDashedLine(canvas, start, end, dashPaint);
-      canvas.drawCircle(
-        start,
-        shot.isGoal ? 5 : 4,
-        shot.isGoal ? goalPaint : dotPaint,
-      );
+      canvas.drawCircle(start, shotMapMarkerRadius, dotPaint);
     }
   }
 
@@ -1246,7 +1243,6 @@ class _DefenseTerritoryPainter extends CustomPainter {
       line,
     );
 
-    final arrowColor = AppPalette.white.withValues(alpha: 0.48);
     final arrowShaft = defenseTerritoryArrowShaftRect(size);
     final arrowY = arrowShaft.center.dy;
     final arrowShoulder = arrowShaft.right;
@@ -1255,14 +1251,22 @@ class _DefenseTerritoryPainter extends CustomPainter {
       arrowShoulder + defenseTerritoryArrowHeadWidth,
     );
     final arrowHeadTop = arrowY - size.height * 0.18;
-    canvas.drawRect(arrowShaft, Paint()..color = arrowColor);
+    final arrowBounds = Rect.fromLTRB(
+      arrowShaft.left,
+      arrowHeadTop,
+      arrowTip,
+      arrowY + size.height * 0.18,
+    );
+    final arrowPaint = Paint()
+      ..shader = defenseTerritoryArrowGradient.createShader(arrowBounds);
+    canvas.drawRect(arrowShaft, arrowPaint);
     canvas.drawPath(
       Path()
         ..moveTo(arrowShoulder, arrowHeadTop)
         ..lineTo(arrowTip, arrowY)
         ..lineTo(arrowShoulder, arrowY + size.height * 0.18)
         ..close(),
-      Paint()..color = arrowColor,
+      arrowPaint,
     );
 
     for (var index = 0; index < 3; index += 1) {
@@ -1305,6 +1309,11 @@ const double defenseTerritoryArrowShaftHeight = 28;
 const double defenseTerritoryArrowHeadWidth = 36;
 const double defenseTerritoryArrowHorizontalInset = 8;
 const double defenseTerritoryLabelGap = 8;
+const LinearGradient defenseTerritoryArrowGradient = LinearGradient(
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+  colors: [Color(0x00FFFFFF), Color(0x7AFFFFFF)],
+);
 
 Rect defenseTerritoryArrowShaftRect(Size size) {
   final availableWidth = math.max(
