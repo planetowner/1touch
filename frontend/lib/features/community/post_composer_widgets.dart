@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
@@ -69,7 +70,7 @@ class PostComposerFields extends StatelessWidget {
               duration: const Duration(milliseconds: 150),
               curve: Curves.easeOut,
               width: categoryFilterWidth,
-              height: 48,
+              height: AppDropdownTokens.height,
               child: PopupMenuButton<Category>(
                 initialValue: selectedCategory,
                 position: PopupMenuPosition.under,
@@ -100,7 +101,8 @@ class PostComposerFields extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppPalette.white,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius:
+                        BorderRadius.circular(AppDropdownTokens.radius),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x40000000),
@@ -119,12 +121,8 @@ class PostComposerFields extends StatelessWidget {
                           style: Body1_b.style.copyWith(color: Colors.black),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.black,
-                        size: 24,
-                      ),
+                      const SizedBox(width: AppDropdownTokens.gap),
+                      const AppDropdownChevron(color: Colors.black),
                     ],
                   ),
                 ),
