@@ -39,6 +39,7 @@ PlayerDetail detailFixture(
 
 class FakePlayerDetailRepository implements PlayerDetailRepository {
   final calls = <({int playerId, int? seasonId})>[];
+  final searchQueries = <String>[];
   bool fail = false;
   @override
   Future<PlayerDetail> load(int playerId, {int? seasonId}) async {
@@ -51,7 +52,13 @@ class FakePlayerDetailRepository implements PlayerDetailRepository {
   }
 
   @override
-  Future<List<PlayerCandidate>> search(String query) async => [
-        for (final id in [1, 2, 3]) (id: id, name: 'Player $id', image: null),
-      ];
+  Future<List<PlayerCandidate>> search(String query) async {
+    searchQueries.add(query);
+    final normalized = query.trim().toLowerCase();
+    return [
+      for (final id in [1, 2, 3])
+        if (normalized.isEmpty || 'player $id'.contains(normalized))
+          (id: id, name: 'Player $id', image: null),
+    ];
+  }
 }

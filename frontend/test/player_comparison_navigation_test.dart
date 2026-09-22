@@ -65,4 +65,43 @@ void main() {
 
     expect(repository.calls.last, (playerId: 1, seasonId: 25651));
   });
+
+  testWidgets('player search updates automatically after typing',
+      (tester) async {
+    final repository = FakePlayerDetailRepository();
+    await tester.pumpWidget(MaterialApp(
+        home: PlayerComparisonScreen(
+            initialPlayerId: '1', repository: repository)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('PLAYER 2'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('comparison-player-search-field')),
+      'missing',
+    );
+    await tester.pump(const Duration(milliseconds: 299));
+    expect(repository.searchQueries, ['']);
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(repository.searchQueries.last, 'missing');
+    expect(find.text('No players found'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('comparison-player-search-field')),
+      'Player 3',
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(repository.searchQueries.last, 'Player 3');
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == 'Player 3',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
