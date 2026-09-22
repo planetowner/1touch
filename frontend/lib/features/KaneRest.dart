@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 
 class PlayerMatchStatRow {
   final String label;
@@ -19,6 +20,7 @@ class PlayerMatchStatSection {
 
 class PlayerMatchStatData {
   final int? playerId;
+  final int teamPrimaryColor;
   final String name;
   final int? jerseyNumber;
   final List<String> positions;
@@ -31,6 +33,7 @@ class PlayerMatchStatData {
 
   const PlayerMatchStatData({
     this.playerId,
+    required this.teamPrimaryColor,
     required this.name,
     required this.jerseyNumber,
     required this.positions,
@@ -108,14 +111,21 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = _ensureWhiteTextContrast(Color(player.teamPrimaryColor));
     return Container(
       key: const ValueKey('player-match-stat-header'),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFF6CABDD),
-            Color(0xFF3376A3),
-            Color(0xFF102A43),
+            primary,
+            Color.alphaBlend(
+              Colors.black.withValues(alpha: 0.28),
+              primary,
+            ),
+            Color.alphaBlend(
+              Colors.black.withValues(alpha: 0.62),
+              primary,
+            ),
           ],
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
@@ -257,6 +267,21 @@ class _Header extends StatelessWidget {
   }
 }
 
+Color _ensureWhiteTextContrast(Color color) {
+  if (ColorUtils.getContrastRatio(color, Colors.white) >= 4.5) return color;
+
+  for (var opacity = 0.05; opacity <= 0.8; opacity += 0.05) {
+    final candidate = Color.alphaBlend(
+      Colors.black.withValues(alpha: opacity),
+      color,
+    );
+    if (ColorUtils.getContrastRatio(candidate, Colors.white) >= 4.5) {
+      return candidate;
+    }
+  }
+  return Colors.black;
+}
+
 class _HeaderIconBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
@@ -335,6 +360,7 @@ class _StatSection extends StatelessWidget {
 }
 
 final mockRashfordStats = PlayerMatchStatData(
+  teamPrimaryColor: 0xFFA50044,
   name: 'M. Rashford',
   jerseyNumber: 14,
   positions: ['ST', 'LW', 'LM'],
