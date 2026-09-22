@@ -30,7 +30,9 @@ class BestElevenPitch extends StatelessWidget {
       teamName: team?.name,
       primaryFallback: team == null ? null : Color(team.primaryColor),
     ).primary;
-    final jerseyNumberColor = _jerseyNumberColor(playerCircleColor);
+    final jerseyNumberColor = ColorUtils.monochromeTextColor(
+      playerCircleColor,
+    );
 
     final Map<int, List<_BestElevenPitchPlayer>> byRow = {};
     for (final player in _players) {
@@ -185,25 +187,6 @@ class _BestElevenPlayerDot extends StatelessWidget {
       ),
     );
   }
-}
-
-Color _jerseyNumberColor(Color background) {
-  const minimumNormalTextContrast = 4.5;
-  final blackContrast = ColorUtils.getContrastRatio(
-    background,
-    AppPalette.black,
-  );
-  final whiteContrast = ColorUtils.getContrastRatio(
-    background,
-    AppPalette.white,
-  );
-
-  if (blackContrast >= whiteContrast) {
-    assert(blackContrast >= minimumNormalTextContrast);
-    return AppPalette.black;
-  }
-  assert(whiteContrast >= minimumNormalTextContrast);
-  return AppPalette.white;
 }
 
 class _BestElevenPitchPlayer {

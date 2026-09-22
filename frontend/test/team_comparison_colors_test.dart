@@ -13,6 +13,18 @@ void main() {
         ColorUtils.okLabDistance(Colors.red, Colors.green), greaterThan(.12));
   });
 
+  test('selects a WCAG-compliant monochrome color for mid-tone backgrounds',
+      () {
+    const background = Color(0xFF777777);
+    final textColor = ColorUtils.monochromeTextColor(background);
+
+    expect(textColor, Colors.black);
+    expect(
+      ColorUtils.getContrastRatio(background, textColor),
+      greaterThanOrEqualTo(4.5),
+    );
+  });
+
   test('uses the first opponent palette color that passes both thresholds', () {
     final selected = TeamComparisonColorResolver.resolveOpponentColor(
       anchor: Colors.red,

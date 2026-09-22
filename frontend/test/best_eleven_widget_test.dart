@@ -129,7 +129,7 @@ void main() {
       ),
     );
     expect(playerDotColor, const Color(0xFF5FAFF1));
-    expect(jerseyNumber.style!.color, AppPalette.black);
+    expect(jerseyNumber.style!.color, Colors.black);
     expect(
       ColorUtils.getContrastRatio(playerDotColor, jerseyNumber.style!.color!),
       greaterThanOrEqualTo(4.5),
