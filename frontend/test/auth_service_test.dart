@@ -88,6 +88,34 @@ void main() {
     expect(() => session.establish('  '), throwsArgumentError);
     expect(session.isAuthenticated, isFalse);
   });
+
+  test('email registration establishes the backend session', () async {
+    final repository = _FakeAuthRepository(
+      (_) async => throw UnimplementedError(),
+      registerWithEmail: () async => ' email-access-token ',
+    );
+    final session = AuthSession();
+    final service = AuthService(
+      googleIdentityService: _FakeGoogleIdentityService(
+        () async => throw UnimplementedError(),
+      ),
+      repository: repository,
+      session: session,
+    );
+
+    await service.registerWithEmail(
+      challengeId: 'challenge',
+      code: '123456',
+      password: 'Password123',
+      username: 'member',
+      firstName: 'First',
+      lastName: 'Last',
+    );
+
+    expect(session.requestHeaders, {
+      'Authorization': 'Bearer email-access-token',
+    });
+  });
 }
 
 class _FakeGoogleIdentityService implements GoogleIdentityService {
@@ -100,9 +128,13 @@ class _FakeGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository(this._signInWithGoogle);
+  _FakeAuthRepository(
+    this._signInWithGoogle, {
+    Future<String> Function()? registerWithEmail,
+  }) : _registerWithEmail = registerWithEmail;
 
   final Future<String> Function(String idToken) _signInWithGoogle;
+  final Future<String> Function()? _registerWithEmail;
   final List<String> receivedIdTokens = [];
 
   @override
@@ -121,4 +153,15 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
       throw UnimplementedError();
+
+  @override
+  Future<String> registerWithEmail({
+    required String challengeId,
+    required String code,
+    required String password,
+    required String username,
+    required String firstName,
+    required String lastName,
+  }) =>
+      _registerWithEmail?.call() ?? Future.error(UnimplementedError());
 }

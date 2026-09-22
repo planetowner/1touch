@@ -91,6 +91,50 @@ class ApiGoogleAuthRepository implements AuthRepository {
     return EmailCodeChallenge.fromJson(decoded);
   }
 
+  @override
+  Future<String> registerWithEmail({
+    required String challengeId,
+    required String code,
+    required String password,
+    required String username,
+    required String firstName,
+    required String lastName,
+  }) async {
+    final uri = _apiBaseUri.resolve('auth/email/register');
+    final response = await _client.post(
+      uri,
+      headers: const {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'challenge_id': challengeId,
+        'code': code,
+        'password': password,
+        'username': username,
+        'first_name': firstName,
+        'last_name': lastName,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        message: _responseDetail(
+          response.body,
+          fallback: 'Unable to create the account.',
+        ),
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException(
+        'Expected the email registration response to be a JSON object.',
+      );
+    }
+    return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
+  }
+
   Future<String> _postForAccessToken(
     String path,
     Map<String, String> body, {

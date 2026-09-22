@@ -9,4 +9,13 @@ abstract interface class AuthRepository {
   });
 
   Future<EmailCodeChallenge> requestSignUpEmailCode({required String email});
+
+  Future<String> registerWithEmail({
+    required String challengeId,
+    required String code,
+    required String password,
+    required String username,
+    required String firstName,
+    required String lastName,
+  });
 }
