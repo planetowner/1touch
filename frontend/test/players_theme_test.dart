@@ -32,9 +32,12 @@ void main() {
         expect(find.text('Favorite player'), findsOneWidget);
         expect(find.text('Ranked player 1'), findsOneWidget);
         expect(find.text('Ranked player 6'), findsNothing);
-        expect(find.text('All seasons'), findsNothing);
-        expect(find.textContaining('Ranking data unavailable: Bundesliga'),
-            findsOneWidget);
+        expect(find.text('FAVORITE PLAYERS'), findsOneWidget);
+        expect(find.text('ALL LEAGUES'), findsOneWidget);
+        expect(find.text('2026/2027'), findsOneWidget);
+        expect(find.text('ALL POSITIONS'), findsOneWidget);
+        expect(
+            find.byKey(const ValueKey('players-brand-gradient')), findsNothing);
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
         await tester.pumpAndSettle();
         expect(find.text('Improving player'), findsOneWidget);
@@ -43,6 +46,20 @@ void main() {
       });
     }
   }
+  testWidgets('directory keeps the pre-merge card treatment with API data',
+      (tester) async {
+    await pump(tester);
+    final ranking = tester.widget<Container>(
+      find.byKey(const ValueKey('players-ranking-card')),
+    );
+    final decoration = ranking.decoration! as BoxDecoration;
+    expect(ranking.padding, const EdgeInsets.all(24));
+    expect(decoration.borderRadius, BorderRadius.circular(16));
+    expect(decoration.boxShadow, app_style.lightModeCardShadows);
+    expect(find.byKey(const ValueKey('favorite-player-number-badge')),
+        findsOneWidget);
+    expect(find.byIcon(Icons.help_outline), findsNWidgets(2));
+  });
   testWidgets(
       'league and position filters reach the API and unavailable league stays empty',
       (tester) async {
