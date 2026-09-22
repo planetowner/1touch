@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
@@ -404,18 +405,18 @@ class _ActiveDirectoryFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
         color: AppColors.of(context).subtleBackground,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
         child: InkWell(
           onTap: onRemove,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: AppDropdownTokens.triggerPadding,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(label, style: Body2_b.style),
-                const SizedBox(width: 6),
-                const Icon(Icons.close, size: 20),
+                const SizedBox(width: 4),
+                const Icon(Icons.close, size: AppDropdownTokens.iconSize),
               ],
             ),
           ),

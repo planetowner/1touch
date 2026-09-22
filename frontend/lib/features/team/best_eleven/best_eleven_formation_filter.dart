@@ -29,19 +29,18 @@ class _BestElevenFormationFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: AppDropdownTokens.height,
       padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
       decoration: BoxDecoration(
         color: appColors.subtleBackground,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           key: const ValueKey('analysis-formation-filter'),
           value: selectedFormation,
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-            color: colors.onSurface,
-          ),
+          isDense: true,
+          icon: AppDropdownChevron(color: colors.onSurface),
           dropdownColor: appColors.cardBackground,
           style: Body2_b.style.copyWith(color: colors.onSurface),
           onChanged: enabled

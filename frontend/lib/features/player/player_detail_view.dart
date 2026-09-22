@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
@@ -95,18 +96,20 @@ class PlayerSeasonSelector extends StatelessWidget {
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
+      height: AppDropdownTokens.height,
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
         boxShadow: appCardShadows(context),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+      padding: const EdgeInsets.only(left: 16, right: 8),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: detail.selectedSeason?.id,
           isExpanded: true,
+          isDense: true,
           dropdownColor: surface,
-          icon: Icon(Icons.keyboard_arrow_down, color: foreground, size: 24),
+          icon: AppDropdownChevron(color: foreground),
           style: Body2_b.style.copyWith(color: foreground),
           hint: const Text('SELECT A SEASON'),
           items: detail.seasons

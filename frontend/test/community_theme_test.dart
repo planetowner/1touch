@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/community/mock/community_catalog.dart';
@@ -376,7 +377,7 @@ void main() {
     final generalFilterSize = tester.getSize(
       find.byKey(const ValueKey('community-category-filter')),
     );
-    expect(generalFilterSize.height, 48);
+    expect(generalFilterSize.height, AppDropdownTokens.height);
     final categoryFilterTopLeft = tester.getTopLeft(
       find.byKey(const ValueKey('community-category-filter')),
     );
@@ -396,7 +397,7 @@ void main() {
     final analysisFilterSize = tester.getSize(
       find.byKey(const ValueKey('community-category-filter')),
     );
-    expect(analysisFilterSize.height, 48);
+    expect(analysisFilterSize.height, AppDropdownTokens.height);
     expect(analysisFilterSize.width, greaterThan(generalFilterSize.width));
     expect(find.byIcon(Icons.star_border), findsNothing);
     expect(tester.takeException(), isNull);

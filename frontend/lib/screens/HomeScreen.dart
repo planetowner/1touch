@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
@@ -314,11 +315,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             onSwitch: _switchFavoriteTeam,
                           ),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                            padding: AppDropdownTokens.compactPadding,
                             decoration: BoxDecoration(
                               color: AppPalette.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(
+                                AppDropdownTokens.radius,
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -332,10 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 24,
                                   ),
                                 ),
-                                Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: appBarForeground,
-                                ),
+                                AppDropdownChevron(color: appBarForeground),
                               ],
                             ),
                           ),

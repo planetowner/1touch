@@ -197,10 +197,12 @@ class _PlayerChip extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: EdgeInsets.fromLTRB(player == null ? 16 : 8, 8, 8, 8),
+          padding: player == null
+              ? AppDropdownTokens.triggerPadding
+              : AppDropdownTokens.compactPadding,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
           ),
           child: Row(
             children: [
@@ -218,7 +220,7 @@ class _PlayerChip extends StatelessWidget {
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: AppDropdownTokens.gap),
                 Expanded(
                   child: Text(
                     player!.profile.name,
@@ -242,11 +244,7 @@ class _PlayerChip extends StatelessWidget {
                     ),
                   ),
                 ),
-              const Icon(
-                Icons.keyboard_arrow_down,
-                color: Color(0xFF0A0A0A),
-                size: 24,
-              ),
+              const AppDropdownChevron(color: Color(0xFF0A0A0A)),
             ],
           ),
         ),

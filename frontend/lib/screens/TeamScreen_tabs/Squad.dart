@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
@@ -543,7 +544,7 @@ class _SquadTabState extends State<SquadTab> {
       width: 88,
       decoration: BoxDecoration(
         color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -557,7 +558,7 @@ class _SquadTabState extends State<SquadTab> {
             }),
             behavior: HitTestBehavior.opaque,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+              padding: AppDropdownTokens.triggerPadding,
               child: Row(
                 children: [
                   Expanded(
@@ -570,14 +571,9 @@ class _SquadTabState extends State<SquadTab> {
                       ),
                     ),
                   ),
-                  AnimatedRotation(
-                    turns: _isSeasonDropdownOpen ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      size: 24,
-                    ),
+                  AppDropdownChevron(
+                    expanded: _isSeasonDropdownOpen,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ],
               ),
@@ -608,7 +604,7 @@ class _SquadTabState extends State<SquadTab> {
       onTap: () => _selectSeason(season),
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+        padding: AppDropdownTokens.triggerPadding,
         child: Row(
           children: [
             Expanded(
@@ -639,7 +635,7 @@ class _SquadTabState extends State<SquadTab> {
       width: 172,
       decoration: BoxDecoration(
         color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -652,7 +648,7 @@ class _SquadTabState extends State<SquadTab> {
             }),
             behavior: HitTestBehavior.opaque,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+              padding: AppDropdownTokens.triggerPadding,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -664,15 +660,10 @@ class _SquadTabState extends State<SquadTab> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  AnimatedRotation(
-                    turns: _isDropdownOpen ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      key: const ValueKey('squad-sort-arrow'),
-                      Icons.keyboard_arrow_down,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      size: 24,
-                    ),
+                  AppDropdownChevron(
+                    key: const ValueKey('squad-sort-arrow'),
+                    expanded: _isDropdownOpen,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ],
               ),
@@ -742,7 +733,7 @@ class _SquadTabState extends State<SquadTab> {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        padding: AppDropdownTokens.triggerPadding,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
