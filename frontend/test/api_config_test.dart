@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:onetouch/core/api_config.dart';
 
 void main() {
@@ -81,6 +83,34 @@ void main() {
         () => config.requestHeaders['Authorization'] = 'Bearer replacement',
         throwsUnsupportedError,
       );
+    });
+
+    test('session-aware client replaces stale authorization per request',
+        () async {
+      final receivedAuthorization = <String?>[];
+      final client = ApiConfig.sessionAwareClient(
+        MockClient((request) async {
+          receivedAuthorization.add(request.headers['Authorization']);
+          return http.Response('{}', 200);
+        }),
+      );
+      addTearDown(() {
+        ApiConfig.setRuntimeAccessToken(null);
+        client.close();
+      });
+
+      ApiConfig.setRuntimeAccessToken('first-session');
+      await client.get(
+        Uri.parse('https://api.example.test/first'),
+        headers: const {'Authorization': 'Bearer stale-development-token'},
+      );
+      ApiConfig.setRuntimeAccessToken('second-session');
+      await client.get(Uri.parse('https://api.example.test/second'));
+
+      expect(receivedAuthorization, [
+        'Bearer first-session',
+        'Bearer second-session',
+      ]);
     });
   });
 }

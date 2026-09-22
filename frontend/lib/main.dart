@@ -9,6 +9,7 @@ import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/data/auth/auth_repository_provider.dart';
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
@@ -27,6 +28,7 @@ import 'package:onetouch/WelcomeScreen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await appThemeController.initialize();
+  await authService.restoreSession();
   // Initializes the team catalog before loading and validating stored IDs.
   await currentUserPreferences.initialize();
   await playerRepository.initializeFollowing();
@@ -43,8 +45,15 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => SplashScreen(
-        nextLocation:
-            ApiConfig.skipOnboardingForDevelopment ? '/home' : '/onboarding',
+        nextLocation: authSession.isAuthenticated
+            ? (authSession.onboardingComplete
+                ? '/home'
+                : authSession.profileComplete
+                    ? '/onboarding/welcome'
+                    : '/onboarding/profile')
+            : (ApiConfig.skipOnboardingForDevelopment
+                ? '/home'
+                : '/onboarding'),
       ),
     ),
 
@@ -56,6 +65,10 @@ final GoRouter _router = GoRouter(
           GoRoute(
             path: 'welcome',
             builder: (context, state) => const WelcomeScreen(),
+          ),
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) => const CompleteSocialProfileScreen(),
           ),
           GoRoute(
             path: 'select-favorites',

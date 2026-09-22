@@ -28,9 +28,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() => _isSigningInWithGoogle = true);
 
     try {
-      await _authService.signInWithGoogle();
+      final status = await _authService.signInWithGoogle();
       if (!mounted) return;
-      context.go('/onboarding/welcome');
+      context.go(
+        status.onboardingComplete
+            ? '/home'
+            : status.profileComplete
+                ? '/onboarding/welcome'
+                : '/onboarding/profile',
+      );
     } on GoogleIdentityException catch (error) {
       if (error.type != GoogleIdentityFailureType.cancelled && mounted) {
         _showGoogleSignInError();

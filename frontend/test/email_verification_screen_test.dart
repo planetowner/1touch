@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/data/auth/auth_account_status.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/SignComps/VerifyEmail.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
@@ -7,6 +8,7 @@ import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
+import 'support/fake_auth_token_store.dart';
 
 void main() {
   testWidgets('submits the six-digit code and establishes the session',
@@ -54,6 +56,18 @@ void main() {
     expect(find.text('A new verification code was sent.'), findsOneWidget);
     expect(find.text('Send again (60s)'), findsOneWidget);
   });
+
+  testWidgets('back returns to signup when verification has no prior route',
+      (tester) async {
+    final router = _router(_service(_FakeAuthRepository(), AuthSession()));
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Signup destination'), findsOneWidget);
+  });
 }
 
 AuthService _service(AuthRepository repository, AuthSession session) =>
@@ -61,6 +75,7 @@ AuthService _service(AuthRepository repository, AuthSession session) =>
       googleIdentityService: _UnusedGoogleIdentityService(),
       repository: repository,
       session: session,
+      tokenStore: FakeAuthTokenStore(),
     );
 
 GoRouter _router(AuthService service) => GoRouter(
@@ -81,6 +96,10 @@ GoRouter _router(AuthService service) => GoRouter(
               expiresInSeconds: 600,
             ),
           ),
+        ),
+        GoRoute(
+          path: '/auth/signup',
+          builder: (_, __) => const Scaffold(body: Text('Signup destination')),
         ),
         GoRoute(
           path: '/onboarding/welcome',
@@ -134,4 +153,24 @@ class _FakeAuthRepository implements AuthRepository {
     required String password,
   }) =>
       throw UnimplementedError();
+
+  @override
+  Future<AuthAccountStatus> loadAccountStatus(
+          {required String accessToken}) async =>
+      const AuthAccountStatus(
+        profileComplete: true,
+        onboardingComplete: true,
+      );
+
+  @override
+  Future<AuthAccountStatus> completeSocialProfile({
+    required String accessToken,
+    required String username,
+    required String firstName,
+    required String lastName,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> logout({required String accessToken}) async {}
 }

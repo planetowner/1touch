@@ -65,7 +65,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       final email = _email.text.trim();
       final challenge = await _authService.requestSignUpEmailCode(email: email);
       if (!mounted) return;
-      context.go(
+      context.push(
         '/auth/verify',
         extra: EmailRegistrationDraft(
           firstName: _firstName.text.trim(),
