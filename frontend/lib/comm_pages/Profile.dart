@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -577,46 +578,55 @@ class _ProfileState extends State<Profile> {
         itemBuilder: (context, index) {
           final player = players[index];
 
-          return Column(
-            children: [
-              Stack(
+          return Semantics(
+            button: true,
+            label: 'Open ${player.fullName}',
+            child: InkWell(
+              key: ValueKey('profile-player-link-${player.id}'),
+              onTap: () => openPlayerPage(context, player.id),
+              borderRadius: BorderRadius.circular(12),
+              child: Column(
                 children: [
-                  SizedBox(
-                    width: 74,
-                    height: 74,
-                    child: ClipOval(child: PlayerImage(player: player)),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: CircleAvatar(
-                      key: ValueKey('profile-player-jersey-${player.id}'),
-                      radius: 16,
-                      backgroundColor: isLight
-                          ? AppPalette.white
-                          : appColors.subtleBackground,
-                      child: Text(
-                        player.jerseyNumber.toString(),
-                        style: Body2_b.style.copyWith(
-                          color: isLight ? AppPalette.black : null,
+                  Stack(
+                    children: [
+                      SizedBox(
+                        width: 74,
+                        height: 74,
+                        child: ClipOval(child: PlayerImage(player: player)),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        child: CircleAvatar(
+                          key: ValueKey('profile-player-jersey-${player.id}'),
+                          radius: 16,
+                          backgroundColor: isLight
+                              ? AppPalette.white
+                              : appColors.subtleBackground,
+                          child: Text(
+                            player.jerseyNumber.toString(),
+                            style: Body2_b.style.copyWith(
+                              color: isLight ? AppPalette.black : null,
+                            ),
+                          ),
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 80,
+                    child: Text(
+                      player.fullName,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Body1.style,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 80,
-                child: Text(
-                  player.fullName,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Body1.style,
-                ),
-              ),
-            ],
+            ),
           );
         },
       ),

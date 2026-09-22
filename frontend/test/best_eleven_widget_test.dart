@@ -121,6 +121,14 @@ void main() {
     final playerDot = tester.widget<Container>(
       find.byKey(const ValueKey('best-eleven-player-dot-1:1')),
     );
+    expect(
+      tester
+          .widget<InkWell>(
+            find.byKey(const ValueKey('best-eleven-player-link-100')),
+          )
+          .onTap,
+      isNotNull,
+    );
     final playerDotColor = (playerDot.decoration as BoxDecoration).color!;
     final jerseyNumber = tester.widget<Text>(
       find.descendant(
