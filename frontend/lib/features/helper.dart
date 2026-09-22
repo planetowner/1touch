@@ -551,10 +551,10 @@ class _MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final roundName = match?.roundName?.trim();
+    final roundLabel = match?.displayRoundLabel;
     final competitionAndRound = [
       leagueName ?? 'League',
-      if (roundName?.isNotEmpty ?? false) roundName!,
+      if (roundLabel != null) roundLabel,
     ].join('  ');
 
     return Column(

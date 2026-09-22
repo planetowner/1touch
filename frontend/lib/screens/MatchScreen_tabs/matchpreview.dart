@@ -205,12 +205,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
     final time =
         kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
-    final round = widget.fixture.roundName?.trim();
-    final roundLabel = round == null || round.isEmpty
-        ? 'Round TBD'
-        : int.tryParse(round) != null
-            ? 'Round $round'
-            : round;
+    final roundLabel = widget.fixture.displayRoundLabel ?? 'Round TBD';
 
     return Row(
       children: [

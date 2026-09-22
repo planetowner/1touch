@@ -37,6 +37,19 @@ void main() {
       expect(fixture.roundName, isNull);
     });
 
+    test('uses stage name and leg when round name is unavailable', () {
+      final fixture = Fixture.fromJson(
+        _fixtureJson(status: 'upcoming')
+          ..['round_name'] = null
+          ..['stage_name'] = 'Semi-finals'
+          ..['leg'] = '2/2',
+      );
+
+      expect(fixture.stageName, 'Semi-finals');
+      expect(fixture.leg, '2/2');
+      expect(fixture.displayRoundLabel, 'Semi-finals • 2nd Leg');
+    });
+
     test('preserves a missing kickoff as null', () {
       final fixture = Fixture.fromJson(
         _fixtureJson(status: 'upcoming')..['starting_at'] = null,
