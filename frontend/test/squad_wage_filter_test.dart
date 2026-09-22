@@ -51,6 +51,14 @@ void main() {
       (playerCard.decoration as BoxDecoration).boxShadow,
       lightModeCardShadows,
     );
+    expect(
+      tester
+          .widget<InkWell>(
+            find.byKey(const ValueKey('squad-player-link-1')),
+          )
+          .onTap,
+      isNotNull,
+    );
     expect(repository.requestedSeasonIds, [27965]);
     expect(find.text('26/27'), findsOneWidget);
     await tester.tap(find.text('POSITION'));

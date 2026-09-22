@@ -133,6 +133,13 @@ void main() {
     expect(find.text('Player 2'), findsOneWidget);
     expect(find.text('Player 3'), findsOneWidget);
     expect(detailRepository.calls.length, 1);
+
+    await tester.tap(find.text('Player 2'));
+    await tester.pump();
+    final update = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, 'UPDATE'),
+    );
+    expect(update.onPressed, isNotNull);
     expect(tester.takeException(), isNull);
   });
   testWidgets('directory retry restores real results', (tester) async {
