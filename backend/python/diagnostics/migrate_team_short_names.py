@@ -13,12 +13,25 @@ SEED_PATH = Path(__file__).with_name("team_short_names.json")
 SQL_PATH = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_team_short_names.sql"
 
 
-def short_names() -> dict[int, str]:
+def reviewed_rows():
     rows = json.loads(SEED_PATH.read_text(encoding="utf-8"))
     names = {row["team_id"]: row["short_name"] for row in rows}
     if len(names) != len(rows) or any(not isinstance(name, str) or not name.strip() or len(name) > 64 for name in names.values()):
         raise ValueError("Invalid or duplicate reviewed short names")
-    return names
+    for row in rows:
+        if "previous_short_name" in row:
+            previous = row["previous_short_name"]
+            if not row.get("name") or not isinstance(previous, str) or not previous.strip() or len(previous) > 64:
+                raise ValueError("Invalid reviewed previous short name or team identity")
+    return rows
+
+
+def short_names() -> dict[int, str]:
+    return {row["team_id"]: row["short_name"] for row in reviewed_rows()}
+
+
+def previous_names() -> dict[int, str]:
+    return {row["team_id"]: row["previous_short_name"] for row in reviewed_rows() if "previous_short_name" in row}
 
 
 def verify_schema(*, before: bool) -> bool:
@@ -33,7 +46,9 @@ def verify_schema(*, before: bool) -> bool:
 
 def migrate_data(conn):
     # 한국어 이름과 같은 저장 경로에서 기존 값 충돌·전체 행 불변성을 확인해요.
-    save_names(conn, names={"teams": short_names()}, columns={"teams": ("team_id", "short_name")})
+    # Sky의 전체 이름을 잘못 넣었던 행만 확인된 이전 값에서 축약 표기로 교정해요.
+    save_names(conn, names={"teams": short_names()}, columns={"teams": ("team_id", "short_name")},
+               expected_before={"teams": previous_names()})
 
 
 def preview():
@@ -43,13 +58,16 @@ def preview():
     missing = names.keys() - teams.keys()
     if missing:
         raise ValueError(f"Missing reviewed team IDs: {sorted(missing)}")
-    for row in json.loads(SEED_PATH.read_text(encoding="utf-8")):
+    for row in reviewed_rows():
         if "name" in row and teams[row["team_id"]][1] != row["name"]:
             raise ValueError(f"Reviewed team identity changed: {row['team_id']}")
-    conflicts = [key for key, name in names.items() if teams[key][2] not in (None, name)]
+    previous = previous_names()
+    conflicts = [key for key, name in names.items() if teams[key][2] not in (previous.get(key), name)]
     if conflicts:
         raise ValueError(f"Existing English short names differ: {conflicts}")
-    return ready, {"reviewed": len(names), "updates": sum(teams[key][2] != name for key, name in names.items())}
+    changes = [{"team_id": key, "before": teams[key][2], "after": name}
+               for key, name in names.items() if teams[key][2] != name]
+    return ready, {"reviewed": len(names), "updates": len(changes), "changes": changes}
 
 
 def main():
