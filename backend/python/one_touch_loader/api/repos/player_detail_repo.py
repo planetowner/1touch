@@ -14,18 +14,10 @@ from ...core.player_detail import (
 )
 from ...core.player_match_metrics import POSITION_GROUPS
 from ...core.football_names import korean_name_ids
+from ...core.player_appearances import APPEARED, MATCH_FROM
 
 COMPLETED = ','.join(map(str, COMPLETED_STATE_IDS))
 DISPLAY_STATES = ','.join(map(str, (*COMPLETED_STATE_IDS, *LIVE_STATE_IDS)))
-APPEARED = """(fl.lineup_type_id=11 OR fl.minutes_played>0 OR fl.rating IS NOT NULL
-    OR EXISTS (SELECT 1 FROM fixture_events ev WHERE ev.fixture_id=fl.fixture_id
-      AND ev.team_id=fl.team_id AND ev.event_type_id=18
-      AND (ev.player_id=fl.player_id OR ev.related_player_id=fl.player_id)))"""
-MATCH_FROM = """
-FROM fixture_lineups fl JOIN fixtures f ON f.fixture_id=fl.fixture_id
-JOIN stages st ON st.stage_id=f.stage_id JOIN seasons s ON s.season_id=st.season_id
-JOIN competitions c ON c.competition_id=s.competition_id
-"""
 MATCH_SELECT = """
 SELECT fl.*, s.season_id, s.name AS season_name, s.competition_id,
        c.name AS competition_name, c.competition_type,
