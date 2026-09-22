@@ -73,11 +73,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final season = detail.selectedSeason;
     return PlayerSection(
       title: 'TOP STATS',
-      trailing: Tooltip(
+      titleAccessory: Tooltip(
         triggerMode: TooltipTriggerMode.tap,
         message:
             '${season?.name ?? 'Current season'} ${season?.competitionName ?? ''} · ${analysis.position ?? '—'} · reference players with at least ${analysis.minimumMinutes} minutes.',
-        child: const Icon(Icons.help_outline, size: 18),
+        child: const Icon(
+          Icons.help_outline,
+          key: ValueKey('top-stats-help-icon'),
+          size: 18,
+        ),
       ),
       child: PlayerSurface(
         key: const ValueKey('player-top-stats-card'),

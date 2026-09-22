@@ -167,6 +167,32 @@ void main() {
     expect(find.text('LIVE'), findsNothing);
     expect(repository.calls.length, 1);
   });
+  testWidgets('help icons stay directly beside their section titles',
+      (tester) async {
+    final repository = FakePlayerDetailRepository();
+    await tester.pumpWidget(MaterialApp(
+        home: PlayerCard(player: player, detailRepository: repository)));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+              .getTopLeft(
+                find.byKey(const ValueKey('competition-stats-help-icon')),
+              )
+              .dx -
+          tester.getTopRight(find.text('COMPETITION STATS')).dx,
+      4,
+    );
+
+    await tester.tap(find.text('Analysis').first);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('top-stats-help-icon'))).dx -
+          tester.getTopRight(find.text('TOP STATS')).dx,
+      4,
+    );
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('season selection loads its own data', (tester) async {
     final repository = FakePlayerDetailRepository();
     await tester.pumpWidget(MaterialApp(
