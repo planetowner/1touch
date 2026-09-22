@@ -5,12 +5,16 @@ import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/models/player_detail.dart';
 
 Map<String, dynamic> playerDetailJson(
-    {int playerId = 9967153, String position = 'FW', int? seasonId}) {
+    {int playerId = 9967153,
+    String position = 'FW',
+    int? seasonId,
+    String? playerImage}) {
   final json =
       jsonDecode(File('test/fixtures/player_detail.json').readAsStringSync())
           as Map<String, dynamic>;
   json['player_id'] = playerId;
   json['profile']['name'] = 'Player $playerId';
+  json['profile']['image'] = playerImage;
   json['profile']['position_group'] = position;
   json['current_position'] = position;
   json['analysis']['position_group'] = position;
@@ -23,9 +27,15 @@ Map<String, dynamic> playerDetailJson(
 }
 
 PlayerDetail detailFixture(
-        {int playerId = 9967153, String position = 'FW', int? seasonId}) =>
+        {int playerId = 9967153,
+        String position = 'FW',
+        int? seasonId,
+        String? playerImage}) =>
     playerDetailFromJson(playerDetailJson(
-        playerId: playerId, position: position, seasonId: seasonId));
+        playerId: playerId,
+        position: position,
+        seasonId: seasonId,
+        playerImage: playerImage));
 
 class FakePlayerDetailRepository implements PlayerDetailRepository {
   final calls = <({int playerId, int? seasonId})>[];
