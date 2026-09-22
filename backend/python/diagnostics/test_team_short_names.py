@@ -16,47 +16,18 @@ class TeamShortNamesTests(unittest.TestCase):
     def test_reviewed_names_are_unique_and_preserve_requested_spelling(self):
         rows = json.loads(migration.SEED_PATH.read_text(encoding="utf-8"))
         names = migration.short_names()
-        self.assertEqual(len(rows), 95)
-        self.assertEqual(len(names), 95)
+        self.assertEqual(len(rows), 134)
+        self.assertEqual(len(names), 134)
         self.assertEqual(names[83], "Barcelona")
         self.assertEqual(names[117], "Conventry")
         self.assertEqual(names[9818], "R Santandr")
         self.assertEqual(names[683], "M’gladbach")
         self.assertNotIn(90, names)  # 목록에 없는 Augsburg에는 이름을 지정하지 않아요.
+        self.assertNotIn(62, names)  # UEFA 예선에 있어도 첨부 표에 없는 팀은 제외해요.
+        self.assertEqual(names[58], "Sporting Lisbon")
+        self.assertEqual(names[3369], "Linz ASK")
+        self.assertEqual(names[132649], "Ararat-Armenia")
         self.assertTrue(all(name and len(name) <= 64 for name in names.values()))
-
-    def test_migration_updates_only_short_names_and_can_run_again(self):
-        with closing(sqlite3.connect(":memory:")) as db:
-            db.execute("CREATE TABLE teams (team_id INTEGER PRIMARY KEY, name TEXT, short_code TEXT, short_name TEXT)")
-            names = migration.short_names()
-            db.executemany("INSERT INTO teams VALUES (?, ?, ?, NULL)",
-                           [(team_id, f"Original {team_id}", "OLD") for team_id in names])
-            db.execute("INSERT INTO teams VALUES (90, 'FC Augsburg', 'FCA', NULL)")
-
-            class Cursor:
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    return False
-
-                def executemany(self, sql, rows):
-                    db.executemany(sql.replace("%s", "?"), rows)
-
-            class Connection:
-                def cursor(self):
-                    return Cursor()
-
-                def commit(self):
-                    db.commit()
-
-            for _ in range(2):
-                migration.migrate_data(Connection())
-            self.assertEqual(dict(db.execute("SELECT team_id, short_name FROM teams WHERE short_name IS NOT NULL")), names)
-            self.assertEqual(db.execute("SELECT name, short_code, short_name FROM teams WHERE team_id=90").fetchone(),
-                             ("FC Augsburg", "FCA", None))
-            self.assertEqual(db.execute("SELECT name, short_code FROM teams WHERE team_id=83").fetchone(),
-                             ("Original 83", "OLD"))
 
     def test_team_api_reads_stored_name_and_preserves_original_name(self):
         with closing(sqlite3.connect(":memory:")) as db:

@@ -31,6 +31,15 @@ def plan_for(case, known=None):
 
 
 class MappingTests(unittest.TestCase):
+    def test_verified_carvajal_name_keeps_player_and_shirt_constraints(self):
+        row = dict(fixture_id=19662566, team_id=3468, player_id=31647, jersey_number=2,
+                   display_name="Daniel Carvajal", full_name="Daniel Carvajal Ramos")
+        source = dict(external_player_id="7oykphzczagr975xsqt70s89h", jersey_number=2,
+                      name="Dani Carvajal")
+        self.assertEqual(match_roster([source], [row]), {source['external_player_id']: 31647})
+        self.assertEqual(match_roster([{**source, 'jersey_number': 3}], [row]), {})
+        self.assertFalse(player_name_matches(source['name'], {**row, 'player_id': 999}))
+
     def test_real_analysis_mapping_repairs_preserve_identity_and_fixture_scope(self):
         cases = json.loads((ROOT / "opta-analysis-mapping-repair.json").read_text(encoding="utf-8"))
         for case in cases:

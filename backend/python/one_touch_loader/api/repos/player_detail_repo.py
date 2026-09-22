@@ -13,6 +13,7 @@ from ...core.player_detail import (
     rank_categories, season_categories, stat_index, summarize,
 )
 from ...core.player_match_metrics import POSITION_GROUPS
+from ...core.football_names import korean_name_ids
 
 COMPLETED = ','.join(map(str, COMPLETED_STATE_IDS))
 DISPLAY_STATES = ','.join(map(str, (*COMPLETED_STATE_IDS, *LIVE_STATE_IDS)))
@@ -169,14 +170,17 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
 
 
 def list_player_comparison_candidates(query: str) -> list[dict]:
+    player_ids = korean_name_ids("players", query)
+    korean_condition = (" OR p.player_id IN (" + ",".join(["%s"] * len(player_ids)) + ")") if player_ids else ""
     with closing(get_conn()) as conn:
         conn.start_transaction(readonly=True)
         try:
             with conn.cursor(dictionary=True) as cur:
-                cur.execute("""SELECT DISTINCT p.player_id,p.display_name AS name,p.image_path AS image
+                cur.execute(f"""SELECT DISTINCT p.player_id,p.display_name AS name,p.image_path AS image
                     FROM players p JOIN team_squad_members sm ON sm.player_id=p.player_id
                     JOIN seasons s ON s.season_id=sm.season_id
-                    WHERE s.is_current=1 AND p.display_name LIKE %s ORDER BY p.display_name LIMIT 100""", (f"%{query}%",))
+                    WHERE s.is_current=1 AND (p.display_name LIKE %s{korean_condition})
+                    ORDER BY p.display_name LIMIT 100""", (f"%{query}%", *player_ids))
                 return cur.fetchall()
         finally:
             conn.rollback()
