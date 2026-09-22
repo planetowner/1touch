@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/data/auth/auth_repository_provider.dart'
+    as auth_provider;
+import 'package:onetouch/data/auth/auth_request_exception.dart';
+import 'package:onetouch/data/auth/auth_service.dart';
+import 'package:onetouch/SignComps/VerifyEmail.dart';
 
 class EmailSignUpScreen extends StatefulWidget {
-  const EmailSignUpScreen({super.key});
+  const EmailSignUpScreen({super.key, this.authService});
+
+  final AuthService? authService;
 
   @override
   State<EmailSignUpScreen> createState() => _EmailSignUpScreenState();
@@ -22,6 +29,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   bool _obscure = true;
   bool _agreed = false;
   bool _submitting = false;
+
+  AuthService get _authService =>
+      widget.authService ?? auth_provider.authService;
 
   InputDecoration _dec(BuildContext context, String hint) {
     final appColors = AppColors.of(context);
@@ -46,19 +56,45 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       _password.text.length >= 8;
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_submitting || !_formKey.currentState!.validate()) return;
     if (!_agreed) return;
 
     setState(() => _submitting = true);
 
-    // TODO: 실제 회원가입 API 호출
-    await Future.delayed(const Duration(milliseconds: 600));
+    try {
+      final email = _email.text.trim();
+      final challenge = await _authService.requestSignUpEmailCode(email: email);
+      if (!mounted) return;
+      context.go(
+        '/auth/verify',
+        extra: EmailRegistrationDraft(
+          firstName: _firstName.text.trim(),
+          lastName: _lastName.text.trim(),
+          username: _username.text.trim(),
+          email: email,
+          password: _password.text,
+          challengeId: challenge.challengeId,
+          expiresInSeconds: challenge.expiresInSeconds,
+        ),
+      );
+    } on AuthRequestException catch (error) {
+      if (!mounted) return;
+      _showCodeRequestError(error.displayMessage);
+    } on Object {
+      if (!mounted) return;
+      _showCodeRequestError(
+        'Unable to send a verification code. Check your connection and try '
+        'again.',
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
 
-    setState(() => _submitting = false);
-
-    // verify screen으로 이동 (email을 query로 전달)
-    if (!mounted) return;
-    context.go('/auth/verify?email=${Uri.encodeComponent(_email.text.trim())}');
+  void _showCodeRequestError(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -231,6 +267,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         height: 56,
                         width: double.infinity,
                         child: FilledButton(
+                          key: const ValueKey('email-sign-up-button'),
                           onPressed: _canSubmit ? _submit : null,
                           style: FilledButton.styleFrom(
                             backgroundColor: colors.onSurface,

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_repository.dart';
+import 'package:onetouch/data/auth/auth_request_exception.dart';
 
 void main() {
   test('posts a Google ID token and returns the backend access token',
@@ -32,6 +33,115 @@ void main() {
     );
 
     expect(accessToken, 'backend-access-token');
+  });
+
+  test('posts username and password without changing the password', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/auth/login');
+        expect(request.url.queryParameters, isEmpty);
+        expect(request.headers['Accept'], 'application/json');
+        expect(request.headers['Content-Type'], 'application/json');
+        expect(jsonDecode(request.body), {
+          'username': 'member',
+          'password': ' Password123 ',
+        });
+        return http.Response(
+          jsonEncode({'access_token': 'password-session'}),
+          200,
+        );
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    final accessToken = await repository.signInWithPassword(
+      username: ' member ',
+      password: ' Password123 ',
+    );
+
+    expect(accessToken, 'password-session');
+  });
+
+  test('requests a signup email code and parses its challenge', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/auth/email/code');
+        expect(jsonDecode(request.body), {
+          'email': 'member@example.com',
+          'purpose': 'signup',
+        });
+        return http.Response(
+          jsonEncode({
+            'challenge_id': 'c' * 40,
+            'expires_in': 600,
+          }),
+          200,
+        );
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    final challenge = await repository.requestSignUpEmailCode(
+      email: ' member@example.com ',
+    );
+
+    expect(challenge.challengeId, 'c' * 40);
+    expect(challenge.expiresInSeconds, 600);
+  });
+
+  test('preserves the backend detail when an email-code request fails',
+      () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode({'detail': 'Verification email could not be sent'}),
+          502,
+        ),
+      ),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    await expectLater(
+      repository.requestSignUpEmailCode(email: 'member@example.com'),
+      throwsA(
+        isA<AuthRequestException>()
+            .having((error) => error.statusCode, 'statusCode', 502)
+            .having(
+              (error) => error.message,
+              'message',
+              'Verification email could not be sent',
+            ),
+      ),
+    );
+  });
+
+  test('reads FastAPI validation messages for email-code failures', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'detail': [
+              {'msg': 'value is not a valid email address'},
+            ],
+          }),
+          422,
+        ),
+      ),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    await expectLater(
+      repository.requestSignUpEmailCode(email: 'invalid'),
+      throwsA(
+        isA<AuthRequestException>().having(
+          (error) => error.displayMessage,
+          'displayMessage',
+          'value is not a valid email address (422)',
+        ),
+      ),
+    );
   });
 
   test('supports a trailing base-URI slash and any successful status',

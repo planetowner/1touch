@@ -63,15 +63,24 @@ final GoRouter _router = GoRouter(
           ),
         ]),
     GoRoute(
+      path: '/auth/signin',
+      builder: (context, state) => const EmailSignInScreen(),
+    ),
+    GoRoute(
       path: '/auth/signup',
       builder: (context, state) => const EmailSignUpScreen(),
     ),
     GoRoute(
       path: '/auth/verify',
       builder: (context, state) {
-        // 이전 화면에서 email을 query로 넘겨줌 ?email=...
-        final email = state.uri.queryParameters['email'] ?? '';
-        return EmailVerifyScreen(email: email);
+        final draft = state.extra is EmailRegistrationDraft
+            ? state.extra! as EmailRegistrationDraft
+            : null;
+        final email = draft?.email ?? state.uri.queryParameters['email'] ?? '';
+        return EmailVerifyScreen(
+          email: email,
+          registrationDraft: draft,
+        );
       },
     ),
 
