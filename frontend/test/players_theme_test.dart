@@ -11,14 +11,15 @@ void main() {
       {Size size = const Size(430, 932),
       bool dark = false,
       FakePlayerDirectoryRepository? repository,
-      FakeFollowingPlayersRepository? following}) async {
+      FakeFollowingPlayersRepository? following,
+      FakePlayerDetailRepository? detailRepository}) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(MaterialApp(
         theme: dark ? app_style.darktheme : app_style.whitetheme,
         home: Players(
             repository: repository ?? FakePlayerDirectoryRepository(),
-            detailRepository: FakePlayerDetailRepository(),
+            detailRepository: detailRepository ?? FakePlayerDetailRepository(),
             followingController: PlayerFollowingController(
                 repository: following ?? FakeFollowingPlayersRepository()))));
     await tester.pumpAndSettle();
@@ -115,6 +116,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(following.saved, isEmpty);
     expect(find.text('Add favorite players'), findsOneWidget);
+  });
+  testWidgets('favorite editor shows search candidates without loading details',
+      (tester) async {
+    final detailRepository = FakePlayerDetailRepository();
+    await pump(tester, detailRepository: detailRepository);
+    expect(detailRepository.calls, isEmpty);
+
+    await tester.tap(find.byTooltip('Edit favorites'));
+    await tester.pumpAndSettle();
+    expect(detailRepository.calls.length, 1);
+    await tester.enterText(find.byType(TextField), 'Player');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Player 1'), findsNothing);
+    expect(find.text('Player 2'), findsOneWidget);
+    expect(find.text('Player 3'), findsOneWidget);
+    expect(detailRepository.calls.length, 1);
+    expect(tester.takeException(), isNull);
   });
   testWidgets('directory retry restores real results', (tester) async {
     final repository = FakePlayerDirectoryRepository()..fail = true;
