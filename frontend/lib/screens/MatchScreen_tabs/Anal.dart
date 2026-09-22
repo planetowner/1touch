@@ -1247,21 +1247,18 @@ class _DefenseTerritoryPainter extends CustomPainter {
     );
 
     final arrowColor = AppPalette.white.withValues(alpha: 0.48);
-    final arrowY = size.height / 2;
-    final arrowStart = size.width * 0.72;
-    final arrowShoulder = size.width * 0.86;
-    final arrowTip = size.width * 0.93;
-    canvas.drawLine(
-      Offset(arrowStart, arrowY),
-      Offset(arrowShoulder, arrowY),
-      Paint()
-        ..color = arrowColor
-        ..strokeWidth = size.height * 0.12
-        ..strokeCap = StrokeCap.square,
+    final arrowShaft = defenseTerritoryArrowShaftRect(size);
+    final arrowY = arrowShaft.center.dy;
+    final arrowShoulder = arrowShaft.right;
+    final arrowTip = math.min(
+      size.width - defenseTerritoryArrowHorizontalInset,
+      arrowShoulder + defenseTerritoryArrowHeadWidth,
     );
+    final arrowHeadTop = arrowY - size.height * 0.18;
+    canvas.drawRect(arrowShaft, Paint()..color = arrowColor);
     canvas.drawPath(
       Path()
-        ..moveTo(arrowShoulder, arrowY - size.height * 0.18)
+        ..moveTo(arrowShoulder, arrowHeadTop)
         ..lineTo(arrowTip, arrowY)
         ..lineTo(arrowShoulder, arrowY + size.height * 0.18)
         ..close(),
@@ -1284,7 +1281,10 @@ class _DefenseTerritoryPainter extends CustomPainter {
         canvas,
         Offset(
           zoneWidth * (index + 0.5) - text.width / 2,
-          size.height / 2 - text.height / 2,
+          defenseTerritoryLabelTop(
+            labelHeight: text.height,
+            arrowHeadTop: arrowHeadTop,
+          ),
         ),
       );
     }
@@ -1299,3 +1299,35 @@ class _DefenseTerritoryPainter extends CustomPainter {
 
 double defenseTerritoryOpacity(double zoneDelta) =>
     (0.5 + zoneDelta / 100).clamp(0.0, 1.0).toDouble();
+
+const double defenseTerritoryArrowShaftWidth = 233;
+const double defenseTerritoryArrowShaftHeight = 28;
+const double defenseTerritoryArrowHeadWidth = 36;
+const double defenseTerritoryArrowHorizontalInset = 8;
+const double defenseTerritoryLabelGap = 8;
+
+Rect defenseTerritoryArrowShaftRect(Size size) {
+  final availableWidth = math.max(
+    0.0,
+    size.width -
+        defenseTerritoryArrowHeadWidth -
+        defenseTerritoryArrowHorizontalInset * 2,
+  );
+  final width = math.min(defenseTerritoryArrowShaftWidth, availableWidth);
+  final totalArrowWidth = width + defenseTerritoryArrowHeadWidth;
+  return Rect.fromLTWH(
+    (size.width - totalArrowWidth) / 2,
+    size.height / 2,
+    width,
+    defenseTerritoryArrowShaftHeight,
+  );
+}
+
+double defenseTerritoryLabelTop({
+  required double labelHeight,
+  required double arrowHeadTop,
+}) =>
+    math.max(
+      defenseTerritoryArrowHorizontalInset,
+      arrowHeadTop - defenseTerritoryLabelGap - labelHeight,
+    );
