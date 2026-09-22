@@ -48,6 +48,10 @@ docker build --progress=plain -t "onetouch-api:$release_tag" \
 docker run --rm --init --user 1001:1001 --entrypoint python "onetouch-api:$release_tag" \
   -m diagnostics.check_opta_browser
 
+# 새 순위 API에 필요한 테이블은 사용자가 먼저 만들어요. 없으면 기존 API를 바꾸기 전에 멈춰요.
+docker compose --env-file "$runtime_directory/.env" -f "$runtime_directory/compose.yaml" exec -T db sh -c \
+  'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --execute="SELECT season_id,team_id,position,previous_position,won,draw,lost,goals_for,goals_against,points FROM live_standings LIMIT 0"'
+
 if [[ ! -f "$runtime_directory/.env.production" ]]; then
   # PowerShell은 줄바꿈 전까지 안내를 전달하지 않아, 암호 입력 전에 줄을 마쳐요.
   printf '\nNew API collaboration password:\n' >/dev/tty
@@ -83,7 +87,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -120,6 +124,11 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.service" /etc
 install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.timer" /etc/systemd/system/onetouch-opta-sync.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.service" /etc/systemd/system/onetouch-probability-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.timer" /etc/systemd/system/onetouch-probability-sync.timer
+for task in standings understat; do
+  for unit in service timer; do
+    install -m 644 "$release_directory/deploy/vultr/onetouch-$task-sync.$unit" "/etc/systemd/system/onetouch-$task-sync.$unit"
+  done
+done
 install -m 644 "$release_directory/deploy/vultr/onetouch-highlights-sync.service" /etc/systemd/system/onetouch-highlights-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-highlights-sync.timer" /etc/systemd/system/onetouch-highlights-sync.timer
 # 포인트 테이블 생성 뒤 사용자가 정산 예약을 켜요. 배포에서는 실행 파일만 준비해요.
@@ -147,12 +156,12 @@ status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}
 curl --fail --silent --show-error --retry 12 --retry-all-errors --retry-delay 5 --max-time 10 \
   'https://1touch.football/' --output "$transfer_directory/served-introduction.html"
 cmp "$runtime_directory/site/index.html" "$transfer_directory/served-introduction.html"
-systemctl enable --now onetouch-opta-sync.timer
-systemctl is-enabled onetouch-opta-sync.timer
-systemctl is-active onetouch-opta-sync.timer
-systemctl enable --now onetouch-probability-sync.timer
-systemctl is-enabled onetouch-probability-sync.timer
-systemctl is-active onetouch-probability-sync.timer
+for task in standings understat opta probability; do
+  systemctl enable "onetouch-$task-sync.timer"
+  systemctl restart "onetouch-$task-sync.timer"
+  systemctl is-enabled "onetouch-$task-sync.timer"
+  systemctl is-active "onetouch-$task-sync.timer"
+done
 systemctl enable --now onetouch-highlights-sync.timer
 systemctl is-enabled onetouch-highlights-sync.timer
 systemctl is-active onetouch-highlights-sync.timer

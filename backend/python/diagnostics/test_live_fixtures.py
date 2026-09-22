@@ -195,10 +195,10 @@ class LiveRefreshTests(unittest.TestCase):
         client.return_value.get_livescores.return_value = []
         fixture = live_payload()
         fixture["state_id"] = 5
-        client.return_value.get_live_fixture.return_value = fixture
+        client.return_value.get_live_fixtures_batch.return_value = [fixture]
         client.return_value.correct_fixture_details.side_effect = lambda value: value
         result = live.refresh_live_fixtures(apply=True)
-        client.return_value.get_live_fixture.assert_called_once_with(500)
+        client.return_value.get_live_fixtures_batch.assert_called_once_with([500])
         self.assertEqual(write.call_args.args[:3], (fixture, 10, 20))
         self.assertEqual(result["updated"], 1)
 

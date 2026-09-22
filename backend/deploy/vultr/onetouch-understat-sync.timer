@@ -1,0 +1,10 @@
+[Unit]
+Description=Detect completed matches and retry unpublished xG after five minutes
+
+[Timer]
+OnBootSec=45s
+OnUnitInactiveSec=15s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

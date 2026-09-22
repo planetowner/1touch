@@ -13,6 +13,7 @@ from ..core.clubelo import rating_before
 from ..core.cup_betting import EUROPE_COMPETITION_IDS, utc_datetime
 from ..core.european_probability import (MODEL_METHOD, OUTCOME_KIND, TITLE_EVENTS, ScoreModel,
     disciplinary_points, fit_penalties, fit_scores, score_loss, simulate_title, simulate_bracket_title)
+from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.sportmonks import SportmonksClient, correct_event_metadata
 from . import cup_betting_loader, probability_loader as common
 from .probability_training import BIG5_IDS, MODEL_SEASONS, TRAIN_SEASONS, VALIDATION_SEASON
@@ -122,7 +123,7 @@ def train_and_validate(dataset):
 
 
 def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, simulations=100000,
-                 seed=20260917, brackets=()):
+                 seed=20260917, brackets=(), previous_by_season=None):
     coefficient_data = common._read(Path(__file__).parents[1] / 'core/uefa_coefficients_2026.json')
     if report['method'] != MODEL_METHOD or utc_datetime(report['forecast_model']['last_training_fixture_at']) >= observed_at:
         raise ValueError('A previously trained European title model is required')
@@ -160,6 +161,27 @@ def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, sim
             if any(f['state_id'] in (5, 7, 8) and (f['starting_at'] is None or utc_datetime(f['starting_at']) >= observed_at)
                    for st in bracket['stages'] for tie in st['ties'] for f in tie['fixtures']):
                 raise ValueError('A completed knockout fixture is dated after the forecast')
+        # 예선·국내 리그를 섞지 않고 이번 계산에 반영한 본선 경기만 비교 기준으로 남겨요.
+        title_fixtures = league + ([f for stage in bracket['stages'] for tie in stage['ties']
+                                   for f in tie['fixtures']] if drawn else [])
+        played_at = {t: [] for t in teams}
+        for fixture in title_fixtures:
+            if fixture['state_id'] in COMPLETED_STATE_IDS:
+                kickoff = utc_datetime(fixture['starting_at'])
+                if kickoff >= observed_at:
+                    raise ValueError('A completed fixture is dated after the forecast')
+                for team_id in (fixture['home_team_id'], fixture['away_team_id']):
+                    played_at[team_id].append(kickoff)
+        fingerprint = common.input_fingerprint(league, {'elos': elos, 'discipline': discipline,
+            'coefficients': {str(t): coefficient_data['teams'][str(t)] for t in teams},
+            'bracket_input_sha256': bracket['input_sha256'] if drawn else None,
+            'model': report['forecast_model']})
+        previous = (previous_by_season or {}).get(season_id)
+        if common.calculation_unchanged(previous, model_id=report['model_id'], input_sha256=fingerprint,
+                outcome_kind=OUTCOME_KIND, simulations=simulations, seed=seed, refresh_input_version=1):
+            statuses.append({'season_id': season_id, 'status': 'unchanged', 'teams': len(teams)})
+            continue
+        if drawn:
             estimates = simulate_bracket_title(bracket=bracket, **model_args)
         else:
             estimates = simulate_title(competition_id=competition_id, fixtures=league,
@@ -172,17 +194,18 @@ def prepare_runs(fixtures, histories, report, card_fixtures, *, observed_at, sim
             'bracket_input_sha256': bracket['input_sha256'] if drawn else None,
             'coefficient_source_url': coefficient_data['source_url'], 'limitations': report['limitations'],
             'validation': report['validation']['metrics'], 'teams': {str(t): {
-                'elo': elos[t], 'event': TITLE_EVENTS[competition_id], **estimates[t]} for t in teams}}
-        run['input_sha256'] = common.input_fingerprint(league, {'elos': elos, 'discipline': discipline,
-            'coefficients': {str(t): coefficient_data['teams'][str(t)] for t in teams},
-            'bracket_input_sha256': run['bracket_input_sha256']})
+                'elo': elos[t], 'event': TITLE_EVENTS[competition_id], **estimates[t],
+                'played': len(played_at[t]),
+                'previous_fixture_at': max(played_at[t]).isoformat() if played_at[t] else None} for t in teams}}
+        run.update(input_sha256=fingerprint, refresh_input_version=1)
         runs.append(run)
         statuses.append({'season_id': season_id, 'status': 'updated', 'teams': len(teams)})
     return runs, statuses
 
 
-def refresh(*, apply=False, histories=None, simulations=100000, seed=20260917, brackets=None):
-    report, fixtures = common.latest_model(MODEL_METHOD), cup_betting_loader.read_fixtures()
+def refresh(*, apply=False, histories=None, simulations=100000, seed=20260917, brackets=None, fixtures=None):
+    report = common.latest_model(MODEL_METHOD)
+    fixtures = cup_betting_loader.read_fixtures(current_only=True) if fixtures is None else fixtures
     current = [f for f in fixtures if f['competition_id'] in EUROPE_COMPETITION_IDS and f['season_name']=='2026/2027']
     if brackets is None:
         from ..core.db_json import decoded
@@ -191,9 +214,14 @@ def refresh(*, apply=False, histories=None, simulations=100000, seed=20260917, b
     if histories is None:
         ids = {f[k] for f in current if f['stage_type_id']==223 for k in ('home_team_id','away_team_id')}
         histories = common.refresh_histories(common.read_clubelo_mapping(ids), apply=apply)
-    raw = read_card_fixtures(current)
+    # 조별 리그 동률 순위에만 카드가 필요해요. 확정 토너먼트 경로를 쓰는 시즌은 다시 수집하지 않아요.
+    drawn = {f['season_id'] for f in current if f['stage_type_id'] == 224}
+    drawn.update(b['season_id'] for b in brackets if b['stages'])
+    raw = read_card_fixtures([f for f in current if f['season_id'] not in drawn])
+    previous = {season: common.latest_calculation_inputs(season, MODEL_METHOD)
+                for season in {f['season_id'] for f in current}}
     runs, statuses = prepare_runs(current, histories, report, raw, observed_at=datetime.now(timezone.utc),
-                                  simulations=simulations, seed=seed, brackets=brackets)
+                                  simulations=simulations, seed=seed, brackets=brackets, previous_by_season=previous)
     if apply and runs:
         common.store_runs(runs)
     return {'applied': apply, 'competitions': statuses}
