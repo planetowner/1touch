@@ -303,8 +303,8 @@ class _EventBadges extends StatelessWidget {
   final List<LineupEvent> events;
   const _EventBadges({required this.events});
 
-  static const double _badgeSize = 12;
-  static const double _badgeOffset = 7;
+  static const double _badgeSize = 16;
+  static const double _badgeOffset = 9;
 
   List<LineupEvent> get _displayEvents {
     final otherEvents = events.where((event) {
@@ -402,6 +402,7 @@ class _EventBadges extends StatelessWidget {
       key: key == null ? null : ValueKey(key),
       type: event.type,
       size: _badgeSize,
+      outlined: true,
     );
   }
 }
