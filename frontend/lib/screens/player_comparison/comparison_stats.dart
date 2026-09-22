@@ -4,16 +4,8 @@ class _ComparisonContent extends StatelessWidget {
   const _ComparisonContent({required this.p1, required this.p2});
   final PlayerDetail p1, p2;
 
-  String _abbrev(String name) => name
-      .split(RegExp(r'\s+'))
-      .where((part) => part.isNotEmpty)
-      .map((part) => part[0])
-      .join('. ');
-
   @override
   Widget build(BuildContext context) {
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    final muted = AppColors.of(context).mutedForeground;
     final colors = _comparisonColors(context, p1, p2);
     final categories = _mergeCategories(
       p1.analysis?.categories ?? const [],
@@ -26,34 +18,21 @@ class _ComparisonContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: SizedBox(
-              width: double.infinity,
-              height: 238,
-              child: _AttributeUnavailable(foreground: foreground),
-            ),
-          ),
+          Text('ATTRIBUTES', style: Body2_b.style),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: _LegendDot(
-                  color: colors.anchor,
-                  label: _abbrev(p1.profile.name),
-                  textColor: muted,
+          PlayerSurface(
+            key: const ValueKey('comparison-attribute-pending-card'),
+            padding: const EdgeInsets.all(24),
+            child: SizedBox(
+              height: 96,
+              child: Center(
+                child: Text(
+                  '아직 준비중이에요 ㅠㅠ',
+                  key: const ValueKey('comparison-attribute-pending'),
+                  style: Heading5.style,
                 ),
               ),
-              const SizedBox(width: 20),
-              Flexible(
-                child: _LegendDot(
-                  color: colors.opponent,
-                  label: _abbrev(p2.profile.name),
-                  textColor: muted,
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 24),
           for (final category in categories)
@@ -67,45 +46,6 @@ class _ComparisonContent extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AttributeUnavailable extends StatelessWidget {
-  const _AttributeUnavailable({required this.foreground});
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _EmptyRadarPainter(
-                color: foreground.withValues(alpha: .30),
-                labelColor: foreground,
-              ),
-            ),
-          ),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface
-                    .withValues(alpha: .92),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '아직 준비중이에요ㅠㅠ',
-                key: const ValueKey('comparison-attribute-pending'),
-                style: TextStyle(
-                  color: foreground,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
 }
 
 class _MergedCategory {
@@ -141,37 +81,6 @@ List<_MergedCategory> _mergeCategories(
         second: secondMap[code]?.metrics ?? const [],
       ),
   ];
-}
-
-class _LegendDot extends StatelessWidget {
-  const _LegendDot({
-    required this.color,
-    required this.label,
-    required this.textColor,
-  });
-  final Color color, textColor;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: textColor, fontSize: 12),
-            ),
-          ),
-        ],
-      );
 }
 
 class _StatCategoryCard extends StatelessWidget {
