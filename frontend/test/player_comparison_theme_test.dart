@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 import 'support/player_detail_fixture.dart';
 
@@ -23,16 +22,22 @@ void main() {
         expect(tester.takeException(), isNull);
         await tester.tap(find.text('Player 3'));
         await tester.pumpAndSettle();
-        final surface = find
-            .descendant(
-                of: find.byType(PlayerSurface).first,
-                matching: find.byType(Container))
-            .first;
-        final decoration =
-            tester.widget<Container>(surface).decoration as BoxDecoration;
+        await tester.tap(find.text('26/27'));
+        await tester.pumpAndSettle();
+        final header = tester.widget<DecoratedBox>(
+            find.byKey(const ValueKey('comparison-header-gradient')));
+        final gradient =
+            (header.decoration as BoxDecoration).gradient! as LinearGradient;
+        expect(
+            gradient.colors,
+            dark
+                ? const [Color(0xFF000000), AppPalette.darkGrey]
+                : const [AppPalette.white, AppPalette.lightModeDarkGrey]);
+        final statCard = tester.widget<Container>(
+            find.byKey(const ValueKey('comparison-stat-card-Finish')));
+        final decoration = statCard.decoration as BoxDecoration;
         expect(decoration.color, dark ? AppPalette.darkGrey : AppPalette.white);
-        await tester.drag(
-            find.byType(SingleChildScrollView).first, const Offset(0, -450));
+        await tester.drag(find.byType(CustomScrollView), const Offset(0, -450));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       });
