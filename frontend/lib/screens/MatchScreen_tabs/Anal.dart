@@ -222,7 +222,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       homeScore: widget.fixture.homeScore?.toString() ?? '#',
       awayScore: widget.fixture.awayScore?.toString() ?? '#',
       statusLabel: isLive ? '42:02' : 'Final',
-      roundLabel: widget.fixture.roundName,
+      roundLabel: widget.fixture.displayRoundLabel,
     );
   }
 

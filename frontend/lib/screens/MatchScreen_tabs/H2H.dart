@@ -196,9 +196,9 @@ class _H2HTabState extends State<H2HTab> {
                 final leagueName =
                     competitionRepository.findById(f.competitionId)?.name ??
                         'Unknown';
-                final roundName = f.roundName?.trim();
-                final competitionAndRound = roundName?.isNotEmpty ?? false
-                    ? '$leagueName · $roundName'
+                final roundLabel = f.displayRoundLabel;
+                final competitionAndRound = roundLabel != null
+                    ? '$leagueName · $roundLabel'
                     : leagueName;
                 return GestureDetector(
                   key: ValueKey('match-h2h-fixture-${f.fixtureId}'),
