@@ -30,6 +30,8 @@ class ApiFixtureResponse {
     required this.awayPenaltyScore,
     required this.homeTeamName,
     required this.awayTeamName,
+    this.homeTeamShortName,
+    this.awayTeamShortName,
     required this.homeTeamLogo,
     required this.awayTeamLogo,
   });
@@ -59,6 +61,8 @@ class ApiFixtureResponse {
   final int? awayPenaltyScore;
   final String homeTeamName;
   final String awayTeamName;
+  final String? homeTeamShortName;
+  final String? awayTeamShortName;
   final String? homeTeamLogo;
   final String? awayTeamLogo;
 
@@ -89,6 +93,8 @@ class ApiFixtureResponse {
       awayPenaltyScore: _optionalInt(json, 'away_penalty_score'),
       homeTeamName: _requiredString(json, 'home_team_name'),
       awayTeamName: _requiredString(json, 'away_team_name'),
+      homeTeamShortName: _optionalString(json, 'home_team_short_name'),
+      awayTeamShortName: _optionalString(json, 'away_team_short_name'),
       homeTeamLogo: _optionalString(json, 'home_team_logo'),
       awayTeamLogo: _optionalString(json, 'away_team_logo'),
     );

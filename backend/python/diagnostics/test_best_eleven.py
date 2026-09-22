@@ -20,10 +20,11 @@ from one_touch_loader.loaders import best_eleven_loader as loader
 
 
 CASES = json.loads((Path(__file__).parent / "fixtures/best_eleven_verified_lineups.json").read_text(encoding="utf-8"))
+BAYERN = json.loads((Path(__file__).parent / "fixtures/best_eleven_bayern_orientation.json").read_text(encoding="utf-8"))
 
 
-def source_lineup(fixture_id=1, formation="4-3-3", first_player=1):
-    return [(fixture_id, formation, first_player + index, slot)
+def source_lineup(fixture_id=1, formation="4-3-3", first_player=1, is_home=True):
+    return [(fixture_id, formation, first_player + index, slot, is_home)
             for index, slot in enumerate(formation_slots(formation))]
 
 
@@ -31,7 +32,8 @@ class SelectionTests(unittest.TestCase):
     def test_actual_west_ham_maximizes_total_starts(self):
         case = CASES["west_ham"]
         result = loader.build_best_eleven_rows(case["team_id"], case["season_id"], case["rows"])
-        self.assertEqual(sum(row[5] for row in result["players"]), 21)
+        # 홈 경기의 좌우를 맞추면 같은 자리 선발 합은 21회가 아니라 27회예요.
+        self.assertEqual(sum(row[5] for row in result["players"]), 27)
         forwards = {row[3]: row[4] for row in result["players"] if row[3].startswith("5:")}
         self.assertEqual(forwards, {"5:1": 31532, "5:2": 1592})
 
@@ -62,6 +64,20 @@ class SelectionTests(unittest.TestCase):
 
 
 class LineupTests(unittest.TestCase):
+    def test_bayern_home_and_away_use_the_same_attacking_direction(self):
+        original = json.dumps(BAYERN)
+        result = loader.build_best_eleven_rows(503, 28321, BAYERN["rows"])
+        self.assertEqual(result["formations"], [(503, 28321, "4-2-3-1", 5)])
+        self.assertEqual(result["excluded"], [])
+        # 공급자 홈 3경기·원정 2경기를 대조한 자리별 선발 횟수예요.
+        self.assertEqual([(row[3], row[4], row[5]) for row in result["players"]], [
+            ("1:1", 30642, 4), ("2:1", 262644, 4), ("2:2", 31836, 3),
+            ("2:3", 33685, 5), ("2:4", 52585, 3), ("3:1", 37582044, 4),
+            ("3:2", 32362, 4), ("4:1", 241036, 4), ("4:2", 33186829, 2),
+            ("4:3", 24799984, 3), ("5:1", 997, 4),
+        ])
+        self.assertEqual(json.dumps(BAYERN), original)
+
     def test_verified_provider_mismatch_is_excluded_without_changing_source(self):
         case = CASES["marseille_mismatch"]
         original = json.dumps(case)
@@ -80,20 +96,20 @@ class LineupTests(unittest.TestCase):
         self.assertTrue(all(len(row) == 6 and row[5] == 1 for row in result["players"]))
 
     def test_partial_and_missing_lineups_are_unavailable(self):
-        rows = [(1, None, None, None)] + source_lineup(2)[:10]
-        rows += [(3, formation, player, None) for _, formation, player, _ in source_lineup(3)]
+        rows = [(1, None, None, None, True)] + source_lineup(2)[:10]
+        rows += [(3, formation, player, None, home) for _, formation, player, _, home in source_lineup(3)]
         result = loader.build_best_eleven_rows(1, 1, rows)
         self.assertEqual(result["formations"], [])
         self.assertEqual(result["players"], [])
         self.assertEqual(result["excluded"], [(1, "missing_formation"), (2, "incomplete_starters"), (3, "missing_slots")])
 
     def test_extra_starter_with_missing_slot_does_not_pass_eleven_slot_filter(self):
-        rows = source_lineup() + [(1, "4-3-3", 12, None)]
+        rows = source_lineup() + [(1, "4-3-3", 12, None, True)]
         self.assertEqual(loader.build_best_eleven_rows(1, 1, rows)["excluded"], [(1, "incomplete_starters")])
 
     def test_distinct_players_in_duplicate_slots_are_excluded(self):
         rows = source_lineup()
-        rows[-1] = (*rows[-1][:3], rows[-2][3])
+        rows[-1] = (*rows[-1][:3], rows[-2][3], rows[-1][4])
         self.assertEqual(loader.build_best_eleven_rows(1, 1, rows)["excluded"], [(1, "formation_slots_mismatch")])
 
     def test_each_formation_has_its_own_players_and_match_count(self):
@@ -155,10 +171,11 @@ class DatabaseFlowTests(unittest.TestCase):
         self.read_connections = self.stack.enter_context(patch.object(loader, "get_conn", side_effect=connection))
         self.stack.enter_context(patch.object(db, "get_conn", side_effect=connection))
 
-    def add_fixture(self, fixture_id, formation="4-3-3", first_player=1, stage=10, state=5):
-        self.sql.execute("INSERT INTO fixtures VALUES (?,?,10,20,?)", (fixture_id, stage, state))
+    def add_fixture(self, fixture_id, formation="4-3-3", first_player=1, stage=10, state=5, is_home=True):
+        home, away = (10, 20) if is_home else (20, 10)
+        self.sql.execute("INSERT INTO fixtures VALUES (?,?,?,?,?)", (fixture_id, stage, home, away, state))
         self.sql.execute("INSERT INTO fixture_formations VALUES (?,10,?)", (fixture_id, formation))
-        for _, _, player, slot in source_lineup(fixture_id, formation, first_player):
+        for _, _, player, slot, _ in source_lineup(fixture_id, formation, first_player):
             self.sql.execute("INSERT OR IGNORE INTO players VALUES (?,?,NULL,NULL)", (player, f"Player {player}"))
             self.sql.execute("INSERT INTO fixture_lineups VALUES (?,10,?,11,?)", (fixture_id, player, slot))
         self.sql.commit()
@@ -182,6 +199,32 @@ class DatabaseFlowTests(unittest.TestCase):
         self.assertEqual(totals["built"], 1)
         self.assertEqual(self.sql.execute("SELECT matches_used FROM team_best_eleven_formations").fetchone(), (3,))
         self.assertTrue(all(row == (3,) for row in self.sql.execute("SELECT starts FROM team_best_eleven")))
+
+    def test_home_and_away_starts_are_combined_before_selection_and_api_display(self):
+        for formation in ("4-3-3", "3-5-2", "4-2-3-1"):
+            with self.subTest(formation=formation):
+                self.sql.execute("DELETE FROM fixture_lineups")
+                self.sql.execute("DELETE FROM fixture_formations")
+                self.sql.execute("DELETE FROM fixtures")
+                self.add_fixture(1, formation)
+                self.add_fixture(2, formation, is_home=False)
+                # 같은 선수의 원정 좌표는 공급자 응답처럼 각 줄의 반대편이에요.
+                widths = [1, *map(int, formation.split("-"))]
+                expected = {}
+                for _, _, player, slot, _ in source_lineup(2, formation):
+                    row, column = map(int, slot.split(":"))
+                    display_slot = f"{row}:{widths[row - 1] + 1 - column}"
+                    self.sql.execute("UPDATE fixture_lineups SET formation_field=? WHERE fixture_id=2 AND player_id=?", (display_slot, player))
+                    expected[display_slot] = player
+                self.sql.commit()
+                raw = self.sql.execute("SELECT * FROM fixture_lineups ORDER BY fixture_id,player_id").fetchall()
+                loader.rebuild_best_eleven("2025/2026")
+                response = BestElevenResponse.model_validate(self.api())
+                self.assertEqual(response.matches_used, 2)
+                self.assertEqual({p.slot_key: p.player_id for p in response.players}, expected)
+                self.assertTrue(all(p.starts == 2 for p in response.players))
+                self.assertEqual(self.sql.execute("SELECT * FROM fixture_lineups ORDER BY fixture_id,player_id").fetchall(), raw)
+                self.assertEqual(loader.validate_best_eleven("2025/2026")["status"], "PASS")
 
     def test_one_season_scopes_all_five_leagues_and_not_external_opponents(self):
         for index, competition in enumerate((82, 301, 384, 564), start=1):

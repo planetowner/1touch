@@ -37,6 +37,7 @@ class ApiStandingRowResponse {
     required this.rankDelta,
     required this.teamId,
     required this.teamName,
+    this.teamShortName,
     required this.teamLogo,
     required this.matchesPlayed,
     required this.won,
@@ -53,6 +54,7 @@ class ApiStandingRowResponse {
   final int? rankDelta;
   final int teamId;
   final String teamName;
+  final String? teamShortName;
   final String? teamLogo;
   final int matchesPlayed;
   final int won;
@@ -80,6 +82,9 @@ class ApiStandingRowResponse {
       rankDelta: _optionalInt(json, 'rank_delta'),
       teamId: _requiredInt(json, 'team_id'),
       teamName: _requiredString(json, 'team_name'),
+      teamShortName: json.containsKey('team_short_name')
+          ? _optionalString(json, 'team_short_name')
+          : null,
       teamLogo: _optionalString(json, 'team_logo'),
       matchesPlayed: _requiredInt(json, 'matches_played'),
       won: _requiredInt(json, 'won'),
