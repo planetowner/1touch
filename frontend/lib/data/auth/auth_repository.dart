@@ -1,3 +1,4 @@
+import 'package:onetouch/data/auth/auth_account_status.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 
 abstract interface class AuthRepository {
@@ -18,4 +19,15 @@ abstract interface class AuthRepository {
     required String firstName,
     required String lastName,
   });
+
+  Future<AuthAccountStatus> loadAccountStatus({required String accessToken});
+
+  Future<AuthAccountStatus> completeSocialProfile({
+    required String accessToken,
+    required String username,
+    required String firstName,
+    required String lastName,
+  });
+
+  Future<void> logout({required String accessToken});
 }

@@ -212,6 +212,84 @@ void main() {
     );
   });
 
+  test('validates a restored session and reads onboarding state', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/v1/users/me');
+        expect(request.headers['Authorization'], 'Bearer restored-token');
+        return http.Response(
+          jsonEncode({
+            'username': 'member',
+            'first_name': 'First',
+            'last_name': 'Last',
+            'onboarding_complete': true,
+          }),
+          200,
+        );
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    expect(
+      (await repository.loadAccountStatus(
+        accessToken: 'restored-token',
+      ))
+          .onboardingComplete,
+      isTrue,
+    );
+  });
+
+  test('completes a new social account profile', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'PUT');
+        expect(request.url.path, '/v1/users/me/profile');
+        expect(request.headers['Authorization'], 'Bearer social-token');
+        expect(jsonDecode(request.body), {
+          'username': 'member',
+          'first_name': 'First',
+          'last_name': 'Last',
+        });
+        return http.Response(
+          jsonEncode({
+            'username': 'member',
+            'first_name': 'First',
+            'last_name': 'Last',
+            'favorite_team_id': null,
+            'onboarding_complete': false,
+          }),
+          200,
+        );
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    final status = await repository.completeSocialProfile(
+      accessToken: 'social-token',
+      username: 'member',
+      firstName: 'First',
+      lastName: 'Last',
+    );
+
+    expect(status.profileComplete, isTrue);
+    expect(status.onboardingComplete, isFalse);
+  });
+
+  test('logs out the current backend session', () async {
+    final repository = ApiGoogleAuthRepository(
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/auth/logout');
+        expect(request.headers['Authorization'], 'Bearer active-token');
+        return http.Response(jsonEncode({'ok': true}), 200);
+      }),
+      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+    );
+
+    await repository.logout(accessToken: 'active-token');
+  });
+
   test('supports a trailing base-URI slash and any successful status',
       () async {
     final repository = ApiGoogleAuthRepository(

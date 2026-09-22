@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:onetouch/data/auth/api/api_google_auth_response.dart';
+import 'package:onetouch/data/auth/auth_account_status.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
@@ -135,6 +136,84 @@ class ApiGoogleAuthRepository implements AuthRepository {
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
   }
 
+  @override
+  Future<AuthAccountStatus> loadAccountStatus({
+    required String accessToken,
+  }) async {
+    final uri = _apiBaseUri.resolve('users/me');
+    final response = await _client.get(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${accessToken.trim()}',
+      },
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        message: _responseDetail(
+          response.body,
+          fallback: 'Unable to restore the login session.',
+        ),
+      );
+    }
+    return _accountStatus(response.body);
+  }
+
+  @override
+  Future<AuthAccountStatus> completeSocialProfile({
+    required String accessToken,
+    required String username,
+    required String firstName,
+    required String lastName,
+  }) async {
+    final uri = _apiBaseUri.resolve('users/me/profile');
+    final response = await _client.put(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${accessToken.trim()}',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'username': username.trim(),
+        'first_name': firstName.trim(),
+        'last_name': lastName.trim(),
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        message: _responseDetail(
+          response.body,
+          fallback: 'Unable to complete your profile.',
+        ),
+      );
+    }
+    return _accountStatus(response.body);
+  }
+
+  @override
+  Future<void> logout({required String accessToken}) async {
+    final uri = _apiBaseUri.resolve('auth/logout');
+    final response = await _client.post(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${accessToken.trim()}',
+      },
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        message: _responseDetail(
+          response.body,
+          fallback: 'Unable to close the server session.',
+        ),
+      );
+    }
+  }
+
   Future<String> _postForAccessToken(
     String path,
     Map<String, String> body, {
@@ -163,6 +242,27 @@ class ApiGoogleAuthRepository implements AuthRepository {
       );
     }
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
+  }
+
+  static AuthAccountStatus _accountStatus(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is! Map<String, dynamic> ||
+        decoded['onboarding_complete'] is! bool) {
+      throw const FormatException(
+        'Expected users/me to include onboarding_complete.',
+      );
+    }
+    bool completedField(String key) {
+      final value = decoded[key];
+      return value is String && value.trim().isNotEmpty;
+    }
+
+    return AuthAccountStatus(
+      profileComplete: completedField('username') &&
+          completedField('first_name') &&
+          completedField('last_name'),
+      onboardingComplete: decoded['onboarding_complete'] as bool,
+    );
   }
 
   static Uri _asDirectoryUri(Uri uri) {

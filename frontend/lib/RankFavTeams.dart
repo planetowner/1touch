@@ -6,6 +6,8 @@ import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/data/teams/following_teams_repository_provider.dart';
+import 'package:onetouch/data/auth/auth_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 
 class RankFavoriteTeamsScreen extends StatefulWidget {
@@ -43,16 +45,32 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
-    await currentUserPreferences.updateTeamSelection(
-      _myTeams.map((team) => team.teamId),
-    );
-    if (!mounted) return;
+    try {
+      final teamIds = _myTeams.map((team) => team.teamId).toList();
+      await followingTeamsRepository.replaceFollowing(
+        teamIds: teamIds,
+        favoriteTeamId: teamIds.first,
+      );
+      await currentUserPreferences.updateTeamSelection(teamIds);
+      await authService.markOnboardingComplete();
+      if (!mounted) return;
 
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()),
-    );
-    if (mounted) setState(() => _isSaving = false);
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()),
+      );
+    } on Object {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Unable to save your teams. Please try again.'),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override

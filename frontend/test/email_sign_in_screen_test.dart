@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/data/auth/auth_account_status.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/SignComps/SignIn.dart';
@@ -8,6 +9,7 @@ import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
+import 'support/fake_auth_token_store.dart';
 
 void main() {
   testWidgets('Continue with email opens sign in and signup link is aligned',
@@ -41,9 +43,10 @@ void main() {
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
     final session = AuthSession();
+    final tokenStore = FakeAuthTokenStore();
     final repository = _FakeAuthRepository();
     final router = _router(
-      _service(session, repository),
+      _service(session, repository, tokenStore: tokenStore),
       initialLocation: '/auth/signin',
     );
     addTearDown(router.dispose);
@@ -65,16 +68,22 @@ void main() {
     expect(session.requestHeaders, {
       'Authorization': 'Bearer password-access-token',
     });
+    expect(tokenStore.value?.accessToken, 'password-access-token');
     expect(find.text('Home destination'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
 
-AuthService _service(AuthSession session, AuthRepository repository) =>
+AuthService _service(
+  AuthSession session,
+  AuthRepository repository, {
+  FakeAuthTokenStore? tokenStore,
+}) =>
     AuthService(
       googleIdentityService: _FakeGoogleIdentityService(),
       repository: repository,
       session: session,
+      tokenStore: tokenStore ?? FakeAuthTokenStore(),
     );
 
 GoRouter _router(AuthService service, {required String initialLocation}) =>
@@ -144,4 +153,24 @@ class _FakeAuthRepository implements AuthRepository {
     required String lastName,
   }) =>
       throw UnimplementedError();
+
+  @override
+  Future<AuthAccountStatus> loadAccountStatus(
+          {required String accessToken}) async =>
+      const AuthAccountStatus(
+        profileComplete: true,
+        onboardingComplete: true,
+      );
+
+  @override
+  Future<AuthAccountStatus> completeSocialProfile({
+    required String accessToken,
+    required String username,
+    required String firstName,
+    required String lastName,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> logout({required String accessToken}) async {}
 }
