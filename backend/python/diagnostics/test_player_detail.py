@@ -2,6 +2,8 @@
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
+import json
+from pathlib import Path
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -153,8 +155,9 @@ class PlayerDetailRepositoryTests(unittest.TestCase):
             self.assertIn(client.get('/players/1/detail').status_code, (401,403,422))
             get.assert_not_called()
             app.dependency_overrides[get_user_id]=lambda:1
-            get.return_value={'player_id':1}
-            self.assertEqual(client.get('/players/1/detail?season_id=5').json(), {'player_id':1})
+            get.return_value=json.loads((Path(__file__).resolve().parents[3] / 'frontend/test/fixtures/player_detail.json').read_text())
+            get.return_value['player_id']=1
+            self.assertEqual(client.get('/players/1/detail?season_id=5').json()['player_id'], 1)
             get.assert_called_with(1,5)
             get.side_effect=ValueError('Player has no record for this league season')
             self.assertEqual(client.get('/players/1/detail?season_id=6').status_code,404)

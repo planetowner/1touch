@@ -65,7 +65,7 @@ class PlayerDirectoryTests(unittest.TestCase):
         app.include_router(routes.router)
         app.dependency_overrides[get_user_id] = lambda: 1
         client = TestClient(app)
-        with patch.object(routes, 'get_current_ranking', return_value={'items': []}) as fn:
+        with patch.object(routes, 'get_current_ranking', return_value={'season_name': None, 'leagues': [], 'items': [], 'total': 0, 'limit': 20, 'offset': 0, 'competition_id': 8, 'position': 'FW'}) as fn:
             self.assertEqual(client.get('/players/ranking-current?position=FW&competition_id=8').status_code, 200)
             fn.assert_called_once_with(8, 'FW', limit=20, offset=0)
             self.assertEqual(client.get('/players/ranking-current?position=ST').status_code, 422)
