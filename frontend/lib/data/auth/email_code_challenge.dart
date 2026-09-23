@@ -1,3 +1,11 @@
+enum EmailCodePurpose {
+  signup('signup'),
+  passwordReset('password_reset');
+
+  const EmailCodePurpose(this.apiValue);
+  final String apiValue;
+}
+
 class EmailCodeChallenge {
   const EmailCodeChallenge({
     required this.challengeId,

@@ -129,7 +129,7 @@ class _TransferState extends State<Transfer> {
                       ),
                     ),
                     alignment: Alignment.center,
-                    child: Text("IN", style: Body2_b.style),
+                    child: Text(tr(context, "IN"), style: Body2_b.style),
                   ),
                 ),
               ),
@@ -150,7 +150,7 @@ class _TransferState extends State<Transfer> {
                       ),
                     ),
                     alignment: Alignment.center,
-                    child: Text("OUT", style: Body2_b.style),
+                    child: Text(tr(context, "OUT"), style: Body2_b.style),
                   ),
                 ),
               ),
@@ -177,9 +177,11 @@ class _TransferState extends State<Transfer> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Unable to load transfers', style: Body2.style),
+                  child: Text(tr(context, 'Unable to load transfers'),
+                      style: Body2.style),
                 ),
-                TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+                TextButton(
+                    onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
               ],
             ),
           )
@@ -187,7 +189,7 @@ class _TransferState extends State<Transfer> {
           Padding(
             key: const ValueKey('transfer-empty'),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Text('No transfers', style: Body2.style),
+            child: Text(tr(context, 'No transfers'), style: Body2.style),
           )
         else
           ...list.map((transfer) => TransferTile(transfer: transfer)),

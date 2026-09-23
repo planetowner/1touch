@@ -1,8 +1,10 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
 void main() {
+  setUpAppCatalog();
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('omits a missing round label at ${size.width}x${size.height}',
         (tester) async {

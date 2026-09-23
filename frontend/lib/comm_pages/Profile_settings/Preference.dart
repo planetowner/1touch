@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'PreferenceDetails.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PreferencePage extends StatefulWidget {
   const PreferencePage({super.key});
@@ -12,20 +13,9 @@ class PreferencePage extends StatefulWidget {
 }
 
 class _PreferencePageState extends State<PreferencePage> {
-  // State variables to hold current selections
-  String _language = "English";
   String _unit = "Metric (cm)";
   String _currency = "USD (\$)";
 
-  // Mock data options
-  final List<String> _languageOptions = [
-    "English",
-    "Spanish",
-    "French",
-    "German",
-    "Korean",
-    "Japanese"
-  ];
   final List<String> _unitOptions = ["Metric (cm)", "Imperial (ft/in)"];
   final List<String> _currencyOptions = [
     "USD (\$)",
@@ -61,7 +51,7 @@ class _PreferencePageState extends State<PreferencePage> {
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
-                      const Text("Preferences", style: Body1.style),
+                      Text(tr(context, "Preferences"), style: Body1.style),
                       IconButton(
                         icon: Icon(
                           Icons.search,
@@ -80,12 +70,8 @@ class _PreferencePageState extends State<PreferencePage> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
-                      _buildPreferenceSection("LANGUAGE", _language,
-                          onTap: () => _navigateAndSelect(
-                              "Language",
-                              _languageOptions,
-                              _language,
-                              (val) => _language = val)),
+                      _buildPreferenceSection(tr(context, "LANGUAGE"),
+                          tr(context, "Follows your device language")),
                       _buildDivider(),
                       const SizedBox(
                         height: 12,
@@ -93,16 +79,17 @@ class _PreferencePageState extends State<PreferencePage> {
                       const SizedBox(
                         height: 12,
                       ),
-                      _buildPreferenceSection("UNIT", _unit,
-                          onTap: () => _navigateAndSelect("Unit", _unitOptions,
-                              _unit, (val) => _unit = val)),
+                      _buildPreferenceSection(tr(context, "UNIT"), _unit,
+                          onTap: () => _navigateAndSelect(tr(context, "Unit"),
+                              _unitOptions, _unit, (val) => _unit = val)),
                       _buildDivider(),
                       const SizedBox(
                         height: 12,
                       ),
-                      _buildPreferenceSection("CURRENCY", _currency,
+                      _buildPreferenceSection(
+                          tr(context, "CURRENCY"), _currency,
                           onTap: () => _navigateAndSelect(
-                              "Currency",
+                              tr(context, "Currency"),
                               _currencyOptions,
                               _currency,
                               (val) => _currency = val)),
@@ -132,7 +119,7 @@ class _PreferencePageState extends State<PreferencePage> {
                         ),
                       ),
                       child: Text(
-                        "UPDATE PREFERENCES",
+                        tr(context, "UPDATE PREFERENCES"),
                         style: Body2_b.style.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
@@ -168,11 +155,11 @@ class _PreferencePageState extends State<PreferencePage> {
   }
 
   Widget _buildPreferenceSection(String label, String value,
-      {required VoidCallback onTap}) {
+      {VoidCallback? onTap}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Body2_b.style),
+        Text(tr(context, label), style: Body2_b.style),
         const SizedBox(height: 16),
         GestureDetector(
           onTap: onTap,
@@ -184,17 +171,18 @@ class _PreferencePageState extends State<PreferencePage> {
               children: [
                 Expanded(
                   child: Text(
-                    value,
+                    tr(context, value),
                     style: Body1.style,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                if (onTap != null)
+                  Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
               ],
             ),
           ),

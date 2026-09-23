@@ -7,6 +7,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/player_detail.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class CareerTab extends StatefulWidget {
   const CareerTab({super.key, this.player, this.playerId});
@@ -45,7 +46,7 @@ class _CareerTabState extends State<CareerTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PlayerSection(
-                title: 'TROPHIES',
+                title: tr(context, 'TROPHIES'),
                 child: _trophies(detail.honours),
               ),
               // TODO: Restore the TEAM / PERSONAL trophy filter when personal
@@ -68,7 +69,8 @@ class _CareerTabState extends State<CareerTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (teams.isEmpty) const Text('Team trophy records unavailable'),
+          if (teams.isEmpty)
+            Text(tr(context, 'Team trophy records unavailable')),
           for (var teamIndex = 0;
               teamIndex < teams.entries.length;
               teamIndex++) ...[
@@ -99,7 +101,8 @@ class _CareerTabState extends State<CareerTab> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                (first.teamName ?? 'Team unavailable').toUpperCase(),
+                (first.teamName ?? tr(context, 'Team unavailable'))
+                    .toUpperCase(),
                 style: Body2_b.style,
               ),
             ),
@@ -165,14 +168,14 @@ class _CareerTabState extends State<CareerTab> {
                 .any((competition) => competition.id == _competition))
         .toList();
     final label = _competition == null
-        ? 'ALL LEAGUES'
+        ? tr(context, 'ALL LEAGUES')
         : competitions[_competition] ?? 'COMPETITION';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text('HISTORY', style: Body2_b.style),
+            Text(tr(context, 'HISTORY'), style: Body2_b.style),
             const SizedBox(width: 12),
             Expanded(
               child: Align(
@@ -193,7 +196,7 @@ class _CareerTabState extends State<CareerTab> {
             children: [
               _header(),
               const SizedBox(height: 8),
-              if (visible.isEmpty) const Text('No history available'),
+              if (visible.isEmpty) Text(tr(context, 'No history available')),
               for (var index = 0; index < visible.length; index++)
                 _season(visible[index], index == 0),
             ],
@@ -209,17 +212,19 @@ class _CareerTabState extends State<CareerTab> {
     );
     return Row(
       children: [
-        Expanded(flex: 2, child: Text('Season', style: style)),
-        Expanded(flex: 3, child: Text('Team', style: style)),
+        Expanded(flex: 2, child: Text(tr(context, 'Season'), style: style)),
+        Expanded(flex: 3, child: Text(tr(context, 'Team'), style: style)),
         Expanded(
             flex: 2,
-            child: Text('MP', textAlign: TextAlign.center, style: style)),
+            child: Text(tr(context, 'MP'),
+                textAlign: TextAlign.center, style: style)),
         Expanded(
             flex: 2,
             child: Text('WR', textAlign: TextAlign.center, style: style)),
         Expanded(
             flex: 2,
-            child: Text('Rating', textAlign: TextAlign.center, style: style)),
+            child: Text(tr(context, 'Rating'),
+                textAlign: TextAlign.center, style: style)),
         const SizedBox(width: 22),
       ],
     );
@@ -356,7 +361,7 @@ class _CareerTabState extends State<CareerTab> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           children: [
             ListTile(
-              title: const Text('ALL LEAGUES'),
+              title: Text(tr(context, 'ALL LEAGUES')),
               trailing: _competition == null ? const Icon(Icons.check) : null,
               onTap: () => Navigator.pop(context, 0),
             ),
@@ -399,7 +404,7 @@ class _FilterButton extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  label.toUpperCase(),
+                  tr(context, label).toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Body2_b.style,

@@ -1,24 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/standings/api/api_xg_standing_mapper.dart';
 import 'package:onetouch/data/standings/api/api_xg_standing_response.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/models/standing.dart';
 
 class ApiXgStandingRepository implements XgStandingRepository {
-  ApiXgStandingRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiXgStandingRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<Map<XgStandingQuery, List<XgStanding>>> _cachedTables =
       ValueNotifier(const {});
   final ValueNotifier<List<XgStanding>> _xgStandings = ValueNotifier(const []);
@@ -73,30 +63,15 @@ class ApiXgStandingRepository implements XgStandingRepository {
     final seasonId = query.seasonId;
 
     final baseUri =
-        _apiBaseUri.resolve('competitions/$competitionId/xg-standings');
+        _api.baseUri.resolve('competitions/$competitionId/xg-standings');
     final uri = seasonId == null
         ? baseUri
         : baseUri.replace(queryParameters: {'season_id': '$seasonId'});
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'xG standings request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the xG standings response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     final apiResponse = ApiCompetitionXgStandingsResponse.fromJson(decoded);
     if (apiResponse.competitionId != competitionId) {
       throw FormatException(
@@ -166,9 +141,4 @@ class ApiXgStandingRepository implements XgStandingRepository {
 
   @override
   Future<void> initialize() async {}
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
-  }
 }

@@ -43,7 +43,7 @@ class MomentumChart extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("MOMENTUM", style: Body2_b.style),
+        Text(tr(context, "MOMENTUM"), style: Body2_b.style),
         const SizedBox(height: 12),
         Container(
           key: const ValueKey('match-momentum-card'),

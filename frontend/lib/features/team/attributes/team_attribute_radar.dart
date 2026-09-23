@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:onetouch/core/style.dart';
@@ -48,7 +49,7 @@ class TeamAttributeRadar extends StatelessWidget {
             final label = teamAttributeLabels[index];
             final moveOutward = label == 'Progression' || label == 'Possession';
             return RadarChartTitle(
-              text: label,
+              text: tr(context, label),
               angle: 0,
               positionPercentageOffset: moveOutward ? 0.3 : null,
             );

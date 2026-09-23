@@ -69,7 +69,7 @@ class XgTable extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    _buildHeaderCell(context, 'MP'),
+                    _buildHeaderCell(context, tr(context, 'MP')),
                     _buildHeaderCell(context, 'xG'),
                     _buildHeaderCell(context, 'xGA'),
                     _buildHeaderCell(context, 'xPts'),

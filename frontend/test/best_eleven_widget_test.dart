@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart
 import 'package:onetouch/models/team_best_eleven.dart';
 
 void main() {
+  setUpAppCatalog();
   void useScreen(WidgetTester tester, Size size) {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;

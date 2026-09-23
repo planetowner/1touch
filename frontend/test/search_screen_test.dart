@@ -1,367 +1,142 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Search.dart';
 import 'package:onetouch/core/style.dart' as app_style;
-import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
-import 'package:onetouch/data/players/mock_player_repository.dart';
+import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/data/search/search_repository.dart';
 import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
-import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
 
-class _TestCompetitionContextResolver
-    implements TeamCompetitionContextResolver {
-  const _TestCompetitionContextResolver(this.contexts);
-
-  final Map<int, TeamCompetitionContext> contexts;
-
+class _Context implements TeamCompetitionContextResolver {
   @override
-  TeamCompetitionContext? resolve(int teamId) => contexts[teamId];
+  TeamCompetitionContext? resolve(int id) => TeamCompetitionContext(
+      teamId: id,
+      seasonId: 28083,
+      competitionId: 8,
+      competitionName: 'Premier League');
 }
 
-class _FailingTeamRepository extends MockTeamRepository {
-  _FailingTeamRepository() : super(teams: const []);
-
+class _Preferences implements UserPreferencesRepository {
   @override
-  Future<void> initialize() async {
-    throw StateError('Team catalogue unavailable');
+  Future<UserTeamPreferences?> load() async => null;
+  @override
+  Future<void> save(UserTeamPreferences value) async {}
+}
+
+class _Search implements SearchRepository {
+  final calls = <String>[];
+  final pending = <Completer<SearchResults>>[];
+  @override
+  Future<SearchResults> search(String query) {
+    calls.add(query);
+    final request = Completer<SearchResults>();
+    pending.add(request);
+    return request.future;
   }
 }
 
-class _ImmediatePlayerRepository extends MockPlayerRepository {
-  _ImmediatePlayerRepository() : super(players: const []);
+const _team = Team(teamId: 8, name: 'Example United');
+const _results = SearchResults(
+    players: [(id: 123, name: '선수 Example', image: null)], teams: [_team]);
 
-  @override
-  Future<void> initializeFollowing() async {}
+Future<void> _pump(WidgetTester tester, _Search repository,
+    {bool dark = false, GoRouter? router}) async {
+  final preferences = CurrentUserPreferences(
+      repository: _Preferences(),
+      teamRepository: MockTeamRepository(teams: [_team]),
+      fallback:
+          const UserTeamPreferences(favoriteTeamId: 8, followedTeamIds: [8]));
+  final screen = Search(
+      repository: repository,
+      competitionContextResolver: _Context(),
+      preferences: preferences);
+  final routing = router ??
+      GoRouter(routes: [
+        GoRoute(path: '/', builder: (_, __) => screen),
+        GoRoute(
+            path: '/players/:id',
+            builder: (_, state) =>
+                Text('Player ID ${state.pathParameters['id']}')),
+      ]);
+  addTearDown(routing.dispose);
+  await tester.pumpWidget(MaterialApp.router(
+      theme: dark ? app_style.darktheme : app_style.whitetheme,
+      routerConfig: routing));
+  await tester.pump();
 }
 
-Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
-  final element = tester.element(finder);
-  final text = tester.widget<Text>(finder);
-  return DefaultTextStyle.of(element).style.merge(text.style).color;
-}
-
-void _useCompactPhone(WidgetTester tester) {
-  tester.view.physicalSize = const Size(320, 568);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.resetPhysicalSize);
-  addTearDown(tester.view.resetDevicePixelRatio);
+Future<void> _query(WidgetTester tester, String text) async {
+  await tester.enterText(
+      find.byKey(const ValueKey('global-search-field')), text);
+  await tester.pump(const Duration(milliseconds: 300));
 }
 
 void main() {
-  testWidgets('dark search uses the approved card palette', (tester) async {
-    _useCompactPhone(tester);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.darktheme,
-        home: const Search(),
-      ),
-    );
-    await tester.pump();
-
-    final scaffold = tester.widget<Scaffold>(
-      find.byKey(const ValueKey('search-scaffold')),
-    );
-    final playerCard = tester.widget<Container>(
-      find.byKey(const ValueKey('search-player-lee-kang-in')),
-    );
-
-    expect(scaffold.backgroundColor, app_style.AppPalette.black);
-    expect(
-      (playerCard.decoration as BoxDecoration).color,
-      app_style.AppPalette.darkGrey,
-    );
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('empty search shows mixed recents with black light-mode text',
-      (tester) async {
-    _useCompactPhone(tester);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: const Search(),
-      ),
-    );
-    await tester.pump();
-
-    expect(
-      tester
-          .widget<Scaffold>(
-            find.byKey(const ValueKey('search-scaffold')),
-          )
-          .backgroundColor,
-      app_style.AppPalette.lightModeDarkGrey,
-    );
-    expect(find.byKey(const ValueKey('search-recents')), findsOneWidget);
-    expect(find.text('RECENTS'), findsOneWidget);
-    expect(find.byKey(const ValueKey('search-player-lee-kang-in')),
-        findsOneWidget);
-    expect(find.byKey(const ValueKey('search-team-83')), findsOneWidget);
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget.key is ValueKey<String> &&
-            (widget.key! as ValueKey<String>).value.startsWith('search-event-'),
-      ),
-      findsOneWidget,
-    );
-    expect(find.byKey(const ValueKey('search-category-tabs')), findsNothing);
-    expect(
-      _effectiveTextColor(tester, find.text('RECENTS')),
-      app_style.AppPalette.black,
-    );
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Container &&
-            widget.decoration is BoxDecoration &&
-            (widget.decoration! as BoxDecoration).gradient != null,
-      ),
-      findsNothing,
-    );
-    expect(tester.takeException(), isNull);
-  });
-
   testWidgets(
-      'typing reveals working category filters and clear restores recents',
+      'empty input shows a prompt without fabricated recents or a request',
       (tester) async {
-    _useCompactPhone(tester);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: const Search(),
-      ),
-    );
-    await tester.pump();
-
-    await tester.enterText(
-      find.byKey(const ValueKey('global-search-field')),
-      'bar',
-    );
-    await tester.pump();
-
-    expect(find.byKey(const ValueKey('search-results')), findsOneWidget);
-    expect(find.byKey(const ValueKey('search-category-tabs')), findsOneWidget);
-    expect(find.byKey(const ValueKey('search-recents')), findsNothing);
-    expect(
-      _effectiveTextColor(tester, find.text('ALL')),
-      app_style.AppPalette.black,
-    );
-
-    await tester.drag(
-      find.byKey(const ValueKey('search-category-tabs')),
-      const Offset(-120, 0),
-    );
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('search-tab-teams')));
-    await tester.pump();
-    expect(find.byKey(const ValueKey('search-team-83')), findsOneWidget);
-
+    final repo = _Search();
+    await _pump(tester, repo);
+    expect(find.byKey(const ValueKey('search-prompt')), findsOneWidget);
+    expect(find.text('RECENTS'), findsNothing);
+    expect(repo.calls, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+      'API results retain card styling, category tabs and numeric player navigation',
+      (tester) async {
+    final repo = _Search();
+    await _pump(tester, repo, dark: true);
+    await _query(tester, 'Example');
+    repo.pending.single.complete(_results);
+    await tester.pumpAndSettle();
+    final card = tester
+        .widget<Container>(find.byKey(const ValueKey('search-player-123')));
+    expect((card.decoration as BoxDecoration).color,
+        app_style.AppPalette.darkGrey);
+    expect(find.byKey(const ValueKey('search-team-8')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('search-tab-players')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('search-team-8')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('search-player-123')));
+    await tester.pumpAndSettle();
+    expect(find.text('Player ID 123'), findsOneWidget);
+  });
+  testWidgets(
+      'older responses cannot replace a newer query or restore cleared results',
+      (tester) async {
+    final repo = _Search();
+    await _pump(tester, repo);
+    await _query(tester, 'old');
+    await _query(tester, 'new');
+    repo.pending[1].complete(const SearchResults());
+    await tester.pumpAndSettle();
+    repo.pending[0].complete(_results);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('search-empty-results')), findsOneWidget);
+    await _query(tester, 'pending');
     await tester.tap(find.byTooltip('Clear search'));
-    await tester.pump();
-    expect(find.byKey(const ValueKey('search-recents')), findsOneWidget);
-    expect(find.byKey(const ValueKey('search-category-tabs')), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('events filter matches either team name', (tester) async {
-    _useCompactPhone(tester);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: const Search(),
-      ),
-    );
-    await tester.pump();
-
-    await tester.enterText(
-      find.byKey(const ValueKey('global-search-field')),
-      'girona',
-    );
-    await tester.pump();
-    await tester.drag(
-      find.byKey(const ValueKey('search-category-tabs')),
-      const Offset(-240, 0),
-    );
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('search-tab-events')));
-    await tester.pump();
-
-    expect(find.byKey(const ValueKey('search-event-19300014')), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('team results come from the injected repository and context',
-      (tester) async {
-    _useCompactPhone(tester);
-    final repository = MockTeamRepository(
-      teams: const [
-        Team(teamId: 900, name: 'Codex Athletic', shortCode: 'CDX'),
-      ],
-    );
-    const contextResolver = _TestCompetitionContextResolver({
-      900: TeamCompetitionContext(
-        teamId: 900,
-        seasonId: 25646,
-        competitionId: 8,
-        competitionName: 'Test League',
-        currentPosition: 1,
-      ),
-    });
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: Search(
-          teamRepository: repository,
-          competitionContextResolver: contextResolver,
-        ),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.byKey(const ValueKey('search-team-83')), findsNothing);
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget.key is ValueKey<String> &&
-            (widget.key! as ValueKey<String>).value.startsWith('search-event-'),
-      ),
-      findsNothing,
-    );
-
-    await tester.enterText(
-      find.byKey(const ValueKey('global-search-field')),
-      'test league',
-    );
-    await tester.pump();
-
-    expect(find.byKey(const ValueKey('search-team-900')), findsOneWidget);
-    expect(find.text('Test League 1st'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('event results show fixture scores and open Match Details',
-      (tester) async {
-    _useCompactPhone(tester);
-    final teamRepository = MockTeamRepository(
-      teams: const [
-        Team(teamId: 900, name: 'Codex Athletic', shortCode: 'CDX'),
-        Team(teamId: 901, name: 'Router United', shortCode: 'RTR'),
-      ],
-    );
-    final fixtureRepository = MockFixtureRepository(
-      fixtures: const [
-        Fixture(
-          fixtureId: 777,
-          seasonId: 100,
-          competitionId: 8,
-          homeTeamId: 900,
-          awayTeamId: 901,
-          competitionType: CompetitionType.league,
-          roundName: 'Round 1',
-          status: FixtureStatus.past,
-          startingAt: '2026-09-12T18:00:00Z',
-          homeScore: 2,
-          awayScore: 1,
-        ),
-      ],
-    );
-    const contextResolver = _TestCompetitionContextResolver({});
-    final router = GoRouter(
-      initialLocation: '/search',
-      routes: [
-        GoRoute(
-          path: '/search',
-          builder: (_, __) => Search(
-            teamRepository: teamRepository,
-            competitionContextResolver: contextResolver,
-            fixtureRepository: fixtureRepository,
-          ),
-        ),
-        GoRoute(
-          path: '/match/:id',
-          builder: (_, state) => Text(
-            'Opened match ${state.pathParameters['id']}',
-          ),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(
-      MaterialApp.router(
-        theme: app_style.whitetheme,
-        routerConfig: router,
-      ),
-    );
-    await tester.pump();
-    await tester.enterText(
-      find.byKey(const ValueKey('global-search-field')),
-      'router',
-    );
-    await tester.pump();
-
-    expect(find.byKey(const ValueKey('search-event-777')), findsOneWidget);
-    expect(find.text('2'), findsOneWidget);
-    expect(find.text('1'), findsOneWidget);
-
-    await tester.tap(find.byKey(const ValueKey('search-event-777')));
+    repo.pending[2].complete(_results);
     await tester.pumpAndSettle();
-
-    expect(find.text('Opened match 777'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('search-prompt')), findsOneWidget);
+    expect(find.byKey(const ValueKey('search-player-123')), findsNothing);
   });
-
-  testWidgets('empty repositories render recents without throwing',
+  testWidgets('a failed search offers a retry for the same query',
       (tester) async {
-    _useCompactPhone(tester);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: Search(
-          teamRepository: MockTeamRepository(teams: const []),
-          competitionContextResolver: const _TestCompetitionContextResolver({}),
-          fixtureRepository: MockFixtureRepository(fixtures: const []),
-          playerRepository: _ImmediatePlayerRepository(),
-        ),
-      ),
-    );
+    final repo = _Search();
+    await _pump(tester, repo);
+    await _query(tester, 'retry');
+    repo.pending.single.completeError(StateError('Unavailable'));
     await tester.pumpAndSettle();
-
-    expect(find.byKey(const ValueKey('search-recents')), findsOneWidget);
-    expect(find.text('RECENTS'), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('empty failed initialization shows a retry state',
-      (tester) async {
-    _useCompactPhone(tester);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: Search(
-          teamRepository: _FailingTeamRepository(),
-          competitionContextResolver: const _TestCompetitionContextResolver({}),
-          fixtureRepository: MockFixtureRepository(fixtures: const []),
-          playerRepository: _ImmediatePlayerRepository(),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
     expect(find.byKey(const ValueKey('search-load-error')), findsOneWidget);
-    expect(find.text('SEARCH UNAVAILABLE'), findsOneWidget);
-    expect(find.text('Retry'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Retry'));
+    await tester.pump();
+    repo.pending.last.complete(_results);
+    await tester.pumpAndSettle();
+    expect(repo.calls, ['retry', 'retry']);
+    expect(find.byKey(const ValueKey('search-player-123')), findsOneWidget);
   });
 }

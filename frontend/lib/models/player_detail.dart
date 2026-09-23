@@ -144,3 +144,9 @@ class PlayerDetail {
   final List<PlayerClubHistoryEntry> clubs;
   final List<PlayerHonour> honours;
 }
+
+PlayerCandidate playerCandidateFromJson(Map<String, dynamic> json) => (
+      id: json['player_id'] as int,
+      name: json['name'] as String,
+      image: json['image'] as String?,
+    );

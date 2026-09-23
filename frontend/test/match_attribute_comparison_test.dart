@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:fl_chart/fl_chart.dart';
@@ -10,6 +11,7 @@ import 'package:onetouch/models/team_attribute_season_option.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('preview and team page render the same current attribute values',
       (tester) async {
     final repository = _Repository();
@@ -47,7 +49,7 @@ void main() {
     await tester.pumpWidget(_app(_comparison(repository)));
     await tester.pumpAndSettle();
     expect(find.text('ATTRIBUTES'), findsOneWidget);
-    expect(find.text('아직 준비중이에요ㅠㅠ'), findsOneWidget);
+    expect(find.text('Coming soon'), findsOneWidget);
     expect(find.byType(RadarChart), findsNothing);
   });
 
@@ -58,7 +60,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(RadarChart), findsNothing);
     repository.fail = false;
-    await tester.tap(find.text('능력치를 불러오지 못했어요. 다시 시도'));
+    await tester.tap(find.text('Unable to load attributes. Retry'));
     await tester.pumpAndSettle();
     expect(find.byType(RadarChart), findsOneWidget);
   });

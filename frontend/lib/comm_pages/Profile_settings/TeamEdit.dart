@@ -9,6 +9,7 @@ import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class FollowingTeamsEditResult {
   const FollowingTeamsEditResult({
@@ -143,7 +144,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
   void _removeTeam(int index) {
     if (_followedTeams.length == 1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('At least one team must stay followed.')),
+        SnackBar(
+            content:
+                Text(tr(context, 'At least one team must stay followed.'))),
       );
       return;
     }
@@ -170,7 +173,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
 
     if (candidateTeams.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('At least one team must stay followed.')),
+        SnackBar(
+            content:
+                Text(tr(context, 'At least one team must stay followed.'))),
       );
       return;
     }
@@ -187,16 +192,10 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
         favoriteTeamId: favoriteTeamId,
       );
 
-      // Home and navigation still read the temporary local preference store.
-      // Keep it synchronized only after the backend has accepted the update.
-      unawaited(
-        currentUserPreferences.updateTeamSelection([
-          favoriteTeamId,
-          ...savedTeams
-              .map((team) => team.teamId)
-              .where((teamId) => teamId != favoriteTeamId),
-        ]),
-      );
+      currentUserPreferences.applyServerSelection(UserTeamPreferences(
+        favoriteTeamId: favoriteTeamId,
+        followedTeamIds: savedTeams.map((team) => team.teamId).toList(),
+      ));
       if (!mounted) return;
       Navigator.of(context).pop(
         FollowingTeamsEditResult(
@@ -214,8 +213,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to update followed teams. Please try again.'),
+        SnackBar(
+          content: Text(tr(
+              context, 'Unable to update followed teams. Please try again.')),
         ),
       );
     }
@@ -246,9 +246,9 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const SizedBox(width: 48),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      "Following Teams",
+                      tr(context, "Following Teams"),
                       style: Heading5.style,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -279,7 +279,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   decoration: InputDecoration(
                     contentPadding:
                         const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                    hintText: "Search teams to add!",
+                    hintText: tr(context, "Search teams to add!"),
                     hintStyle:
                         Body1.style.copyWith(color: appColors.mutedForeground),
                     border: InputBorder.none,
@@ -329,20 +329,10 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                           text: TextSpan(
                             style: Body2.style
                                 .copyWith(color: appColors.mutedForeground),
-                            children: [
-                              const TextSpan(
-                                text:
-                                    "You may select only one team from each league. "
-                                    "This means you'd have to let go of ",
-                              ),
-                              TextSpan(
-                                text: _conflictTeam!.name,
-                                style: Body2_b.style
-                                    .copyWith(color: colors.onSurface),
-                              ),
-                              const TextSpan(
-                                  text: ". Are you sure you want to proceed?"),
-                            ],
+                            text: tr(
+                                context,
+                                'You can follow one team per league. Following this team will replace {team}. Continue?',
+                                {'team': _conflictTeam!.name}),
                           ),
                         ),
                       ),
@@ -386,7 +376,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                           ),
                         )
                       : Text(
-                          "UPDATE",
+                          tr(context, "UPDATE"),
                           style:
                               Body2_b.style.copyWith(color: colors.onPrimary),
                         ),
@@ -502,7 +492,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     if (_filteredTeams.isEmpty) {
       return Center(
         child: Text(
-          "No teams found",
+          tr(context, "No teams found"),
           style: Body1.style.copyWith(
             color: AppColors.of(context).mutedForeground,
           ),

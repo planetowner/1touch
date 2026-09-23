@@ -1,7 +1,12 @@
-import 'package:onetouch/data/auth/auth_account_status.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
+import 'package:onetouch/data/auth/login_provider.dart';
 
 abstract interface class AuthRepository {
+  Future<String> signInWithSocial({
+    required LoginProvider provider,
+    required Map<String, String> credentials,
+  });
+
   Future<String> signInWithGoogle({required String idToken});
 
   Future<String> signInWithPassword({
@@ -9,7 +14,15 @@ abstract interface class AuthRepository {
     required String password,
   });
 
-  Future<EmailCodeChallenge> requestSignUpEmailCode({required String email});
+  Future<EmailCodeChallenge> requestEmailCode(
+      {required String email,
+      EmailCodePurpose purpose = EmailCodePurpose.signup});
+
+  Future<void> resetPassword({
+    required String challengeId,
+    required String code,
+    required String password,
+  });
 
   Future<String> registerWithEmail({
     required String challengeId,
@@ -19,15 +32,8 @@ abstract interface class AuthRepository {
     required String firstName,
     required String lastName,
   });
+}
 
-  Future<AuthAccountStatus> loadAccountStatus({required String accessToken});
-
-  Future<AuthAccountStatus> completeSocialProfile({
-    required String accessToken,
-    required String username,
-    required String firstName,
-    required String lastName,
-  });
-
-  Future<void> logout({required String accessToken});
+abstract interface class LogoutAuthRepository {
+  Future<void> logout();
 }

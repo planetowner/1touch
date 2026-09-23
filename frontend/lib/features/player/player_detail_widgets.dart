@@ -5,6 +5,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerRemoteImage extends StatelessWidget {
   const PlayerRemoteImage(this.url, {super.key, this.size = 28});
@@ -41,7 +42,8 @@ class PlayerSection extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  Flexible(child: Text(title, style: Body2_b.style)),
+                  Flexible(
+                      child: Text(tr(context, title), style: Body2_b.style)),
                   if (titleAccessory != null) ...[
                     const SizedBox(width: 4),
                     titleAccessory!,
@@ -90,13 +92,15 @@ class PlayerRecordRow extends StatelessWidget {
       child: Row(children: [
         Expanded(flex: 4, child: label),
         for (final text in [
-          header ? 'MP' : '${record!.appearances}',
+          header ? tr(context, 'MP') : '${record!.appearances}',
           header
               ? 'WR'
               : record!.winRate == null
                   ? '—'
                   : '${playerNumber(record!.winRate, decimals: 1)}%',
-          header ? 'Rating' : record!.rating?.toStringAsFixed(1) ?? '—'
+          header
+              ? tr(context, 'Rating')
+              : record!.rating?.toStringAsFixed(1) ?? '—'
         ])
           Expanded(
               flex: 2,
@@ -119,23 +123,25 @@ class PlayerCompetitionTable extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Column(children: [
         Row(children: [
-          Expanded(flex: 3, child: Text('League', style: muted)),
+          Expanded(flex: 3, child: Text(tr(context, 'League'), style: muted)),
           Expanded(
               flex: 2,
-              child: Text('MP', textAlign: TextAlign.center, style: muted)),
+              child: Text(tr(context, 'MP'),
+                  textAlign: TextAlign.center, style: muted)),
           Expanded(
               flex: 2,
               child: Text('WR', textAlign: TextAlign.center, style: muted)),
           Expanded(
               flex: 2,
-              child: Text('Rating', textAlign: TextAlign.right, style: muted)),
+              child: Text(tr(context, 'Rating'),
+                  textAlign: TextAlign.right, style: muted)),
         ]),
         const SizedBox(height: 12),
         Divider(color: appColors.divider, height: 1),
         if (competitions.isEmpty)
-          const Padding(
+          Padding(
               padding: EdgeInsets.all(16),
-              child: Text('No competitions this season')),
+              child: Text(tr(context, 'No competitions this season'))),
         for (var index = 0; index < competitions.length; index++) ...[
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -195,7 +201,7 @@ class PlayerDetailMatchCard extends StatelessWidget {
           onTap: () => context.push(
               '/match/${match.id}?status=${match.live ? 'live' : 'past'}'),
           child: PlayerMatchCard(
-              result: match.live ? 'LIVE' : match.result ?? '—',
+              result: match.live ? tr(context, 'LIVE') : match.result ?? '—',
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
               competition:
                   '${match.competition}${match.round == null ? '' : ' / ${match.round}'}',
@@ -220,7 +226,8 @@ class PlayerStatCategories extends StatelessWidget {
           Padding(
               padding: const EdgeInsets.only(bottom: 32),
               child: PlayerSection(
-                  title: category.label.toUpperCase(),
+                  title: playerCategoryLabel(context, category.label)
+                      .toUpperCase(),
                   child: PlayerSurface(
                       key: ValueKey('player-category-${category.code}'),
                       child: Column(children: [
@@ -238,7 +245,9 @@ class PlayerStatCategories extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Expanded(child: Text(stat.metric.label, style: Body2_b.style)),
+            Expanded(
+                child:
+                    Text(tr(context, stat.metric.label), style: Body2_b.style)),
             if (comparison == null)
               Text(playerMetricValue(stat.metric), style: Body2_b.style)
           ]),
@@ -253,11 +262,14 @@ class PlayerStatCategories extends StatelessWidget {
             _comparisonBar(stat, other),
           if (comparison == null && stat.rank != null)
             Text(
-                '#${stat.rank} / ${stat.referenceCount} · ${stat.metric.kind == 'percentage' ? 'success rate' : 'per 90'}',
+                '#${stat.rank} / ${stat.referenceCount} · ${stat.metric.kind == 'percentage' ? tr(context, 'success rate') : tr(context, 'per 90')}',
                 style: Eyebrow.style),
           if (stat.observedMatches < stat.totalMatches)
             Text(
-                'Available in ${stat.observedMatches}/${stat.totalMatches} matches',
+                tr(context, 'Available in {observed}/{total} matches', {
+                  'observed': stat.observedMatches,
+                  'total': stat.totalMatches
+                }),
                 style: Eyebrow.style),
         ]));
   }

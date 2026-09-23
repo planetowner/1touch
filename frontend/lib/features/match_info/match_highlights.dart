@@ -79,7 +79,7 @@ class _MatchHighlightsState extends State<MatchHighlights> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("HIGHLIGHTS", style: Body2_b.style),
+        Text(tr(context, "HIGHLIGHTS"), style: Body2_b.style),
         const SizedBox(height: 16),
         GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -120,7 +120,7 @@ class _MatchHighlightsState extends State<MatchHighlights> {
       child: _highlight != null
           ? const Icon(Icons.play_circle_outline, size: 48)
           : Text(
-              'HIGHLIGHTS UNAVAILABLE',
+              tr(context, 'HIGHLIGHTS UNAVAILABLE'),
               style: Body2_b.style.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),

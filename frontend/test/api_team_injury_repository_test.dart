@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/injuries/api/api_team_injury_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 
@@ -10,17 +11,19 @@ void main() {
   test('requests, maps, and caches the current team injury report', () async {
     var requestCount = 0;
     final repository = ApiTeamInjuryRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/teams/83/injuries');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_reportJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/teams/83/injuries');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_reportJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final first = await repository.loadForTeam(83);
@@ -40,15 +43,16 @@ void main() {
 
   test('supports a trailing base-URI slash and an empty player list', () async {
     final repository = ApiTeamInjuryRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/teams/83/injuries');
-        return http.Response(
-          jsonEncode(_reportJson(players: const [])),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/teams/83/injuries');
+            return http.Response(
+              jsonEncode(_reportJson(players: const [])),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     final report = await repository.loadForTeam(83);
@@ -59,12 +63,13 @@ void main() {
 
   test('keeps different teams in separate cache entries', () async {
     final repository = ApiTeamInjuryRepository(
-      client: MockClient((request) async {
-        final teamId = int.parse(request.url.pathSegments[2]);
-        return http.Response(jsonEncode(_reportJson(teamId: teamId)), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            final teamId = int.parse(request.url.pathSegments[2]);
+            return http.Response(jsonEncode(_reportJson(teamId: teamId)), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final first = await repository.loadForTeam(83);
@@ -77,9 +82,10 @@ void main() {
 
   test('maps not found to an unavailable team feature', () async {
     final repository = ApiTeamInjuryRepository(
-      client: MockClient((_) async => http.Response('Not found', 404)),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => http.Response('Not found', 404)),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -96,9 +102,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiTeamInjuryRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     for (var i = 0; i < responses.length; i++) {
@@ -121,9 +128,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiTeamInjuryRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     for (var i = 0; i < responses.length; i++) {

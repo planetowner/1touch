@@ -1,21 +1,10 @@
-import 'package:onetouch/core/api_config.dart';
+import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/profile/api/api_current_user_repository.dart';
-import 'package:onetouch/data/profile/current_user_repository.dart';
 
-final ApiConfig _apiConfig = ApiConfig.unauthenticatedFromEnvironment();
-
-/// Headers for private profile media served by the same authenticated API.
-/// Uses the restored/login session, with the development token only in the
-/// explicit skip-onboarding launch mode.
+/// API에서 제공하는 비공개 이미지도 현재 로그인 세션으로 요청해요.
 Map<String, String> get currentUserMediaRequestHeaders =>
-    ApiConfig.currentAccessToken == null
-        ? const {}
-        : Map.unmodifiable({
-            'Authorization': 'Bearer ${ApiConfig.currentAccessToken}',
-          });
+    authSession.requestHeaders;
 
-final CurrentUserRepository currentUserRepository = ApiCurrentUserRepository(
-  client: ApiConfig.sessionAwareClient(),
-  apiBaseUri: _apiConfig.baseUri,
-  requestHeaders: _apiConfig.requestHeaders,
+final ApiCurrentUserRepository currentUserRepository = ApiCurrentUserRepository(
+  api: apiClient,
 );

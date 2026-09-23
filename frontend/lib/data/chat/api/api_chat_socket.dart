@@ -23,31 +23,16 @@ abstract interface class ChatSocketConnection {
 class ApiChatSocket implements ChatSocket {
   ApiChatSocket({
     required Uri apiBaseUri,
-    String? sessionToken,
-    String Function()? sessionTokenProvider,
+    required String? Function() sessionToken,
     ChatSocketConnector? connector,
     Duration handshakeTimeout = const Duration(seconds: 10),
   })  : _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _sessionTokenProvider = sessionTokenProvider ?? (() => sessionToken!),
+        _sessionToken = sessionToken,
         _connector = connector ?? _WebSocketChannelConnection.connect,
-        _handshakeTimeout = handshakeTimeout {
-    if ((sessionToken == null) == (sessionTokenProvider == null)) {
-      throw ArgumentError(
-        'Provide exactly one of sessionToken or sessionTokenProvider.',
-      );
-    }
-    if (sessionToken != null &&
-        (sessionToken.trim().length < 40 || sessionToken.trim().length > 100)) {
-      throw ArgumentError.value(
-        sessionToken,
-        'sessionToken',
-        'Must contain between 40 and 100 characters',
-      );
-    }
-  }
+        _handshakeTimeout = handshakeTimeout;
 
   final Uri _apiBaseUri;
-  final String Function() _sessionTokenProvider;
+  final String? Function() _sessionToken;
   final ChatSocketConnector _connector;
   final Duration _handshakeTimeout;
 
@@ -56,9 +41,16 @@ class ApiChatSocket implements ChatSocket {
     if (fixtureId < 1) {
       throw RangeError.value(fixtureId, 'fixtureId', 'Must be positive');
     }
-    final sessionToken = _sessionTokenProvider().trim();
+    // 재연결할 때도 이전 토큰을 재사용하지 않아요.
+    final sessionToken = _sessionToken()?.trim();
+    if (sessionToken == null || sessionToken.isEmpty) {
+      throw const ChatSocketException(
+        message: 'Please sign in to use fixture chat.',
+        closeCode: 4401,
+      );
+    }
     if (sessionToken.length < 40 || sessionToken.length > 100) {
-      throw StateError('A valid authenticated session is required for chat.');
+      throw ArgumentError('Session token must contain 40 to 100 characters.');
     }
     final httpUri = _apiBaseUri.resolve('fixtures/$fixtureId/chat');
     final socketUri = httpUri.replace(

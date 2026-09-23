@@ -11,8 +11,11 @@ class MyHighlights extends StatelessWidget {
   final List<HomeContentItem> fallbacks;
 
   @override
-  Widget build(BuildContext context) =>
-      _HomeContentList(items: highlights, fallbacks: fallbacks);
+  Widget build(BuildContext context) => highlights.isEmpty
+      ? Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(tr(context, 'No highlights available yet.')))
+      : _HomeContentList(items: highlights, fallbacks: fallbacks);
 }
 
 class MyNews extends StatelessWidget {
@@ -21,14 +24,12 @@ class MyNews extends StatelessWidget {
     required this.news,
     this.isLoading = false,
     this.hasError = false,
-    this.isKorean = false,
     this.onRetry,
   });
 
   final List<HomeContentItem> news;
   final bool isLoading;
   final bool hasError;
-  final bool isKorean;
   final VoidCallback? onRetry;
 
   @override
@@ -45,13 +46,12 @@ class MyNews extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(
             hasError
-                ? (isKorean ? '뉴스를 불러오지 못했어요' : 'Unable to load news.')
-                : (isKorean ? '아직 등록된 팀 뉴스가 없어요' : 'No team news yet.'),
+                ? tr(context, 'Unable to load news.')
+                : tr(context, 'No team news yet.'),
             style: Body2.style,
           ),
           if (hasError && onRetry != null)
-            TextButton(
-                onPressed: onRetry, child: Text(isKorean ? '다시 시도' : 'Retry')),
+            TextButton(onPressed: onRetry, child: Text(tr(context, 'Retry'))),
         ]),
       );
     }

@@ -3,18 +3,17 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
 import 'package:onetouch/data/standings/api_standing_repository_provider.dart';
 import 'package:onetouch/data/standings/api_xg_standing_repository_provider.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
-import 'package:onetouch/data/standings/standing_repository_provider.dart'
-    as standing_options;
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
-import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
-import 'package:onetouch/features/knockout_bracket.dart';
+import 'package:onetouch/features/api_knockout_bracket.dart';
+import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class StandingTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -39,18 +38,6 @@ class StandingTab extends StatefulWidget {
 class _StandingTabState extends State<StandingTab> {
   // xG standings are only available for Big 5 leagues
   static const _big5LeagueIds = {8, 82, 301, 384, 564};
-
-  // TODO(standing-seasons): Replace these verified current-season options
-  // with the shared backend season-options response when that endpoint is
-  // available. Keeping them local prevents a Standing-only workaround from
-  // changing season selection in Squad, Analysis, or other features.
-  static const _currentBig5Seasons = <int, _StandingSeasonOption>{
-    8: _StandingSeasonOption(28083, '2026/2027'),
-    82: _StandingSeasonOption(28321, '2026/2027'),
-    301: _StandingSeasonOption(28082, '2026/2027'),
-    384: _StandingSeasonOption(27895, '2026/2027'),
-    564: _StandingSeasonOption(27965, '2026/2027'),
-  };
 
   int selectedLeagueId = 8;
   int selectedSeasonId = 23614;
@@ -82,22 +69,17 @@ class _StandingTabState extends State<StandingTab> {
   XgStandingRepository get _xgStandingRepository =>
       widget.xgStandingRepository ?? apiXgStandingRepository;
 
-  List<Fixture> get _selectedKnockoutFixtures => fixtureRepository
-      .forCompetition(
-        selectedLeagueId,
-        seasonId: selectedSeasonId,
-        competitionType: CompetitionType.europe,
-      )
-      .where(
-        (fixture) => knockoutRoundFromName(fixture.roundOrStageName) != null,
-      )
-      .toList();
-
   bool get _knockoutBracketAvailable =>
-      hasEuropeanKnockoutStage(_selectedKnockoutFixtures);
+      TournamentBracketRepository.supportedCompetitions
+          .contains(selectedLeagueId) &&
+      (seasonRepository
+                  .findById(selectedSeasonId)
+                  ?.name
+                  .compareTo('2024/2025') ??
+              -1) >=
+          0;
 
-  StandingView get _defaultView =>
-      _knockoutBracketAvailable ? StandingView.bracket : StandingView.standing;
+  StandingView get _defaultView => StandingView.standing;
 
   StandingView _viewAfterSelectionChange(StandingView currentView) {
     if (currentView == StandingView.xgTable && _xgAvailable) {
@@ -151,22 +133,15 @@ class _StandingTabState extends State<StandingTab> {
 
   void _setDefaultLeagueAndSeason() {
     currentTeamId = widget.team?['id'] as int?;
-    final fixtures = currentTeamId != null
-        ? fixtureRepository.forTeam(currentTeamId!)
-        : const <Fixture>[];
-
-    _validLeagueIds = fixtures
-        .map((f) => f.competitionId)
+    _validLeagueIds = footballCatalog.memberships
+        .where((m) => m.teamId == currentTeamId)
+        .map((m) => m.competitionId)
         .toSet()
-        .where(
-          (id) =>
-              standing_options.standingRepository.forCompetition(id).isNotEmpty,
-        )
-        .toList();
-
-    final leagueId = _validLeagueIds.isNotEmpty
-        ? _validLeagueIds.first
-        : competitionRepository.allCompetitions.first.competitionId;
+        .toList()
+      ..sort((a, b) => (_big5LeagueIds.contains(a) ? 0 : 1)
+          .compareTo(_big5LeagueIds.contains(b) ? 0 : 1));
+    if (_validLeagueIds.isEmpty) return;
+    final leagueId = _validLeagueIds.first;
 
     final seasonId = _defaultSeasonForCompetition(leagueId).seasonId;
 
@@ -423,9 +398,9 @@ class _StandingTabState extends State<StandingTab> {
   @override
   Widget build(BuildContext context) {
     if (!_hasStandingContext) {
-      return const Center(
+      return Center(
         child: Text(
-          'No standings available',
+          tr(context, 'No standings available'),
           key: ValueKey('standing-unavailable'),
         ),
       );
@@ -515,12 +490,12 @@ class _StandingTabState extends State<StandingTab> {
             child: Center(
               child: Column(
                 children: [
-                  const Text('Unable to load standings'),
+                  Text(tr(context, 'Unable to load standings')),
                   const SizedBox(height: 8),
                   TextButton(
                     key: const ValueKey('standing-retry'),
                     onPressed: _startStandingLoad,
-                    child: const Text('Retry'),
+                    child: Text(tr(context, 'Retry')),
                   ),
                 ],
               ),
@@ -528,10 +503,10 @@ class _StandingTabState extends State<StandingTab> {
           );
         }
         if (standings.isEmpty) {
-          return const Padding(
+          return Padding(
             key: ValueKey('standing-empty'),
             padding: EdgeInsets.symmetric(vertical: 48),
-            child: Center(child: Text('No standings available')),
+            child: Center(child: Text(tr(context, 'No standings available'))),
           );
         }
         return StandingTable(
@@ -556,12 +531,12 @@ class _StandingTabState extends State<StandingTab> {
             child: Center(
               child: Column(
                 children: [
-                  const Text('Unable to load xG standings'),
+                  Text(tr(context, 'Unable to load xG standings')),
                   const SizedBox(height: 8),
                   TextButton(
                     key: const ValueKey('xg-standing-retry'),
                     onPressed: _startXgLoad,
-                    child: const Text('Retry'),
+                    child: Text(tr(context, 'Retry')),
                   ),
                 ],
               ),
@@ -569,10 +544,11 @@ class _StandingTabState extends State<StandingTab> {
           );
         }
         if (xgStandings.isEmpty) {
-          return const Padding(
+          return Padding(
             key: ValueKey('xg-standing-empty'),
             padding: EdgeInsets.symmetric(vertical: 48),
-            child: Center(child: Text('No xG standings available')),
+            child:
+                Center(child: Text(tr(context, 'No xG standings available'))),
           );
         }
         return XgTable(
@@ -583,8 +559,9 @@ class _StandingTabState extends State<StandingTab> {
           isScrolledToEnd: isScrolledToEnd,
         );
       case StandingView.bracket:
-        return KnockoutBracket(
-          fixtures: _selectedKnockoutFixtures,
+        return ApiKnockoutBracket(
+          competitionId: selectedLeagueId,
+          seasonId: selectedSeasonId,
           currentTeamId: currentTeamId,
         );
     }
@@ -709,9 +686,6 @@ class _StandingTabState extends State<StandingTab> {
   }
 
   _StandingSeasonOption _defaultSeasonForCompetition(int competitionId) {
-    final current = _currentBig5Seasons[competitionId];
-    if (current != null) return current;
-
     final catalogCurrent =
         seasonRepository.currentForCompetition(competitionId);
     if (catalogCurrent != null) {
@@ -722,14 +696,11 @@ class _StandingTabState extends State<StandingTab> {
     final options = _seasonOptionsForCompetition(competitionId);
     if (options.isNotEmpty) return options.first;
 
-    final fallback = seasonRepository.allSeasons.first;
-    return _StandingSeasonOption(fallback.seasonId, fallback.name);
+    throw StateError('No seasons for competition $competitionId');
   }
 
   List<_StandingSeasonOption> _seasonOptionsForCompetition(int competitionId) {
-    final current = _currentBig5Seasons[competitionId];
     final options = <_StandingSeasonOption>[
-      if (current != null) current,
       ...seasonRepository.forCompetition(competitionId).map(
             (season) => _StandingSeasonOption(season.seasonId, season.name),
           ),

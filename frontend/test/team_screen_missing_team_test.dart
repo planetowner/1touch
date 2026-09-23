@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:onetouch/screens/TeamScreen.dart';
 import 'support/test_team_overview_repository.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('Team shows an explicit missing-team state', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

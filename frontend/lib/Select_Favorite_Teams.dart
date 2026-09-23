@@ -6,12 +6,12 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/standings/standing_repository_provider.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team.dart';
 import 'RankFavTeams.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class SelectFavoriteTeamsScreen extends StatefulWidget {
   const SelectFavoriteTeamsScreen({super.key});
@@ -44,20 +44,18 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
   void initState() {
     super.initState();
 
-    _leagues = competitionRepository.domesticCompetitions;
+    _leagues = competitionRepository.domesticCompetitions
+        .where((c) => footballCatalog.currentTeams(c.competitionId).isNotEmpty)
+        .toList();
 
     _leagueTeams = {};
     for (final league in _leagues) {
-      final standingsForLeague =
-          standingRepository.forCompetition(league.competitionId);
-      _leagueTeams[league.competitionId] = standingsForLeague
-          .map((standing) => teamRepository.findById(standing.teamId))
-          .whereType<Team>()
-          .toList();
+      _leagueTeams[league.competitionId] =
+          footballCatalog.currentTeams(league.competitionId);
     }
 
     selectedLeague = _leagues.first.name;
-    _focusedTeam = _leagueTeams[_selectedLeagueId]?.first;
+    _focusedTeam = _leagueTeams[_selectedLeagueId]?.firstOrNull;
 
     _pageController = PageController(viewportFraction: 0.6);
   }
@@ -400,12 +398,14 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                           const Spacer(flex: 2),
 
                           // Instruction text
-                          const Column(
+                          Column(
                             children: [
-                              Text("Select your favorite club(s)",
+                              Text(tr(context, "Select your favorite club(s)"),
                                   style: Heading5.style),
                               SizedBox(height: 6),
-                              Text("You may choose up to 1 team per league",
+                              Text(
+                                  tr(context,
+                                      "You may choose up to 1 team per league"),
                                   style: Body2.style),
                             ],
                           ),
@@ -503,7 +503,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                                 disabledBackgroundColor:
                                     appColors.subtleBackground,
                               ),
-                              child: Text("CONTINUE",
+                              child: Text(tr(context, "CONTINUE"),
                                   style: Body2_b.style
                                       .copyWith(color: colors.surface)),
                             ),

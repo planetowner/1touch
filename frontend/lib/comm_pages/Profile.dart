@@ -1,40 +1,39 @@
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
-import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
-import 'package:onetouch/data/community/mock/community_catalog.dart'
-    show mockUserProfileById;
-import 'package:onetouch/data/auth/auth_repository_provider.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/features/player/player_directory_widgets.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as profile_provider;
+import 'package:onetouch/data/auth/auth_repository_provider.dart'
+    as auth_provider;
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
     as following_teams_provider;
 import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
-import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
-import 'package:onetouch/models/user_profile.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
     super.key,
     this.repository,
+    this.followingController,
     this.followingTeamsRepository,
     this.avatarRequestHeaders,
   });
 
   final CurrentUserRepository? repository;
+  final PlayerFollowingController? followingController;
   final FollowingTeamsRepository? followingTeamsRepository;
   final Map<String, String>? avatarRequestHeaders;
 
@@ -43,15 +42,12 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  static const _placeholderUserId = 1001;
-
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
   CurrentUserProfile? _profile;
   List<Team> _followingTeams = const [];
   int? _favoriteTeamId;
   bool _isLoading = true;
-  late UserProfile _placeholderStats;
 
   CurrentUserRepository get _repository =>
       widget.repository ?? profile_provider.currentUserRepository;
@@ -76,16 +72,7 @@ class _ProfileState extends State<Profile> {
         });
       });
 
-    // TODO(api-community-profile): Replace these counts when the profile API
-    // exposes points, posts, and comments.
-    _placeholderStats = mockUserProfileById(_placeholderUserId);
-    playerRepository.followedPlayerIds.addListener(_onPreferencesChanged);
     _loadProfile();
-  }
-
-  void _onPreferencesChanged() {
-    if (!mounted) return;
-    setState(() {});
   }
 
   Future<void> _loadProfile() async {
@@ -144,7 +131,6 @@ class _ProfileState extends State<Profile> {
 
   @override
   void dispose() {
-    playerRepository.followedPlayerIds.removeListener(_onPreferencesChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -174,12 +160,12 @@ class _ProfileState extends State<Profile> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Unable to load Profile.'),
+              Text(tr(context, 'Unable to load Profile.')),
               const SizedBox(height: 12),
               TextButton(
                 key: const ValueKey('profile-retry-button'),
                 onPressed: _loadProfile,
-                child: const Text('Retry'),
+                child: Text(tr(context, 'Retry')),
               ),
             ],
           ),
@@ -275,7 +261,7 @@ class _ProfileState extends State<Profile> {
                       children: [
                         Expanded(
                           child: Text(
-                            "FOLLOWING TEAMS",
+                            tr(context, "FOLLOWING TEAMS"),
                             style: Body2_b.style,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -319,42 +305,18 @@ class _ProfileState extends State<Profile> {
                   _buildTeamList(),
                   const SizedBox(height: 48),
 
-                  // FOLLOWING PLAYERS
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "FOLLOWING PLAYERS",
-                            style: Body2_b.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.border_color,
-                              color: colors.onSurface, size: 20),
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) =>
-                                  const EditFollowingPlayersSheet(),
-                            );
-                          },
-                        ),
-                      ],
+                    child: PlayerFavorites(
+                      title: tr(context, 'FOLLOWING PLAYERS'),
+                      controller: widget.followingController ??
+                          playerFollowingController,
+                      searchRepository: null,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildPlayerList(),
                   const SizedBox(height: 48),
 
-                  _buildSectionLabel("SETTINGS"),
+                  _buildSectionLabel(tr(context, "SETTINGS")),
                   const SizedBox(height: 16),
                   SettingsList(
                     onPersonalInfo: () => _openProfileEditor(profile),
@@ -436,11 +398,11 @@ class _ProfileState extends State<Profile> {
         ),
         child: Row(
           children: [
-            _buildStat(_placeholderStats.pts.toString(), "PTS"),
+            _buildStat('—', tr(context, "PTS")),
             _verticalDivider(),
-            _buildStat(_placeholderStats.postCount.toString(), "POSTS"),
+            _buildStat('—', tr(context, "POSTS")),
             _verticalDivider(),
-            _buildStat(_placeholderStats.commentCount.toString(), "COMMENTS"),
+            _buildStat('—', tr(context, "COMMENTS")),
           ],
         ),
       ),
@@ -456,7 +418,7 @@ class _ProfileState extends State<Profile> {
           children: [
             Text(value, style: Heading4.style),
             const SizedBox(height: 4),
-            Text(label, style: Body2_b.style),
+            Text(tr(context, label), style: Body2_b.style),
           ],
         ),
       ),
@@ -474,7 +436,7 @@ class _ProfileState extends State<Profile> {
   Widget _buildSectionLabel(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Text(title, style: Body2_b.style),
+      child: Text(tr(context, title), style: Body2_b.style),
     );
   }
 
@@ -538,7 +500,7 @@ class _ProfileState extends State<Profile> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
-                            label,
+                            tr(context, label),
                             style: Eyebrow.style,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
@@ -554,77 +516,6 @@ class _ProfileState extends State<Profile> {
                       child:
                           Icon(Icons.star, color: colors.onSurface, size: 18),
                     ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildPlayerList() {
-    final appColors = AppColors.of(context);
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    final players = playerRepository.favorites;
-
-    return SizedBox(
-      key: const ValueKey('profile-following-player-list'),
-      height: 120,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        scrollDirection: Axis.horizontal,
-        itemCount: players.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final player = players[index];
-
-          return Semantics(
-            button: true,
-            label: 'Open ${player.fullName}',
-            child: InkWell(
-              key: ValueKey('profile-player-link-${player.id}'),
-              onTap: () => openPlayerPage(context, player.id),
-              borderRadius: BorderRadius.circular(12),
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      SizedBox(
-                        width: 74,
-                        height: 74,
-                        child: ClipOval(child: PlayerImage(player: player)),
-                      ),
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        child: CircleAvatar(
-                          key: ValueKey('profile-player-jersey-${player.id}'),
-                          radius: 16,
-                          backgroundColor: isLight
-                              ? AppPalette.white
-                              : appColors.subtleBackground,
-                          child: Text(
-                            player.jerseyNumber.toString(),
-                            style: Body2_b.style.copyWith(
-                              color: isLight ? AppPalette.black : null,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      player.fullName,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Body1.style,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -651,27 +542,29 @@ class _SettingsListState extends State<SettingsList> {
   bool _isLoggingOut = false;
 
   Future<void> _logout() async {
-    if (_isLoggingOut) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Log out?'),
-        content: const Text('You will need to sign in again to use 1Touch.'),
+        title: Text(tr(dialogContext, 'Log out?')),
+        content: Text(
+          tr(dialogContext, 'You will need to sign in again to use 1Touch.'),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(tr(dialogContext, 'Cancel')),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Log out'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(tr(dialogContext, 'Log out')),
           ),
         ],
       ),
     );
     if (confirmed != true || !mounted) return;
+
     setState(() => _isLoggingOut = true);
-    await authService.logout();
+    await auth_provider.authService.logout();
     if (!mounted) return;
     context.go('/onboarding');
   }
@@ -688,7 +581,7 @@ class _SettingsListState extends State<SettingsList> {
       {required IconData icon, required String title, VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon),
-      title: Text(title, style: Body1.style),
+      title: Text(tr(context, title), style: Body1.style),
       trailing: const Icon(Icons.arrow_forward_ios),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
@@ -701,13 +594,13 @@ class _SettingsListState extends State<SettingsList> {
       children: [
         _settingItem(
           icon: Icons.badge_outlined,
-          title: 'Personal Info',
+          title: tr(context, 'Personal Info'),
           onTap: widget.onPersonalInfo,
         ),
         _divider(),
         _settingItem(
           icon: Icons.notifications_none,
-          title: 'Notification',
+          title: tr(context, 'Notification'),
           onTap: () {
             context.push('/profile/notification');
           },
@@ -715,7 +608,7 @@ class _SettingsListState extends State<SettingsList> {
         _divider(),
         _settingItem(
           icon: Icons.language_rounded,
-          title: 'Preferences',
+          title: tr(context, 'Preferences'),
           onTap: () {
             context.push('/profile/preference');
           },
@@ -726,14 +619,14 @@ class _SettingsListState extends State<SettingsList> {
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.brightness_4_outlined),
-            title: Text("Dark Theme", style: Body1.style),
+            title: Text(tr(context, "Dark Theme"), style: Body1.style),
             trailing: const AppThemeSwitch(),
           ),
         ),
         _divider(),
         _settingItem(
           icon: Icons.chat_outlined,
-          title: 'Contact Us',
+          title: tr(context, 'Contact Us'),
           onTap: () {
             context.push('/profile/contact');
           },
@@ -741,21 +634,20 @@ class _SettingsListState extends State<SettingsList> {
         _divider(),
         _settingItem(
           icon: Icons.info_outline,
-          title: 'About',
+          title: tr(context, 'About'),
           onTap: () {
             context.push('/profile/about');
           },
         ),
         _divider(),
         ListTile(
-          key: const ValueKey('profile-logout-button'),
+          key: const ValueKey('profile-logout'),
           leading: const Icon(Icons.logout),
           title: Text(
-            _isLoggingOut ? 'Logging out...' : 'Log out',
+            tr(context, _isLoggingOut ? 'Logging out...' : 'Log out'),
             style: Body1.style,
           ),
-          enabled: !_isLoggingOut,
-          onTap: _logout,
+          onTap: _isLoggingOut ? null : _logout,
           contentPadding: const EdgeInsets.symmetric(horizontal: 24),
         ),
       ],

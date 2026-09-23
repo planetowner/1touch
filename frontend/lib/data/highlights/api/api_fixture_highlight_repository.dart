@@ -1,39 +1,20 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/highlights/fixture_highlight_repository.dart';
 import 'package:onetouch/models/fixture_highlight.dart';
 
 class ApiFixtureHighlightRepository implements FixtureHighlightRepository {
-  ApiFixtureHighlightRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = apiBaseUri.toString().endsWith('/')
-            ? apiBaseUri
-            : Uri.parse('$apiBaseUri/'),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiFixtureHighlightRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<FixtureHighlight?> loadForFixture(int fixtureId) async {
     // 실제 시청 국가를 추정하지 않고 외부 YouTube에서 재생 제한을 처리해요.
-    final uri = _apiBaseUri.resolve('fixtures/$fixtureId/highlights');
-    final response = await _client.get(
+    final uri = _api.baseUri.resolve('fixtures/$fixtureId/highlights');
+    final response = await _api.get(
       uri,
-      headers: {'Accept': 'application/json', ..._requestHeaders},
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Fixture highlights request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     if (decoded['fixture_id'] != fixtureId) {
       throw const FormatException(
           'Highlight response belongs to another fixture.');

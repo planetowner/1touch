@@ -39,7 +39,8 @@ class RegisterEmailBody(UserProfileBody, CodeBody):
 
 
 class PasswordLoginBody(BaseModel):
-    username: Username
+    # 기존 클라이언트의 필드 이름을 유지하면서 이메일 최대 길이도 받아요.
+    username: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=254)]
     password: Password
 
 

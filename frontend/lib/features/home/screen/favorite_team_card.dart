@@ -65,7 +65,7 @@ class FavoriteTeamCard extends StatelessWidget {
                           // TODO(api-standings): Add movement when standings
                           // exposes the team's previous position.
                           Text(
-                            "$leagueName ${rank != null ? ordinal(rank) : '-'}",
+                            "$leagueName ${rank != null ? ordinal(rank, locale: Localizations.localeOf(context)) : '-'}",
                             style: Body2.style,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -114,7 +114,7 @@ class FavoriteTeamCard extends StatelessWidget {
                     final kickoff = last.kickoff;
                     return MatchCard2(
                       date: kickoff == null
-                          ? 'Date TBD'
+                          ? tr(context, 'Date TBD')
                           : DateFormat('EEE, MMM d h:mm a')
                               .format(kickoff.toLocal()),
                       venue: '',

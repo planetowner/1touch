@@ -19,6 +19,7 @@ import 'package:onetouch/features/team/attributes/match_attribute_comparison.dar
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class _StandingRow {
   final int pos;
@@ -162,10 +163,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           const SizedBox(height: 48),
           _buildHeader(),
           const SizedBox(height: 48),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 0),
             child: Text(
-              "BET",
+              tr(context, "BET"),
               style: Body2_b.style,
             ),
           ),
@@ -201,11 +202,14 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final home = fixtureHomeTeam(widget.fixture, teamRepository);
     final away = fixtureAwayTeam(widget.fixture, teamRepository);
     final kickoff = widget.fixture.kickoff?.toLocal();
-    final date =
-        kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
-    final time =
-        kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
-    final roundLabel = widget.fixture.displayRoundLabel ?? 'Round TBD';
+    final date = kickoff == null
+        ? tr(context, 'Date TBD')
+        : DateFormat('EEE, MMM d').format(kickoff);
+    final time = kickoff == null
+        ? tr(context, 'Time TBD')
+        : DateFormat('h:mm a').format(kickoff);
+    final roundLabel =
+        widget.fixture.displayRoundLabel ?? tr(context, 'Round TBD');
 
     return Row(
       children: [
@@ -280,10 +284,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final h2h = _latestH2H;
 
     if (_isLatestH2HLoading) {
-      return const Column(
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('LATEST H2H', style: Body2_b.style),
+          Text(tr(context, 'LATEST H2H'), style: Body2_b.style),
           SizedBox(height: 16),
           Padding(
             key: ValueKey('match-preview-h2h-loading'),
@@ -298,21 +302,21 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('LATEST H2H', style: Body2_b.style),
+          Text(tr(context, 'LATEST H2H'), style: Body2_b.style),
           const SizedBox(height: 16),
           Center(
             key: const ValueKey('match-preview-h2h-error'),
             child: Column(
               children: [
-                const Text(
-                  'Unable to load the latest meeting.',
+                Text(
+                  tr(context, 'Unable to load the latest meeting.'),
                   style: Body2.style,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: _loadLatestHeadToHead,
-                  child: const Text('RETRY'),
+                  child: Text(tr(context, 'RETRY')),
                 ),
               ],
             ),
@@ -322,15 +326,15 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     }
 
     if (h2h == null) {
-      return const Column(
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('LATEST H2H', style: Body2_b.style),
+          Text(tr(context, 'LATEST H2H'), style: Body2_b.style),
           SizedBox(height: 16),
           Center(
             key: ValueKey('match-preview-h2h-empty'),
             child: Text(
-              'No previous meetings found.',
+              tr(context, 'No previous meetings found.'),
               style: Body2.style,
               textAlign: TextAlign.center,
             ),
@@ -342,15 +346,17 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final home = fixtureHomeTeam(h2h, teamRepository);
     final away = fixtureAwayTeam(h2h, teamRepository);
     final kickoff = h2h.kickoff?.toLocal();
-    final date =
-        kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
-    final time =
-        kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
+    final date = kickoff == null
+        ? tr(context, 'Date TBD')
+        : DateFormat('EEE, MMM d').format(kickoff);
+    final time = kickoff == null
+        ? tr(context, 'Time TBD')
+        : DateFormat('h:mm a').format(kickoff);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("LATEST H2H", style: Body2_b.style),
+        Text(tr(context, "LATEST H2H"), style: Body2_b.style),
         const SizedBox(height: 16),
         GestureDetector(
           key: const ValueKey('match-preview-h2h-card'),
@@ -494,17 +500,17 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('STANDING', style: Body2_b.style),
+          Text(tr(context, 'STANDING'), style: Body2_b.style),
           const SizedBox(height: 16),
           if (_standingsLoading)
             const Center(child: CircularProgressIndicator())
           else if (_standingsFailed)
             TextButton(
               onPressed: _loadCurrentStandings,
-              child: const Text('순위표를 불러오지 못했어요. 다시 시도'),
+              child: Text(tr(context, "Unable to load standings. Retry")),
             )
           else
-            const Center(child: Text('아직 준비중이에요ㅠㅠ')),
+            Center(child: Text(tr(context, "Coming soon"))),
         ],
       );
     }
@@ -545,7 +551,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("STANDING", style: Body2_b.style),
+        Text(tr(context, "STANDING"), style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
@@ -581,7 +587,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            league?.name ?? 'Unknown',
+                            league?.name ?? tr(context, 'Unknown'),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -605,15 +611,15 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                                   fontSize: 13)),
                         ),
                         Expanded(
-                          child: Text('Club',
+                          child: Text(tr(context, 'Club'),
                               style: TextStyle(
                                   color: appColors.mutedForeground,
                                   fontSize: 13)),
                         ),
-                        ..._colLabel('MP'),
-                        ..._colLabel('W'),
-                        ..._colLabel('D'),
-                        ..._colLabel('L'),
+                        ..._colLabel(tr(context, 'MP')),
+                        ..._colLabel(tr(context, 'W')),
+                        ..._colLabel(tr(context, 'D')),
+                        ..._colLabel(tr(context, 'L')),
                       ],
                     ),
                     const SizedBox(height: 14),

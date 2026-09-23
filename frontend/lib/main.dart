@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 // Core & Data
@@ -7,9 +9,11 @@ import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/team_navigation.dart';
-import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
-import 'package:onetouch/data/auth/auth_repository_provider.dart';
+import 'package:onetouch/SessionScreen.dart';
+import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
+import 'package:onetouch/data/auth/auth_repository_provider.dart'
+    as auth_provider;
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
@@ -25,13 +29,14 @@ import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/WelcomeScreen.dart';
 
-void main() async {
+Future<void> main() => runOneTouchApp();
+
+Future<void> runOneTouchApp({
+  Future<bool> Function()? restoreSession,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
   await appThemeController.initialize();
-  await authService.restoreSession();
-  // Initializes the team catalog before loading and validating stored IDs.
-  await currentUserPreferences.initialize();
-  await playerRepository.initializeFollowing();
+  await (restoreSession ?? auth_provider.authService.restoreSession)();
   runApp(const MyApp());
 }
 
@@ -39,23 +44,32 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
+  redirect: (context, state) {
+    final path = state.uri.path;
+    if (path == '/' ||
+        path == '/session' ||
+        path == '/onboarding' ||
+        path.startsWith('/auth/')) return null;
+    if (!authSession.isAuthenticated) return '/onboarding';
+    if (path.startsWith('/onboarding/') && footballCatalog.isLoaded)
+      return null;
+    return isAppSessionReady ? null : '/session';
+  },
   errorBuilder: (context, state) => const AppErrorScreen(statusCode: 404),
   routes: [
     // Splash
     GoRoute(
       path: '/',
       builder: (context, state) => SplashScreen(
-        nextLocation: authSession.isAuthenticated
-            ? (authSession.onboardingComplete
-                ? '/home'
-                : authSession.profileComplete
-                    ? '/onboarding/welcome'
-                    : '/onboarding/profile')
-            : (ApiConfig.skipOnboardingForDevelopment
-                ? '/home'
-                : '/onboarding'),
+        nextLocation: ApiConfig.skipOnboardingForDevelopment ||
+                authSession.isAuthenticated
+            ? '/session'
+            : '/onboarding',
       ),
     ),
+
+    GoRoute(
+        path: '/session', builder: (context, state) => const SessionScreen()),
 
     // Onboarding
     GoRoute(
@@ -65,10 +79,6 @@ final GoRouter _router = GoRouter(
           GoRoute(
             path: 'welcome',
             builder: (context, state) => const WelcomeScreen(),
-          ),
-          GoRoute(
-            path: 'profile',
-            builder: (context, state) => const CompleteSocialProfileScreen(),
           ),
           GoRoute(
             path: 'select-favorites',
@@ -118,9 +128,7 @@ final GoRouter _router = GoRouter(
                 path: ':id',
                 builder: (context, state) {
                   final playerId = state.pathParameters['id']!;
-                  final player = playerRepository.findById(playerId);
-                  return PlayerCard(
-                      player: player, playerId: int.tryParse(playerId));
+                  return PlayerCard(playerId: int.tryParse(playerId));
                 },
               ),
             ],
@@ -139,15 +147,6 @@ final GoRouter _router = GoRouter(
                   final teamId = int.parse(state.pathParameters['id']!);
                   return TeamScreen(teamId: teamId);
                 },
-                routes: [
-                  GoRoute(
-                    path: 'probability/:event',
-                    builder: (context, state) => TeamProbabilityScreen(
-                      teamId: int.parse(state.pathParameters['id']!),
-                      event: state.pathParameters['event']!,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -281,29 +280,33 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
           child: Row(
             children: [
               _buildItem(
+                context: context,
                 index: 0,
-                label: 'Home',
+                label: tr(context, 'Home'),
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home,
                 foreground: foreground,
               ),
               _buildItem(
+                context: context,
                 index: 1,
-                label: 'Players',
+                label: tr(context, 'Players'),
                 icon: Icons.person_outline,
                 activeIcon: Icons.person,
                 foreground: foreground,
               ),
               _buildItem(
+                context: context,
                 index: 2,
-                label: 'Team',
+                label: tr(context, 'Team'),
                 icon: Icons.local_police_outlined,
                 activeIcon: Icons.local_police,
                 foreground: foreground,
               ),
               _buildItem(
+                context: context,
                 index: 3,
-                label: 'Community',
+                label: tr(context, 'Community'),
                 icon: Icons.people_alt_outlined,
                 activeIcon: Icons.people_alt,
                 foreground: foreground,
@@ -316,6 +319,7 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
   }
 
   Widget _buildItem({
+    required BuildContext context,
     required int index,
     required String label,
     required IconData icon,
@@ -344,7 +348,7 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                label,
+                tr(context, label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -369,6 +373,13 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: appThemeController,
       builder: (context, themeMode, _) => MaterialApp.router(
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        localeListResolutionCallback: resolveAppLocale,
+        builder: (context, child) {
+          Intl.defaultLocale = Localizations.localeOf(context).languageCode;
+          return child!;
+        },
         theme: style.whitetheme,
         darkTheme: style.darktheme,
         themeMode: themeMode,

@@ -17,14 +17,18 @@ def auth_request_limit(request: Request):
 
 
 @router.get("/auth/providers")
-def providers(platform: Literal["ios", "android"], country_code: str = Query(min_length=2, max_length=2)):
+def providers(platform: Literal["ios", "android"], country_code: str | None = Query(default=None, min_length=2, max_length=2)):
     # 국가 코드는 가입 화면의 선택지를 정해요. 사용자의 국적이나 로그인 권한을 제한하지 않아요.
     # 한국·일본만 지역별 로그인을 추가하고, 그 외는 영미권과 같은 기본 목록을 써요.
     # 중국 전용 로그인은 추후에 추가해요. 지금 CN은 기타와 같고, 중국어 표시 지원과는 별개예요.
     # Apple 로그인은 iPhone에서만 제공해요. 기기 정보가 없으면 임의로 iOS를 선택하지 않아요.
     regional_providers = {"KR": ["kakao"], "JP": ["line"]}
-    return {"providers": regional_providers.get(country_code.upper(), [])
-            + (["apple"] if platform == "ios" else []) + ["google", "email"]}
+    recommended = regional_providers.get((country_code or "").upper(), [])
+    # 지역을 바꾸거나 해외에 있어도 기존 계정으로 로그인할 수 있어요.
+    other = [provider for providers in regional_providers.values()
+             for provider in providers if provider not in recommended]
+    return {"providers": recommended + ["google"] + (["apple"] if platform == "ios" else []) + ["email"],
+            "other_providers": other}
 
 
 @router.post("/auth/email/code", dependencies=[Depends(auth_request_limit)])

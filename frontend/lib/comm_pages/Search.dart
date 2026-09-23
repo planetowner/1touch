@@ -10,35 +10,28 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/fixtures/fixture_repository.dart';
-import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
-    as fixture_providers;
-import 'package:onetouch/data/players/player_repository.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart'
-    as player_providers;
+import 'package:onetouch/data/search/search_repository.dart' as search_data;
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
-import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart'
     as team_providers;
-import 'package:onetouch/features/player_image.dart';
+import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/fixture.dart';
-import 'package:onetouch/models/player.dart';
+import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class Search extends StatelessWidget {
   const Search({
     super.key,
-    this.teamRepository,
+    this.preferences,
     this.competitionContextResolver,
-    this.fixtureRepository,
-    this.playerRepository,
+    this.repository,
   });
 
-  final TeamRepository? teamRepository;
+  final CurrentUserPreferences? preferences;
   final TeamCompetitionContextResolver? competitionContextResolver;
-  final FixtureRepository? fixtureRepository;
-  final PlayerRepository? playerRepository;
+  final search_data.SearchRepository? repository;
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +40,10 @@ class Search extends StatelessWidget {
       backgroundColor: mainPageBackground(context),
       body: SafeArea(
         child: SearchContent(
-          teamRepository: teamRepository ?? team_providers.teamRepository,
+          preferences: preferences ?? currentUserPreferences,
           competitionContextResolver: competitionContextResolver ??
               team_providers.teamCompetitionContextResolver,
-          fixtureRepository:
-              fixtureRepository ?? fixture_providers.fixtureRepository,
-          playerRepository:
-              playerRepository ?? player_providers.playerRepository,
+          repository: repository ?? search_data.searchRepository,
         ),
       ),
     );
@@ -63,16 +53,14 @@ class Search extends StatelessWidget {
 class SearchContent extends StatefulWidget {
   const SearchContent({
     super.key,
-    required this.teamRepository,
+    required this.preferences,
     required this.competitionContextResolver,
-    required this.fixtureRepository,
-    required this.playerRepository,
+    required this.repository,
   });
 
-  final TeamRepository teamRepository;
+  final CurrentUserPreferences preferences;
   final TeamCompetitionContextResolver competitionContextResolver;
-  final FixtureRepository fixtureRepository;
-  final PlayerRepository playerRepository;
+  final search_data.SearchRepository repository;
 
   @override
   State<SearchContent> createState() => _SearchContentState();
@@ -81,9 +69,11 @@ class SearchContent extends StatefulWidget {
 class _SearchContentState extends State<SearchContent> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
-  bool _isInitializing = true;
-  Object? _initializationError;
-  int _loadGeneration = 0;
+  bool _isSearching = false;
+  Object? _searchError;
+  int _generation = 0;
+  Timer? _debounce;
+  search_data.SearchResults _results = const search_data.SearchResults();
 
   static const _tabs = ['ALL', 'PLAYERS', 'TEAMS', 'EVENTS'];
   bool get _hasQuery => _searchController.text.trim().isNotEmpty;
@@ -93,85 +83,62 @@ class _SearchContentState extends State<SearchContent> {
   @override
   void initState() {
     super.initState();
-    widget.teamRepository.teams.addListener(_onTeamsChanged);
-    widget.fixtureRepository.fixtures.addListener(_onFixturesChanged);
-    unawaited(_initializeRepositories());
-    currentUserPreferences.followedTeamIds.addListener(_onFollowingChanged);
-    widget.playerRepository.followedPlayerIds.addListener(_onFollowingChanged);
+    widget.preferences.followedTeamIds.addListener(_onFollowingChanged);
   }
 
-  @override
-  void didUpdateWidget(covariant SearchContent oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    var repositoriesChanged = false;
-    if (oldWidget.teamRepository != widget.teamRepository) {
-      oldWidget.teamRepository.teams.removeListener(_onTeamsChanged);
-      widget.teamRepository.teams.addListener(_onTeamsChanged);
-      repositoriesChanged = true;
-    }
-    if (oldWidget.fixtureRepository != widget.fixtureRepository) {
-      oldWidget.fixtureRepository.fixtures.removeListener(_onFixturesChanged);
-      widget.fixtureRepository.fixtures.addListener(_onFixturesChanged);
-      repositoriesChanged = true;
-    }
-    if (oldWidget.playerRepository != widget.playerRepository) {
-      oldWidget.playerRepository.followedPlayerIds
-          .removeListener(_onFollowingChanged);
-      widget.playerRepository.followedPlayerIds
-          .addListener(_onFollowingChanged);
-      repositoriesChanged = true;
-    }
-    if (repositoriesChanged) unawaited(_initializeRepositories());
+  void _onQueryChanged() {
+    _debounce?.cancel();
+    ++_generation;
+    setState(() {
+      _results = const search_data.SearchResults();
+      _searchError = null;
+      _isSearching = _hasQuery;
+    });
+    if (_hasQuery)
+      _debounce = Timer(const Duration(milliseconds: 250), _search);
   }
 
-  Future<void> _initializeRepositories() async {
-    final generation = ++_loadGeneration;
-    if (!_isInitializing || _initializationError != null) {
-      setState(() {
-        _isInitializing = true;
-        _initializationError = null;
-      });
-    }
-
+  Future<void> _search() async {
+    final generation = ++_generation;
+    setState(() {
+      _isSearching = true;
+      _searchError = null;
+    });
     try {
-      await Future.wait([
-        widget.teamRepository.initialize(),
-        widget.fixtureRepository.initialize(),
-        widget.playerRepository.initializeFollowing(),
-      ]);
-      if (!mounted || generation != _loadGeneration) return;
+      final results = await widget.repository.search(_searchController.text);
+      if (!mounted || generation != _generation) return;
       setState(() {
-        _isInitializing = false;
-        _initializationError = null;
+        _results = results;
+        _isSearching = false;
       });
-    } on Object catch (error) {
-      if (!mounted || generation != _loadGeneration) return;
+    } catch (error) {
+      if (!mounted || generation != _generation) return;
       setState(() {
-        _isInitializing = false;
-        _initializationError = error;
+        _searchError = error;
+        _isSearching = false;
       });
     }
-  }
-
-  void _onTeamsChanged() {
-    if (mounted) setState(() {});
-  }
-
-  void _onFixturesChanged() {
-    if (mounted) setState(() {});
   }
 
   void _onFollowingChanged() {
     if (mounted) setState(() {});
   }
 
+  Future<void> _toggleTeam(int id) async {
+    try {
+      await widget.preferences.toggleFollowedTeam(id);
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(tr(context,
+                'Unable to update followed teams. Please try again.'))));
+    }
+  }
+
   @override
   void dispose() {
-    widget.teamRepository.teams.removeListener(_onTeamsChanged);
-    widget.fixtureRepository.fixtures.removeListener(_onFixturesChanged);
-    currentUserPreferences.followedTeamIds.removeListener(_onFollowingChanged);
-    widget.playerRepository.followedPlayerIds
-        .removeListener(_onFollowingChanged);
+    _debounce?.cancel();
+    widget.preferences.followedTeamIds.removeListener(_onFollowingChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -192,7 +159,7 @@ class _SearchContentState extends State<SearchContent> {
             child: Row(
               children: [
                 IconButton(
-                  tooltip: 'Back',
+                  tooltip: tr(context, 'Back'),
                   icon: Icon(
                     Icons.arrow_back_ios_new,
                     color: colors.onSurface,
@@ -216,9 +183,11 @@ class _SearchContentState extends State<SearchContent> {
                       textInputAction: TextInputAction.search,
                       style: Body1_b.style.copyWith(color: colors.onSurface),
                       cursorColor: colors.onSurface,
-                      onChanged: (_) => setState(() {}),
+                      maxLength: 100,
+                      onChanged: (_) => _onQueryChanged(),
                       decoration: InputDecoration(
-                        hintText: 'Search...',
+                        counterText: '',
+                        hintText: tr(context, 'Search...'),
                         hintStyle:
                             Body1.style.copyWith(color: colors.onSurface),
                         border: InputBorder.none,
@@ -228,7 +197,7 @@ class _SearchContentState extends State<SearchContent> {
                         ),
                         suffixIcon: _hasQuery
                             ? IconButton(
-                                tooltip: 'Clear search',
+                                tooltip: tr(context, 'Clear search'),
                                 icon: Icon(
                                   Icons.close,
                                   color: colors.onSurface,
@@ -236,7 +205,8 @@ class _SearchContentState extends State<SearchContent> {
                                 ),
                                 onPressed: () {
                                   _searchController.clear();
-                                  setState(() => _selectedIndex = 0);
+                                  _selectedIndex = 0;
+                                  _onQueryChanged();
                                 },
                               )
                             : Icon(
@@ -260,68 +230,35 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   Widget _buildBody() {
-    if (!_hasSearchableData && _isInitializing) {
+    if (_isSearching) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (!_hasSearchableData && _initializationError != null) {
+    if (_searchError != null) {
       return Center(
         key: const ValueKey('search-load-error'),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'SEARCH UNAVAILABLE',
+              tr(context, 'SEARCH UNAVAILABLE'),
               style: Body1_b.style.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: _initializeRepositories,
-              child: const Text('Retry'),
+              onPressed: _search,
+              child: Text(tr(context, 'Retry')),
             ),
           ],
         ),
       );
     }
-    return _hasQuery ? _buildSearchResults() : _buildRecents();
-  }
-
-  bool get _hasSearchableData =>
-      widget.playerRepository.allPlayers.isNotEmpty ||
-      widget.teamRepository.allTeams
-          .any((team) => _teamPageEligibility.supports(team.teamId));
-
-  Widget _buildRecents() {
-    final recentPlayer = widget.playerRepository.findById('lee-kang-in') ??
-        widget.playerRepository.allPlayers.firstOrNull;
-    final recentTeam = widget.teamRepository.findById(83);
-    final recentEvent = _eventFixtures().firstOrNull;
-
-    return ListView(
-      key: const ValueKey('search-recents'),
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-      children: [
-        Text(
-          'RECENTS',
-          style: Body2_b.style.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 20),
-        if (recentPlayer != null) _buildPlayerCard(recentPlayer),
-        if (recentTeam != null &&
-            _teamPageEligibility.supports(recentTeam.teamId)) ...[
-          const SizedBox(height: 16),
-          _buildTeamCard(recentTeam),
-        ],
-        if (recentEvent != null) ...[
-          const SizedBox(height: 16),
-          _buildEventCard(recentEvent),
-        ],
-      ],
-    );
+    return _hasQuery
+        ? _buildSearchResults()
+        : Center(
+            child: Text(tr(context, 'Search players, teams and matches'),
+                key: ValueKey('search-prompt')));
   }
 
   Widget _buildSearchResults() {
@@ -373,7 +310,7 @@ class _SearchContentState extends State<SearchContent> {
               : null,
         ),
         child: Text(
-          _tabs[index],
+          tr(context, _tabs[index]),
           style: Body1_b.style.copyWith(color: colors.onSurface),
         ),
       ),
@@ -381,32 +318,9 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   Widget _buildSelectedResults() {
-    final query = _searchController.text.trim().toLowerCase();
-    final players = widget.playerRepository.search(query).take(12).toList();
-    final directTeamIds =
-        widget.teamRepository.search(query).map((team) => team.teamId).toSet();
-    final teams = widget.teamRepository.allTeams
-        .where((team) {
-          if (!_teamPageEligibility.supports(team.teamId)) return false;
-          final contextLabel = widget.competitionContextResolver
-              .labelFor(team.teamId)
-              .toLowerCase();
-          return directTeamIds.contains(team.teamId) ||
-              contextLabel.contains(query);
-        })
-        .take(12)
-        .toList();
-    final events = _eventFixtures()
-        .where((fixture) {
-          final home = widget.teamRepository.findById(fixture.homeTeamId);
-          final away = widget.teamRepository.findById(fixture.awayTeamId);
-          if (home == null || away == null) return false;
-          return '${home.name} ${home.shortCode} ${away.name} ${away.shortCode}'
-              .toLowerCase()
-              .contains(query);
-        })
-        .take(12)
-        .toList();
+    final players = _results.players;
+    final teams = _results.teams;
+    final events = _results.fixtures;
 
     final children = <Widget>[];
     if (_selectedIndex == 0 || _selectedIndex == 1) {
@@ -422,7 +336,7 @@ class _SearchContentState extends State<SearchContent> {
     if (children.isEmpty) {
       return Center(
         child: Text(
-          'NO RESULTS',
+          tr(context, 'NO RESULTS'),
           key: const ValueKey('search-empty-results'),
           style: Body1_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
@@ -454,12 +368,12 @@ class _SearchContentState extends State<SearchContent> {
     );
   }
 
-  Widget _buildPlayerCard(Player player) {
+  Widget _buildPlayerCard(PlayerCandidate player) {
     final colors = Theme.of(context).colorScheme;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: () => openPlayerPage(context, player.id),
+      onTap: () => openPlayerPage(context, '${player.id}'),
       child: Container(
         key: ValueKey('search-player-${player.id}'),
         constraints: const BoxConstraints(minHeight: 96),
@@ -470,7 +384,7 @@ class _SearchContentState extends State<SearchContent> {
             SizedBox(
               width: 64,
               height: 64,
-              child: ClipOval(child: PlayerImage(player: player)),
+              child: ClipOval(child: PlayerRemoteImage(player.image, size: 64)),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -479,17 +393,10 @@ class _SearchContentState extends State<SearchContent> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    player.fullName,
+                    player.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Heading4.style.copyWith(color: colors.onSurface),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    player.teamName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Body1.style.copyWith(color: colors.onSurface),
                   ),
                 ],
               ),
@@ -503,11 +410,11 @@ class _SearchContentState extends State<SearchContent> {
   Widget _buildTeamCard(Team team) {
     final colors = Theme.of(context).colorScheme;
     final isFollowing =
-        currentUserPreferences.followedTeamIds.value.contains(team.teamId);
+        widget.preferences.followedTeamIds.value.contains(team.teamId);
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: isTeamPageSupported(team.teamId)
+      onTap: _teamPageEligibility.supports(team.teamId)
           ? () => openTeamPage(context, team.teamId)
           : null,
       child: Container(
@@ -541,9 +448,10 @@ class _SearchContentState extends State<SearchContent> {
               ),
             ),
             IconButton(
-              tooltip: isFollowing ? 'Unfollow team' : 'Follow team',
-              onPressed: () =>
-                  currentUserPreferences.toggleFollowedTeam(team.teamId),
+              tooltip: isFollowing
+                  ? tr(context, 'Unfollow team')
+                  : tr(context, 'Follow team'),
+              onPressed: () => _toggleTeam(team.teamId),
               icon: Icon(
                 isFollowing ? Icons.star : Icons.star_outline,
                 color: colors.onSurface,
@@ -557,15 +465,24 @@ class _SearchContentState extends State<SearchContent> {
   }
 
   Widget _buildEventCard(Fixture fixture) {
-    final home = widget.teamRepository.findById(fixture.homeTeamId);
-    final away = widget.teamRepository.findById(fixture.awayTeamId);
-    if (home == null || away == null) return const SizedBox.shrink();
+    final home = Team(
+        teamId: fixture.homeTeamId,
+        name: fixture.homeTeamName ?? '—',
+        shortName: fixture.homeTeamShortName,
+        imagePath: fixture.homeTeamLogo);
+    final away = Team(
+        teamId: fixture.awayTeamId,
+        name: fixture.awayTeamName ?? '—',
+        shortName: fixture.awayTeamShortName,
+        imagePath: fixture.awayTeamLogo);
     final colors = Theme.of(context).colorScheme;
     final kickoff = fixture.kickoff?.toLocal();
-    final date =
-        kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
-    final time =
-        kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
+    final date = kickoff == null
+        ? tr(context, 'Date TBD')
+        : DateFormat('EEE, MMM d').format(kickoff);
+    final time = kickoff == null
+        ? tr(context, 'Time TBD')
+        : DateFormat('h:mm a').format(kickoff);
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -614,47 +531,6 @@ class _SearchContentState extends State<SearchContent> {
         ),
       ),
     );
-  }
-
-  List<Fixture> _eventFixtures() {
-    final fixtures = widget.fixtureRepository.allFixtures
-        .where(
-          (fixture) =>
-              widget.teamRepository.contains(fixture.homeTeamId) &&
-              widget.teamRepository.contains(fixture.awayTeamId),
-        )
-        .toList()
-      ..sort(_compareEventFixtures);
-    return fixtures;
-  }
-
-  int _compareEventFixtures(Fixture first, Fixture second) {
-    final statusComparison = _eventStatusPriority(first.status) -
-        _eventStatusPriority(second.status);
-    if (statusComparison != 0) return statusComparison;
-
-    final firstKickoff = first.kickoff;
-    final secondKickoff = second.kickoff;
-    if (firstKickoff == null || secondKickoff == null) {
-      if (firstKickoff == null && secondKickoff == null) {
-        return first.fixtureId.compareTo(second.fixtureId);
-      }
-      return firstKickoff == null ? 1 : -1;
-    }
-
-    if (first.status == FixtureStatus.upcoming) {
-      return firstKickoff.compareTo(secondKickoff);
-    }
-    return secondKickoff.compareTo(firstKickoff);
-  }
-
-  int _eventStatusPriority(FixtureStatus status) {
-    return switch (status) {
-      FixtureStatus.live => 0,
-      FixtureStatus.upcoming => 1,
-      FixtureStatus.past => 2,
-      FixtureStatus.unknown => 3,
-    };
   }
 
   Widget _buildTeamLogo(Team team, {required double size}) {

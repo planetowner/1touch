@@ -1,12 +1,18 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
+import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/team/overview/team_screen_features.dart';
 import 'package:onetouch/data/team_attributes/mock/mock_team_attribute_repository.dart';
 import 'package:onetouch/models/current_form.dart';
+import 'package:onetouch/models/standing.dart' as standings;
+import 'package:onetouch/data/competitions/mock/season_catalog.dart';
+import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
+import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
@@ -19,9 +25,34 @@ Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
 }
 
 void main() {
+  setUpAppCatalog();
   final teamAttributeRepository = MockTeamAttributeRepository();
   final teamOverviewRepository = TestTeamOverviewRepository.withTeam9();
-  final xgStandingRepository = MockXgStandingRepository();
+  final currentSeasonId = mockSeasons
+      .singleWhere((season) => season.competitionId == 8 && season.isCurrent)
+      .seasonId;
+  final standingRepository = MockStandingRepository(standings: [
+    standings.Standing.fromJson({
+      ...teamOverviewRepository.cachedForTeam(9)!.standing!,
+      'competition_id': 8,
+      'season_id': currentSeasonId,
+      'phase': 'league',
+      'group_name': '',
+    }),
+  ]);
+  final xgStandingRepository = MockXgStandingRepository(standings: [
+    standings.XgStanding(
+        competitionId: 8,
+        seasonId: currentSeasonId,
+        teamId: 9,
+        position: 1,
+        matchesPlayed: 3,
+        xg: 7.5,
+        xga: 2.5,
+        xpts: 7.2),
+  ]);
+  final currentFormRepository = MockCurrentFormRepository();
+  final fixtureRepository = MockFixtureRepository();
   const phoneSizes = [
     Size(320, 568),
     Size(375, 667),
@@ -38,6 +69,9 @@ void main() {
       MaterialApp(
         theme: app_style.darktheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: teamOverviewRepository,
@@ -112,6 +146,9 @@ void main() {
             MaterialApp(
               theme: testCase.theme,
               home: TeamScreen(
+                fixtureRepository: fixtureRepository,
+                standingRepository: standingRepository,
+                currentFormRepository: currentFormRepository,
                 teamId: 9,
                 teamAttributeRepository: teamAttributeRepository,
                 teamOverviewRepository: teamOverviewRepository,
@@ -282,6 +319,9 @@ void main() {
       MaterialApp(
         theme: app_style.darktheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: teamOverviewRepository,
@@ -303,6 +343,9 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 33,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: repository,
@@ -335,6 +378,9 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: teamOverviewRepository,
@@ -378,7 +424,7 @@ void main() {
     expect(indicator.borderSide.width, 2);
     expect(tabBar.padding, const EdgeInsets.only(left: 8));
     expect(find.byKey(const Key('team-profile-button')), findsNothing);
-    expect(searchIcon.color, app_style.AppPalette.white);
+    expect(searchIcon.color, app_style.AppPalette.black);
     expect(nextMatch.backgroundColor, app_style.AppPalette.white);
     expect(lastMatch.backgroundColor, app_style.AppPalette.lightGreyBox);
     expect(
@@ -531,6 +577,9 @@ void main() {
       MaterialApp(
         theme: app_style.darktheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: teamOverviewRepository,
@@ -569,6 +618,9 @@ void main() {
       MaterialApp(
         theme: app_style.darktheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: teamOverviewRepository,
@@ -708,6 +760,9 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: teamOverviewRepository,
@@ -751,9 +806,6 @@ void main() {
     final attributesFilter = tester.widget<PopupMenuButton<int>>(
       attributesFilterFinder,
     );
-    final formationFilter = tester.widget<DropdownButton<String>>(
-      find.byKey(const ValueKey('analysis-formation-filter')),
-    );
     final formFilterFinder = find.byKey(
       const ValueKey('analysis-form-filter'),
     );
@@ -773,7 +825,6 @@ void main() {
           ?.color,
       app_style.AppPalette.black,
     );
-    expect(formationFilter.style?.color, app_style.AppPalette.black);
     expect(
       tester
           .widget<Text>(
@@ -790,10 +841,6 @@ void main() {
       tester.element(attributesFilterFinder),
     )) {
       final item = entry as PopupMenuItem<int>;
-      final label = (item.child as Text).data!;
-      expect(label, label.toUpperCase());
-    }
-    for (final item in formationFilter.items!) {
       final label = (item.child as Text).data!;
       expect(label, label.toUpperCase());
     }
@@ -843,6 +890,9 @@ void main() {
       MaterialApp(
         theme: app_style.whitetheme,
         home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
           teamId: 9,
           teamAttributeRepository: teamAttributeRepository,
           teamOverviewRepository: cupOverviewRepository,
@@ -900,6 +950,9 @@ void main() {
         MaterialApp(
           theme: app_style.whitetheme,
           home: TeamScreen(
+            fixtureRepository: fixtureRepository,
+            standingRepository: standingRepository,
+            currentFormRepository: currentFormRepository,
             teamId: 9,
             teamAttributeRepository: teamAttributeRepository,
             teamOverviewRepository: repository,

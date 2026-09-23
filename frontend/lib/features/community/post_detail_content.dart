@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:onetouch/core/style.dart';
@@ -10,6 +11,7 @@ import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PostDetailContent extends StatelessWidget {
   const PostDetailContent({
@@ -79,7 +81,7 @@ class PostDetailContent extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Community Ground Rules',
+                        tr(context, 'Community Ground Rules'),
                         style: Heading5.style.copyWith(color: colors.onSurface),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -109,13 +111,14 @@ class PostDetailContent extends StatelessWidget {
                       children: [
                         Text(
                           communityUsernameLabel(
+                            locale: Localizations.localeOf(context),
                             username: post.username,
                             authorDeleted: post.authorDeleted,
                           ),
                           style: Body1.style,
                         ),
                         Text(
-                          _timeAgo(post.createdAt),
+                          _timeAgo(context, post.createdAt),
                           style: Body2.style.copyWith(
                             color: appColors.mutedForeground,
                           ),
@@ -246,8 +249,9 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to post comment. Please try again.'),
+        SnackBar(
+          content:
+              Text(tr(context, 'Unable to post comment. Please try again.')),
         ),
       );
     } finally {
@@ -273,7 +277,9 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
               children: [
                 Expanded(
                   child: Text(
-                    'Replying to ${_commentAuthorLabel(widget.replyTarget!)}',
+                    tr(context, 'Replying to {name}', {
+                      'name': _commentAuthorLabel(context, widget.replyTarget!)
+                    }),
                     style: Body2.style.copyWith(
                       color: appColors.mutedForeground,
                     ),
@@ -324,8 +330,8 @@ class _PostDetailReplyBarState extends State<PostDetailReplyBar> {
                     onSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
                       hintText: widget.replyTarget == null
-                          ? 'Write a comment...'
-                          : 'Write a reply...',
+                          ? tr(context, 'Write a comment...')
+                          : tr(context, 'Write a reply...'),
                       hintStyle: TextStyle(color: appColors.mutedForeground),
                       border: InputBorder.none,
                       filled: false,
@@ -392,7 +398,7 @@ class _PostAction extends StatelessWidget {
               children: [
                 Icon(icon, size: 18, color: color),
                 const SizedBox(width: 4),
-                Text(label, key: labelKey, style: Body2.style),
+                Text(tr(context, label), key: labelKey, style: Body2.style),
               ],
             ),
           ),
@@ -466,7 +472,7 @@ class _PostComments extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'Unable to load comments.',
+                tr(context, 'Unable to load comments.'),
                 key: const ValueKey('community-comments-error'),
                 style: Body2.style,
               ),
@@ -474,7 +480,7 @@ class _PostComments extends StatelessWidget {
               TextButton(
                 key: const ValueKey('community-comments-retry'),
                 onPressed: onRetry,
-                child: const Text('RETRY'),
+                child: Text(tr(context, 'RETRY')),
               ),
             ],
           ),
@@ -485,7 +491,7 @@ class _PostComments extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Text(
-          'No comments yet.',
+          tr(context, 'No comments yet.'),
           key: const ValueKey('community-comments-empty'),
           style: Body2.style,
         ),
@@ -545,8 +551,9 @@ class _PostCommentRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_commentAuthorLabel(comment), style: Body2_b.style),
-                Text(_commentBodyLabel(comment), style: Body2.style),
+                Text(_commentAuthorLabel(context, comment),
+                    style: Body2_b.style),
+                Text(_commentBodyLabel(context, comment), style: Body2.style),
               ],
             ),
           ),
@@ -566,31 +573,28 @@ class _PostCommentRow extends StatelessWidget {
   }
 }
 
-String _commentAuthorLabel(PostComment comment) {
+String _commentAuthorLabel(BuildContext context, PostComment comment) {
   return switch (comment.state) {
     PostCommentState.active => communityUsernameLabel(
+        locale: Localizations.localeOf(context),
         username: comment.username,
         authorDeleted: comment.authorDeleted,
       ),
-    PostCommentState.deleted => 'Deleted comment',
-    PostCommentState.hidden => 'Hidden comment',
-    PostCommentState.blocked => 'Blocked user',
+    PostCommentState.deleted => tr(context, 'Deleted comment'),
+    PostCommentState.hidden => tr(context, 'Hidden comment'),
+    PostCommentState.blocked => tr(context, 'Blocked user'),
   };
 }
 
-String _commentBodyLabel(PostComment comment) {
+String _commentBodyLabel(BuildContext context, PostComment comment) {
   return switch (comment.state) {
     PostCommentState.active => comment.body,
-    PostCommentState.deleted => 'This comment was deleted.',
-    PostCommentState.hidden => 'This comment is unavailable.',
-    PostCommentState.blocked => 'Comment from a blocked user.',
+    PostCommentState.deleted => tr(context, 'This comment was deleted.'),
+    PostCommentState.hidden => tr(context, 'This comment is unavailable.'),
+    PostCommentState.blocked => tr(context, 'Comment from a blocked user.'),
   };
 }
 
-String _timeAgo(String createdAt) {
-  final created = DateTime.tryParse(createdAt) ?? DateTime.now();
-  final diff = DateTime.now().difference(created);
-  if (diff.inDays >= 1) return '${diff.inDays}d ago';
-  if (diff.inHours >= 1) return '${diff.inHours}h ago';
-  return '${diff.inMinutes}m ago';
-}
+String _timeAgo(BuildContext context, String createdAt) =>
+    relativeTimeLabel(DateTime.tryParse(createdAt),
+        locale: Localizations.localeOf(context));

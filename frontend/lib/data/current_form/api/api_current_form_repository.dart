@@ -1,7 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/current_form/api/api_current_form_mapper.dart';
 import 'package:onetouch/data/current_form/api/api_current_form_response.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
@@ -9,17 +7,9 @@ import 'package:onetouch/models/current_form.dart';
 
 /// HTTP implementation of the Current Form options and comparison endpoints.
 class ApiCurrentFormRepository implements CurrentFormRepository {
-  ApiCurrentFormRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiCurrentFormRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<Map<CurrentFormOptionsQuery, List<CurrentFormOption>>>
       _cachedOptions = ValueNotifier(const {});
   final ValueNotifier<Map<CurrentFormComparisonQuery, CurrentFormComparison>>
@@ -80,13 +70,13 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
     if (cached != null) return cached;
 
     final uri =
-        _apiBaseUri.resolve('teams/$teamId/current-form/options').replace(
+        _api.baseUri.resolve('teams/$teamId/current-form/options').replace(
       queryParameters: {
         if (query.search.isNotEmpty) 'search': query.search,
         'limit': '$limit',
       },
     );
-    final decoded = await _getJsonObject(uri, 'Current Form options');
+    final decoded = _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
     final response = ApiCurrentFormOptionsResponse.fromJson(decoded);
     if (response.limit != limit) {
       throw FormatException(
@@ -118,29 +108,18 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
     final cached = _cachedComparisons.value[query];
     if (cached != null) return cached;
 
-    final uri = _apiBaseUri.resolve('teams/$teamId/current-form').replace(
+    final uri = _api.baseUri.resolve('teams/$teamId/current-form').replace(
       queryParameters: {
         'compare_team_id': '$compareTeamId',
         'compare_season_id': '$compareSeasonId',
         if (seasonId != null) 'season_id': '$seasonId',
       },
     );
-    final httpResponse = await _client.get(
+    final httpResponse = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (httpResponse.statusCode != 200) {
-      throw http.ClientException(
-        'Current Form request failed with status '
-        '${httpResponse.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = _decodeJsonObject(httpResponse.body, 'Current Form');
+    final decoded = _api.decodeJson<Map<String, dynamic>>(httpResponse);
     final response = ApiCurrentFormResponse.fromJson(decoded);
     _verifyComparisonResponse(response, query);
 
@@ -150,39 +129,6 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
       query: comparison,
     });
     return comparison;
-  }
-
-  Future<Map<String, dynamic>> _getJsonObject(
-    Uri uri,
-    String responseName,
-  ) async {
-    final response = await _client.get(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
-    );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        '$responseName request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-    return _decodeJsonObject(response.body, responseName);
-  }
-
-  static Map<String, dynamic> _decodeJsonObject(
-    String body,
-    String responseName,
-  ) {
-    final decoded = jsonDecode(body);
-    if (decoded is! Map<String, dynamic>) {
-      throw FormatException(
-        'Expected the $responseName response to be a JSON object.',
-      );
-    }
-    return decoded;
   }
 
   static void _verifyComparisonResponse(
@@ -213,10 +159,5 @@ class ApiCurrentFormRepository implements CurrentFormRepository {
         '${response.comparison.seasonId}.',
       );
     }
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

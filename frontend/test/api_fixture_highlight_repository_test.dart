@@ -3,20 +3,22 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/highlights/api/api_fixture_highlight_repository.dart';
 
 void main() {
   test('requests the exact fixture without guessing the viewer country',
       () async {
     final repository = ApiFixtureHighlightRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/fixtures/19722166/highlights');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Authorization'], 'Bearer test-session');
-        return http.Response(jsonEncode(_response()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: const {'Authorization': 'Bearer test-session'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/fixtures/19722166/highlights');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Authorization'], 'Bearer test-session');
+            return http.Response(jsonEncode(_response()), 200);
+          }),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => const {'Authorization': 'Bearer test-session'}),
     );
     final item = await repository.loadForFixture(19722166);
     expect(item!.fixtureId, 19722166);
@@ -27,10 +29,11 @@ void main() {
   test('does not substitute another video when this fixture has none',
       () async {
     final repository = ApiFixtureHighlightRepository(
-      client: MockClient((_) async =>
-          http.Response(jsonEncode({..._response(), 'items': []}), 200)),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async =>
+              http.Response(jsonEncode({..._response(), 'items': []}), 200)),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => const {}),
     );
     expect(await repository.loadForFixture(19722166), isNull);
   });
@@ -45,9 +48,11 @@ void main() {
         ((body['items'] as List).single as Map)['match'] = {'fixture_id': 123};
       }
       final repository = ApiFixtureHighlightRepository(
-        client: MockClient((_) async => http.Response(jsonEncode(body), 200)),
-        apiBaseUri: Uri.parse('https://example.test/v1/'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client:
+                MockClient((_) async => http.Response(jsonEncode(body), 200)),
+            baseUri: Uri.parse('https://example.test/v1/'),
+            requestHeaders: () => const {}),
       );
       await expectLater(
           repository.loadForFixture(19722166), throwsFormatException);
@@ -59,11 +64,12 @@ void main() {
     ((body['items'] as List).single as Map)['thumbnail_url'] = null;
     var calls = 0;
     final repository = ApiFixtureHighlightRepository(
-      client: MockClient((_) async => ++calls == 1
-          ? http.Response(jsonEncode(body), 200)
-          : http.Response('Unavailable', 503)),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => ++calls == 1
+              ? http.Response(jsonEncode(body), 200)
+              : http.Response('Unavailable', 503)),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => const {}),
     );
     expect((await repository.loadForFixture(19722166))!.thumbnailUrl, isNull);
     await expectLater(repository.loadForFixture(19722166),

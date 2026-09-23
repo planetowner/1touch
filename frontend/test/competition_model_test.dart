@@ -40,7 +40,7 @@ void main() {
         'season_id': 2,
         'competition_id': 8,
         'name': '2025/2026',
-        'is_current': 1,
+        'is_current': true,
         'starting_at': '2025-08-15 00:00:00',
         'ending_at': '2026-05-24 00:00:00',
       });

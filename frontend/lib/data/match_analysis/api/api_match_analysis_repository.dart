@@ -1,24 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/match_analysis/api/api_match_analysis_mapper.dart';
 import 'package:onetouch/data/match_analysis/api/api_match_analysis_response.dart';
 import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 
 class ApiMatchAnalysisRepository implements MatchAnalysisRepository {
-  ApiMatchAnalysisRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiMatchAnalysisRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<Map<int, MatchTacticalAnalysis>> _cachedAnalyses =
       ValueNotifier(const {});
   final ValueNotifier<Map<int, MatchShotMap>> _cachedShotMaps =
@@ -72,22 +62,11 @@ class ApiMatchAnalysisRepository implements MatchAnalysisRepository {
   }
 
   Future<Map<String, dynamic>> _getObject(String path) async {
-    final uri = _apiBaseUri.resolve(path);
-    final response = await _client.get(
+    final uri = _api.baseUri.resolve(path);
+    final response = await _api.get(
       uri,
-      headers: {'Accept': 'application/json', ..._requestHeaders},
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Match analysis request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-    final decoded = jsonDecode(response.body);
-    if (decoded is Map<String, dynamic>) return decoded;
-    throw const FormatException(
-      'Expected the match analysis response to be a JSON object.',
-    );
+    return _api.decodeJson<Map<String, dynamic>>(response);
   }
 
   void _verifyFixture(int expected, int actual) {
@@ -96,10 +75,5 @@ class ApiMatchAnalysisRepository implements MatchAnalysisRepository {
         'Expected fixture_id $expected but received $actual.',
       );
     }
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }
