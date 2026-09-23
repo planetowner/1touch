@@ -1,3 +1,4 @@
+import 'package:onetouch/data/auth/login_provider.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.byKey(const ValueKey('google-sign-in-button')),
     );
@@ -79,6 +81,7 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('google-sign-in-button')));
     await tester.pumpAndSettle();
 
@@ -104,6 +107,7 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('google-sign-in-button')));
     await tester.pumpAndSettle();
 
@@ -127,6 +131,11 @@ GoRouter _router(AuthService authService) {
         path: '/onboarding',
         builder: (context, state) => OnboardingScreen(
           authService: authService,
+          loadOptions: () async => const LoginOptions(recommended: [
+            LoginProvider.google,
+            LoginProvider.apple,
+            LoginProvider.email
+          ]),
         ),
       ),
       GoRoute(
@@ -158,6 +167,19 @@ class _FakeGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<void> resetPassword(
+          {required String challengeId,
+          required String code,
+          required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<String> signInWithSocial(
+          {required LoginProvider provider,
+          required Map<String, String> credentials}) =>
+      throw UnimplementedError();
+
   _FakeAuthRepository(this._signInWithGoogle);
 
   final Future<String> Function(String idToken) _signInWithGoogle;
@@ -177,7 +199,9 @@ class _FakeAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
-  Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
+  Future<EmailCodeChallenge> requestEmailCode(
+          {required String email,
+          EmailCodePurpose purpose = EmailCodePurpose.signup}) =>
       throw UnimplementedError();
 
   @override

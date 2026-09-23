@@ -7,6 +7,7 @@ import 'package:onetouch/data/auth/auth_repository_provider.dart'
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/SignComps/VerifyEmail.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class EmailSignUpScreen extends StatefulWidget {
   const EmailSignUpScreen({super.key, this.authService});
@@ -53,7 +54,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       _lastName.text.trim().isNotEmpty &&
       _username.text.trim().isNotEmpty &&
       _email.text.trim().isNotEmpty &&
-      _password.text.length >= 8;
+      isValidNewPassword(_password.text);
 
   Future<void> _submit() async {
     if (_submitting || !_formKey.currentState!.validate()) return;
@@ -63,7 +64,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
     try {
       final email = _email.text.trim();
-      final challenge = await _authService.requestSignUpEmailCode(email: email);
+      final challenge = await _authService.requestEmailCode(email: email);
       if (!mounted) return;
       context.go(
         '/auth/verify',
@@ -79,12 +80,15 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       );
     } on AuthRequestException catch (error) {
       if (!mounted) return;
-      _showCodeRequestError(error.displayMessage);
+      _showCodeRequestError(
+          '${tr(context, error.message)} (${error.statusCode})');
     } on Object {
       if (!mounted) return;
       _showCodeRequestError(
-        'Unable to send a verification code. Check your connection and try '
-        'again.',
+        tr(
+            context,
+            'Unable to send a verification code. Check your connection and try '
+            'again.'),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -94,7 +98,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   void _showCodeRequestError(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(SnackBar(content: Text(tr(context, message))));
   }
 
   @override
@@ -126,7 +130,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           },
         ),
         centerTitle: true,
-        title: Text('Sign up', style: Body1.style),
+        title: Text(tr(context, 'Sign up'), style: Body1.style),
       ),
       body: SafeArea(
         child: CustomScrollView(
@@ -144,43 +148,43 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 12),
-                      const Text('First name', style: Eyebrow.style),
+                      Text(tr(context, 'First name'), style: Eyebrow.style),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _firstName,
                         decoration: _dec(context, 'John'),
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Enter first name'
+                            ? tr(context, 'Enter first name')
                             : null,
                         style: Body1.style,
                       ),
                       const SizedBox(height: 16),
 
-                      const Text('Last name', style: Eyebrow.style),
+                      Text(tr(context, 'Last name'), style: Eyebrow.style),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _lastName,
                         decoration: _dec(context, 'Doe'),
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Enter last name'
+                            ? tr(context, 'Enter last name')
                             : null,
                         style: Body1.style,
                       ),
                       const SizedBox(height: 16),
 
-                      const Text('Username', style: Eyebrow.style),
+                      Text(tr(context, 'Username'), style: Eyebrow.style),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _username,
                         decoration: _dec(context, 'john_doe'),
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Enter username'
+                            ? tr(context, 'Enter username')
                             : null,
                         style: Body1.style,
                       ),
                       const SizedBox(height: 16),
 
-                      const Text('Email', style: Eyebrow.style),
+                      Text(tr(context, 'Email'), style: Eyebrow.style),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _email,
@@ -188,16 +192,16 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                         decoration: _dec(context, 'johndoe@gmail.com'),
                         validator: (v) {
                           if (v == null || v.trim().isEmpty)
-                            return 'Enter email';
+                            return tr(context, 'Enter email');
                           final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+$')
                               .hasMatch(v.trim());
-                          return ok ? null : 'Enter a valid email';
+                          return ok ? null : tr(context, 'Enter a valid email');
                         },
                         style: Body1.style,
                       ),
                       const SizedBox(height: 16),
 
-                      const Text('Password', style: Eyebrow.style),
+                      Text(tr(context, 'Password'), style: Eyebrow.style),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _password,
@@ -213,9 +217,10 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                 setState(() => _obscure = !_obscure),
                           ),
                         ),
-                        validator: (v) => (v != null && v.length >= 8)
+                        validator: (v) => isValidNewPassword(v ?? '')
                             ? null
-                            : 'At least 8 characters',
+                            : tr(context,
+                                'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
                         style: Body1.style,
                       ),
 
@@ -248,9 +253,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  "By clicking sign up, I hereby agree and consent to\n"
-                                  "1Touch’s Terms & Conditions; I confirm that I have\n"
-                                  "read 1Touch’s Privacy Policy.",
+                                  tr(
+                                      context,
+                                      "By clicking sign up, I hereby agree and consent to\n"
+                                      "1Touch’s Terms & Conditions; I confirm that I have\n"
+                                      "read 1Touch’s Privacy Policy."),
                                   maxLines: 3,
                                   softWrap: false,
                                   style: Body2.style,
@@ -281,7 +288,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                                   width: 22,
                                   child:
                                       CircularProgressIndicator(strokeWidth: 2))
-                              : Text('SIGN UP',
+                              : Text(tr(context, 'SIGN UP'),
                                   style: Body2_b.style
                                       .copyWith(color: colors.surface)),
                         ),
