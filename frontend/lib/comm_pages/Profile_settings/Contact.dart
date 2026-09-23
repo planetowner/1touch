@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 // import 'package:go_router/go_router.dart';
 
 class ContactPage extends StatefulWidget {
@@ -38,7 +39,7 @@ class _ContactPageState extends State<ContactPage> {
                         ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
-                      Text("Contact", style: Body1.style),
+                      Text(tr(context, "Contact"), style: Body1.style),
                       SizedBox(
                         width: 48,
                         child: Icon(
@@ -57,7 +58,7 @@ class _ContactPageState extends State<ContactPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
                       const SizedBox(height: 16),
-                      _buildLabel("EMAIL"),
+                      _buildLabel(tr(context, "EMAIL")),
                       const SizedBox(height: 16),
                       _buildValueRow("contact@1touch.com", onTap: () {}),
                       const SizedBox(height: 12),
@@ -81,7 +82,7 @@ class _ContactPageState extends State<ContactPage> {
 
   Widget _buildLabel(String label) {
     return Text(
-      label,
+      tr(context, label),
       style: Body2_b.style,
     );
   }

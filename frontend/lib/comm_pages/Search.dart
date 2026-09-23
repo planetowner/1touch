@@ -19,6 +19,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class Search extends StatelessWidget {
   const Search({
@@ -128,9 +129,9 @@ class _SearchContentState extends State<SearchContent> {
       await widget.preferences.toggleFollowedTeam(id);
     } catch (_) {
       if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content:
-                Text('Unable to update followed teams. Please try again.')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(tr(context,
+                'Unable to update followed teams. Please try again.'))));
     }
   }
 
@@ -158,7 +159,7 @@ class _SearchContentState extends State<SearchContent> {
             child: Row(
               children: [
                 IconButton(
-                  tooltip: 'Back',
+                  tooltip: tr(context, 'Back'),
                   icon: Icon(
                     Icons.arrow_back_ios_new,
                     color: colors.onSurface,
@@ -186,7 +187,7 @@ class _SearchContentState extends State<SearchContent> {
                       onChanged: (_) => _onQueryChanged(),
                       decoration: InputDecoration(
                         counterText: '',
-                        hintText: 'Search...',
+                        hintText: tr(context, 'Search...'),
                         hintStyle:
                             Body1.style.copyWith(color: colors.onSurface),
                         border: InputBorder.none,
@@ -196,7 +197,7 @@ class _SearchContentState extends State<SearchContent> {
                         ),
                         suffixIcon: _hasQuery
                             ? IconButton(
-                                tooltip: 'Clear search',
+                                tooltip: tr(context, 'Clear search'),
                                 icon: Icon(
                                   Icons.close,
                                   color: colors.onSurface,
@@ -239,7 +240,7 @@ class _SearchContentState extends State<SearchContent> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'SEARCH UNAVAILABLE',
+              tr(context, 'SEARCH UNAVAILABLE'),
               style: Body1_b.style.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
@@ -247,7 +248,7 @@ class _SearchContentState extends State<SearchContent> {
             const SizedBox(height: 12),
             TextButton(
               onPressed: _search,
-              child: const Text('Retry'),
+              child: Text(tr(context, 'Retry')),
             ),
           ],
         ),
@@ -255,8 +256,8 @@ class _SearchContentState extends State<SearchContent> {
     }
     return _hasQuery
         ? _buildSearchResults()
-        : const Center(
-            child: Text('Search players, teams and matches',
+        : Center(
+            child: Text(tr(context, 'Search players, teams and matches'),
                 key: ValueKey('search-prompt')));
   }
 
@@ -309,7 +310,7 @@ class _SearchContentState extends State<SearchContent> {
               : null,
         ),
         child: Text(
-          _tabs[index],
+          tr(context, _tabs[index]),
           style: Body1_b.style.copyWith(color: colors.onSurface),
         ),
       ),
@@ -335,7 +336,7 @@ class _SearchContentState extends State<SearchContent> {
     if (children.isEmpty) {
       return Center(
         child: Text(
-          'NO RESULTS',
+          tr(context, 'NO RESULTS'),
           key: const ValueKey('search-empty-results'),
           style: Body1_b.style.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
@@ -447,7 +448,9 @@ class _SearchContentState extends State<SearchContent> {
               ),
             ),
             IconButton(
-              tooltip: isFollowing ? 'Unfollow team' : 'Follow team',
+              tooltip: isFollowing
+                  ? tr(context, 'Unfollow team')
+                  : tr(context, 'Follow team'),
               onPressed: () => _toggleTeam(team.teamId),
               icon: Icon(
                 isFollowing ? Icons.star : Icons.star_outline,
@@ -474,10 +477,12 @@ class _SearchContentState extends State<SearchContent> {
         imagePath: fixture.awayTeamLogo);
     final colors = Theme.of(context).colorScheme;
     final kickoff = fixture.kickoff?.toLocal();
-    final date =
-        kickoff == null ? 'Date TBD' : DateFormat('EEE, MMM d').format(kickoff);
-    final time =
-        kickoff == null ? 'Time TBD' : DateFormat('h:mm a').format(kickoff);
+    final date = kickoff == null
+        ? tr(context, 'Date TBD')
+        : DateFormat('EEE, MMM d').format(kickoff);
+    final time = kickoff == null
+        ? tr(context, 'Time TBD')
+        : DateFormat('h:mm a').format(kickoff);
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),

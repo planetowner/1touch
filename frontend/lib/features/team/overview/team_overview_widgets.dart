@@ -12,7 +12,7 @@ class TransferTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final playerImage = transfer.playerImage;
     final transferValue = _transferValue(transfer);
-    final isLoan = (transfer.displayType ?? '').contains('Loan');
+    final isLoan = (transfer.displayType ?? '').contains(tr(context, 'Loan'));
     final appColors = AppColors.of(context);
 
     final content = Container(
@@ -59,7 +59,7 @@ class TransferTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        transfer.playerName ?? 'Unknown Player',
+                        transfer.playerName ?? tr(context, 'Unknown Player'),
                         style: Heading5.style,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -83,13 +83,13 @@ class TransferTile extends StatelessWidget {
                   children: [
                     Badge(
                       label: transfer.direction == TransferDirection.incoming
-                          ? 'FROM'
-                          : 'TO',
+                          ? tr(context, 'FROM')
+                          : tr(context, 'TO'),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        transfer.otherTeamName ?? 'Unknown Team',
+                        transfer.otherTeamName ?? tr(context, 'Unknown Team'),
                         style: Body1.style,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -104,7 +104,7 @@ class TransferTile extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 4,
                   children: [
-                    _contractDate(transfer),
+                    _contractDate(context, transfer),
                     if (isLoan) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -114,7 +114,7 @@ class TransferTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'LOAN',
+                          tr(context, 'LOAN'),
                           style: Eyebrow.style
                               .copyWith(color: const Color(0xFFD82457)),
                         ),
@@ -151,7 +151,7 @@ class TransferTile extends StatelessWidget {
     return '€${_compactAmount(transfer.amount!)}';
   }
 
-  static Widget _contractDate(TransferEntry transfer) {
+  static Widget _contractDate(BuildContext context, TransferEntry transfer) {
     final start = transfer.contractStartDate;
     final end = transfer.contractEndDate;
     final formatter = DateFormat('MMM yyyy');
@@ -159,11 +159,12 @@ class TransferTile extends StatelessWidget {
         ? '-'
         : '${start == null ? '-' : formatter.format(start)} – '
             '${end == null ? '-' : formatter.format(end)}';
-    final text = Text(label, style: Body1.style);
+    final text = Text(tr(context, label), style: Body1.style);
 
     if (start != null && end != null) return text;
     return Tooltip(
-      message: 'Complete contract dates are currently unavailable.',
+      message:
+          tr(context, 'Complete contract dates are currently unavailable.'),
       child: text,
     );
   }
@@ -202,7 +203,7 @@ class Badge extends StatelessWidget {
         color: appColors.subtleBackground,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(label, style: Eyebrow.style),
+      child: Text(tr(context, label), style: Eyebrow.style),
     );
   }
 }

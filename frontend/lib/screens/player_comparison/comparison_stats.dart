@@ -79,6 +79,7 @@ class _AttributeUnavailable extends StatelessWidget {
           Positioned.fill(
             child: CustomPaint(
               painter: _EmptyRadarPainter(
+                locale: Localizations.localeOf(context),
                 color: foreground.withValues(alpha: .30),
                 labelColor: foreground,
               ),
@@ -95,7 +96,7 @@ class _AttributeUnavailable extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '아직 준비중이에요ㅠㅠ',
+                tr(context, "Coming soon"),
                 key: const ValueKey('comparison-attribute-pending'),
                 style: TextStyle(
                   color: foreground,
@@ -164,7 +165,7 @@ class _LegendDot extends StatelessWidget {
           const SizedBox(width: 6),
           Flexible(
             child: Text(
-              label,
+              tr(context, label),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: textColor, fontSize: 12),
@@ -197,7 +198,7 @@ class _StatCategoryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            category.label.toUpperCase(),
+            playerCategoryLabel(context, category.label).toUpperCase(),
             style: TextStyle(
               color: foreground,
               fontSize: 13,
@@ -274,7 +275,7 @@ class _StatRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
+            tr(context, label),
             style: TextStyle(
               color: AppColors.of(context).mutedForeground,
               fontSize: 12,

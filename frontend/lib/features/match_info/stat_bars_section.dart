@@ -78,7 +78,8 @@ class StatComparisonBar extends StatelessWidget {
       child: Column(
         children: [
           Center(
-              child: Text(data.category.toUpperCase(), style: Body2_b.style)),
+              child: Text(tr(context, data.category).toUpperCase(),
+                  style: Body2_b.style)),
           const SizedBox(height: 6),
           Row(
             children: [

@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'core/style.dart';
 import 'core/stylesheet_dark.dart';
 import 'core/theme_controller.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class WelcomeLoadingScreen extends StatefulWidget {
   const WelcomeLoadingScreen({super.key});
@@ -134,14 +135,15 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                   child: Column(
                     children: [
                       Text(
-                        "Welcome to 1Touch!",
+                        tr(context, "Welcome to 1Touch!"),
                         textAlign: TextAlign.center,
                         style:
                             Heading3.style.copyWith(color: appColors.onBrand),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        "Your setup is complete. Let’s see what\nyour favorites are up to.",
+                        tr(context,
+                            "Your setup is complete. Let’s see what\nyour favorites are up to."),
                         textAlign: TextAlign.center,
                         style: Body2_b.style.copyWith(color: appColors.onBrand),
                       ),
@@ -170,7 +172,7 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Text("CONTINUE",
+                    child: Text(tr(context, "CONTINUE"),
                         style: Body2_b.style.copyWith(color: colors.surface)),
                   ),
                 ),

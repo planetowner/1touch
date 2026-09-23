@@ -236,7 +236,7 @@ class _PlayerChip extends StatelessWidget {
               ] else
                 Expanded(
                   child: Text(
-                    'PLAYER $slot',
+                    tr(context, 'PLAYER {slot}', {'slot': slot}),
                     style: const TextStyle(
                       color: Color(0xFF0A0A0A),
                       fontSize: 14,

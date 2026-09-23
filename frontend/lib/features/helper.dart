@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:onetouch/l10n/date_labels.dart';
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 // Maps a team's id to its local crest file in TeamLogos/, used as the
 // fallback when the network image fails to load. Filenames don't follow a
@@ -87,7 +88,10 @@ Widget competitionLogoFallback(int competitionId, {double size = 24}) {
 // UTILITIES & HELPERS
 //
 
-String ordinal(int number) {
+String ordinal(int number, {Locale locale = const Locale('en')}) {
+  if (locale.languageCode != 'en') {
+    return translateMessage(locale, '{rank} place', {'rank': number});
+  }
   if (number >= 11 && number <= 13) return '${number}th';
   switch (number % 10) {
     case 1:
@@ -99,11 +103,6 @@ String ordinal(int number) {
     default:
       return '${number}th';
   }
-}
-
-String _formatDate(DateTime? kickoff) {
-  if (kickoff == null) return 'Date TBD';
-  return DateFormat('EEE, MMM d h:mm a').format(kickoff.toLocal());
 }
 
 String determineMatchStatus(DateTime matchDateTime) {
@@ -152,7 +151,9 @@ class MatchCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            match!.status == FixtureStatus.live ? 'LIVE MATCH' : 'NEXT MATCH',
+            match!.status == FixtureStatus.live
+                ? tr(context, 'LIVE MATCH')
+                : tr(context, 'NEXT MATCH'),
             style: Body1_b.style,
           ),
           const SizedBox(height: 16),
@@ -240,9 +241,9 @@ class MatchCard2 extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(children: [
+          Row(children: [
             SizedBox(width: 8),
-            Text('LAST MATCH', style: Body1_b.style),
+            Text(tr(context, 'LAST MATCH'), style: Body1_b.style),
           ]),
           const SizedBox(height: 16),
           LayoutBuilder(
@@ -562,7 +563,8 @@ class _MatchInfo extends StatelessWidget {
         SizedBox(
           width: width,
           child: Text(
-            _formatDate(match!.kickoff),
+            fixtureDateLabel(match!.kickoff,
+                locale: Localizations.localeOf(context)),
             textAlign: TextAlign.center,
             style: Body2.style,
           ),

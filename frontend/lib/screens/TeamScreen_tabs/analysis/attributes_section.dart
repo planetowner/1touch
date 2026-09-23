@@ -195,7 +195,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     if (_myScores == null) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-        child: Text('No attribute data available',
+        child: Text(tr(context, 'No attribute data available'),
             style: TextStyle(color: AppColors.of(context).mutedForeground)),
       );
     }
@@ -221,7 +221,7 @@ class _AttributesSectionState extends State<AttributesSection> {
         children: [
           //   Header: title + comparison picker
           _AnalysisSectionHeader(
-            title: 'ATTRIBUTES',
+            title: tr(context, 'ATTRIBUTES'),
             trailing:
                 _comparisonOptions.isNotEmpty ? _buildComparisonPill() : null,
           ),
@@ -234,7 +234,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           ] else if (_comparisonFailed) ...[
             const SizedBox(height: 8),
             Text(
-              'Comparison data unavailable',
+              tr(context, 'Comparison data unavailable'),
               key: const ValueKey('analysis-attributes-comparison-error'),
               style: TextStyle(color: AppColors.of(context).mutedForeground),
             ),
@@ -268,7 +268,7 @@ class _AttributesSectionState extends State<AttributesSection> {
               spacing: 20,
               runSpacing: 8,
               children: [
-                _legendDot(teamPrimaryColor, 'MY TEAM'),
+                _legendDot(teamPrimaryColor, tr(context, 'MY TEAM')),
                 if (_comparisonScores != null)
                   _legendDot(
                     comparisonColor ?? Colors.white,
@@ -297,7 +297,7 @@ class _AttributesSectionState extends State<AttributesSection> {
     }
 
     final label = selectedSeason == null
-        ? 'SEASON'
+        ? tr(context, 'SEASON')
         : _compactSeasonLabel(selectedSeason.seasonName);
 
     return PopupMenuButton<int>(
@@ -334,7 +334,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              label,
+              tr(context, label),
               style: Body2_b.style.copyWith(color: colors.onSurface),
             ),
             const SizedBox(width: AppDropdownTokens.gap),
@@ -361,7 +361,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              label,
+              tr(context, label),
               style: Body2_b.style,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

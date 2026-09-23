@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 // Core & Data
@@ -269,29 +271,33 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
           child: Row(
             children: [
               _buildItem(
+                context: context,
                 index: 0,
-                label: 'Home',
+                label: tr(context, 'Home'),
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home,
                 foreground: foreground,
               ),
               _buildItem(
+                context: context,
                 index: 1,
-                label: 'Players',
+                label: tr(context, 'Players'),
                 icon: Icons.person_outline,
                 activeIcon: Icons.person,
                 foreground: foreground,
               ),
               _buildItem(
+                context: context,
                 index: 2,
-                label: 'Team',
+                label: tr(context, 'Team'),
                 icon: Icons.local_police_outlined,
                 activeIcon: Icons.local_police,
                 foreground: foreground,
               ),
               _buildItem(
+                context: context,
                 index: 3,
-                label: 'Community',
+                label: tr(context, 'Community'),
                 icon: Icons.people_alt_outlined,
                 activeIcon: Icons.people_alt,
                 foreground: foreground,
@@ -304,6 +310,7 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
   }
 
   Widget _buildItem({
+    required BuildContext context,
     required int index,
     required String label,
     required IconData icon,
@@ -332,7 +339,7 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                label,
+                tr(context, label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -357,6 +364,13 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: appThemeController,
       builder: (context, themeMode, _) => MaterialApp.router(
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        localeListResolutionCallback: resolveAppLocale,
+        builder: (context, child) {
+          Intl.defaultLocale = Localizations.localeOf(context).languageCode;
+          return child!;
+        },
         theme: style.whitetheme,
         darkTheme: style.darktheme,
         themeMode: themeMode,
