@@ -148,7 +148,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          _getMonthName(_currentMonth.month),
+                          tr(context, _getMonthName(_currentMonth.month)),
                           style: Heading3.style,
                         ),
                       ),
@@ -194,11 +194,11 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildLegendDot(Colors.red, 'League'),
+                _buildLegendDot(Colors.red, tr(context, 'League')),
                 const SizedBox(width: 16),
-                _buildLegendDot(Colors.blue, 'Europe'),
+                _buildLegendDot(Colors.blue, tr(context, 'Europe')),
                 const SizedBox(width: 16),
-                _buildLegendDot(Colors.green, 'Cup'),
+                _buildLegendDot(Colors.green, tr(context, 'Cup')),
               ],
             ),
           ),
@@ -217,7 +217,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
-        Text(label, style: Body2_b.style),
+        Text(tr(context, label), style: Body2_b.style),
       ],
     );
   }

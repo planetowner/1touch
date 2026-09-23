@@ -37,7 +37,7 @@ class ApiNewsRepository implements NewsRepository {
           title: article.title,
           source: article.source,
           timeLabel: contentTimeLabel(article.publishedAt,
-              language: newsLanguage, now: _now()),
+              language: language, now: _now()),
           imageUrl: article.imageUrl,
           destinationUrl: article.url,
         )));

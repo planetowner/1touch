@@ -4,6 +4,7 @@ import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/All.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class CommunityPostBody extends StatelessWidget {
   const CommunityPostBody({
@@ -48,7 +49,7 @@ class CommunityPostBody extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Unable to load community posts.',
+                tr(context, 'Unable to load community posts.'),
                 style: Body1.style,
                 textAlign: TextAlign.center,
               ),
@@ -56,7 +57,7 @@ class CommunityPostBody extends StatelessWidget {
               TextButton(
                 key: const ValueKey('community-posts-retry'),
                 onPressed: onRetry,
-                child: const Text('RETRY'),
+                child: Text(tr(context, 'RETRY')),
               ),
             ],
           ),

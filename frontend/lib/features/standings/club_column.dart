@@ -44,7 +44,7 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
               top: 24,
               bottom: 16,
             ),
-            child: Text('Club', style: Body1.style),
+            child: Text(tr(context, 'Club'), style: Body1.style),
           ),
           const SizedBox(height: 24),
           ...widget.standings.map((team) => _buildClubRow(context, team)),
@@ -107,8 +107,9 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
                     child: Semantics(
                       button: true,
                       label: _isExpanded
-                          ? 'Collapse club names to short codes'
-                          : 'Expand all club short codes to full names',
+                          ? tr(context, 'Collapse club names to short codes')
+                          : tr(context,
+                              'Expand all club short codes to full names'),
                       child: GestureDetector(
                         key: ValueKey('standing-club-name-$teamId'),
                         behavior: HitTestBehavior.opaque,

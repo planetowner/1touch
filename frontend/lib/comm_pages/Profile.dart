@@ -19,6 +19,7 @@ import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
@@ -157,12 +158,12 @@ class _ProfileState extends State<Profile> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Unable to load Profile.'),
+              Text(tr(context, 'Unable to load Profile.')),
               const SizedBox(height: 12),
               TextButton(
                 key: const ValueKey('profile-retry-button'),
                 onPressed: _loadProfile,
-                child: const Text('Retry'),
+                child: Text(tr(context, 'Retry')),
               ),
             ],
           ),
@@ -258,7 +259,7 @@ class _ProfileState extends State<Profile> {
                       children: [
                         Expanded(
                           child: Text(
-                            "FOLLOWING TEAMS",
+                            tr(context, "FOLLOWING TEAMS"),
                             style: Body2_b.style,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -305,7 +306,7 @@ class _ProfileState extends State<Profile> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: PlayerFavorites(
-                      title: 'FOLLOWING PLAYERS',
+                      title: tr(context, 'FOLLOWING PLAYERS'),
                       controller: widget.followingController ??
                           playerFollowingController,
                       searchRepository: null,
@@ -313,7 +314,7 @@ class _ProfileState extends State<Profile> {
                   ),
                   const SizedBox(height: 48),
 
-                  _buildSectionLabel("SETTINGS"),
+                  _buildSectionLabel(tr(context, "SETTINGS")),
                   const SizedBox(height: 16),
                   SettingsList(
                     onPersonalInfo: () => _openProfileEditor(profile),
@@ -395,11 +396,11 @@ class _ProfileState extends State<Profile> {
         ),
         child: Row(
           children: [
-            _buildStat('—', "PTS"),
+            _buildStat('—', tr(context, "PTS")),
             _verticalDivider(),
-            _buildStat('—', "POSTS"),
+            _buildStat('—', tr(context, "POSTS")),
             _verticalDivider(),
-            _buildStat('—', "COMMENTS"),
+            _buildStat('—', tr(context, "COMMENTS")),
           ],
         ),
       ),
@@ -415,7 +416,7 @@ class _ProfileState extends State<Profile> {
           children: [
             Text(value, style: Heading4.style),
             const SizedBox(height: 4),
-            Text(label, style: Body2_b.style),
+            Text(tr(context, label), style: Body2_b.style),
           ],
         ),
       ),
@@ -433,7 +434,7 @@ class _ProfileState extends State<Profile> {
   Widget _buildSectionLabel(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Text(title, style: Body2_b.style),
+      child: Text(tr(context, title), style: Body2_b.style),
     );
   }
 
@@ -497,7 +498,7 @@ class _ProfileState extends State<Profile> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
-                            label,
+                            tr(context, label),
                             style: Eyebrow.style,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
@@ -548,7 +549,7 @@ class _SettingsListState extends State<SettingsList> {
       {required IconData icon, required String title, VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon),
-      title: Text(title, style: Body1.style),
+      title: Text(tr(context, title), style: Body1.style),
       trailing: const Icon(Icons.arrow_forward_ios),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
@@ -561,13 +562,13 @@ class _SettingsListState extends State<SettingsList> {
       children: [
         _settingItem(
           icon: Icons.badge_outlined,
-          title: 'Personal Info',
+          title: tr(context, 'Personal Info'),
           onTap: widget.onPersonalInfo,
         ),
         _divider(),
         _settingItem(
           icon: Icons.notifications_none,
-          title: 'Notification',
+          title: tr(context, 'Notification'),
           onTap: () {
             context.push('/profile/notification');
           },
@@ -575,7 +576,7 @@ class _SettingsListState extends State<SettingsList> {
         _divider(),
         _settingItem(
           icon: Icons.language_rounded,
-          title: 'Preferences',
+          title: tr(context, 'Preferences'),
           onTap: () {
             context.push('/profile/preference');
           },
@@ -586,14 +587,14 @@ class _SettingsListState extends State<SettingsList> {
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.brightness_4_outlined),
-            title: Text("Dark Theme", style: Body1.style),
+            title: Text(tr(context, "Dark Theme"), style: Body1.style),
             trailing: const AppThemeSwitch(),
           ),
         ),
         _divider(),
         _settingItem(
           icon: Icons.chat_outlined,
-          title: 'Contact Us',
+          title: tr(context, 'Contact Us'),
           onTap: () {
             context.push('/profile/contact');
           },
@@ -601,7 +602,7 @@ class _SettingsListState extends State<SettingsList> {
         _divider(),
         _settingItem(
           icon: Icons.info_outline,
-          title: 'About',
+          title: tr(context, 'About'),
           onTap: () {
             context.push('/profile/about');
           },

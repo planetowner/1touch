@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/rating_level_ring.dart';
 import 'package:onetouch/models/player_indicators.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerIndicatorValue extends StatelessWidget {
   const PlayerIndicatorValue({
@@ -24,9 +25,9 @@ class PlayerIndicatorValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final value = loading
-        ? 'Loading'
+        ? tr(context, 'Loading')
         : failed
-            ? 'Unavailable'
+            ? tr(context, 'Unavailable')
             : label ?? score?.grade ?? '—';
     return Tooltip(
       message: explanation,
@@ -38,7 +39,7 @@ class PlayerIndicatorValue extends StatelessWidget {
               child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
-                  child: Text(value, style: Heading5.style))),
+                  child: Text(tr(context, value), style: Heading5.style))),
           const SizedBox(width: 8),
           if (loading)
             const SizedBox.square(
@@ -48,17 +49,18 @@ class PlayerIndicatorValue extends StatelessWidget {
           else if (failed)
             InkResponse(
               onTap: onRetry,
-              child: const Icon(
+              child: Icon(
                 Icons.refresh,
                 size: 20,
-                semanticLabel: 'Retry',
+                semanticLabel: tr(context, 'Retry'),
               ),
             )
           else if (score?.band != null)
             Semantics(
               label: score!.percentile == null
                   ? score!.grade!
-                  : '${score!.percentile!.toStringAsFixed(1)} percentile',
+                  : tr(context, '{value} percentile',
+                      {'value': score!.percentile!.toStringAsFixed(1)}),
               child: ExcludeSemantics(
                 child: RatingLevelRing(
                   rating: score!.grade!,

@@ -14,6 +14,7 @@ import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class MatchesTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -241,21 +242,21 @@ class _MatchesTabState extends State<MatchesTab> {
         if (upcomingMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.upcoming,
-            title: 'UPCOMING',
+            title: tr(context, 'UPCOMING'),
             matches: upcomingMatches,
             key: _upcomingSectionKey,
           ),
         if (liveMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.live,
-            title: '• LIVE',
+            title: tr(context, '• LIVE'),
             matches: liveMatches,
             key: _liveSectionKey,
           ),
         if (pastMatches.isNotEmpty)
           _MatchSectionData(
             type: _MatchSection.past,
-            title: 'PAST',
+            title: tr(context, 'PAST'),
             matches: pastMatches,
             key: _pastSectionKey,
           ),
@@ -277,7 +278,7 @@ class _MatchesTabState extends State<MatchesTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Unable to load matches',
+              tr(context, 'Unable to load matches'),
               style: Body1.style,
               textAlign: TextAlign.center,
             ),
@@ -285,7 +286,7 @@ class _MatchesTabState extends State<MatchesTab> {
             TextButton(
               key: const ValueKey('matches-retry'),
               onPressed: _retryLoad,
-              child: const Text('Retry'),
+              child: Text(tr(context, 'Retry')),
             ),
           ],
         ),
@@ -296,7 +297,7 @@ class _MatchesTabState extends State<MatchesTab> {
     if (sections.isEmpty) {
       return Center(
         child: Text(
-          'No matches available',
+          tr(context, 'No matches available'),
           key: const ValueKey('matches-empty'),
           style: Body1.style,
         ),
@@ -425,7 +426,7 @@ class _MatchesTabState extends State<MatchesTab> {
                   child: isUpcoming
                       ? Text(
                           kickoff == null
-                              ? 'DATE TBD'
+                              ? tr(context, 'DATE TBD')
                               : DateFormat('E, MMM d\nh:mm a').format(kickoff),
                           style: Body2.style,
                           textAlign: TextAlign.center,
@@ -546,7 +547,7 @@ class _MatchSectionHeader extends StatelessWidget {
           const SizedBox(height: 16),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(title, style: Body2_b.style),
+            child: Text(tr(context, title), style: Body2_b.style),
           ),
           const Spacer(),
           Container(height: 0.7, color: AppColors.of(context).divider),

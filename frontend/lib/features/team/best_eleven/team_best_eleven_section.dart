@@ -11,6 +11,7 @@ import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
 
+import 'package:onetouch/l10n/app_localizations.dart';
 part 'best_eleven_formation_filter.dart';
 part 'best_eleven_painters.dart';
 part 'best_eleven_pitch.dart';
@@ -180,9 +181,11 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
         child: Row(
           children: [
             Expanded(
-              child: Text('Unable to load best eleven', style: Body2.style),
+              child: Text(tr(context, 'Unable to load best eleven'),
+                  style: Body2.style),
             ),
-            TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+            TextButton(
+                onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
           ],
         ),
       );
@@ -193,7 +196,8 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
       return Padding(
         key: const ValueKey('best-eleven-empty'),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        child: Text('No best eleven available', style: Body2.style),
+        child:
+            Text(tr(context, 'No best eleven available'), style: Body2.style),
       );
     }
 
@@ -212,7 +216,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _BestElevenSectionHeader(
-            title: 'BEST ELEVEN',
+            title: tr(context, 'BEST ELEVEN'),
             trailing: _formations.isEmpty
                 ? null
                 : _BestElevenFormationFilter(
@@ -242,18 +246,20 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
               children: [
                 Expanded(
                   child: Text(
-                    'Unable to load best eleven',
+                    tr(context, 'Unable to load best eleven'),
                     style: Body2.style,
                   ),
                 ),
-                TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+                TextButton(
+                    onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
               ],
             )
           else if (_lineup == null || _lineup!.players.isEmpty)
             Padding(
               key: const ValueKey('analysis-best-eleven-empty'),
               padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text('No best eleven available', style: Body2.style),
+              child: Text(tr(context, 'No best eleven available'),
+                  style: Body2.style),
             )
           else
             BestElevenPitch(
@@ -275,7 +281,7 @@ class _BestElevenSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final control = trailing;
-    if (control == null) return Text(title, style: Body2_b.style);
+    if (control == null) return Text(tr(context, title), style: Body2_b.style);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -283,7 +289,7 @@ class _BestElevenSectionHeader extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Body2_b.style),
+              Text(tr(context, title), style: Body2_b.style),
               const SizedBox(height: 8),
               Align(alignment: Alignment.centerRight, child: control),
             ],
@@ -292,7 +298,7 @@ class _BestElevenSectionHeader extends StatelessWidget {
 
         return Row(
           children: [
-            Text(title, style: Body2_b.style),
+            Text(tr(context, title), style: Body2_b.style),
             const SizedBox(width: 12),
             const Spacer(),
             control,

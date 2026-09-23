@@ -5,13 +5,14 @@ import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
     as community_providers;
 import 'package:onetouch/models/community_rules.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 void showGroundRulesModal(
   BuildContext context, {
   required int teamId,
   CommunityRepository? repository,
 }) {
-  final locale = WidgetsBinding.instance.platformDispatcher.locale;
+  final locale = Localizations.localeOf(context);
   final language = CommunityLanguage.fromLocaleParts(
     languageCode: locale.languageCode,
     scriptCode: locale.scriptCode,
@@ -93,7 +94,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          rules?.title ?? 'Community Ground Rules',
+                          rules?.title ?? tr(context, 'Community Ground Rules'),
                           style: Heading5.style.copyWith(
                             color: colors.onSurface,
                           ),
@@ -122,7 +123,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Unable to load community rules.',
+                                tr(context, 'Unable to load community rules.'),
                                 key: const ValueKey('community-rules-error'),
                                 style: Body1.style.copyWith(
                                   color: colors.onSurface,
@@ -133,7 +134,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                               TextButton(
                                 key: const ValueKey('community-rules-retry'),
                                 onPressed: _retry,
-                                child: const Text('RETRY'),
+                                child: Text(tr(context, 'RETRY')),
                               ),
                             ],
                           ),

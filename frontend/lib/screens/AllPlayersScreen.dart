@@ -10,6 +10,7 @@ import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/index.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 const double _playerDetailAppBarHeight = 100;
 const double _playerDetailTabBarHeight = 48;
@@ -195,11 +196,11 @@ class _PlayerCardState extends State<PlayerCard>
                             width: 2,
                           ),
                         ),
-                        tabs: const [
-                          Tab(text: "Overview"),
-                          Tab(text: "Analysis"),
-                          Tab(text: "Matches"),
-                          Tab(text: "Career"),
+                        tabs: [
+                          Tab(text: tr(context, "Overview")),
+                          Tab(text: tr(context, "Analysis")),
+                          Tab(text: tr(context, "Matches")),
+                          Tab(text: tr(context, "Career")),
                         ],
                         tabAlignment: TabAlignment.start,
                       ),
@@ -315,8 +316,8 @@ class _PlayerFollowButtonState extends State<PlayerFollowButton> {
       builder: (_, __) => IconButton(
           key: const Key('player-follow-button'),
           tooltip: controller.contains(widget.playerId)
-              ? 'Unfollow player'
-              : 'Follow player',
+              ? tr(context, 'Unfollow player')
+              : tr(context, 'Follow player'),
           onPressed: controller.loading
               ? null
               : () async {
@@ -324,8 +325,9 @@ class _PlayerFollowButtonState extends State<PlayerFollowButton> {
                     await controller.toggle(widget.playerId);
                   } catch (_) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Could not save favorites')));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text(tr(context, 'Could not save favorites'))));
                     }
                   }
                 },

@@ -16,6 +16,7 @@ import 'package:onetouch/data/profile/current_user_repository_provider.dart'
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/fixture_chat_message.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class LiveChatTab extends StatefulWidget {
   final int matchId;
@@ -163,27 +164,30 @@ class _LiveChatTabState extends State<LiveChatTab> {
   void _handleSocketDone() {
     if (!mounted || _isClosing || _initError != null) return;
     _requestId++;
-    setState(() => _initError = 'Chat disconnected. Please try again.');
+    setState(
+        () => _initError = tr(context, 'Chat disconnected. Please try again.'));
   }
 
   String _friendlyError(Object error) {
     if (error is ChatSocketException) {
       if (error.isUnauthorized) {
-        return 'Your session expired. Please sign in again.';
+        return tr(context, 'Your session expired. Please sign in again.');
       }
       if (error.isForbidden) {
-        return 'Chat is only available to supporters of the participating teams.';
+        return tr(context,
+            'Chat is only available to supporters of the participating teams.');
       }
       return error.message;
     }
     final text = error.toString();
     if (text.contains('status 401')) {
-      return 'Your session expired. Please sign in again.';
+      return tr(context, 'Your session expired. Please sign in again.');
     }
     if (text.contains('status 403')) {
-      return 'Chat is only available to supporters of the participating teams.';
+      return tr(context,
+          'Chat is only available to supporters of the participating teams.');
     }
-    return 'Please check your connection and try again.';
+    return tr(context, 'Please check your connection and try again.');
   }
 
   void _scrollToBottom() {
@@ -231,7 +235,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
               children: [
                 Icon(Icons.outlined_flag, color: foreground, size: 18),
                 const SizedBox(width: 10),
-                Text('Report', style: Body1.style),
+                Text(tr(context, 'Report'), style: Body1.style),
               ],
             ),
             onTap: () => _reportMessage(msg),
@@ -241,7 +245,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
             children: [
               Icon(Icons.copy_outlined, color: foreground, size: 18),
               const SizedBox(width: 10),
-              Text('Copy Text', style: Body1.style),
+              Text(tr(context, 'Copy Text'), style: Body1.style),
             ],
           ),
           onTap: () => Clipboard.setData(ClipboardData(text: msg.text)),
@@ -297,7 +301,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
             children: [
               Icon(Icons.wifi_off, color: appColors.mutedForeground, size: 40),
               const SizedBox(height: 16),
-              Text('Couldn\'t connect to chat',
+              Text(tr(context, 'Couldn\'t connect to chat'),
                   style: Body1.style, textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Opacity(
@@ -316,7 +320,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
-                child: Text('Retry', style: Body2_b.style),
+                child: Text(tr(context, 'Retry'), style: Body2_b.style),
               ),
             ],
           ),
@@ -337,7 +341,8 @@ class _LiveChatTabState extends State<LiveChatTab> {
                 ? Center(
                     child: Opacity(
                       opacity: 0.4,
-                      child: Text('Be the first to chat!', style: Body1.style),
+                      child: Text(tr(context, 'Be the first to chat!'),
+                          style: Body1.style),
                     ),
                   )
                 : ListView.builder(
@@ -399,7 +404,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
                         controller: _controller,
                         style: Body1.style,
                         decoration: InputDecoration(
-                          hintText: 'Type a message',
+                          hintText: tr(context, 'Type a message'),
                           hintStyle: Body1.style.copyWith(
                             color: appColors.mutedForeground,
                           ),
@@ -440,7 +445,11 @@ class _LiveChatTabState extends State<LiveChatTab> {
         if (showHeader) ...[
           Row(
             children: [
-              Text(msg.displayUsername, style: Body2_b.style),
+              Text(
+                  msg.authorDeleted
+                      ? tr(context, 'Deleted user')
+                      : msg.displayUsername,
+                  style: Body2_b.style),
               const SizedBox(width: 8),
               Opacity(
                 opacity: 0.5,
@@ -476,7 +485,11 @@ class _LiveChatTabState extends State<LiveChatTab> {
                 child: Text(_timeString(msg), style: Eyebrow.style),
               ),
               const SizedBox(width: 8),
-              Text(msg.displayUsername, style: Body2_b.style),
+              Text(
+                  msg.authorDeleted
+                      ? tr(context, 'Deleted user')
+                      : msg.displayUsername,
+                  style: Body2_b.style),
             ],
           ),
           const SizedBox(height: 6),

@@ -26,7 +26,7 @@ class _AnalysisSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final control = trailing;
-    if (control == null) return Text(title, style: Body2_b.style);
+    if (control == null) return Text(tr(context, title), style: Body2_b.style);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -34,7 +34,7 @@ class _AnalysisSectionHeader extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Body2_b.style),
+              Text(tr(context, title), style: Body2_b.style),
               const SizedBox(height: 8),
               Align(alignment: Alignment.centerRight, child: control),
             ],
@@ -43,7 +43,7 @@ class _AnalysisSectionHeader extends StatelessWidget {
 
         return Row(
           children: [
-            Text(title, style: Body2_b.style),
+            Text(tr(context, title), style: Body2_b.style),
             const SizedBox(width: 12),
             const Spacer(),
             control,
