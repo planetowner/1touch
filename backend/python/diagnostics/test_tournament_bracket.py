@@ -187,8 +187,8 @@ class BracketForecastTests(unittest.TestCase):
         self.assertEqual(result[4]['probability'], 0)
         self.assertTrue(.4 < result[1]['probability'] < .6)
         rows[1]['state_id'] = 2
-        with self.assertRaisesRegex(ValueError, 'live'):
-            self.estimate(build(rows, provider_edges=edges))
+        rows[1].update(home_score=99,away_score=0)
+        self.assertEqual(self.estimate(build(rows, provider_edges=edges)), result)
         with self.assertRaisesRegex(ValueError, 'verified knockout path'):
             self.estimate(build(rows))
 

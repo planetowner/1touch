@@ -1,0 +1,1335 @@
+{
+  "note": "2026-09-19 운영 기사 감사에서 확인한 제목·태그와 기대 팀 ID예요. snapshot_article_id는 감사 자료의 ID이며 테스트 중 DB를 조회하지 않아요. 214·220은 제목 우선 규칙, 270·271·273·274·308은 복수 구단 태그로 단일 팀을 정할 수 없는 경우예요.",
+  "teams": [
+    {
+      "team_id": 3,
+      "name": "Sunderland",
+      "competition_id": 8
+    },
+    {
+      "team_id": 6,
+      "name": "Tottenham Hotspur",
+      "competition_id": 8
+    },
+    {
+      "team_id": 8,
+      "name": "Liverpool",
+      "competition_id": 8
+    },
+    {
+      "team_id": 9,
+      "name": "Manchester City",
+      "competition_id": 8
+    },
+    {
+      "team_id": 11,
+      "name": "Fulham",
+      "competition_id": 8
+    },
+    {
+      "team_id": 13,
+      "name": "Everton",
+      "competition_id": 8
+    },
+    {
+      "team_id": 14,
+      "name": "Manchester United",
+      "competition_id": 8
+    },
+    {
+      "team_id": 15,
+      "name": "Aston Villa",
+      "competition_id": 8
+    },
+    {
+      "team_id": 18,
+      "name": "Chelsea",
+      "competition_id": 8
+    },
+    {
+      "team_id": 19,
+      "name": "Arsenal",
+      "competition_id": 8
+    },
+    {
+      "team_id": 20,
+      "name": "Newcastle United",
+      "competition_id": 8
+    },
+    {
+      "team_id": 22,
+      "name": "Hull City",
+      "competition_id": 8
+    },
+    {
+      "team_id": 36,
+      "name": "Celta de Vigo",
+      "competition_id": 564
+    },
+    {
+      "team_id": 37,
+      "name": "Roma",
+      "competition_id": 384
+    },
+    {
+      "team_id": 43,
+      "name": "Lazio",
+      "competition_id": 384
+    },
+    {
+      "team_id": 44,
+      "name": "Olympique Marseille",
+      "competition_id": 301
+    },
+    {
+      "team_id": 51,
+      "name": "Crystal Palace",
+      "competition_id": 8
+    },
+    {
+      "team_id": 52,
+      "name": "AFC Bournemouth",
+      "competition_id": 8
+    },
+    {
+      "team_id": 63,
+      "name": "Nottingham Forest",
+      "competition_id": 8
+    },
+    {
+      "team_id": 67,
+      "name": "Schalke 04",
+      "competition_id": 82
+    },
+    {
+      "team_id": 68,
+      "name": "Borussia Dortmund",
+      "competition_id": 82
+    },
+    {
+      "team_id": 71,
+      "name": "Leeds United",
+      "competition_id": 8
+    },
+    {
+      "team_id": 78,
+      "name": "Brighton & Hove Albion",
+      "competition_id": 8
+    },
+    {
+      "team_id": 79,
+      "name": "Olympique Lyonnais",
+      "competition_id": 301
+    },
+    {
+      "team_id": 82,
+      "name": "Werder Bremen",
+      "competition_id": 82
+    },
+    {
+      "team_id": 83,
+      "name": "FC Barcelona",
+      "competition_id": 564
+    },
+    {
+      "team_id": 90,
+      "name": "FC Augsburg",
+      "competition_id": 82
+    },
+    {
+      "team_id": 102,
+      "name": "Genoa",
+      "competition_id": 384
+    },
+    {
+      "team_id": 106,
+      "name": "Getafe",
+      "competition_id": 564
+    },
+    {
+      "team_id": 109,
+      "name": "Fiorentina",
+      "competition_id": 384
+    },
+    {
+      "team_id": 113,
+      "name": "AC Milan",
+      "competition_id": 384
+    },
+    {
+      "team_id": 116,
+      "name": "Ipswich Town",
+      "competition_id": 8
+    },
+    {
+      "team_id": 117,
+      "name": "Coventry City",
+      "competition_id": 8
+    },
+    {
+      "team_id": 126,
+      "name": "Málaga",
+      "competition_id": 564
+    },
+    {
+      "team_id": 214,
+      "name": "Valencia",
+      "competition_id": 564
+    },
+    {
+      "team_id": 236,
+      "name": "Brentford",
+      "competition_id": 8
+    },
+    {
+      "team_id": 266,
+      "name": "Brest",
+      "competition_id": 301
+    },
+    {
+      "team_id": 267,
+      "name": "Venezia",
+      "competition_id": 384
+    },
+    {
+      "team_id": 268,
+      "name": "Como",
+      "competition_id": 384
+    },
+    {
+      "team_id": 271,
+      "name": "Lens",
+      "competition_id": 301
+    },
+    {
+      "team_id": 277,
+      "name": "RB Leipzig",
+      "competition_id": 82
+    },
+    {
+      "team_id": 289,
+      "name": "Toulouse",
+      "competition_id": 301
+    },
+    {
+      "team_id": 346,
+      "name": "Udinese",
+      "competition_id": 384
+    },
+    {
+      "team_id": 366,
+      "name": "Eintracht Frankfurt",
+      "competition_id": 82
+    },
+    {
+      "team_id": 377,
+      "name": "Rayo Vallecano",
+      "competition_id": 564
+    },
+    {
+      "team_id": 398,
+      "name": "Parma",
+      "competition_id": 384
+    },
+    {
+      "team_id": 429,
+      "name": "Deportivo A Coruña",
+      "competition_id": 564
+    },
+    {
+      "team_id": 450,
+      "name": "Nice",
+      "competition_id": 301
+    },
+    {
+      "team_id": 459,
+      "name": "Osasuna",
+      "competition_id": 564
+    },
+    {
+      "team_id": 485,
+      "name": "Real Betis",
+      "competition_id": 564
+    },
+    {
+      "team_id": 503,
+      "name": "FC Bayern München",
+      "competition_id": 82
+    },
+    {
+      "team_id": 528,
+      "name": "Espanyol",
+      "competition_id": 564
+    },
+    {
+      "team_id": 585,
+      "name": "Cagliari",
+      "competition_id": 384
+    },
+    {
+      "team_id": 591,
+      "name": "Paris Saint Germain",
+      "competition_id": 301
+    },
+    {
+      "team_id": 594,
+      "name": "Real Sociedad",
+      "competition_id": 564
+    },
+    {
+      "team_id": 597,
+      "name": "Napoli",
+      "competition_id": 384
+    },
+    {
+      "team_id": 598,
+      "name": "Rennes",
+      "competition_id": 301
+    },
+    {
+      "team_id": 613,
+      "name": "Torino",
+      "competition_id": 384
+    },
+    {
+      "team_id": 625,
+      "name": "Juventus",
+      "competition_id": 384
+    },
+    {
+      "team_id": 676,
+      "name": "Sevilla",
+      "competition_id": 564
+    },
+    {
+      "team_id": 683,
+      "name": "Borussia Mönchengladbach",
+      "competition_id": 82
+    },
+    {
+      "team_id": 686,
+      "name": "Strasbourg",
+      "competition_id": 301
+    },
+    {
+      "team_id": 690,
+      "name": "LOSC Lille",
+      "competition_id": 301
+    },
+    {
+      "team_id": 708,
+      "name": "Atalanta",
+      "competition_id": 384
+    },
+    {
+      "team_id": 776,
+      "name": "Angers SCO",
+      "competition_id": 301
+    },
+    {
+      "team_id": 794,
+      "name": "FSV Mainz 05",
+      "competition_id": 82
+    },
+    {
+      "team_id": 1055,
+      "name": "Le Havre",
+      "competition_id": 301
+    },
+    {
+      "team_id": 1079,
+      "name": "FC Union Berlin",
+      "competition_id": 82
+    },
+    {
+      "team_id": 1099,
+      "name": "Elche",
+      "competition_id": 564
+    },
+    {
+      "team_id": 1628,
+      "name": "Monza",
+      "competition_id": 384
+    },
+    {
+      "team_id": 2642,
+      "name": "Paderborn",
+      "competition_id": 82
+    },
+    {
+      "team_id": 2708,
+      "name": "Hamburger SV",
+      "competition_id": 82
+    },
+    {
+      "team_id": 2714,
+      "name": "Sassuolo",
+      "competition_id": 384
+    },
+    {
+      "team_id": 2726,
+      "name": "TSG Hoffenheim",
+      "competition_id": 82
+    },
+    {
+      "team_id": 2930,
+      "name": "Inter",
+      "competition_id": 384
+    },
+    {
+      "team_id": 2975,
+      "name": "Deportivo Alavés",
+      "competition_id": 564
+    },
+    {
+      "team_id": 3319,
+      "name": "VfB Stuttgart",
+      "competition_id": 82
+    },
+    {
+      "team_id": 3320,
+      "name": "FC Köln",
+      "competition_id": 82
+    },
+    {
+      "team_id": 3321,
+      "name": "Bayer 04 Leverkusen",
+      "competition_id": 82
+    },
+    {
+      "team_id": 3457,
+      "name": "Levante",
+      "competition_id": 564
+    },
+    {
+      "team_id": 3468,
+      "name": "Real Madrid",
+      "competition_id": 564
+    },
+    {
+      "team_id": 3477,
+      "name": "Villarreal",
+      "competition_id": 564
+    },
+    {
+      "team_id": 3543,
+      "name": "SC Freiburg",
+      "competition_id": 82
+    },
+    {
+      "team_id": 3588,
+      "name": "Elversberg",
+      "competition_id": 82
+    },
+    {
+      "team_id": 3682,
+      "name": "Auxerre",
+      "competition_id": 301
+    },
+    {
+      "team_id": 4070,
+      "name": "Frosinone",
+      "competition_id": 384
+    },
+    {
+      "team_id": 4508,
+      "name": "Paris",
+      "competition_id": 301
+    },
+    {
+      "team_id": 6789,
+      "name": "Monaco",
+      "competition_id": 301
+    },
+    {
+      "team_id": 7047,
+      "name": "Troyes",
+      "competition_id": 301
+    },
+    {
+      "team_id": 7758,
+      "name": "Le Mans",
+      "competition_id": 301
+    },
+    {
+      "team_id": 7790,
+      "name": "Lecce",
+      "competition_id": 384
+    },
+    {
+      "team_id": 7980,
+      "name": "Atlético de Madrid",
+      "competition_id": 564
+    },
+    {
+      "team_id": 8513,
+      "name": "Bologna",
+      "competition_id": 384
+    },
+    {
+      "team_id": 9257,
+      "name": "Lorient",
+      "competition_id": 301
+    },
+    {
+      "team_id": 9818,
+      "name": "Racing Santander",
+      "competition_id": 564
+    },
+    {
+      "team_id": 13258,
+      "name": "Athletic Club",
+      "competition_id": 564
+    }
+  ],
+  "articles": [
+    {
+      "snapshot_article_id": 1,
+      "language": "ko",
+      "title": "비르츠 안 쫓아냅니다! \"이라올라 감독 활용 방안 고민\"…단호한 리버풀,'뮌헨의 러브콜' 소용없다",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        8,
+        503
+      ]
+    },
+    {
+      "snapshot_article_id": 4,
+      "language": "ko",
+      "title": "[오피셜]'훌리안, 정해진 거 없다' 마드리드 더비서 무리뉴와 대결하는 아틀레티코 시메오네 감독, 알바레즈 보다 루크먼 더 선호..'이강인, 바에나 공격 조합 그대로 선발 가능'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 7,
+      "language": "ko",
+      "title": "'충격, 이제 수비까지 와르르 붕괴' 개막 후 5경기 연속 무승→최악의 부진! 토트넘, 애스턴 빌라에 2-3 패..'사비우 마르무시, 日 국대 수문장 스즈키에게 제대로 막혔다'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        6,
+        15
+      ]
+    },
+    {
+      "snapshot_article_id": 15,
+      "language": "ko",
+      "title": "'韓 에이스' 이강인 풀타임 맹활약했는데...레알 마드리드전 충격 전망, 주전 경합 가능성 \"오른쪽 공격수 출전 가능\"",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 18,
+      "language": "ko",
+      "title": "'충격! 또 3실점, 이런 자동문을 봤나' 개막 5경기서 총 12골 헌납! 첼시, 브렌트포드 원정 0-3 대패..'레알 마드리드에서 망했던 사비 알론소, EPL도 쉽지 않다'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        18,
+        236,
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 21,
+      "language": "ko",
+      "title": "[오피셜]'충격, 나이키와 작별이라니' 레알 마드리드 에이스 킬리안 음바페, 나이키→스위스 '온(On)'으로 갈아탔다..'티에리 앙리가 영향을 줬다'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 23,
+      "language": "ko",
+      "title": "'정말, 떠나고 싶은 거다' 아틀레티코 탈출 실패한 아르헨티나 국대 훌리안 알바레즈, 에이전트 교체 승부수 띄웠다..'이달고 작별→파스토레 사단 합류 협상'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 24,
+      "language": "ko",
+      "title": "[오피셜]\"에이스, 선발 출격합니다\" 2무2패 4경기 무득점 '최악의 개막 부진' 토트넘 데 제르비 감독, '부상 회복' 제임스 매디슨 첫 선발 낙점..'19일 애스턴빌라전 풀가동 예고'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        6,
+        15
+      ]
+    },
+    {
+      "snapshot_article_id": 27,
+      "language": "ko",
+      "title": "'韓 에이스' 이강인 '오피셜' 작심 발언, AT 마드리드 더 발전할 수 있는 이유...\"그리즈만 잊게 한다는 목표 실현 중\"",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 40,
+      "language": "ko",
+      "title": "레알 마드리드만 만나면 '펄펄' 날던 이강인…'마드리드 더비' 앞두고 시즌 2호골 폭발→MOM 영광",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 47,
+      "language": "ko",
+      "title": "'충격' 이강인 '7번 에이스'인데 연봉은 왜 이래? 또또 찬밥대우?...아틀레티코 연봉 TOP 10 탈락",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 55,
+      "language": "ko",
+      "title": "'케인 토트넘 복귀' 가능성 미쳤다! 뮌헨과 재계약 지지부진…대체자로 볼테마데 영입 준비→골잡이 간절한 토트넘",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        6,
+        503
+      ]
+    },
+    {
+      "snapshot_article_id": 59,
+      "language": "ko",
+      "title": "韓 에이스 이런 극찬 있었나! 이강인 미쳤다…'LEE 플레이 보석과도 같다'→'아틀레티코 마드리드에 없어선 안 될 핵심 존재'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 60,
+      "language": "ko",
+      "title": "'한국산 양발의 신' 이강인 극찬 세례! 적절한 시점에 터진 시즌 2호골…'MOM 선정' ATL 오사수나 대파",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        459,
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 64,
+      "language": "ko",
+      "title": "\"초대박\" 韓 축구 중심! '괴물 수비수' 김민재 실력으로 만든 반전…바이에른 뮌헨, KIM '이적 유력 후보→계약 연장 논의'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        503
+      ]
+    },
+    {
+      "snapshot_article_id": 70,
+      "language": "ko",
+      "title": "[오피셜]韓 축구 초대형 호재! 이강인 벌써 두 번째 MOM 영광…아틀레티코 마드리드, 오사수나 4-0 격파 \"계속 발전해 나가는 것\"",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        459,
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 71,
+      "language": "ko",
+      "title": "'韓 에이스' 이강인 미쳤다, 시즌 2호골 폭발→ MVP 선정! 아틀레티코 7번 자격 증명...오사수나에 4-0 대승",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        459,
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 74,
+      "language": "ko",
+      "title": "'한국산 황소' 황희찬, 독일에도 소문 쫙! 샬케 선발 데뷔전 초임박…'라울의 7번' 물려받은 후계자 기대 만발",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        67
+      ]
+    },
+    {
+      "snapshot_article_id": 75,
+      "language": "ko",
+      "title": "'비르츠의 뮌헨 이적' 새빨간 거짓말이었다! 합류시 올리세 매각으로 '자금 확보'…리버풀 결별 고려 안 해 \"먼 미래나 가능한 일\"",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        8,
+        503
+      ]
+    },
+    {
+      "snapshot_article_id": 76,
+      "language": "ko",
+      "title": "알바레스 초대박! AT 마드리드 탈출각 나왔다 \"20골 넣으면 내보내줄게\"…꿈의 구단 바르셀로나 이적 '돌파구'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        83,
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 78,
+      "language": "ko",
+      "title": "이강인과 정말 만날까…재계약 눈앞인데, 바르사가 케인을 흔든다",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        83
+      ]
+    },
+    {
+      "snapshot_article_id": 91,
+      "language": "ko",
+      "title": "시메오네 '오피셜' 공식 인정, '아틀레티코 7번' 이강인 독박 공격 확정...파트너 또 이름 없다 \"의료진과 확인, 내일 못 뛸 예정\"",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 94,
+      "language": "ko",
+      "title": "'체력+볼끌기' 비판에 직면한 아틀레티코 이강인, 오사수나전도 또 선발 출전 확실..'후반 이른 교체 전에 뭔가를 보여주어야 한다'",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        459,
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 95,
+      "language": "ko",
+      "title": "시메오네 폭탄 발언 때문인가...'조기 교체 낙담' 이강인 입지 뒤흔들 깜짝 영입 후보 등장, \"AT 마드리드 윙어 데려올 계획\"",
+      "categories": [
+        "스포츠",
+        "축구"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 101,
+      "language": "ko",
+      "title": "[pl.told] '125번째 생일에 제대로 사고쳤다!' 브라이튼, 1901년 특별 유니폼 입고 아스널 3-0 격파",
+      "categories": [],
+      "expected_team_ids": [
+        19,
+        78
+      ]
+    },
+    {
+      "snapshot_article_id": 103,
+      "language": "ko",
+      "title": "[pl.review] ‘브라이튼의 미친 압박에 완전히 무너졌다!’ 아스널, 원정서 충격의 0-3 완패...결국 시즌 첫 패배",
+      "categories": [],
+      "expected_team_ids": [
+        19,
+        78
+      ]
+    },
+    {
+      "snapshot_article_id": 107,
+      "language": "ko",
+      "title": "[pl.review] '토트넘 진짜 어쩌나!' 5경기 만에 골 터졌지만...빌라에 2-3 패배→개막 5G 무승+18위 '강등권 추락'",
+      "categories": [],
+      "expected_team_ids": [
+        6,
+        15
+      ]
+    },
+    {
+      "snapshot_article_id": 123,
+      "language": "ko",
+      "title": "‘바르사 떠나자, 완전히 살아났다!’ 아라우호, 리버풀 6경기 만에 감독 마음 사로잡았다...이라올라 “정신력이 마음에 들어”",
+      "categories": [],
+      "expected_team_ids": [
+        8,
+        83
+      ]
+    },
+    {
+      "snapshot_article_id": 128,
+      "language": "ko",
+      "title": "‘7경기 11골 폭주→바르사 종신 선언!’ 하피냐, 재계약 직접 원한다...“여기서 선수 생활 끝내고 싶다”",
+      "categories": [],
+      "expected_team_ids": [
+        83
+      ]
+    },
+    {
+      "snapshot_article_id": 134,
+      "language": "ko",
+      "title": "“레알·바르사·아틀레티코 정말 존경한다” 해리 케인 깜짝 발언…“사실 라리가 이적할 수도 있었어”",
+      "categories": [],
+      "expected_team_ids": [
+        83,
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 148,
+      "language": "ko",
+      "title": "'맨체스터 유나이티드vs리버풀' 1월부터 장외전쟁 예고!…'유벤투스 핵심 CB' 칼룰루 동시 정조준→\"쉽게 안 판다\"",
+      "categories": [],
+      "expected_team_ids": [
+        8,
+        14,
+        625
+      ]
+    },
+    {
+      "snapshot_article_id": 172,
+      "language": "en",
+      "title": "Report: Arsenal eyeing January move to sign Real Madrid star",
+      "categories": [
+        "Arsenal",
+        "Featured Articles",
+        "Latest Transfer News",
+        "Arsenal rumours",
+        "Arsenal transfer news",
+        "attacking depth",
+        "Bernabeu",
+        "Brazil forward",
+        "Brazil National Team",
+        "Endrick",
+        "European Football",
+        "Football Transfers",
+        "january transfer window",
+        "La Liga",
+        "Mikel Arteta",
+        "North London",
+        "premier league",
+        "Real Madrid",
+        "Real Madrid squad",
+        "TeamTalk",
+        "Transfer Rumours",
+        "Young Striker"
+      ],
+      "expected_team_ids": [
+        19,
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 174,
+      "language": "en",
+      "title": "Player Ratings as Brighton Punish Arteta’s Side in 3-0 Loss",
+      "categories": [
+        "Arsenal",
+        "Featured Articles",
+        "Match Reports",
+        "Arsenal FC",
+        "ARSENAL NEWS",
+        "Arsenal player ratings",
+        "Arsenal vs Brighton",
+        "brighton",
+        "Brighton 3-0 Arsenal",
+        "Brighton and Hove Albion",
+        "Brighton vs Arsenal",
+        "Bruno Guimaraes",
+        "Bukayo Saka",
+        "Declan Rice",
+        "Featured",
+        "Gabriel Magalhaes",
+        "Kai Havertz",
+        "Martin Odegaard",
+        "Mikel Arteta",
+        "premier league",
+        "Premier League Player Ratings",
+        "Viktor Gyokeres"
+      ],
+      "expected_team_ids": [
+        78
+      ]
+    },
+    {
+      "snapshot_article_id": 193,
+      "language": "en",
+      "title": "Report: Man United wonderkid in talks with Real Madrid and Barcelona",
+      "categories": [
+        "Featured Articles",
+        "Latest Transfer News",
+        "Manchester United",
+        "academy registration",
+        "academy transfer",
+        "Barcelona",
+        "Chelsea",
+        "European transfer",
+        "FIFA rules",
+        "football pathway",
+        "Irish nationality",
+        "Jason Wilcox",
+        "JJ Gabriel",
+        "LaLiga clubs",
+        "Man Utd News",
+        "October 6",
+        "Old Trafford",
+        "Omar Berrada",
+        "premier league",
+        "Real Madrid",
+        "Transfer Latest",
+        "Youth Prospect"
+      ],
+      "expected_team_ids": [
+        14,
+        83,
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 197,
+      "language": "en",
+      "title": "Report: Everton star is wanted by Real Madrid in surprise move",
+      "categories": [
+        "Everton",
+        "Featured Articles",
+        "Latest Transfer News",
+        "Atlético Madrid",
+        "centre-back",
+        "Defender Transfer",
+        "England defender",
+        "Everton Transfer News",
+        "football rumours",
+        "Goodison Park",
+        "Jarrad Branthwaite",
+        "La Liga",
+        "Manchester City",
+        "Manchester United",
+        "michael carrick",
+        "premier league",
+        "Real Madrid",
+        "Spanish Giants",
+        "squad planning",
+        "summer window",
+        "Transfer Latest",
+        "transfer race"
+      ],
+      "expected_team_ids": [
+        13,
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 206,
+      "language": "en",
+      "title": "Report: Arsenal remain interested in move for Real Madrid forward",
+      "categories": [
+        "Arsenal",
+        "Featured Articles",
+        "Latest Transfer News",
+        "ACL Injury",
+        "Arsenal transfer news",
+        "Bernabeu",
+        "Brazil forward",
+        "Christos Tzolis",
+        "Football Transfers",
+        "Gunners",
+        "january transfer window",
+        "LaLiga",
+        "left winger",
+        "Mikel Arteta",
+        "premier league",
+        "Real Madrid",
+        "Rodrygo",
+        "squad planning",
+        "TeamTalk",
+        "Transfer Latest",
+        "transfer shortlist",
+        "Winger Target"
+      ],
+      "expected_team_ids": [
+        19,
+        3468
+      ]
+    },
+    {
+      "snapshot_article_id": 214,
+      "language": "en",
+      "title": "Bayern director aims barb at Lamine Yamal over Ballon d’Or race: ‘The best players don’t need a campaign to win’",
+      "categories": [
+        "Barça News",
+        "Ballon d&#039;Or",
+        "barcelona",
+        "barcelona news",
+        "bayern munich",
+        "Lamine Yamal",
+        "Max Eberl"
+      ],
+      "expected_team_ids": [
+        503
+      ]
+    },
+    {
+      "snapshot_article_id": 220,
+      "language": "en",
+      "title": "Liverpool winger backs Lamine Yamal for Ballon d’Or: ‘He has merit’",
+      "categories": [
+        "Barça News",
+        "Ballon d&#039;Or",
+        "barcelona",
+        "barcelona news",
+        "fc barcelona",
+        "Lamine Yamal",
+        "Victor Munoz"
+      ],
+      "expected_team_ids": [
+        8
+      ]
+    },
+    {
+      "snapshot_article_id": 224,
+      "language": "en",
+      "title": "Atlético CEO proposes 31 or 32-match LaLiga player limit",
+      "categories": [
+        "Atletico Madrid"
+      ],
+      "expected_team_ids": [
+        7980
+      ]
+    },
+    {
+      "snapshot_article_id": 228,
+      "language": "en",
+      "title": "Bayern contract talks put Harry Kane on Barcelona’s radar",
+      "categories": [
+        "Transfer News"
+      ],
+      "expected_team_ids": [
+        83,
+        503
+      ]
+    },
+    {
+      "snapshot_article_id": 231,
+      "language": "en",
+      "title": "“I don’t need any calls” – Füllkrug unfazed by Germany snub",
+      "categories": [
+        "Bundesliga",
+        "Bremen",
+        "Germany"
+      ],
+      "expected_team_ids": [
+        82
+      ]
+    },
+    {
+      "snapshot_article_id": 236,
+      "language": "en",
+      "title": "\"I’ll never forget this moment\" – Weiser reflects on fairytale Weserstadion return",
+      "categories": [
+        "Bundesliga",
+        "Bremen"
+      ],
+      "expected_team_ids": [
+        82
+      ]
+    },
+    {
+      "snapshot_article_id": 243,
+      "language": "en",
+      "title": "Weiser’s 93rd-minute screamer seals incredible Bremen comeback",
+      "categories": [
+        "Bundesliga",
+        "Bremen",
+        "Augsburg"
+      ],
+      "expected_team_ids": [
+        82
+      ]
+    },
+    {
+      "snapshot_article_id": 245,
+      "language": "en",
+      "title": "Hamburg beat Köln for first league win",
+      "categories": [
+        "Bundesliga",
+        "HSV",
+        "FC Köln"
+      ],
+      "expected_team_ids": [
+        2708,
+        3320
+      ]
+    },
+    {
+      "snapshot_article_id": 260,
+      "language": "en",
+      "title": "Bayern consider Augsburg's Dahmen as possible Neuer replacement",
+      "categories": [
+        "Bundesliga",
+        "FC Bayern",
+        "Augsburg"
+      ],
+      "expected_team_ids": [
+        90,
+        503
+      ]
+    },
+    {
+      "snapshot_article_id": 268,
+      "language": "en",
+      "title": "“He thought I was a rat” – Hertha’s Mads Pedersen details bitter Augsburg falling-out with Sandro Wagner",
+      "categories": [
+        "Bundesliga",
+        "2. Bundesliga",
+        "Augsburg",
+        "Hertha BSC"
+      ],
+      "expected_team_ids": [
+        90
+      ]
+    },
+    {
+      "snapshot_article_id": 270,
+      "language": "en",
+      "title": "“Everyone is different”: Harry Kane plays down Yamal’s Ballon d’Or statements",
+      "categories": [
+        "Bundesliga",
+        "FC Bayern",
+        "Union Berlin"
+      ],
+      "expected_team_ids": []
+    },
+    {
+      "snapshot_article_id": 271,
+      "language": "en",
+      "title": "Jamal Musiala shares delight after taking a step forward",
+      "categories": [
+        "Bundesliga",
+        "FC Bayern",
+        "Union Berlin"
+      ],
+      "expected_team_ids": []
+    },
+    {
+      "snapshot_article_id": 273,
+      "language": "en",
+      "title": "Kompany and Kane praise “whole package” Olise",
+      "categories": [
+        "Bundesliga",
+        "FC Bayern",
+        "Union Berlin"
+      ],
+      "expected_team_ids": []
+    },
+    {
+      "snapshot_article_id": 274,
+      "language": "en",
+      "title": "“The best players don’t need campaigns”: Max Eberl responds to Yamal’s statements as he adds Olise to Ballon d’Or discourse",
+      "categories": [
+        "Bundesliga",
+        "FC Bayern",
+        "Union Berlin"
+      ],
+      "expected_team_ids": []
+    },
+    {
+      "snapshot_article_id": 275,
+      "language": "en",
+      "title": "\"A very nice evening for all of us\": Wolfsburg players speak after ending home win wait",
+      "categories": [
+        "2. Bundesliga",
+        "Wolfsburg",
+        "Darmstadt"
+      ],
+      "expected_team_ids": []
+    },
+    {
+      "snapshot_article_id": 291,
+      "language": "en",
+      "title": "Gian Piero Gasperini satisfied by Roma’s 2-2 draw against Inter",
+      "categories": [
+        "Home Featured",
+        "News",
+        "Roma",
+        "Serie A",
+        "Inter"
+      ],
+      "expected_team_ids": [
+        37,
+        2930
+      ]
+    },
+    {
+      "snapshot_article_id": 292,
+      "language": "en",
+      "title": "Lautaro Martinez slams Inter’s 1st half show v Roma: “Our attitude wasn’t right”",
+      "categories": [
+        "Home Featured",
+        "Internazionale",
+        "News",
+        "Roma",
+        "Serie A",
+        "Inter"
+      ],
+      "expected_team_ids": [
+        37,
+        2930
+      ]
+    },
+    {
+      "snapshot_article_id": 294,
+      "language": "en",
+      "title": "Cesc Fabregas backs Chelsea loanee Robert Sanchez to shine at Como",
+      "categories": [
+        "Como",
+        "News",
+        "Other Leagues",
+        "Premier League",
+        "Serie A"
+      ],
+      "expected_team_ids": [
+        18,
+        268
+      ]
+    },
+    {
+      "snapshot_article_id": 300,
+      "language": "en",
+      "title": "Ex-Tottenham manager Igor Tudor in line to become next Venezia manager",
+      "categories": [
+        "Home Featured",
+        "News",
+        "Serie A",
+        "Venezia"
+      ],
+      "expected_team_ids": [
+        6,
+        267
+      ]
+    },
+    {
+      "snapshot_article_id": 303,
+      "language": "en",
+      "title": "Official | Alidu Seidu joins OGC Nice on loan from Rennes",
+      "categories": [
+        "Home",
+        "Ligue 1",
+        "Ligue 1 News",
+        "News",
+        "OGC Nice",
+        "Stade Rennais",
+        "Transfers"
+      ],
+      "expected_team_ids": [
+        450,
+        598
+      ]
+    },
+    {
+      "snapshot_article_id": 308,
+      "language": "en",
+      "title": "FEATURE | Five players who could feature in Zinédine Zidane’s first France squad",
+      "categories": [
+        "News",
+        "Home",
+        "Home Featured",
+        "Les Bleus",
+        "Les Bleus News",
+        "Ligue 1",
+        "Ligue 1 News",
+        "Other Leagues",
+        "Premier League",
+        "RC Lens",
+        "Serie A",
+        "Stade Rennais",
+        "France",
+        "Rennes"
+      ],
+      "expected_team_ids": []
+    },
+    {
+      "snapshot_article_id": 310,
+      "language": "en",
+      "title": "Lorient rejected chance to sign former Manchester United forward Anthony Martial",
+      "categories": [
+        "Home",
+        "FC Lorient",
+        "Ligue 1",
+        "Ligue 1 News",
+        "News",
+        "Transfers"
+      ],
+      "expected_team_ids": [
+        14,
+        9257
+      ]
+    }
+  ]
+}

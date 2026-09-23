@@ -21,66 +21,58 @@ def load_known_ids() -> dict:
     )} for entity in ("team", "fixture", "player")}
 
 
-def load_scope(competition_id: int, season_name: str) -> tuple[list[dict], list[dict]]:
+def load_scope(competition_id: int, season_name: str, *, match_dates=None) -> tuple[list[dict], list[dict]]:
     from ..api.db import fetch_all_dict
     from ..core.opta_ids import VERIFIED_SUBSTITUTION_ROSTER, supplement_roster
 
+    if match_dates is not None and not match_dates:
+        return [], []
+    dates = sorted(set(match_dates)) if match_dates is not None else []
+    date_filter = f" AND DATE(f.starting_at) IN ({','.join('%s' for _ in dates)})" if dates else ''
+    # ID 검증도 경기 날짜가 같은 후보만 사용해요. 명단은 그 후보 경기만 읽으면 돼요.
     fixtures = fetch_all_dict("""
         SELECT f.fixture_id, f.home_team_id, f.away_team_id, f.starting_at, f.state_id
         FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
         JOIN seasons s ON s.season_id=st.season_id
         WHERE s.competition_id=%s AND s.name=%s
-    """, (competition_id, season_name))
+    """ + date_filter, (competition_id, season_name, *dates))
     if not fixtures:
         raise ValueError(f"DB에 대상 시즌 경기가 없어요: {competition_id} {season_name}")
-    lineups = fetch_all_dict("""
+    fixture_ids = [f['fixture_id'] for f in fixtures]
+    marks = ','.join('%s' for _ in fixture_ids)
+    lineups = fetch_all_dict(f"""
         SELECT l.fixture_id, l.team_id, l.player_id, l.jersey_number, p.display_name, p.full_name
         FROM fixture_lineups l JOIN players p ON p.player_id=l.player_id
-        JOIN fixtures f ON f.fixture_id=l.fixture_id JOIN stages st ON st.stage_id=f.stage_id
-        JOIN seasons s ON s.season_id=st.season_id
-        WHERE s.competition_id=%s AND s.name=%s
-    """, (competition_id, season_name))
+        WHERE l.fixture_id IN ({marks})
+    """, tuple(fixture_ids))
     # 공식 명단과 대조한 교체 선수만 보충해요. 전체 이벤트를 출전 명단으로 간주하지 않아요.
     placeholders = ",".join(["%s"] * len(VERIFIED_SUBSTITUTION_ROSTER))
     events = fetch_all_dict(f"""
         SELECT e.event_id, e.event_type_id, e.fixture_id, e.team_id, e.player_id,
                p.display_name, p.full_name
         FROM fixture_events e JOIN players p ON p.player_id=e.player_id
-        JOIN fixtures f ON f.fixture_id=e.fixture_id JOIN stages st ON st.stage_id=f.stage_id
-        JOIN seasons s ON s.season_id=st.season_id
-        WHERE s.competition_id=%s AND s.name=%s AND e.event_id IN ({placeholders})
-    """, (competition_id, season_name, *VERIFIED_SUBSTITUTION_ROSTER))
+        WHERE e.fixture_id IN ({marks}) AND e.event_id IN ({placeholders})
+    """, (*fixture_ids, *VERIFIED_SUBSTITUTION_ROSTER))
     return fixtures, supplement_roster(lineups, events)
 
 
 def refresh_recent_rosters(fixtures: list[dict], lineups: list[dict], *, from_date,
                            to_date, stored_ids: set, apply: bool) -> list[dict]:
     from ..core.fixture_states import COMPLETED_STATE_IDS
-    from ..core.sportmonks import SportmonksClient
     from .fixture_details_loader import normalize_fixture_lineups
-    from .live_fixtures_loader import store_live_fixture, validate_fixture_participants
+    from .live_fixtures_loader import refresh_completed_details
 
-    client = SportmonksClient(timeout=20)
     result = list(lineups)
-    for fixture in fixtures:
-        fixture_id = fixture["fixture_id"]
-        if not from_date.isoformat() <= str(fixture["starting_at"])[:10] <= to_date.isoformat():
-            continue
-        if fixture_id in stored_ids and fixture["state_id"] in COMPLETED_STATE_IDS:
-            continue
-        # 예정 상태에 남은 종료 경기와 새 출전 선수를 기존 라이브 저장 규칙으로 갱신해요.
-        payload = client.correct_fixture_details(client.get_live_fixture(fixture_id))
-        validate_fixture_participants(payload, fixture["home_team_id"], fixture["away_team_id"])
-        if payload["state_id"] not in COMPLETED_STATE_IDS:
-            continue
+    pending = [f for f in fixtures
+               if from_date.isoformat() <= str(f['starting_at'])[:10] <= to_date.isoformat()
+               and not (f['fixture_id'] in stored_ids and f['state_id'] in COMPLETED_STATE_IDS)]
+    for payload in refresh_completed_details(pending, apply=apply):
+        fixture_id = payload['id']
         normalized = normalize_fixture_lineups(payload, fixture_id)["lineups"]
         originals = [row for row in payload["lineups"] if row["player_id"] is not None]
         fresh = [dict(fixture_id=row[0], team_id=row[1], player_id=row[2], jersey_number=row[5],
                       display_name=source["player"].get("display_name"), full_name=source["player"]["name"])
                  for row, source in zip(normalized, originals)]
-        if apply:
-            store_live_fixture(payload, fixture["home_team_id"], fixture["away_team_id"],
-                               datetime.now(timezone.utc).replace(tzinfo=None))
         # --check에서도 최신 명단으로 매핑하지만 DB에는 쓰지 않아요.
         result = [row for row in result if row["fixture_id"] != fixture_id] + fresh
         print(f"ROSTER: fixture_id={fixture_id} players={len(fresh)} check={not apply}", flush=True)

@@ -584,13 +584,16 @@ def _name_keys(observation: dict) -> set[str]:
     return {normalize_identity_text(observation[k]) for k in ("display_name", "full_name") if observation[k]}
 
 
-def load_mapping_source(client: UnderstatClient, source: dict) -> tuple[dict, list[dict]]:
+def load_mapping_source(client: UnderstatClient, source: dict, *, require_rosters: bool = False) -> tuple[dict, list[dict]]:
     matches, unavailable = select_understat_matches(source)
-    players, player_teams = {}, defaultdict(set)
+    players, player_teams, ready = {}, defaultdict(set), []
     # PSG–Rennes 오류가 시즌 선수 합계에도 섞여 있어요. 정상 경기 명단에서 ID·팀을 확인해요.
     # 선수 자체를 제외하지 않아, 다른 정상 경기 출전이나 이후 이적은 그대로 연결할 수 있어요.
     for match in matches:
         details = client.get_match(str(match["id"]))
+        if require_rosters and not all(details['rosters'].get(side) for side in ('h', 'a')):
+            continue
+        ready.append(match)
         for side, roster in details["rosters"].items():
             title = source["teams"][str(match[side]["id"])]["title"]
             for player in roster.values():
@@ -599,7 +602,7 @@ def load_mapping_source(client: UnderstatClient, source: dict) -> tuple[dict, li
                 player_teams[sid].add(title)
     for sid, player in players.items():
         player["team_title"] = ",".join(sorted(player_teams[sid]))
-    return {"teams": source["teams"], "dates": matches, "players": list(players.values())}, unavailable
+    return {"teams": source["teams"], "dates": ready, "players": list(players.values())}, unavailable
 
 
 def plan_team_ids(source: dict, observations: list[dict], existing: dict) -> tuple[dict, list]:
@@ -698,15 +701,19 @@ def _validate_mapping_uniqueness(entity: str, existing: dict, additions: dict) -
 
 
 def collect_understat_ids(season_name: str | None = None, competition_ids: list[int] | None = None,
-                         *, check: bool = False) -> dict:
-    scope = load_understat_scope(season_name, competition_ids)
-    known = {kind: load_external_ids(kind) for kind in ("team", "fixture", "player")}
-    client = UnderstatClient()
+                         *, check: bool = False, client=None, scope=None, known=None, fixture_ids=None) -> dict:
+    from .understat_common import select_fixture_source
+    scope = load_understat_scope(season_name, competition_ids) if scope is None else scope
+    known = {kind: load_external_ids(kind) for kind in ("team", "fixture", "player")} if known is None else known
+    owns_client = client is None
+    client = UnderstatClient() if owns_client else client
     reports = []
     try:
         for season in scope:
             source, unavailable = load_mapping_source(
-                client, client.get_season(season["competition_id"], season["name"]),
+                client, select_fixture_source(client.get_season(season['competition_id'], season['name']),
+                                              season['season_id'], fixture_ids, known),
+                **({'require_rosters': True} if fixture_ids is not None else {}),
             )
             observations = load_player_observations(season["season_id"])
             teams, evidence = plan_team_ids(source, observations, known["team"])
@@ -743,7 +750,8 @@ def collect_understat_ids(season_name: str | None = None, competition_ids: list[
                   f"unavailable={len(unavailable)} "
                   f"check={check} report={path}", flush=True)
     finally:
-        client.close()
+        if owns_client:
+            client.close()
     # 앞 시즌의 미매핑 선수가 뒤 시즌에서 확인될 수 있어요. 최종 미해결 ID만 세요.
     remaining = {"teams": sorted({tid for r in reports for tid in r["pending_teams"]} - known["team"].keys())}
     for entity in ("fixture", "player"):

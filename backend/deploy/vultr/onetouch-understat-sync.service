@@ -1,0 +1,10 @@
+[Unit]
+Description=1Touch completed match xG and expected standings
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+UMask=0077
+TimeoutStartSec=infinity
+ExecStart=/usr/bin/bash /opt/1touch/backend/deploy/vultr/sync-match-refresh.sh understat --apply

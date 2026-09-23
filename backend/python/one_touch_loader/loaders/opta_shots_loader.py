@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlencode
@@ -111,6 +111,7 @@ def sync_matches(args) -> dict:
     capture_dataset = "analysis" if "analysis" in datasets else "shots"
     normalizers = {"shots": normalize_chalkboard, "analysis": normalize_analysis}
     known = load_known_ids()
+    targets = getattr(args, 'fixtures', None)
     # 새 DDL을 실행하기 전에도 --check로 매핑·실제 수집을 검토할 수 있어요.
     stored_by_dataset, fixture_ids_by_dataset = {}, {}
     for kind in datasets:
@@ -138,7 +139,9 @@ def sync_matches(args) -> dict:
     attempts = 0
     report_path = args.output_dir / "report.json"
     try:
-        with open_browser() as driver:
+        # 저장 완료·범위 밖 경기나 확보한 원본만 재검증할 때는 브라우저를 띄우지 않아요.
+        with ExitStack() as browsers:
+            driver = None
             for competition_id in args.competition_ids:
                 try:
                     scope = fetch_schedule(competition_id)
@@ -146,11 +149,40 @@ def sync_matches(args) -> dict:
                     # 현재 공개 페이지의 시즌만 확인했어요. 과거 시즌을 현재 값으로 바꿔 수집하지 않아요.
                     if args.season and scope["season_name"] != args.season:
                         raise ValueError(f"공개 일정은 {scope['season_name']} 시즌이에요. 요청 시즌: {args.season}")
-                    fixtures, lineups = load_scope(competition_id, scope["season_name"])
+                    matches = []
+                    for match in scope['matches']:
+                        if match['date'] > args.to_date.isoformat() or (args.from_date and match['date'] < args.from_date.isoformat()):
+                            continue
+                        external = match['external_fixture_id']
+                        if targets is not None:
+                            home = known['team'].get(match['home_external_team_id'])
+                            away = known['team'].get(match['away_external_team_id'])
+                            if not any(str(f['starting_at'])[:10] == match['date']
+                                       and (home is None or home == f['home_team_id'])
+                                       and (away is None or away == f['away_team_id']) for f in targets):
+                                continue
+                        if retry_ids is not None and external not in retry_ids:
+                            continue
+                        if external in stored and not args.refresh:
+                            report['skipped'] += 1
+                            continue
+                        matches.append(match)
+                        if args.limit is not None and len(matches) >= args.limit - attempts:
+                            break
+                    if not matches:
+                        report['scopes'].append({'competition_id': competition_id, 'season': scope['season_name'],
+                                                 'scheduled': len(scope['matches'])})
+                        continue
+                    fixtures, lineups = load_scope(competition_id, scope["season_name"],
+                                                  match_dates=sorted({m['date'] for m in matches}))
+                    if targets is not None:
+                        target_ids = {f['fixture_id'] for f in targets}
+                        fixtures = [f for f in fixtures if f['fixture_id'] in target_ids]
+                        lineups = [r for r in lineups if r['fixture_id'] in target_ids]
                     if getattr(args, "refresh_details", False):
                         lineups = refresh_recent_rosters(
                             fixtures, lineups, from_date=args.from_date, to_date=args.to_date,
-                            stored_ids=complete_fixture_ids, apply=not check,
+                            stored_ids=set() if args.refresh else complete_fixture_ids, apply=not check,
                         )
                     report["scopes"].append({"competition_id": competition_id, "season": scope["season_name"],
                                              "scheduled": len(scope["matches"])})
@@ -159,17 +191,8 @@ def sync_matches(args) -> dict:
                     report["scopes"].append({"competition_id": competition_id, "error": str(error)[:800]})
                     print(f"FAIL: competition_id={competition_id} {error}", flush=True)
                     continue
-                for match in scope["matches"]:
-                    if match["date"] > args.to_date.isoformat() or (args.from_date and match["date"] < args.from_date.isoformat()):
-                        continue
+                for match in matches:
                     external = match["external_fixture_id"]
-                    if retry_ids is not None and external not in retry_ids:
-                        continue
-                    if external in stored and not args.refresh:
-                        report["skipped"] += 1
-                        continue
-                    if args.limit is not None and attempts >= args.limit:
-                        break
                     attempts += 1
                     item = {"external_fixture_id": external, "competition_id": competition_id, "date": match["date"]}
                     try:
@@ -178,6 +201,8 @@ def sync_matches(args) -> dict:
                         raw = json.loads(cached_path.read_text(encoding="utf-8")) if cached_path and cached_path.is_file() else None
                         if (raw is None or not raw.get("finished") or raw.get("available") is False
                                 or raw.get("dataset", "shots") != capture_dataset):
+                            if driver is None:
+                                driver = browsers.enter_context(open_browser())
                             raw = collect_snapshot(match["url"], driver, finished_only=True, dataset=capture_dataset)
                         write_json(args.output_dir / f"{external}.raw.json", raw)
                         if not raw["finished"]:

@@ -15,17 +15,19 @@ from ..core.cup_betting import (CUP_COMPETITION_IDS, MODEL_METHOD, aggregate_ind
 from ..core.fixture_states import COMPLETED_STATE_IDS
 from ..core.probability import OUTCOMES, evaluate_wdl, fit_wdl
 from .probability_loader import (_dump, _fetch, _read, latest_model, read_histories,
-                                read_clubelo_mapping, refresh_histories, store_model, store_runs)
+                                read_clubelo_mapping, refresh_histories, store_model, store_runs,
+                                input_fingerprint, latest_calculation_inputs, calculation_unchanged)
 from .probability_training import MODEL_SEASONS, TRAIN_SEASONS, VALIDATION_SEASON, _baseline, _inputs
 
 
-def read_fixtures():
+def read_fixtures(*, current_only=False):
     marks = ','.join('%s' for _ in CUP_COMPETITION_IDS)
+    seasons = "('2026/2027')" if current_only else "('2023/2024','2024/2025','2025/2026','2026/2027')"
     return _fetch(f'''SELECT f.fixture_id,f.home_team_id,f.away_team_id,f.starting_at,f.state_id,
         f.home_score,f.away_score,f.home_penalty_score,f.away_penalty_score,f.leg,f.aggregate_id,
         st.stage_type_id,st.name AS stage_name,s.competition_id,s.season_id,s.name AS season_name
         FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id JOIN seasons s ON s.season_id=st.season_id
-        WHERE s.competition_id IN ({marks}) AND s.name IN ('2023/2024','2024/2025','2025/2026','2026/2027')
+        WHERE s.competition_id IN ({marks}) AND s.name IN {seasons}
         ORDER BY f.starting_at,f.fixture_id''', CUP_COMPETITION_IDS)
 
 
@@ -93,7 +95,7 @@ def train_and_validate(dataset):
     return report
 
 
-def prepare_runs(fixtures, histories, report, *, observed_at):
+def prepare_runs(fixtures, histories, report, *, observed_at, previous_by_season=None):
     if report['method'] != MODEL_METHOD or report['settlement_rule'] != SETTLEMENT_RULE:
         raise ValueError('A cup final-result model is required')
     if utc_datetime(report['forecast_model']['last_training_fixture_at']) >= observed_at:
@@ -121,20 +123,37 @@ def prepare_runs(fixtures, histories, report, *, observed_at):
             continue
         run['fixture_markets'][str(fixture['fixture_id'])] = {
             'fixture': fixture_context(fixture), **context, 'home_elo': ratings[0], 'away_elo': ratings[1],
-            'options': prediction_options(report['forecast_model']['coefficients'], *ratings,
-                                          draw_allowed=context['draw_allowed']),
         }
-    return list(runs.values()), excluded
+    changed = []
+    for season_id, run in runs.items():
+        # 시각 자체 대신 지금 베팅 가능한 경기와 1차전 결과를 비교해요. 킥오프가 지나도 다시 계산해요.
+        run['input_sha256'] = input_fingerprint(
+            [f for f in fixtures if f['season_id'] == season_id],
+            {'markets': run['fixture_markets'], 'model': report['forecast_model']})
+        run['refresh_input_version'] = 1
+        previous = (previous_by_season or {}).get(season_id)
+        if calculation_unchanged(previous, model_id=run['model_id'], input_sha256=run['input_sha256'],
+                                 market_kind=SETTLEMENT_RULE, refresh_input_version=1):
+            continue
+        for market in run['fixture_markets'].values():
+            market['options'] = prediction_options(report['forecast_model']['coefficients'],
+                market['home_elo'], market['away_elo'], draw_allowed=market['draw_allowed'])
+        changed.append(run)
+    return changed, excluded
 
 
-def refresh(*, apply=False, histories=None):
-    report, fixtures = latest_model(MODEL_METHOD), read_fixtures()
+def refresh(*, apply=False, histories=None, fixtures=None):
+    report = latest_model(MODEL_METHOD)
+    fixtures = read_fixtures(current_only=True) if fixtures is None else fixtures
     team_ids = {f[key] for f in fixtures if f['season_name'] == '2026/2027'
                 for key in ('home_team_id', 'away_team_id')}
     mapping = read_clubelo_mapping(team_ids)
     if histories is None:
         histories = refresh_histories(mapping, apply=apply)
-    runs, excluded = prepare_runs(fixtures, histories, report, observed_at=datetime.now(timezone.utc))
+    previous = {season: latest_calculation_inputs(season, MODEL_METHOD)
+                for season in {f['season_id'] for f in fixtures}}
+    runs, excluded = prepare_runs(fixtures, histories, report, observed_at=datetime.now(timezone.utc),
+                                  previous_by_season=previous)
     if apply and runs:
         store_runs(runs)
     return {'applied': apply, 'markets': sum(len(r['fixture_markets']) for r in runs),

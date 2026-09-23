@@ -1,5 +1,5 @@
 {
-  "verified_at": "2026-09-19",
+  "verified_at": "2026-09-20",
   "sources": [
     {
       "key": "2345e1c55e8c1725",
@@ -8,11 +8,11 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공식 RSS 응답의 기사 수가 0개예요. 실제 기사를 확인한 뒤 연결해요."
+      "feed_url": "https://www.interfootball.co.kr/rss/allArticle.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.interfootball.co.kr/rss/allArticle.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "6a103fa035f2a88d",
@@ -51,11 +51,13 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.osen.co.kr/sports",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.osen.co.kr/sports",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "format": "html",
+      "article_selector": ".sub-content a[href^=\"/article/\"]"
     },
     {
       "key": "c907e9b52e91c8f9",
@@ -64,11 +66,12 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.xportsnews.com/sitemap/latest_articles_google",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.xportsnews.com/sitemap/latest_articles_google",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "format": "news_sitemap"
     },
     {
       "key": "a7752a41fff6a293",
@@ -81,11 +84,12 @@
         384,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.mydaily.co.kr/sitemap.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.mydaily.co.kr/sitemap.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "format": "news_sitemap"
     },
     {
       "key": "02ca2f56d030aaaf",
@@ -98,11 +102,13 @@
         384,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.spotvnews.co.kr/news/articleList.html?sc_section_code=S1N5&view_type=sm",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.spotvnews.co.kr/news/articleList.html?sc_section_code=S1N5&view_type=sm",
+      "note": "전체 뉴스 사이트맵에는 푸욜을 언급한 일반 스포츠 기사가 섞여 있어 해외축구 목록으로 제한했어요. 2026-09-20 기사 발행 메타데이터를 확인했어요.",
+      "format": "html",
+      "article_selector": ".article_list a[href*=\"articleView.html\"]"
     },
     {
       "key": "246ae001a2f8b11b",
@@ -128,11 +134,11 @@
         384,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://sports.khan.co.kr/rss/soccer_world-soccer",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://sports.khan.co.kr/rss/soccer_world-soccer",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "4d784af10d19750a",
@@ -145,11 +151,12 @@
         384,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://rss.mt.co.kr/st_news.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://rss.mt.co.kr/st_news.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "date_format": "%Y%m%d%H%M%S%z"
     },
     {
       "key": "ad882c018b25c129",
@@ -165,8 +172,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://offsaide.com/",
+      "note": "제공된 이름의 공식 도메인·공급 경로를 확인하지 못했어요. 후보 도메인 연결에 실패했어요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "67e37d523c954625",
@@ -176,11 +184,11 @@
         8,
         301
       ],
-      "feed_url": null,
+      "feed_url": "https://www.standard.co.uk/sport/football/rss",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://www.standard.co.uk/sport/football/rss",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "5e7bed0260c9f15d",
@@ -190,11 +198,11 @@
         8,
         564
       ],
-      "feed_url": null,
+      "feed_url": "https://www.caughtoffside.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://www.caughtoffside.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "195060ca6fc4ac48",
@@ -203,11 +211,11 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
+      "feed_url": "https://www.independent.co.uk/sport/football/rss",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://www.independent.co.uk/sport/football/rss",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "36053d8d270c2710",
@@ -216,11 +224,11 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
+      "feed_url": "https://footballleagueworld.co.uk/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://footballleagueworld.co.uk/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "e6b8c29a898397e4",
@@ -229,11 +237,11 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
+      "feed_url": "https://www.football365.com/rss",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "콘텐츠 재사용 조건을 확인해야 해요."
+      "is_active": true,
+      "verification_url": "https://www.football365.com/rss",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "3609a73fcf87c91d",
@@ -255,11 +263,11 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
+      "feed_url": "https://thepeoplesperson.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://thepeoplesperson.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "0fcea82a7063946b",
@@ -268,11 +276,11 @@
       "competition_ids": [
         8
       ],
-      "feed_url": null,
+      "feed_url": "https://thefootballfaithful.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://thefootballfaithful.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "5697f60c602afda1",
@@ -285,11 +293,12 @@
         384,
         301
       ],
-      "feed_url": null,
+      "feed_url": "https://onefootball.com/sitemaps/daily_news/en_1.xml",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://onefootball.com/sitemaps/daily_news/en_1.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "format": "news_sitemap"
     },
     {
       "key": "b5f31bc6ff769fe2",
@@ -301,11 +310,11 @@
         384,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://isplus.com/rss",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://isplus.com/rss",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "f19fb9aea38a8f1c",
@@ -315,11 +324,11 @@
         564,
         384
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://mhnse.com/feed/",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://mhnse.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "0704181371d8091a",
@@ -331,11 +340,13 @@
         384,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.sportsseoul.com/sports/soccer",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.sportsseoul.com/sports/soccer",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "format": "html",
+      "article_selector": ".new-article-wrap a[href*=\"/news/read/\"]"
     },
     {
       "key": "75159e54b7e56e93",
@@ -347,11 +358,11 @@
         384,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.newsis.com/RSS/sports.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.newsis.com/RSS/sports.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "31a2aa0495fa014a",
@@ -361,11 +372,13 @@
         564,
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://sports.donga.com/sports/soccer2",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://sports.donga.com/sports/soccer2",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "format": "html",
+      "article_selector": ".list_news a[href*=\"/sports/article/\"]"
     },
     {
       "key": "5abd53a43a1ebe92",
@@ -387,11 +400,11 @@
       "competition_ids": [
         564
       ],
-      "feed_url": null,
+      "feed_url": "https://getfootballnewsspain.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://getfootballnewsspain.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "7fe334ec928c000b",
@@ -413,11 +426,11 @@
       "competition_ids": [
         564
       ],
-      "feed_url": null,
+      "feed_url": "https://madriduniversal.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://madriduniversal.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "96b22b1907c75505",
@@ -431,8 +444,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://foot-africa.com/en/",
+      "note": "영어 사이트 요청이 HTTP 403으로 거부돼요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "1412834530cbfcb1",
@@ -441,11 +455,11 @@
       "competition_ids": [
         564
       ],
-      "feed_url": null,
+      "feed_url": "https://semprebarca.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://semprebarca.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "7c87ea17977b6c86",
@@ -459,8 +473,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://www.playmakerstats.com/",
+      "note": "사이트 요청이 HTTP 403으로 거부돼요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "9ddd9c97473a2ac4",
@@ -469,11 +484,12 @@
       "competition_ids": [
         82
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://rss.nocutnews.co.kr/category/sports.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://rss.nocutnews.co.kr/category/sports.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "date_format": "%a, %d %m %Y %H:%M:%S %z"
     },
     {
       "key": "4cdef789521af20b",
@@ -482,11 +498,11 @@
       "competition_ids": [
         82
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.thesportstimes.co.kr/rss/allArticle.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.thesportstimes.co.kr/rss/allArticle.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "696413f2e302c5ec",
@@ -521,11 +537,12 @@
       "competition_ids": [
         82
       ],
-      "feed_url": null,
+      "feed_url": "https://fcbinside.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://fcbinside.com/feed/",
+      "note": "영어판 .com의 제목·본문은 영어지만 RSS language는 de로 표기돼 있어요. 2026-09-20 실제 기사로 확인했어요.",
+      "feed_language": "de"
     },
     {
       "key": "5f952cb6d821e24e",
@@ -537,8 +554,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://bvbwld.de/feed/",
+      "note": "공식 피드 원문은 독일어예요. 영어 공급 경로를 확인하지 못했어요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "b4551064170c6ca3",
@@ -550,8 +568,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://nurdieraute.de/feed/",
+      "note": "공식 피드 원문은 독일어예요. 영어 공급 경로를 확인하지 못했어요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "beb886f2fc2122b4",
@@ -563,8 +582,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://fcbayern.com/en",
+      "note": "공식 영어 사이트 요청이 HTTP 403으로 거부돼요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "cc8805bf76df66da",
@@ -573,11 +593,12 @@
       "competition_ids": [
         384
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://www.munhwa.com/sitemap/latest-articles",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://www.munhwa.com/sitemap/latest-articles",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요.",
+      "format": "news_sitemap"
     },
     {
       "key": "bc336462e0916f8d",
@@ -587,11 +608,11 @@
         384,
         301
       ],
-      "feed_url": null,
+      "feed_url": "https://football-italia.net/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "자동 수집·재사용 조건을 확인해야 해요."
+      "is_active": true,
+      "verification_url": "https://football-italia.net/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "b9980598e832a7f1",
@@ -600,11 +621,11 @@
       "competition_ids": [
         384
       ],
-      "feed_url": null,
+      "feed_url": "https://sempreinter.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://sempreinter.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "f7810450b4d78bc9",
@@ -613,11 +634,11 @@
       "competition_ids": [
         384
       ],
-      "feed_url": null,
+      "feed_url": "https://romapress.net/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://romapress.net/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "742def176bae3d4d",
@@ -626,11 +647,11 @@
       "competition_ids": [
         384
       ],
-      "feed_url": null,
+      "feed_url": "https://talkjuve.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://talkjuve.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "3111171b8d5f8663",
@@ -642,8 +663,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://www.gonfialarete.com/",
+      "note": "공식 사이트 원문은 이탈리아어예요. 영어 공급 경로를 확인하지 못했어요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "85be02ca1dbb1182",
@@ -652,11 +674,11 @@
       "competition_ids": [
         384
       ],
-      "feed_url": null,
+      "feed_url": "https://sempremilan.com/feed",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://sempremilan.com/feed",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "8502c265e6b6ce68",
@@ -678,11 +700,11 @@
       "competition_ids": [
         384
       ],
-      "feed_url": null,
+      "feed_url": "https://cultofcalcio.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://cultofcalcio.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "252270c5f0acd6f8",
@@ -691,11 +713,11 @@
       "competition_ids": [
         301
       ],
-      "feed_url": null,
-      "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "feed_url": "https://cdn.sportalkorea.com/rss/gn_rss_allArticle.xml",
+      "timezone": "Asia/Seoul",
+      "is_active": true,
+      "verification_url": "https://cdn.sportalkorea.com/rss/gn_rss_allArticle.xml",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "81f4f82defad3837",
@@ -720,8 +742,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "원문이 프랑스어예요. 영어 공급 경로를 확인해야 해요."
+      "verification_url": "https://www.parisfans.fr/feed",
+      "note": "공식 피드 원문은 프랑스어예요. 영어 공급 경로를 확인하지 못했어요.",
+      "checked_at": "2026-09-20"
     },
     {
       "key": "9d95639f857581e4",
@@ -730,11 +753,11 @@
       "competition_ids": [
         301
       ],
-      "feed_url": null,
+      "feed_url": "https://psgtalk.com/feed/",
       "timezone": null,
-      "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "is_active": true,
+      "verification_url": "https://psgtalk.com/feed/",
+      "note": "2026-09-20 실제 응답의 기사 제목·발행일·원문 언어를 확인했어요."
     },
     {
       "key": "1301698760b45605",
@@ -746,8 +769,9 @@
       "feed_url": null,
       "timezone": null,
       "is_active": false,
-      "verification_url": null,
-      "note": "공급 경로 확인 전"
+      "verification_url": "https://www.gazetaesportiva.com/feedrss/",
+      "note": "공식 사이트·피드 안내는 포르투갈어예요. 영어 공급 경로를 확인하지 못했어요.",
+      "checked_at": "2026-09-20"
     }
   ]
 }

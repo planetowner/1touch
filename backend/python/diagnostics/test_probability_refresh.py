@@ -42,6 +42,18 @@ class ProbabilityRefreshTests(unittest.TestCase):
             self.assertEqual(runs[0]["cutoff"], "observed_state")
             self.assertNotEqual(runs[0]["input_sha256"], self.previous["input_sha256"])
 
+    def test_old_snapshot_gets_match_timestamp_once_even_with_unchanged_inputs(self):
+        for team in self.previous['teams'].values():
+            team.pop('previous_fixture_at')
+        runs, result = loader.refresh_league(**self.args)
+        self.assertEqual(result['status'], 'updated')
+        self.assertEqual(len(runs), 1)
+        self.assertEqual(runs[0]['teams']['1']['previous_fixture_at'], '2026-09-09T14:00:00Z')
+        self.args['previous'] = runs[0]
+        runs, result = loader.refresh_league(**self.args)
+        self.assertEqual(runs, [])
+        self.assertEqual(result['status'], 'unchanged')
+
     def test_new_day_adds_daily_baseline_and_keeps_current_what_if(self):
         self.args["observed_at"] = datetime(2026, 9, 11, 1, tzinfo=timezone.utc)
         runs, result = loader.refresh_league(**self.args)
@@ -56,13 +68,27 @@ class ProbabilityRefreshTests(unittest.TestCase):
         self.assertEqual([r["as_of"][:10] for r in runs], ["2026-09-09", "2026-09-10"])
         self.assertEqual(runs[-1]["cutoff"], "observed_state")
 
-    def test_live_league_preserves_all_published_snapshots(self):
-        self.args["fixtures"][1]["state_id"] = 2
-        with patch.object(loader, "forecast_day") as simulate:
+    def test_other_live_match_does_not_block_finished_results(self):
+        self.args["fixtures"][1].update(state_id=2, starting_at="2026-09-10 16:00:00", home_score=8, away_score=0)
+        self.args["fixtures"][2].update(state_id=5, starting_at="2026-09-10 14:00:00", home_score=1, away_score=0)
+        runs, result = loader.refresh_league(**self.args)
+        self.assertEqual(result['status'], 'updated')
+        self.assertEqual(runs[-1]['teams']['1']['current_points'], 6)
+        self.args['previous'] = runs[-1]
+        self.args['fixtures'][1]['home_score'] = 9
+        with patch.object(loader, 'forecast_day') as simulate:
             runs, result = loader.refresh_league(**self.args)
-        self.assertEqual(runs, [])
-        self.assertEqual(result, {"season_id": 1, "status": "live", "fixture_ids": [2]})
+        self.assertEqual(result['status'], 'unchanged')
         simulate.assert_not_called()
+
+    def test_kickoff_invalidates_next_match_scenario_once(self):
+        target = self.args['fixtures'][1]
+        target.update(state_id=2, starting_at='2026-09-10 16:00:00', home_score=0, away_score=0)
+        runs, result = loader.refresh_league(**self.args)
+        self.assertEqual(result['status'], 'updated')
+        for team in runs[-1]['teams'].values():
+            if team['what_if'] is not None:
+                self.assertNotEqual(team['what_if']['fixture']['fixture_id'], target['fixture_id'])
 
     def test_unresolved_result_is_an_error_not_silently_treated_as_live(self):
         self.args["fixtures"][0]["state_id"] = 15

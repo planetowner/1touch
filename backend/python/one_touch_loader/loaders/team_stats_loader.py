@@ -51,7 +51,10 @@ def refresh_fixture_team_stats(fixture_id: int) -> None:
 
     sm = SportmonksClient()
     fixture_payload = sm.get_fixture_with_statistics(fixture_id)
+    _store_fixture_team_stats(fixture_id, fixture_payload)
 
+
+def _store_fixture_team_stats(fixture_id: int, fixture_payload: dict) -> None:
     rows = normalize_fixture_statistics(fixture_payload, fixture_id)
 
     replace_fixture_detail_rows(fixture_id, rows)
@@ -84,10 +87,15 @@ def refresh_fixture_team_stats_for_season(
     fixture_ids = [int(row[0]) for row in fixture_rows]
 
     total = 0
-
-    for fixture_id in fixture_ids:
-        refresh_fixture_team_stats(fixture_id)
-        total += 1
+    if fixture_ids:
+        sm = SportmonksClient()
+        # DB에서 확인한 경기들을 묶어 조회해요. 저장은 기존처럼 경기별 트랜잭션을 유지해요.
+        for offset in range(0, len(fixture_ids), 50):
+            batch = fixture_ids[offset:offset + 50]
+            payloads = sm.get_fixture_statistics_batch(batch)
+            for fixture_id, payload in zip(batch, payloads):
+                _store_fixture_team_stats(fixture_id, payload)
+                total += 1
 
     print(
         f"[team-stats] season {season_id}: "

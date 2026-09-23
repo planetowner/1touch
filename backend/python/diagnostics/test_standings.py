@@ -66,6 +66,7 @@ class StandingsRepositoryTests(unittest.TestCase):
         fetch_all_dict: Mock,
     ) -> None:
         fetch_all_dict.side_effect = [
+            [],
             [
                 {
                     "position": 2,
@@ -133,7 +134,7 @@ class StandingsRepositoryTests(unittest.TestCase):
         self.assertIsNone(rows[1]["rank_delta"])
         self.assertEqual(rows[1]["last5_form"], ["D", "L"])
         self.assertEqual(rows[2]["last5_form"], [])
-        fixture_query = fetch_all_dict.call_args_list[1].args[0]
+        fixture_query = fetch_all_dict.call_args_list[2].args[0]
         self.assertIn("r.name REGEXP '^[0-9]+$'", fixture_query)
 
 

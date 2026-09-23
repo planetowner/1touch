@@ -982,7 +982,7 @@ SPORTMONKS_EVENT_PLAYER_PROFILE_IDS = {
 # 원문과 검증한 경기 기록을 대조해 잘못된 이벤트 필드만 보정해요.
 SPORTMONKS_EVENT_OVERRIDES = {
 
-    # 경기표에서 감독 카드 시간을 확인했어요. 근거는 sportmonks_negative_completion_events.json에 있어요.
+    # negative 경기표와 선수 신원을 대조했어요. 근거는 sportmonks_negative_completion 자료에 있어요.
     84149823: {'minute': 48, 'extra_minute': None},
     84149825: {'minute': 84, 'extra_minute': None},
     84164002: {'minute': 90, 'extra_minute': 6},
@@ -2130,6 +2130,7 @@ SPORTMONKS_DUPLICATE_EVENT_IDS = {
 
 
 # 단건 적재와 라이브 적재가 같은 경기 상세 항목을 요청해요.
+FIXTURE_STATISTICS_INCLUDE = "participants;statistics.type"
 FIXTURE_DETAILS_INCLUDE = (
     "events.type;statistics.type;lineups.details;"
     "lineups.player;formations;coaches;pressure"
@@ -2398,9 +2399,11 @@ class SportmonksClient:
     def get_fixture_with_statistics(self, fixture_id: int) -> Dict:
         response = self._get(
             f"fixtures/{fixture_id}",
-            params={"include": "participants;statistics.type"},
+            params={"include": FIXTURE_STATISTICS_INCLUDE},
         )
-        return response["data"]
+        fixture = response["data"]
+        self._correct_fixture_teams(fixture)
+        return fixture
 
     def get_fixture_details(self, fixture_id: int) -> Dict:
         response = self._get(
@@ -2408,6 +2411,12 @@ class SportmonksClient:
             params={"include": FIXTURE_DETAILS_INCLUDE},
         )
         return self.correct_fixture_details(response["data"])
+
+    def get_fixture_statistics_batch(self, fixture_ids: List[int]) -> List[Dict]:
+        fixtures = self.get_fixtures_batch(fixture_ids, include=FIXTURE_STATISTICS_INCLUDE)
+        for fixture in fixtures:
+            self._correct_fixture_teams(fixture)
+        return fixtures
 
     def get_fixture_details_batch(self, fixture_ids: List[int]) -> List[Dict]:
         """같은 상세 응답을 한 번에 최대 50경기씩 가져와요."""
@@ -2426,6 +2435,9 @@ class SportmonksClient:
             raise ValueError("Fixture details batch response IDs differ from requested IDs")
         by_id = {f["id"]: f for f in payloads}
         return [by_id[fixture_id] for fixture_id in fixture_ids]
+
+    def get_live_fixtures_batch(self, fixture_ids: List[int]) -> List[Dict]:
+        return self.get_fixtures_batch(fixture_ids, include=LIVE_FIXTURE_INCLUDE)
 
     def get_livescores(self) -> List[Dict]:
         # 실제 응답에는 pagination이 없어요. 경기 시작 전·종료 후 15분도 포함해요.
@@ -2468,7 +2480,8 @@ class SportmonksClient:
         for key in ("scores", "events", "statistics", "formations", "pressure"):
             for row in fixture.get(key, []):
                 row["participant_id"] = mapping.get(row["participant_id"], row["participant_id"])
-        for lineup in fixture["lineups"]:
+        # 팀 통계만 요청한 응답에는 명단이 없지만 같은 구단 ID 정정이 필요해요.
+        for lineup in fixture.get("lineups", []):
             lineup["team_id"] = mapping.get(lineup["team_id"], lineup["team_id"])
             for detail in lineup["details"]:
                 detail["team_id"] = mapping.get(detail["team_id"], detail["team_id"])
@@ -2504,6 +2517,10 @@ class SportmonksClient:
     # ------------------------------------------------------------------
     # 순위
     # ------------------------------------------------------------------
+
+    def get_live_standings(self, competition_id: int) -> List[Dict]:
+        return self._get(f"standings/live/leagues/{competition_id}",
+                         params={"include": "details.type"})["data"]
 
     def get_standings_for_season(self, season_id: int) -> List[Dict]:
         """시즌의 공식 순위를 가져와요."""
