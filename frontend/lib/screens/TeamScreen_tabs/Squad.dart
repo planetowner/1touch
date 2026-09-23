@@ -8,7 +8,8 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/data/contracts/team_contract_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
-import 'package:onetouch/data/teams/mock/team_season_catalog.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
+import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
 import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
@@ -308,8 +309,12 @@ class _SquadTabState extends State<SquadTab> {
   List<Season> get _availableSeasons {
     final teamId = widget.team?['id'] as int?;
     if (teamId == null) return const [];
-    final seasonIds = mockTeamSeasonMemberships
-        .where((membership) => membership.teamId == teamId)
+    final seasonIds = footballCatalog.memberships
+        // 계약 API는 Big 5 정규리그 시즌만 받아요. 컵 소속 시즌은 제외해요.
+        .where((membership) =>
+            membership.teamId == teamId &&
+            TeamPageEligibility.domesticBigFiveCompetitionIds
+                .contains(membership.competitionId))
         .map((membership) => membership.seasonId)
         .toSet();
     final seasons = seasonRepository.allSeasons
@@ -317,7 +322,7 @@ class _SquadTabState extends State<SquadTab> {
         .toList();
     seasons.sort((a, b) {
       if (a.isCurrent != b.isCurrent) return a.isCurrent ? -1 : 1;
-      return b.startingAt.compareTo(a.startingAt);
+      return b.name.compareTo(a.name);
     });
     return seasons;
   }

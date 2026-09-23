@@ -6,8 +6,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
-import 'package:onetouch/data/standings/standing_repository_provider.dart';
-import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team.dart';
@@ -44,20 +43,18 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
   void initState() {
     super.initState();
 
-    _leagues = competitionRepository.domesticCompetitions;
+    _leagues = competitionRepository.domesticCompetitions
+        .where((c) => footballCatalog.currentTeams(c.competitionId).isNotEmpty)
+        .toList();
 
     _leagueTeams = {};
     for (final league in _leagues) {
-      final standingsForLeague =
-          standingRepository.forCompetition(league.competitionId);
-      _leagueTeams[league.competitionId] = standingsForLeague
-          .map((standing) => teamRepository.findById(standing.teamId))
-          .whereType<Team>()
-          .toList();
+      _leagueTeams[league.competitionId] =
+          footballCatalog.currentTeams(league.competitionId);
     }
 
     selectedLeague = _leagues.first.name;
-    _focusedTeam = _leagueTeams[_selectedLeagueId]?.first;
+    _focusedTeam = _leagueTeams[_selectedLeagueId]?.firstOrNull;
 
     _pageController = PageController(viewportFraction: 0.6);
   }
