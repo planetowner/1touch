@@ -7,7 +7,6 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_detail.dart';
@@ -46,7 +45,7 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
     final raw = widget.initialPlayerId;
     final id = raw == null
         ? null
-        : int.tryParse(raw) ?? playerRepository.findById(raw)?.externalPlayerId;
+        : int.tryParse(raw);
     if (id != null) _load(0, id);
   }
 
