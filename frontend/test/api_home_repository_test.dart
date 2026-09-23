@@ -3,28 +3,30 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/home/api/api_home_repository.dart';
 
 void main() {
   test('requests and maps Home with a UTC calendar boundary envelope',
       () async {
     final repository = ApiHomeRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/home');
-        expect(request.url.queryParameters, {
-          'viewer_country': 'US',
-          'start': '2026-08-31',
-          'end': '2026-10-01',
-        });
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_homeJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1'),
-      requestHeaders: const {
-        'Authorization': 'Bearer session-token',
-      },
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/home');
+            expect(request.url.queryParameters, {
+              'viewer_country': 'US',
+              'start': '2026-08-31',
+              'end': '2026-10-01',
+            });
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_homeJson()), 200);
+          }),
+          baseUri: Uri.parse('http://localhost:8000/v1'),
+          requestHeaders: () => const {
+                'Authorization': 'Bearer session-token',
+              }),
       viewerCountry: 'us',
     );
 
@@ -44,13 +46,15 @@ void main() {
   test('omits date parameters and supports a trailing base-URI slash',
       () async {
     final repository = ApiHomeRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/home');
-        expect(request.url.queryParameters, {'viewer_country': 'US'});
-        return http.Response(jsonEncode(_homeJson(calendar: const [])), 200);
-      }),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/home');
+            expect(request.url.queryParameters, {'viewer_country': 'US'});
+            return http.Response(
+                jsonEncode(_homeJson(calendar: const [])), 200);
+          }),
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {}),
       viewerCountry: 'US',
     );
 
@@ -62,18 +66,20 @@ void main() {
   test('pads whichever optional date boundary is supplied', () async {
     var requestCount = 0;
     final repository = ApiHomeRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(
-          request.url.queryParameters,
-          requestCount == 1
-              ? {'viewer_country': 'US', 'start': '2026-08-31'}
-              : {'viewer_country': 'US', 'end': '2026-10-01'},
-        );
-        return http.Response(jsonEncode(_homeJson(calendar: const [])), 200);
-      }),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(
+              request.url.queryParameters,
+              requestCount == 1
+                  ? {'viewer_country': 'US', 'start': '2026-08-31'}
+                  : {'viewer_country': 'US', 'end': '2026-10-01'},
+            );
+            return http.Response(
+                jsonEncode(_homeJson(calendar: const [])), 200);
+          }),
+          baseUri: Uri.parse('http://localhost:8000/v1'),
+          requestHeaders: () => const {}),
       viewerCountry: 'US',
     );
 
@@ -90,9 +96,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiHomeRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('http://localhost:8000/v1'),
+          requestHeaders: () => const {}),
       viewerCountry: 'US',
     );
 
@@ -104,9 +111,11 @@ void main() {
     final payload = _homeJson();
     (payload['highlights'] as Map<String, dynamic>)['viewer_country'] = 'KR';
     final repository = ApiHomeRepository(
-      client: MockClient((_) async => http.Response(jsonEncode(payload), 200)),
-      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client:
+              MockClient((_) async => http.Response(jsonEncode(payload), 200)),
+          baseUri: Uri.parse('https://api.example.test/v1/'),
+          requestHeaders: () => const {}),
       viewerCountry: 'US',
     );
 

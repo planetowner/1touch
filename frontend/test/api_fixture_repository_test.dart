@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 
@@ -30,9 +31,10 @@ void main() {
       );
     });
     final repository = ApiFixtureRepository(
-      client: client,
-      apiBaseUri: Uri.parse('http://localhost:8000/v1'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: client,
+          baseUri: Uri.parse('http://localhost:8000/v1'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     final loaded = await repository.loadForTeam(
@@ -77,9 +79,10 @@ void main() {
       );
     });
     final repository = ApiFixtureRepository(
-      client: client,
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: client,
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     await repository.loadForTeam(8, limit: 1);
@@ -105,9 +108,10 @@ void main() {
       );
     });
     final repository = ApiFixtureRepository(
-      client: client,
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: client,
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     expect(await repository.loadForTeam(8), isEmpty);
@@ -120,9 +124,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiFixtureRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     await expectLater(
@@ -139,12 +144,13 @@ void main() {
   test('rejects invalid queries before sending a request', () async {
     var requestCount = 0;
     final repository = ApiFixtureRepository(
-      client: MockClient((_) async {
-        requestCount++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requestCount++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     await expectLater(
@@ -172,11 +178,12 @@ void main() {
       return http.Response(jsonEncode(_fixtureDetailJson()), 200);
     });
     final repository = ApiFixtureRepository(
-      client: client,
-      apiBaseUri: Uri.parse('http://localhost:8000/v1'),
-      requestHeaders: const {
-        'Authorization': 'Bearer session-token',
-      },
+      api: ApiClient(
+          client: client,
+          baseUri: Uri.parse('http://localhost:8000/v1'),
+          requestHeaders: () => const {
+                'Authorization': 'Bearer session-token',
+              }),
     );
 
     final detail = await repository.loadDetail(19712345);
@@ -190,14 +197,15 @@ void main() {
 
   test('rejects a mismatched fixture-detail identity', () async {
     final repository = ApiFixtureRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode(_fixtureDetailJson(fixtureId: 9999)),
-          200,
-        ),
-      ),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode(_fixtureDetailJson(fixtureId: 9999)),
+              200,
+            ),
+          ),
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -230,9 +238,10 @@ void main() {
       );
     });
     final repository = ApiFixtureRepository(
-      client: client,
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: client,
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     final loaded = await repository.loadHeadToHead(1001, limit: 20);
@@ -244,19 +253,20 @@ void main() {
 
   test('rejects mismatched head-to-head fixture identities', () async {
     final repository = ApiFixtureRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({
-            'fixture_id': 9999,
-            'team_a': 8,
-            'team_b': 19,
-            'items': [_fixtureJson()],
-          }),
-          200,
-        ),
-      ),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode({
+                'fixture_id': 9999,
+                'team_a': 8,
+                'team_b': 19,
+                'items': [_fixtureJson()],
+              }),
+              200,
+            ),
+          ),
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     await expectLater(
@@ -275,12 +285,13 @@ void main() {
   test('rejects invalid head-to-head limits before requesting', () async {
     var requestCount = 0;
     final repository = ApiFixtureRepository(
-      client: MockClient((_) async {
-        requestCount++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      requestHeaders: const {'X-User-Id': '1'},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requestCount++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('http://localhost:8000/v1/'),
+          requestHeaders: () => const {'X-User-Id': '1'}),
     );
 
     await expectLater(

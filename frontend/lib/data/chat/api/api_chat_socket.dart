@@ -23,24 +23,16 @@ abstract interface class ChatSocketConnection {
 class ApiChatSocket implements ChatSocket {
   ApiChatSocket({
     required Uri apiBaseUri,
-    required String sessionToken,
+    required String? Function() sessionToken,
     ChatSocketConnector? connector,
     Duration handshakeTimeout = const Duration(seconds: 10),
   })  : _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _sessionToken = sessionToken.trim(),
+        _sessionToken = sessionToken,
         _connector = connector ?? _WebSocketChannelConnection.connect,
-        _handshakeTimeout = handshakeTimeout {
-    if (_sessionToken.length < 40 || _sessionToken.length > 100) {
-      throw ArgumentError.value(
-        sessionToken,
-        'sessionToken',
-        'Must contain between 40 and 100 characters',
-      );
-    }
-  }
+        _handshakeTimeout = handshakeTimeout;
 
   final Uri _apiBaseUri;
-  final String _sessionToken;
+  final String? Function() _sessionToken;
   final ChatSocketConnector _connector;
   final Duration _handshakeTimeout;
 
@@ -48,6 +40,17 @@ class ApiChatSocket implements ChatSocket {
   Future<ChatSocketSession> connect(int fixtureId) async {
     if (fixtureId < 1) {
       throw RangeError.value(fixtureId, 'fixtureId', 'Must be positive');
+    }
+    // 재연결할 때도 이전 토큰을 재사용하지 않아요.
+    final sessionToken = _sessionToken()?.trim();
+    if (sessionToken == null || sessionToken.isEmpty) {
+      throw const ChatSocketException(
+        message: 'Please sign in to use fixture chat.',
+        closeCode: 4401,
+      );
+    }
+    if (sessionToken.length < 40 || sessionToken.length > 100) {
+      throw ArgumentError('Session token must contain 40 to 100 characters.');
     }
     final httpUri = _apiBaseUri.resolve('fixtures/$fixtureId/chat');
     final socketUri = httpUri.replace(
@@ -62,7 +65,7 @@ class ApiChatSocket implements ChatSocket {
     final session = _ApiChatSocketSession(
       connection: _connector(socketUri),
       fixtureId: fixtureId,
-      sessionToken: _sessionToken,
+      sessionToken: sessionToken,
       apiBaseUri: _apiBaseUri,
       handshakeTimeout: _handshakeTimeout,
     );

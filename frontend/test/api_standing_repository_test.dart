@@ -4,23 +4,26 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
 
 void main() {
   test('requests, maps, and caches an explicit competition season', () async {
     var requestCount = 0;
     final repository = ApiStandingRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/competitions/8/standings');
-        expect(request.url.queryParameters, {'season_id': '25583'});
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_responseJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/competitions/8/standings');
+            expect(request.url.queryParameters, {'season_id': '25583'});
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_responseJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final first = await repository.loadForCompetition(8, seasonId: 25583);
@@ -40,12 +43,13 @@ void main() {
   test('omits season_id and caches the backend-resolved current season',
       () async {
     final repository = ApiStandingRepository(
-      client: MockClient((request) async {
-        expect(request.url.queryParameters, isEmpty);
-        return http.Response(jsonEncode(_responseJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.queryParameters, isEmpty);
+            return http.Response(jsonEncode(_responseJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     final current = await repository.loadForCompetition(8);
@@ -60,19 +64,21 @@ void main() {
 
   test('separates competition and season cache entries', () async {
     final repository = ApiStandingRepository(
-      client: MockClient((request) async {
-        final competitionId = int.parse(request.url.pathSegments[2]);
-        final seasonId = int.parse(request.url.queryParameters['season_id']!);
-        return http.Response(
-          jsonEncode(_responseJson(
-            competitionId: competitionId,
-            seasonId: seasonId,
-          )),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            final competitionId = int.parse(request.url.pathSegments[2]);
+            final seasonId =
+                int.parse(request.url.queryParameters['season_id']!);
+            return http.Response(
+              jsonEncode(_responseJson(
+                competitionId: competitionId,
+                seasonId: seasonId,
+              )),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await repository.loadForCompetition(8, seasonId: 25583);
@@ -87,12 +93,13 @@ void main() {
     var requestCount = 0;
     final response = Completer<http.Response>();
     final repository = ApiStandingRepository(
-      client: MockClient((_) {
-        requestCount++;
-        return response.future;
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) {
+            requestCount++;
+            return response.future;
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final firstLoad = repository.loadForCompetition(8, seasonId: 25583);
@@ -111,15 +118,17 @@ void main() {
     var requestCount = 0;
     final responses = <int, Completer<http.Response>>{};
     final repository = ApiStandingRepository(
-      client: MockClient((request) {
-        requestCount++;
-        final seasonId = int.parse(request.url.queryParameters['season_id']!);
-        return responses
-            .putIfAbsent(seasonId, () => Completer<http.Response>())
-            .future;
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) {
+            requestCount++;
+            final seasonId =
+                int.parse(request.url.queryParameters['season_id']!);
+            return responses
+                .putIfAbsent(seasonId, () => Completer<http.Response>())
+                .future;
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final firstLoad = repository.loadForCompetition(8, seasonId: 25583);
@@ -148,9 +157,10 @@ void main() {
     ];
     var index = 0;
     final repository = ApiStandingRepository(
-      client: MockClient((_) async => responses[index++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[index++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

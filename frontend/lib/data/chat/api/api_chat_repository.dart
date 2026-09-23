@@ -1,24 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/chat/api/api_chat_mapper.dart';
 import 'package:onetouch/data/chat/api/api_chat_response.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/models/fixture_chat_message.dart';
 
 class ApiChatRepository implements ChatRepository {
-  ApiChatRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiChatRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<Map<int, List<FixtureChatMessage>>> _cachedHistories =
       ValueNotifier(const {});
 
@@ -56,29 +48,17 @@ class ApiChatRepository implements ChatRepository {
     final query = <String, String>{'limit': '$limit'};
     if (beforeId != null) query['before_id'] = '$beforeId';
     if (afterId != null) query['after_id'] = '$afterId';
-    final uri = _apiBaseUri
+    final uri = _api.baseUri
         .resolve('fixtures/$fixtureId/chat/messages')
         .replace(queryParameters: query);
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {'Accept': 'application/json', ..._requestHeaders},
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Chat history request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the chat history response to be an object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     final page = ApiChatHistoryResponse.fromJson(decoded).items.map((item) {
       final message = chatMessageFromApiResponse(
         item,
-        apiBaseUri: _apiBaseUri,
+        apiBaseUri: _api.baseUri,
       );
       if (message.fixtureId != fixtureId) {
         throw FormatException(
@@ -109,24 +89,16 @@ class ApiChatRepository implements ChatRepository {
         'Must contain between 1 and $maxChatReportReasonLength characters',
       );
     }
-    final uri = _apiBaseUri.resolve('chat/messages/$messageId/report');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('chat/messages/$messageId/report');
+    final response = await _api.post(
       uri,
       headers: {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        ..._requestHeaders,
       },
       body: jsonEncode({'reason': normalizedReason}),
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Chat-message report failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic> || decoded['ok'] != true) {
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] != true) {
       throw const FormatException(
         'Expected the chat-message report response to return ok=true.',
       );
@@ -157,10 +129,5 @@ class ApiChatRepository implements ChatRepository {
         fixtureId: List.unmodifiable(merged),
       },
     );
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

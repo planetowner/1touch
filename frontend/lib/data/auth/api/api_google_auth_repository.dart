@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_response.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
@@ -8,14 +8,9 @@ import 'package:onetouch/data/auth/email_code_challenge.dart';
 
 /// Exchanges a Google SDK ID token for a 1Touch bearer access token.
 class ApiGoogleAuthRepository implements AuthRepository {
-  ApiGoogleAuthRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri);
+  ApiGoogleAuthRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
+  final ApiClient _api;
 
   @override
   Future<String> signInWithGoogle({required String idToken}) async {
@@ -27,7 +22,6 @@ class ApiGoogleAuthRepository implements AuthRepository {
     return _postForAccessToken(
       'auth/google',
       {'id_token': normalizedIdToken},
-      failureLabel: 'Google authentication',
     );
   }
 
@@ -47,7 +41,6 @@ class ApiGoogleAuthRepository implements AuthRepository {
     return _postForAccessToken(
       'auth/login',
       {'username': normalizedUsername, 'password': password},
-      failureLabel: 'Password authentication',
     );
   }
 
@@ -60,11 +53,10 @@ class ApiGoogleAuthRepository implements AuthRepository {
       throw ArgumentError.value(email, 'email', 'must not be empty');
     }
 
-    final uri = _apiBaseUri.resolve('auth/email/code');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('auth/email/code');
+    final response = await _api.post(
       uri,
       headers: const {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
@@ -82,12 +74,8 @@ class ApiGoogleAuthRepository implements AuthRepository {
       );
     }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the email-code response to be a JSON object.',
-      );
-    }
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return EmailCodeChallenge.fromJson(decoded);
   }
 
@@ -100,11 +88,10 @@ class ApiGoogleAuthRepository implements AuthRepository {
     required String firstName,
     required String lastName,
   }) async {
-    final uri = _apiBaseUri.resolve('auth/email/register');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('auth/email/register');
+    final response = await _api.post(
       uri,
       headers: const {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
@@ -126,48 +113,27 @@ class ApiGoogleAuthRepository implements AuthRepository {
       );
     }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the email registration response to be a JSON object.',
-      );
-    }
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
   }
 
   Future<String> _postForAccessToken(
     String path,
-    Map<String, String> body, {
-    required String failureLabel,
-  }) async {
-    final uri = _apiBaseUri.resolve(path);
-    final response = await _client.post(
+    Map<String, String> body,
+  ) async {
+    final uri = _api.baseUri.resolve(path);
+    final response = await _api.post(
       uri,
       headers: const {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(body),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw http.ClientException(
-        '$failureLabel failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the Google authentication response to be a JSON object.',
-      );
-    }
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 
   static String _responseDetail(

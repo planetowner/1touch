@@ -3,23 +3,26 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/players/api/api_player_club_history_repository.dart';
 
 void main() {
   test('requests, maps, and caches a player club history', () async {
     var requests = 0;
     final repository = ApiPlayerClubHistoryRepository(
-      client: MockClient((request) async {
-        requests++;
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/players/4313/club-history');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_historyJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requests++;
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/players/4313/club-history');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_historyJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final first = await repository.loadForPlayer(4313);
@@ -45,15 +48,16 @@ void main() {
   test('accepts a successful empty history and a trailing base slash',
       () async {
     final repository = ApiPlayerClubHistoryRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/players/4313/club-history');
-        return http.Response(
-          jsonEncode({'player_id': 4313, 'clubs': []}),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/players/4313/club-history');
+            return http.Response(
+              jsonEncode({'player_id': 4313, 'clubs': []}),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     expect((await repository.loadForPlayer(4313)).clubs, isEmpty);
@@ -62,12 +66,13 @@ void main() {
   test('rejects a non-positive player ID before requesting', () async {
     var requests = 0;
     final repository = ApiPlayerClubHistoryRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.loadForPlayer(0), throwsRangeError);
@@ -95,9 +100,10 @@ void main() {
     ];
     var index = 0;
     final repository = ApiPlayerClubHistoryRepository(
-      client: MockClient((_) async => responses[index++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[index++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

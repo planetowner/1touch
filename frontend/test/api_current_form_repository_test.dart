@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/current_form/api/api_current_form_repository.dart';
 
 void main() {
@@ -10,23 +11,25 @@ void main() {
     test('requests, maps, and caches the global option list', () async {
       var requestCount = 0;
       final repository = ApiCurrentFormRepository(
-        client: MockClient((request) async {
-          requestCount++;
-          expect(request.method, 'GET');
-          expect(request.url.path, '/v1/teams/83/current-form/options');
-          expect(request.url.queryParameters, {'limit': '200'});
-          expect(request.headers['Accept'], 'application/json');
-          expect(request.headers['Authorization'], 'Bearer session-token');
-          return http.Response(
-            jsonEncode({
-              'items': [_optionJson()],
-              'limit': 200,
+        api: ApiClient(
+            client: MockClient((request) async {
+              requestCount++;
+              expect(request.method, 'GET');
+              expect(request.url.path, '/v1/teams/83/current-form/options');
+              expect(request.url.queryParameters, {'limit': '200'});
+              expect(request.headers['Accept'], 'application/json');
+              expect(request.headers['Authorization'], 'Bearer session-token');
+              return http.Response(
+                jsonEncode({
+                  'items': [_optionJson()],
+                  'limit': 200,
+                }),
+                200,
+              );
             }),
-            200,
-          );
-        }),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {'Authorization': 'Bearer session-token'},
+            baseUri: Uri.parse('https://api.1touch.football/v1'),
+            requestHeaders: () =>
+                const {'Authorization': 'Bearer session-token'}),
       );
 
       final first = await repository.loadOptions(83);
@@ -42,13 +45,15 @@ void main() {
         () async {
       final requests = <Uri>[];
       final repository = ApiCurrentFormRepository(
-        client: MockClient((request) async {
-          requests.add(request.url);
-          final limit = int.parse(request.url.queryParameters['limit']!);
-          return http.Response(jsonEncode({'items': [], 'limit': limit}), 200);
-        }),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient((request) async {
+              requests.add(request.url);
+              final limit = int.parse(request.url.queryParameters['limit']!);
+              return http.Response(
+                  jsonEncode({'items': [], 'limit': limit}), 200);
+            }),
+            baseUri: Uri.parse('https://api.1touch.football/v1/'),
+            requestHeaders: () => const {}),
       );
 
       final first = await repository.loadOptions(
@@ -75,12 +80,13 @@ void main() {
     test('validates limits before sending a request', () async {
       var requested = false;
       final repository = ApiCurrentFormRepository(
-        client: MockClient((_) async {
-          requested = true;
-          return http.Response('{}', 200);
-        }),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient((_) async {
+              requested = true;
+              return http.Response('{}', 200);
+            }),
+            baseUri: Uri.parse('https://api.1touch.football/v1'),
+            requestHeaders: () => const {}),
       );
 
       await expectLater(repository.loadOptions(83, limit: 0), throwsRangeError);
@@ -100,9 +106,10 @@ void main() {
       ];
       var requestCount = 0;
       final repository = ApiCurrentFormRepository(
-        client: MockClient((_) async => responses[requestCount++]),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient((_) async => responses[requestCount++]),
+            baseUri: Uri.parse('https://api.1touch.football/v1'),
+            requestHeaders: () => const {}),
       );
 
       await expectLater(
@@ -119,19 +126,21 @@ void main() {
     test('requests, maps, and caches an exact comparison', () async {
       var requestCount = 0;
       final repository = ApiCurrentFormRepository(
-        client: MockClient((request) async {
-          requestCount++;
-          expect(request.url.path, '/v1/teams/83/current-form');
-          expect(request.url.queryParameters, {
-            'compare_team_id': '3468',
-            'compare_season_id': '23621',
-            'season_id': '25659',
-          });
-          expect(request.headers['Authorization'], 'Bearer session-token');
-          return http.Response(jsonEncode(_comparisonJson()), 200);
-        }),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {'Authorization': 'Bearer session-token'},
+        api: ApiClient(
+            client: MockClient((request) async {
+              requestCount++;
+              expect(request.url.path, '/v1/teams/83/current-form');
+              expect(request.url.queryParameters, {
+                'compare_team_id': '3468',
+                'compare_season_id': '23621',
+                'season_id': '25659',
+              });
+              expect(request.headers['Authorization'], 'Bearer session-token');
+              return http.Response(jsonEncode(_comparisonJson()), 200);
+            }),
+            baseUri: Uri.parse('https://api.1touch.football/v1'),
+            requestHeaders: () =>
+                const {'Authorization': 'Bearer session-token'}),
       );
 
       final first = await repository.loadComparison(
@@ -164,15 +173,16 @@ void main() {
 
     test('omits the optional current season', () async {
       final repository = ApiCurrentFormRepository(
-        client: MockClient((request) async {
-          expect(request.url.queryParameters, {
-            'compare_team_id': '3468',
-            'compare_season_id': '23621',
-          });
-          return http.Response(jsonEncode(_comparisonJson()), 200);
-        }),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient((request) async {
+              expect(request.url.queryParameters, {
+                'compare_team_id': '3468',
+                'compare_season_id': '23621',
+              });
+              return http.Response(jsonEncode(_comparisonJson()), 200);
+            }),
+            baseUri: Uri.parse('https://api.1touch.football/v1/'),
+            requestHeaders: () => const {}),
       );
 
       expect(
@@ -187,14 +197,15 @@ void main() {
 
     test('surfaces unavailable comparison data as an HTTP failure', () async {
       final repository = ApiCurrentFormRepository(
-        client: MockClient((_) async {
-          return http.Response(
-            jsonEncode({'detail': 'Comparison team-season not available'}),
-            404,
-          );
-        }),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient((_) async {
+              return http.Response(
+                jsonEncode({'detail': 'Comparison team-season not available'}),
+                404,
+              );
+            }),
+            baseUri: Uri.parse('https://api.1touch.football/v1'),
+            requestHeaders: () => const {}),
       );
 
       await expectLater(
@@ -215,9 +226,10 @@ void main() {
       ];
       var requestCount = 0;
       final repository = ApiCurrentFormRepository(
-        client: MockClient((_) async => responses[requestCount++]),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient((_) async => responses[requestCount++]),
+            baseUri: Uri.parse('https://api.1touch.football/v1'),
+            requestHeaders: () => const {}),
       );
 
       await expectLater(
@@ -247,12 +259,13 @@ void main() {
       ];
       var requestCount = 0;
       final repository = ApiCurrentFormRepository(
-        client: MockClient(
-          (_) async =>
-              http.Response(jsonEncode(responses[requestCount++]), 200),
-        ),
-        apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient(
+              (_) async =>
+                  http.Response(jsonEncode(responses[requestCount++]), 200),
+            ),
+            baseUri: Uri.parse('https://api.1touch.football/v1'),
+            requestHeaders: () => const {}),
       );
 
       for (var i = 0; i < responses.length; i++) {
