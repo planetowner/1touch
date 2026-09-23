@@ -161,7 +161,7 @@ def _analysis(fetch, player_id, season, clubs, roster, now):
                             if str(r["round_name"]).isdigit()]}
 
 
-def list_player_comparison_candidates(query: str) -> list[dict]:
+def list_player_comparison_candidates(query: str, *, limit: int = 100) -> list[dict]:
     player_ids = korean_name_ids("players", query)
     korean_condition = (" OR p.player_id IN (" + ",".join(["%s"] * len(player_ids)) + ")") if player_ids else ""
     with closing(get_conn()) as conn:
@@ -172,7 +172,7 @@ def list_player_comparison_candidates(query: str) -> list[dict]:
                     FROM players p JOIN team_squad_members sm ON sm.player_id=p.player_id
                     JOIN seasons s ON s.season_id=sm.season_id
                     WHERE s.is_current=1 AND (p.display_name LIKE %s{korean_condition})
-                    ORDER BY p.display_name LIMIT 100""", (f"%{query}%", *player_ids))
+                    ORDER BY p.display_name,p.player_id LIMIT %s""", (f"%{query.strip()}%", *player_ids, limit))
                 return cur.fetchall()
         finally:
             conn.rollback()
