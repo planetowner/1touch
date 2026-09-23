@@ -6,6 +6,8 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/standings/xg_standing_repository.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
@@ -25,6 +27,8 @@ class TeamScreen extends StatefulWidget {
   final TeamProbabilityRepository? teamProbabilityRepository;
   final StandingRepository? standingRepository;
   final XgStandingRepository? xgStandingRepository;
+  final FixtureRepository? fixtureRepository;
+  final CurrentFormRepository? currentFormRepository;
 
   TeamScreen({
     super.key,
@@ -34,6 +38,8 @@ class TeamScreen extends StatefulWidget {
     this.teamProbabilityRepository,
     this.standingRepository,
     this.xgStandingRepository,
+    this.fixtureRepository,
+    this.currentFormRepository,
   });
 
   @override
@@ -365,7 +371,8 @@ class _TeamScreenState extends State<TeamScreen>
                   onStandingCompetitionSelected: _openStandingCompetition,
                   standingRepository: widget.standingRepository,
                 ),
-                MatchesTab(team: team),
+                MatchesTab(
+                    team: team, fixtureRepository: widget.fixtureRepository),
                 StandingTab(
                   team: team,
                   regularStandingRepository: widget.standingRepository,
@@ -378,6 +385,7 @@ class _TeamScreenState extends State<TeamScreen>
                   team: team,
                   repository: widget.teamAttributeRepository,
                   probabilityRepository: widget.teamProbabilityRepository,
+                  currentFormRepository: widget.currentFormRepository,
                 ),
               ],
             ),

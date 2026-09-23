@@ -359,13 +359,16 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         const SizedBox(width: 8),
         _teamLogo(option.teamLogo),
         const SizedBox(width: 6),
-        Text(
-          teamCode,
-          style: Body2_b.style.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
+        // 짧은 이름이 없는 팀도 메뉴의 남은 너비 안에서 표시해요.
+        Flexible(
+          child: Text(
+            teamCode,
+            style: Body2_b.style.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

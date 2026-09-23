@@ -1,9 +1,11 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('same position restores comparison design with pending radar',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
