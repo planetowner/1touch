@@ -121,15 +121,18 @@ def register_email(challenge: str, code: str, password: str, profile: dict) -> d
 
 
 def login_password(username: str, password: str) -> dict:
+    username = username.strip()
     rate_limit(f"password-login:{username.casefold()}", 10, 300)
     with transaction() as conn, conn.cursor(dictionary=True) as cur:
-        # 이메일은 가입 인증·비밀번호 복구에 쓰고, 로그인은 현재 username으로만 찾아요.
+        # 아이디에도 @가 허용되므로 문자열 모양으로 이메일과 아이디를 구분하지 않아요.
         cur.execute("""SELECT c.user_id,c.password_hash FROM users u
             JOIN user_email_credentials c ON c.user_id=u.user_id
-            WHERE u.username=%s FOR UPDATE""", (username,))
-        row = cur.fetchone()
-        if row is None or not PASSWORDS.verify(password, row["password_hash"]):
-            raise HTTPException(401, "Invalid username or password")
+            WHERE u.username=%s OR c.email=%s FOR UPDATE""", (username, username))
+        matches = [row for row in cur.fetchall() if PASSWORDS.verify(password, row["password_hash"])]
+        # 서로 다른 계정의 아이디·이메일과 비밀번호까지 겹치면 한 계정을 임의로 선택하지 않아요.
+        if len(matches) != 1:
+            raise HTTPException(401, "Invalid email, username, or password")
+        row = matches[0]
         return _create_session(cur, row["user_id"])
 
 
