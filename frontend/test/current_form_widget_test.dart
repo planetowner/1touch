@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:fl_chart/fl_chart.dart';
@@ -11,6 +12,7 @@ import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
+  setUpAppCatalog();
   Widget buildSubject({
     required int? teamId,
     required CurrentFormRepository repository,
@@ -65,7 +67,7 @@ void main() {
       lightModeCardShadows,
     );
     final chart = tester.widget<LineChart>(find.byType(LineChart));
-    expect(chart.data.lineBarsData.first.color, const Color(0xFF7A263A));
+    expect(chart.data.lineBarsData.first.color, const Color(0xFFD82457));
     expect(chart.data.lineBarsData[1].color, Colors.white);
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
@@ -297,7 +299,7 @@ void main() {
     );
   }
 
-  testWidgets('opens all 192 catalog options at compact width without overflow',
+  testWidgets('opens all catalog options at compact width without overflow',
       (tester) async {
     useScreen(tester, const Size(320, 568));
     final repository = MockCurrentFormRepository();
@@ -309,7 +311,15 @@ void main() {
     final popup = tester.widget<PopupMenuButton<CurrentFormOption>>(
       filterFinder,
     );
-    expect(popup.itemBuilder(tester.element(filterFinder)), hasLength(192));
+    final options = await repository.loadOptions(83);
+    final menu = popup.itemBuilder(tester.element(filterFinder));
+    expect(menu, hasLength(options.length));
+    expect(
+      menu
+          .cast<PopupMenuItem<CurrentFormOption>>()
+          .map((item) => (item.value!.teamId, item.value!.seasonId)),
+      options.map((option) => (option.teamId, option.seasonId)),
+    );
 
     await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
     await tester.pumpAndSettle();

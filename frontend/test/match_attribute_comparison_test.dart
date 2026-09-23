@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:fl_chart/fl_chart.dart';
@@ -10,6 +11,7 @@ import 'package:onetouch/models/team_attribute_season_option.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('preview and team page render the same current attribute values',
       (tester) async {
     final repository = _Repository();

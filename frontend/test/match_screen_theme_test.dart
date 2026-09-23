@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -6,8 +7,11 @@ import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
 import 'support/fake_betting_repository.dart';
+import 'support/test_match_analysis_repository.dart';
+import 'package:onetouch/models/match_tactical_analysis.dart';
 
 void main() {
+  setUpAppCatalog();
   Future<void> pumpMatch(
     WidgetTester tester, {
     required ThemeData theme,
@@ -56,6 +60,19 @@ void main() {
           initialFixture: fixture,
           repository: repository,
           bettingRepository: FakeBettingRepository(),
+          analysisRepository: TestMatchAnalysisRepository(
+            MatchTacticalAnalysis(
+                fixtureId: fixture.fixtureId,
+                available: false,
+                home: null,
+                away: null),
+            MatchShotMap(
+                fixtureId: fixture.fixtureId,
+                available: true,
+                homeCount: 0,
+                awayCount: 0,
+                shots: const []),
+          ),
           standingRepository: MockStandingRepository(),
         ),
       ),
@@ -193,7 +210,7 @@ void main() {
     );
     await tester.pump();
     await tester.tap(find.text('ANALYSIS'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(
       decorationColor(tester, const ValueKey('match-analysis-attack-card')),
       app_style.AppPalette.white,

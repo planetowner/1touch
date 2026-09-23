@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'package:onetouch/models/team_contract_roster.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Squad.dart';
 
 void main() {
+  setUpAppCatalog();
   test('exposes the nullable wage sort option', () {
     expect(SortOption.wage.label, 'Wage');
 

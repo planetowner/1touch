@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -6,12 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
 void main() {
+  setUpAppCatalog();
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets(
         'renders current API attributes at ${size.width}x${size.height}',
@@ -455,15 +458,16 @@ ApiTeamAttributeRepository _repository(
   Future<http.Response> Function(http.Request request)? optionsHandler,
 }) {
   return ApiTeamAttributeRepository(
-    client: MockClient((request) {
-      if (request.url.path.endsWith('/attributes/options')) {
-        return optionsHandler?.call(request) ??
-            Future.value(http.Response(jsonEncode(_optionsJson()), 200));
-      }
-      return handler(request);
-    }),
-    apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-    requestHeaders: const {},
+    api: ApiClient(
+        client: MockClient((request) {
+          if (request.url.path.endsWith('/attributes/options')) {
+            return optionsHandler?.call(request) ??
+                Future.value(http.Response(jsonEncode(_optionsJson()), 200));
+          }
+          return handler(request);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1'),
+        requestHeaders: () => const {}),
   );
 }
 

@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:onetouch/screens/HomeScreen.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('changing team removes old news and rejects its late response',
       (tester) async {
     final oldFavorite = currentUserPreferences.favoriteTeamId.value;
