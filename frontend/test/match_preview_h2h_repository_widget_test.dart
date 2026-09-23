@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -7,45 +8,48 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('loads backend current standings instead of the fixture season',
       (tester) async {
     final requests = <Uri>[];
     final standings = ApiStandingRepository(
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: const {},
-      client: MockClient((request) async {
-        requests.add(request.url);
-        return http.Response(
-            jsonEncode({
-              'competition_id': 8,
-              'season_id': 28083,
-              'rows': [
-                {
-                  'position': 1,
-                  'rank_delta': null,
-                  'team_id': 999999,
-                  'team_name': 'Current season leader',
-                  'team_logo': null,
-                  'matches_played': 3,
-                  'won': 2,
-                  'draw': 1,
-                  'lost': 0,
-                  'goals_for': 8,
-                  'goals_against': 2,
-                  'goal_diff': 6,
-                  'points': 7,
-                  'last5_form': ['W', 'D'],
-                }
-              ],
-            }),
-            200);
-      }),
+      api: ApiClient(
+          client: MockClient((request) async {
+            requests.add(request.url);
+            return http.Response(
+                jsonEncode({
+                  'competition_id': 8,
+                  'season_id': 28083,
+                  'rows': [
+                    {
+                      'position': 1,
+                      'rank_delta': null,
+                      'team_id': 999999,
+                      'team_name': 'Current season leader',
+                      'team_logo': null,
+                      'matches_played': 3,
+                      'won': 2,
+                      'draw': 1,
+                      'lost': 0,
+                      'goals_for': 8,
+                      'goals_against': 2,
+                      'goal_diff': 6,
+                      'points': 7,
+                      'last5_form': ['W', 'D'],
+                    }
+                  ],
+                }),
+                200);
+          }),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => const {}),
     );
     final betting = fakeBettingController(_firstSelectedFixture.fixtureId);
     addTearDown(betting.dispose);

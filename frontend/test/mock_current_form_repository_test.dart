@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
+import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/models/team_season_membership.dart';
@@ -28,8 +29,10 @@ void main() {
 
     expect(options, isNotEmpty);
     expect(options.first.teamId, 83);
-    expect(options.first.seasonName, anyOf('2025/2026', '2024/2025'));
-    expect(comparison?.current.seasonId, 25659);
+    final current = mockSeasons.singleWhere(
+        (season) => season.competitionId == 564 && season.isCurrent);
+    expect(options.first.seasonName, current.name);
+    expect(comparison?.current.seasonId, current.seasonId);
     expect(comparison?.comparison.seasonId, 23621);
   });
 }

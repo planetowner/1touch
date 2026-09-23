@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -10,6 +11,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
 
 void main() {
+  setUpAppCatalog();
   test('API short name leaves the original name and code available', () {
     final team = teamFromApiResponse(ApiTeamResponse.fromJson({
       'team_id': 83,

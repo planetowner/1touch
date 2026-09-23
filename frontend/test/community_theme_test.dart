@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,6 +30,7 @@ void _useCompactPhone(WidgetTester tester) {
 }
 
 void main() {
+  setUpAppCatalog();
   for (final testCase in <({
     String name,
     ThemeData theme,

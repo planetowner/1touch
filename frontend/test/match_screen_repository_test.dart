@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('loads a fixture detail asynchronously on a compact screen',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
@@ -419,7 +421,7 @@ void main() {
     );
     final headerGradient =
         (statHeader.decoration as BoxDecoration).gradient as LinearGradient;
-    const teamPrimary = Color(0xFFA50044);
+    const teamPrimary = Color(0xFFD92455);
     expect(headerGradient.colors, [
       teamPrimary,
       Color.alphaBlend(
