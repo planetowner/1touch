@@ -7,6 +7,7 @@ import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class OverviewTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -72,13 +73,13 @@ class _OverviewTabState extends State<OverviewTab> {
           delegate: SliverChildListDelegate(
             [
               const SizedBox(height: 24),
-              const SectionHeader(title: "FIXTURE"),
+              SectionHeader(title: tr(context, "FIXTURE")),
               // Pass the whole team map
               Fixtures(teams: widget.team),
 
               if (hasStanding) ...[
                 const SizedBox(height: 32),
-                const SectionHeader(title: "STANDING"),
+                SectionHeader(title: tr(context, "STANDING")),
                 Standing(
                   teams: widget.team,
                   onCompetitionSelected: widget.onStandingCompetitionSelected,
@@ -88,7 +89,7 @@ class _OverviewTabState extends State<OverviewTab> {
 
               if (_showBestElevenSection) ...[
                 const SizedBox(height: 32),
-                const SectionHeader(title: "BEST XI"),
+                SectionHeader(title: tr(context, "BEST XI")),
                 TeamBestElevenSection(
                   teamId: _teamId,
                   variant: TeamBestElevenVariant.overview,
@@ -99,7 +100,7 @@ class _OverviewTabState extends State<OverviewTab> {
 
               if (_showInjurySection) ...[
                 const SizedBox(height: 32),
-                const SectionHeader(title: "INJURY STATUS"),
+                SectionHeader(title: tr(context, "INJURY STATUS")),
                 InjuryStatus(
                   teams: widget.team,
                   repository: widget.injuryRepository,
@@ -109,7 +110,7 @@ class _OverviewTabState extends State<OverviewTab> {
 
               if (_showTransferSection) ...[
                 const SizedBox(height: 20),
-                const SectionHeader(title: "TRANSFERS"),
+                SectionHeader(title: tr(context, "TRANSFERS")),
                 Transfer(
                   teams: widget.team,
                   repository: widget.transferRepository,
@@ -132,7 +133,7 @@ class _OverviewTabState extends State<OverviewTab> {
                   ),
                   child: Center(
                     child: Text(
-                      "Ad",
+                      tr(context, "Ad"),
                       textAlign: TextAlign.center,
                       style: Heading4.style.copyWith(color: AppPalette.white),
                     ),
@@ -156,7 +157,8 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Text(title, style: Body1_b.style, textAlign: TextAlign.start),
+      child: Text(tr(context, title),
+          style: Body1_b.style, textAlign: TextAlign.start),
     );
   }
 }

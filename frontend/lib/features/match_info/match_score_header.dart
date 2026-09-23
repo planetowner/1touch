@@ -38,7 +38,7 @@ class MatchScoreHeader extends StatelessWidget {
     final awayDimmed = home != null && away != null && away < home;
     final round = roundLabel?.trim();
     final visibleRoundLabel = round != null && int.tryParse(round) != null
-        ? 'Round $round'
+        ? tr(context, 'Round {round}', {'round': round})
         : round;
 
     return LayoutBuilder(
@@ -82,7 +82,7 @@ class MatchScoreHeader extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text(statusLabel, style: Body2_b.style),
+                Text(tr(context, statusLabel), style: Body2_b.style),
                 if (venueLabel?.trim().isNotEmpty ?? false) ...[
                   const SizedBox(height: 6),
                   SizedBox(

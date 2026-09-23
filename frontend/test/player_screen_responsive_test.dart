@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -9,6 +10,7 @@ import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
+  setUpAppCatalog();
   final player = playerRepository.findById('lee-kang-in')!;
   test('player gradient ends below the overview profile', () {
     expect(playerDetailOverviewGradientHeight(20), 329);
@@ -201,7 +203,7 @@ void main() {
     await tester.tap(find.text('Analysis').first);
     await tester.pumpAndSettle();
     expect(find.text('ATTRIBUTES'), findsOneWidget);
-    expect(find.text('아직 준비중이에요 ㅠㅠ'), findsOneWidget);
+    expect(find.text('Coming soon'), findsOneWidget);
     expect(find.text('Minutes Played\nPer Game'), findsOneWidget);
     expect(find.text('Goal\nContributions'), findsOneWidget);
     final selector =
@@ -210,7 +212,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.calls.last.seasonId, selector.detail.seasons.last.id);
     expect(find.text('ATTRIBUTES'), findsOneWidget);
-    expect(find.text('아직 준비중이에요 ㅠㅠ'), findsOneWidget);
+    expect(find.text('Coming soon'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('failed detail has retry without mock competitions',

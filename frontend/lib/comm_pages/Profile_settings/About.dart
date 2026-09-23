@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 // import 'package:go_router/go_router.dart';
 
 class AboutPage extends StatefulWidget {
@@ -39,7 +40,7 @@ class _AboutPageState extends State<AboutPage> {
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       Text(
-                        "About",
+                        tr(context, "About"),
                         style: Body1.style,
                       ),
                       SizedBox(
@@ -59,15 +60,16 @@ class _AboutPageState extends State<AboutPage> {
                     child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   children: [
-                    _buildListItem(context, "Legal", () {
+                    _buildListItem(context, tr(context, "Legal"), () {
                       // TODO: Navigate or show dialog
                     }),
                     _buildDivider(),
-                    _buildListItem(context, "Terms of Service", () {
+                    _buildListItem(context, tr(context, "Terms of Service"),
+                        () {
                       // TODO: Navigate or show dialog
                     }),
                     _buildDivider(),
-                    _buildListItem(context, "Privacy Policy", () {
+                    _buildListItem(context, tr(context, "Privacy Policy"), () {
                       // TODO: Navigate or show dialog
                     }),
                     _buildDivider(),
@@ -85,7 +87,7 @@ class _AboutPageState extends State<AboutPage> {
       BuildContext context, String title, VoidCallback onTap) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      title: Text(title, style: Body1.style),
+      title: Text(tr(context, title), style: Body1.style),
       trailing: Icon(
         Icons.arrow_forward_ios,
         color: Theme.of(context).colorScheme.onSurface,

@@ -13,7 +13,7 @@ void main() {
     Uri? connectedUri;
     final socket = ApiChatSocket(
       apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      sessionToken: token,
+      sessionToken: () => token,
       connector: (uri) {
         connectedUri = uri;
         return connection;
@@ -60,7 +60,7 @@ void main() {
     Uri? connectedUri;
     final socket = ApiChatSocket(
       apiBaseUri: Uri.parse('http://localhost:8000/v1/'),
-      sessionToken: token,
+      sessionToken: () => token,
       connector: (uri) {
         connectedUri = uri;
         return connection;
@@ -87,7 +87,7 @@ void main() {
     final connection = _FakeConnection();
     final socket = ApiChatSocket(
       apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      sessionToken: token,
+      sessionToken: () => token,
       connector: (_) => connection,
     );
     final connecting = socket.connect(42);
@@ -108,11 +108,40 @@ void main() {
     await error;
   });
 
+  test('reads the latest session at each connection', () async {
+    String? currentToken;
+    final connections = <_FakeConnection>[];
+    final socket = ApiChatSocket(
+      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
+      sessionToken: () => currentToken,
+      connector: (_) {
+        final connection = _FakeConnection();
+        connections.add(connection);
+        return connection;
+      },
+    );
+    await expectLater(
+      socket.connect(42),
+      throwsA(isA<ChatSocketException>()
+          .having((e) => e.closeCode, 'closeCode', 4401)),
+    );
+    expect(connections, isEmpty);
+    for (final value in [token, 'a' * 40]) {
+      currentToken = value;
+      final connecting = socket.connect(42);
+      final connection = connections.last;
+      await _waitFor(() => connection.sent.isNotEmpty);
+      expect(jsonDecode(connection.sent.single as String), {'token': value});
+      connection.addJson({'type': 'ready', 'fixture_id': 42});
+      await (await connecting).close();
+    }
+  });
+
   test('rejects malformed handshake frames and handshake timeouts', () async {
     final malformed = _FakeConnection();
     final malformedSocket = ApiChatSocket(
       apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      sessionToken: token,
+      sessionToken: () => token,
       connector: (_) => malformed,
     );
     final malformedConnect = malformedSocket.connect(42);
@@ -123,7 +152,7 @@ void main() {
     final timedOut = _FakeConnection();
     final timeoutSocket = ApiChatSocket(
       apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      sessionToken: token,
+      sessionToken: () => token,
       connector: (_) => timedOut,
       handshakeTimeout: const Duration(milliseconds: 5),
     );
@@ -135,17 +164,17 @@ void main() {
   });
 
   test('rejects invalid fixture IDs and session-token lengths', () async {
-    expect(
-      () => ApiChatSocket(
+    await expectLater(
+      ApiChatSocket(
         apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-        sessionToken: 'short',
+        sessionToken: () => 'short',
         connector: (_) => _FakeConnection(),
-      ),
+      ).connect(42),
       throwsArgumentError,
     );
     final socket = ApiChatSocket(
       apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      sessionToken: token,
+      sessionToken: () => token,
       connector: (_) => _FakeConnection(),
     );
     await expectLater(socket.connect(0), throwsRangeError);

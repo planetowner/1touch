@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 Future<void> showReportDialog(
   BuildContext context, {
@@ -46,7 +47,7 @@ Future<void> showReportDialog(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Report",
+                          tr(context, "Report"),
                           style:
                               Heading4.style.copyWith(color: colors.onSurface),
                         ),
@@ -67,7 +68,10 @@ Future<void> showReportDialog(
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Tell us why you would like to report this $targetLabel!',
+                            tr(
+                                context,
+                                'Tell us why you would like to report this {target}!',
+                                {'target': tr(context, targetLabel)}),
                             style: Body2.style
                                 .copyWith(color: appColors.mutedForeground),
                           ),
@@ -92,7 +96,7 @@ Future<void> showReportDialog(
                               RadioListTile<int>(
                                 value: index,
                                 title: Text(
-                                  reasons[index],
+                                  tr(context, reasons[index]),
                                   style: Body1.style,
                                 ),
                                 activeColor: colors.onSurface,
@@ -142,8 +146,8 @@ Future<void> showReportDialog(
                                 if (!context.mounted) return;
                                 setState(() {
                                   isSubmitting = false;
-                                  errorMessage =
-                                      'Unable to submit report. Please try again.';
+                                  errorMessage = tr(context,
+                                      'Unable to submit report. Please try again.');
                                 });
                               }
                             },
@@ -170,7 +174,7 @@ Future<void> showReportDialog(
                                 ),
                               )
                             : Text(
-                                "SUBMIT",
+                                tr(context, "SUBMIT"),
                                 style: Body2_b.style
                                     .copyWith(color: colors.onPrimary),
                               ),
@@ -207,7 +211,7 @@ void showThanksDialog(BuildContext context) {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Report",
+                  tr(context, "Report"),
                   style: Heading4.style.copyWith(color: colors.onSurface),
                 ),
                 GestureDetector(
@@ -225,12 +229,13 @@ void showThanksDialog(BuildContext context) {
             ),
             const SizedBox(height: 16),
             Text(
-              "Thanks for your report!",
+              tr(context, "Thanks for your report!"),
               style: Heading5.style,
             ),
             const SizedBox(height: 16),
             Text(
-              "Thanks again for your report — we’ve got your back, and your fellow 1touchers too. Every report helps make 1touch a safer, better place for everyone.",
+              tr(context,
+                  "Thanks again for your report — we’ve got your back, and your fellow 1touchers too. Every report helps make 1touch a safer, better place for everyone."),
               style: Body2.style,
               textAlign: TextAlign.center,
             ),
@@ -246,7 +251,7 @@ void showThanksDialog(BuildContext context) {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  "DONE",
+                  tr(context, "DONE"),
                   style: Body2_b.style.copyWith(color: colors.onPrimary),
                 ),
               ),

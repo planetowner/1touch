@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -128,7 +129,7 @@ class PlayerMatchCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          stat["label"]!,
+                          tr(context, stat["label"]!),
                           textAlign: TextAlign.center,
                           maxLines: 3,
                           style: Eyebrow.style,

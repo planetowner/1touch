@@ -16,6 +16,7 @@ import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 
 import '../core/stylesheet_dark.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class MatchScreen extends StatefulWidget {
   final String matchId;
@@ -130,8 +131,8 @@ class _MatchScreenState extends State<MatchScreen> {
     final appBarBackground = isDark
         ? AppColors.of(context).pageBackground
         : AppPalette.lightModeDarkGrey;
-    final selectedSurface = AppPalette.white;
-    final selectedForeground = AppPalette.black;
+    const selectedSurface = AppPalette.white;
+    const selectedForeground = AppPalette.black;
     final unselectedSurface =
         isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox;
 
@@ -208,7 +209,7 @@ class _MatchScreenState extends State<MatchScreen> {
                             boxShadow: appCardShadows(context),
                           ),
                           child: Text(
-                            tabs[index],
+                            tr(context, tabs[index]),
                             style: Body2_b.style.copyWith(
                               color:
                                   isSelected ? selectedForeground : foreground,
@@ -253,14 +254,14 @@ class _MatchScreenState extends State<MatchScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Unable to load match.',
+                tr(context, 'Unable to load match.'),
                 style: TextStyle(color: foreground),
               ),
               const SizedBox(height: 12),
               TextButton(
                 key: const ValueKey('match-retry-button'),
                 onPressed: _retryLoad,
-                child: const Text('Retry'),
+                child: Text(tr(context, 'Retry')),
               ),
             ],
           ),
@@ -272,7 +273,8 @@ class _MatchScreenState extends State<MatchScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(48),
-          child: Text('Match not found', style: TextStyle(color: foreground)),
+          child: Text(tr(context, 'Match not found'),
+              style: TextStyle(color: foreground)),
         ),
       );
     }

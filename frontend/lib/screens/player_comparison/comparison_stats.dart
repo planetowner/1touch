@@ -18,7 +18,7 @@ class _ComparisonContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          Text('ATTRIBUTES', style: Body2_b.style),
+          Text(tr(context, 'ATTRIBUTES'), style: Body2_b.style),
           const SizedBox(height: 16),
           PlayerSurface(
             key: const ValueKey('comparison-attribute-pending-card'),
@@ -27,7 +27,7 @@ class _ComparisonContent extends StatelessWidget {
               height: 96,
               child: Center(
                 child: Text(
-                  '아직 준비중이에요 ㅠㅠ',
+                  tr(context, 'Coming soon'),
                   key: const ValueKey('comparison-attribute-pending'),
                   style: Heading5.style,
                 ),
@@ -106,7 +106,7 @@ class _StatCategoryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            category.label.toUpperCase(),
+            playerCategoryLabel(context, category.label).toUpperCase(),
             style: TextStyle(
               color: foreground,
               fontSize: 13,
@@ -183,7 +183,7 @@ class _StatRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
+            tr(context, label),
             style: TextStyle(
               color: AppColors.of(context).mutedForeground,
               fontSize: 12,

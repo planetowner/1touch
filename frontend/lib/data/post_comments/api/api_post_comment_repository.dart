@@ -1,23 +1,15 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/post_comments/api/api_post_comment_mapper.dart';
 import 'package:onetouch/data/post_comments/api/api_post_comment_response.dart';
 import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/models/post_comment.dart';
 
 class ApiPostCommentRepository implements PostCommentRepository {
-  ApiPostCommentRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiPostCommentRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<int> createComment({
@@ -41,28 +33,21 @@ class ApiPostCommentRepository implements PostCommentRepository {
       );
     }
 
-    final uri = _apiBaseUri.resolve('posts/$postId/comments');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('posts/$postId/comments');
+    final response = await _api.post(
       uri,
       headers: {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        ..._requestHeaders,
       },
       body: jsonEncode({
         'body': normalizedBody,
         'reply_to_id': replyToId,
       }),
     );
-    if (response.statusCode != 201) {
-      throw http.ClientException(
-        'Comment creation failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic> || decoded['comment_id'] is! int) {
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: 201);
+    if (decoded['comment_id'] is! int) {
       throw const FormatException(
         'Expected comment creation to return integer "comment_id".',
       );
@@ -92,38 +77,23 @@ class ApiPostCommentRepository implements PostCommentRepository {
       throw RangeError.range(limit, 1, 100, 'limit');
     }
 
-    final uri = _apiBaseUri.resolve('posts/$postId/comments').replace(
+    final uri = _api.baseUri.resolve('posts/$postId/comments').replace(
       queryParameters: {
         'after_id': '$afterId',
         'limit': '$limit',
       },
     );
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Comments request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the comments response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     final apiResponse = ApiPostCommentListResponse.fromJson(decoded);
     final comments = apiResponse.items
         .map(
           (item) => postCommentFromApiResponse(
             item,
-            apiBaseUri: _apiBaseUri,
+            apiBaseUri: _api.baseUri,
           ),
         )
         .toList(growable: false);
@@ -143,10 +113,5 @@ class ApiPostCommentRepository implements PostCommentRepository {
       previousId = comment.commentId;
     }
     return List.unmodifiable(comments);
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

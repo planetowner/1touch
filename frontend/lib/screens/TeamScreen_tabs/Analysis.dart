@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_baseline.dart';
 import 'package:onetouch/features/team/attributes/team_attribute_radar.dart';
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/current_form_repository_provider.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
@@ -31,12 +34,14 @@ class AnalysisTab extends StatelessWidget {
   final Map<String, dynamic>? team;
   final TeamAttributeRepository? repository;
   final TeamProbabilityRepository? probabilityRepository;
+  final CurrentFormRepository? currentFormRepository;
 
   const AnalysisTab({
     super.key,
     required this.team,
     this.repository,
     this.probabilityRepository,
+    this.currentFormRepository,
   });
 
   @override
@@ -55,7 +60,7 @@ class AnalysisTab extends StatelessWidget {
             teamId: team?['id'] as int?,
             variant: TeamBestElevenVariant.analysis,
           ),
-          CurrentFormSection(team: team),
+          CurrentFormSection(team: team, repository: currentFormRepository),
         ],
       ),
     );

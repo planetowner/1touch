@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 
@@ -10,22 +11,24 @@ void main() {
   test('posts a Google ID token and returns the backend access token',
       () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/auth/google');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Content-Type'], 'application/json');
-        expect(jsonDecode(request.body), {'id_token': 'google-id-token'});
-        return http.Response(
-          jsonEncode({
-            'access_token': 'backend-access-token',
-            'token_type': 'bearer',
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/auth/google');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Content-Type'], 'application/json');
+            expect(jsonDecode(request.body), {'id_token': 'google-id-token'});
+            return http.Response(
+              jsonEncode({
+                'access_token': 'backend-access-token',
+                'token_type': 'bearer',
+              }),
+              200,
+            );
           }),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final accessToken = await repository.signInWithGoogle(
@@ -37,22 +40,24 @@ void main() {
 
   test('posts username and password without changing the password', () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/auth/login');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Content-Type'], 'application/json');
-        expect(jsonDecode(request.body), {
-          'username': 'member',
-          'password': ' Password123 ',
-        });
-        return http.Response(
-          jsonEncode({'access_token': 'password-session'}),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/auth/login');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Content-Type'], 'application/json');
+            expect(jsonDecode(request.body), {
+              'username': 'member',
+              'password': ' Password123 ',
+            });
+            return http.Response(
+              jsonEncode({'access_token': 'password-session'}),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final accessToken = await repository.signInWithPassword(
@@ -65,25 +70,27 @@ void main() {
 
   test('requests a signup email code and parses its challenge', () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/auth/email/code');
-        expect(jsonDecode(request.body), {
-          'email': 'member@example.com',
-          'purpose': 'signup',
-        });
-        return http.Response(
-          jsonEncode({
-            'challenge_id': 'c' * 40,
-            'expires_in': 600,
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/auth/email/code');
+            expect(jsonDecode(request.body), {
+              'email': 'member@example.com',
+              'purpose': 'signup',
+            });
+            return http.Response(
+              jsonEncode({
+                'challenge_id': 'c' * 40,
+                'expires_in': 600,
+              }),
+              200,
+            );
           }),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
-    final challenge = await repository.requestSignUpEmailCode(
+    final challenge = await repository.requestEmailCode(
       email: ' member@example.com ',
     );
 
@@ -94,17 +101,19 @@ void main() {
   test('preserves the backend detail when an email-code request fails',
       () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({'detail': 'Verification email could not be sent'}),
-          502,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode({'detail': 'Verification email could not be sent'}),
+              502,
+            ),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
-      repository.requestSignUpEmailCode(email: 'member@example.com'),
+      repository.requestEmailCode(email: 'member@example.com'),
       throwsA(
         isA<AuthRequestException>()
             .having((error) => error.statusCode, 'statusCode', 502)
@@ -119,21 +128,23 @@ void main() {
 
   test('reads FastAPI validation messages for email-code failures', () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({
-            'detail': [
-              {'msg': 'value is not a valid email address'},
-            ],
-          }),
-          422,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode({
+                'detail': [
+                  {'msg': 'value is not a valid email address'},
+                ],
+              }),
+              422,
+            ),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
-      repository.requestSignUpEmailCode(email: 'invalid'),
+      repository.requestEmailCode(email: 'invalid'),
       throwsA(
         isA<AuthRequestException>().having(
           (error) => error.displayMessage,
@@ -146,26 +157,28 @@ void main() {
 
   test('registers an email account and returns its access token', () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/auth/email/register');
-        expect(jsonDecode(request.body), {
-          'challenge_id': 'c' * 40,
-          'code': '373262',
-          'password': 'Password123',
-          'username': 'member',
-          'first_name': 'First',
-          'last_name': 'Last',
-        });
-        return http.Response(
-          jsonEncode({
-            'access_token': 'email-session-token',
-            'token_type': 'bearer',
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/auth/email/register');
+            expect(jsonDecode(request.body), {
+              'challenge_id': 'c' * 40,
+              'code': '373262',
+              'password': 'Password123',
+              'username': 'member',
+              'first_name': 'First',
+              'last_name': 'Last',
+            });
+            return http.Response(
+              jsonEncode({
+                'access_token': 'email-session-token',
+                'token_type': 'bearer',
+              }),
+              201,
+            );
           }),
-          201,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final accessToken = await repository.registerWithEmail(
@@ -182,15 +195,17 @@ void main() {
 
   test('preserves backend detail when email registration fails', () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({
-            'detail': 'Invalid, expired, or exhausted verification code',
-          }),
-          400,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode({
+                'detail': 'Invalid, expired, or exhausted verification code',
+              }),
+              400,
+            ),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -212,95 +227,19 @@ void main() {
     );
   });
 
-  test('validates a restored session and reads onboarding state', () async {
-    final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/users/me');
-        expect(request.headers['Authorization'], 'Bearer restored-token');
-        return http.Response(
-          jsonEncode({
-            'username': 'member',
-            'first_name': 'First',
-            'last_name': 'Last',
-            'onboarding_complete': true,
-          }),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-    );
-
-    expect(
-      (await repository.loadAccountStatus(
-        accessToken: 'restored-token',
-      ))
-          .onboardingComplete,
-      isTrue,
-    );
-  });
-
-  test('completes a new social account profile', () async {
-    final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'PUT');
-        expect(request.url.path, '/v1/users/me/profile');
-        expect(request.headers['Authorization'], 'Bearer social-token');
-        expect(jsonDecode(request.body), {
-          'username': 'member',
-          'first_name': 'First',
-          'last_name': 'Last',
-        });
-        return http.Response(
-          jsonEncode({
-            'username': 'member',
-            'first_name': 'First',
-            'last_name': 'Last',
-            'favorite_team_id': null,
-            'onboarding_complete': false,
-          }),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-    );
-
-    final status = await repository.completeSocialProfile(
-      accessToken: 'social-token',
-      username: 'member',
-      firstName: 'First',
-      lastName: 'Last',
-    );
-
-    expect(status.profileComplete, isTrue);
-    expect(status.onboardingComplete, isFalse);
-  });
-
-  test('logs out the current backend session', () async {
-    final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/auth/logout');
-        expect(request.headers['Authorization'], 'Bearer active-token');
-        return http.Response(jsonEncode({'ok': true}), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-    );
-
-    await repository.logout(accessToken: 'active-token');
-  });
-
   test('supports a trailing base-URI slash and any successful status',
       () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/auth/google');
-        return http.Response(
-          jsonEncode({'access_token': 'created-session'}),
-          201,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/auth/google');
+            return http.Response(
+              jsonEncode({'access_token': 'created-session'}),
+              201,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     expect(
@@ -309,14 +248,35 @@ void main() {
     );
   });
 
+  test('logs out with the current authorization header', () async {
+    final repository = ApiGoogleAuthRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.method, 'POST');
+          expect(request.url.path, '/v1/auth/logout');
+          expect(request.headers['Authorization'], 'Bearer active-token');
+          return http.Response(jsonEncode({'ok': true}), 200);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {
+          'Authorization': 'Bearer active-token',
+        },
+      ),
+    );
+
+    await repository.logout();
+  });
+
   test('rejects an empty Google ID token before making a request', () async {
     var requestCount = 0;
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((_) async {
-        requestCount++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      api: ApiClient(
+          client: MockClient((_) async {
+            requestCount++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -328,8 +288,10 @@ void main() {
 
   test('surfaces unsuccessful HTTP responses', () async {
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((_) async => http.Response('Unauthorized', 401)),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      api: ApiClient(
+          client: MockClient((_) async => http.Response('Unauthorized', 401)),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -347,8 +309,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiGoogleAuthRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     for (var i = 0; i < responses.length; i++) {

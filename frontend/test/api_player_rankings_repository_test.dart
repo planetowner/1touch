@@ -3,26 +3,29 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/players/api/api_player_rankings_repository.dart';
 import 'package:onetouch/models/player_rankings.dart';
 
 void main() {
   test('requests and maps one rankings page', () async {
     final repository = ApiPlayerRankingsRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/players/rankings');
-        expect(request.url.queryParameters, {
-          'season_id': '28083',
-          'limit': '20',
-          'offset': '0',
-        });
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_rankingsJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/players/rankings');
+            expect(request.url.queryParameters, {
+              'season_id': '28083',
+              'limit': '20',
+              'offset': '0',
+            });
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_rankingsJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final page = await repository.load(seasonId: 28083);
@@ -39,12 +42,13 @@ void main() {
   test('validates request arguments before sending HTTP', () async {
     var requests = 0;
     final repository = ApiPlayerRankingsRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.load(seasonId: 0), throwsRangeError);
@@ -70,9 +74,10 @@ void main() {
     ];
     var index = 0;
     final repository = ApiPlayerRankingsRepository(
-      client: MockClient((_) async => responses[index++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[index++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

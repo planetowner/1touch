@@ -39,6 +39,11 @@ def open_browser():
         yield driver
 
 
+def unavailable_evidence(evidence: dict) -> bool:
+    return (evidence.get('commentary_message') == 'There is no data available for this fixture.'
+            and evidence.get('passmap_message') == 'No data found')
+
+
 def collect_snapshot(url: str, driver=None, *, finished_only: bool = False, dataset: str = "shots") -> dict:
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support import expected_conditions as ec
@@ -70,8 +75,7 @@ def collect_snapshot(url: str, driver=None, *, finished_only: bool = False, data
             commentary_message: document.querySelector('.Opta-OS-No-Data-Text')?.textContent.trim(),
             passmap_message: document.querySelector('.Opta_F_AP_container')?.textContent.trim()
         };""")
-        if (evidence['commentary_message'] == 'There is no data available for this fixture.'
-                and evidence['passmap_message'] == 'No data found'):
+        if unavailable_evidence(evidence):
             return {"finished": True, "available": False, "match_id": ids["matchId"],
                     "source_url": widget_url, "evidence": evidence,
                     "checked_at_utc": datetime.now(timezone.utc).isoformat()}
@@ -102,7 +106,27 @@ def write_json(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
 
-def sync_matches(args) -> dict:
+def scheduled_fixture(match: dict, fixtures: list[dict], known: dict) -> dict | None:
+    """자료가 없는 경기의 재확인 기록은 검증된 ID와 일정으로만 연결해요."""
+    linked = known['fixture'].get(match['external_fixture_id'])
+    teams = {side: known['team'].get(match[f'{side}_external_team_id']) for side in ('home', 'away')}
+    if linked is None and any(team is None for team in teams.values()):
+        return None
+    candidates = [f for f in fixtures
+                  if str(f['starting_at'])[:10] == match['date']
+                  and (linked is None or f['fixture_id'] == linked)
+                  and all(team is None or f[f'{side}_team_id'] == team for side, team in teams.items())]
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def source_context(match, competition_id, season_name):
+    # DB ID가 없는 예선도 원본 경기 ID로 기다려요. 일정이 정정되면 대기를 풀어요.
+    return {'signature': [competition_id, season_name, *[match[k] for k in (
+                'home_external_team_id', 'away_external_team_id', 'date', 'time')]],
+            'starting_at': f"{match['date']}T{match['time']}" if match['time'] else None}
+
+
+def sync_matches(args, *, on_result=None, should_retry=None, source_order=None) -> dict:
     from ..core.db import fetch_all
 
     check = not args.apply
@@ -113,7 +137,7 @@ def sync_matches(args) -> dict:
     known = load_known_ids()
     targets = getattr(args, 'fixtures', None)
     # 새 DDL을 실행하기 전에도 --check로 매핑·실제 수집을 검토할 수 있어요.
-    stored_by_dataset, fixture_ids_by_dataset = {}, {}
+    stored_by_dataset, fixture_ids_by_dataset, stored_fixture_ids = {}, {}, {}
     for kind in datasets:
         metadata_table = DATASETS[kind][0]
         exists = fetch_all("""SELECT COUNT(*) FROM information_schema.tables
@@ -124,6 +148,7 @@ def sync_matches(args) -> dict:
             JOIN fixture_external_ids x ON x.fixture_id=m.fixture_id AND x.provider='opta' ''') if exists else []
         stored_by_dataset[kind] = {row[0] for row in saved}
         fixture_ids_by_dataset[kind] = {row[1] for row in saved}
+        stored_fixture_ids.update(saved)
     stored = set.intersection(*stored_by_dataset.values())
     complete_fixture_ids = set.intersection(*fixture_ids_by_dataset.values())
     report = {"dataset": dataset, "check": check, "ready": 0, "stored": 0, "skipped": 0, "not_finished": 0,
@@ -150,7 +175,12 @@ def sync_matches(args) -> dict:
                     if args.season and scope["season_name"] != args.season:
                         raise ValueError(f"공개 일정은 {scope['season_name']} 시즌이에요. 요청 시즌: {args.season}")
                     matches = []
-                    for match in scope['matches']:
+                    schedule = scope['matches']
+                    if source_order is not None:
+                        schedule = sorted(schedule, key=lambda match: source_order({
+                            'external_fixture_id': match['external_fixture_id'],
+                            'source': source_context(match, competition_id, scope['season_name'])}))
+                    for match in schedule:
                         if match['date'] > args.to_date.isoformat() or (args.from_date and match['date'] < args.from_date.isoformat()):
                             continue
                         external = match['external_fixture_id']
@@ -163,7 +193,16 @@ def sync_matches(args) -> dict:
                                 continue
                         if retry_ids is not None and external not in retry_ids:
                             continue
+                        context = source_context(match, competition_id, scope['season_name'])
                         if external in stored and not args.refresh:
+                            report['skipped'] += 1
+                            if on_result is not None:
+                                on_result({'external_fixture_id': external,
+                                           'fixture_id': stored_fixture_ids[external], 'status': 'stored',
+                                           'source': context,
+                                           'checked_at_utc': datetime.now(timezone.utc).isoformat()})
+                            continue
+                        if should_retry is not None and not should_retry({'external_fixture_id': external, 'source': context}):
                             report['skipped'] += 1
                             continue
                         matches.append(match)
@@ -194,7 +233,11 @@ def sync_matches(args) -> dict:
                 for match in matches:
                     external = match["external_fixture_id"]
                     attempts += 1
-                    item = {"external_fixture_id": external, "competition_id": competition_id, "date": match["date"]}
+                    item = {"external_fixture_id": external, "competition_id": competition_id, "date": match["date"],
+                            'source': source_context(match, competition_id, scope['season_name'])}
+                    linked = scheduled_fixture(match, fixtures, known)
+                    if linked is not None:
+                        item['fixture_id'] = linked['fixture_id']
                     try:
                         # 매핑 실패는 이미 확보한 종료 경기 원본으로 재검증해요. 시간 초과는 원본이 없어 다시 읽어요.
                         cached_path = retry_report.parent / f"{external}.raw.json" if retry_report else None
@@ -244,8 +287,12 @@ def sync_matches(args) -> dict:
                         item.update(status="failed", error=f"{type(error).__name__}: {str(error)[:800]}")
                         print(f"FAIL: {external} {item['error']}", flush=True)
                     finally:
+                        item['checked_at_utc'] = datetime.now(timezone.utc).isoformat()
                         report["matches"].append(item)
                         write_json(report_path, report)
+                        # 다른 경기의 실패나 중단이 이번 경기의 완료·미제공 기록을 지우지 않게 해요.
+                        if on_result is not None and 'status' in item:
+                            on_result(item)
                 if args.limit is not None and attempts >= args.limit:
                     break
     finally:

@@ -76,26 +76,33 @@ class ProviderDisplayTests(unittest.TestCase):
     def test_country_and_device_determine_signup_choices_without_database(self):
         client = TestClient(create_app())
         for platform, country, expected in (
-            ("ios", "KR", ["kakao", "apple", "google", "email"]),
+            ("ios", "KR", ["kakao", "google", "apple", "email"]),
             ("android", "KR", ["kakao", "google", "email"]),
-            ("ios", "US", ["apple", "google", "email"]),
+            ("ios", "US", ["google", "apple", "email"]),
             ("android", "US", ["google", "email"]),
-            ("ios", "DE", ["apple", "google", "email"]),
+            ("ios", "DE", ["google", "apple", "email"]),
             ("android", "DE", ["google", "email"]),
             ("android", "kr", ["kakao", "google", "email"]),
-            ("ios", "JP", ["line", "apple", "google", "email"]),
+            ("ios", "JP", ["line", "google", "apple", "email"]),
             ("android", "jp", ["line", "google", "email"]),
-            ("ios", "CN", ["apple", "google", "email"]),
+            ("ios", "CN", ["google", "apple", "email"]),
             ("android", "CN", ["google", "email"]),
         ):
             with self.subTest(platform=platform, country=country):
                 response = client.get("/v1/auth/providers", params={"platform": platform, "country_code": country})
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.json(), {"providers": expected})
+                self.assertEqual(response.json(), {"providers": expected,
+                    "other_providers": [name for name in ("kakao", "line") if name not in expected]})
+
+    def test_unknown_region_keeps_all_login_methods_accessible(self):
+        response = TestClient(create_app()).get("/v1/auth/providers", params={"platform": "ios"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"providers": ["google", "apple", "email"],
+                                           "other_providers": ["kakao", "line"]})
 
     def test_missing_or_unknown_device_is_not_assumed_to_be_iphone(self):
         client = TestClient(create_app())
-        for query in ("country_code=KR", "country_code=KR&platform=web", "country_code=KR&platform=", "platform=ios"):
+        for query in ("country_code=KR", "country_code=KR&platform=web", "country_code=KR&platform="):
             with self.subTest(query=query):
                 self.assertEqual(client.get("/v1/auth/providers?" + query).status_code, 422)
 
@@ -345,15 +352,17 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.assertEqual(logged_in.status_code, 200, logged_in.text)
         self.assertEqual(auth_repo.session_user(logged_in.json()["access_token"])["user_id"], user_id)
 
-    def test_email_address_and_wrong_password_do_not_authenticate(self):
+    def test_email_address_authenticates_but_wrong_credentials_do_not(self):
         self.execute("INSERT INTO user_email_credentials VALUES (%s,%s,%s)",
                      (self.a, "alpha@example.com", auth_security.PASSWORDS.hash("Password123")))
-        for body in ({"username": "alpha@example.com", "password": "Password123"},
-                     {"username": "alpha", "password": "WrongPassword123"},
+        logged_in = self.request("POST", "/v1/auth/login", json={"username": "alpha@example.com", "password": "Password123"})
+        self.assertEqual(logged_in.status_code, 200, logged_in.text)
+        self.assertEqual(auth_repo.session_user(logged_in.json()["access_token"])["user_id"], self.a)
+        for body in ({"username": "alpha", "password": "WrongPassword123"},
                      {"username": "missing", "password": "Password123"}):
             self.assertEqual(self.request("POST", "/v1/auth/login", json=body).status_code, 401)
         self.assertEqual(self.request("POST", "/v1/auth/login", json={"email": "alpha@example.com", "password": "Password123"}).status_code, 422)
-        self.assertEqual(len(self.execute("SELECT * FROM user_sessions")), 3)
+        self.assertEqual(len(self.execute("SELECT * FROM user_sessions")), 4)
         self.assertNotIn("/v1/auth/email/login", self.client.app.openapi()["paths"])
 
     def test_password_login_uses_current_username_and_keeps_social_only_accounts_separate(self):

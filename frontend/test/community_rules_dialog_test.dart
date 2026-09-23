@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -9,13 +10,16 @@ import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
 void main() {
   testWidgets('loads and displays rules for the team and device language',
       (tester) async {
-    tester.binding.platformDispatcher.localeTestValue = const Locale('ko');
-    addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
+    tester.binding.platformDispatcher.localesTestValue = const [Locale('ko')];
+    addTearDown(tester.binding.platformDispatcher.clearLocalesTestValue);
     final response = Completer<CommunityRules>();
     final repository = _ScriptedRulesRepository([() => response.future]);
 
     await tester.pumpWidget(
       MaterialApp(
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        localeListResolutionCallback: resolveAppLocale,
         home: Builder(
           builder: (context) => TextButton(
             onPressed: () => showGroundRulesModal(
@@ -29,6 +33,7 @@ void main() {
       ),
     );
 
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Open'));
     await tester.pump();
     expect(
@@ -77,6 +82,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        localeListResolutionCallback: resolveAppLocale,
         home: Builder(
           builder: (context) => TextButton(
             onPressed: () => showGroundRulesModal(
@@ -90,6 +98,7 @@ void main() {
       ),
     );
 
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     expect(

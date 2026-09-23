@@ -7,6 +7,28 @@ import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
 
 void main() {
+  test('failed reload clears previous favorites and remains retryable',
+      () async {
+    final repository = FakeFollowingPlayersRepository();
+    final controller = PlayerFollowingController(repository: repository);
+    addTearDown(controller.dispose);
+    await controller.load();
+    expect(controller.contains(1), isTrue);
+
+    repository.fail = true;
+    await controller.load();
+    expect(controller.players, isEmpty);
+    expect(controller.loaded, isFalse);
+    expect(controller.error, isA<StateError>());
+
+    repository.fail = false;
+    repository.players.value = [];
+    await controller.load();
+    expect(controller.loaded, isTrue);
+    expect(controller.players, isEmpty);
+    expect(controller.error, isNull);
+  });
+
   Future<void> pump(WidgetTester tester,
       {Size size = const Size(430, 932),
       bool dark = false,
@@ -60,7 +82,7 @@ void main() {
     expect(decoration.borderRadius, BorderRadius.circular(16));
     expect(decoration.boxShadow, app_style.lightModeCardShadows);
     expect(find.byKey(const ValueKey('favorite-player-number-badge')),
-        findsOneWidget);
+        findsNothing);
     expect(find.byIcon(Icons.help_outline), findsNWidgets(2));
   });
   testWidgets(

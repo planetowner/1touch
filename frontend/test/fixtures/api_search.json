@@ -1,0 +1,15 @@
+{
+  "players": [{"player_id": 123, "name": "선수 Example", "image": null}],
+  "teams": [{"team_id": 8, "name": "Example United", "short_name": "United", "short_code": "UNT", "image_path": null}],
+  "fixtures": [{
+    "fixture_id": 987, "competition_id": 8, "season_id": 28083,
+    "competition_type": "league", "round_name": "1", "stage_id": 10, "stage_name": "Regular Season",
+    "round_id": null, "group_id": null, "aggregate_id": null, "leg": "1/1", "venue_id": null,
+    "state_id": 5, "state_code": "FT", "state_name": "Full Time", "status": "past",
+    "starting_at": "2026-09-01 18:00:00", "home_team_id": 8, "away_team_id": 19,
+    "home_score": 0, "away_score": 1, "home_penalty_score": null, "away_penalty_score": null,
+    "home_team_name": "Example United", "away_team_name": "Example City",
+    "home_team_short_name": "United", "away_team_short_name": null,
+    "home_team_logo": null, "away_team_logo": null
+  }]
+}

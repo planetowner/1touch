@@ -4,23 +4,26 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/team_overview/api/api_team_overview_repository.dart';
 
 void main() {
   test('requests, maps, and caches a Team overview', () async {
     var requestCount = 0;
     final repository = ApiTeamOverviewRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/teams/83');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_overviewJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/teams/83');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_overviewJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final first = await repository.loadForTeam(83);
@@ -36,15 +39,16 @@ void main() {
   test('supports a trailing base URI and separate team cache entries',
       () async {
     final repository = ApiTeamOverviewRepository(
-      client: MockClient((request) async {
-        final teamId = int.parse(request.url.pathSegments.last);
-        return http.Response(
-          jsonEncode(_overviewJson(teamId: teamId)),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            final teamId = int.parse(request.url.pathSegments.last);
+            return http.Response(
+              jsonEncode(_overviewJson(teamId: teamId)),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await repository.loadForTeam(83);
@@ -57,12 +61,13 @@ void main() {
     var requestCount = 0;
     final response = Completer<http.Response>();
     final repository = ApiTeamOverviewRepository(
-      client: MockClient((_) {
-        requestCount++;
-        return response.future;
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) {
+            requestCount++;
+            return response.future;
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final firstLoad = repository.loadForTeam(83);
@@ -81,15 +86,16 @@ void main() {
     var requestCount = 0;
     final responses = <int, Completer<http.Response>>{};
     final repository = ApiTeamOverviewRepository(
-      client: MockClient((request) {
-        requestCount++;
-        final teamId = int.parse(request.url.pathSegments.last);
-        return responses
-            .putIfAbsent(teamId, () => Completer<http.Response>())
-            .future;
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) {
+            requestCount++;
+            final teamId = int.parse(request.url.pathSegments.last);
+            return responses
+                .putIfAbsent(teamId, () => Completer<http.Response>())
+                .future;
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final firstLoad = repository.loadForTeam(83);
@@ -117,9 +123,10 @@ void main() {
     ];
     var index = 0;
     final repository = ApiTeamOverviewRepository(
-      client: MockClient((_) async => responses[index++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[index++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

@@ -17,11 +17,15 @@ from ...core.player_images import IMAGE_ROUTE
 from ..repos.player_detail_repo import get_player_detail, list_player_comparison_candidates
 from ..repos.player_directory_repo import get_current_ranking, get_ones_to_watch
 from typing import Literal
+from ..schemas.players import (
+    CurrentPlayerRankingResponse, PlayerCandidatesResponse, PlayerDetailResponse,
+    PlayerClubHistoryResponse, PlayersToWatchResponse,
+)
 
 router = APIRouter()
 
 
-@router.get('/players/ranking-current')
+@router.get('/players/ranking-current', response_model=CurrentPlayerRankingResponse)
 def current_ranking(competition_id: int | None = Query(default=None, gt=0),
                     position: Literal['GK', 'DF', 'MF', 'FW'] | None = None,
                     limit: int = Query(default=20, ge=1, le=100), offset: int = Query(default=0, ge=0),
@@ -31,17 +35,17 @@ def current_ranking(competition_id: int | None = Query(default=None, gt=0),
     return get_current_ranking(competition_id, position, limit=limit, offset=offset)
 
 
-@router.get('/players/ones-to-watch')
+@router.get('/players/ones-to-watch', response_model=PlayersToWatchResponse)
 def ones_to_watch(user_id: int = Depends(get_user_id)):
     return get_ones_to_watch()
 
 
-@router.get("/players/comparison-candidates")
+@router.get("/players/comparison-candidates", response_model=PlayerCandidatesResponse)
 def comparison_candidates(q: str = Query(default="", max_length=100), user_id: int = Depends(get_user_id)):
     return {"players": list_player_comparison_candidates(q)}
 
 
-@router.get("/players/{player_id}/detail")
+@router.get("/players/{player_id}/detail", response_model=PlayerDetailResponse)
 def player_detail(player_id: int = Path(gt=0), season_id: int | None = Query(default=None, gt=0),
                   user_id: int = Depends(get_user_id)):
     try:
@@ -87,7 +91,7 @@ def player_rankings(
     return result
 
 
-@router.get("/players/{player_id}/club-history")
+@router.get("/players/{player_id}/club-history", response_model=PlayerClubHistoryResponse)
 def player_club_history(player_id: int, user_id: int = Depends(get_user_id)):
     if fetch_one_dict("SELECT player_id FROM players WHERE player_id=%s", (player_id,)) is None:
         raise HTTPException(status_code=404, detail="Player not found")

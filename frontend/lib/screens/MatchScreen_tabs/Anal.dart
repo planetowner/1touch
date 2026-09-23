@@ -14,6 +14,7 @@ import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
 import 'match_event_view_data.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class AnalysisTab extends StatefulWidget {
   final Fixture fixture;
@@ -185,8 +186,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
   Widget _buildLoadError() => Center(
         child: Column(
           children: [
-            const Text('Match analysis could not be loaded.'),
-            TextButton(onPressed: _startLoad, child: const Text('Retry')),
+            Text(tr(context, 'Match analysis could not be loaded.')),
+            TextButton(
+                onPressed: _startLoad, child: Text(tr(context, 'Retry'))),
           ],
         ),
       );
@@ -201,8 +203,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: appCardShadows(context),
         ),
-        child: const Text(
-          'Tactical analysis is unavailable for this match.',
+        child: Text(
+          tr(context, 'Tactical analysis is unavailable for this match.'),
           textAlign: TextAlign.center,
           style: Body1.style,
         ),
@@ -221,7 +223,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       awayTeamName: away.displayName,
       homeScore: widget.fixture.homeScore?.toString() ?? '#',
       awayScore: widget.fixture.awayScore?.toString() ?? '#',
-      statusLabel: isLive ? '42:02' : 'Final',
+      statusLabel: isLive ? '42:02' : tr(context, 'Final'),
       roundLabel: widget.fixture.displayRoundLabel,
     );
   }
@@ -339,7 +341,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("ATTACK", style: Body2_b.style),
+          Text(tr(context, "ATTACK"), style: Body2_b.style),
           const SizedBox(height: 16),
           Container(
             key: const ValueKey('match-analysis-attack-card'),
@@ -361,19 +363,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
                     lineColor: foreground.withValues(alpha: 0.30),
                   ),
                   const SizedBox(height: 24),
-                  _buildStatRow('Goals', homeGoals, awayGoals),
-                  _buildStatRow('Shots on Target', homeShots, awayShots),
+                  _buildStatRow(tr(context, 'Goals'), homeGoals, awayGoals),
+                  _buildStatRow(
+                      tr(context, 'Shots on Target'), homeShots, awayShots),
                 ],
                 // 키패스는 Opta 전술 분석과 별개인 Sportmonks 팀 통계를 사용해요.
                 if (keyPasses != null)
                   _buildStatRow(
-                    'Key Passes',
+                    tr(context, 'Key Passes'),
                     keyPasses.home,
                     keyPasses.away,
                   ),
                 if (_analysis?.available == true) ...[
                   _buildStatRow(
-                    'Passes into Final Third',
+                    tr(context, 'Passes into Final Third'),
                     _homeAnalysis?.attack.completedPassesIntoFinalThird,
                     _awayAnalysis?.attack.completedPassesIntoFinalThird,
                   ),
@@ -394,7 +397,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("POSSESSION", style: Body2_b.style),
+          Text(tr(context, "POSSESSION"), style: Body2_b.style),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(24),
@@ -506,7 +509,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("PROGRESSION", style: Body2_b.style),
+        Text(tr(context, "PROGRESSION"), style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(24),
@@ -527,17 +530,17 @@ class _AnalysisTabState extends State<AnalysisTab> {
               ),
               const SizedBox(height: 24),
               _buildStatRow(
-                'Completed Passes',
+                tr(context, 'Completed Passes'),
                 _homeAnalysis?.progression.completedPasses,
                 _awayAnalysis?.progression.completedPasses,
               ),
               _buildStatRow(
-                'Progressive Passes',
+                tr(context, 'Progressive Passes'),
                 _homeAnalysis?.progression.progressivePasses,
                 _awayAnalysis?.progression.progressivePasses,
               ),
               _buildStatRow(
-                'Passes into Final Third',
+                tr(context, 'Passes into Final Third'),
                 _homeAnalysis?.attack.completedPassesIntoFinalThird,
                 _awayAnalysis?.attack.completedPassesIntoFinalThird,
               ),
@@ -654,7 +657,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           ),
           Expanded(
             child: Text(
-              label,
+              tr(context, label),
               style: Body1.style,
               textAlign: TextAlign.center,
             ),
@@ -698,14 +701,14 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('DEFENSE', style: Body2_b.style),
+              Text(tr(context, 'DEFENSE'), style: Body2_b.style),
               SizedBox(width: 4),
               Tooltip(
-                message:
-                    'Pitch values compare each team’s share of recoveries by third.',
+                message: tr(context,
+                    'Pitch values compare each team’s share of recoveries by third.'),
                 child: Icon(Icons.help_outline, size: 14),
               ),
             ],
@@ -735,8 +738,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 if (zoneDeltas == null && missingPositionCount > 0) ...[
                   const SizedBox(height: 12),
                   Text(
-                    'Recovery comparison incomplete '
-                    '($missingPositionCount missing)',
+                    tr(
+                        context,
+                        'Recovery comparison incomplete ({count} missing)',
+                        {'count': missingPositionCount}),
                     style: Body2.style.copyWith(
                       color: AppColors.of(context).mutedForeground,
                     ),
@@ -805,14 +810,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   List<({String label, num home, num away, bool isPercent})> _possessionRows() {
-    const definitions = [
-      (code: 'ball-possession', label: 'Ball Possession', isPercent: true),
+    final definitions = [
+      (
+        code: 'ball-possession',
+        label: tr(context, 'Ball Possession'),
+        isPercent: true
+      ),
       (
         code: 'successful-passes-percentage',
-        label: 'Pass Accuracy',
+        label: tr(context, 'Pass Accuracy'),
         isPercent: true,
       ),
-      (code: 'touches', label: 'Touches', isPercent: false),
+      (code: 'touches', label: tr(context, 'Touches'), isPercent: false),
     ];
     return [
       for (final definition in definitions)
@@ -828,12 +837,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   List<({String label, num home, num away})> _defenseRows() {
-    const definitions = [
-      (code: 'tackles-won', label: 'Tackles Won'),
-      (code: 'interceptions', label: 'Interceptions'),
-      (code: 'blocked-shots', label: 'Blocks'),
-      (code: 'duels-won', label: 'Duels Won'),
-      (code: 'clearances', label: 'Clearances'),
+    final definitions = [
+      (code: 'tackles-won', label: tr(context, 'Tackles Won')),
+      (code: 'interceptions', label: tr(context, 'Interceptions')),
+      (code: 'blocked-shots', label: tr(context, 'Blocks')),
+      (code: 'duels-won', label: tr(context, 'Duels Won')),
+      (code: 'clearances', label: tr(context, 'Clearances')),
     ];
     return [
       for (final definition in definitions)

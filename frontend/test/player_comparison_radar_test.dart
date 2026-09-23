@@ -1,9 +1,11 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('same position shows the unavailable attribute message',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
@@ -18,7 +20,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('comparison-attribute-pending')),
         findsOneWidget);
-    expect(find.text('아직 준비중이에요 ㅠㅠ'), findsOneWidget);
+    expect(find.text('Coming soon'), findsOneWidget);
     expect(find.text('Pace'), findsNothing);
     expect(find.text('Shooting'), findsNothing);
     expect(find.text('FINISH'), findsOneWidget);

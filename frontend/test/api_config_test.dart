@@ -1,116 +1,44 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 import 'package:onetouch/core/api_config.dart';
 
 void main() {
   group('ApiConfig', () {
-    test('normalizes the base URI and creates the bearer header', () {
+    test('normalizes the API directory and optional development token', () {
       final config = ApiConfig.fromValues(
-        baseUri: 'https://api.1touch.football/v1',
-        sessionToken: 'session-token',
+        baseUri: ' https://api.1touch.football/v1 ',
+        sessionToken: ' session-token ',
       );
-
       expect(config.baseUri, Uri.parse('https://api.1touch.football/v1/'));
-      expect(config.requestHeaders, {
-        'Authorization': 'Bearer session-token',
-      });
       expect(config.sessionToken, 'session-token');
     });
 
-    test('preserves an existing trailing slash and trims input', () {
-      final config = ApiConfig.fromValues(
-        baseUri: ' https://api.1touch.football/v1/ ',
-        sessionToken: ' session-token ',
-      );
-
-      expect(config.baseUri, Uri.parse('https://api.1touch.football/v1/'));
-      expect(config.requestHeaders['Authorization'], 'Bearer session-token');
-    });
-
-    test('creates unauthenticated API settings without a session token', () {
-      final config = ApiConfig.unauthenticated(
-        baseUri: ' https://api.1touch.football/v1 ',
-      );
-
-      expect(config.baseUri, Uri.parse('https://api.1touch.football/v1/'));
-      expect(config.requestHeaders, isEmpty);
-      expect(config.sessionToken, isNull);
-    });
-
-    test('rejects missing configuration values', () {
-      expect(
-        () => ApiConfig.fromValues(baseUri: '', sessionToken: 'token'),
-        throwsStateError,
-      );
-      expect(
-        () => ApiConfig.fromValues(
+    test('allows login without a configured development session', () {
+      for (final token in ['', '  ']) {
+        final config = ApiConfig.fromValues(
           baseUri: 'https://api.1touch.football/v1/',
-          sessionToken: '',
-        ),
-        throwsStateError,
-      );
+          sessionToken: token,
+        );
+        expect(config.baseUri, Uri.parse('https://api.1touch.football/v1/'));
+        expect(config.sessionToken, isNull);
+      }
     });
 
-    test('rejects malformed base URIs', () {
+    test('rejects a missing API address', () {
+      expect(() => ApiConfig.fromValues(baseUri: ''), throwsStateError);
+    });
+
+    test('rejects malformed API addresses', () {
       for (final baseUri in [
         'api.1touch.football/v1',
         'ftp://api.1touch.football/v1',
         'https://api.1touch.football/v1?debug=true',
+        'https://api.1touch.football/v1#fragment',
       ]) {
         expect(
-          () => ApiConfig.fromValues(
-            baseUri: baseUri,
-            sessionToken: 'token',
-          ),
+          () => ApiConfig.fromValues(baseUri: baseUri),
           throwsFormatException,
         );
       }
-
-      expect(
-        () => ApiConfig.unauthenticated(baseUri: 'not-a-uri'),
-        throwsFormatException,
-      );
-    });
-
-    test('does not expose mutable request headers', () {
-      final config = ApiConfig.fromValues(
-        baseUri: 'https://api.1touch.football/v1/',
-        sessionToken: 'session-token',
-      );
-
-      expect(
-        () => config.requestHeaders['Authorization'] = 'Bearer replacement',
-        throwsUnsupportedError,
-      );
-    });
-
-    test('session-aware client replaces stale authorization per request',
-        () async {
-      final receivedAuthorization = <String?>[];
-      final client = ApiConfig.sessionAwareClient(
-        MockClient((request) async {
-          receivedAuthorization.add(request.headers['Authorization']);
-          return http.Response('{}', 200);
-        }),
-      );
-      addTearDown(() {
-        ApiConfig.setRuntimeAccessToken(null);
-        client.close();
-      });
-
-      ApiConfig.setRuntimeAccessToken('first-session');
-      await client.get(
-        Uri.parse('https://api.example.test/first'),
-        headers: const {'Authorization': 'Bearer stale-development-token'},
-      );
-      ApiConfig.setRuntimeAccessToken('second-session');
-      await client.get(Uri.parse('https://api.example.test/second'));
-
-      expect(receivedAuthorization, [
-        'Bearer first-session',
-        'Bearer second-session',
-      ]);
     });
   });
 }

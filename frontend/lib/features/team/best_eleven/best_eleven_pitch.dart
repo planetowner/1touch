@@ -156,7 +156,7 @@ class _BestElevenPlayerDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final playerName = player.playerName?.trim();
     final label = playerName == null || playerName.isEmpty
-        ? 'Unknown'
+        ? tr(context, 'Unknown')
         : playerName.split(' ').last;
     return Semantics(
       button: true,
@@ -185,7 +185,7 @@ class _BestElevenPlayerDot extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                label,
+                tr(context, label),
                 style: Eyebrow.style,
                 textAlign: TextAlign.center,
                 maxLines: 1,

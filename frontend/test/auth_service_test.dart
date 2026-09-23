@@ -1,7 +1,6 @@
+import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/data/auth/auth_account_status.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
-import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/auth/auth_token_store.dart';
@@ -23,7 +22,6 @@ void main() {
       googleIdentityService: identityService,
       repository: repository,
       session: session,
-      tokenStore: FakeAuthTokenStore(),
     );
 
     await service.signInWithGoogle();
@@ -56,7 +54,6 @@ void main() {
       googleIdentityService: identityService,
       repository: repository,
       session: session,
-      tokenStore: FakeAuthTokenStore(),
     );
 
     await expectLater(service.signInWithGoogle(), throwsA(same(failure)));
@@ -80,7 +77,6 @@ void main() {
       googleIdentityService: identityService,
       repository: repository,
       session: session,
-      tokenStore: FakeAuthTokenStore(),
     );
 
     await expectLater(service.signInWithGoogle(), throwsA(same(failure)));
@@ -108,7 +104,6 @@ void main() {
       ),
       repository: repository,
       session: session,
-      tokenStore: FakeAuthTokenStore(),
     );
 
     await service.registerWithEmail(
@@ -125,81 +120,53 @@ void main() {
     });
   });
 
-  test('restores a valid saved session and its onboarding state', () async {
+  test('persists a successful backend session', () async {
+    final store = FakeAuthTokenStore();
+    final service = AuthService(
+      googleIdentityService: _FakeGoogleIdentityService(
+        () async => 'google-id-token',
+      ),
+      repository: _FakeAuthRepository((_) async => 'backend-access-token'),
+      session: AuthSession(),
+      tokenStore: store,
+    );
+
+    await service.signInWithGoogle();
+
+    expect(store.value?.accessToken, 'backend-access-token');
+  });
+
+  test('restores a saved session', () async {
     final store = FakeAuthTokenStore()
       ..value = const StoredAuthSession(
         accessToken: 'stored-token',
-        profileComplete: true,
+        profileComplete: false,
         onboardingComplete: false,
       );
-    final repository = _FakeAuthRepository(
-      (_) async => throw UnimplementedError(),
-      loadAccountStatus: (_) async => const AuthAccountStatus(
-        profileComplete: true,
-        onboardingComplete: true,
-      ),
-    );
     final session = AuthSession();
     final service = AuthService(
       googleIdentityService: _FakeGoogleIdentityService(
         () async => throw UnimplementedError(),
       ),
-      repository: repository,
+      repository: _FakeAuthRepository((_) async => throw UnimplementedError()),
       session: session,
       tokenStore: store,
     );
 
     expect(await service.restoreSession(), isTrue);
-    expect(session.isAuthenticated, isTrue);
-    expect(session.onboardingComplete, isTrue);
-    expect(store.value?.onboardingComplete, isTrue);
+    expect(session.accessToken, 'stored-token');
   });
 
-  test('removes an expired saved session after a 401 response', () async {
-    final store = FakeAuthTokenStore()
-      ..value = const StoredAuthSession(
-        accessToken: 'expired-token',
-        profileComplete: true,
-        onboardingComplete: true,
-      );
-    final repository = _FakeAuthRepository(
-      (_) async => throw UnimplementedError(),
-      loadAccountStatus: (_) async => throw const AuthRequestException(
-        statusCode: 401,
-        message: 'Invalid or expired session',
-      ),
-    );
-    final session = AuthSession();
-    final service = AuthService(
-      googleIdentityService: _FakeGoogleIdentityService(
-        () async => throw UnimplementedError(),
-      ),
-      repository: repository,
-      session: session,
-      tokenStore: store,
-    );
-
-    expect(await service.restoreSession(), isFalse);
-    expect(session.isAuthenticated, isFalse);
-    expect(store.value, isNull);
-  });
-
-  test('logout clears both the backend and local sessions', () async {
+  test('logout revokes and clears the saved session', () async {
     final store = FakeAuthTokenStore()
       ..value = const StoredAuthSession(
         accessToken: 'active-token',
-        profileComplete: true,
-        onboardingComplete: true,
+        profileComplete: false,
+        onboardingComplete: false,
       );
-    final repository = _FakeAuthRepository(
-      (_) async => throw UnimplementedError(),
-    );
-    final session = AuthSession()
-      ..establish(
-        'active-token',
-        onboardingComplete: true,
-        persistent: true,
-      );
+    final repository =
+        _FakeAuthRepository((_) async => throw UnimplementedError());
+    final session = AuthSession()..establish('active-token');
     final service = AuthService(
       googleIdentityService: _FakeGoogleIdentityService(
         () async => throw UnimplementedError(),
@@ -211,7 +178,7 @@ void main() {
 
     await service.logout();
 
-    expect(repository.loggedOutTokens, ['active-token']);
+    expect(repository.logoutCalls, 1);
     expect(session.isAuthenticated, isFalse);
     expect(store.value, isNull);
   });
@@ -226,20 +193,32 @@ class _FakeGoogleIdentityService implements GoogleIdentityService {
   Future<String> authenticate() => _authenticate();
 }
 
-class _FakeAuthRepository implements AuthRepository {
+class _FakeAuthRepository implements AuthRepository, LogoutAuthRepository {
+  @override
+  Future<void> resetPassword(
+          {required String challengeId,
+          required String code,
+          required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<String> signInWithSocial(
+          {required LoginProvider provider,
+          required Map<String, String> credentials}) =>
+      throw UnimplementedError();
+
   _FakeAuthRepository(
     this._signInWithGoogle, {
     Future<String> Function()? registerWithEmail,
-    Future<AuthAccountStatus> Function(String accessToken)? loadAccountStatus,
-  })  : _registerWithEmail = registerWithEmail,
-        _loadAccountStatus = loadAccountStatus;
+  }) : _registerWithEmail = registerWithEmail;
 
   final Future<String> Function(String idToken) _signInWithGoogle;
   final Future<String> Function()? _registerWithEmail;
-  final Future<AuthAccountStatus> Function(String accessToken)?
-      _loadAccountStatus;
   final List<String> receivedIdTokens = [];
-  final List<String> loggedOutTokens = [];
+  int logoutCalls = 0;
+
+  @override
+  Future<void> logout() async => logoutCalls++;
 
   @override
   Future<String> signInWithGoogle({required String idToken}) {
@@ -255,7 +234,9 @@ class _FakeAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
-  Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
+  Future<EmailCodeChallenge> requestEmailCode(
+          {required String email,
+          EmailCodePurpose purpose = EmailCodePurpose.signup}) =>
       throw UnimplementedError();
 
   @override
@@ -268,31 +249,4 @@ class _FakeAuthRepository implements AuthRepository {
     required String lastName,
   }) =>
       _registerWithEmail?.call() ?? Future.error(UnimplementedError());
-
-  @override
-  Future<AuthAccountStatus> loadAccountStatus({required String accessToken}) =>
-      _loadAccountStatus?.call(accessToken) ??
-      Future.value(
-        const AuthAccountStatus(
-          profileComplete: true,
-          onboardingComplete: true,
-        ),
-      );
-
-  @override
-  Future<AuthAccountStatus> completeSocialProfile({
-    required String accessToken,
-    required String username,
-    required String firstName,
-    required String lastName,
-  }) async =>
-      const AuthAccountStatus(
-        profileComplete: true,
-        onboardingComplete: false,
-      );
-
-  @override
-  Future<void> logout({required String accessToken}) async {
-    loggedOutTokens.add(accessToken);
-  }
 }

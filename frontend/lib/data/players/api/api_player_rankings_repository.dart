@@ -1,6 +1,4 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/players/api/api_player_rankings_mapper.dart';
 import 'package:onetouch/data/players/api/api_player_rankings_response.dart';
 import 'package:onetouch/data/players/player_rankings_repository.dart';
@@ -8,17 +6,9 @@ import 'package:onetouch/models/player_rankings.dart';
 
 /// HTTP implementation of `GET /v1/players/rankings`.
 class ApiPlayerRankingsRepository implements PlayerRankingsRepository {
-  ApiPlayerRankingsRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiPlayerRankingsRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<PlayerRankingsPage> load({
@@ -36,33 +26,18 @@ class ApiPlayerRankingsRepository implements PlayerRankingsRepository {
       throw RangeError.value(offset, 'offset', 'Must not be negative');
     }
 
-    final uri = _apiBaseUri.resolve('players/rankings').replace(
+    final uri = _api.baseUri.resolve('players/rankings').replace(
       queryParameters: {
         'season_id': '$seasonId',
         'limit': '$limit',
         'offset': '$offset',
       },
     );
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Player rankings request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the player-rankings response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     final rankings = playerRankingsFromApiResponse(
       ApiPlayerRankingsResponse.fromJson(decoded),
     );
@@ -74,10 +49,5 @@ class ApiPlayerRankingsRepository implements PlayerRankingsRepository {
       );
     }
     return rankings;
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

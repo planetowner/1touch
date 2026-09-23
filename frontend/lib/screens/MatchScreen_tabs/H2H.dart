@@ -16,6 +16,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/betting_widgets.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class H2HTab extends StatefulWidget {
   final Fixture fixture;
@@ -155,15 +156,15 @@ class _H2HTabState extends State<H2HTab> {
               child: Center(
                 child: Column(
                   children: [
-                    const Text(
-                      'Unable to load head-to-head matches.',
+                    Text(
+                      tr(context, 'Unable to load head-to-head matches.'),
                       style: Body2_b.style,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: _loadHeadToHead,
-                      child: const Text('RETRY'),
+                      child: Text(tr(context, 'RETRY')),
                     ),
                   ],
                 ),
@@ -173,17 +174,17 @@ class _H2HTabState extends State<H2HTab> {
             _buildWDLBox(wins, draws, losses),
             const SizedBox(height: 48),
             _buildBetsCard(),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 8, top: 40),
-              child: Text('PAST MATCHES', style: Body2_b.style),
+              child: Text(tr(context, 'PAST MATCHES'), style: Body2_b.style),
             ),
             if (_h2hMatches.isEmpty)
-              const Padding(
+              Padding(
                 key: ValueKey('match-h2h-empty'),
                 padding: EdgeInsets.symmetric(vertical: 40),
                 child: Center(
                   child: Text(
-                    'No previous meetings found.',
+                    tr(context, 'No previous meetings found.'),
                     style: Body2.style,
                     textAlign: TextAlign.center,
                   ),
@@ -278,7 +279,8 @@ class _H2HTabState extends State<H2HTab> {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'LAST $n MATCHES',
+                              tr(context, 'Last {count} matches', {'count': n})
+                                  .toUpperCase(),
                               maxLines: 1,
                               softWrap: false,
                               style: Body2_b.style.copyWith(color: foreground),
@@ -296,7 +298,8 @@ class _H2HTabState extends State<H2HTab> {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'LAST $_selectedMatches MATCHES',
+                              tr(context, 'Last {count} matches',
+                                  {'count': _selectedMatches}).toUpperCase(),
                               maxLines: 1,
                               softWrap: false,
                               style: Body2_b.style.copyWith(color: foreground),
@@ -311,7 +314,7 @@ class _H2HTabState extends State<H2HTab> {
             ),
           ),
           const SizedBox(width: 8),
-          const Text('AGAINST', style: Body2_b.style),
+          Text(tr(context, 'AGAINST'), style: Body2_b.style),
           const SizedBox(width: 8),
           Container(
             key: ValueKey('match-h2h-against-team-$_againstTeamId'),
@@ -353,9 +356,12 @@ class _H2HTabState extends State<H2HTab> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildWDLStat('$wins', 'Win', valueKey: 'match-h2h-win-value'),
-          _buildWDLStat('$draws', 'Draw', valueKey: 'match-h2h-draw-value'),
-          _buildWDLStat('$losses', 'Lose', valueKey: 'match-h2h-loss-value'),
+          _buildWDLStat('$wins', tr(context, 'Win'),
+              valueKey: 'match-h2h-win-value'),
+          _buildWDLStat('$draws', tr(context, 'Draw'),
+              valueKey: 'match-h2h-draw-value'),
+          _buildWDLStat('$losses', tr(context, 'Lose'),
+              valueKey: 'match-h2h-loss-value'),
         ],
       ),
     );
@@ -383,7 +389,7 @@ class _H2HTabState extends State<H2HTab> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: Body1.style),
+        Text(tr(context, label), style: Body1.style),
       ],
     );
   }
@@ -411,7 +417,7 @@ class _H2HTabState extends State<H2HTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('BETS', style: Body2_b.style),
+        Text(tr(context, 'BETS'), style: Body2_b.style),
         const SizedBox(height: 16),
         BettingParticipationCard(
           controller: widget.bettingController,

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/betting/api/api_betting_repository.dart';
 import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/models/betting.dart';
@@ -13,19 +14,20 @@ void main() {
     var token = 'first-session';
     var calls = 0;
     final repository = ApiBettingRepository(
-      client: MockClient((request) async {
-        expect(request.headers['Authorization'], 'Bearer $token');
-        if (calls++ == 0) {
-          expect(request.method, 'POST');
-          expect(request.url.path, '/v1/users/me/points/initialize');
-          return http.Response(jsonEncode(_wallet), 200);
-        }
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/fixtures/42/betting');
-        return http.Response(jsonEncode(_market()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: () => {'Authorization': 'Bearer $token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.headers['Authorization'], 'Bearer $token');
+            if (calls++ == 0) {
+              expect(request.method, 'POST');
+              expect(request.url.path, '/v1/users/me/points/initialize');
+              return http.Response(jsonEncode(_wallet), 200);
+            }
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/fixtures/42/betting');
+            return http.Response(jsonEncode(_market()), 200);
+          }),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => {'Authorization': 'Bearer $token'}),
     );
     expect((await repository.initializeWallet()).balance, 1000);
     token = 'refreshed-session';
@@ -42,28 +44,30 @@ void main() {
     var calls = 0;
     const requestId = '08f2f891-c382-4367-a81d-00a96c085d8b';
     final repository = ApiBettingRepository(
-      client: MockClient((request) async {
-        final body = jsonDecode(request.body) as Map<String, dynamic>;
-        expect(body['request_id'], requestId);
-        if (calls++ == 0) {
-          expect(request.method, 'PUT');
-          expect(request.url.path, '/v1/fixtures/42/bet');
-          expect(body, {
-            'request_id': requestId,
-            'expected_revision': 0,
-            'prediction_run_id': 'a' * 64,
-            'outcome': 'draw',
-            'stake': 100,
-          });
-        } else {
-          expect(request.method, 'POST');
-          expect(request.url.path, '/v1/fixtures/42/bet/cancel');
-          expect(body, {'request_id': requestId, 'expected_revision': 1});
-        }
-        return http.Response(jsonEncode({'wallet': _wallet, 'bet': _bet}), 200);
-      }),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: () => {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            final body = jsonDecode(request.body) as Map<String, dynamic>;
+            expect(body['request_id'], requestId);
+            if (calls++ == 0) {
+              expect(request.method, 'PUT');
+              expect(request.url.path, '/v1/fixtures/42/bet');
+              expect(body, {
+                'request_id': requestId,
+                'expected_revision': 0,
+                'prediction_run_id': 'a' * 64,
+                'outcome': 'draw',
+                'stake': 100,
+              });
+            } else {
+              expect(request.method, 'POST');
+              expect(request.url.path, '/v1/fixtures/42/bet/cancel');
+              expect(body, {'request_id': requestId, 'expected_revision': 1});
+            }
+            return http.Response(
+                jsonEncode({'wallet': _wallet, 'bet': _bet}), 200);
+          }),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => {}),
     );
     final result = await repository.saveBet(
       fixtureId: 42,
@@ -92,9 +96,10 @@ void main() {
     ];
     var calls = 0;
     final repository = ApiBettingRepository(
-      client: MockClient((_) async => responses[calls++]),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: () => {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[calls++]),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => {}),
     );
     for (final code in ['sign_in_required', 'prediction_changed']) {
       await expectLater(

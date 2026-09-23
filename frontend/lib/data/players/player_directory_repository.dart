@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:onetouch/core/api_config.dart';
+import 'package:onetouch/core/api_client.dart';
+import 'package:onetouch/core/api_client_provider.dart';
 
 typedef PlayerLeague = ({int id, String name, int available});
 typedef PlayerRank = ({
@@ -41,26 +40,18 @@ abstract interface class PlayerDirectoryRepository {
 }
 
 final PlayerDirectoryRepository playerDirectoryRepository =
-    ApiPlayerDirectoryRepository();
+    ApiPlayerDirectoryRepository(api: apiClient);
 
 class ApiPlayerDirectoryRepository implements PlayerDirectoryRepository {
-  ApiPlayerDirectoryRepository({http.Client? client, this.config})
-      : client = client ?? ApiConfig.sessionAwareClient();
-  final http.Client client;
-  final ApiConfig? config;
+  ApiPlayerDirectoryRepository({required ApiClient api}) : _api = api;
+  final ApiClient _api;
   Future<Map<String, dynamic>> _get(
       String path, Map<String, String> params) async {
-    final api = config ?? ApiConfig.unauthenticatedFromEnvironment();
-    final uri = api.baseUri
+    final uri = _api.baseUri
         .resolve(path)
         .replace(queryParameters: params.isEmpty ? null : params);
-    final response = await client.get(uri,
-        headers: {'Accept': 'application/json', ...api.requestHeaders});
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-          'Could not load players (${response.statusCode})', uri);
-    }
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    final response = await _api.get(uri);
+    return _api.decodeJson<Map<String, dynamic>>(response);
   }
 
   @override

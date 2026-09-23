@@ -5,6 +5,7 @@ import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/betting.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class MatchBettingSection extends StatelessWidget {
   const MatchBettingSection({
@@ -48,11 +49,13 @@ class MatchBettingSection extends StatelessWidget {
                     (!market.canBet || !controller.beforeKickoff))
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Text(_unavailable(market.unavailableReason)),
+                    child: Text(
+                        tr(context, _unavailable(market.unavailableReason))),
                   ),
                 if (market != null) ...[
                   const SizedBox(height: 20),
-                  Text("You’ve got ${market.wallet.balance} pts!"),
+                  Text(tr(context, "You’ve got {points} pts!",
+                      {'points': market.wallet.balance})),
                 ],
                 if (bet != null)
                   _BetReceipt(
@@ -61,16 +64,19 @@ class MatchBettingSection extends StatelessWidget {
                   ),
                 if (controller.error != null) ...[
                   const SizedBox(height: 12),
-                  Text(controller.error!, textAlign: TextAlign.center),
+                  Text(tr(context, controller.error!),
+                      textAlign: TextAlign.center),
                   TextButton(
                     onPressed: controller.load,
-                    child: const Text('RETRY'),
+                    child: Text(tr(context, 'RETRY')),
                   ),
                 ],
                 if (controller.canBet) ...[
                   const SizedBox(height: 20),
                   _BetButton(
-                    text: bet?.isOpen == true ? 'EDIT BET' : 'PLACE A BET',
+                    text: bet?.isOpen == true
+                        ? tr(context, 'EDIT BET')
+                        : tr(context, 'PLACE A BET'),
                     onPressed: controller.spendingLimit < 10
                         ? null
                         : () => showModalBottomSheet<void>(
@@ -85,9 +91,10 @@ class MatchBettingSection extends StatelessWidget {
                             ),
                   ),
                   if (controller.spendingLimit < 10)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 8),
-                      child: Text('You need at least 10 pts to place a bet.'),
+                      child: Text(tr(
+                          context, 'You need at least 10 pts to place a bet.')),
                     ),
                 ],
                 if (controller.canCancel)
@@ -96,23 +103,26 @@ class MatchBettingSection extends StatelessWidget {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Cancel your bet?'),
-                          content: Text('${bet!.stake} pts will be returned.'),
+                          title: Text(tr(context, 'Cancel your bet?')),
+                          content: Text(tr(
+                              context,
+                              '{points} pts will be returned.',
+                              {'points': bet!.stake})),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
-                              child: const Text('KEEP BET'),
+                              child: Text(tr(context, 'KEEP BET')),
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, true),
-                              child: const Text('CANCEL BET'),
+                              child: Text(tr(context, 'CANCEL BET')),
                             ),
                           ],
                         ),
                       );
                       if (confirmed == true) await controller.cancel();
                     },
-                    child: const Text('CANCEL BET'),
+                    child: Text(tr(context, 'CANCEL BET')),
                   ),
                 if (controller.saving) const LinearProgressIndicator(),
               ],
@@ -188,8 +198,9 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                   children: [
                     Row(
                       children: [
-                        const Expanded(
-                            child: Text('Bets', style: Heading3.style)),
+                        Expanded(
+                            child: Text(tr(context, 'Bets'),
+                                style: Heading3.style)),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close),
@@ -199,15 +210,17 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                     if (_submitted) ...[
                       const Icon(Icons.check_circle_outline, size: 72),
                       const SizedBox(height: 16),
-                      const Text('Bet Submitted!', style: Heading3.style),
+                      Text(tr(context, 'Bet Submitted!'),
+                          style: Heading3.style),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Check back after the final whistle for the result.',
+                      Text(
+                        tr(context,
+                            'Check back after the final whistle for the result.'),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
                       _BetButton(
-                        text: 'DONE',
+                        text: tr(context, 'DONE'),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ] else ...[
@@ -278,8 +291,10 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                             ),
                             Flexible(
                               child: FittedBox(
-                                child:
-                                    Text('$_amount pts', style: Heading3.style),
+                                child: Text(
+                                    tr(context, '{points} pts',
+                                        {'points': _amount}),
+                                    style: Heading3.style),
                               ),
                             ),
                             IconButton(
@@ -292,15 +307,20 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                             ),
                           ],
                         ),
-                        Text('Available: ${controller.spendingLimit} pts'),
+                        Text(tr(context, 'Available: {points} pts',
+                            {'points': controller.spendingLimit})),
                         const SizedBox(height: 16),
                         if (total != null) ...[
                           Text(
-                            'If correct: +${total - _amount} pts',
+                            tr(context, 'If correct: +{points} pts',
+                                {'points': total - _amount}),
                             style: Heading5.style,
                           ),
                           Text(
-                            'Total return: $total pts, including your stake.',
+                            tr(
+                                context,
+                                'Total return: {points} pts, including your stake.',
+                                {'points': total}),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -308,26 +328,26 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                           onPressed: controller.saving
                               ? null
                               : () => setState(() => _choosingAmount = false),
-                          child: const Text('CHANGE PICK'),
+                          child: Text(tr(context, 'CHANGE PICK')),
                         ),
                       ],
                       if (controller.error != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
-                            controller.error!,
+                            tr(context, controller.error!),
                             textAlign: TextAlign.center,
                           ),
                         ),
                       if (!controller.beforeKickoff)
-                        const Text('Betting is closed for this match.'),
+                        Text(tr(context, 'Betting is closed for this match.')),
                       const SizedBox(height: 16),
                       _BetButton(
                         text: controller.saving
-                            ? 'SUBMITTING…'
+                            ? tr(context, 'SUBMITTING…')
                             : _choosingAmount
-                                ? 'CONFIRM BET'
-                                : 'CONTINUE',
+                                ? tr(context, 'CONFIRM BET')
+                                : tr(context, 'CONTINUE'),
                         onPressed: _selected == null ||
                                 !controller.canBet ||
                                 _amount > controller.spendingLimit
@@ -474,10 +494,10 @@ class BettingParticipationCard extends StatelessWidget {
                   )
                 else
                   Text(controller.loading
-                      ? 'Loading…'
-                      : 'Prediction unavailable.'),
+                      ? tr(context, 'Loading…')
+                      : tr(context, 'Prediction unavailable.')),
                 const SizedBox(height: 20),
-                const Text('USER', style: Body2_b.style),
+                Text(tr(context, 'USER'), style: Body2_b.style),
                 const SizedBox(height: 12),
                 if (market?.userProbabilities != null)
                   BettingProbabilityBar(
@@ -491,15 +511,16 @@ class BettingParticipationCard extends StatelessWidget {
                 else
                   Text(
                     controller.loading
-                        ? 'Loading…'
+                        ? tr(context, 'Loading…')
                         : market == null
-                            ? 'Unable to load bets.'
-                            : 'No bets yet.',
+                            ? tr(context, 'Unable to load bets.')
+                            : tr(context, 'No bets yet.'),
                   ),
                 if (market != null) ...[
                   const SizedBox(height: 8),
                   Text(
-                    '${market.participantCount} participants · Home / Draw / Away',
+                    tr(context, '{count} participants · Home / Draw / Away',
+                        {'count': market.participantCount}),
                     style: Body2.style,
                   ),
                 ],
@@ -515,12 +536,12 @@ class BettingParticipationCard extends StatelessWidget {
                 if (market?.bet?.isOpen == true && !controller.beforeKickoff)
                   TextButton(
                     onPressed: controller.loading ? null : controller.load,
-                    child: const Text('REFRESH RESULT'),
+                    child: Text(tr(context, 'REFRESH RESULT')),
                   ),
                 if (controller.error != null)
                   TextButton(
                     onPressed: controller.load,
-                    child: const Text('RETRY'),
+                    child: Text(tr(context, 'RETRY')),
                   ),
               ],
             ),
@@ -540,15 +561,20 @@ class _BetReceipt extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              '$label · ${bet.stake} pts',
+              '${tr(context, label)} · ${tr(context, '{points} pts', {
+                    'points': bet.stake
+                  })}',
               textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
               bet.isOpen
-                  ? 'Return if correct: ${bet.potentialReturn} pts (includes stake)'
-                  : _settled(bet),
+                  ? tr(
+                      context,
+                      'Return if correct: {points} pts (includes stake)',
+                      {'points': bet.potentialReturn})
+                  : _settled(context, bet),
               textAlign: TextAlign.center,
             ),
           ],
@@ -705,10 +731,13 @@ String _unavailable(String? reason) => switch (reason) {
       'prediction_unavailable' => 'Prediction unavailable for this match.',
       _ => 'Betting is closed for this match.',
     };
-String _settled(FixtureBet bet) => switch (bet.status) {
-      'won' => 'Won · ${bet.payout} pts returned',
-      'lost' => 'Not correct · 0 pts returned',
-      'refunded' => 'Match refunded · ${bet.payout} pts returned',
-      'cancelled' => 'Cancelled · ${bet.payout} pts returned',
-      _ => 'Waiting for the result',
+String _settled(BuildContext context, FixtureBet bet) => switch (bet.status) {
+      'won' =>
+        tr(context, 'Won · {points} pts returned', {'points': bet.payout}),
+      'lost' => tr(context, 'Not correct · 0 pts returned'),
+      'refunded' =>
+        tr(context, 'Refunded · {points} pts returned', {'points': bet.payout}),
+      'cancelled' =>
+        tr(context, 'Refunded · {points} pts returned', {'points': bet.payout}),
+      _ => tr(context, 'Waiting for the result'),
     };

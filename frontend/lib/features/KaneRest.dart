@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -313,7 +314,7 @@ class _StatSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          section.category,
+          tr(context, section.category),
           style: Eyebrow.style.copyWith(
             fontWeight: FontWeight.w700,
             letterSpacing: 0.6,
@@ -336,7 +337,8 @@ class _StatSection extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(section.rows[i].label, style: Body1.style),
+                      Text(tr(context, section.rows[i].label),
+                          style: Body1.style),
                       const Spacer(),
                       Text(section.rows[i].value, style: Body1_b.style),
                     ],

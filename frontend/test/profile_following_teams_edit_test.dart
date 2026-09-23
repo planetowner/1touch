@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/models/team.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('saves edited following teams through the API repository',
       (tester) async {
     final repository = _RecordingFollowingTeamsRepository();

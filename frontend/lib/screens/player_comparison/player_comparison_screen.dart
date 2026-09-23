@@ -9,11 +9,11 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_detail.dart';
 
+import 'package:onetouch/l10n/app_localizations.dart';
 part 'comparison_header.dart';
 part 'comparison_picker_sheets.dart';
 part 'comparison_stats.dart';
@@ -45,9 +45,7 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
   void initState() {
     super.initState();
     final raw = widget.initialPlayerId;
-    final id = raw == null
-        ? null
-        : int.tryParse(raw) ?? playerRepository.findById(raw)?.externalPlayerId;
+    final id = raw == null ? null : int.tryParse(raw);
     if (id != null) _load(0, id);
   }
 
@@ -66,14 +64,16 @@ class _PlayerComparisonScreenState extends State<PlayerComparisonScreen> {
         _players[slot] = player;
         if (other != null &&
             (position == null || position != other.analysis?.position)) {
-          _error =
-              'Select a player with the same season position (${other.analysis?.position ?? 'unavailable'}).';
+          _error = tr(context,
+              'Select a player with the same season position ({position}).', {
+            'position': other.analysis?.position ?? tr(context, 'Unavailable')
+          });
         }
       });
     } on Object {
       if (mounted && request == _request) {
-        setState(() => _error =
-            'Could not load player data. Please select the player again.');
+        setState(() => _error = tr(context,
+            'Could not load player data. Please select the player again.'));
       }
     } finally {
       if (mounted && request == _request) setState(() => _loading = false);
@@ -182,7 +182,7 @@ class _MostComparedUnavailableSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'MOST COMPARED',
+            tr(context, 'MOST COMPARED'),
             style: TextStyle(
               color: foreground,
               fontSize: 14,
@@ -200,7 +200,7 @@ class _MostComparedUnavailableSection extends StatelessWidget {
               boxShadow: appCardShadows(context),
             ),
             child: Text(
-              '아직 준비중이에요ㅠㅠ',
+              tr(context, "Coming soon"),
               style: TextStyle(color: foreground, fontWeight: FontWeight.w700),
             ),
           ),

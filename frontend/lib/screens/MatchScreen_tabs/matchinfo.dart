@@ -11,6 +11,7 @@ import 'package:onetouch/features/player/player_stat_value.dart';
 
 import '../../models/match_data.dart';
 import 'match_event_view_data.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class MatchInfoTab extends StatelessWidget {
   final Fixture fixture;
@@ -378,7 +379,7 @@ class MatchInfoTab extends StatelessWidget {
             awayTeamName: awayTeam.displayName,
             homeScore: homeScore,
             awayScore: awayScore,
-            statusLabel: isLive ? 'Live' : 'Final',
+            statusLabel: isLive ? tr(context, 'Live') : tr(context, 'Final'),
             roundLabel: fixture.displayRoundLabel,
             venueLabel: detail?.venueName,
           ),

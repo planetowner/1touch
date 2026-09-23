@@ -3,25 +3,28 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/community/api/api_community_repository.dart';
 import 'package:onetouch/models/community_rules.dart';
 
 void main() {
   test('loads localized rules through the authenticated endpoint', () async {
     final repository = ApiCommunityRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/community/rules');
-        expect(request.url.queryParameters, {
-          'team_id': '9',
-          'language': 'ko',
-        });
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_rulesJson(language: 'ko')), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/community/rules');
+            expect(request.url.queryParameters, {
+              'team_id': '9',
+              'language': 'ko',
+            });
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_rulesJson(language: 'ko')), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final rules = await repository.loadRules(
@@ -69,12 +72,13 @@ void main() {
   test('rejects an invalid team ID before requesting rules', () async {
     var requests = 0;
     final repository = ApiCommunityRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -99,9 +103,10 @@ void main() {
     ];
     var requestIndex = 0;
     final repository = ApiCommunityRepository(
-      client: MockClient((_) async => responses[requestIndex++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestIndex++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     for (var index = 0; index < responses.length; index++) {
