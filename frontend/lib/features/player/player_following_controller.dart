@@ -19,6 +19,8 @@ class PlayerFollowingController extends ChangeNotifier {
   Future<void> load() => _request ??= _load();
   Future<void> _load() async {
     loading = true;
+    loaded = false;
+    players = [];
     error = null;
     notifyListeners();
     try {
