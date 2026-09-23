@@ -1,7 +1,9 @@
+import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 //
 // Data model
@@ -15,16 +17,18 @@ class _MockNotif {
   final _NotifCategory category;
   final String title;
   final String bodyPrefix;
+  final Map<String, Object> arguments;
   final String? bodyBold; // bolded segment immediately after bodyPrefix
-  final String timeAgo;
+  final Duration age;
   final String? imageUrl; // team logo or player photo URL
 
   const _MockNotif({
     required this.category,
     required this.title,
     this.bodyPrefix = '',
+    this.arguments = const {},
     this.bodyBold,
-    required this.timeAgo,
+    required this.age,
     this.imageUrl,
   });
 
@@ -50,66 +54,70 @@ const _mockNotifications = <_MockNotif>[
   _MockNotif(
     category: _NotifCategory.reaction,
     title: 'Reaction',
-    bodyPrefix: 'Username121 and 2 more users liked your post.',
-    timeAgo: '2 hrs ago',
+    bodyPrefix: '{user} and {count} more users liked your post.',
+    arguments: {'user': 'Username121', 'count': 2},
+    age: Duration(hours: 2),
   ),
   _MockNotif(
     category: _NotifCategory.comment,
     title: 'Comment',
-    bodyPrefix: "Username144 commented to your post: ",
+    bodyPrefix: "{user} commented on your post: ",
+    arguments: {'user': 'Username144'},
     bodyBold: "can't agree more",
-    timeAgo: '3 hrs ago',
+    age: Duration(hours: 3),
   ),
   _MockNotif(
     category: _NotifCategory.team,
     title: 'FC Barcelona',
     bodyPrefix: 'Full time 3-1 — Big win for Barcelona!',
-    timeAgo: '5 hrs ago',
+    age: Duration(hours: 5),
     imageUrl: 'https://cdn.sportmonks.com/images/soccer/teams/83/83.png',
   ),
   _MockNotif(
     category: _NotifCategory.player,
     title: 'Kang-In Lee',
     bodyPrefix: 'Kang-In is in the XI 👕',
-    timeAgo: '6 hrs ago',
+    age: Duration(hours: 6),
   ),
   _MockNotif(
     category: _NotifCategory.team,
     title: 'Bayern Munich',
     bodyPrefix: 'Kane scored twice! Bayern 2-0 Dortmund.',
-    timeAgo: '1 day ago',
+    age: Duration(days: 1),
     imageUrl: 'https://cdn.sportmonks.com/images/soccer/teams/183/183.png',
   ),
   _MockNotif(
     category: _NotifCategory.betting,
     title: 'New Bet Available',
     bodyPrefix: 'Barcelona vs Real Madrid — place your prediction.',
-    timeAgo: '1 day ago',
+    age: Duration(days: 1),
   ),
   _MockNotif(
     category: _NotifCategory.reaction,
     title: 'Reaction',
-    bodyPrefix: 'Username88 liked your comment.',
-    timeAgo: '2 days ago',
+    bodyPrefix: '{user} liked your comment.',
+    arguments: {'user': 'Username88'},
+    age: Duration(days: 2),
   ),
   _MockNotif(
     category: _NotifCategory.player,
     title: 'R. Lewandowski',
     bodyPrefix: 'Lewandowski scored! Barcelona lead 1-0.',
-    timeAgo: '2 days ago',
+    age: Duration(days: 2),
   ),
   _MockNotif(
     category: _NotifCategory.betting,
     title: 'Post-match Result',
     bodyPrefix: 'Your prediction was correct — Bayern won 3-1.',
-    timeAgo: '3 days ago',
+    age: Duration(days: 3),
   ),
   _MockNotif(
     category: _NotifCategory.comment,
     title: 'Comment',
-    bodyPrefix: 'Username203 replied to your comment: ',
+    bodyPrefix: '{user} replied to your comment: ',
+    arguments: {'user': 'Username203'},
     bodyBold: 'totally agree with you!',
-    timeAgo: '3 days ago',
+    age: Duration(days: 3),
   ),
 ];
 
@@ -161,7 +169,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
             floating: true,
             snap: true,
             toolbarHeight: 80,
-            title: const Text('Notifications', style: Body1.style),
+            title: Text(tr(context, 'Notifications'), style: Body1.style),
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new, color: foreground),
               onPressed: () => Navigator.of(context).pop(),
@@ -202,7 +210,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            e.value,
+                            tr(context, e.value),
                             style: Body2_b.style.copyWith(
                               color:
                                   isSelected ? selectedForeground : foreground,
@@ -266,12 +274,13 @@ class _NotifTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(notif.title, style: Body1_b.style),
+                Text(tr(context, notif.title), style: Body1_b.style),
                 const SizedBox(height: 4),
                 _BodyText(notif: notif),
                 const SizedBox(height: 6),
                 Text(
-                  notif.timeAgo,
+                  relativeTimeLabel(DateTime.now().subtract(notif.age),
+                      locale: Localizations.localeOf(context)),
                   style: Eyebrow.style.copyWith(
                     color: appColors.mutedForeground,
                   ),
@@ -371,7 +380,7 @@ class _BodyText extends StatelessWidget {
     final mutedForeground = AppColors.of(context).mutedForeground;
     if (notif.bodyBold == null) {
       return Text(
-        notif.bodyPrefix,
+        tr(context, notif.bodyPrefix, notif.arguments),
         style: Body2.style.copyWith(color: mutedForeground),
       );
     }
@@ -379,7 +388,7 @@ class _BodyText extends StatelessWidget {
       text: TextSpan(
         style: Body2.style.copyWith(color: mutedForeground),
         children: [
-          TextSpan(text: notif.bodyPrefix),
+          TextSpan(text: tr(context, notif.bodyPrefix, notif.arguments)),
           TextSpan(
             text: notif.bodyBold,
             style: Body2_b.style.copyWith(color: foreground),

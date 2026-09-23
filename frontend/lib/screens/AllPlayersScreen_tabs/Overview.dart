@@ -10,6 +10,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_indicators.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/models/player.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerOverviewTab extends StatelessWidget {
   const PlayerOverviewTab(
@@ -59,9 +60,10 @@ class PlayerOverviewTab extends StatelessWidget {
                   player: player, playerId: id, profile: detail.profile),
               const SizedBox(height: 48),
               PlayerSection(
-                  title: 'COMPETITION STATS',
-                  titleAccessory: const Tooltip(
-                    message: 'Competition statistics for the selected season.',
+                  title: tr(context, 'COMPETITION STATS'),
+                  titleAccessory: Tooltip(
+                    message: tr(context,
+                        'Competition statistics for the selected season.'),
                     triggerMode: TooltipTriggerMode.tap,
                     child: Icon(
                       Icons.help_outline,
@@ -74,25 +76,25 @@ class PlayerOverviewTab extends StatelessWidget {
                       competitions: detail.competitions)),
               const SizedBox(height: 48),
               PlayerSection(
-                  title: 'MATCHES',
+                  title: tr(context, 'MATCHES'),
                   trailing: IconButton(
                       icon: const Icon(Icons.chevron_right),
-                      tooltip: 'All matches',
+                      tooltip: tr(context, 'All matches'),
                       onPressed: onMatches),
                   child: Column(children: [
                     if (detail.matches.isEmpty)
-                      const Text('No appearances this season'),
+                      Text(tr(context, 'No appearances this season')),
                     for (final match in detail.matches.take(3))
                       PlayerDetailMatchCard(match: match),
                   ])),
               const SizedBox(height: 48),
               PlayerSection(
-                  title: 'CLUB HISTORY',
+                  title: tr(context, 'CLUB HISTORY'),
                   child: PlayerSurface(
                       key: const ValueKey('player-club-history-card'),
                       child: Column(children: [
                         if (detail.clubs.isEmpty)
-                          const Text('Club history unavailable'),
+                          Text(tr(context, 'Club history unavailable')),
                         for (final club in detail.clubs)
                           Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -182,28 +184,38 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
   String _explanation({required bool cost}) {
     final score = cost ? _indicators?.costEffectiveness : _indicators?.form;
     final definition = cost
-        ? 'Compares season rating and share of playing time with expectations '
+        ? tr(
+            context,
+            'Compares season rating and share of playing time with expectations '
             "for the player's estimated gross wage, club wage level, league "
             'and position. The two differences carry equal weight. '
             'Fair means within the usual prediction error; higher grades mean '
-            'more return for the wage. Transfer fees are not included.'
-        : 'Recent performance over the latest 5 league appearances this season, '
+            'more return for the wage. Transfer fees are not included.')
+        : tr(
+            context,
+            'Recent performance over the latest 5 league appearances this season, '
             'weighted by playing time and calibrated recency. '
-            'Compared with all positions across the five leagues.';
+            'Compared with all positions across the five leagues.');
     final season = _indicators?.seasonName;
-    final scope =
-        season == null ? 'Current season only.' : 'Current season: $season.';
+    final scope = season == null
+        ? tr(context, 'Current season only.')
+        : tr(context, 'Current season: {season}.', {'season': season});
     final evidence = score?.grade == null
         ? switch (score?.unavailableReason) {
-            'wage_unavailable' => 'Wage data is unavailable.',
-            'no_rated_matches' => 'No rated appearances are available.',
+            'wage_unavailable' => tr(context, 'Wage data is unavailable.'),
+            'no_rated_matches' =>
+              tr(context, 'No rated appearances are available.'),
             _ => _failed
-                ? 'Could not load the indicators. Tap retry to try again.'
-                : 'An indicator is shown when enough data is available.',
+                ? tr(context,
+                    'Could not load the indicators. Tap retry to try again.')
+                : tr(context,
+                    'An indicator is shown when enough data is available.'),
           }
-        : '${score!.ratedMatches} rated appearances. '
-            '${score.referenceCount} players across the five leagues. '
-            '${cost ? 'Grades are based on prediction error, not equal-sized groups.' : ''}';
+        : '${tr(context, '{matches} rated appearances. {players} players across the five leagues.', {
+                'matches': score!.ratedMatches,
+                'players': score.referenceCount
+              })} '
+            '${cost ? tr(context, 'Grades are based on prediction error, not equal-sized groups.') : ''}';
     return '$definition\n\n$scope $evidence';
   }
 
@@ -226,7 +238,7 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
     final columns = <List<({String label, Widget value, String? explanation})>>[
       [
         (
-          label: 'Height',
+          label: tr(context, 'Height'),
           value: Text(
               widget.profile == null
                   ? (player == null ? '—' : '${player.heightCm}cm')
@@ -237,12 +249,14 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
           explanation: null
         ),
         (
-          label: 'Age',
-          value: Text(age == null ? '—' : '$age yrs', style: Heading5.style),
+          label: tr(context, 'Age'),
+          value: Text(
+              age == null ? '—' : tr(context, '{age} yrs', {'age': age}),
+              style: Heading5.style),
           explanation: null
         ),
         (
-          label: 'Form',
+          label: tr(context, 'Form'),
           value: PlayerIndicatorValue(
             key: const ValueKey('player-form'),
             score: _indicators?.form,
@@ -256,7 +270,7 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
       ],
       [
         (
-          label: 'Weight',
+          label: tr(context, 'Weight'),
           value: Text(
               widget.profile == null
                   ? (player == null ? '—' : '${player.weightKg}kg')
@@ -267,7 +281,7 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
           explanation: null
         ),
         (
-          label: 'Squad Role',
+          label: tr(context, 'Squad Role'),
           value: PlayerIndicatorValue(
             key: const ValueKey('player-squad-role'),
             label: _indicators?.squadRole,
@@ -284,7 +298,7 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
           explanation: null
         ),
         (
-          label: 'Cost-Effectiveness',
+          label: tr(context, 'Cost-Effectiveness'),
           value: PlayerIndicatorValue(
             key: const ValueKey('player-cost-effectiveness'),
             score: _indicators?.costEffectiveness,
@@ -362,7 +376,7 @@ class _PlayerBioCell extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(label, style: Body1.style),
+                    Text(tr(context, label), style: Body1.style),
                     if (explanation != null)
                       Padding(
                         padding: const EdgeInsets.only(left: 4),

@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import 'package:onetouch/screens/PlayerComparisonScreen.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('empty comparison has two empty slots', (tester) async {
     await tester.pumpWidget(MaterialApp(
         home:

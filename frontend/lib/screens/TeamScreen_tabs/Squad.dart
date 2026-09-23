@@ -8,10 +8,12 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
 import 'package:onetouch/data/contracts/team_contract_repository_provider.dart';
 import 'package:onetouch/data/seasons/season_repository_provider.dart';
-import 'package:onetouch/data/teams/mock/team_season_catalog.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
+import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
 import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 // TODO(squad-api): Remove after the API-backed Squad screen is confirmed on
 // device. It is intentionally not used as an error fallback because that would
@@ -264,18 +266,18 @@ class _SquadTabState extends State<SquadTab> {
     null,
   ];
 
-  static String _positionLabel(Position? pos) {
+  String _positionLabel(Position? pos) {
     switch (pos) {
       case Position.GK:
-        return 'GOALKEEPER';
+        return tr(context, 'GOALKEEPER');
       case Position.DF:
-        return 'DEFENDERS';
+        return tr(context, 'DEFENDERS');
       case Position.MF:
-        return 'MIDFIELDERS';
+        return tr(context, 'MIDFIELDERS');
       case Position.FW:
-        return 'ATTACKERS';
+        return tr(context, 'ATTACKERS');
       case null:
-        return 'POSITION UNAVAILABLE';
+        return tr(context, 'POSITION UNAVAILABLE');
     }
   }
 
@@ -308,8 +310,12 @@ class _SquadTabState extends State<SquadTab> {
   List<Season> get _availableSeasons {
     final teamId = widget.team?['id'] as int?;
     if (teamId == null) return const [];
-    final seasonIds = mockTeamSeasonMemberships
-        .where((membership) => membership.teamId == teamId)
+    final seasonIds = footballCatalog.memberships
+        // 계약 API는 Big 5 정규리그 시즌만 받아요. 컵 소속 시즌은 제외해요.
+        .where((membership) =>
+            membership.teamId == teamId &&
+            TeamPageEligibility.domesticBigFiveCompetitionIds
+                .contains(membership.competitionId))
         .map((membership) => membership.seasonId)
         .toSet();
     final seasons = seasonRepository.allSeasons
@@ -317,7 +323,7 @@ class _SquadTabState extends State<SquadTab> {
         .toList();
     seasons.sort((a, b) {
       if (a.isCurrent != b.isCurrent) return a.isCurrent ? -1 : 1;
-      return b.startingAt.compareTo(a.startingAt);
+      return b.name.compareTo(a.name);
     });
     return seasons;
   }
@@ -460,7 +466,7 @@ class _SquadTabState extends State<SquadTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Unable to load squad',
+              tr(context, 'Unable to load squad'),
               key: const ValueKey('squad-error'),
               style: Body1.style,
               textAlign: TextAlign.center,
@@ -469,7 +475,7 @@ class _SquadTabState extends State<SquadTab> {
             TextButton(
               key: const ValueKey('squad-retry'),
               onPressed: _retryLoad,
-              child: const Text('Retry'),
+              child: Text(tr(context, 'Retry')),
             ),
           ],
         ),
@@ -478,7 +484,7 @@ class _SquadTabState extends State<SquadTab> {
     if (_players.isEmpty) {
       return Center(
         child: Text(
-          'No players found',
+          tr(context, 'No players found'),
           key: const ValueKey('squad-empty'),
           style: TextStyle(color: AppColors.of(context).mutedForeground),
         ),
@@ -655,7 +661,7 @@ class _SquadTabState extends State<SquadTab> {
                 children: [
                   Expanded(
                     child: Text(
-                      _sortOption.label.toUpperCase(),
+                      tr(context, _sortOption.label).toUpperCase(),
                       style: Body2_b.style,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -680,7 +686,7 @@ class _SquadTabState extends State<SquadTab> {
                     children: [
                       // Section 1: Ascending / Descending
                       _dropdownItem(
-                        label: 'ASCENDING',
+                        label: tr(context, 'ASCENDING'),
                         selected: _isAscending,
                         onTap: () => setState(() {
                           _isAscending = true;
@@ -688,7 +694,7 @@ class _SquadTabState extends State<SquadTab> {
                         }),
                       ),
                       _dropdownItem(
-                        label: 'DESCENDING',
+                        label: tr(context, 'DESCENDING'),
                         selected: !_isAscending,
                         onTap: () => setState(() {
                           _isAscending = false;
@@ -742,7 +748,7 @@ class _SquadTabState extends State<SquadTab> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text(label, style: Body2_b.style),
+                child: Text(tr(context, label), style: Body2_b.style),
               ),
             ),
             if (selected)
@@ -769,7 +775,7 @@ class _PositionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      label,
+      tr(context, label),
       style: Body2_b.style,
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class AppThemeController extends ValueNotifier<ThemeMode> {
   AppThemeController() : super(ThemeMode.dark);
@@ -103,7 +104,9 @@ class AppThemeIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return IconButton(
-      tooltip: isDark ? 'Use light theme' : 'Use dark theme',
+      tooltip: isDark
+          ? tr(context, 'Use light theme')
+          : tr(context, 'Use dark theme'),
       onPressed: appThemeController.toggle,
       icon: Icon(
         isDark ? Icons.light_mode : Icons.dark_mode,

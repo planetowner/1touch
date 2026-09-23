@@ -1,24 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/standings/api/api_standing_mapper.dart';
 import 'package:onetouch/data/standings/api/api_standing_response.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/models/standing.dart';
 
 class ApiStandingRepository implements StandingRepository {
-  ApiStandingRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiStandingRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<Map<StandingQuery, List<Standing>>> _cachedTables =
       ValueNotifier(const {});
   final ValueNotifier<List<Standing>> _standings = ValueNotifier(const []);
@@ -73,30 +63,15 @@ class ApiStandingRepository implements StandingRepository {
     final seasonId = query.seasonId;
 
     final baseUri =
-        _apiBaseUri.resolve('competitions/$competitionId/standings');
+        _api.baseUri.resolve('competitions/$competitionId/standings');
     final uri = seasonId == null
         ? baseUri
         : baseUri.replace(queryParameters: {'season_id': '$seasonId'});
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Standings request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the standings response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     final apiResponse = ApiCompetitionStandingsResponse.fromJson(decoded);
     if (apiResponse.competitionId != competitionId) {
       throw FormatException(
@@ -176,9 +151,4 @@ class ApiStandingRepository implements StandingRepository {
 
   @override
   Future<void> initialize() async {}
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
-  }
 }

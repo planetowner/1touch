@@ -132,8 +132,8 @@ void main() {
           isNotNull,
           reason: 'mock fixture ${fixture.fixtureId} needs a kickoff',
         );
-        final seasonStart = DateTime.parse(season.startingAt);
-        final seasonEnd = DateTime.parse(season.endingAt);
+        final seasonStart = DateTime.parse(season.startingAt!);
+        final seasonEnd = DateTime.parse(season.endingAt!);
         final kickoffDate = DateTime(
           kickoff!.year,
           kickoff.month,

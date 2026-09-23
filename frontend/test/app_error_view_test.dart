@@ -3,16 +3,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_error_config.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/features/app_error_view.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 void main() {
   test('uses the configured Korean error copy without changing it', () {
+    const locale = Locale('ko');
     expect(appErrorConfigs, hasLength(8));
     expect(
       appErrorConfigs.map(
         (code, config) => MapEntry(code, {
-          'title': config.title,
-          'message': config.message,
-          'action': config.action,
+          'title': translateMessage(locale, config.title),
+          'message': translateMessage(locale, config.message),
+          'action': config.action == null
+              ? null
+              : translateMessage(locale, config.action!),
         }),
       ),
       {
@@ -64,6 +68,9 @@ void main() {
     var tapped = false;
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         theme: app_style.whitetheme,
         home: Scaffold(
           body: AppErrorView(
@@ -84,6 +91,9 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         theme: app_style.darktheme,
         home: Scaffold(
           body: AppErrorView(statusCode: 429, onAction: () {}),

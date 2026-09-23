@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/teams/mock/team_catalog.dart';
 
 void main() {
+  setUpAppCatalog();
   const phoneSizes = [
     Size(320, 568),
     Size(375, 667),

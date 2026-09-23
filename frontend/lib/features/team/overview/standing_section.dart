@@ -149,7 +149,7 @@ class _StandingState extends State<Standing> {
           child: TextButton(
             key: const ValueKey('overview-standing-retry'),
             onPressed: _startLoad,
-            child: const Text('Retry standings'),
+            child: Text(tr(context, 'Retry standings')),
           ),
         ),
       );
@@ -263,7 +263,7 @@ class _StandingState extends State<Standing> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                league?.name ?? 'Unknown',
+                                league?.name ?? tr(context, 'Unknown'),
                                 style: Heading4.style,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -322,35 +322,35 @@ class _StandingState extends State<Standing> {
             Text("#",
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-            Text("Club",
+            Text(tr(context, "Club"),
                 overflow: TextOverflow.ellipsis,
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             const SizedBox.shrink(),
             Align(
                 alignment: Alignment.centerRight,
-                child: Text("MP",
+                child: Text(tr(context, "MP"),
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
             const SizedBox.shrink(),
             Align(
                 key: const ValueKey('overview-standing-win-header'),
                 alignment: Alignment.center,
-                child: Text("W",
+                child: Text(tr(context, "W"),
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
             const SizedBox.shrink(),
             Align(
                 key: const ValueKey('overview-standing-draw-header'),
                 alignment: Alignment.center,
-                child: Text("D",
+                child: Text(tr(context, "D"),
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
             const SizedBox.shrink(),
             Align(
                 key: const ValueKey('overview-standing-loss-header'),
                 alignment: Alignment.center,
-                child: Text("L",
+                child: Text(tr(context, "L"),
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
           ],
