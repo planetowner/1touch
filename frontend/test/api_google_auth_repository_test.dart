@@ -90,7 +90,7 @@ void main() {
           requestHeaders: () => const {}),
     );
 
-    final challenge = await repository.requestSignUpEmailCode(
+    final challenge = await repository.requestEmailCode(
       email: ' member@example.com ',
     );
 
@@ -113,7 +113,7 @@ void main() {
     );
 
     await expectLater(
-      repository.requestSignUpEmailCode(email: 'member@example.com'),
+      repository.requestEmailCode(email: 'member@example.com'),
       throwsA(
         isA<AuthRequestException>()
             .having((error) => error.statusCode, 'statusCode', 502)
@@ -144,7 +144,7 @@ void main() {
     );
 
     await expectLater(
-      repository.requestSignUpEmailCode(email: 'invalid'),
+      repository.requestEmailCode(email: 'invalid'),
       throwsA(
         isA<AuthRequestException>().having(
           (error) => error.displayMessage,

@@ -1,3 +1,4 @@
+import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -10,27 +11,20 @@ import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 
 void main() {
-  testWidgets('Continue with email opens sign in and signup link is aligned',
+  testWidgets('onboarding includes password fields and opens signup',
       (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
     final service = _service(AuthSession(), _FakeAuthRepository());
     final router = _router(service, initialLocation: '/onboarding');
     addTearDown(router.dispose);
-
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    await tester.ensureVisible(find.text('Continue with email'));
-    await tester.tap(find.text('Continue with email'));
     await tester.pumpAndSettle();
-
-    expect(find.text('Sign in'), findsOneWidget);
-    expect(find.text('Username'), findsOneWidget);
-    expect(find.text('Remember me'), findsOneWidget);
-    expect(find.text('Need sign up?'), findsOneWidget);
-    expect(
-      tester.getCenter(find.text('Remember me')).dy,
-      closeTo(tester.getCenter(find.text('Need sign up?')).dy, 1),
-    );
-
+    expect(find.text('Continue with email'), findsNothing);
+    expect(find.byKey(const ValueKey('sign-in-username')), findsOneWidget);
+    expect(find.text('Remember me'), findsNothing);
+    expect(find.text('Forgot password?'), findsOneWidget);
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('sign-in-sign-up-link')));
     await tester.tap(find.byKey(const ValueKey('sign-in-sign-up-link')));
     await tester.pumpAndSettle();
     expect(find.text('Signup destination'), findsOneWidget);
@@ -58,6 +52,8 @@ void main() {
       'Password123',
     );
     await tester.pump();
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('email-sign-in-button')));
     await tester.tap(find.byKey(const ValueKey('email-sign-in-button')));
     await tester.pumpAndSettle();
 
@@ -83,7 +79,13 @@ GoRouter _router(AuthService service, {required String initialLocation}) =>
       routes: [
         GoRoute(
           path: '/onboarding',
-          builder: (_, __) => OnboardingScreen(authService: service),
+          builder: (_, __) => OnboardingScreen(
+              authService: service,
+              loadOptions: () async => const LoginOptions(recommended: [
+                    LoginProvider.google,
+                    LoginProvider.apple,
+                    LoginProvider.email
+                  ])),
         ),
         GoRoute(
           path: '/auth/signin',
@@ -115,6 +117,19 @@ class _FakeGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<void> resetPassword(
+          {required String challengeId,
+          required String code,
+          required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<String> signInWithSocial(
+          {required LoginProvider provider,
+          required Map<String, String> credentials}) =>
+      throw UnimplementedError();
+
   final passwordCredentials = <(String, String)>[];
 
   @override
@@ -131,7 +146,9 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
+  Future<EmailCodeChallenge> requestEmailCode(
+          {required String email,
+          EmailCodePurpose purpose = EmailCodePurpose.signup}) =>
       throw UnimplementedError();
 
   @override

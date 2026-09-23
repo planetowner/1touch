@@ -1,3 +1,4 @@
+import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -95,13 +96,27 @@ class _UnusedGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<void> resetPassword(
+          {required String challengeId,
+          required String code,
+          required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<String> signInWithSocial(
+          {required LoginProvider provider,
+          required Map<String, String> credentials}) =>
+      throw UnimplementedError();
+
   final requestedEmails = <String>[];
   String? registrationChallengeId;
   String? registrationCode;
 
   @override
-  Future<EmailCodeChallenge> requestSignUpEmailCode({
+  Future<EmailCodeChallenge> requestEmailCode({
     required String email,
+    EmailCodePurpose purpose = EmailCodePurpose.signup,
   }) async {
     requestedEmails.add(email);
     return const EmailCodeChallenge(
