@@ -7,7 +7,6 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
-import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/data/home/news_repository_provider.dart'
     as news_provider;
@@ -147,22 +146,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final homeData = _homeData;
     if (homeData == null || homeData.favoriteTeam.teamId == teamId) return;
 
-    await _followingTeamsRepository.replaceFollowing(
+    final savedTeams = await _followingTeamsRepository.replaceFollowing(
       teamIds: homeData.followingTeams.map((team) => team.teamId),
       favoriteTeamId: teamId,
     );
 
-    // The backend is authoritative. Notify the rest of the app only after it
-    // accepts the favorite change; local persistence remains best-effort until
-    // authenticated session restoration replaces this compatibility store.
-    unawaited(
-      currentUserPreferences.updateTeamSelection([
-        teamId,
-        ...homeData.followingTeams
-            .map((team) => team.teamId)
-            .where((followedTeamId) => followedTeamId != teamId),
-      ]),
-    );
+    currentUserPreferences.applyServerSelection(UserTeamPreferences(
+      favoriteTeamId: teamId,
+      followedTeamIds: savedTeams.map((team) => team.teamId).toList(),
+    ));
   }
 
   void _loadCalendarMonth(DateTime month) {
@@ -388,10 +380,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 32),
                   const SectionHeader(title: "HIGHLIGHTS"),
                   MyHighlights(
-                    highlights: homeData.highlights.isEmpty
-                        ? homeContentFallbackItems
-                        : homeData.highlights,
-                    fallbacks: homeContentFallbackItems,
+                    highlights: homeData.highlights,
+                    fallbacks: const [],
                   ),
                   const SizedBox(height: 32),
                   const SectionHeader(title: "NEWS"),

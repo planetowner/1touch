@@ -155,7 +155,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
         lastName: draft.lastName,
       );
       if (!mounted) return;
-      context.go('/onboarding/welcome');
+      context.go('/session');
     } on AuthRequestException catch (error) {
       if (!mounted) return;
       _showMessage(error.displayMessage);

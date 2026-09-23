@@ -65,7 +65,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         password: _password.text,
       );
       if (!mounted) return;
-      context.go('/home');
+      context.go('/session');
     } on Object {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
