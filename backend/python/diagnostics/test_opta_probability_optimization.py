@@ -79,6 +79,63 @@ class OptaWorkSelectionTests(unittest.TestCase):
         self.assertEqual(self.collect.call_count, 2)
         self.browser.assert_called_once()
 
+    def test_reports_each_unavailable_or_failed_match_with_verified_fixture_id(self):
+        first, second = CASES[:2]
+        fixtures = {f['fixture_id']: f for c in (first, second) for f in c['fixtures']}
+        self.scope.return_value = (list(fixtures.values()), first['lineups'] + second['lineups'])
+        known = empty_ids()
+        for case in (first, second):
+            plan = opta.plan_match_ids(case['raw'], case['match'], case['fixtures'], case['lineups'], empty_ids())
+            known['fixture'].update(plan['mappings']['fixture'])
+        self.collect.side_effect = [dict(finished=True, available=False), TimeoutError('capture failed')]
+        observed = []
+        with patch.object(opta, 'load_known_ids', return_value=known):
+            result = opta.sync_matches(self.args, on_result=lambda row: observed.append(dict(row)))
+        self.assertEqual([row['status'] for row in observed], ['unavailable','failed'])
+        self.assertEqual([row['fixture_id'] for row in observed], [known['fixture'][c['match']['external_fixture_id']] for c in (first,second)])
+        self.assertTrue(all(row['checked_at_utc'] for row in observed))
+        self.assertEqual((result['unavailable'],result['failed']), (1,1))
+
+    def test_already_stored_match_reports_completion_without_browser(self):
+        pairs = [(c['raw']['match_id'], c['fixtures'][0]['fixture_id']) for c in CASES[:2]]
+        self.db.side_effect = [[(1,)], pairs]
+        observed = []
+        result = opta.sync_matches(self.args, on_result=observed.append)
+        self.assertEqual(result['skipped'],2)
+        self.assertEqual([row['fixture_id'] for row in observed], [fid for _,fid in pairs])
+        self.browser.assert_not_called()
+
+    def test_interrupted_capture_does_not_report_an_unfinished_result(self):
+        self.collect.side_effect = [dict(finished=True, available=False), KeyboardInterrupt()]
+        observed = []
+        with self.assertRaises(KeyboardInterrupt):
+            opta.sync_matches(self.args, on_result=observed.append)
+        self.assertEqual([row['status'] for row in observed], ['unavailable'])
+
+    def test_unavailable_source_is_skipped_before_limit_without_known_team_ids(self):
+        self.args.limit = 1
+        first = CASES[0]['match']['external_fixture_id']
+        report = opta.sync_matches(self.args, should_retry=lambda row: row['external_fixture_id'] != first)
+        self.assertEqual(report['skipped'], 1)
+        self.assertEqual(report['matches'][0]['external_fixture_id'], CASES[1]['match']['external_fixture_id'])
+        self.assertEqual(self.collect.call_count, 1)
+
+    def test_all_sources_waiting_do_not_start_browser_or_read_rosters(self):
+        opta.sync_matches(self.args, should_retry=lambda row: False)
+        self.scope.assert_not_called()
+        self.browser.assert_not_called()
+
+    def test_least_recent_source_attempt_is_ordered_before_applying_limit(self):
+        from one_touch_loader.loaders import match_refresh as jobs
+        self.args.limit = 1
+        first = CASES[0]['match']['external_fixture_id']
+        def order(row):
+            previous = {'attempted_at':1 if row['external_fixture_id']==first else 0}
+            return jobs.opta_priority(row['source'], previous, datetime(2026,9,23,tzinfo=timezone.utc))
+        result = opta.sync_matches(self.args, source_order=order)
+        self.assertEqual(result['matches'][0]['external_fixture_id'], CASES[1]['match']['external_fixture_id'])
+        self.assertEqual(self.collect.call_count, 1)
+
     def test_upstream_roster_failure_prevents_browser_and_event_storage(self):
         self.args.refresh_details = True
         self.args.from_date = date(2026,9,1)

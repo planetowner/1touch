@@ -6,12 +6,14 @@ import sqlite3
 import unittest
 from unittest.mock import Mock, patch
 
-from one_touch_loader.loaders import match_refresh as jobs
-from one_touch_loader.loaders import live_fixtures_loader as live
-from one_touch_loader.loaders import standings_loader as standings
-from one_touch_loader.loaders import understat_common as understat
-from one_touch_loader.loaders import understat_loader, understat_ids_loader
-from one_touch_loader.api.repos import standings_repo
+# 단독 실행도 테스트 수집 중 실제 DB 연결을 열지 않아요.
+with patch('mysql.connector.pooling.MySQLConnectionPool'):
+    from one_touch_loader.loaders import match_refresh as jobs
+    from one_touch_loader.loaders import live_fixtures_loader as live
+    from one_touch_loader.loaders import standings_loader as standings
+    from one_touch_loader.loaders import understat_common as understat
+    from one_touch_loader.loaders import understat_loader, understat_ids_loader
+    from one_touch_loader.api.repos import standings_repo
 from diagnostics.test_standings import _details
 from diagnostics.test_understat import SAMPLE
 

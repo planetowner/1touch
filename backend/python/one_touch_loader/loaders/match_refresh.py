@@ -1,4 +1,4 @@
-"""종료 경기는 바로 확인하고, 아직 공개되지 않은 경기 자료는 5분 뒤 다시 확인해요."""
+"""종료 경기는 바로 확인하고, 공급자 결과와 경기 경과 시간에 맞춰 다시 확인해요."""
 from __future__ import annotations
 
 import argparse
@@ -10,6 +10,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from ..api.db import fetch_all_dict
+from ..core.cup_betting import utc_datetime
 from ..core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..core.opta_schedule import COMPETITIONS as OPTA_COMPETITIONS
 from ..core.understat import UNDERSTAT_LEAGUES
@@ -21,6 +22,11 @@ from .xg_standings_loader import build_xg_standings
 RETRY_SECONDS = 300
 STANDINGS_SECONDS = 30
 PROBABILITY_SECONDS = 900
+# 최근 경기의 공개 지연은 빠르게 확인하고, 오래된 미제공 경기는 하루 뒤 확인해요.
+OPTA_RECENT_SECONDS = 48 * 3600
+OPTA_UNAVAILABLE_SECONDS = 24 * 3600
+OPTA_MATCH_LIMIT = 5
+OPTA_OLD_MATCH_LIMIT = 1
 
 
 def fingerprint(value) -> str:
@@ -61,7 +67,50 @@ def save_state(path: Path, state: dict) -> None:
     temporary.replace(path)
 
 
-def _provider_refresh(task, fixtures, *, apply, output_dir):
+def opta_state_entry(fixture, item):
+    """수집 결과와 기존 보고서 복구가 같은 상태·재확인 시각을 사용해요."""
+    status = {'stored': 'complete', 'verified': 'complete', 'unavailable': 'unavailable',
+              'failed': 'failed', 'not_finished': 'pending'}[item['status']]
+    context = {'signature': fingerprint(fixture_result(fixture))} if fixture is not None else item['source']
+    return {**context, 'status': status,
+            'attempted_at': datetime.fromisoformat(item['checked_at_utc']).timestamp(),
+            'external_fixture_id': item['external_fixture_id']}
+
+
+def opta_recent(fixture, now):
+    return (fixture['starting_at'] is not None
+            and (now - utc_datetime(fixture['starting_at'])).total_seconds() <= OPTA_RECENT_SECONDS)
+
+
+def opta_priority(fixture, previous, now):
+    old = not opta_recent(fixture, now)
+    return old, previous.get('attempted_at', 0) if old else -utc_datetime(fixture['starting_at']).timestamp()
+
+
+def opta_retry_seconds(fixture, previous, now):
+    # 원본에 킥오프 시각이 없으면 48시간 경과를 단정하지 않아요.
+    if fixture['starting_at'] is None:
+        return RETRY_SECONDS
+    if previous.get('status') == 'unavailable' and not opta_recent(fixture, now):
+        return OPTA_UNAVAILABLE_SECONDS
+    return RETRY_SECONDS
+
+
+def opta_source_key(item):
+    return 'opta:' + item['external_fixture_id']
+
+
+def opta_source_due(item, state, now):
+    previous = state.get(opta_source_key(item), {})
+    if previous.get('signature') != item['source']['signature']:
+        return True
+    # 완료 경기의 점수 정정은 DB 경기 상태가 판단해요. 여기서는 미제공·실패만 기다려요.
+    if previous.get('status') in ('complete', 'withheld'):
+        return True
+    return now.timestamp() - previous.get('attempted_at', 0) >= opta_retry_seconds(item['source'], previous, now)
+
+
+def _provider_refresh(task, fixtures, *, apply, output_dir, on_result=None, should_retry=None, source_order=None):
     # 종료 상태만 저장됐어도 상세·실제 출전 명단은 늦을 수 있어 먼저 같은 저장 경로로 확인해요.
     payloads = live_fixtures_loader.refresh_completed_details(fixtures, apply=apply)
     completed = {p['id'] for p in payloads}
@@ -83,16 +132,18 @@ def _provider_refresh(task, fixtures, *, apply, output_dir):
     args = SimpleNamespace(apply=apply, dataset='both', competition_ids=[competition], season=season,
                            fixtures=selected, from_date=min(dates), to_date=max(dates),
                            refresh=any(f['has_opta'] for f in selected),
-                           refresh_details=False, retry_report=None, retry_statuses=None, limit=None,
+                           refresh_details=False, retry_report=None, retry_statuses=None, limit=len(selected),
                            output_dir=output_dir)
-    report = opta_shots_loader.sync_matches(args)
+    report = opta_shots_loader.sync_matches(args, on_result=on_result, should_retry=should_retry, source_order=source_order)
     if report['failed']:
         raise ValueError(f"Opta capture or identity validation failed: {report['failed']}")
     return {r['fixture_id'] for r in report['matches'] if r['status'] in ('stored', 'verified')}, set()
 
 
 def refresh(task: str, *, state_path: Path, apply: bool = False, now=None) -> dict:
-    now = now or datetime.now(timezone.utc)
+    fixed_now = now
+    clock = lambda: fixed_now or datetime.now(timezone.utc)
+    now = clock()
     stamp = now.timestamp()
     state = json.loads(state_path.read_text(encoding='utf-8')) if state_path.is_file() else {}
     fixtures = read_current_fixtures()
@@ -113,7 +164,15 @@ def refresh(task: str, *, state_path: Path, apply: bool = False, now=None) -> di
     if task in ('understat', 'opta'):
         supported = UNDERSTAT_LEAGUES if task == 'understat' else OPTA_COMPETITIONS
         groups = defaultdict(list)
-        for fixture in fixtures:
+        candidates = fixtures
+        if task == 'opta':
+            def priority(fixture):
+                # 새 경기부터 처리하고, 오래된 경기는 마지막 확인이 오래된 순서로 나눠 확인해요.
+                return (*opta_priority(fixture, state.get(str(fixture['fixture_id']), {}), now), fixture['fixture_id'])
+            candidates = sorted(fixtures, key=priority)
+            result['deferred'] = 0
+        selected_count = old_count = 0
+        for fixture in candidates:
             if fixture['competition_id'] not in supported or fixture['state_id'] not in COMPLETED_STATE_IDS:
                 continue
             key = str(fixture['fixture_id'])
@@ -126,29 +185,76 @@ def refresh(task: str, *, state_path: Path, apply: bool = False, now=None) -> di
                 # 최초 실행 때 이미 검증한 현재 시즌 자료를 다시 수집하지 않아요.
                 checkpoint(key, {'signature': signature, 'status': 'complete'})
                 continue
-            if same and stamp - previous.get('attempted_at', 0) < RETRY_SECONDS:
+            interval = opta_retry_seconds(fixture, previous, now) if task == 'opta' else RETRY_SECONDS
+            if same and stamp - previous.get('attempted_at', 0) < interval:
                 continue
+            if task == 'opta':
+                old = not opta_recent(fixture, now)
+                if selected_count >= OPTA_MATCH_LIMIT or (old and old_count >= OPTA_OLD_MATCH_LIMIT):
+                    result['deferred'] += 1
+                    continue
+                selected_count += 1
+                old_count += int(old)
             groups[fixture['season_id']].append(fixture)
+        source_old_count = 0
         for selected in groups.values():
+            corrected = any(state.get(str(f['fixture_id']), {}).get('signature') not in (
+                None, fingerprint(fixture_result(f))) for f in selected)
             for fixture in selected:
                 checkpoint(str(fixture['fixture_id']), {'signature': fingerprint(fixture_result(fixture)),
-                           'status': 'pending', 'attempted_at': stamp})
-            # 한 경기마다 전체 상태 파일을 다시 쓰지 않아요. 원격 수집 직전에 묶어서 저장해요.
+                           'status': 'pending', 'attempted_at': clock().timestamp()})
+            # 시작 기록은 묶어서 저장하고, Opta 처리 결과는 경기마다 바로 저장해요.
             flush()
             result['attempted'] += len(selected)
+            handled = set()
+
+            def record_opta(item):
+                checkpoint(opta_source_key(item), opta_state_entry(None, item))
+                fixture = next((f for f in selected if f['fixture_id'] == item.get('fixture_id')), None)
+                if fixture is not None:
+                    key = str(fixture['fixture_id'])
+                    checkpoint(key, opta_state_entry(fixture, item))
+                    handled.add(fixture['fixture_id'])
+                flush()
+
+            def source_order(item):
+                return (*opta_priority(item['source'], state.get(opta_source_key(item), {}), clock()),
+                        item['external_fixture_id'])
+
+            def should_retry(item):
+                nonlocal source_old_count
+                if not corrected and not opta_source_due(item, state, clock()):
+                    return False
+                if not opta_recent(item['source'], clock()):
+                    # DB 팀 ID가 없으면 같은 날짜의 원본 후보가 여럿이에요. 실제 수집도 1경기로 제한해요.
+                    if source_old_count >= OPTA_OLD_MATCH_LIMIT:
+                        return False
+                    source_old_count += 1
+                return True
+
             try:
+                options = {'on_result': record_opta, 'should_retry': should_retry,
+                           'source_order': source_order} if task == 'opta' else {}
                 complete, withheld = _provider_refresh(task, selected, apply=apply,
-                    output_dir=state_path.parent / 'opta' / now.strftime('%Y%m%dT%H%M%S%f'))
+                    output_dir=state_path.parent / 'opta' / now.strftime('%Y%m%dT%H%M%S%f') / str(selected[0]['season_id']),
+                    **options)
                 for fixture in selected:
+                    if fixture['fixture_id'] in handled:
+                        continue
                     key = str(fixture['fixture_id'])
                     status = 'complete' if fixture['fixture_id'] in complete else (
                         'withheld' if fixture['fixture_id'] in withheld else 'pending')
-                    checkpoint(key, {**state[key], 'status': status})
-                    result['completed'] += int(status in ('complete', 'withheld'))
-                    result['pending'] += int(status == 'pending')
+                    checkpoint(key, {**state[key], 'status': status, 'attempted_at': clock().timestamp()})
             except Exception as error:
-                result['pending'] += len(selected)
                 result['failures'].append({'season_id': selected[0]['season_id'], 'error': str(error)})
+                for fixture in selected:
+                    if fixture['fixture_id'] not in handled:
+                        key = str(fixture['fixture_id'])
+                        checkpoint(key, {**state[key], 'status': 'failed', 'attempted_at': clock().timestamp()})
+            for fixture in selected:
+                status = state[str(fixture['fixture_id'])]['status']
+                result['completed'] += int(status in ('complete', 'withheld'))
+                result['pending'] += int(status not in ('complete', 'withheld'))
         flush()
         return result
 
