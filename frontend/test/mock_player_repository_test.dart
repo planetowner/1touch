@@ -153,7 +153,7 @@ void main() {
                     playerId: detail.playerId, initial: detail),
                 child: CareerTab(playerId: detail.playerId)))));
     await tester.pumpAndSettle();
-    expect(find.text('Paris Saint-Germain'), findsOneWidget);
+    expect(find.text('PARIS SAINT-GERMAIN'), findsOneWidget);
     expect(find.text('PERSONAL'), findsNothing);
     final first = detail.career.first;
     final key = '${first.season}-${first.teamId}';
@@ -180,10 +180,12 @@ void main() {
                 child: CareerTab(playerId: detail.playerId)))));
     await tester.pumpAndSettle();
     final id = detail.career.first.competitions.first.id;
-    tester
-        .widget<DropdownButtonFormField<int>>(
-            find.byKey(const Key('career-competition-filter')))
-        .onChanged!(id);
+    final filter = find.byKey(const Key('career-competition-filter'));
+    await tester.ensureVisible(filter);
+    await tester.tap(filter);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(
+        ListTile, detail.career.first.competitions.first.name.toUpperCase()));
     await tester.pumpAndSettle();
     final filteredSeason = find.byKey(Key(
         'career-season-${detail.career.first.season}-${detail.career.first.teamId}'));

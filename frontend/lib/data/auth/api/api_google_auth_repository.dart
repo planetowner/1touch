@@ -1,22 +1,24 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/api/api_google_auth_response.dart';
-import 'package:onetouch/data/auth/auth_account_status.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/email_code_challenge.dart';
+import 'package:onetouch/data/auth/login_provider.dart';
 
-/// Exchanges a Google SDK ID token for a 1Touch bearer access token.
-class ApiGoogleAuthRepository implements AuthRepository {
-  ApiGoogleAuthRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri);
+/// 소셜·비밀번호 인증과 이메일 인증번호 요청을 같은 API로 처리해요.
+class ApiGoogleAuthRepository implements AuthRepository, LogoutAuthRepository {
+  ApiGoogleAuthRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
+  final ApiClient _api;
+
+  @override
+  Future<String> signInWithSocial({
+    required LoginProvider provider,
+    required Map<String, String> credentials,
+  }) =>
+      _postForAccessToken('auth/${provider.name}', credentials);
 
   @override
   Future<String> signInWithGoogle({required String idToken}) async {
@@ -28,7 +30,6 @@ class ApiGoogleAuthRepository implements AuthRepository {
     return _postForAccessToken(
       'auth/google',
       {'id_token': normalizedIdToken},
-      failureLabel: 'Google authentication',
     );
   }
 
@@ -48,29 +49,28 @@ class ApiGoogleAuthRepository implements AuthRepository {
     return _postForAccessToken(
       'auth/login',
       {'username': normalizedUsername, 'password': password},
-      failureLabel: 'Password authentication',
     );
   }
 
   @override
-  Future<EmailCodeChallenge> requestSignUpEmailCode({
+  Future<EmailCodeChallenge> requestEmailCode({
     required String email,
+    EmailCodePurpose purpose = EmailCodePurpose.signup,
   }) async {
     final normalizedEmail = email.trim();
     if (normalizedEmail.isEmpty) {
       throw ArgumentError.value(email, 'email', 'must not be empty');
     }
 
-    final uri = _apiBaseUri.resolve('auth/email/code');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('auth/email/code');
+    final response = await _api.post(
       uri,
       headers: const {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
         'email': normalizedEmail,
-        'purpose': 'signup',
+        'purpose': purpose.apiValue,
       }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -83,13 +83,34 @@ class ApiGoogleAuthRepository implements AuthRepository {
       );
     }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the email-code response to be a JSON object.',
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
+    return EmailCodeChallenge.fromJson(decoded);
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String challengeId,
+    required String code,
+    required String password,
+  }) async {
+    final response = await _api.post(
+      _api.baseUri.resolve('auth/email/reset-password'),
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'challenge_id': challengeId,
+        'code': code,
+        'password': password,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthRequestException(
+        statusCode: response.statusCode,
+        message: _responseDetail(response.body,
+            fallback: 'Unable to reset your password. Please try again.'),
       );
     }
-    return EmailCodeChallenge.fromJson(decoded);
+    _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
   }
 
   @override
@@ -101,11 +122,10 @@ class ApiGoogleAuthRepository implements AuthRepository {
     required String firstName,
     required String lastName,
   }) async {
-    final uri = _apiBaseUri.resolve('auth/email/register');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('auth/email/register');
+    final response = await _api.post(
       uri,
       headers: const {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
@@ -127,88 +147,20 @@ class ApiGoogleAuthRepository implements AuthRepository {
       );
     }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the email registration response to be a JSON object.',
-      );
-    }
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
   }
 
   @override
-  Future<AuthAccountStatus> loadAccountStatus({
-    required String accessToken,
-  }) async {
-    final uri = _apiBaseUri.resolve('users/me');
-    final response = await _client.get(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${accessToken.trim()}',
-      },
-    );
+  Future<void> logout() async {
+    final response = await _api.post(_api.baseUri.resolve('auth/logout'));
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw AuthRequestException(
         statusCode: response.statusCode,
         message: _responseDetail(
           response.body,
-          fallback: 'Unable to restore the login session.',
-        ),
-      );
-    }
-    return _accountStatus(response.body);
-  }
-
-  @override
-  Future<AuthAccountStatus> completeSocialProfile({
-    required String accessToken,
-    required String username,
-    required String firstName,
-    required String lastName,
-  }) async {
-    final uri = _apiBaseUri.resolve('users/me/profile');
-    final response = await _client.put(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${accessToken.trim()}',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'username': username.trim(),
-        'first_name': firstName.trim(),
-        'last_name': lastName.trim(),
-      }),
-    );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(
-          response.body,
-          fallback: 'Unable to complete your profile.',
-        ),
-      );
-    }
-    return _accountStatus(response.body);
-  }
-
-  @override
-  Future<void> logout({required String accessToken}) async {
-    final uri = _apiBaseUri.resolve('auth/logout');
-    final response = await _client.post(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${accessToken.trim()}',
-      },
-    );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw AuthRequestException(
-        statusCode: response.statusCode,
-        message: _responseDetail(
-          response.body,
-          fallback: 'Unable to close the server session.',
+          fallback: 'Unable to log out.',
         ),
       );
     }
@@ -216,58 +168,20 @@ class ApiGoogleAuthRepository implements AuthRepository {
 
   Future<String> _postForAccessToken(
     String path,
-    Map<String, String> body, {
-    required String failureLabel,
-  }) async {
-    final uri = _apiBaseUri.resolve(path);
-    final response = await _client.post(
+    Map<String, String> body,
+  ) async {
+    final uri = _api.baseUri.resolve(path);
+    final response = await _api.post(
       uri,
       headers: const {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(body),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw http.ClientException(
-        '$failureLabel failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the Google authentication response to be a JSON object.',
-      );
-    }
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: null);
     return ApiGoogleAuthResponse.fromJson(decoded).accessToken;
-  }
-
-  static AuthAccountStatus _accountStatus(String body) {
-    final decoded = jsonDecode(body);
-    if (decoded is! Map<String, dynamic> ||
-        decoded['onboarding_complete'] is! bool) {
-      throw const FormatException(
-        'Expected users/me to include onboarding_complete.',
-      );
-    }
-    bool completedField(String key) {
-      final value = decoded[key];
-      return value is String && value.trim().isNotEmpty;
-    }
-
-    return AuthAccountStatus(
-      profileComplete: completedField('username') &&
-          completedField('first_name') &&
-          completedField('last_name'),
-      onboardingComplete: decoded['onboarding_complete'] as bool,
-    );
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 
   static String _responseDetail(

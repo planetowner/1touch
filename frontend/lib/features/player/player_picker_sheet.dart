@@ -3,6 +3,7 @@ import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player_detail.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerPickerSheet extends StatefulWidget {
   const PlayerPickerSheet({super.key, this.repository, this.excludedId});
@@ -50,7 +51,7 @@ class PlayerPickerSheetState extends State<PlayerPickerSheet> {
                                   controller: _query,
                                   onSubmitted: (_) => setState(_search),
                                   decoration: InputDecoration(
-                                      hintText: 'Search players',
+                                      hintText: tr(context, 'Search players'),
                                       suffixIcon: IconButton(
                                           onPressed: () => setState(_search),
                                           icon: const Icon(Icons.search))))),
@@ -71,14 +72,15 @@ class PlayerPickerSheetState extends State<PlayerPickerSheet> {
                                 return Center(
                                     child: TextButton(
                                         onPressed: () => setState(_search),
-                                        child: const Text('Retry')));
+                                        child: Text(tr(context, 'Retry'))));
                               }
                               final players = snapshot.requireData
                                   .where((p) => p.id != widget.excludedId)
                                   .toList();
                               if (players.isEmpty) {
-                                return const Center(
-                                    child: Text('No players found'));
+                                return Center(
+                                    child:
+                                        Text(tr(context, 'No players found')));
                               }
                               return ListView.builder(
                                   itemCount: players.length,

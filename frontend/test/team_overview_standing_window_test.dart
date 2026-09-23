@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
@@ -6,6 +7,7 @@ import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/standing.dart' as standing_model;
 
 void main() {
+  setUpAppCatalog();
   Widget subject(int teamId) {
     return MaterialApp(
       home: Scaffold(

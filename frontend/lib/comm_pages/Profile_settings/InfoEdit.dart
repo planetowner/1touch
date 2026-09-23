@@ -4,13 +4,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/features/profile_fields.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as current_user_provider;
 import 'package:onetouch/data/profile/profile_avatar_repository.dart';
 import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
     as avatar_provider;
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 typedef AvatarImagePicker = Future<XFile?> Function();
 
@@ -35,8 +36,6 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  static const _currentUserId = 1001;
-
   late final TextEditingController nameController;
   late final TextEditingController usernameController;
   late final TextEditingController emailController;
@@ -56,16 +55,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final user = mockUserById(_currentUserId);
     final profile = widget.profile;
     nameController = TextEditingController(
-      text: profile?.displayName ?? user.displayName,
+      text: profile?.displayName ?? '',
     );
     usernameController = TextEditingController(
-      text: profile?.username ?? user.username,
+      text: profile?.username ?? '',
     );
     emailController = TextEditingController(
-      text: profile?.email ?? user.email,
+      text: profile?.email ?? '',
     );
     passwordController = TextEditingController(text: '••••••••');
   }
@@ -107,7 +105,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onPressed: () => Navigator.of(context).pop(
                 _AvatarAction.choosePhoto,
               ),
-              child: const Text('Choose from Photos'),
+              child: Text(tr(context, 'Choose from Photos')),
             ),
             if (widget.profile?.avatarUri != null)
               CupertinoActionSheetAction(
@@ -116,14 +114,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onPressed: () => Navigator.of(context).pop(
                   _AvatarAction.removePhoto,
                 ),
-                child: const Text('Remove Photo'),
+                child: Text(tr(context, 'Remove Photo')),
               ),
           ],
           cancelButton: CupertinoActionSheetAction(
             key: const ValueKey('profile-avatar-cancel'),
             isDefaultAction: true,
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(tr(context, 'Cancel')),
           ),
         ),
       );
@@ -141,7 +139,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ListTile(
               key: const ValueKey('profile-avatar-choose-photo'),
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from Gallery'),
+              title: Text(tr(context, 'Choose from Gallery')),
               onTap: () => Navigator.of(context).pop(
                 _AvatarAction.choosePhoto,
               ),
@@ -150,7 +148,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ListTile(
                 key: const ValueKey('profile-avatar-remove-photo'),
                 leading: const Icon(Icons.delete_outline),
-                title: const Text('Remove Photo'),
+                title: Text(tr(context, 'Remove Photo')),
                 onTap: () => Navigator.of(context).pop(
                   _AvatarAction.removePhoto,
                 ),
@@ -179,8 +177,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
       setState(() => _isAvatarSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to update profile photo. Please try again.'),
+        SnackBar(
+          content: Text(
+              tr(context, 'Unable to update profile photo. Please try again.')),
         ),
       );
     }
@@ -198,8 +197,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
       setState(() => _isAvatarSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to remove profile photo. Please try again.'),
+        SnackBar(
+          content: Text(
+              tr(context, 'Unable to remove profile photo. Please try again.')),
         ),
       );
     }
@@ -321,33 +321,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 48),
 
               Text(
-                "LOGIN",
+                tr(context, "LOGIN"),
                 style: Body2_b.style,
               ),
 
               const SizedBox(height: 16),
 
-              // Form Fields
               _buildTextField(
-                label: "Name",
-                controller: nameController,
-                fieldKey: const ValueKey('profile-real-name-field'),
+                  label: tr(context, 'Name'),
+                  controller: nameController,
+                  fieldKey: const ValueKey('profile-real-name-field'),
+                  readOnly: true),
+              const SizedBox(height: 24),
+              ProfileFields(
+                showNameFields: false,
+                username: widget.profile?.username,
+                firstName: widget.profile?.firstName,
+                lastName: widget.profile?.lastName,
+                onSaved: () => Navigator.of(context).pop(true),
+              ),
+              const SizedBox(height: 24),
+              _buildTextField(
+                label: tr(context, "Email"),
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
                 readOnly: true,
               ),
               const SizedBox(height: 24),
               _buildTextField(
-                label: "Username",
-                controller: usernameController,
-              ),
-              const SizedBox(height: 24),
-              _buildTextField(
-                label: "Email",
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 24),
-              _buildTextField(
-                label: "Password",
+                label: tr(context, "Password"),
                 controller: passwordController,
                 isPassword: true,
                 isObscure: !isPasswordVisible,
@@ -361,45 +363,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 48),
 
               // Social Accounts Section
-              Text("SOCIAL ACCOUNTS", style: Body2_b.style),
+              Text(tr(context, "SOCIAL ACCOUNTS"), style: Body2_b.style),
               const SizedBox(height: 16),
 
               // Updated to use SVGs
               _buildSocialRow(
                   iconPath: 'assets/google.svg',
                   name: 'Google',
-                  status: 'Connected'),
+                  status: tr(context, 'Connected')),
               _divider(),
               _buildSocialRow(
                   iconPath: 'assets/apple.svg',
                   name: 'Apple',
-                  status: 'Not Connected'),
+                  status: tr(context, 'Not Connected')),
               _divider(),
 
               const SizedBox(height: 48),
-
-              // Update Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle update logic
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.onSurface,
-                    foregroundColor: colors.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    "UPDATE INFO",
-                    style: Body2_b.style.copyWith(color: colors.onPrimary),
-                  ),
-                ),
-              ),
 
               const SizedBox(height: 24),
 
@@ -410,7 +389,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Handle delete logic
                   },
                   child: Text(
-                    "DELETE ACCOUNT",
+                    tr(context, "DELETE ACCOUNT"),
                     style: Body2_b.style.copyWith(
                       decoration: TextDecoration.underline,
                       decorationColor: colors.onSurface,
@@ -515,7 +494,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               children: [
                 Text(name, style: Body1.style),
                 const SizedBox(height: 4),
-                Text(status, style: Eyebrow.style),
+                Text(tr(context, status), style: Eyebrow.style),
               ],
             ),
           ),

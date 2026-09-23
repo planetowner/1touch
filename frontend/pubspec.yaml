@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   go_router: ^10.1.2
   flutter_svg: ^2.0.9
   fl_chart: ^0.70.0
@@ -43,7 +45,9 @@ dependencies:
   lottie: ^3.5.1
   image_picker: ^1.1.2
   google_sign_in: ^7.2.0
-  flutter_secure_storage: ^9.2.4
+  kakao_flutter_sdk_user: ^2.0.1
+  sign_in_with_apple: ^8.0.0
+  flutter_line_sdk: ^2.7.2
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -53,6 +57,7 @@ dependencies:
   intl: any
   dotted_border: ^2.1.0
   shared_preferences: ^2.5.5
+  flutter_secure_storage: ^9.2.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -72,6 +77,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - assets/auth/
     - assets/highlight1.png
     - assets/app_logo.svg
     - assets/messi.png
@@ -106,6 +112,12 @@ flutter:
   uses-material-design: true
 
   fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700
     - family: Archivo
       fonts:
         - asset: assets/fonts/Archivo-Variable.ttf

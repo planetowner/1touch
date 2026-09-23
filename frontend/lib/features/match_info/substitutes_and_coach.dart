@@ -23,7 +23,7 @@ class SubstitutesAndCoach extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (hasSubstitutes) ...[
-          const Text("SUBSTITUTES", style: Body2_b.style),
+          Text(tr(context, "SUBSTITUTES"), style: Body2_b.style),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +46,7 @@ class SubstitutesAndCoach extends StatelessWidget {
           ),
           const SizedBox(height: 24),
         ],
-        const Text("COACH", style: Body2_b.style),
+        Text(tr(context, "COACH"), style: Body2_b.style),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

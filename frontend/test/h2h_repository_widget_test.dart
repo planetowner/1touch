@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('uses the participating favorite team as the H2H perspective',
       (tester) async {
     await _setSize(tester, const Size(430, 932));

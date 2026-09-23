@@ -9,6 +9,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/models/following_player.dart';
 import 'package:onetouch/models/player_detail.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 typedef PlayerRankingFilterSelection = ({int? league, String? position});
 
@@ -39,11 +40,11 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final divider = isDark ? AppPalette.lightGrey : appColors.divider;
     final positions = <(String?, String)>[
-      (null, 'All positions'),
-      ('GK', 'Goalkeeper'),
-      ('DF', 'Defender'),
-      ('MF', 'Midfielder'),
-      ('FW', 'Forward'),
+      (null, tr(context, 'All positions')),
+      ('GK', tr(context, 'Goalkeeper')),
+      ('DF', tr(context, 'Defender')),
+      ('MF', tr(context, 'Midfielder')),
+      ('FW', tr(context, 'Forward')),
     ];
     return DraggableScrollableSheet(
       initialChildSize: .92,
@@ -60,12 +61,13 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
             children: [
               _SheetTitle(
-                  title: 'Filter', onClose: () => Navigator.pop(context)),
+                  title: tr(context, 'Filter'),
+                  onClose: () => Navigator.pop(context)),
               const SizedBox(height: 48),
-              const Text('LEAGUE', style: Body2_b.style),
+              Text(tr(context, 'LEAGUE'), style: Body2_b.style),
               const SizedBox(height: 16),
               _FilterChoice(
-                  label: 'All leagues',
+                  label: tr(context, 'All leagues'),
                   selected: _league == null,
                   divider: divider,
                   onTap: () => setState(() => _league = null)),
@@ -76,12 +78,12 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
                     divider: divider,
                     onTap: () => setState(() => _league = league.id)),
               const SizedBox(height: 48),
-              const Text('SEASON', style: Body2_b.style),
+              Text(tr(context, 'SEASON'), style: Body2_b.style),
               const SizedBox(height: 16),
               _FixedSeasonRow(
                   season: widget.season ?? 'Current season', divider: divider),
               const SizedBox(height: 48),
-              const Text('POSITION', style: Body2_b.style),
+              Text(tr(context, 'POSITION'), style: Body2_b.style),
               const SizedBox(height: 16),
               for (final position in positions)
                 _FilterChoice(
@@ -106,7 +108,7 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
               ),
-              child: Text('UPDATE FILTER',
+              child: Text(tr(context, 'UPDATE FILTER'),
                   style: Body2_b.style.copyWith(color: colors.onPrimary)),
             ),
           ),
@@ -130,7 +132,7 @@ class _FilterChoice extends StatelessWidget {
   Widget build(BuildContext context) => Column(children: [
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(label, style: Body1.style),
+          title: Text(tr(context, label), style: Body1.style),
           trailing: selected
               ? Icon(Icons.check,
                   color: Theme.of(context).colorScheme.onSurface)
@@ -264,7 +266,7 @@ class _FollowingPlayersEditorSheetState
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(children: [
             _SheetTitle(
-                title: 'Following Players',
+                title: tr(context, 'Following Players'),
                 onClose: () => Navigator.pop(context)),
             const SizedBox(height: 12),
             Container(
@@ -279,7 +281,7 @@ class _FollowingPlayersEditorSheetState
                 decoration: InputDecoration(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  hintText: 'Search players to add!',
+                  hintText: tr(context, 'Search players to add!'),
                   hintStyle:
                       Body1.style.copyWith(color: appColors.mutedForeground),
                   border: InputBorder.none,
@@ -319,7 +321,7 @@ class _FollowingPlayersEditorSheetState
                             ? Colors.grey.shade400
                             : colors.onPrimary),
                   ),
-                  child: const Text('UPDATE',
+                  child: Text(tr(context, 'UPDATE'),
                       style: TextStyle(fontWeight: FontWeight.w700)),
                 ),
               ),
@@ -404,7 +406,7 @@ class _FollowingPlayerRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(children: [
                 IconButton(
-                  tooltip: 'Remove player',
+                  tooltip: tr(context, 'Remove player'),
                   onPressed: onRemove,
                   icon: const Icon(Icons.remove_circle,
                       color: Color(0xFFFF5C5C), size: 20),
@@ -565,7 +567,8 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: Column(children: [
             _SheetTitle(
-                title: '1Touch Ranking', onClose: () => Navigator.pop(context)),
+                title: tr(context, '1Touch Ranking'),
+                onClose: () => Navigator.pop(context)),
             const SizedBox(height: 24),
             Container(
               decoration: BoxDecoration(
@@ -578,7 +581,7 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
                 decoration: InputDecoration(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  hintText: 'Look for players',
+                  hintText: tr(context, 'Look for players'),
                   hintStyle:
                       Body1.style.copyWith(color: appColors.mutedForeground),
                   border: InputBorder.none,
@@ -668,7 +671,7 @@ class _SheetTitle extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Center(
-              child: Text(title,
+              child: Text(tr(context, title),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Heading5.style)),

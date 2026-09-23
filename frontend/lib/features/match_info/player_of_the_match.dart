@@ -19,7 +19,7 @@ class PlayerOfTheMatch extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("PLAYER OF THE MATCH", style: Body2_b.style),
+        Text(tr(context, "PLAYER OF THE MATCH"), style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           key: const ValueKey('match-player-of-the-match-card'),

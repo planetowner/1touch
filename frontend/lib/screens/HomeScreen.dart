@@ -7,7 +7,6 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
-import 'package:onetouch/data/home/mock/home_content_catalog.dart';
 import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/data/home/news_repository_provider.dart'
     as news_provider;
@@ -21,6 +20,7 @@ import '../models/home_content_item.dart';
 import '../models/home_data.dart';
 import '../models/team_overview.dart';
 import 'package:onetouch/features/index.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -147,22 +147,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final homeData = _homeData;
     if (homeData == null || homeData.favoriteTeam.teamId == teamId) return;
 
-    await _followingTeamsRepository.replaceFollowing(
+    final savedTeams = await _followingTeamsRepository.replaceFollowing(
       teamIds: homeData.followingTeams.map((team) => team.teamId),
       favoriteTeamId: teamId,
     );
 
-    // The backend is authoritative. Notify the rest of the app only after it
-    // accepts the favorite change; local persistence remains best-effort until
-    // authenticated session restoration replaces this compatibility store.
-    unawaited(
-      currentUserPreferences.updateTeamSelection([
-        teamId,
-        ...homeData.followingTeams
-            .map((team) => team.teamId)
-            .where((followedTeamId) => followedTeamId != teamId),
-      ]),
-    );
+    currentUserPreferences.applyServerSelection(UserTeamPreferences(
+      favoriteTeamId: teamId,
+      followedTeamIds: savedTeams.map((team) => team.teamId).toList(),
+    ));
   }
 
   void _loadCalendarMonth(DateTime month) {
@@ -229,12 +222,12 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Unable to load Home.', style: Body1.style),
+              Text(tr(context, 'Unable to load Home.'), style: Body1.style),
               const SizedBox(height: 16),
               ElevatedButton(
                 key: const ValueKey('home-retry-button'),
                 onPressed: () => _loadHome(refreshContent: true),
-                child: const Text('RETRY'),
+                child: Text(tr(context, 'RETRY')),
               ),
             ],
           ),
@@ -360,12 +353,12 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 48),
-                  const SectionHeader(title: "FAVORITE TEAM"),
+                  SectionHeader(title: tr(context, "FAVORITE TEAM")),
                   FavoriteTeamCard(team: favoriteTeam),
                   const SizedBox(height: 32),
                   Row(
                     children: [
-                      const SectionHeader(title: "CALENDAR"),
+                      SectionHeader(title: tr(context, "CALENDAR")),
                       const Spacer(),
                       Padding(
                         padding: const EdgeInsets.only(right: 24),
@@ -386,20 +379,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     onMonthChanged: _loadCalendarMonth,
                   ),
                   const SizedBox(height: 32),
-                  const SectionHeader(title: "HIGHLIGHTS"),
+                  SectionHeader(title: tr(context, "HIGHLIGHTS")),
                   MyHighlights(
-                    highlights: homeData.highlights.isEmpty
-                        ? homeContentFallbackItems
-                        : homeData.highlights,
-                    fallbacks: homeContentFallbackItems,
+                    highlights: homeData.highlights,
+                    fallbacks: const [],
                   ),
                   const SizedBox(height: 32),
-                  const SectionHeader(title: "NEWS"),
+                  SectionHeader(title: tr(context, "NEWS")),
                   MyNews(
                     news: _news,
                     isLoading: _isNewsLoading,
                     hasError: _hasNewsError,
-                    isKorean: _newsLanguage.toLowerCase().startsWith('ko'),
                     onRetry: () => _loadNews(homeData.favoriteTeam.teamId),
                   ),
                   Padding(
@@ -417,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          "Ad",
+                          tr(context, "Ad"),
                           style: Heading4.style.copyWith(
                             color: AppPalette.white,
                           ),
@@ -444,7 +434,7 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Text(title, style: Body2_b.style),
+      child: Text(tr(context, title), style: Body2_b.style),
     );
   }
 }

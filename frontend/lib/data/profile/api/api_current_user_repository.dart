@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/profile/api/api_current_user_mapper.dart';
 import 'package:onetouch/data/profile/api/api_current_user_response.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
@@ -8,49 +8,37 @@ import 'package:onetouch/models/current_user_profile.dart';
 
 /// HTTP implementation of the verified `GET /v1/users/me` contract.
 class ApiCurrentUserRepository implements CurrentUserRepository {
-  ApiCurrentUserRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiCurrentUserRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<CurrentUserProfile> load() async {
-    final uri = _apiBaseUri.resolve('users/me');
-    final response = await _client.get(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
-    );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Current-user request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the current-user response to be a JSON object.',
-      );
-    }
-    return currentUserProfileFromApiResponse(
-      ApiCurrentUserResponse.fromJson(decoded),
-      apiBaseUri: _apiBaseUri,
-    );
+    return currentUserProfileFromApiResponse(await loadAccount(),
+        apiBaseUri: _api.baseUri);
   }
 
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
+  Future<ApiCurrentUserResponse> loadAccount() async {
+    final uri = _api.baseUri.resolve('users/me');
+    final response = await _api.get(
+      uri,
+    );
+
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    return ApiCurrentUserResponse.fromJson(decoded);
+  }
+
+  Future<void> updateProfile(
+      {required String username,
+      required String firstName,
+      required String lastName}) async {
+    final response = await _api.put(_api.baseUri.resolve('users/me/profile'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'first_name': firstName,
+          'last_name': lastName
+        }));
+    _api.decodeJson<Map<String, dynamic>>(response);
   }
 }

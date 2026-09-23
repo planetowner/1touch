@@ -1,19 +1,13 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/post_attachments/api/api_post_attachment_response.dart';
 import 'package:onetouch/data/post_attachments/post_attachment_repository.dart';
 import 'package:onetouch/models/uploaded_post_attachment.dart';
 
 class ApiPostAttachmentRepository implements PostAttachmentRepository {
-  ApiPostAttachmentRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiPostAttachmentRepository({required ApiClient api}) : _api = api;
 
   static const _allowedContentTypes = {
     'image/jpeg',
@@ -24,9 +18,7 @@ class ApiPostAttachmentRepository implements PostAttachmentRepository {
     'video/webm',
   };
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<UploadedPostAttachment> upload({
@@ -41,12 +33,8 @@ class ApiPostAttachmentRepository implements PostAttachmentRepository {
       throw ArgumentError.value(filename, 'filename', 'must not be empty');
     }
 
-    final uri = _apiBaseUri.resolve('attachments/upload');
+    final uri = _api.baseUri.resolve('attachments/upload');
     final request = http.MultipartRequest('POST', uri)
-      ..headers.addAll({
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      })
       ..files.add(
         http.MultipartFile.fromBytes(
           'file',
@@ -55,21 +43,11 @@ class ApiPostAttachmentRepository implements PostAttachmentRepository {
         ),
       );
     final response = await http.Response.fromStream(
-      await _client.send(request),
+      await _api.send(request),
     );
-    if (response.statusCode != 201) {
-      throw http.ClientException(
-        'Post attachment upload failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the attachment-upload response to be a JSON object.',
-      );
-    }
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: 201);
     final apiResponse = ApiPostAttachmentUploadResponse.fromJson(decoded);
     final contentType = apiResponse.contentType.trim().toLowerCase();
     if (apiResponse.attachmentId < 1 ||
@@ -97,32 +75,16 @@ class ApiPostAttachmentRepository implements PostAttachmentRepository {
       );
     }
 
-    final uri = _apiBaseUri.resolve('attachments/$attachmentId');
-    final response = await _client.delete(
+    final uri = _api.baseUri.resolve('attachments/$attachmentId');
+    final response = await _api.delete(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Post attachment deletion failed with status '
-        '${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic> || decoded['ok'] != true) {
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] != true) {
       throw const FormatException(
         'Expected ok=true in the attachment-deletion response.',
       );
     }
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

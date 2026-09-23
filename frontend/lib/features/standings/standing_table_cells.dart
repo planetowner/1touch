@@ -10,7 +10,7 @@ Widget _buildHeaderCell(
     padding: const EdgeInsets.only(right: 8),
     alignment: Alignment.center,
     color: AppColors.of(context).subtleBackground,
-    child: Text(title, style: Body2.style),
+    child: Text(tr(context, title), style: Body2.style),
   );
 }
 

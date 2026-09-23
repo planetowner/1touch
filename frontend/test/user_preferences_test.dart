@@ -82,6 +82,18 @@ void main() {
     expect(repository.saved?.followedTeamIds, [8]);
   });
 
+  test('failed save keeps the last accepted selection and surfaces the error',
+      () async {
+    final repository = _FakeUserPreferencesRepository()..failSave = true;
+    final preferences = CurrentUserPreferences(
+        repository: repository,
+        teamRepository: teamRepository,
+        fallback: fallback);
+    await expectLater(preferences.setFavoriteTeam(8), throwsStateError);
+    expect(preferences.favoriteTeamId.value, 83);
+    expect(preferences.followedTeamIds.value, [83, 503]);
+  });
+
   test('local repository persists preferences between instances', () async {
     SharedPreferences.setMockInitialValues({});
     final writer = LocalUserPreferencesRepository();
@@ -102,6 +114,7 @@ void main() {
 class _FakeUserPreferencesRepository implements UserPreferencesRepository {
   _FakeUserPreferencesRepository({this.stored, this.onLoad});
 
+  bool failSave = false;
   UserTeamPreferences? stored;
   UserTeamPreferences? saved;
   final void Function()? onLoad;
@@ -114,6 +127,7 @@ class _FakeUserPreferencesRepository implements UserPreferencesRepository {
 
   @override
   Future<void> save(UserTeamPreferences preferences) async {
+    if (failSave) throw StateError('Server rejected selection');
     saved = preferences;
   }
 }

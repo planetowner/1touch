@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,7 +6,7 @@ import 'package:onetouch/comm_pages/Profile_settings/About.dart';
 import 'package:onetouch/comm_pages/Profile_settings/Contact.dart';
 import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
 import 'package:onetouch/comm_pages/Profile_settings/Notification.dart';
-import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
+import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/comm_pages/Profile_settings/Preference.dart';
 import 'package:onetouch/comm_pages/Profile_settings/PreferenceDetails.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
@@ -21,6 +22,7 @@ Color? _effectiveTextColor(WidgetTester tester, Finder finder) {
 }
 
 void main() {
+  setUpAppCatalog();
   final pages = <({String name, String title, Widget page})>[
     (
       name: 'personal info',
@@ -111,7 +113,7 @@ void main() {
     expect(nameField.readOnly, isTrue);
     expect(nameField.enableInteractiveSelection, isFalse);
     expect(nameField.showCursor, isFalse);
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(2));
   });
 
   for (final testCase in <({String title, Widget page})>[
@@ -207,8 +209,8 @@ void main() {
     ),
     (
       name: 'following players',
-      key: const ValueKey('profile-player-edit-sheet'),
-      sheet: const EditFollowingPlayersSheet(),
+      key: const ValueKey('following-players-sheet'),
+      sheet: const FollowingPlayersEditorSheet(players: []),
     ),
   ]) {
     for (final themeCase in <({
@@ -245,12 +247,16 @@ void main() {
         );
         await tester.pump();
 
-        final sheet = tester.widget<Container>(find.byKey(testCase.key));
+        final sheet = tester.widget(find.byKey(testCase.key));
         final searchKey = testCase.name == 'following teams'
             ? const ValueKey('profile-team-edit-search')
-            : const ValueKey('profile-player-edit-search');
+            : const ValueKey('following-players-search');
         final search = tester.widget<Container>(find.byKey(searchKey));
-        expect((sheet.decoration as BoxDecoration).color, themeCase.sheet);
+        expect(
+            sheet is Material
+                ? sheet.color
+                : ((sheet as Container).decoration as BoxDecoration).color,
+            themeCase.sheet);
         expect((search.decoration as BoxDecoration).color, themeCase.search);
         expect(tester.takeException(), isNull);
       });

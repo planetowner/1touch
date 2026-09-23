@@ -4,6 +4,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class CommunitySliverAppBar extends StatelessWidget {
   const CommunitySliverAppBar({
@@ -151,7 +152,7 @@ class CommunityTeamHeader extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'LIVE',
+                            tr(context, 'LIVE'),
                             style: Body2_b.style.copyWith(
                               color:
                                   isLight ? AppPalette.black : AppPalette.white,
@@ -163,7 +164,7 @@ class CommunityTeamHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _formatFollowers(followerCount),
+                    _formatFollowers(context, followerCount),
                     key: const ValueKey('community-follower-count'),
                     style: Body2.style.copyWith(color: foreground),
                   ),
@@ -211,11 +212,11 @@ class CommunityPostTabHeader extends StatelessWidget {
           indicator: UnderlineTabIndicator(
             borderSide: BorderSide(color: colors.onSurface, width: 2),
           ),
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'General'),
-            Tab(text: 'Analysis'),
-            Tab(text: 'News & Insights'),
+          tabs: [
+            Tab(text: tr(context, 'All')),
+            Tab(text: tr(context, 'General')),
+            Tab(text: tr(context, 'Analysis')),
+            Tab(text: tr(context, 'News & Insights')),
           ],
           tabAlignment: TabAlignment.start,
         ),
@@ -224,15 +225,14 @@ class CommunityPostTabHeader extends StatelessWidget {
   }
 }
 
-String _formatFollowers(int? count) {
-  if (count == null) return 'Followers';
-  if (count >= 1000000) {
-    return '${(count / 1000000).toStringAsFixed(1)}M Followers';
-  }
-  if (count >= 1000) {
-    return '${(count / 1000).toStringAsFixed(1)}K Followers';
-  }
-  return '$count Followers';
+String _formatFollowers(BuildContext context, int? count) {
+  if (count == null) return tr(context, 'Followers');
+  final label = count >= 1000000
+      ? '${(count / 1000000).toStringAsFixed(1)}M'
+      : count >= 1000
+          ? '${(count / 1000).toStringAsFixed(1)}K'
+          : '$count';
+  return tr(context, '{count} Followers', {'count': label});
 }
 
 class _CommunityTabBarDelegate extends SliverPersistentHeaderDelegate {

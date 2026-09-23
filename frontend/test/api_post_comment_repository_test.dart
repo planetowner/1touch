@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/post_comments/api/api_post_comment_repository.dart';
 import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/models/post_comment.dart';
@@ -10,32 +11,34 @@ import 'package:onetouch/models/post_comment.dart';
 void main() {
   test('loads comments in backend cursor order with Bearer headers', () async {
     final repository = ApiPostCommentRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/posts/42/comments');
-        expect(request.url.queryParameters, {
-          'after_id': '10',
-          'limit': '25',
-        });
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(
-          jsonEncode({
-            'items': [
-              _commentJson(commentId: 11),
-              _commentJson(
-                commentId: 12,
-                replyToId: 11,
-                avatarUrl: null,
-                liked: 0,
-              ),
-            ],
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/posts/42/comments');
+            expect(request.url.queryParameters, {
+              'after_id': '10',
+              'limit': '25',
+            });
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(
+              jsonEncode({
+                'items': [
+                  _commentJson(commentId: 11),
+                  _commentJson(
+                    commentId: 12,
+                    replyToId: 11,
+                    avatarUrl: null,
+                    liked: 0,
+                  ),
+                ],
+              }),
+              200,
+            );
           }),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final comments = await repository.loadForPost(
@@ -59,28 +62,29 @@ void main() {
 
   test('preserves masked comment state and nullable author fields', () async {
     final repository = ApiPostCommentRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({
-            'items': [
-              _commentJson(
-                commentId: 1,
-                userId: null,
-                username: null,
-                avatarUrl: null,
-                body: '',
-                state: 'blocked',
-                authorDeleted: false,
-                likeCount: 0,
-                liked: false,
-              ),
-            ],
-          }),
-          200,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode({
+                'items': [
+                  _commentJson(
+                    commentId: 1,
+                    userId: null,
+                    username: null,
+                    avatarUrl: null,
+                    body: '',
+                    state: 'blocked',
+                    authorDeleted: false,
+                    likeCount: 0,
+                    liked: false,
+                  ),
+                ],
+              }),
+              200,
+            ),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     final comment =
@@ -96,21 +100,23 @@ void main() {
 
   test('creates a top-level comment with Bearer authentication', () async {
     final repository = ApiPostCommentRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/posts/42/comments');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Content-Type'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        expect(jsonDecode(request.body), {
-          'body': 'A real comment',
-          'reply_to_id': null,
-        });
-        return http.Response(jsonEncode({'comment_id': 71}), 201);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/posts/42/comments');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Content-Type'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            expect(jsonDecode(request.body), {
+              'body': 'A real comment',
+              'reply_to_id': null,
+            });
+            return http.Response(jsonEncode({'comment_id': 71}), 201);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     expect(
@@ -125,12 +131,13 @@ void main() {
   test('rejects invalid comment creation before requesting', () async {
     var requests = 0;
     final repository = ApiPostCommentRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 201);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 201);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -167,9 +174,10 @@ void main() {
     ];
     var index = 0;
     final repository = ApiPostCommentRepository(
-      client: MockClient((_) async => responses[index++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[index++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -189,12 +197,13 @@ void main() {
   test('rejects invalid local query values before requesting', () async {
     var requests = 0;
     final repository = ApiPostCommentRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -242,9 +251,10 @@ void main() {
     ];
     var index = 0;
     final repository = ApiPostCommentRepository(
-      client: MockClient((_) async => responses[index++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[index++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

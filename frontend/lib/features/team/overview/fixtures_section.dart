@@ -1,10 +1,5 @@
 part of 'team_screen_features.dart';
 
-String _formatMatchDate(DateTime? kickoff) {
-  if (kickoff == null) return 'Date TBD';
-  return DateFormat('EEE, MMM d h:mm a').format(kickoff.toLocal());
-}
-
 class Fixtures extends StatefulWidget {
   Fixtures({super.key, this.teams});
 
@@ -25,7 +20,7 @@ class _FixturesState extends State<Fixtures> {
     final Fixture? lastMatch = map['last_match'] as Fixture?;
     final competitionId = match?.competitionId ?? lastMatch?.competitionId;
     final leagueName = competitionId == null
-        ? 'Unknown League'
+        ? tr(context, 'Unknown League')
         : competitionRepository.findById(competitionId)?.name ??
             'Unknown League';
 
@@ -74,7 +69,8 @@ class _FixturesState extends State<Fixtures> {
                     final home = fixtureHomeTeam(lastMatch, teamRepository);
                     final away = fixtureAwayTeam(lastMatch, teamRepository);
                     return MatchCard2(
-                      date: _formatMatchDate(lastMatch.kickoff),
+                      date: fixtureDateLabel(lastMatch.kickoff,
+                          locale: Localizations.localeOf(context)),
                       venue: '',
                       team1shortname: home.shortCode ?? home.name,
                       team1Logo: home.imagePath ?? '',

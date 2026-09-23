@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_error_config.dart';
@@ -40,14 +41,14 @@ class AppErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 28),
             Text(
-              config.title,
+              tr(context, config.title),
               key: ValueKey('app-error-$statusCode-title'),
               textAlign: TextAlign.center,
               style: Heading3.style,
             ),
             const SizedBox(height: 12),
             Text(
-              config.message,
+              tr(context, config.message),
               key: ValueKey('app-error-$statusCode-message'),
               textAlign: TextAlign.center,
               style: Body1.style.copyWith(color: colors.mutedForeground),
@@ -60,7 +61,8 @@ class AppErrorView extends StatelessWidget {
                 child: FilledButton(
                   key: ValueKey('app-error-$statusCode-action'),
                   onPressed: onAction,
-                  child: Text(config.action!, style: Body1_b.style),
+                  child:
+                      Text(tr(context, config.action!), style: Body1_b.style),
                 ),
               ),
             ],

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/posts/api/api_post_mapper.dart';
 import 'package:onetouch/data/posts/api/api_post_response.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
@@ -11,17 +11,9 @@ import 'package:onetouch/models/post.dart';
 /// Feed loading, text-post creation, and post reporting are connected. Media
 /// uploads remain outside this repository and require attachment IDs first.
 class ApiPostRepository implements PostRepository {
-  ApiPostRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiPostRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<List<Post>> loadPosts({
@@ -50,29 +42,14 @@ class ApiPostRepository implements PostRepository {
       'offset': '$offset',
       if (period != PostPeriod.allTime) 'timezone': timezone!.trim(),
     };
-    final uri = _apiBaseUri.resolve('posts').replace(
+    final uri = _api.baseUri.resolve('posts').replace(
           queryParameters: queryParameters,
         );
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Posts request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the posts response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     final apiResponse = ApiPostListResponse.fromJson(decoded);
     if (apiResponse.limit != limit || apiResponse.offset != offset) {
       throw FormatException(
@@ -82,7 +59,7 @@ class ApiPostRepository implements PostRepository {
     }
 
     final posts = apiResponse.items
-        .map((item) => postFromApiResponse(item, apiBaseUri: _apiBaseUri))
+        .map((item) => postFromApiResponse(item, apiBaseUri: _api.baseUri))
         .toList(growable: false);
     for (final post in posts) {
       if (post.teamId != teamId) {
@@ -99,13 +76,11 @@ class ApiPostRepository implements PostRepository {
     final title = input.title.trim();
     _validateCreatePostInput(input, title: title);
 
-    final uri = _apiBaseUri.resolve('posts');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('posts');
+    final response = await _api.post(
       uri,
       headers: {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        ..._requestHeaders,
       },
       body: jsonEncode({
         'team_id': input.teamId,
@@ -115,15 +90,10 @@ class ApiPostRepository implements PostRepository {
         'attachment_ids': input.attachmentIds,
       }),
     );
-    if (response.statusCode != 201) {
-      throw http.ClientException(
-        'Post creation failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic> || decoded['post_id'] is! int) {
+    final decoded =
+        _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: 201);
+    if (decoded['post_id'] is! int) {
       throw const FormatException(
         'Expected the post-creation response to contain integer "post_id".',
       );
@@ -155,25 +125,17 @@ class ApiPostRepository implements PostRepository {
       );
     }
 
-    final uri = _apiBaseUri.resolve('posts/$postId/report');
-    final response = await _client.post(
+    final uri = _api.baseUri.resolve('posts/$postId/report');
+    final response = await _api.post(
       uri,
       headers: {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        ..._requestHeaders,
       },
       body: jsonEncode({'reason': normalizedReason}),
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Post-report request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic> || decoded['ok'] is! bool) {
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] is! bool) {
       throw const FormatException(
         'Expected the post-report response to contain boolean "ok".',
       );
@@ -194,23 +156,11 @@ class ApiPostRepository implements PostRepository {
       throw RangeError.value(postId, 'postId', 'Must be positive');
     }
 
-    final uri = _apiBaseUri.resolve('posts/$postId/like');
-    final headers = {
-      'Accept': 'application/json',
-      ..._requestHeaders,
-    };
-    final response = liked
-        ? await _client.put(uri, headers: headers)
-        : await _client.delete(uri, headers: headers);
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Post-like update failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
+    final uri = _api.baseUri.resolve('posts/$postId/like');
+    final response = liked ? await _api.put(uri) : await _api.delete(uri);
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic> || decoded['ok'] is! bool) {
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] is! bool) {
       throw const FormatException(
         'Expected the post-like response to contain boolean "ok".',
       );
@@ -291,10 +241,5 @@ class ApiPostRepository implements PostRepository {
         'IDs must not be repeated',
       );
     }
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

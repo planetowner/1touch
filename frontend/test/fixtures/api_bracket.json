@@ -1,0 +1,242 @@
+{
+  "competition_id": 2,
+  "season_id": 100,
+  "season_name": "2026/2027",
+  "scope": "main_knockout",
+  "source": "sportmonks",
+  "fetched_at": "2027-04-02T00:00:00Z",
+  "input_sha256": "1541cf9f509796b089dc0928d8cc1c84b580a8c99ffb766cbbed7124edb1b8f0",
+  "status": "in_progress",
+  "path_status": "complete",
+  "champion_team_id": null,
+  "stages": [
+    {
+      "stage_id": 3,
+      "key": "semifinal",
+      "name": "Semi-finals",
+      "order": 3,
+      "ties": [
+        {
+          "tie_id": "fixture:1",
+          "stage_id": 3,
+          "stage_key": "semifinal",
+          "format": "two_leg",
+          "legs_complete": true,
+          "slots": [
+            {
+              "slot": "home",
+              "team_id": 1,
+              "label": "Team 1",
+              "source_tie_id": null
+            },
+            {
+              "slot": "away",
+              "team_id": 2,
+              "label": "Team 2",
+              "source_tie_id": null
+            }
+          ],
+          "fixtures": [
+            {
+              "fixture_id": 1,
+              "home_team_id": 1,
+              "away_team_id": 2,
+              "home_score": 1,
+              "away_score": 0,
+              "home_penalty_score": null,
+              "away_penalty_score": null,
+              "starting_at": "2027-04-01T20:00:00Z",
+              "state_id": 5,
+              "state": "FT",
+              "leg": "1/2",
+              "source_leg": "1/2",
+              "aggregate_id": null,
+              "detail_available": true
+            },
+            {
+              "fixture_id": 2,
+              "home_team_id": 2,
+              "away_team_id": 1,
+              "home_score": 1,
+              "away_score": 0,
+              "home_penalty_score": 3,
+              "away_penalty_score": 4,
+              "starting_at": "2027-04-01T20:00:00Z",
+              "state_id": 8,
+              "state": "FT",
+              "leg": "2/2",
+              "source_leg": "2/2",
+              "aggregate_id": null,
+              "detail_available": false
+            }
+          ],
+          "aggregate_score": [
+            1,
+            1
+          ],
+          "winner_team_id": 1,
+          "winner_basis": "penalties",
+          "status": "completed",
+          "next_tie_id": "fixture:5"
+        },
+        {
+          "tie_id": "fixture:3",
+          "stage_id": 3,
+          "stage_key": "semifinal",
+          "format": "two_leg",
+          "legs_complete": true,
+          "slots": [
+            {
+              "slot": "home",
+              "team_id": 3,
+              "label": "Team 3",
+              "source_tie_id": null
+            },
+            {
+              "slot": "away",
+              "team_id": 4,
+              "label": "Team 4",
+              "source_tie_id": null
+            }
+          ],
+          "fixtures": [
+            {
+              "fixture_id": 3,
+              "home_team_id": 3,
+              "away_team_id": 4,
+              "home_score": 2,
+              "away_score": 0,
+              "home_penalty_score": null,
+              "away_penalty_score": null,
+              "starting_at": "2027-04-01T20:00:00Z",
+              "state_id": 5,
+              "state": "FT",
+              "leg": "1/2",
+              "source_leg": "1/2",
+              "aggregate_id": null,
+              "detail_available": false
+            },
+            {
+              "fixture_id": 4,
+              "home_team_id": 4,
+              "away_team_id": 3,
+              "home_score": 0,
+              "away_score": 0,
+              "home_penalty_score": null,
+              "away_penalty_score": null,
+              "starting_at": "2027-04-01T20:00:00Z",
+              "state_id": 5,
+              "state": "FT",
+              "leg": "2/2",
+              "source_leg": "2/2",
+              "aggregate_id": null,
+              "detail_available": false
+            }
+          ],
+          "aggregate_score": [
+            2,
+            0
+          ],
+          "winner_team_id": 3,
+          "winner_basis": "aggregate_score",
+          "status": "completed",
+          "next_tie_id": "fixture:5"
+        }
+      ]
+    },
+    {
+      "stage_id": 4,
+      "key": "final",
+      "name": "Final",
+      "order": 4,
+      "ties": [
+        {
+          "tie_id": "fixture:5",
+          "stage_id": 4,
+          "stage_key": "final",
+          "format": "single_match",
+          "legs_complete": true,
+          "slots": [
+            {
+              "slot": "home",
+              "team_id": 1,
+              "label": "Team 1",
+              "source_tie_id": "fixture:1"
+            },
+            {
+              "slot": "away",
+              "team_id": 3,
+              "label": "Team 3",
+              "source_tie_id": "fixture:3"
+            }
+          ],
+          "fixtures": [
+            {
+              "fixture_id": 5,
+              "home_team_id": 1,
+              "away_team_id": 3,
+              "home_score": null,
+              "away_score": null,
+              "home_penalty_score": null,
+              "away_penalty_score": null,
+              "starting_at": "2027-04-01T20:00:00Z",
+              "state_id": 1,
+              "state": "NS",
+              "leg": "1/1",
+              "source_leg": "1/1",
+              "aggregate_id": null,
+              "detail_available": false
+            }
+          ],
+          "aggregate_score": null,
+          "winner_team_id": null,
+          "winner_basis": null,
+          "status": "scheduled",
+          "next_tie_id": null
+        }
+      ]
+    }
+  ],
+  "teams": {
+    "1": {
+      "team_id": 1,
+      "name": "Team 1",
+      "short_code": null,
+      "logo": null
+    },
+    "2": {
+      "team_id": 2,
+      "name": "Team 2",
+      "short_code": null,
+      "logo": null
+    },
+    "3": {
+      "team_id": 3,
+      "name": "Team 3",
+      "short_code": null,
+      "logo": null
+    },
+    "4": {
+      "team_id": 4,
+      "name": "Team 4",
+      "short_code": null,
+      "logo": null
+    }
+  },
+  "edges": [
+    {
+      "from_tie_id": "fixture:1",
+      "to_tie_id": "fixture:5",
+      "to_slot": "home",
+      "source": "results"
+    },
+    {
+      "from_tie_id": "fixture:3",
+      "to_tie_id": "fixture:5",
+      "to_slot": "away",
+      "source": "results"
+    }
+  ],
+  "unlinked_tie_ids": [],
+  "issues": []
+}

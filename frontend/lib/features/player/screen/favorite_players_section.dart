@@ -17,9 +17,9 @@ class FavoritePlayersSection extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    "FAVORITE PLAYERS",
+                    tr(context, "FAVORITE PLAYERS"),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Body2_b.style,
