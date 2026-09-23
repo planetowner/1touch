@@ -40,5 +40,12 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # Flutter 보조 타깃의 iOS 13 설정을 지워 Runner의 최소 버전을 따르게 해요.
+    if target.name == 'Flutter'
+      target.build_configurations.each do |configuration|
+        configuration.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET')
+      end
+    end
   end
 end
