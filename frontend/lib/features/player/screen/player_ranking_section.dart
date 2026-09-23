@@ -86,7 +86,7 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
                 ),
               );
             },
-            child: Text("See All", style: Body2.style),
+            child: Text(tr(context, "See All"), style: Body2.style),
           ),
         ],
       ),
@@ -116,7 +116,7 @@ class FullRankingPopup extends StatelessWidget {
                   const SizedBox(width: 48),
                   Expanded(
                     child: Text(
-                      "1Touch Ranking",
+                      tr(context, "1Touch Ranking"),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -144,7 +144,7 @@ class FullRankingPopup extends StatelessWidget {
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: "Look for players",
+                          hintText: tr(context, "Look for players"),
                           hintStyle: Body1.style.copyWith(
                             color: appColors.mutedForeground,
                           ),

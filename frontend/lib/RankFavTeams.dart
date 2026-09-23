@@ -7,6 +7,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class RankFavoriteTeamsScreen extends StatefulWidget {
   final List<Team> selectedTeams;
@@ -51,8 +52,9 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
           MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()));
     } catch (_) {
       if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Unable to save teams. Please try again.')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(tr(context, 'Unable to save teams. Please try again.'))));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -107,7 +109,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                     children: [
                       IconButton(
                         key: const ValueKey('rank-favorites-back-button'),
-                        tooltip: 'Back to team selection',
+                        tooltip: tr(context, 'Back to team selection'),
                         onPressed: () => Navigator.of(context).maybePop(),
                         icon: const Icon(
                           Icons.arrow_back_ios_new,
@@ -167,10 +169,12 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   child: Column(
                     children: [
-                      const Text("Rank your clubs", style: Heading4.style),
+                      Text(tr(context, "Rank your clubs"),
+                          style: Heading4.style),
                       const SizedBox(height: 8),
                       Text(
-                        "Hold and drag a team card up or down to reorder your favorites. Don't worry, you can always change this later.",
+                        tr(context,
+                            "Hold and drag a team card up or down to reorder your favorites. Don't worry, you can always change this later."),
                         textAlign: TextAlign.center,
                         style: Body2.style,
                       ),
@@ -192,7 +196,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                                   color: colors.surface,
                                 ),
                               )
-                            : Text("CONTINUE",
+                            : Text(tr(context, "CONTINUE"),
                                 style: Body2_b.style
                                     .copyWith(color: colors.surface)),
                       ),

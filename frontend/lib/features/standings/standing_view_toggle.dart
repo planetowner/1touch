@@ -146,7 +146,7 @@ class _StandingViewSegment extends StatelessWidget {
               duration: const Duration(milliseconds: 140),
               curve: Curves.easeOut,
               style: Body2_b.style.copyWith(color: foreground),
-              child: Text(view.label),
+              child: Text(tr(context, view.label)),
             ),
           ),
         ),

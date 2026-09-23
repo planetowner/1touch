@@ -249,7 +249,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _AnalysisSectionHeader(
-            title: 'CURRENT FORM',
+            title: tr(context, 'CURRENT FORM'),
             trailing: _baselineSeasonId != null && _options.isNotEmpty
                 ? _buildComparisonPicker()
                 : null,
@@ -272,11 +272,12 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
               children: [
                 Expanded(
                   child: Text(
-                    'Unable to load current form',
+                    tr(context, 'Unable to load current form'),
                     style: Body2.style,
                   ),
                 ),
-                TextButton(onPressed: _retryLoad, child: const Text('RETRY')),
+                TextButton(
+                    onPressed: _retryLoad, child: Text(tr(context, 'RETRY'))),
               ],
             )
           else if (_comparison == null || _comparison!.current.points.isEmpty)
@@ -297,7 +298,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final colors = Theme.of(context).colorScheme;
     final selectedOption = _selectedOption;
     final label = selectedOption == null
-        ? 'SEASON'
+        ? tr(context, 'SEASON')
         : _compactSeasonLabel(selectedOption.seasonName);
 
     return PopupMenuButton<CurrentFormOption>(
@@ -330,7 +331,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              label,
+              tr(context, label),
               style: Body2_b.style.copyWith(color: colors.onSurface),
             ),
             const SizedBox(width: AppDropdownTokens.gap),
@@ -407,7 +408,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       ),
       alignment: Alignment.center,
       child: Text(
-        'Current form data is not available yet',
+        tr(context, 'Current form data is not available yet'),
         style: Body2.style.copyWith(
           color: AppColors.of(context).mutedForeground,
         ),
@@ -543,7 +544,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                         top: 0,
                         child: RotatedBox(
                           quarterTurns: 3,
-                          child: Text('POINTS', style: Body2_b.style),
+                          child:
+                              Text(tr(context, 'POINTS'), style: Body2_b.style),
                         ),
                       ),
                       if (selectedRound != null && comparisonPoint != null)
@@ -580,7 +582,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: Text('ROUND', style: Body2_b.style),
+            child: Text(tr(context, 'ROUND'), style: Body2_b.style),
           ),
         ],
       ),
@@ -666,7 +668,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Round $round',
+                  tr(context, 'Round {round}', {'round': round}),
                   maxLines: 1,
                   style: Body2_b.style.copyWith(
                     color: foreground.withValues(alpha: 0.55),
@@ -681,7 +683,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerRight,
                 child: Text(
-                  '$points Pts',
+                  tr(context, '{points} Pts', {'points': points}),
                   maxLines: 1,
                   style: Body2_b.style.copyWith(color: foreground),
                 ),
@@ -736,7 +738,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           spacing: 20,
           runSpacing: 8,
           children: [
-            _legendItem(comparisonColors.anchor, 'CURRENT'),
+            _legendItem(comparisonColors.anchor, tr(context, 'CURRENT')),
             _legendItem(
               comparisonColors.opponent,
               '${_compactSeasonLabel(comparison.seasonName)} '
@@ -764,7 +766,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              label,
+              tr(context, label),
               style: Body2_b.style,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

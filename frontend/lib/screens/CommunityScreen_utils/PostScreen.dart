@@ -15,6 +15,7 @@ import 'package:onetouch/data/posts/post_repository_provider.dart'
 import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Post post;
@@ -158,8 +159,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     });
     if (failed) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to update like. Please try again.'),
+        SnackBar(
+          content:
+              Text(tr(context, 'Unable to update like. Please try again.')),
         ),
       );
     }

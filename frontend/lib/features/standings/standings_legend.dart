@@ -44,7 +44,7 @@ class _LegendItem extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(tier.label, style: Body2_b.style),
+        Text(tr(context, tier.label), style: Body2_b.style),
       ],
     );
   }

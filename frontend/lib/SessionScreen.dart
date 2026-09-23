@@ -9,6 +9,7 @@ import 'package:onetouch/data/teams/following_teams_repository_provider.dart';
 import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/profile_fields.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 String? _readyToken;
 bool get isAppSessionReady =>
@@ -77,7 +78,7 @@ class _SessionScreenState extends State<SessionScreen> {
         body: SafeArea(
             child: profile != null
                 ? ListView(padding: const EdgeInsets.all(24), children: [
-                    const Text('Complete your profile'),
+                    Text(tr(context, 'Complete your profile')),
                     const SizedBox(height: 24),
                     ProfileFields(
                         username: profile.username,
@@ -89,10 +90,11 @@ class _SessionScreenState extends State<SessionScreen> {
                     child: _error == null
                         ? const CircularProgressIndicator()
                         : Column(mainAxisSize: MainAxisSize.min, children: [
-                            const Text(
-                                'Unable to load your account. Please try again.'),
+                            Text(tr(context,
+                                'Unable to load your account. Please try again.')),
                             TextButton(
-                                onPressed: _load, child: const Text('Retry')),
+                                onPressed: _load,
+                                child: Text(tr(context, 'Retry'))),
                           ]))));
   }
 }

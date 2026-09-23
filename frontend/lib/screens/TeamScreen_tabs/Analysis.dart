@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_baseline.dart';
 import 'package:onetouch/features/team/attributes/team_attribute_radar.dart';
 import 'dart:math' as math;

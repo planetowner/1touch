@@ -1,8 +1,9 @@
 part of 'player_comparison_screen.dart';
 
 class _EmptyRadarPainter extends CustomPainter {
-  const _EmptyRadarPainter({required this.color, required this.labelColor});
+  const _EmptyRadarPainter({required this.color, required this.labelColor, required this.locale});
   final Color color, labelColor;
+  final Locale locale;
   static const labels = [
     'Pace',
     'Shooting',
@@ -49,7 +50,7 @@ class _EmptyRadarPainter extends CustomPainter {
       final anchor = center + direction * 1.28;
       final text = TextPainter(
         text: TextSpan(
-          text: labels[i],
+          text: translateMessage(locale, labels[i]),
           style: TextStyle(color: labelColor, fontSize: 11),
         ),
         textDirection: TextDirection.ltr,
@@ -63,5 +64,5 @@ class _EmptyRadarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_EmptyRadarPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.labelColor != labelColor;
+      oldDelegate.locale != locale || oldDelegate.color != color || oldDelegate.labelColor != labelColor;
 }

@@ -9,6 +9,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/models/following_player.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerFavorites extends StatefulWidget {
   const PlayerFavorites({
@@ -49,7 +50,7 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save favorites')),
+          SnackBar(content: Text(tr(context, 'Could not save favorites'))),
         );
       }
     }
@@ -77,7 +78,7 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Edit favorites',
+                  tooltip: tr(context, 'Edit favorites'),
                   onPressed:
                       controller.loading || !controller.loaded ? null : _edit,
                   icon: Icon(
@@ -97,12 +98,12 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
             else if (controller.error != null)
               TextButton(
                 onPressed: controller.load,
-                child: const Text('Could not load favorites · Retry'),
+                child: Text(tr(context, 'Could not load favorites · Retry')),
               )
             else if (controller.players.isEmpty)
               TextButton(
                 onPressed: _edit,
-                child: const Text('Add favorite players'),
+                child: Text(tr(context, 'Add favorite players')),
               )
             else
               SizedBox(
@@ -250,7 +251,7 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final leagueLabel = _league == null
-        ? 'ALL LEAGUES'
+        ? tr(context, 'ALL LEAGUES')
         : _page?.leagues
                 .where((item) => item.id == _league)
                 .firstOrNull
@@ -262,12 +263,12 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
       children: [
         Row(
           children: [
-            const Text('1TOUCH RANKING', style: Body2_b.style),
+            Text(tr(context, '1TOUCH RANKING'), style: Body2_b.style),
             const SizedBox(width: 4),
             Icon(Icons.help_outline, size: 18, color: colors.onSurface),
             const Spacer(),
             IconButton(
-              tooltip: 'Ranking filters',
+              tooltip: tr(context, 'Ranking filters'),
               onPressed: _loading ? null : _filters,
               icon: Icon(Icons.tune, color: colors.onSurface),
             ),
@@ -301,10 +302,10 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
         if (_failed)
           TextButton(
             onPressed: () => _load(more: _items.isNotEmpty),
-            child: const Text('Could not load ranking · Retry'),
+            child: Text(tr(context, 'Could not load ranking · Retry')),
           ),
         if (!_loading && !_failed && _items.isEmpty)
-          const Text('No ranking data for these filters'),
+          Text(tr(context, 'No ranking data for these filters')),
         if (_items.isNotEmpty) _rankingCard(context),
         if (_loading)
           const Padding(
@@ -345,7 +346,7 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
                     detailRepository: widget.detailRepository,
                   ),
                 ),
-                child: Text('See all', style: Body2.style),
+                child: Text(tr(context, 'See all'), style: Body2.style),
               ),
             ],
           ),
@@ -391,7 +392,7 @@ class _ActiveDirectoryFilterChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label, style: Body2_b.style),
+                Text(tr(context, label), style: Body2_b.style),
                 const SizedBox(width: 4),
                 const Icon(Icons.close, size: AppDropdownTokens.iconSize),
               ],
@@ -439,7 +440,10 @@ class _RankingRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${player.position ?? '—'} • ${player.appearances} MP',
+                      tr(context, '{position} • {count} MP', {
+                        'position': player.position ?? '—',
+                        'count': player.appearances
+                      }),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Body2.style,
@@ -482,7 +486,7 @@ class _PlayersToWatchState extends State<PlayersToWatch> {
       children: [
         Row(
           children: [
-            const Text('ONES TO WATCH', style: Body2_b.style),
+            Text(tr(context, 'ONES TO WATCH'), style: Body2_b.style),
             const SizedBox(width: 4),
             Icon(Icons.help_outline, size: 16, color: colors.onSurface),
           ],
@@ -502,13 +506,14 @@ class _PlayersToWatchState extends State<PlayersToWatch> {
                 onPressed: () => setState(
                   () => _request = Future.sync(widget.repository.watch),
                 ),
-                child: const Text('Could not load players · Retry'),
+                child: Text(tr(context, 'Could not load players · Retry')),
               );
             }
             final players = snapshot.requireData;
             if (players.isEmpty) {
-              return const Text(
-                'No players with 10 rated appearances and an improved average',
+              return Text(
+                tr(context,
+                    'No players with 10 rated appearances and an improved average'),
               );
             }
             return SizedBox(
@@ -620,7 +625,8 @@ class _WatchCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Rating ${player.recent.toStringAsFixed(2)}',
+                        tr(context, 'Rating {rating}',
+                            {'rating': player.recent.toStringAsFixed(2)}),
                         style: Eyebrow.style.copyWith(color: colors.onSurface),
                       ),
                     ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class ApiKnockoutBracket extends StatefulWidget {
   const ApiKnockoutBracket(
@@ -43,14 +44,16 @@ class _ApiKnockoutBracketState extends State<ApiKnockoutBracket> {
             return const Center(child: CircularProgressIndicator());
           if (snapshot.hasError)
             return Column(children: [
-              const Text('Unable to load bracket.'),
+              Text(tr(context, 'Unable to load bracket.')),
               TextButton(
-                  onPressed: () => setState(_load), child: const Text('Retry')),
+                  onPressed: () => setState(_load),
+                  child: Text(tr(context, 'Retry'))),
             ]);
           final bracket = snapshot.requireData;
           if (bracket.status == 'not_published' || bracket.stages.isEmpty) {
-            return const Center(
-                child: Text('Bracket has not been published yet.'));
+            return Center(
+                child:
+                    Text(tr(context, 'Bracket has not been published yet.')));
           }
           return SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -108,7 +111,9 @@ class _ApiKnockoutBracketState extends State<ApiKnockoutBracket> {
                                                       '/match/${match.id}')
                                                   : null,
                                               child: Text(
-                                                  'Match ${index + 1} · ${match.homeScore ?? '—'} : ${match.awayScore ?? '—'}'),
+                                                  '${tr(context, 'Match {number}', {
+                                                    'number': index + 1
+                                                  })} · ${match.homeScore ?? '—'} : ${match.awayScore ?? '—'}'),
                                             ),
                                         ]))),
                             ]))),

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 enum Category { general, analysis, newsAndInsights }
 
@@ -44,7 +45,8 @@ class PostComposerFields extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final selectedCategoryLabel = selectedCategory.label.toUpperCase();
+    final selectedCategoryLabel =
+        tr(context, selectedCategory.label).toUpperCase();
     final categoryLabelPainter = TextPainter(
       text: TextSpan(
         text: selectedCategoryLabel,
@@ -65,7 +67,7 @@ class PostComposerFields extends StatelessWidget {
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text('POST TO', style: Body2_b.style),
+            Text(tr(context, 'POST TO'), style: Body2_b.style),
             AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               curve: Curves.easeOut,
@@ -90,7 +92,7 @@ class PostComposerFields extends StatelessWidget {
                       (category) => PopupMenuItem<Category>(
                         value: category,
                         child: Text(
-                          category.label.toUpperCase(),
+                          tr(context, category.label).toUpperCase(),
                           style: Body1_b.style.copyWith(color: Colors.black),
                         ),
                       ),
@@ -137,7 +139,7 @@ class PostComposerFields extends StatelessWidget {
           cursorColor: colors.onSurface,
           maxLines: null,
           decoration: InputDecoration(
-            hintText: 'Title...',
+            hintText: tr(context, 'Title...'),
             hintStyle: Heading4.style.copyWith(
               color: appColors.mutedForeground,
             ),
@@ -155,7 +157,7 @@ class PostComposerFields extends StatelessWidget {
           maxLines: null,
           keyboardType: TextInputType.multiline,
           decoration: InputDecoration(
-            hintText: 'Write something...',
+            hintText: tr(context, 'Write something...'),
             hintStyle: Body2.style.copyWith(
               color: appColors.mutedForeground,
             ),
@@ -234,7 +236,7 @@ class PostComposerFields extends StatelessWidget {
                     Icon(Icons.add, color: colors.onSurface, size: 28),
                     const SizedBox(height: 8),
                     Text(
-                      'Add photo or video',
+                      tr(context, 'Add photo or video'),
                       style: Body2.style.copyWith(color: colors.onSurface),
                     ),
                   ],
@@ -289,7 +291,7 @@ class PostComposerSubmitBar extends StatelessWidget {
                   ),
                 )
               : Text(
-                  'POST',
+                  tr(context, 'POST'),
                   style: Body1_b.style.copyWith(color: colors.onPrimary),
                 ),
         ),

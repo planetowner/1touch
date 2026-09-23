@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class ProfileFields extends StatefulWidget {
   const ProfileFields(
@@ -39,8 +40,8 @@ class _ProfileFieldsState extends State<ProfileFields> {
       if (mounted) widget.onSaved();
     } catch (_) {
       if (mounted)
-        setState(() => _error =
-            'Unable to save profile. Check your username and try again.');
+        setState(() => _error = tr(context,
+            'Unable to save profile. Check your username and try again.'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -60,10 +61,10 @@ class _ProfileFieldsState extends State<ProfileFields> {
       child: Column(children: [
         for (final field in [
           if (widget.showNameFields) ...[
-            (_firstName, 'First name', 100),
-            (_lastName, 'Last name', 100)
+            (_firstName, tr(context, 'First name'), 100),
+            (_lastName, tr(context, 'Last name'), 100)
           ],
-          (_username, 'Username', 50)
+          (_username, tr(context, 'Username'), 50)
         ])
           Padding(
               padding: const EdgeInsets.only(bottom: 24),
@@ -73,15 +74,17 @@ class _ProfileFieldsState extends State<ProfileFields> {
                 controller: field.$1,
                 enabled: !_saving,
                 maxLength: field.$3,
-                decoration:
-                    InputDecoration(labelText: field.$2, counterText: ''),
+                decoration: InputDecoration(
+                    labelText: tr(context, field.$2), counterText: ''),
                 validator: (value) => value == null || value.trim().isEmpty
-                    ? 'Enter ${field.$2.toLowerCase()}'
+                    ? tr(context, 'Enter ${field.$2.toLowerCase()}')
                     : null,
               )),
         if (_error != null) Text(_error!),
         FilledButton(
             onPressed: _saving ? null : _save,
-            child: Text(_saving ? 'Saving…' : 'Save profile')),
+            child: Text(_saving
+                ? tr(context, 'Saving…')
+                : tr(context, 'Save profile'))),
       ]));
 }

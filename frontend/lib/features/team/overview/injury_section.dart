@@ -116,19 +116,19 @@ class _InjuryStatusState extends State<InjuryStatus> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Unable to load injuries',
+                        tr(context, 'Unable to load injuries'),
                         style: Body2.style,
                       ),
                     ),
                     TextButton(
                       onPressed: _retryLoad,
-                      child: const Text('RETRY'),
+                      child: Text(tr(context, 'RETRY')),
                     ),
                   ],
                 )
               : players.isEmpty
                   ? Text(
-                      'No current injuries',
+                      tr(context, 'No current injuries'),
                       key: const ValueKey('injury-empty'),
                       style: Body2.style,
                     )
@@ -213,7 +213,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
     );
     return Semantics(
       button: true,
-      label: 'Open ${player.playerName}',
+      label: tr(context, 'Open {name}', {'name': player.playerName}),
       child: InkWell(
         key: ValueKey('injured-player-${player.playerId}'),
         onTap: () => openPlayerPage(context, player.playerId.toString()),
@@ -230,8 +230,10 @@ class _InjuryStatusState extends State<InjuryStatus> {
     final period = switch ((start, end)) {
       (final DateTime start, final DateTime end) =>
         '${_formatInjuryDate(start)} – ${_formatInjuryDate(end)}',
-      (final DateTime start, null) => 'Since ${_formatInjuryDate(start)}',
-      (null, final DateTime end) => 'Through ${_formatInjuryDate(end)}',
+      (final DateTime start, null) =>
+        tr(context, 'Since {date}', {'date': _formatInjuryDate(start)}),
+      (null, final DateTime end) =>
+        tr(context, 'Through {date}', {'date': _formatInjuryDate(end)}),
       _ => '',
     };
     return '${injury.typeName} • $period';
