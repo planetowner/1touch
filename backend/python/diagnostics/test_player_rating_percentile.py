@@ -88,6 +88,22 @@ class HistoricalPercentileTests(unittest.TestCase):
         self.assertEqual(scores, {1: 25, 2: 75, 3: 50, 4: 50, 5: 90})
         self.assertEqual(score_season_records([]), [])
 
+    def test_partial_refresh_keeps_past_reference_and_recalculates_later_seasons(self):
+        rows = [dict(player_id=p, season_name=f'{year}/{year+1}', rated_matches=p,
+                     rating_sum=Decimal(p * (6 + (p + year) % 3)))
+                for year in range(2017, 2027) for p in range(1, 6)]
+        for first in ('2017/2018', '2022/2023', '2026/2027', '2027/2028'):
+            with self.subTest(first=first):
+                expected = [r for r in score_season_records(rows) if r['season_name'] >= first]
+                key = lambda row: (row['season_name'], row['player_id'])
+                self.assertEqual(sorted(score_season_records(list(reversed(rows)), from_season=first), key=key),
+                                 sorted(expected, key=key))
+        before = score_season_records(rows, from_season='2026/2027')
+        rows[0]['rating_sum'] = Decimal(1)
+        after = score_season_records(rows, from_season='2026/2027')
+        self.assertNotEqual(before, after)
+        self.assertEqual(after, [r for r in score_season_records(rows) if r['season_name'] == '2026/2027'])
+
 
 if __name__ == "__main__":
     unittest.main()

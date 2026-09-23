@@ -1,4 +1,4 @@
-"""확인된 RSS만 읽어요. --apply를 명시해야 운영 데이터를 저장해요."""
+"""확인된 공급자의 기사 메타데이터를 읽어요. --apply를 명시해야 운영 데이터를 저장해요."""
 from __future__ import annotations
 
 import argparse
@@ -7,7 +7,29 @@ import json
 import requests
 import xml.etree.ElementTree as ET
 
-from one_touch_loader.core.news import ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, load_sources, parse_feed
+from one_touch_loader.core.news import (
+    ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, article_links, load_sources, parse_article_page, parse_feed,
+)
+
+
+def read_source(session, source: dict) -> list[dict]:
+    def get(url):
+        # 노컷뉴스는 XML 형식을 나열한 Accept에 406을 반환해요. 기본 */*로 요청해요.
+        response = session.get(url, timeout=20, headers={"User-Agent": "1Touch-News/1.0"})
+        response.raise_for_status()
+        return response.content
+
+    content = get(source["feed_url"])
+    if source.get("format") != "html":
+        return parse_feed(content, source)
+    # RSS가 없는 매체도 같은 메타데이터·팀 판별·기간 규칙을 사용해요. 본문은 저장하지 않아요.
+    links = article_links(content, source)
+    if not links:
+        raise ValueError("Article list has no matching links")
+    articles = [parse_article_page(get(url), source, url) for url in links]
+    if not any(articles):
+        raise ValueError("Article pages have no valid metadata")
+    return [article for article in articles if article]
 
 
 def current_teams() -> list[dict]:
@@ -72,12 +94,10 @@ def refresh(*, apply: bool, sources=None, teams=None, session=None, now=None) ->
                 continue
             articles, error = [], None
             try:
-                response = session.get(source["feed_url"], timeout=20,
-                                       headers={"User-Agent": "1Touch-News/1.0", "Accept": "application/rss+xml, application/xml"})
-                response.raise_for_status()
-                for article in parse_feed(response.content, source):
+                for article in read_source(session, source):
                     if now - NEWS_MAX_AGE <= article["published_at"] <= now:
-                        articles.append({**article, "team_ids": matcher.match(article, source["competition_ids"])})
+                        # 공급자 목록의 리그는 분류 정보예요. 이적·대륙 대회 기사의 다른 리그 팀도 연결해요.
+                        articles.append({**article, "team_ids": matcher.match(article)})
             except (requests.RequestException, ET.ParseError, ValueError) as exc:
                 # 원문 응답이나 URL을 오류에 출력하지 않고 실패한 공급자만 표시해요.
                 error = type(exc).__name__

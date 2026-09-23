@@ -1,10 +1,11 @@
 [Unit]
-Description=1Touch hourly completed match data collection
+Description=Detect completed matches and retry unpublished Opta data after five minutes
 
 [Timer]
-# 같은 서비스가 실행 중이면 중복 실행하지 않고 다음 정각에 다시 확인해요.
-OnCalendar=hourly
-Persistent=true
+# 수집이 끝난 뒤 다시 확인해 같은 브라우저 작업을 겹쳐 실행하지 않아요.
+OnBootSec=45s
+OnUnitInactiveSec=15s
+AccuracySec=1s
 
 [Install]
 WantedBy=timers.target

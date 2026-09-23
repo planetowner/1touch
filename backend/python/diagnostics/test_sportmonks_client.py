@@ -8,6 +8,34 @@ from one_touch_loader.core.sportmonks import SportmonksClient
 
 
 class SportmonksClientTest(unittest.TestCase):
+    def test_statistics_batch_restores_requested_order_and_uses_single_request(self):
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._get = Mock(return_value={'data': [{'id': 2, 'statistics': []}, {'id': 1, 'statistics': []}]})
+        result = client.get_fixture_statistics_batch([1, 2])
+        self.assertEqual([r['id'] for r in result], [1, 2])
+        client._get.assert_called_once_with('fixtures/multi/1,2', params={'include': 'participants;statistics.type'})
+
+    def test_statistics_batch_rejects_missing_duplicate_or_unrequested_fixtures(self):
+        for ids in ([1], [1, 1], [1, 3]):
+            with self.subTest(ids=ids):
+                client = SportmonksClient.__new__(SportmonksClient)
+                client._get = Mock(return_value={'data': [{'id': fid} for fid in ids]})
+                with self.assertRaisesRegex(ValueError, 'response IDs differ'):
+                    client.get_fixture_statistics_batch([1, 2])
+
+    def test_statistics_batch_applies_same_team_corrections_as_single_fixture(self):
+        from one_touch_loader.core.sportmonks import SPORTMONKS_FIXTURE_TEAM_ID_OVERRIDES
+        fixture_id, mapping = next(iter(SPORTMONKS_FIXTURE_TEAM_ID_OVERRIDES.items()))
+        original_id, corrected_id = next(iter(mapping.items()))
+        payload = dict(id=fixture_id, participants=[{'id': original_id}],
+                       statistics=[{'participant_id': original_id}])
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._get = Mock(side_effect=[{'data': deepcopy(payload)}, {'data': [deepcopy(payload)]}])
+        single = client.get_fixture_with_statistics(fixture_id)
+        batch = client.get_fixture_statistics_batch([fixture_id])[0]
+        self.assertEqual(single, batch)
+        self.assertEqual(batch['statistics'][0]['participant_id'], corrected_id)
+
     def test_bracket_endpoint_preserves_empty_provider_graph(self):
         client = SportmonksClient.__new__(SportmonksClient)
         graph = {'stages': [], 'edges': []}
