@@ -111,7 +111,8 @@ if [[ -f .env.production ]]; then
   cp -- .env.production .env.production.previous
 fi
 mv -- .env.production.next .env.production
-bash compose-production.sh up -d --no-build --wait --wait-timeout 180 db api
+# API 초기화 유예가 끝나기 전에 배포 대기가 먼저 종료되지 않게 해요.
+bash compose-production.sh up -d --no-build --wait --wait-timeout 600 db api
 # install로 교체한 파일은 기존 파일 마운트에 반영되지 않아 프록시만 새로 만들어요.
 bash compose-production.sh up -d --no-build --no-deps --force-recreate --wait --wait-timeout 180 proxy
 install -m 644 "$release_directory/deploy/vultr/onetouch-db-backup.service" /etc/systemd/system/onetouch-db-backup.service
