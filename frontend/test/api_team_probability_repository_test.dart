@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/team_probability/api/api_team_probability_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 
@@ -10,17 +11,19 @@ void main() {
   test('requests, maps, and caches current team probability cards', () async {
     var requestCount = 0;
     final repository = ApiTeamProbabilityRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/teams/83/probability');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_probabilityJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/teams/83/probability');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_probabilityJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final first = await repository.loadForTeam(83);
@@ -54,13 +57,14 @@ void main() {
 
   test('requests and verifies an explicit season', () async {
     final repository = ApiTeamProbabilityRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/teams/83/probability');
-        expect(request.url.queryParameters, {'season_id': '27965'});
-        return http.Response(jsonEncode(_probabilityJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/teams/83/probability');
+            expect(request.url.queryParameters, {'season_id': '27965'});
+            return http.Response(jsonEncode(_probabilityJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     final result = await repository.loadForTeam(83, seasonId: 27965);
@@ -72,20 +76,21 @@ void main() {
   test('preserves an unavailable comparison instead of inventing zero',
       () async {
     final repository = ApiTeamProbabilityRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode(
-            _probabilityJson(
-              comparisonAvailable: false,
-              comparisonAsOf: null,
-              firstChangePp: null,
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode(
+                _probabilityJson(
+                  comparisonAvailable: false,
+                  comparisonAsOf: null,
+                  firstChangePp: null,
+                ),
+              ),
+              200,
             ),
           ),
-          200,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final result = await repository.loadForTeam(83);
@@ -98,9 +103,10 @@ void main() {
 
   test('maps not found to an unavailable team feature', () async {
     final repository = ApiTeamProbabilityRepository(
-      client: MockClient((_) async => http.Response('Not found', 404)),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => http.Response('Not found', 404)),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -117,9 +123,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiTeamProbabilityRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     for (var i = 0; i < responses.length; i++) {
@@ -152,9 +159,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiTeamProbabilityRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.loadForTeam(83), throwsFormatException);

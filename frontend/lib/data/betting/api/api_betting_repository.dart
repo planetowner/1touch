@@ -1,37 +1,28 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/betting/api/api_betting_mapper.dart';
 import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/models/betting.dart';
 
 class ApiBettingRepository implements BettingRepository {
-  ApiBettingRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> Function() requestHeaders,
-  })  : _client = client,
-        _baseUri = apiBaseUri,
-        _requestHeaders = requestHeaders;
+  ApiBettingRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _baseUri;
-  final Map<String, String> Function() _requestHeaders;
+  final ApiClient _api;
 
   Future<Map<String, dynamic>> _request(
     String method,
     String path, [
     Map<String, dynamic>? body,
   ]) async {
-    final request = http.Request(method, _baseUri.resolve(path))
+    final request = http.Request(method, _api.baseUri.resolve(path))
       ..headers.addAll({
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        ..._requestHeaders(),
       });
     if (body != null) request.body = jsonEncode(body);
     final response = await http.Response.fromStream(
-      await _client.send(request),
+      await _api.send(request),
     );
     if (response.statusCode == 401) {
       throw const BettingRequestException('sign_in_required');
@@ -49,11 +40,7 @@ class ApiBettingRepository implements BettingRepository {
       }
       throw BettingRequestException(code);
     }
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException('Expected a betting response object');
-    }
-    return decoded;
+    return _api.decodeJson<Map<String, dynamic>>(response);
   }
 
   @override

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/match_analysis/api/api_match_analysis_repository.dart';
 
 void main() {
@@ -10,19 +11,20 @@ void main() {
       () async {
     var requests = 0;
     final repository = ApiMatchAnalysisRepository(
-      client: MockClient((request) async {
-        requests++;
-        expect(request.method, 'GET');
-        expect(request.headers['Authorization'], 'Bearer test-session');
-        expect(request.headers['Accept'], 'application/json');
-        if (request.url.path.endsWith('/analysis')) {
-          return http.Response(jsonEncode(_analysisJson()), 200);
-        }
-        expect(request.url.path, '/v1/fixtures/42/shotmap');
-        return http.Response(jsonEncode(_shotMapJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://example.test/v1'),
-      requestHeaders: const {'Authorization': 'Bearer test-session'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requests++;
+            expect(request.method, 'GET');
+            expect(request.headers['Authorization'], 'Bearer test-session');
+            expect(request.headers['Accept'], 'application/json');
+            if (request.url.path.endsWith('/analysis')) {
+              return http.Response(jsonEncode(_analysisJson()), 200);
+            }
+            expect(request.url.path, '/v1/fixtures/42/shotmap');
+            return http.Response(jsonEncode(_shotMapJson()), 200);
+          }),
+          baseUri: Uri.parse('https://example.test/v1'),
+          requestHeaders: () => const {'Authorization': 'Bearer test-session'}),
     );
 
     final analysis = await repository.loadAnalysis(42);
@@ -47,25 +49,27 @@ void main() {
   test('preserves the unavailable response instead of creating fake data',
       () async {
     final repository = ApiMatchAnalysisRepository(
-      client: MockClient((request) async {
-        if (request.url.path.endsWith('/analysis')) {
-          return http.Response(
-            jsonEncode({'fixture_id': 42, 'available': false, 'teams': null}),
-            200,
-          );
-        }
-        return http.Response(
-          jsonEncode({
-            'fixture_id': 42,
-            'available': false,
-            'counts': null,
-            'shots': [],
+      api: ApiClient(
+          client: MockClient((request) async {
+            if (request.url.path.endsWith('/analysis')) {
+              return http.Response(
+                jsonEncode(
+                    {'fixture_id': 42, 'available': false, 'teams': null}),
+                200,
+              );
+            }
+            return http.Response(
+              jsonEncode({
+                'fixture_id': 42,
+                'available': false,
+                'counts': null,
+                'shots': [],
+              }),
+              200,
+            );
           }),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: const {},
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => const {}),
     );
 
     expect((await repository.loadAnalysis(42)).available, isFalse);
@@ -75,17 +79,18 @@ void main() {
   test('rejects failed requests and mismatched fixture identities', () async {
     var request = 0;
     final repository = ApiMatchAnalysisRepository(
-      client: MockClient((_) async {
-        request++;
-        return request == 1
-            ? http.Response('Unavailable', 503)
-            : http.Response(
-                jsonEncode({..._analysisJson(), 'fixture_id': 99}),
-                200,
-              );
-      }),
-      apiBaseUri: Uri.parse('https://example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            request++;
+            return request == 1
+                ? http.Response('Unavailable', 503)
+                : http.Response(
+                    jsonEncode({..._analysisJson(), 'fixture_id': 99}),
+                    200,
+                  );
+          }),
+          baseUri: Uri.parse('https://example.test/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

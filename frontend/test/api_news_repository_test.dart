@@ -3,26 +3,28 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/home/api/api_news_repository.dart';
 import 'package:onetouch/models/news_language.dart';
 
 void main() {
   test('requests selected team and locale and preserves Korean text', () async {
     final repository = ApiNewsRepository(
-      client: MockClient((request) async {
-        expect(request.url.toString(),
-            'https://api.example.com/v1/teams/83/news?language=ko');
-        expect(request.headers['Authorization'], 'Bearer test');
-        return http.Response.bytes(
-            utf8.encode(jsonEncode({
-              'team_id': 83,
-              'language': 'ko',
-              'items': [_article],
-            })),
-            200);
-      }),
-      apiBaseUri: Uri.parse('https://api.example.com/v1'),
-      requestHeaders: const {'Authorization': 'Bearer test'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.toString(),
+                'https://api.example.com/v1/teams/83/news?language=ko');
+            expect(request.headers['Authorization'], 'Bearer test');
+            return http.Response.bytes(
+                utf8.encode(jsonEncode({
+                  'team_id': 83,
+                  'language': 'ko',
+                  'items': [_article],
+                })),
+                200);
+          }),
+          baseUri: Uri.parse('https://api.example.com/v1'),
+          requestHeaders: () => const {'Authorization': 'Bearer test'}),
       now: () => DateTime.utc(2026, 9, 19, 18),
     );
     final items = await repository.loadForTeam(83, language: 'ko-KR');
@@ -38,12 +40,14 @@ void main() {
       () async {
     expect(newsLanguageForLocale('zh-CN'), 'en');
     final repository = ApiNewsRepository(
-      client: MockClient((request) async {
-        expect(request.url.queryParameters['language'], 'en');
-        return http.Response('{"team_id":83,"language":"en","items":[]}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.example.com/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.queryParameters['language'], 'en');
+            return http.Response(
+                '{"team_id":83,"language":"en","items":[]}', 200);
+          }),
+          baseUri: Uri.parse('https://api.example.com/v1/'),
+          requestHeaders: () => const {}),
     );
     expect(await repository.loadForTeam(83, language: 'ja'), isEmpty);
   });
@@ -55,9 +59,10 @@ void main() {
       http.Response('unavailable', 503),
     ]) {
       final repository = ApiNewsRepository(
-        client: MockClient((_) async => response),
-        apiBaseUri: Uri.parse('https://api.example.com/v1/'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient((_) async => response),
+            baseUri: Uri.parse('https://api.example.com/v1/'),
+            requestHeaders: () => const {}),
       );
       await expectLater(
           repository.loadForTeam(83, language: 'en'), throwsException);

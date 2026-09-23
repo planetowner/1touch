@@ -1,7 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/best_eleven/api/api_best_eleven_mapper.dart';
 import 'package:onetouch/data/best_eleven/api/api_best_eleven_response.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
@@ -9,17 +7,9 @@ import 'package:onetouch/models/team_best_eleven.dart';
 
 /// HTTP implementation of `GET /v1/teams/{team_id}/best-eleven`.
 class ApiBestElevenRepository implements BestElevenRepository {
-  ApiBestElevenRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiBestElevenRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<Map<BestElevenQuery, TeamBestEleven>> _cachedLineups =
       ValueNotifier(const {});
 
@@ -54,33 +44,18 @@ class ApiBestElevenRepository implements BestElevenRepository {
     final cached = _cachedLineups.value[query];
     if (cached != null) return cached;
 
-    final uri = _apiBaseUri.resolve('teams/$teamId/best-eleven').replace(
+    final uri = _api.baseUri.resolve('teams/$teamId/best-eleven').replace(
       queryParameters: {
         if (seasonId != null) 'season_id': '$seasonId',
         if (query.formation != null) 'formation': query.formation!,
       },
     );
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
     if (response.statusCode == 404) return null;
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Best eleven request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the Best Eleven response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
 
     final apiResponse = ApiBestElevenResponse.fromJson(decoded);
     if (apiResponse.teamId != teamId) {
@@ -106,10 +81,5 @@ class ApiBestElevenRepository implements BestElevenRepository {
       query: lineup,
     });
     return lineup;
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }
