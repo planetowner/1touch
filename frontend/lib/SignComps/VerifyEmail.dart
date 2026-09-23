@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/SignComps/auth_widgets.dart';
+import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class EmailRegistrationDraft {
   const EmailRegistrationDraft({
@@ -48,13 +51,15 @@ class EmailVerifyScreen extends StatefulWidget {
   final String email;
   final EmailRegistrationDraft? registrationDraft;
   final AuthService? authService;
+  final EmailCodeChallenge? passwordResetChallenge;
 
   const EmailVerifyScreen({
     super.key,
     required this.email,
     this.registrationDraft,
     this.authService,
-  });
+    this.passwordResetChallenge,
+  }) : assert(registrationDraft == null || passwordResetChallenge == null);
 
   @override
   State<EmailVerifyScreen> createState() => _EmailVerifyScreenState();
@@ -64,6 +69,13 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   static const _resendCooldownSeconds = 60;
 
   final _code = TextEditingController();
+  final _newPassword = TextEditingController();
+  EmailCodeChallenge? _resetChallenge;
+  bool get _isReset => widget.passwordResetChallenge != null;
+  String? get _challengeId =>
+      _resetChallenge?.challengeId ?? _draft?.challengeId;
+  bool get _validNewPassword => isValidNewPassword(_newPassword.text);
+
   bool _submitting = false;
   bool _resending = false;
   late EmailRegistrationDraft? _draft;
@@ -77,9 +89,10 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   bool get _canSubmit =>
       !_submitting &&
       !_resending &&
-      _draft != null &&
+      _challengeId != null &&
       _expiresInSeconds > 0 &&
-      _code.text.length == 6;
+      _code.text.length == 6 &&
+      (!_isReset || _validNewPassword);
 
   bool get _canResend => !_submitting && !_resending && _resendInSeconds == 0;
 
@@ -87,9 +100,15 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   void initState() {
     super.initState();
     _draft = widget.registrationDraft;
-    _expiresInSeconds = widget.registrationDraft?.expiresInSeconds ?? 0;
+    _resetChallenge = widget.passwordResetChallenge;
+    _expiresInSeconds = _resetChallenge?.expiresInSeconds ??
+        widget.registrationDraft?.expiresInSeconds ??
+        0;
+    _newPassword.addListener(_passwordChanged);
     _startCountdown();
   }
+
+  void _passwordChanged() => setState(() {});
 
   void _startCountdown() {
     _countdown?.cancel();
@@ -110,12 +129,13 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   }
 
   String get _expiryLabel {
-    if (_expiresInSeconds == 0) return 'Code expired';
+    if (_expiresInSeconds == 0) return tr(context, 'Code expired');
     final minutes = _expiresInSeconds ~/ 60;
     final seconds = _expiresInSeconds % 60;
-    return 'Code expires in '
-        '${minutes.toString().padLeft(2, '0')}:'
-        '${seconds.toString().padLeft(2, '0')}';
+    return tr(context, 'Code expires in {time}', {
+      'time':
+          '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
+    });
   }
 
   InputDecoration _dec(BuildContext context, String hint) {
@@ -133,36 +153,49 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
 
   Future<void> _continue() async {
     if (!_canSubmit) {
-      if (_draft == null) {
-        _showMessage('Restart signup to request a new verification code.');
+      if (_challengeId == null) {
+        _showMessage(
+            tr(context, 'Restart signup to request a new verification code.'));
       } else if (_expiresInSeconds == 0) {
-        _showMessage('This code has expired. Send a new code.');
+        _showMessage(tr(context, 'This code has expired. Send a new code.'));
       } else {
-        _showMessage('Enter the 6-digit code.');
+        _showMessage(tr(context, 'Enter the 6-digit code.'));
       }
       return;
     }
     setState(() => _submitting = true);
 
     try {
-      final draft = _draft!;
-      await _authService.registerWithEmail(
-        challengeId: draft.challengeId,
-        code: _code.text,
-        password: draft.password,
-        username: draft.username,
-        firstName: draft.firstName,
-        lastName: draft.lastName,
-      );
-      if (!mounted) return;
-      context.go('/session');
+      if (_isReset) {
+        await _authService.resetPassword(
+            challengeId: _challengeId!,
+            code: _code.text,
+            password: _newPassword.text);
+        if (!mounted) return;
+        _showMessage(
+            tr(context, 'Password reset. Sign in with your new password.'));
+        // 재설정은 로그인 세션을 만들지 않으므로 입력 화면으로 돌아가요.
+        Navigator.of(context).pop();
+      } else {
+        final draft = _draft!;
+        await _authService.registerWithEmail(
+          challengeId: draft.challengeId,
+          code: _code.text,
+          password: draft.password,
+          username: draft.username,
+          firstName: draft.firstName,
+          lastName: draft.lastName,
+        );
+        if (mounted) context.go('/session');
+      }
     } on AuthRequestException catch (error) {
       if (!mounted) return;
-      _showMessage(error.displayMessage);
+      _showMessage('${tr(context, error.message)} (${error.statusCode})');
     } on Object {
       if (!mounted) return;
       _showMessage(
-        'Unable to verify the code. Check your connection and try again.',
+        tr(context,
+            'Unable to verify the code. Check your connection and try again.'),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -171,31 +204,38 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
 
   Future<void> _resend() async {
     final draft = _draft;
-    if (!_canResend || draft == null) return;
+    if (!_canResend || _challengeId == null) return;
     setState(() => _resending = true);
 
     try {
-      final challenge =
-          await _authService.requestSignUpEmailCode(email: draft.email);
+      final challenge = await _authService.requestEmailCode(
+          email: widget.email,
+          purpose: _isReset
+              ? EmailCodePurpose.passwordReset
+              : EmailCodePurpose.signup);
       if (!mounted) return;
       setState(() {
-        _draft = draft.withChallenge(
-          challengeId: challenge.challengeId,
-          expiresInSeconds: challenge.expiresInSeconds,
-        );
+        if (_isReset) {
+          _resetChallenge = challenge;
+        } else {
+          _draft = draft!.withChallenge(
+              challengeId: challenge.challengeId,
+              expiresInSeconds: challenge.expiresInSeconds);
+        }
         _expiresInSeconds = challenge.expiresInSeconds;
         _resendInSeconds = _resendCooldownSeconds;
         _code.clear();
       });
       _startCountdown();
-      _showMessage('A new verification code was sent.');
+      _showMessage(tr(context, 'A new verification code was sent.'));
     } on AuthRequestException catch (error) {
       if (!mounted) return;
-      _showMessage(error.displayMessage);
+      _showMessage('${tr(context, error.message)} (${error.statusCode})');
     } on Object {
       if (!mounted) return;
       _showMessage(
-        'Unable to resend the code. Check your connection and try again.',
+        tr(context,
+            'Unable to resend the code. Check your connection and try again.'),
       );
     } finally {
       if (mounted) setState(() => _resending = false);
@@ -205,13 +245,14 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
   void _showMessage(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(SnackBar(content: Text(tr(context, message))));
   }
 
   @override
   void dispose() {
     _countdown?.cancel();
     _code.dispose();
+    _newPassword.dispose();
     super.dispose();
   }
 
@@ -225,7 +266,9 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
         elevation: 0,
         leading: BackButton(color: colors.onSurface),
         centerTitle: true,
-        title: const Text('Verify your email', style: Body1.style),
+        title: Text(
+            tr(context, _isReset ? 'Reset password' : 'Verify your email'),
+            style: Body1.style),
       ),
       body: SafeArea(
         // 1. Switch ListView to CustomScrollView
@@ -242,7 +285,8 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                     const SizedBox(height: 16),
                     Text.rich(
                       TextSpan(
-                        text: 'Enter the verification code that we sent to ',
+                        text: tr(context,
+                            'Enter the verification code that we sent to '),
                         children: [
                           TextSpan(
                             text: widget.email,
@@ -254,8 +298,8 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                       style: Body1.style,
                     ),
                     const SizedBox(height: 24),
-
-                    const Text('Verification code', style: Eyebrow.style),
+                    Text(tr(context, 'Verification code'),
+                        style: Eyebrow.style),
                     const SizedBox(height: 8),
                     TextField(
                       key: const ValueKey('email-verification-code'),
@@ -270,23 +314,25 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                       decoration: _dec(context, '204182'),
                       style: Body1.style,
                     ),
-
                     const SizedBox(height: 8),
                     Text(_expiryLabel, style: Body2.style),
-
                     const SizedBox(height: 20),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      runSpacing: 8,
                       children: [
-                        const Text("Didn't get code? ", style: Body1.style),
+                        Text(tr(context, "Didn't get code? "),
+                            style: Body1.style),
                         GestureDetector(
                           key: const ValueKey('resend-email-code'),
                           onTap: _canResend ? _resend : null,
                           child: Text(
                             _resending
-                                ? 'Sending...'
+                                ? tr(context, 'Sending...')
                                 : _resendInSeconds > 0
-                                    ? 'Send again (${_resendInSeconds}s)'
-                                    : 'Send again',
+                                    ? tr(context, 'Send again ({seconds}s)',
+                                        {'seconds': _resendInSeconds})
+                                    : tr(context, 'Send again'),
                             style: Body1.style.copyWith(
                               decoration: TextDecoration.underline,
                               color: _canResend
@@ -300,10 +346,27 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                         ),
                       ],
                     ),
-
-                    // 3. This Spacer now works perfectly because of SliverFillRemaining
+                    if (_isReset) ...[
+                      const SizedBox(height: 24),
+                      AuthInput(
+                          label: tr(context, 'New password'),
+                          controller: _newPassword,
+                          fieldKey: const ValueKey('reset-new-password'),
+                          enabled: !_submitting && !_resending,
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.newPassword],
+                          onSubmitted: (_) {
+                            if (_canSubmit) _continue();
+                          }),
+                      const SizedBox(height: 8),
+                      Text(
+                          tr(context,
+                              'Use 8–128 characters with uppercase and lowercase English letters and a number.'),
+                          style: Body2.style),
+                      const SizedBox(height: 24),
+                    ],
                     const Spacer(),
-
                     SizedBox(
                       height: 56,
                       width: double.infinity, // Ensures button takes full width
@@ -323,7 +386,9 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
                                 width: 22,
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2))
-                            : Text('CONTINUE',
+                            : Text(
+                                tr(context,
+                                    _isReset ? 'Reset password' : 'CONTINUE'),
                                 style: Body1_b.style
                                     .copyWith(color: colors.surface)),
                       ),

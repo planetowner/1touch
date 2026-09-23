@@ -1,3 +1,4 @@
+import 'package:onetouch/data/auth/login_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
@@ -128,6 +129,19 @@ class _FakeGoogleIdentityService implements GoogleIdentityService {
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<void> resetPassword(
+          {required String challengeId,
+          required String code,
+          required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<String> signInWithSocial(
+          {required LoginProvider provider,
+          required Map<String, String> credentials}) =>
+      throw UnimplementedError();
+
   _FakeAuthRepository(
     this._signInWithGoogle, {
     Future<String> Function()? registerWithEmail,
@@ -151,7 +165,9 @@ class _FakeAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
-  Future<EmailCodeChallenge> requestSignUpEmailCode({required String email}) =>
+  Future<EmailCodeChallenge> requestEmailCode(
+          {required String email,
+          EmailCodePurpose purpose = EmailCodePurpose.signup}) =>
       throw UnimplementedError();
 
   @override
