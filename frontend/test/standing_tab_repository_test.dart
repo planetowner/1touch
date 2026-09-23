@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -5,11 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
-import 'package:onetouch/features/knockout_bracket.dart';
+import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('loads the selected competition and season from the repository',
       (tester) async {
     final repository = _ControlledStandingRepository(
@@ -328,7 +330,9 @@ void main() {
 
     expect(leagueFilter.value, 2);
     expect(seasonFilter.value, 25580);
-    expect(find.byType(KnockoutBracket), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('standing-view-bracket')));
+    await tester.pump();
+    expect(find.byType(ApiKnockoutBracket), findsOneWidget);
     expect(
       find.byKey(const ValueKey('standing-view-standing')),
       findsOneWidget,
@@ -341,7 +345,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('standing-view-standing')));
     await tester.pump();
 
-    expect(find.byType(KnockoutBracket), findsNothing);
+    expect(find.byType(ApiKnockoutBracket), findsNothing);
     expect(
       repository.requests,
       contains((competitionId: 2, seasonId: 25580)),
