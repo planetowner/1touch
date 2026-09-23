@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 
@@ -32,7 +32,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
   @override
   Widget build(BuildContext context) {
     final teamIds = currentUserPreferences.followedTeamIds.value;
-    final players = playerRepository.favorites;
+    final players = playerFollowingController.players;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -103,9 +103,9 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       return Column(
                         children: [
                           _listRow(
-                            label: player.fullName,
+                            label: player.name,
                             onTap: () => context.push(
-                              '/profile/notification/player/${Uri.encodeComponent(player.fullName)}',
+                              '/profile/notification/player/${Uri.encodeComponent(player.name)}',
                             ),
                           ),
                           if (i != players.length - 1) _divider(context),

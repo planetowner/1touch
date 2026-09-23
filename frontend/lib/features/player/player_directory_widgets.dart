@@ -15,9 +15,11 @@ class PlayerFavorites extends StatefulWidget {
     super.key,
     required this.controller,
     required this.searchRepository,
+    this.title = 'FAVORITE PLAYERS',
   });
 
   final PlayerFollowingController controller;
+  final String title;
   final PlayerDetailRepository? searchRepository;
 
   @override
@@ -56,7 +58,6 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListenableBuilder(
       listenable: widget.controller,
       builder: (_, __) {
@@ -67,9 +68,9 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'FAVORITE PLAYERS',
+                    widget.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Body2_b.style,
@@ -129,30 +130,6 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                                     child: PlayerRemoteImage(
                                       player.imagePath,
                                       size: 74,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: 0,
-                                  top: 0,
-                                  child: Container(
-                                    key: const ValueKey(
-                                      'favorite-player-number-badge',
-                                    ),
-                                    width: 32,
-                                    height: 32,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? AppPalette.lightGrey
-                                          : AppPalette.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      '##',
-                                      style: Body2_b.style.copyWith(
-                                        color: colors.onSurface,
-                                      ),
                                     ),
                                   ),
                                 ),
