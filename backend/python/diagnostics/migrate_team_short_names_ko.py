@@ -1,4 +1,4 @@
-"""네이버에서 확인한 5대 리그와 지정된 UEFA 팀의 한국어 짧은 이름을 저장해요."""
+"""네이버에서 확인한 5대 리그·UEFA·챔피언십 팀의 한국어 짧은 이름을 저장해요."""
 from __future__ import annotations
 
 import argparse
@@ -15,8 +15,8 @@ COLUMNS = {"teams": ("team_id", "short_name_ko")}
 
 def reviewed_rows():
     rows = json.loads(SEED_PATH.read_text(encoding="utf-8"))["teams"]
-    if len(rows) != 135 or len({row["team_id"] for row in rows}) != 135:
-        raise ValueError("Expected 135 distinct reviewed teams")
+    if len(rows) != 159 or len({row["team_id"] for row in rows}) != 159:
+        raise ValueError("Expected 159 distinct reviewed teams")
     for row in rows:
         name = row["short_name_ko"]
         if not isinstance(name, str) or not name.strip() or len(name) > 64:
@@ -43,12 +43,18 @@ def preview():
                         "JOIN teams t ON t.team_id=ts.team_id "
                         "WHERE s.is_current=1 AND s.competition_id IN (2,5,8,82,301,384,564)")
     expected = [(row["competition_id"], row["season_id"], row["season"], row["team_id"], row["name"])
-                for row in rows]
+                for row in rows if row["competition_id"] is not None]
     # UEFA 예선의 다른 팀까지 늘리지 않고, 첨부 표에서 확인한 팀만 포함해요.
     domestic = lambda values: sorted(row for row in values if row[0] not in (2, 5))
     if domestic(current) != domestic(expected) or not set(expected).issubset(set(current)):
         raise ValueError("Current league membership or team identity differs from reviewed Naver mapping")
-    saved = dict(fetch_all("SELECT team_id, " + ("short_name_ko" if ready else "NULL") + " FROM teams"))
+    # 챔피언십은 DB에 대회·시즌이 없어요. PDF 범위의 팀도 원문 이름과 ID는 확인해요.
+    teams = fetch_all("SELECT team_id, name, " + ("short_name_ko" if ready else "NULL") + " FROM teams")
+    identities = {team_id: name for team_id, name, _ in teams}
+    mismatches = [row["team_id"] for row in rows if identities.get(row["team_id"]) != row["name"]]
+    if mismatches:
+        raise ValueError(f"Team identity differs from reviewed Naver mapping: {mismatches}")
+    saved = {team_id: name for team_id, _, name in teams}
     conflicts = [row["team_id"] for row in rows if saved[row["team_id"]] not in (None, row["short_name_ko"])]
     if conflicts:
         raise ValueError(f"Existing Korean short names differ: {conflicts}")

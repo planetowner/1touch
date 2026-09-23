@@ -24,10 +24,36 @@ class TeamShortNamesTests(unittest.TestCase):
         self.assertEqual(names[683], "M’gladbach")
         self.assertNotIn(90, names)  # 목록에 없는 Augsburg에는 이름을 지정하지 않아요.
         self.assertNotIn(62, names)  # UEFA 예선에 있어도 첨부 표에 없는 팀은 제외해요.
-        self.assertEqual(names[58], "Sporting Lisbon")
+        self.assertEqual(names[58], "Sporting")
+        self.assertEqual(names[49], "Salzburg")
+        self.assertEqual(names[494], "NEC")
         self.assertEqual(names[3369], "Linz ASK")
         self.assertEqual(names[132649], "Ararat-Armenia")
         self.assertTrue(all(name and len(name) <= 64 for name in names.values()))
+
+    def test_preview_accepts_only_reviewed_old_or_corrected_short_names(self):
+        rows = migration.reviewed_rows()
+        previous = migration.previous_names()
+        self.assertEqual(len(previous), 12)
+        self.assertEqual(previous[49], "Red Bull Salzburg")
+        saved = [(row["team_id"], row.get("name", "Unchanged team"), previous.get(row["team_id"], row["short_name"]))
+                 for row in rows]
+        schema = [("varchar(64)", "YES")]
+        with patch.object(migration, "fetch_all", side_effect=[schema, saved]):
+            ready, summary = migration.preview()
+        self.assertTrue(ready)
+        self.assertEqual((summary["reviewed"], summary["updates"]), (134, 12))
+        self.assertEqual({row["team_id"] for row in summary["changes"]}, set(previous))
+        corrected = [(key, original, migration.short_names()[key]) for key, original, _ in saved]
+        with patch.object(migration, "fetch_all", side_effect=[schema, corrected]):
+            self.assertEqual(migration.preview()[1]["updates"], 0)
+        for invalid in (
+            [row for row in saved if row[0] != 49],
+            [(key, "Another club" if key == 49 else original, name) for key, original, name in saved],
+            [(key, original, "Other reviewed name" if key == 49 else name) for key, original, name in saved],
+        ):
+            with patch.object(migration, "fetch_all", side_effect=[schema, invalid]), self.assertRaises(ValueError):
+                migration.preview()
 
     def test_team_api_reads_stored_name_and_preserves_original_name(self):
         with closing(sqlite3.connect(":memory:")) as db:

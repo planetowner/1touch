@@ -77,6 +77,12 @@ python -m diagnostics.refresh_squad_roles --apply --report ..\logs\diagnostics\s
 모든 계산이 성공해야 저장 단계에 들어가요. 기본 실행에는 저장 단계가 없어요. 역할은 여러 선수의 값을 한 UPDATE로 보내 원격 DB 왕복을 줄여요.
 운영 API와 앱에 새 코드를 반영하는 배포는 별도예요. DB 반영만으로 기존 앱 코드가 바뀌지 않아요.
 
+## 반복 진단의 학습 캐시
+
+`--training-cache <경로>` 또는 `--refresh-training`을 지정하면 과거 결장 조회와 학습 결과를 재사용하는 진단 경로를 선택해요. 과거 DB의 실제 학습 입력이 바뀌면 다시 학습해요. 현재 시즌의 출전 기록·명단과 생일 판정은 매번 확인해요.
+
+운영 자동 갱신과 일반 미리보기는 계속 배포된 `squad_role_calibration.json`을 사용해요. 새로 학습한 기준을 운영에 적용하려면 아래 절차대로 검증·배포해야 해요.
+
 ## 다음 시즌 기준 학습
 
 ```powershell

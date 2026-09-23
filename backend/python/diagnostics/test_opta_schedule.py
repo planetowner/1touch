@@ -16,7 +16,7 @@ from one_touch_loader.loaders import opta_shots_loader as loader, opta_shots_sto
 
 
 class ScheduleTests(unittest.TestCase):
-    def run_sync(self, *, saved_shots=(), saved_analysis=(), apply=True):
+    def run_sync(self, *, saved_shots=(), saved_analysis=(), apply=True, targets=None):
         raw = json.loads((Path(__file__).parent / 'fixtures/opta-valencia-analysis.json').read_text(encoding='utf-8'))
         case = CASES[1]
         eid = case['raw']['match_id']
@@ -25,7 +25,7 @@ class ScheduleTests(unittest.TestCase):
             args = SimpleNamespace(dataset='both', apply=apply, output_dir=Path(directory),
                 competition_ids=[564], season='2026/2027', from_date=date(2026,9,6),
                 to_date=date(2026,9,6), refresh=False, limit=None, retry_report=None,
-                refresh_details=False)
+                refresh_details=False, fixtures=targets)
             with patch.object(db,'fetch_all',side_effect=[[(1,)], list(saved_shots), [(1,)], list(saved_analysis)]), \
                  patch.object(loader,'load_known_ids',return_value=empty_ids()), \
                  patch.object(loader,'fetch_schedule',return_value={'season_name':'2026/2027','matches':[case['match']]}), \
@@ -36,6 +36,17 @@ class ScheduleTests(unittest.TestCase):
                 report = loader.sync_matches(args)
                 calls = save.call_args_list
         return report, collect, calls, eid, fid
+
+    def test_targeted_collection_reads_only_the_requested_finished_fixture(self):
+        target = copy.deepcopy(CASES[1]['fixtures'][0])
+        report, collect, calls, _, _ = self.run_sync(targets=[target])
+        self.assertEqual(report['stored'], 1)
+        collect.assert_called_once()
+        target['starting_at'] = '2026-09-07 18:00:00'
+        report, collect, calls, _, _ = self.run_sync(targets=[target])
+        self.assertEqual(report['stored'], 0)
+        collect.assert_not_called()
+        self.assertEqual(calls, [])
 
     def test_one_capture_saves_both_and_check_never_writes(self):
         for apply in (False, True):
@@ -83,16 +94,16 @@ class ScheduleTests(unittest.TestCase):
                   dict(fixture_id=99,home_team_id=10,away_team_id=20,starting_at='2026-09-08 19:00:00',state_id=1),
                   dict(fixture_id=98,home_team_id=10,away_team_id=20,starting_at='2026-09-14 19:00:00',state_id=5)]
         for apply in (False,True):
-            with self.subTest(apply=apply),patch.object(SportmonksClient,'get_live_fixture',return_value=payload) as read, \
+            with self.subTest(apply=apply),patch.object(SportmonksClient,'get_live_fixtures_batch',return_value=[payload]) as read, \
                  patch.object(SportmonksClient,'correct_fixture_details',side_effect=lambda p:p), \
                  patch.object(live,'store_live_fixture') as save:
                 rows=store.refresh_recent_rosters(fixtures,[],from_date=date(2026,9,9),to_date=date(2026,9,15),stored_ids={98},apply=apply)
-                read.assert_called_once_with(fid)
+                read.assert_called_once_with([fid])
                 self.assertTrue(rows)
                 self.assertEqual(rows[0]['full_name'],'Full Player 0')
                 self.assertEqual(save.call_count,int(apply))
         payload['participants'][0]['id']=999
-        with patch.object(SportmonksClient,'get_live_fixture',return_value=payload), \
+        with patch.object(SportmonksClient,'get_live_fixtures_batch',return_value=[payload]), \
              patch.object(SportmonksClient,'correct_fixture_details',side_effect=lambda p:p), \
              patch.object(live,'store_live_fixture') as save:
             with self.assertRaisesRegex(ValueError,'participants differ'):

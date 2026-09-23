@@ -57,33 +57,45 @@ def preview():
 
 def migrate_data(conn, *, names=None, columns=NAME_COLUMNS, expected_before=None):
     names = reviewed_names() if names is None else names
+    save_name_columns(
+        conn,
+        names={table: {columns[table][1]: values} for table, values in names.items()},
+        identifiers={table: columns[table][0] for table in names},
+        expected_before={table: {columns[table][1]: (expected_before or {}).get(table, {})} for table in names},
+    )
+
+
+def save_name_columns(conn, *, names, identifiers, expected_before=None):
+    # 여러 언어도 같은 트랜잭션에서 저장해 한 언어만 반영된 채 끝나지 않게 해요.
     conn.start_transaction()
     try:
         with conn.cursor() as cursor:
-            for table, values in names.items():
-                identifier, column = columns[table]
+            for table, localized_columns in names.items():
+                identifier = identifiers[table]
                 # 같은 연결의 잠금 안에서 기존 값과 저장 결과를 비교해요.
                 cursor.execute(f"SELECT * FROM {table} ORDER BY {identifier} FOR UPDATE")
                 row_columns = [item[0] for item in cursor.description]
                 before = cursor.fetchall()
-                id_index, name_index = row_columns.index(identifier), row_columns.index(column)
-                saved = {row[id_index]: row[name_index] for row in before}
-                # 기존 이름 교정은 사용자가 지정하고 DB에서 확인한 이전 값만 허용해요.
-                previous = (expected_before or {}).get(table, {})
-                if values.keys() - saved.keys() or any(saved[key] not in (previous.get(key), name) for key, name in values.items()):
-                    raise ValueError(f"Reviewed {table} rows changed after preview")
-                changed = [(key, value) for key, value in values.items() if saved[key] != value]
-                for offset in range(0, len(changed), 500):
-                    batch = changed[offset:offset + 500]
-                    cases = " ".join("WHEN %s THEN %s" for _ in batch)
-                    ids = ",".join("%s" for _ in batch)
-                    cursor.execute(f"UPDATE {table} SET {column}=CASE {identifier} {cases} ELSE {column} END "
-                                   f"WHERE {identifier} IN ({ids})",
-                                   tuple(value for row in batch for value in row) + tuple(row[0] for row in batch))
+                id_index = row_columns.index(identifier)
+                for column, values in localized_columns.items():
+                    name_index = row_columns.index(column)
+                    saved = {row[id_index]: row[name_index] for row in before}
+                    # 기존 이름 교정은 사용자가 지정하고 DB에서 확인한 이전 값만 허용해요.
+                    previous = (expected_before or {}).get(table, {}).get(column, {})
+                    if values.keys() - saved.keys() or any(saved[key] not in (previous.get(key), name) for key, name in values.items()):
+                        raise ValueError(f"Reviewed {table} rows changed after preview")
+                    changed = [(key, value) for key, value in values.items() if saved[key] != value]
+                    for offset in range(0, len(changed), 500):
+                        batch = changed[offset:offset + 500]
+                        cases = " ".join("WHEN %s THEN %s" for _ in batch)
+                        ids = ",".join("%s" for _ in batch)
+                        cursor.execute(f"UPDATE {table} SET {column}=CASE {identifier} {cases} ELSE {column} END "
+                                       f"WHERE {identifier} IN ({ids})",
+                                       tuple(value for row in batch for value in row) + tuple(row[0] for row in batch))
                 cursor.execute(f"SELECT * FROM {table} ORDER BY {identifier}")
                 after = cursor.fetchall()
-                expected = [tuple(values.get(row[id_index], row[name_index]) if index == name_index else value
-                                  for index, value in enumerate(row)) for row in before]
+                expected = [tuple(localized_columns.get(column, {}).get(row[id_index], value)
+                                  for column, value in zip(row_columns, row)) for row in before]
                 if after != expected:
                     raise ValueError(f"Unexpected {table} changes; rolling back")
         conn.commit()

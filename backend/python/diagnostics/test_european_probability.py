@@ -157,13 +157,19 @@ class EuropeanProbabilityTests(unittest.TestCase):
         self.assertEqual(result[35]['probability'],1)
 
     def test_missing_schedule_elo_or_unresolved_match_is_not_invented(self):
-        for kind in ('schedule','elo','live','score'):
+        for kind in ('schedule','elo','unresolved','score'):
             args=inputs()
             if kind=='schedule': args['fixtures'].pop()
             if kind=='elo': args['elos'].pop(0)
-            if kind=='live': args['fixtures'][0]['state_id']=2
+            if kind=='unresolved': args['fixtures'][0]['state_id']=15
             if kind=='score': args['fixtures'][0]['state_id']=5
             with self.subTest(kind=kind), self.assertRaises(ValueError): core.simulate_title(**args)
+
+    def test_live_score_does_not_block_other_completed_match_results(self):
+        args=inputs()
+        baseline=core.simulate_title(**args)
+        args['fixtures'][0].update(state_id=2,home_score=99,away_score=0)
+        self.assertEqual(core.simulate_title(**args),baseline)
 
     def test_drawn_path_is_not_randomly_reconstructed_and_check_never_writes(self):
         args=inputs(); f={**args['fixtures'][0],'stage_type_id':224}
@@ -201,10 +207,34 @@ class EuropeanProbabilityTests(unittest.TestCase):
             self.assertEqual(runs[0]['bracket_input_sha256'], bracket['input_sha256'])
             self.assertEqual(runs[0]['teams']['1']['probability'], 1)
             self.assertEqual(runs[0]['teams']['2']['probability'], 0)
+            self.assertEqual(runs[0]['teams']['1']['played'], 9)
+            self.assertEqual(runs[0]['teams']['1']['previous_fixture_at'], '2027-04-01T20:00:00+00:00')
             bracket['fetched_at'] = '2027-04-03T00:00:00Z'
             with self.assertRaisesRegex(ValueError, 'predate'):
                 loader.prepare_runs(args['fixtures'], histories, report, [],
                     observed_at=observed_at, brackets=[bracket], simulations=100)
+
+    def test_stored_match_context_counts_only_completed_main_competition_fixtures(self):
+        args = inputs()
+        report = {'model_id': 'm', 'method': core.MODEL_METHOD, 'forecast_model': {
+            'coefficients': [.3, .2, .8], 'penalty_coefficient': 0, 'card_samples': [[2, 3]],
+            'last_training_fixture_at': '2026-05-01 12:00:00'}, 'limitations': [], 'validation': {'metrics': {}}}
+        coefficients = {'season_name': '2026/2027', 'teams': args['coefficients'], 'source_url': 'verified'}
+        histories = {t: [{'date': '2026-09-01', 'elo': 1700}] for t in args['team_ids']}
+        first = args['fixtures'][0]
+        first.update(state_id=5, home_score=1, away_score=0, starting_at='2026-09-10 19:00:00')
+        fixtures = args['fixtures'] + [{**first, 'fixture_id': 901, 'stage_type_id': 225},
+                                      {**first, 'fixture_id': 902, 'competition_id': 82}]
+        raw = [{'id': first['fixture_id'], 'state_id': 5, 'events': []}]
+        with patch.object(loader.common, '_read', return_value=coefficients):
+            runs, _ = loader.prepare_runs(fixtures, histories, report, raw,
+                observed_at=datetime(2026, 9, 21, tzinfo=timezone.utc), simulations=100)
+        for team_id in (0, 1):
+            team = runs[0]['teams'][str(team_id)]
+            self.assertEqual(team['played'], 1)
+            self.assertEqual(team['previous_fixture_at'], '2026-09-10T19:00:00+00:00')
+        self.assertEqual(runs[0]['teams']['2']['played'], 0)
+        self.assertIsNone(runs[0]['teams']['2']['previous_fixture_at'])
 
     def test_training_uses_only_pre_match_ratings_and_excludes_ambiguous_cards(self):
         f={**inputs()['fixtures'][0], 'home_team_id':1, 'away_team_id':2,
