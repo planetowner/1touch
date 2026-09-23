@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
-from ...core.fixture_states import COMPLETED_STATE_IDS
+from ...core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..db import fetch_all_dict
 
 
@@ -66,8 +66,16 @@ def list_standings(
     competition_id: int,
     season_id: int,
 ) -> List[Dict[str, Any]]:
+    live_marks = ','.join('%s' for _ in LIVE_STATE_IDS)
+    active = fetch_all_dict(f"""
+        SELECT f.fixture_id FROM fixtures f JOIN stages st ON st.stage_id=f.stage_id
+        WHERE st.season_id=%s AND f.state_id IN ({live_marks})
+          AND EXISTS (SELECT 1 FROM live_standings ls WHERE ls.season_id=st.season_id) LIMIT 1
+    """, (season_id, *LIVE_STATE_IDS))
+    # 종료 후에는 공식 순위를 보여줘요. 다른 계산은 계속 standings만 읽어요.
+    table = 'live_standings' if active else 'standings'
     rows = fetch_all_dict(
-        """
+        f"""
         SELECT
           st.position,
           st.previous_position,
@@ -81,7 +89,7 @@ def list_standings(
           st.goals_for,
           st.goals_against,
           st.points
-        FROM standings st
+        FROM {table} st
         JOIN seasons s ON s.season_id = st.season_id
         JOIN teams t ON t.team_id = st.team_id
         WHERE st.season_id = %s

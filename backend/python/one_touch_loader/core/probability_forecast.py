@@ -7,7 +7,8 @@ from datetime import date, datetime, timedelta, timezone
 import math
 
 from .clubelo import rating_before
-from .fixture_states import COMPLETED_STATE_IDS, UPCOMING_STATE_IDS
+from .cup_betting import utc_datetime
+from .fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS, UPCOMING_STATE_IDS
 from .probability import WDLModel, simulate_league
 
 
@@ -35,6 +36,17 @@ def league_events(competition_id: int, positions: list[dict]) -> list[dict]:
     return [{"event": name, "competition_id": competition_id, "category": category,
              "probability": min(1.0, max(0.0, math.fsum(p["probability"] for p in positions if p["position"] in ranks)))}
             for name, category, ranks in specs]
+
+
+def with_probability_changes(events: list[dict], previous_events: list[dict]) -> list[dict]:
+    # 같은 대회·결과끼리만 %p로 비교하고, 비교값이 없으면 0으로 바꾸지 않아요.
+    previous = {(e['competition_id'], e['event']): e['probability'] for e in previous_events}
+    result = []
+    for event in events:
+        key = (event['competition_id'], event['event'])
+        change = 100 * (event['probability'] - previous[key]) if key in previous else None
+        result.append({**event, 'change_pp': change})
+    return result
 
 
 def select_cards(events: list[dict], limit: int = 4) -> list[dict]:
@@ -102,7 +114,8 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
         day = date.fromisoformat(str(fixture["starting_at"])[:10])
         kickoff = datetime.fromisoformat(str(fixture["starting_at"])).replace(tzinfo=timezone.utc)
         state = fixture["state_id"]
-        if (day < as_of or observed_at) and state not in (*COMPLETED_STATE_IDS, *UPCOMING_STATE_IDS):
+        allowed = (*COMPLETED_STATE_IDS, *UPCOMING_STATE_IDS, *(LIVE_STATE_IDS if observed_at else ()))
+        if (day < as_of or observed_at) and state not in allowed:
             raise ValueError(f"Fixture {fixture['fixture_id']} is live or has an unresolved result")
         h, a = fixture["home_team_id"], fixture["away_team_id"]
         if state in COMPLETED_STATE_IDS and (kickoff < observed_at if observed_at else day < as_of):
@@ -115,6 +128,7 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
             played[a] += 1
             finished.append(fixture)
         else:
+            # 진행 중인 경기의 임시 점수는 확정 승점에 넣지 않아요. 먼저 끝난 경기는 즉시 반영해요.
             # 복원 시점 이후 경기의 현재 결과는 읽지 않고, 당시 Elo로 새로 뽑아요.
             remaining.append({"fixture_id": fixture["fixture_id"], "home_team_id": h, "away_team_id": a,
                               "starting_at": str(fixture["starting_at"]), "round_name": fixture.get("round_name"),
@@ -127,11 +141,13 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
     for team in teams:
         t = team["team_id"]
         entry = baseline[t]
+        previous_fixture = next((f for f in reversed(finished) if t in (f['home_team_id'], f['away_team_id'])), None)
+        previous_at = utc_datetime(previous_fixture['starting_at']) if previous_fixture else None
         entry.update({"team_id": t, "team_name": team["name"], "short_code": team.get("short_code"),
                       "elo": ratings[t], "current_points": points[t], "played": played[t],
                       "maximum_points": points[t] + 3 * (2 * (len(team_ids) - 1) - played[t]),
-                      "previous_fixture_date": next((str(f["starting_at"])[:10] for f in reversed(finished)
-                                                     if t in (f["home_team_id"], f["away_team_id"])), None)})
+                      "previous_fixture_date": previous_at.date().isoformat() if previous_at else None,
+                      "previous_fixture_at": previous_at.isoformat().replace('+00:00', 'Z') if previous_at else None})
         entry["events"] = league_events(competition_id, entry["positions"])
         entry["cards"] = select_cards(entry["events"]) if remaining else []
         entry["what_if"] = None
@@ -146,13 +162,11 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
         for t, fixture in next_by_team.items():
             if fixture is None:
                 continue
-            base_events = {e["event"]: e["probability"] for e in output_teams[str(t)]["events"]}
             scenarios = []
             for label, result_index in zip(("win", "draw", "loss"), (0, 1, 2) if fixture["home_team_id"] == t else (2, 1, 0)):
                 simulated = conditionals[fixture["fixture_id"]][result_index][t]
-                events = league_events(competition_id, simulated["positions"])
-                for event in events:
-                    event["change_pp"] = 100 * (event["probability"] - base_events[event["event"]])
+                events = with_probability_changes(league_events(competition_id, simulated["positions"]),
+                                                  output_teams[str(t)]["events"])
                 scenarios.append({"outcome": label, "events": events, **simulated})
             output_teams[str(t)]["what_if"] = {"fixture": fixture, "scenarios": scenarios}
     return {"competition_id": competition_id, "season_id": season_id, "season_name": "2026/2027",
@@ -163,7 +177,7 @@ def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixt
             "finished_fixtures": len(finished), "remaining_fixtures": len(remaining),
             "limitations": ["point_ties_uniform", "elo_fixed", "daily_historical_cutoff",
                             "historical_fixture_dates_are_currently_stored_dates",
-                            "european_qualification_and_cup_outcomes_pending"],
+                            "european_qualification_and_cup_outcomes_pending", "inplay_scores_not_used"],
             "teams": output_teams}
 
 

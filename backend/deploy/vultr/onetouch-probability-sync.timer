@@ -1,10 +1,11 @@
 [Unit]
-Description=Refresh 1Touch league probabilities every hour
+Description=Refresh 1Touch probabilities when results change
 
 [Timer]
 # 같은 작업이 아직 실행 중이면 겹쳐 실행하지 않아요.
-OnCalendar=hourly
-Persistent=true
+OnBootSec=45s
+OnUnitInactiveSec=15s
+AccuracySec=1s
 
 [Install]
 WantedBy=timers.target

@@ -31,7 +31,7 @@ class HistoricalPercentile:
         return Decimal(50 * (below + through_equal)) / len(self.reference)
 
 
-def score_season_records(rows: list[dict]) -> list[dict]:
+def score_season_records(rows: list[dict], *, from_season: str | None = None) -> list[dict]:
     """각 시즌은 자기 시즌까지의 모든 리그 표본과 비교하고, 이후 시즌은 제외해요."""
     by_season: dict[str, list[dict]] = {}
     for row in rows:
@@ -42,6 +42,9 @@ def score_season_records(rows: list[dict]) -> list[dict]:
         season_rows = by_season[season_name]
         # 같은 시즌의 다른 리그와 자기 기록도 비교 집단에 포함해요.
         reference.extend(average_rating(row["rating_sum"], row["rated_matches"]) for row in season_rows)
+        # 갱신 대상 이전 시즌도 비교 표본에는 남기고, 저장하지 않을 점수 계산만 생략해요.
+        if from_season is not None and season_name < from_season:
+            continue
         distribution = HistoricalPercentile(reference)
         result.extend({
             **row,

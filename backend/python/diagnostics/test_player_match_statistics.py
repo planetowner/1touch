@@ -80,7 +80,11 @@ class PlayerMetricTests(unittest.TestCase):
         self.assertNotIn(103, STORED_STAT_TYPE_IDS)
         self.assertNotIn(27267, STORED_STAT_TYPE_IDS)
         self.assertNotIn(5304, STORED_STAT_TYPE_IDS)
-        self.assertEqual(set(METRICS), {code for cats in CATEGORIES.values() for _, _, codes in cats for code in codes})
+        from one_touch_loader.core.player_match_metrics import SUMMARY_METRICS
+        # 요약 카드 전용 지표도 같은 정의를 쓰지만 상세 분류에 중복 표시하지 않아요.
+        displayed = {code for cats in CATEGORIES.values() for _, _, codes in cats for code in codes}
+        displayed.update(code for codes in SUMMARY_METRICS.values() for code in codes)
+        self.assertEqual(set(METRICS), displayed)
 
     def test_absence_zero_and_invalid_percentage_remain_distinct(self):
         case = deepcopy(SAMPLE["cases"][0])

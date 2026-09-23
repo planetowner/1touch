@@ -1,0 +1,41 @@
+{
+  "cases": [],
+  "profiles": {},
+  "verified_source": {
+    "18464578": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2021-2022-copa-del-rey-girona-fc-rayo-vallecano-4"
+      ],
+      "finding": "LALIGA 경기표에서 Michel 경고 48분, Iraola 경고 84분. 같은 감독의 다른 카드 행은 없음. 선수 ID NULL과 카드 유형을 유지."
+    },
+    "18509802": {
+      "sources": [
+        "https://www.laliga.com/partido/temporada-2021-2022-europa-league-fc-barcelona-eintracht-12",
+        "https://datencenter.dfb.de/datencenter/europa-league/2021-22/viertelfinale/fc-barcelona-eintracht-frankfurt-2337755"
+      ],
+      "finding": "LALIGA의 전체 경기 시계를 기준으로 Glasner 90+6, Xavi 90+10 경고. DFB는 Glasner 90+7로 1분 차이가 있고 Xavi 카드가 누락되어 있어, 두 카드 모두 LALIGA 경기표 기준을 적용. 두 감독의 다른 카드 행은 없음."
+    },
+    "18634426": {
+      "sources": [
+        "https://m.sport.bild.de/app/fussball/conference-league-quali/ma9483036/fehervar-fc_1-fc-koeln/liveticker/cp1/",
+        "https://www.kicker.de/fehervar-fc-gegen-koeln-2022-uefa-conference-league-qualifikation-4809130/spielbericht",
+        "https://www.ksta.de/sport/1-fc-koeln/nach-platzverweis-fc-trainer-steffen-baumgart-erlebt-emotionale-momente-347534"
+      ],
+      "finding": "당시 실시간 중계의 90분 경고 직후 두 번째 경고 퇴장과 Baumgart 본인 발언이 일치. 원문 경고 46분과 두 번째 경고 -4분을 모두 90분으로 보정. 경고/두 번째 경고 두 행을 그대로 유지."
+    },
+    "18674286": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2022-2023-champions-league-fc-barcelona-inter-4",
+        "https://editorial.uefa.com/resources/027a-165659c629fb-066e56c0201f-1000/ucl_bookinglist_before_gs_md5.pdf",
+        "https://www.inter.it/it/match_center/4857"
+      ],
+      "finding": "LALIGA 경기표의 Inzaghi 90분 경고와 90+7분 퇴장. UEFA 2022-10-13 징계표 3쪽은 해당 MD4를 Y+R로 기록해 경고와 직접 퇴장 두 행을 확인. 원문 type19/type20과 NULL 선수 연결 유지."
+    },
+    "18760978": {
+      "sources": [
+        "https://www.laliga.com/en-GB/match/temporada-2022-2023-copa-del-rey-nastic-ca-osasuna-3"
+      ],
+      "finding": "LALIGA 경기표 Raúl Agné 108분 경고. 연장 두 번째 전반 108분이며 90+18로 바꾸지 않음. 원문의 NULL 선수 연결과 type19 유지."
+    }
+  }
+}

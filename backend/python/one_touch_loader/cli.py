@@ -20,7 +20,7 @@ from one_touch_loader.loaders.standings_loader import (
 )
 from one_touch_loader.loaders.xg_standings_loader import build_xg_standings
 from one_touch_loader.loaders.understat_ids_loader import collect_understat_ids
-from one_touch_loader.loaders.understat_loader import collect_understat
+from one_touch_loader.loaders.understat_loader import collect_understat, refresh_understat
 from one_touch_loader.loaders.highlights_loader import run_cli as run_highlights_cli
 from one_touch_loader.loaders.news_loader import run_cli as run_news_cli
 from one_touch_loader.loaders.injuries_loader import (
@@ -128,7 +128,7 @@ New database reload order (redesigned commands):
 
 6. players
   python -m one_touch_loader.cli players all
-  python -m one_touch_loader.cli players <season_name> <competition_id> [competition_id ...]
+  python -m one_touch_loader.cli players <season_name> <competition_id> [competition_id ...] [--with-squads]
   python -m one_touch_loader.cli players refresh-honours <player_id>
 
 7. squads
@@ -194,6 +194,9 @@ New database reload order (redesigned commands):
 17. understat (requires verified Understat IDs; Big 5 only)
   python -m one_touch_loader.cli understat <season_name> [competition_id ...] [--check]
   python -m one_touch_loader.cli understat all [--check]
+
+  # ID 연결과 xG 적재가 같은 원본을 공유해요. 미연결 ID가 남으면 xG 적재를 중단해요.
+  python -m one_touch_loader.cli understat-refresh <season_name|all> [competition_id ...] [--check]
 
 18. xg-standings (requires stored xG; five previous seasons for calibration)
   python -m one_touch_loader.cli xg-standings <season_name> [competition_id ...] [--check]
@@ -413,7 +416,7 @@ def main():
         else:
             print(USAGE)
 
-    elif cmd in {"understat-ids", "understat", "xg-standings"}:
+    elif cmd in {"understat-ids", "understat", "understat-refresh", "xg-standings"}:
         arguments = sys.argv[2:]
         check = "--check" in arguments
         arguments = [a for a in arguments if a != "--check"]
@@ -424,6 +427,7 @@ def main():
         competition_ids = _parse_competition_ids(arguments[1:]) if len(arguments) > 1 else None
         # 매핑·수집·집계가 시즌과 대회 범위를 같은 방식으로 해석해요.
         command = {"understat-ids": collect_understat_ids, "understat": collect_understat,
+                   "understat-refresh": refresh_understat,
                    "xg-standings": build_xg_standings}[cmd]
         print(f"{cmd} done: {command(season_name, competition_ids, check=check)}")
 
@@ -517,11 +521,13 @@ def main():
             "refresh-honours",
         }:
             season_name = sys.argv[2]
-            competition_ids = _parse_competition_ids(sys.argv[3:])
+            with_squads = "--with-squads" in sys.argv[3:]
+            competition_ids = _parse_competition_ids([arg for arg in sys.argv[3:] if arg != "--with-squads"])
             for competition_id in competition_ids:
                 result = collect_players_for_competition_season(
                     season_name,
                     competition_id,
+                    with_squads=with_squads,
                 )
                 print(
                     "Players competition done: "

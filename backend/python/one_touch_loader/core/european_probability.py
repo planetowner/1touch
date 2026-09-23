@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 from scipy.special import expit, gammaln
 
 from .cup_betting import EUROPE_COMPETITION_IDS
-from .fixture_states import COMPLETED_STATE_IDS, UPCOMING_STATE_IDS
+from .fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS, UPCOMING_STATE_IDS
 
 
 MODEL_METHOD = 'european_title_poisson_elo_v1'
@@ -179,7 +179,7 @@ def simulate_bracket_title(*, bracket, team_ids, elos, model, penalty_coefficien
                         raise ValueError('An unresolved bracket slot has no verified parent')
                     participants.append(values)
                 legs = tie['fixtures']
-                if any(f['state_id'] not in (*COMPLETED_STATE_IDS, *UPCOMING_STATE_IDS) for f in legs):
+                if any(f['state_id'] not in (*COMPLETED_STATE_IDS, *UPCOMING_STATE_IDS, *LIVE_STATE_IDS) for f in legs):
                     raise ValueError('The knockout phase has a live or unresolved fixture')
                 if legs[-1]['state_id'] in COMPLETED_STATE_IDS:
                     raise ValueError('A completed tie has no verified winner')
@@ -271,7 +271,8 @@ def simulate_title(*, competition_id, team_ids, fixtures, elos, coefficients, di
             home, away = np.full(simulations, fixture['home_score']), np.full(simulations, fixture['away_score'])
             observed = discipline[fixture['fixture_id']]
             hp, ap = observed[fixture['home_team_id']], observed[fixture['away_team_id']]
-        elif fixture['state_id'] in (1, 10, 13, 16):
+        elif fixture['state_id'] in (*UPCOMING_STATE_IDS, *LIVE_STATE_IDS):
+            # 다른 경기의 종료 결과를 반영하되 진행 중 점수는 아직 확정하지 않아요.
             hr, ar = model.rates(strengths[h] - strengths[a])
             home, away = rng.poisson(hr, size=simulations), rng.poisson(ar, size=simulations)
             sampled = cards[rng.integers(0, len(cards), size=simulations)]
