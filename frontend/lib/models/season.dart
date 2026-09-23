@@ -1,21 +1,20 @@
-// SQL table: seasons
-// season_id | competition_id | name | is_current | starting_at | ending_at
+// 시즌 날짜는 DB에서 제거되어 이름과 현재 시즌 여부로 정렬해요.
 
 class Season {
   final int seasonId;
   final int competitionId;
   final String name;
   final bool isCurrent;
-  final String startingAt; // datetime string: 'YYYY-MM-DD HH:MM:SS'
-  final String endingAt;
+  final String? startingAt;
+  final String? endingAt;
 
   const Season({
     required this.seasonId,
     required this.competitionId,
     required this.name,
     required this.isCurrent,
-    required this.startingAt,
-    required this.endingAt,
+    this.startingAt,
+    this.endingAt,
   });
 
   factory Season.fromJson(Map<String, dynamic> json) {
@@ -23,9 +22,7 @@ class Season {
       seasonId: json['season_id'] as int,
       competitionId: json['competition_id'] as int,
       name: json['name'] as String,
-      isCurrent: (json['is_current'] as int) == 1,
-      startingAt: json['starting_at'] as String,
-      endingAt: json['ending_at'] as String,
+      isCurrent: json['is_current'] as bool,
     );
   }
 }
