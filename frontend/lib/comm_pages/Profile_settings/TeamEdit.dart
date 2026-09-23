@@ -187,16 +187,10 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
         favoriteTeamId: favoriteTeamId,
       );
 
-      // Home and navigation still read the temporary local preference store.
-      // Keep it synchronized only after the backend has accepted the update.
-      unawaited(
-        currentUserPreferences.updateTeamSelection([
-          favoriteTeamId,
-          ...savedTeams
-              .map((team) => team.teamId)
-              .where((teamId) => teamId != favoriteTeamId),
-        ]),
-      );
+      currentUserPreferences.applyServerSelection(UserTeamPreferences(
+        favoriteTeamId: favoriteTeamId,
+        followedTeamIds: savedTeams.map((team) => team.teamId).toList(),
+      ));
       if (!mounted) return;
       Navigator.of(context).pop(
         FollowingTeamsEditResult(

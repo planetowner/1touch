@@ -43,16 +43,19 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
-    await currentUserPreferences.updateTeamSelection(
-      _myTeams.map((team) => team.teamId),
-    );
-    if (!mounted) return;
-
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()),
-    );
-    if (mounted) setState(() => _isSaving = false);
+    try {
+      await currentUserPreferences
+          .updateTeamSelection(_myTeams.map((team) => team.teamId));
+      if (!mounted) return;
+      await Navigator.push(context,
+          MaterialPageRoute(builder: (_) => const WelcomeLoadingScreen()));
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Unable to save teams. Please try again.')));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
