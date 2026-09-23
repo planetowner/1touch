@@ -7,8 +7,9 @@ import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/favorite_team.dart';
 import 'package:onetouch/core/team_navigation.dart';
-import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/SessionScreen.dart';
+import 'package:onetouch/core/api_client_provider.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
@@ -27,9 +28,6 @@ import 'package:onetouch/WelcomeScreen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await appThemeController.initialize();
-  // Initializes the team catalog before loading and validating stored IDs.
-  await currentUserPreferences.initialize();
-  await playerRepository.initializeFollowing();
   runApp(const MyApp());
 }
 
@@ -37,6 +35,17 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
+  redirect: (context, state) {
+    final path = state.uri.path;
+    if (path == '/' ||
+        path == '/session' ||
+        path == '/onboarding' ||
+        path.startsWith('/auth/')) return null;
+    if (!authSession.isAuthenticated) return '/onboarding';
+    if (path.startsWith('/onboarding/') && footballCatalog.isLoaded)
+      return null;
+    return isAppSessionReady ? null : '/session';
+  },
   errorBuilder: (context, state) => const AppErrorScreen(statusCode: 404),
   routes: [
     // Splash
@@ -44,9 +53,12 @@ final GoRouter _router = GoRouter(
       path: '/',
       builder: (context, state) => SplashScreen(
         nextLocation:
-            ApiConfig.skipOnboardingForDevelopment ? '/home' : '/onboarding',
+            ApiConfig.skipOnboardingForDevelopment ? '/session' : '/onboarding',
       ),
     ),
+
+    GoRoute(
+        path: '/session', builder: (context, state) => const SessionScreen()),
 
     // Onboarding
     GoRoute(
@@ -105,9 +117,7 @@ final GoRouter _router = GoRouter(
                 path: ':id',
                 builder: (context, state) {
                   final playerId = state.pathParameters['id']!;
-                  final player = playerRepository.findById(playerId);
-                  return PlayerCard(
-                      player: player, playerId: int.tryParse(playerId));
+                  return PlayerCard(playerId: int.tryParse(playerId));
                 },
               ),
             ],
@@ -126,15 +136,6 @@ final GoRouter _router = GoRouter(
                   final teamId = int.parse(state.pathParameters['id']!);
                   return TeamScreen(teamId: teamId);
                 },
-                routes: [
-                  GoRoute(
-                    path: 'probability/:event',
-                    builder: (context, state) => TeamProbabilityScreen(
-                      teamId: int.parse(state.pathParameters['id']!),
-                      event: state.pathParameters['event']!,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

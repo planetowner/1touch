@@ -83,7 +83,7 @@ GoRouter _router(AuthService service) => GoRouter(
           ),
         ),
         GoRoute(
-          path: '/onboarding/welcome',
+          path: '/session',
           builder: (_, __) => const Scaffold(body: Text('Welcome destination')),
         ),
       ],

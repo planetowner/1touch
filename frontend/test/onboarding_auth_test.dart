@@ -128,15 +128,11 @@ GoRouter _router(AuthService authService) {
         builder: (context, state) => OnboardingScreen(
           authService: authService,
         ),
-        routes: [
-          GoRoute(
-            path: 'welcome',
-            builder: (context, state) => const Scaffold(
-              body: Text('Welcome destination'),
-            ),
-          ),
-        ],
       ),
+      GoRoute(
+          path: '/session',
+          builder: (_, __) =>
+              const Scaffold(body: Text('Welcome destination'))),
     ],
   );
 }
