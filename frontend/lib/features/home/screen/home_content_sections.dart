@@ -12,7 +12,9 @@ class MyHighlights extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      _HomeContentList(items: highlights, fallbacks: fallbacks);
+      highlights.isEmpty
+          ? const Padding(padding: EdgeInsets.all(24), child: Text('No highlights available yet.'))
+          : _HomeContentList(items: highlights, fallbacks: fallbacks);
 }
 
 class MyNews extends StatelessWidget {

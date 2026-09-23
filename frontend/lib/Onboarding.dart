@@ -30,7 +30,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     try {
       await _authService.signInWithGoogle();
       if (!mounted) return;
-      context.go('/onboarding/welcome');
+      context.go('/session');
     } on GoogleIdentityException catch (error) {
       if (error.type != GoogleIdentityFailureType.cancelled && mounted) {
         _showGoogleSignInError();
@@ -67,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     Future<void> proceed() async {
       // TODO: 실제 로그인 처리 후 홈으로
-      context.go('/onboarding/welcome');
+      context.go('/session');
     }
 
     // 아이콘을 위젯으로 받아서 PNG/SVG 아무거나 쓸 수 있게

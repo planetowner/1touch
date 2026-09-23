@@ -96,7 +96,7 @@ GoRouter _router(AuthService service, {required String initialLocation}) =>
           ),
         ),
         GoRoute(
-          path: '/home',
+          path: '/session',
           builder: (_, __) => const Scaffold(body: Text('Home destination')),
         ),
       ],
