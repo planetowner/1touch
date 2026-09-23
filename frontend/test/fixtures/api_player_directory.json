@@ -1,0 +1,6 @@
+{
+  "season_name": "2026/2027",
+  "leagues": [{"competition_id": 8, "season_id": 28083, "season_name": "2026/2027", "name": "Premier League", "available_players": 1}],
+  "items": [{"player_id": 123, "name": "선수 Example", "image": null, "position": "MF", "rank": 1, "display_score": 8.2, "average_rating": 7.8, "rated_matches": 4}],
+  "total": 1, "limit": 20, "offset": 0, "competition_id": null, "position": null
+}
