@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Matches.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('loads each match status and centers labels responsively',
       (tester) async {
     tester.view.physicalSize = const Size(320, 568);

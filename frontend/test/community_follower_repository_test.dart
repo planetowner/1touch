@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:onetouch/screens/CommunityScreen.dart';
 import 'package:onetouch/models/community_rules.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('shows the repository-provided follower count', (tester) async {
     final repository = _ScriptedCommunityRepository([
       () => Future.value(1250),

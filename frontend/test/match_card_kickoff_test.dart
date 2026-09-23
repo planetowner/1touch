@@ -1,9 +1,11 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
 
 void main() {
+  setUpAppCatalog();
   const fixture = Fixture(
     fixtureId: 1,
     seasonId: 1,

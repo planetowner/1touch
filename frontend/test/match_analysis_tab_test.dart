@@ -1,7 +1,8 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
-import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
+import 'support/test_match_analysis_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
@@ -9,6 +10,7 @@ import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('renders real tactical values without the former pressure mocks',
       (tester) async {
     final fixture = mockFixtures.first;
@@ -57,7 +59,7 @@ void main() {
         ),
       ],
     );
-    final repository = _Repository(analysis, shotMap);
+    final repository = TestMatchAnalysisRepository(analysis, shotMap);
     final detail = _detailWithStatistics(
       fixture,
       [
@@ -271,7 +273,7 @@ void main() {
         home: Scaffold(
           body: AnalysisTab(
             fixture: fixture,
-            repository: _Repository(analysis, shotMap),
+            repository: TestMatchAnalysisRepository(analysis, shotMap),
           ),
         ),
       ),
@@ -294,7 +296,7 @@ void main() {
       await tester.binding.setSurfaceSize(scenario.size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final fixture = mockFixtures.first;
-      final repository = _Repository(
+      final repository = TestMatchAnalysisRepository(
         MatchTacticalAnalysis(
           fixtureId: fixture.fixtureId,
           available: false,
@@ -433,32 +435,3 @@ MatchTeamTacticalAnalysis _team(
         averageRegainHeightMetres: 44.5,
       ),
     );
-
-class _Repository implements MatchAnalysisRepository {
-  _Repository(this.analysis, this.shotMap)
-      : cachedAnalyses = ValueNotifier({analysis.fixtureId: analysis}),
-        cachedShotMaps = ValueNotifier({shotMap.fixtureId: shotMap});
-
-  final MatchTacticalAnalysis analysis;
-  final MatchShotMap shotMap;
-
-  @override
-  final ValueNotifier<Map<int, MatchTacticalAnalysis>> cachedAnalyses;
-
-  @override
-  final ValueNotifier<Map<int, MatchShotMap>> cachedShotMaps;
-
-  @override
-  MatchTacticalAnalysis? cachedAnalysisForFixture(int fixtureId) =>
-      cachedAnalyses.value[fixtureId];
-
-  @override
-  MatchShotMap? cachedShotMapForFixture(int fixtureId) =>
-      cachedShotMaps.value[fixtureId];
-
-  @override
-  Future<MatchTacticalAnalysis> loadAnalysis(int fixtureId) async => analysis;
-
-  @override
-  Future<MatchShotMap> loadShotMap(int fixtureId) async => shotMap;
-}

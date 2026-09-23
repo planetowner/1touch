@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('loads current-user identity through the repository',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));

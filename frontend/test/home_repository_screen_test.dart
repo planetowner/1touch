@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -14,6 +15,7 @@ import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/HomeScreen.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('loads Home and followed teams through the repository',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));

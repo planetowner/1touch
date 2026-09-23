@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
+  setUpAppCatalog();
   testWidgets('loads posts through the repository on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));

@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -13,6 +14,7 @@ import 'package:onetouch/screens/HomeScreen.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 
 void main() {
+  setUpAppCatalog();
   final pages = <({String name, Widget screen})>[
     (
       name: 'home',
