@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,8 +8,11 @@ import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/following_player.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
 
 void main() {
+  setUpAppCatalog();
   const phoneSizes = [Size(320, 568), Size(430, 932)];
 
   for (final size in phoneSizes) {
@@ -23,6 +27,12 @@ void main() {
         MaterialApp(
           theme: app_style.whitetheme,
           home: Profile(
+            followingController: PlayerFollowingController()
+              ..loaded = true
+              ..players = [
+                const FollowingPlayer(
+                    playerId: 123, name: 'API Player', imagePath: null)
+              ],
             repository: _StaticCurrentUserRepository(),
             followingTeamsRepository: _StaticFollowingTeamsRepository(),
           ),
@@ -42,7 +52,7 @@ void main() {
       await tester.pump();
 
       final playerList =
-          find.byKey(const ValueKey('profile-following-player-list'));
+          find.byKey(const ValueKey('players-favorites-section'));
       final playerLinks = find.descendant(
         of: playerList,
         matching: find.byWidgetPredicate(
@@ -51,7 +61,7 @@ void main() {
               widget.key is ValueKey<String> &&
               (widget.key! as ValueKey<String>)
                   .value
-                  .startsWith('profile-player-link-'),
+                  .startsWith('favorite-player-'),
         ),
       );
       expect(playerLinks, findsWidgets);
@@ -60,16 +70,6 @@ void main() {
               .widgetList<InkWell>(playerLinks)
               .every((link) => link.onTap != null),
           isTrue);
-      final jerseyBadgeFinder = find
-          .descendant(of: playerList, matching: find.byType(CircleAvatar))
-          .first;
-      final jerseyBadge = tester.widget<CircleAvatar>(jerseyBadgeFinder);
-      final jerseyNumber = tester.widget<Text>(
-        find.descendant(
-          of: jerseyBadgeFinder,
-          matching: find.byType(Text),
-        ),
-      );
       expect(scaffold.backgroundColor, app_style.AppPalette.lightGreyBox);
       expect(
         find.byKey(const ValueKey('profile-background-gradient')),
@@ -79,8 +79,6 @@ void main() {
         (statCard.decoration as BoxDecoration).color,
         app_style.AppPalette.white,
       );
-      expect(jerseyBadge.backgroundColor, app_style.AppPalette.white);
-      expect(jerseyNumber.style?.color, app_style.AppPalette.black);
       expect(tester.takeException(), isNull);
     });
   }
@@ -96,6 +94,12 @@ void main() {
       MaterialApp(
         theme: app_style.darktheme,
         home: Profile(
+          followingController: PlayerFollowingController()
+            ..loaded = true
+            ..players = [
+              const FollowingPlayer(
+                  playerId: 123, name: 'API Player', imagePath: null)
+            ],
           repository: _StaticCurrentUserRepository(),
           followingTeamsRepository: _StaticFollowingTeamsRepository(),
         ),

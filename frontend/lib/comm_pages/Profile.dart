@@ -1,16 +1,13 @@
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
-import 'package:onetouch/comm_pages/Profile_settings/PlayerEdit.dart';
-import 'package:onetouch/data/community/mock/community_catalog.dart'
-    show mockUserProfileById;
-import 'package:onetouch/data/players/player_repository_provider.dart';
+import 'package:onetouch/features/player/player_directory_widgets.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as profile_provider;
@@ -20,20 +17,20 @@ import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
     as following_teams_provider;
 import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
-import 'package:onetouch/features/player_image.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
-import 'package:onetouch/models/user_profile.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
     super.key,
     this.repository,
+    this.followingController,
     this.followingTeamsRepository,
     this.avatarRequestHeaders,
   });
 
   final CurrentUserRepository? repository;
+  final PlayerFollowingController? followingController;
   final FollowingTeamsRepository? followingTeamsRepository;
   final Map<String, String>? avatarRequestHeaders;
 
@@ -42,15 +39,12 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  static const _placeholderUserId = 1001;
-
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
   CurrentUserProfile? _profile;
   List<Team> _followingTeams = const [];
   int? _favoriteTeamId;
   bool _isLoading = true;
-  late UserProfile _placeholderStats;
 
   CurrentUserRepository get _repository =>
       widget.repository ?? profile_provider.currentUserRepository;
@@ -75,16 +69,7 @@ class _ProfileState extends State<Profile> {
         });
       });
 
-    // TODO(api-community-profile): Replace these counts when the profile API
-    // exposes points, posts, and comments.
-    _placeholderStats = mockUserProfileById(_placeholderUserId);
-    playerRepository.followedPlayerIds.addListener(_onPreferencesChanged);
     _loadProfile();
-  }
-
-  void _onPreferencesChanged() {
-    if (!mounted) return;
-    setState(() {});
   }
 
   Future<void> _loadProfile() async {
@@ -143,7 +128,6 @@ class _ProfileState extends State<Profile> {
 
   @override
   void dispose() {
-    playerRepository.followedPlayerIds.removeListener(_onPreferencesChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -318,39 +302,15 @@ class _ProfileState extends State<Profile> {
                   _buildTeamList(),
                   const SizedBox(height: 48),
 
-                  // FOLLOWING PLAYERS
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "FOLLOWING PLAYERS",
-                            style: Body2_b.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.border_color,
-                              color: colors.onSurface, size: 20),
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) =>
-                                  const EditFollowingPlayersSheet(),
-                            );
-                          },
-                        ),
-                      ],
+                    child: PlayerFavorites(
+                      title: 'FOLLOWING PLAYERS',
+                      controller: widget.followingController ??
+                          playerFollowingController,
+                      searchRepository: null,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildPlayerList(),
                   const SizedBox(height: 48),
 
                   _buildSectionLabel("SETTINGS"),
@@ -435,11 +395,11 @@ class _ProfileState extends State<Profile> {
         ),
         child: Row(
           children: [
-            _buildStat(_placeholderStats.pts.toString(), "PTS"),
+            _buildStat('—', "PTS"),
             _verticalDivider(),
-            _buildStat(_placeholderStats.postCount.toString(), "POSTS"),
+            _buildStat('—', "POSTS"),
             _verticalDivider(),
-            _buildStat(_placeholderStats.commentCount.toString(), "COMMENTS"),
+            _buildStat('—', "COMMENTS"),
           ],
         ),
       ),
@@ -553,77 +513,6 @@ class _ProfileState extends State<Profile> {
                       child:
                           Icon(Icons.star, color: colors.onSurface, size: 18),
                     ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildPlayerList() {
-    final appColors = AppColors.of(context);
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    final players = playerRepository.favorites;
-
-    return SizedBox(
-      key: const ValueKey('profile-following-player-list'),
-      height: 120,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        scrollDirection: Axis.horizontal,
-        itemCount: players.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final player = players[index];
-
-          return Semantics(
-            button: true,
-            label: 'Open ${player.fullName}',
-            child: InkWell(
-              key: ValueKey('profile-player-link-${player.id}'),
-              onTap: () => openPlayerPage(context, player.id),
-              borderRadius: BorderRadius.circular(12),
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      SizedBox(
-                        width: 74,
-                        height: 74,
-                        child: ClipOval(child: PlayerImage(player: player)),
-                      ),
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        child: CircleAvatar(
-                          key: ValueKey('profile-player-jersey-${player.id}'),
-                          radius: 16,
-                          backgroundColor: isLight
-                              ? AppPalette.white
-                              : appColors.subtleBackground,
-                          child: Text(
-                            player.jerseyNumber.toString(),
-                            style: Body2_b.style.copyWith(
-                              color: isLight ? AppPalette.black : null,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      player.fullName,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Body1.style,
-                    ),
-                  ),
                 ],
               ),
             ),
