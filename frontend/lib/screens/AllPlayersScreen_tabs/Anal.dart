@@ -8,6 +8,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/player_detail.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class AnalysisTab extends StatefulWidget {
   const AnalysisTab({super.key, this.player, this.playerId});
@@ -48,7 +49,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
               ),
               const SizedBox(height: 32),
               if (detail.analysis == null)
-                const Text('Select a season with league appearances')
+                Text(tr(context, 'Select a season with league appearances'))
               else
                 ..._content(detail, detail.analysis!),
             ],
@@ -64,7 +65,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         _attributes(detail),
         const SizedBox(height: 48),
         PlayerSection(
-          title: 'PERFORMANCE',
+          title: tr(context, 'PERFORMANCE'),
           child: PlayerPerformanceChart(points: analysis.performance),
         ),
       ];
@@ -72,11 +73,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
   Widget _topStats(PlayerDetail detail, PlayerAnalysis analysis) {
     final season = detail.selectedSeason;
     return PlayerSection(
-      title: 'TOP STATS',
+      title: tr(context, 'TOP STATS'),
       titleAccessory: Tooltip(
         triggerMode: TooltipTriggerMode.tap,
-        message:
-            '${season?.name ?? 'Current season'} ${season?.competitionName ?? ''} · ${analysis.position ?? '—'} · reference players with at least ${analysis.minimumMinutes} minutes.',
+        message: tr(
+            context,
+            '{season} {competition} · {position} · reference players with at least {minutes} minutes.',
+            {
+              'season': season?.name ?? tr(context, 'Current season'),
+              'competition': season?.competitionName ?? '',
+              'position': analysis.position ?? '—',
+              'minutes': analysis.minimumMinutes
+            }),
         child: const Icon(
           Icons.help_outline,
           key: ValueKey('top-stats-help-icon'),
@@ -129,7 +137,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         SizedBox(
           height: 38,
           child: Text(
-            stat?.metric.label ?? 'Unavailable',
+            tr(context, stat?.metric.label ?? 'Unavailable'),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -156,7 +164,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              '${stat.observedMatches}/${stat.totalMatches} matches',
+              tr(context, '{count} matches',
+                  {'count': '${stat.observedMatches}/${stat.totalMatches}'}),
               textAlign: TextAlign.center,
               style: Eyebrow.style.copyWith(color: appColors.mutedForeground),
             ),
@@ -178,7 +187,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         .fold(0, (sum, value) => sum + value);
     final contributions = metric('goals') + metric('assists');
     return PlayerSection(
-      title: 'INFLUENCE',
+      title: tr(context, 'INFLUENCE'),
       child: GridView.count(
         padding: EdgeInsets.zero,
         primary: false,
@@ -189,10 +198,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
         physics: const NeverScrollableScrollPhysics(),
         childAspectRatio: .75,
         children: [
-          _influence('Starting Rate', analysis.startingRate, '%'),
-          _influence('Win Rate', analysis.winRate, '%'),
-          _influence('Minutes Played\nPer Game', minutesPerGame, ' Min.'),
-          _influence('Goal\nContributions', contributions, ''),
+          _influence(tr(context, 'Starting Rate'), analysis.startingRate, '%'),
+          _influence(tr(context, 'Win Rate'), analysis.winRate, '%'),
+          _influence(
+              tr(context, 'Minutes Played\nPer Game'), minutesPerGame, ' Min.'),
+          _influence(tr(context, 'Goal\nContributions'), contributions, ''),
         ],
       ),
     );
@@ -203,7 +213,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: Body1.style),
+            Text(tr(context, label), style: Body1.style),
             const Spacer(),
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -220,7 +230,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                   if (value != null && suffix.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(left: 4, bottom: 4),
-                      child: Text(suffix, style: Heading4.style),
+                      child: Text(tr(context, suffix), style: Heading4.style),
                     ),
                 ],
               ),
@@ -235,7 +245,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         : teamRepository.findById(detail.profile.teamId!);
     final accent = Color(team?.primaryColor ?? 0xFFFF5C5C);
     return PlayerSection(
-      title: 'ATTRIBUTES',
+      title: tr(context, 'ATTRIBUTES'),
       trailing: const Icon(Icons.chevron_right),
       child: PlayerSurface(
         key: const ValueKey('player-attributes-card'),
@@ -248,7 +258,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
               children: [
                 Icon(Icons.radar, size: 48, color: accent),
                 const SizedBox(height: 16),
-                const Text('아직 준비중이에요ㅠㅠ', style: Heading5.style),
+                Text(tr(context, "Coming soon"), style: Heading5.style),
               ],
             ),
           ),
@@ -273,12 +283,13 @@ class PlayerPerformanceChart extends StatelessWidget {
       child: SizedBox(
         height: 317,
         child: valid.isEmpty
-            ? const Center(child: Text('No ratings available'))
+            ? Center(child: Text(tr(context, 'No ratings available')))
             : Row(
                 children: [
-                  const RotatedBox(
+                  RotatedBox(
                     quarterTurns: 3,
-                    child: Text('PERFORMANCE', style: Body2_b.style),
+                    child:
+                        Text(tr(context, 'PERFORMANCE'), style: Body2_b.style),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -333,7 +344,7 @@ class PlayerPerformanceChart extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text('ROUND', style: Body2_b.style),
+                        Text(tr(context, 'ROUND'), style: Body2_b.style),
                       ],
                     ),
                   ),

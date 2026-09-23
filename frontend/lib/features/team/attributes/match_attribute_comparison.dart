@@ -6,6 +6,7 @@ import 'package:onetouch/data/team_attributes/team_attribute_repository.dart';
 import 'package:onetouch/data/team_attributes/team_attribute_repository_provider.dart';
 import 'package:onetouch/features/team/attributes/team_attribute_radar.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class MatchAttributeComparison extends StatefulWidget {
   const MatchAttributeComparison({
@@ -86,7 +87,7 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('ATTRIBUTES', style: Body2_b.style),
+        Text(tr(context, 'ATTRIBUTES'), style: Body2_b.style),
         const SizedBox(height: 16),
         Container(
           width: double.infinity,
@@ -106,13 +107,14 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
               : _failed
                   ? TextButton(
                       onPressed: _load,
-                      child: const Text('능력치를 불러오지 못했어요. 다시 시도'),
+                      child:
+                          Text(tr(context, "Unable to load attributes. Retry")),
                     )
                   : _home == null || _away == null
-                      ? const Padding(
+                      ? Padding(
                           padding: EdgeInsets.symmetric(vertical: 32),
-                          child:
-                              Text('아직 준비중이에요ㅠㅠ', textAlign: TextAlign.center),
+                          child: Text(tr(context, "Coming soon"),
+                              textAlign: TextAlign.center),
                         )
                       : TeamAttributeRadar(
                           scores: _home!, comparisonScores: _away),

@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -104,7 +105,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    "Let’s start by choosing\nyour favorite teams!",
+                    tr(context,
+                        "Let’s start by choosing\nyour favorite teams!"),
                     textAlign: TextAlign.center,
                     style: Heading4.style,
                   ),
@@ -128,7 +130,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: Text('CONTINUE',
+                  child: Text(tr(context, 'CONTINUE'),
                       style: Body2_b.style.copyWith(color: colors.surface)),
                 ),
               ),

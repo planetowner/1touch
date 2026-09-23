@@ -13,6 +13,7 @@ import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/data/competitions/tournament_bracket_repository.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class StandingTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -397,9 +398,9 @@ class _StandingTabState extends State<StandingTab> {
   @override
   Widget build(BuildContext context) {
     if (!_hasStandingContext) {
-      return const Center(
+      return Center(
         child: Text(
-          'No standings available',
+          tr(context, 'No standings available'),
           key: ValueKey('standing-unavailable'),
         ),
       );
@@ -489,12 +490,12 @@ class _StandingTabState extends State<StandingTab> {
             child: Center(
               child: Column(
                 children: [
-                  const Text('Unable to load standings'),
+                  Text(tr(context, 'Unable to load standings')),
                   const SizedBox(height: 8),
                   TextButton(
                     key: const ValueKey('standing-retry'),
                     onPressed: _startStandingLoad,
-                    child: const Text('Retry'),
+                    child: Text(tr(context, 'Retry')),
                   ),
                 ],
               ),
@@ -502,10 +503,10 @@ class _StandingTabState extends State<StandingTab> {
           );
         }
         if (standings.isEmpty) {
-          return const Padding(
+          return Padding(
             key: ValueKey('standing-empty'),
             padding: EdgeInsets.symmetric(vertical: 48),
-            child: Center(child: Text('No standings available')),
+            child: Center(child: Text(tr(context, 'No standings available'))),
           );
         }
         return StandingTable(
@@ -530,12 +531,12 @@ class _StandingTabState extends State<StandingTab> {
             child: Center(
               child: Column(
                 children: [
-                  const Text('Unable to load xG standings'),
+                  Text(tr(context, 'Unable to load xG standings')),
                   const SizedBox(height: 8),
                   TextButton(
                     key: const ValueKey('xg-standing-retry'),
                     onPressed: _startXgLoad,
-                    child: const Text('Retry'),
+                    child: Text(tr(context, 'Retry')),
                   ),
                 ],
               ),
@@ -543,10 +544,11 @@ class _StandingTabState extends State<StandingTab> {
           );
         }
         if (xgStandings.isEmpty) {
-          return const Padding(
+          return Padding(
             key: ValueKey('xg-standing-empty'),
             padding: EdgeInsets.symmetric(vertical: 48),
-            child: Center(child: Text('No xG standings available')),
+            child:
+                Center(child: Text(tr(context, 'No xG standings available'))),
           );
         }
         return XgTable(

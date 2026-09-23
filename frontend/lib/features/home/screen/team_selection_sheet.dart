@@ -80,8 +80,9 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to change favorite team. Please try again.'),
+        SnackBar(
+          content: Text(
+              tr(context, 'Unable to change favorite team. Please try again.')),
         ),
       );
     }
@@ -102,7 +103,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
               const SizedBox(width: 48),
               Expanded(
                 child: Text(
-                  "Following Teams",
+                  tr(context, "Following Teams"),
                   style: Heading5.style,
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -180,7 +181,7 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                       ),
                     )
                   : Text(
-                      "SWITCH",
+                      tr(context, "SWITCH"),
                       style:
                           Body2_b.style.copyWith(color: colorScheme.onPrimary),
                     ),

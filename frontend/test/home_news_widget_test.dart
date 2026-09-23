@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -15,6 +16,9 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(MaterialApp(
+          locale: const Locale('ko'),
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
           theme: dark ? app_style.darktheme : app_style.whitetheme,
           home: Scaffold(
               body: SingleChildScrollView(
@@ -31,8 +35,12 @@ void main() {
         expect(find.byIcon(Icons.article_outlined), findsNWidgets(3));
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const MaterialApp(
-            home: Scaffold(body: MyNews(news: [], isKorean: true))));
-        expect(find.text('아직 등록된 팀 뉴스가 없어요'), findsOneWidget);
+            locale: const Locale('ko'),
+            supportedLocales: appSupportedLocales,
+            localizationsDelegates: appLocalizationDelegates,
+            home: Scaffold(body: MyNews(news: []))));
+        await tester.pumpAndSettle();
+        expect(find.text('아직 팀 뉴스가 없어요.'), findsOneWidget);
         expect(find.byType(GestureDetector), findsNothing);
       });
     }
@@ -41,15 +49,18 @@ void main() {
   testWidgets('image failure keeps article title and destination enabled',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(
             body: MyNews(news: [
-      HomeContentItem(
-          title: '실제 기사',
-          source: '실제 매체',
-          timeLabel: '1시간 전',
-          imageUrl: 'https://example.com/broken.jpg',
-          destinationUrl: 'https://example.com/story'),
-    ]))));
+          HomeContentItem(
+              title: '실제 기사',
+              source: '실제 매체',
+              timeLabel: '1시간 전',
+              imageUrl: 'https://example.com/broken.jpg',
+              destinationUrl: 'https://example.com/story'),
+        ]))));
     await tester.pumpAndSettle();
     expect(find.text('실제 기사'), findsOneWidget);
     expect(find.byIcon(Icons.article_outlined), findsOneWidget);
@@ -62,17 +73,23 @@ void main() {
       (tester) async {
     var retried = false;
     await tester.pumpWidget(MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(
             body: MyNews(
-      news: const [],
-      hasError: true,
-      isKorean: true,
-      onRetry: () => retried = true,
-    ))));
-    expect(find.text('아직 등록된 팀 뉴스가 없어요'), findsNothing);
+          news: const [],
+          hasError: true,
+          onRetry: () => retried = true,
+        ))));
+    await tester.pumpAndSettle();
+    expect(find.text('아직 팀 뉴스가 없어요.'), findsNothing);
     await tester.tap(find.text('다시 시도'));
     expect(retried, isTrue);
     await tester.pumpWidget(const MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         home: Scaffold(body: MyNews(news: [], isLoading: true))));
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('No team news yet.'), findsNothing);

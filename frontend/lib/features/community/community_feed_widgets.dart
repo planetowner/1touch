@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -5,6 +6,7 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 import 'package:onetouch/models/post.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class CommunitySortFilters extends StatelessWidget {
   const CommunitySortFilters({
@@ -22,19 +24,19 @@ class CommunitySortFilters extends StatelessWidget {
       spacing: 12,
       children: [
         _SortChip(
-          label: 'Newest',
+          label: tr(context, 'Newest'),
           sort: PostSort.newest,
           isSelected: selectedSort == PostSort.newest,
           onTap: onChanged,
         ),
         _SortChip(
-          label: 'Popular',
+          label: tr(context, 'Popular'),
           sort: PostSort.popular,
           isSelected: selectedSort == PostSort.popular,
           onTap: onChanged,
         ),
         _SortChip(
-          label: 'Best',
+          label: tr(context, 'Best'),
           sort: PostSort.best,
           isSelected: selectedSort == PostSort.best,
           onTap: onChanged,
@@ -72,7 +74,7 @@ class CommunityGroundRulesCard extends StatelessWidget {
             const SizedBox(width: 4),
             Expanded(
               child: Text(
-                'Community Ground Rules',
+                tr(context, 'Community Ground Rules'),
                 style: Heading5.style.copyWith(color: colors.onSurface),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -151,7 +153,7 @@ class _SortChip extends StatelessWidget {
                 ],
         ),
         child: Text(
-          label.toUpperCase(),
+          tr(context, label).toUpperCase(),
           style: Body2_b.style.copyWith(
             color: isDark
                 ? (isSelected ? AppPalette.black : AppPalette.white)
@@ -200,13 +202,14 @@ class _PostCard extends StatelessWidget {
                         children: [
                           Text(
                             communityUsernameLabel(
+                              locale: Localizations.localeOf(context),
                               username: post.username,
                               authorDeleted: post.authorDeleted,
                             ),
                             style: Body1.style,
                           ),
                           Text(
-                            _timeAgo(post.createdAt),
+                            _timeAgo(context, post.createdAt),
                             style: Body2.style.copyWith(
                               color: appColors.mutedForeground,
                             ),
@@ -283,10 +286,6 @@ class _PostCard extends StatelessWidget {
   }
 }
 
-String _timeAgo(String createdAt) {
-  final created = DateTime.tryParse(createdAt) ?? DateTime.now();
-  final diff = DateTime.now().difference(created);
-  if (diff.inDays >= 1) return '${diff.inDays}d ago';
-  if (diff.inHours >= 1) return '${diff.inHours}h ago';
-  return '${diff.inMinutes}m ago';
-}
+String _timeAgo(BuildContext context, String createdAt) =>
+    relativeTimeLabel(DateTime.tryParse(createdAt),
+        locale: Localizations.localeOf(context));

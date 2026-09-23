@@ -19,6 +19,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart'
 import 'package:onetouch/features/helper.dart';
 import 'TeamScreen_tabs/index.dart';
 import '../models/team_overview.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
@@ -137,18 +138,14 @@ class _TeamScreenState extends State<TeamScreen>
         ?.competitionName;
     final positionValue = overview.standing?['position'];
     final rankDeltaValue = overview.standing?['rank_delta'];
-    final position = leagueName == null
-        ? ''
-        : positionValue is int
-            ? '$leagueName ${ordinal(positionValue)}'
-            : leagueName;
 
     return {
       'id': overview.id,
       'name': overview.name,
       'short_code': overview.shortName,
       'image_path': overview.imagePath,
-      'position': position,
+      'position': positionValue,
+      'leagueName': leagueName,
       'logo': overview.imagePath,
       'rankChange': rankDeltaValue is int ? rankDeltaValue : null,
       'standing': overview.standing,
@@ -198,12 +195,12 @@ class _TeamScreenState extends State<TeamScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Unable to load team', style: Body1.style),
+              Text(tr(context, 'Unable to load team'), style: Body1.style),
               const SizedBox(height: 16),
               ElevatedButton(
                 key: const ValueKey('team-retry'),
                 onPressed: _loadError == null ? null : _retryOverviewLoad,
-                child: const Text('RETRY'),
+                child: Text(tr(context, 'RETRY')),
               ),
             ],
           ),
@@ -211,6 +208,14 @@ class _TeamScreenState extends State<TeamScreen>
       );
     }
 
+    // 지역화한 문구는 화면을 그릴 때 만들어 언어 변경도 바로 반영해요.
+    final leagueName = team!['leagueName'] as String?;
+    final rank = team!['position'];
+    final positionLabel = leagueName == null
+        ? ''
+        : rank is int
+            ? '$leagueName ${ordinal(rank, locale: Localizations.localeOf(context))}'
+            : leagueName;
     final displayedTeamId = team!['id'] as int;
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     final appBarForeground = colors.onSurface;
@@ -272,14 +277,14 @@ class _TeamScreenState extends State<TeamScreen>
                               overflow: TextOverflow
                                   .ellipsis, // Now this will work correctly
                             ),
-                            if ((team!['position'] as String).isNotEmpty)
+                            if (positionLabel.isNotEmpty)
                               Row(
                                 key: const ValueKey('team-context-label'),
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      team!['position'] as String,
+                                      positionLabel,
                                       style: Body2.style
                                           .copyWith(color: appBarForeground),
                                       maxLines: 1,
@@ -352,12 +357,12 @@ class _TeamScreenState extends State<TeamScreen>
                     indicator: UnderlineTabIndicator(
                       borderSide: BorderSide(color: colors.onSurface, width: 2),
                     ),
-                    tabs: const [
-                      Tab(text: "Overview"),
-                      Tab(text: "Matches"),
-                      Tab(text: "Standing"),
-                      Tab(text: "Squad"),
-                      Tab(text: "Analysis"),
+                    tabs: [
+                      Tab(text: tr(context, "Overview")),
+                      Tab(text: tr(context, "Matches")),
+                      Tab(text: tr(context, "Standing")),
+                      Tab(text: tr(context, "Squad")),
+                      Tab(text: tr(context, "Analysis")),
                     ],
                   ),
                 ),

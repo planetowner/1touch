@@ -11,6 +11,7 @@ import 'package:onetouch/data/profile/profile_avatar_repository.dart';
 import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
     as avatar_provider;
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 typedef AvatarImagePicker = Future<XFile?> Function();
 
@@ -104,7 +105,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onPressed: () => Navigator.of(context).pop(
                 _AvatarAction.choosePhoto,
               ),
-              child: const Text('Choose from Photos'),
+              child: Text(tr(context, 'Choose from Photos')),
             ),
             if (widget.profile?.avatarUri != null)
               CupertinoActionSheetAction(
@@ -113,14 +114,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onPressed: () => Navigator.of(context).pop(
                   _AvatarAction.removePhoto,
                 ),
-                child: const Text('Remove Photo'),
+                child: Text(tr(context, 'Remove Photo')),
               ),
           ],
           cancelButton: CupertinoActionSheetAction(
             key: const ValueKey('profile-avatar-cancel'),
             isDefaultAction: true,
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(tr(context, 'Cancel')),
           ),
         ),
       );
@@ -138,7 +139,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ListTile(
               key: const ValueKey('profile-avatar-choose-photo'),
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from Gallery'),
+              title: Text(tr(context, 'Choose from Gallery')),
               onTap: () => Navigator.of(context).pop(
                 _AvatarAction.choosePhoto,
               ),
@@ -147,7 +148,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ListTile(
                 key: const ValueKey('profile-avatar-remove-photo'),
                 leading: const Icon(Icons.delete_outline),
-                title: const Text('Remove Photo'),
+                title: Text(tr(context, 'Remove Photo')),
                 onTap: () => Navigator.of(context).pop(
                   _AvatarAction.removePhoto,
                 ),
@@ -176,8 +177,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
       setState(() => _isAvatarSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to update profile photo. Please try again.'),
+        SnackBar(
+          content: Text(
+              tr(context, 'Unable to update profile photo. Please try again.')),
         ),
       );
     }
@@ -195,8 +197,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
       setState(() => _isAvatarSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to remove profile photo. Please try again.'),
+        SnackBar(
+          content: Text(
+              tr(context, 'Unable to remove profile photo. Please try again.')),
         ),
       );
     }
@@ -318,14 +321,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 48),
 
               Text(
-                "LOGIN",
+                tr(context, "LOGIN"),
                 style: Body2_b.style,
               ),
 
               const SizedBox(height: 16),
 
               _buildTextField(
-                  label: 'Name',
+                  label: tr(context, 'Name'),
                   controller: nameController,
                   fieldKey: const ValueKey('profile-real-name-field'),
                   readOnly: true),
@@ -339,14 +342,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 24),
               _buildTextField(
-                label: "Email",
+                label: tr(context, "Email"),
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 readOnly: true,
               ),
               const SizedBox(height: 24),
               _buildTextField(
-                label: "Password",
+                label: tr(context, "Password"),
                 controller: passwordController,
                 isPassword: true,
                 isObscure: !isPasswordVisible,
@@ -360,19 +363,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 48),
 
               // Social Accounts Section
-              Text("SOCIAL ACCOUNTS", style: Body2_b.style),
+              Text(tr(context, "SOCIAL ACCOUNTS"), style: Body2_b.style),
               const SizedBox(height: 16),
 
               // Updated to use SVGs
               _buildSocialRow(
                   iconPath: 'assets/google.svg',
                   name: 'Google',
-                  status: 'Connected'),
+                  status: tr(context, 'Connected')),
               _divider(),
               _buildSocialRow(
                   iconPath: 'assets/apple.svg',
                   name: 'Apple',
-                  status: 'Not Connected'),
+                  status: tr(context, 'Not Connected')),
               _divider(),
 
               const SizedBox(height: 48),
@@ -386,7 +389,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Handle delete logic
                   },
                   child: Text(
-                    "DELETE ACCOUNT",
+                    tr(context, "DELETE ACCOUNT"),
                     style: Body2_b.style.copyWith(
                       decoration: TextDecoration.underline,
                       decorationColor: colors.onSurface,
@@ -491,7 +494,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               children: [
                 Text(name, style: Body1.style),
                 const SizedBox(height: 4),
-                Text(status, style: Eyebrow.style),
+                Text(tr(context, status), style: Eyebrow.style),
               ],
             ),
           ),

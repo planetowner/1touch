@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import "package:flutter/material.dart";
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -42,7 +43,7 @@ class _PreferenceDetailScreenState extends State<PreferenceDetailScreen> {
           onPressed: () => Navigator.pop(context), // Go back without saving
         ),
         title: Text(
-          widget.title.toUpperCase(),
+          tr(context, widget.title).toUpperCase(),
           style: Body1.style,
         ),
         centerTitle: true,
@@ -72,7 +73,7 @@ class _PreferenceDetailScreenState extends State<PreferenceDetailScreen> {
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     title: Text(
-                      option,
+                      tr(context, option),
                       style: Body1.style.copyWith(
                         color: isSelected
                             ? Theme.of(context).colorScheme.onSurface

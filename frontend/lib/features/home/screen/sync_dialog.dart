@@ -26,10 +26,12 @@ class SyncDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Sync with your calendar?", style: Heading5.style),
+            Text(tr(context, "Sync with your calendar?"),
+                style: Heading5.style),
             const SizedBox(height: 16),
             Text(
-              "We’ll add your favorite team’s upcoming matches straight to your calendar, so you never miss a kickoff. You’ll get notified before each game — no spam, no surprises.",
+              tr(context,
+                  "We’ll add your favorite team’s upcoming matches straight to your calendar, so you never miss a kickoff. You’ll get notified before each game — no spam, no surprises."),
               style: Body1.style,
             ),
             const SizedBox(height: 32),
@@ -48,7 +50,7 @@ class SyncDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  "YES, SYNC IT!",
+                  tr(context, "YES, SYNC IT!"),
                   style: Body2_b.style.copyWith(color: colorScheme.onPrimary),
                 ),
               ),
@@ -57,7 +59,7 @@ class SyncDialog extends StatelessWidget {
             Center(
               child: GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
-                child: Text("CANCEL", style: Body2_b.style),
+                child: Text(tr(context, "CANCEL"), style: Body2_b.style),
               ),
             ),
           ],

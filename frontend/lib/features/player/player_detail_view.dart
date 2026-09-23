@@ -5,6 +5,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/models/player_detail.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerDetailStore {
   PlayerDetailStore(
@@ -52,7 +53,7 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
   @override
   Widget build(BuildContext context) {
     if (widget.playerId == null) {
-      return const Center(child: Text('Player data unavailable'));
+      return Center(child: Text(tr(context, 'Player data unavailable')));
     }
     final shared = PlayerDetailScope.maybeOf(context);
     if (_local?.playerId != widget.playerId) {
@@ -72,11 +73,11 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
         if (snapshot.hasError) {
           return Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text('Could not load player data'),
+            Text(tr(context, 'Could not load player data')),
             TextButton(
                 onPressed: () =>
                     setState(() => store.invalidate(widget.seasonId)),
-                child: const Text('Retry')),
+                child: Text(tr(context, 'Retry'))),
           ]));
         }
         return widget.builder(context, snapshot.requireData);
@@ -111,7 +112,7 @@ class PlayerSeasonSelector extends StatelessWidget {
           dropdownColor: surface,
           icon: AppDropdownChevron(color: foreground),
           style: Body2_b.style.copyWith(color: foreground),
-          hint: const Text('SELECT A SEASON'),
+          hint: Text(tr(context, 'SELECT A SEASON')),
           items: detail.seasons
               .map((season) => DropdownMenuItem(
                     value: season.id,

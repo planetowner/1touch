@@ -6,6 +6,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
       color: AppColors.of(context).divider,
@@ -47,7 +48,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
             floating: true,
             snap: true,
             toolbarHeight: 80,
-            title: const Text("Notifications", style: Body1.style),
+            title: Text(tr(context, "Notifications"), style: Body1.style),
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back_ios_new,
@@ -73,7 +74,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Following Teams
-                    const Text("FOLLOWING TEAMS", style: Body2_b.style),
+                    Text(tr(context, "FOLLOWING TEAMS"), style: Body2_b.style),
                     const SizedBox(height: 16),
                     ...teamIds.asMap().entries.map((entry) {
                       final i = entry.key;
@@ -95,7 +96,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     const SizedBox(height: 48),
 
                     // Following Players
-                    const Text("FOLLOWING PLAYERS", style: Body2_b.style),
+                    Text(tr(context, "FOLLOWING PLAYERS"),
+                        style: Body2_b.style),
                     const SizedBox(height: 16),
                     ...players.asMap().entries.map((entry) {
                       final i = entry.key;
@@ -116,25 +118,25 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     const SizedBox(height: 48),
 
                     // Posts
-                    const Text("POSTS", style: Body2_b.style),
+                    Text(tr(context, "POSTS"), style: Body2_b.style),
                     const SizedBox(height: 16),
                     _switchRow(
                       context,
-                      label: 'Reactions',
+                      label: tr(context, 'Reactions'),
                       value: _postsReactions,
                       onChanged: (v) => setState(() => _postsReactions = v),
                     ),
                     _divider(context),
                     _switchRow(
                       context,
-                      label: 'Comments',
+                      label: tr(context, 'Comments'),
                       value: _postsComments,
                       onChanged: (v) => setState(() => _postsComments = v),
                     ),
                     _divider(context),
                     _switchRow(
                       context,
-                      label: 'Following',
+                      label: tr(context, 'Following'),
                       value: _postsFollowing,
                       onChanged: (v) => setState(() => _postsFollowing = v),
                     ),
@@ -142,18 +144,18 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     const SizedBox(height: 48),
 
                     // Betting
-                    const Text("BETTING", style: Body2_b.style),
+                    Text(tr(context, "BETTING"), style: Body2_b.style),
                     const SizedBox(height: 16),
                     _switchRow(
                       context,
-                      label: 'New bets',
+                      label: tr(context, 'New bets'),
                       value: _bettingNewBets,
                       onChanged: (v) => setState(() => _bettingNewBets = v),
                     ),
                     _divider(context),
                     _switchRow(
                       context,
-                      label: 'Post-match results',
+                      label: tr(context, 'Post-match results'),
                       value: _bettingPostMatch,
                       onChanged: (v) => setState(() => _bettingPostMatch = v),
                     ),
@@ -169,7 +171,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
     );
   }
 
-  static Widget _listRow({required String label, required VoidCallback onTap}) {
+  Widget _listRow({required String label, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       child: SizedBox(
@@ -179,7 +181,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
           children: [
             Expanded(
               child: Text(
-                label,
+                tr(context, label),
                 style: Body1.style,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -241,7 +243,7 @@ class _TeamNotificationDetailPageState
                 snap: true,
                 toolbarHeight: 80,
                 // FlexibleSpace Removed
-                title: const Text("Notifications", style: Body1.style),
+                title: Text(tr(context, "Notifications"), style: Body1.style),
                 leading: IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios_new,
@@ -271,7 +273,7 @@ class _TeamNotificationDetailPageState
                         const SizedBox(height: 24),
                         _switchRow(
                           context,
-                          label: "All Notifications",
+                          label: tr(context, "All Notifications"),
                           value: _allOn,
                           onChanged: _toggleAll,
                         ),
@@ -314,8 +316,9 @@ class _TeamNotificationDetailPageState
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Applied to all following teams'),
+                          SnackBar(
+                            content: Text(
+                                tr(context, 'Applied to all following teams')),
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -333,7 +336,8 @@ class _TeamNotificationDetailPageState
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text("APPLY TO ALL TEAMS", style: Body2_b.style),
+                      child: Text(tr(context, "APPLY TO ALL TEAMS"),
+                          style: Body2_b.style),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -352,7 +356,7 @@ class _TeamNotificationDetailPageState
                         ),
                       ),
                       child: Text(
-                        "UPDATE NOTIFICATIONS",
+                        tr(context, "UPDATE NOTIFICATIONS"),
                         style: Body2_b.style.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
@@ -417,7 +421,7 @@ class _PlayerNotificationDetailPageState
                 snap: true,
                 toolbarHeight: 80,
                 // FlexibleSpace Removed
-                title: const Text("Notifications", style: Body1.style),
+                title: Text(tr(context, "Notifications"), style: Body1.style),
                 leading: IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios_new,
@@ -447,7 +451,7 @@ class _PlayerNotificationDetailPageState
                         const SizedBox(height: 24),
                         _switchRow(
                           context,
-                          label: "All Notifications",
+                          label: tr(context, "All Notifications"),
                           value: _allOn,
                           onChanged: _toggleAll,
                         ),
@@ -489,8 +493,9 @@ class _PlayerNotificationDetailPageState
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Applied to all following players'),
+                          SnackBar(
+                            content: Text(tr(
+                                context, 'Applied to all following players')),
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -508,7 +513,8 @@ class _PlayerNotificationDetailPageState
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text("APPLY TO ALL PLAYERS", style: Body2_b.style),
+                      child: Text(tr(context, "APPLY TO ALL PLAYERS"),
+                          style: Body2_b.style),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -527,7 +533,7 @@ class _PlayerNotificationDetailPageState
                         ),
                       ),
                       child: Text(
-                        "UPDATE NOTIFICATIONS",
+                        tr(context, "UPDATE NOTIFICATIONS"),
                         style: Body2_b.style.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
@@ -557,7 +563,7 @@ Widget _switchRow(
     children: [
       Expanded(
         child: Text(
-          label,
+          tr(context, label),
           style: Body1.style,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

@@ -42,11 +42,14 @@ class LineupPitch extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text("LINEUP", style: Body2_b.style),
+            Text(tr(context, "LINEUP"), style: Body2_b.style),
             const Spacer(),
             Flexible(
               child: Text(
-                'HOME ${homeFormation ?? '—'}  •  AWAY ${awayFormation ?? '—'}',
+                tr(context, 'HOME {home}  •  AWAY {away}', {
+                  'home': homeFormation ?? '—',
+                  'away': awayFormation ?? '—'
+                }),
                 style: Eyebrow.style,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

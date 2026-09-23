@@ -15,6 +15,7 @@ import 'package:onetouch/models/post.dart';
 
 export 'package:onetouch/features/community/post_composer_widgets.dart'
     show Category;
+import 'package:onetouch/l10n/app_localizations.dart';
 
 typedef PostMediaPicker = Future<List<XFile>> Function();
 
@@ -77,7 +78,7 @@ class _AddPostState extends State<AddPost> {
   Future<void> _pickMedia() async {
     const maximumAttachments = 10;
     if (_mediaFiles.length >= maximumAttachments) {
-      _showMessage('You can attach up to 10 files.');
+      _showMessage(tr(context, 'You can attach up to 10 files.'));
       return;
     }
 
@@ -88,7 +89,7 @@ class _AddPostState extends State<AddPost> {
     final remaining = maximumAttachments - _mediaFiles.length;
     setState(() => _mediaFiles.addAll(picked.take(remaining)));
     if (picked.length > remaining) {
-      _showMessage('You can attach up to 10 files.');
+      _showMessage(tr(context, 'You can attach up to 10 files.'));
     }
   }
 
@@ -111,7 +112,7 @@ class _AddPostState extends State<AddPost> {
 
     if (title.isEmpty || body.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Title and body are required.")),
+        SnackBar(content: Text(tr(context, "Title and body are required."))),
       );
       return;
     }
@@ -137,14 +138,14 @@ class _AddPostState extends State<AddPost> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-      _showMessage('Unable to publish post. Please try again.');
+      _showMessage(tr(context, 'Unable to publish post. Please try again.'));
     }
   }
 
   void _showMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text(tr(context, message))),
     );
   }
 

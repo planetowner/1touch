@@ -119,7 +119,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('PROBABILITY', style: Body2_b.style),
+          Text(tr(context, 'PROBABILITY'), style: Body2_b.style),
           const SizedBox(height: 16),
           if (_isLoading && _snapshot == null)
             const Center(
@@ -135,7 +135,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
               child: TextButton(
                 key: const ValueKey('team-probability-retry'),
                 onPressed: _startLoad,
-                child: const Text('Retry probability'),
+                child: Text(tr(context, 'Retry probability')),
               ),
             )
           else if (_snapshot case final snapshot?)
@@ -230,11 +230,11 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
 
   String _eventTitle(String event) {
     return switch (event) {
-      'league_winner' => 'Chances to win\nLEAGUE Trophy',
-      'top_4' => 'Chances to finish\nTOP 4',
-      'top_6' => 'Chances to finish\nTOP 6',
-      'direct_relegation' => 'Chances of\nDIRECT RELEGATION',
-      'relegation_playoff' => 'Chances of\nRELEGATION PLAYOFF',
+      'league_winner' => tr(context, 'Chances to win\nLEAGUE Trophy'),
+      'top_4' => tr(context, 'Chances to finish\nTOP 4'),
+      'top_6' => tr(context, 'Chances to finish\nTOP 6'),
+      'direct_relegation' => tr(context, 'Chances of\nDIRECT RELEGATION'),
+      'relegation_playoff' => tr(context, 'Chances of\nRELEGATION PLAYOFF'),
       _ => event
           .split('_')
           .where((part) => part.isNotEmpty)

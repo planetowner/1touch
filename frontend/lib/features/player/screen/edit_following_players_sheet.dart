@@ -94,7 +94,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                   const SizedBox(width: 48),
                   Expanded(
                     child: Text(
-                      "Following Players",
+                      tr(context, "Following Players"),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -122,7 +122,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                   decoration: InputDecoration(
                     contentPadding:
                         const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                    hintText: "Search players to add!",
+                    hintText: tr(context, "Search players to add!"),
                     hintStyle: Body1.style.copyWith(
                       color: appColors.mutedForeground,
                     ),
@@ -186,7 +186,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                               color: colors.onPrimary,
                             ),
                           )
-                        : Text("UPDATE",
+                        : Text(tr(context, "UPDATE"),
                             style: Body2_b.style.copyWith(
                               color: _updateEnabled
                                   ? colors.onPrimary

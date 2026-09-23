@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/models/player.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 class MatchesTab extends StatefulWidget {
   const MatchesTab({super.key, this.player, this.playerId});
@@ -39,7 +40,7 @@ class _MatchesTabState extends State<MatchesTab> {
             const SizedBox(height: 24),
             if (detail.matches.any((m) => m.live)) ...[
               PlayerSection(
-                  title: 'LIVE',
+                  title: tr(context, 'LIVE'),
                   child: Column(children: [
                     for (final match in detail.matches.where((m) => m.live))
                       PlayerDetailMatchCard(match: match)
@@ -47,10 +48,10 @@ class _MatchesTabState extends State<MatchesTab> {
               const SizedBox(height: 24),
             ],
             PlayerSection(
-                title: 'RECENT MATCHES',
+                title: tr(context, 'RECENT MATCHES'),
                 child: Column(children: [
                   if (detail.matches.isEmpty)
-                    const Text('No appearances this season'),
+                    Text(tr(context, 'No appearances this season')),
                   for (final match in detail.matches.where((m) => !m.live))
                     PlayerDetailMatchCard(match: match),
                 ])),

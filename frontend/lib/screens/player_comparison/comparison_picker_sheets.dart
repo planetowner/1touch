@@ -94,7 +94,8 @@ class _ComparisonPlayerPickerSheetState
                 children: [
                   Center(
                     child: Text(
-                      'Select Player ${widget.slot}',
+                      tr(context, 'Select Player {slot}',
+                          {'slot': widget.slot}),
                       style: TextStyle(
                         color: foreground,
                         fontSize: 20,
@@ -123,7 +124,7 @@ class _ComparisonPlayerPickerSheetState
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: fieldSurface,
-                  hintText: 'Search players...',
+                  hintText: tr(context, 'Search players...'),
                   hintStyle: TextStyle(color: appColors.mutedForeground),
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -158,7 +159,8 @@ class _ComparisonPlayerPickerSheetState
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'You can only pick players who play the same position.',
+                        tr(context,
+                            'You can only pick players who play the same position.'),
                         style: TextStyle(color: foreground, fontSize: 13),
                       ),
                     ),
@@ -176,13 +178,13 @@ class _ComparisonPlayerPickerSheetState
                     return Center(
                       child: TextButton(
                         onPressed: _submitSearch,
-                        child: const Text('Retry'),
+                        child: Text(tr(context, 'Retry')),
                       ),
                     );
                   }
                   final players = snapshot.data ?? const [];
                   if (players.isEmpty) {
-                    return const Center(child: Text('No players found'));
+                    return Center(child: Text(tr(context, 'No players found')));
                   }
                   return ListView.separated(
                     controller: controller,

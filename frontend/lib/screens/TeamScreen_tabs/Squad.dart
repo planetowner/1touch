@@ -13,6 +13,7 @@ import 'package:onetouch/data/teams/team_page_eligibility.dart';
 import 'package:onetouch/features/team/squad/squad_player_presentation.dart';
 import 'package:onetouch/models/season.dart';
 import 'package:onetouch/models/team_contract_roster.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 // TODO(squad-api): Remove after the API-backed Squad screen is confirmed on
 // device. It is intentionally not used as an error fallback because that would
@@ -265,18 +266,18 @@ class _SquadTabState extends State<SquadTab> {
     null,
   ];
 
-  static String _positionLabel(Position? pos) {
+  String _positionLabel(Position? pos) {
     switch (pos) {
       case Position.GK:
-        return 'GOALKEEPER';
+        return tr(context, 'GOALKEEPER');
       case Position.DF:
-        return 'DEFENDERS';
+        return tr(context, 'DEFENDERS');
       case Position.MF:
-        return 'MIDFIELDERS';
+        return tr(context, 'MIDFIELDERS');
       case Position.FW:
-        return 'ATTACKERS';
+        return tr(context, 'ATTACKERS');
       case null:
-        return 'POSITION UNAVAILABLE';
+        return tr(context, 'POSITION UNAVAILABLE');
     }
   }
 
@@ -465,7 +466,7 @@ class _SquadTabState extends State<SquadTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Unable to load squad',
+              tr(context, 'Unable to load squad'),
               key: const ValueKey('squad-error'),
               style: Body1.style,
               textAlign: TextAlign.center,
@@ -474,7 +475,7 @@ class _SquadTabState extends State<SquadTab> {
             TextButton(
               key: const ValueKey('squad-retry'),
               onPressed: _retryLoad,
-              child: const Text('Retry'),
+              child: Text(tr(context, 'Retry')),
             ),
           ],
         ),
@@ -483,7 +484,7 @@ class _SquadTabState extends State<SquadTab> {
     if (_players.isEmpty) {
       return Center(
         child: Text(
-          'No players found',
+          tr(context, 'No players found'),
           key: const ValueKey('squad-empty'),
           style: TextStyle(color: AppColors.of(context).mutedForeground),
         ),
@@ -660,7 +661,7 @@ class _SquadTabState extends State<SquadTab> {
                 children: [
                   Expanded(
                     child: Text(
-                      _sortOption.label.toUpperCase(),
+                      tr(context, _sortOption.label).toUpperCase(),
                       style: Body2_b.style,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -685,7 +686,7 @@ class _SquadTabState extends State<SquadTab> {
                     children: [
                       // Section 1: Ascending / Descending
                       _dropdownItem(
-                        label: 'ASCENDING',
+                        label: tr(context, 'ASCENDING'),
                         selected: _isAscending,
                         onTap: () => setState(() {
                           _isAscending = true;
@@ -693,7 +694,7 @@ class _SquadTabState extends State<SquadTab> {
                         }),
                       ),
                       _dropdownItem(
-                        label: 'DESCENDING',
+                        label: tr(context, 'DESCENDING'),
                         selected: !_isAscending,
                         onTap: () => setState(() {
                           _isAscending = false;
@@ -747,7 +748,7 @@ class _SquadTabState extends State<SquadTab> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text(label, style: Body2_b.style),
+                child: Text(tr(context, label), style: Body2_b.style),
               ),
             ),
             if (selected)
@@ -774,7 +775,7 @@ class _PositionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      label,
+      tr(context, label),
       style: Body2_b.style,
     );
   }
