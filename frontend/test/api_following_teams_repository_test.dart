@@ -3,22 +3,25 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/teams/api/api_following_teams_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 
 void main() {
   test('loads and caches following teams in backend order', () async {
     final repository = ApiFollowingTeamsRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/users/me/following/teams');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_teamsJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/users/me/following/teams');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_teamsJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final teams = await repository.load();
@@ -33,25 +36,28 @@ void main() {
   test('PUT sends the selection and re-fetches authoritative order', () async {
     var requestIndex = 0;
     final repository = ApiFollowingTeamsRepository(
-      client: MockClient((request) async {
-        requestIndex++;
-        expect(request.url.path, '/v1/users/me/following/teams');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        if (requestIndex == 1) {
-          expect(request.method, 'PUT');
-          expect(request.headers['Content-Type'], 'application/json');
-          expect(jsonDecode(request.body), {
-            'teamIds': [19, 83],
-            'favoriteTeamId': 19,
-          });
-          return http.Response(jsonEncode({'ok': true}), 200);
-        }
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestIndex++;
+            expect(request.url.path, '/v1/users/me/following/teams');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            if (requestIndex == 1) {
+              expect(request.method, 'PUT');
+              expect(request.headers['Content-Type'], 'application/json');
+              expect(jsonDecode(request.body), {
+                'teamIds': [19, 83],
+                'favoriteTeamId': 19,
+              });
+              return http.Response(jsonEncode({'ok': true}), 200);
+            }
 
-        expect(request.method, 'GET');
-        return http.Response(jsonEncode(_teamsJson().reversed.toList()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+            expect(request.method, 'GET');
+            return http.Response(
+                jsonEncode(_teamsJson().reversed.toList()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final teams = await repository.replaceFollowing(
@@ -67,12 +73,13 @@ void main() {
   test('validates the complete selection before requesting', () async {
     var requests = 0;
     final repository = ApiFollowingTeamsRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -112,19 +119,20 @@ void main() {
 
   test('surfaces a typed favorite-team cooldown', () async {
     final repository = ApiFollowingTeamsRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({
-            'detail': {
-              'message': 'Favorite team can be changed later',
-              'available_at': '2026-09-20T12:30:00Z',
-            },
-          }),
-          409,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode({
+                'detail': {
+                  'message': 'Favorite team can be changed later',
+                  'available_at': '2026-09-20T12:30:00Z',
+                },
+              }),
+              409,
+            ),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -161,9 +169,10 @@ void main() {
     ];
     var requestIndex = 0;
     final repository = ApiFollowingTeamsRepository(
-      client: MockClient((_) async => responses[requestIndex++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestIndex++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.load(), throwsA(isA<http.ClientException>()));
@@ -181,12 +190,13 @@ void main() {
     ];
     var requestIndex = 0;
     final repository = ApiFollowingTeamsRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'PUT');
-        return responses[requestIndex++];
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'PUT');
+            return responses[requestIndex++];
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

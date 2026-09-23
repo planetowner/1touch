@@ -1,7 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_detail_mapper.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_detail_response.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_mapper.dart';
@@ -10,23 +8,12 @@ import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 
-/// HTTP implementation of the verified team-matches fixture query.
-///
-/// The synchronous selectors expose only fixtures loaded during this process;
-/// they are not a complete backend catalog. Keep the active provider on the
-/// mock until existing screens migrate to asynchronous repository operations.
+/// 경기 목록과 상세를 같은 캐시에 보관해요.
+/// 동기 조회는 이미 불러온 경기만 반환하므로 화면은 비동기 조회로 시작해요.
 class ApiFixtureRepository implements FixtureRepository {
-  ApiFixtureRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiFixtureRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<List<Fixture>> _fixtures = ValueNotifier(const []);
 
   @override
@@ -42,8 +29,8 @@ class ApiFixtureRepository implements FixtureRepository {
 
   @override
   Future<FixtureDetail> loadDetail(int fixtureId) async {
-    final uri = _apiBaseUri.resolve('fixtures/$fixtureId');
-    final decoded = await _getJsonObject(uri, 'fixture-detail');
+    final uri = _api.baseUri.resolve('fixtures/$fixtureId');
+    final decoded = _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
     final response = ApiFixtureDetailResponse.fromJson(decoded);
     if (response.fixture.fixtureId != fixtureId) {
       throw FormatException(
@@ -108,10 +95,10 @@ class ApiFixtureRepository implements FixtureRepository {
       'limit': '$limit',
       'offset': '$offset',
     };
-    final uri = _apiBaseUri.resolve('teams/$teamId/matches').replace(
+    final uri = _api.baseUri.resolve('teams/$teamId/matches').replace(
           queryParameters: queryParameters,
         );
-    final decoded = await _getJsonObject(uri, 'team-matches');
+    final decoded = _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
     final page = ApiTeamMatchesResponse.fromJson(decoded);
     final loaded = List<Fixture>.unmodifiable(
       page.items.map(fixtureFromApiResponse),
@@ -201,10 +188,10 @@ class ApiFixtureRepository implements FixtureRepository {
       throw RangeError.range(limit, 1, 50, 'limit');
     }
 
-    final uri = _apiBaseUri.resolve('fixtures/$fixtureId/head2head').replace(
+    final uri = _api.baseUri.resolve('fixtures/$fixtureId/head2head').replace(
       queryParameters: {'limit': '$limit'},
     );
-    final decoded = await _getJsonObject(uri, 'head-to-head');
+    final decoded = _api.decodeJson<Map<String, dynamic>>(await _api.get(uri));
     final response = ApiFixtureHeadToHeadResponse.fromJson(decoded);
     if (response.fixtureId != fixtureId) {
       throw FormatException(
@@ -221,32 +208,6 @@ class ApiFixtureRepository implements FixtureRepository {
 
   @override
   Future<void> initialize() async {}
-
-  Future<Map<String, dynamic>> _getJsonObject(
-    Uri uri,
-    String responseName,
-  ) async {
-    final response = await _client.get(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
-    );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Fixture request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
-
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw FormatException(
-          'Expected the $responseName response to be a JSON object.');
-    }
-    return decoded;
-  }
 
   void _mergeIntoCache(List<Fixture> loaded) {
     final byId = {
@@ -291,11 +252,6 @@ class ApiFixtureRepository implements FixtureRepository {
     return descending
         ? b.fixtureId.compareTo(a.fixtureId)
         : a.fixtureId.compareTo(b.fixtureId);
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 
   static String _formatDate(DateTime value) {

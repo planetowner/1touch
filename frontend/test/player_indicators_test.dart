@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/players/api/api_player_indicators_repository.dart';
 import 'package:onetouch/data/players/api/api_player_indicators_response.dart';
@@ -118,14 +119,16 @@ void main() {
     'API requests current season by provider ID and preserves null wages',
     () async {
       final repository = ApiPlayerIndicatorsRepository(
-        client: MockClient((request) async {
-          expect(request.url.path, '/v1/players/997/indicators');
-          expect(request.url.queryParameters, isEmpty);
-          expect(request.headers['Authorization'], 'Bearer test-session');
-          return http.Response(jsonEncode(_response()), 200);
-        }),
-        apiBaseUri: Uri.parse('https://example.test/v1'),
-        requestHeaders: const {'Authorization': 'Bearer test-session'},
+        api: ApiClient(
+            client: MockClient((request) async {
+              expect(request.url.path, '/v1/players/997/indicators');
+              expect(request.url.queryParameters, isEmpty);
+              expect(request.headers['Authorization'], 'Bearer test-session');
+              return http.Response(jsonEncode(_response()), 200);
+            }),
+            baseUri: Uri.parse('https://example.test/v1'),
+            requestHeaders: () =>
+                const {'Authorization': 'Bearer test-session'}),
       );
       final result = (await repository.loadCurrent(997))!;
       expect(result.seasonName, '2026/2027');
@@ -140,14 +143,15 @@ void main() {
     () async {
       var status = 404;
       final repository = ApiPlayerIndicatorsRepository(
-        client: MockClient(
-          (_) async => http.Response(
-            '{"detail":"Player not in a current five-league squad"}',
-            status,
-          ),
-        ),
-        apiBaseUri: Uri.parse('https://example.test/v1/'),
-        requestHeaders: const {},
+        api: ApiClient(
+            client: MockClient(
+              (_) async => http.Response(
+                '{"detail":"Player not in a current five-league squad"}',
+                status,
+              ),
+            ),
+            baseUri: Uri.parse('https://example.test/v1/'),
+            requestHeaders: () => const {}),
       );
       expect(await repository.loadCurrent(997), isNull);
       status = 503;
@@ -168,11 +172,12 @@ void main() {
         _response()..['form'] = _scoreJson(band: 5),
       ]) {
         final repository = ApiPlayerIndicatorsRepository(
-          client: MockClient(
-            (_) async => http.Response(jsonEncode(payload), 200),
-          ),
-          apiBaseUri: Uri.parse('https://example.test/v1/'),
-          requestHeaders: const {},
+          api: ApiClient(
+              client: MockClient(
+                (_) async => http.Response(jsonEncode(payload), 200),
+              ),
+              baseUri: Uri.parse('https://example.test/v1/'),
+              requestHeaders: () => const {}),
         );
         await expectLater(repository.loadCurrent(997), throwsFormatException);
       }

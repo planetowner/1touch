@@ -1,24 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/team_overview/api/api_team_overview_mapper.dart';
 import 'package:onetouch/data/team_overview/api/api_team_overview_response.dart';
 import 'package:onetouch/data/team_overview/team_overview_repository.dart';
 import 'package:onetouch/models/team_overview.dart';
 
 class ApiTeamOverviewRepository implements TeamOverviewRepository {
-  ApiTeamOverviewRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiTeamOverviewRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
   final ValueNotifier<Map<int, TeamOverview>> _cachedTeams =
       ValueNotifier(const {});
   final Map<int, Future<TeamOverview>> _inFlightLoads = {};
@@ -48,27 +38,12 @@ class ApiTeamOverviewRepository implements TeamOverviewRepository {
   }
 
   Future<TeamOverview> _fetchAndCache(int teamId) async {
-    final uri = _apiBaseUri.resolve('teams/$teamId');
-    final response = await _client.get(
+    final uri = _api.baseUri.resolve('teams/$teamId');
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Team overview request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the Team overview response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
 
     final overview = teamOverviewFromApiResponse(
       ApiTeamOverviewResponse.fromJson(decoded),
@@ -84,10 +59,5 @@ class ApiTeamOverviewRepository implements TeamOverviewRepository {
       teamId: overview,
     });
     return overview;
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

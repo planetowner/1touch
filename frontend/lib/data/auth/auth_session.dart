@@ -2,6 +2,7 @@ class AuthSession {
   String? _accessToken;
 
   bool get isAuthenticated => _accessToken != null;
+  String? get accessToken => _accessToken;
 
   Map<String, String> get requestHeaders {
     final accessToken = _accessToken;

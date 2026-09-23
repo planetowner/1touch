@@ -3,23 +3,26 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/best_eleven/api/api_best_eleven_repository.dart';
 
 void main() {
   test('requests, maps, and caches the default Best Eleven', () async {
     var requestCount = 0;
     final repository = ApiBestElevenRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/teams/83/best-eleven');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_bestElevenJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/teams/83/best-eleven');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_bestElevenJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final first = await repository.loadForTeam(83);
@@ -40,22 +43,23 @@ void main() {
 
   test('sends the requested season and normalized formation', () async {
     final repository = ApiBestElevenRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/teams/83/best-eleven');
-        expect(request.url.queryParameters, {
-          'season_id': '23621',
-          'formation': '4-2-3-1',
-        });
-        return http.Response(
-          jsonEncode(_bestElevenJson(
-            seasonId: 23621,
-            formation: '4-2-3-1',
-          )),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/teams/83/best-eleven');
+            expect(request.url.queryParameters, {
+              'season_id': '23621',
+              'formation': '4-2-3-1',
+            });
+            return http.Response(
+              jsonEncode(_bestElevenJson(
+                seasonId: 23621,
+                formation: '4-2-3-1',
+              )),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     final result = await repository.loadForTeam(
@@ -80,15 +84,16 @@ void main() {
       () async {
     var requestCount = 0;
     final repository = ApiBestElevenRepository(
-      client: MockClient((_) async {
-        requestCount++;
-        return http.Response(
-          jsonEncode({'detail': 'Best eleven not available'}),
-          404,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requestCount++;
+            return http.Response(
+              jsonEncode({'detail': 'Best eleven not available'}),
+              404,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     expect(await repository.loadForTeam(83), isNull);
@@ -104,9 +109,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiBestElevenRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -121,9 +127,10 @@ void main() {
 
   test('rejects a malformed response root', () async {
     final repository = ApiBestElevenRepository(
-      client: MockClient((_) async => http.Response(jsonEncode([]), 200)),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => http.Response(jsonEncode([]), 200)),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.loadForTeam(83), throwsFormatException);
@@ -137,11 +144,13 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiBestElevenRepository(
-      client: MockClient(
-        (_) async => http.Response(jsonEncode(responses[requestCount++]), 200),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient(
+            (_) async =>
+                http.Response(jsonEncode(responses[requestCount++]), 200),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.loadForTeam(83), throwsFormatException);
