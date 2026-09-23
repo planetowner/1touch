@@ -1,6 +1,4 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_options_mapper.dart';
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_options_response.dart';
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_mapper.dart';
@@ -14,42 +12,18 @@ import 'package:onetouch/models/team_attribute_season_option.dart';
 /// The deployed endpoint returns one season per request. Omitting `season_id`
 /// selects the current season; supplying it selects that historical season.
 class ApiTeamAttributeRepository implements TeamAttributeRepository {
-  ApiTeamAttributeRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiTeamAttributeRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<List<TeamAttributeSeasonOption>> loadOptionsForTeam(int teamId) async {
-    final uri = _apiBaseUri.resolve('teams/$teamId/attributes/options');
-    final response = await _client.get(
+    final uri = _api.baseUri.resolve('teams/$teamId/attributes/options');
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Team attribute options request failed with status '
-        '${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the team attribute options response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
 
     final apiResponse = ApiTeamAttributeOptionsResponse.fromJson(decoded);
     if (apiResponse.teamId != teamId) {
@@ -65,31 +39,16 @@ class ApiTeamAttributeRepository implements TeamAttributeRepository {
     int teamId, {
     int? seasonId,
   }) async {
-    final uri = _apiBaseUri.resolve('teams/$teamId/attributes').replace(
+    final uri = _api.baseUri.resolve('teams/$teamId/attributes').replace(
       queryParameters: {
         if (seasonId != null) 'season_id': '$seasonId',
       },
     );
-    final response = await _client.get(
+    final response = await _api.get(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Team attributes request failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the team attributes response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
 
     final apiResponse = ApiTeamAttributeResponse.fromJson(decoded);
     if (apiResponse.teamId != teamId) {
@@ -106,10 +65,5 @@ class ApiTeamAttributeRepository implements TeamAttributeRepository {
     return List.unmodifiable([
       teamAttributeScoresFromApiResponse(apiResponse),
     ]);
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

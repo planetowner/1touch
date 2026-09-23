@@ -1,21 +1,13 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/profile/profile_avatar_repository.dart';
 
 class ApiProfileAvatarRepository implements ProfileAvatarRepository {
-  ApiProfileAvatarRepository({
-    required http.Client client,
-    required Uri apiBaseUri,
-    required Map<String, String> requestHeaders,
-  })  : _client = client,
-        _apiBaseUri = _asDirectoryUri(apiBaseUri),
-        _requestHeaders = Map.unmodifiable(requestHeaders);
+  ApiProfileAvatarRepository({required ApiClient api}) : _api = api;
 
-  final http.Client _client;
-  final Uri _apiBaseUri;
-  final Map<String, String> _requestHeaders;
+  final ApiClient _api;
 
   @override
   Future<Uri> upload({
@@ -30,12 +22,8 @@ class ApiProfileAvatarRepository implements ProfileAvatarRepository {
       throw ArgumentError.value(filename, 'filename', 'must not be empty');
     }
 
-    final uri = _apiBaseUri.resolve('users/me/avatar');
+    final uri = _api.baseUri.resolve('users/me/avatar');
     final request = http.MultipartRequest('PUT', uri)
-      ..headers.addAll({
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      })
       ..files.add(
         http.MultipartFile.fromBytes(
           'file',
@@ -44,21 +32,10 @@ class ApiProfileAvatarRepository implements ProfileAvatarRepository {
         ),
       );
     final response = await http.Response.fromStream(
-      await _client.send(request),
+      await _api.send(request),
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Avatar upload failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException(
-        'Expected the avatar-upload response to be a JSON object.',
-      );
-    }
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
     final avatarUrl = decoded['avatar_url'];
     if (avatarUrl is! String || avatarUrl.trim().isEmpty) {
       throw const FormatException(
@@ -71,7 +48,7 @@ class ApiProfileAvatarRepository implements ProfileAvatarRepository {
       throw FormatException('Invalid avatar_url: $avatarUrl');
     }
     final resolved =
-        parsed.isAbsolute ? parsed : _apiBaseUri.resolveUri(parsed);
+        parsed.isAbsolute ? parsed : _api.baseUri.resolveUri(parsed);
     if ((resolved.scheme != 'http' && resolved.scheme != 'https') ||
         resolved.host.isEmpty) {
       throw FormatException('Invalid avatar_url: $avatarUrl');
@@ -81,31 +58,16 @@ class ApiProfileAvatarRepository implements ProfileAvatarRepository {
 
   @override
   Future<void> delete() async {
-    final uri = _apiBaseUri.resolve('users/me/avatar');
-    final response = await _client.delete(
+    final uri = _api.baseUri.resolve('users/me/avatar');
+    final response = await _api.delete(
       uri,
-      headers: {
-        'Accept': 'application/json',
-        ..._requestHeaders,
-      },
     );
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-        'Avatar deletion failed with status ${response.statusCode}.',
-        uri,
-      );
-    }
 
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map<String, dynamic> || decoded['ok'] != true) {
+    final decoded = _api.decodeJson<Map<String, dynamic>>(response);
+    if (decoded['ok'] != true) {
       throw const FormatException(
         'Expected ok=true in the avatar-deletion response.',
       );
     }
-  }
-
-  static Uri _asDirectoryUri(Uri uri) {
-    final value = uri.toString();
-    return value.endsWith('/') ? uri : Uri.parse('$value/');
   }
 }

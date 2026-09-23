@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/chat/api/api_chat_repository.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 
@@ -10,33 +11,34 @@ void main() {
   test('loads authenticated history and maps nullable author metadata',
       () async {
     final repository = ApiChatRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/fixtures/42/chat/messages');
-        expect(request.url.queryParameters, {
-          'limit': '25',
-          'before_id': '30',
-        });
-        expect(request.headers['Authorization'], 'Bearer test-session');
-        expect(request.headers['Accept'], 'application/json');
-        return http.Response(
-          jsonEncode({
-            'items': [
-              _messageJson(messageId: 10),
-              _messageJson(
-                messageId: 20,
-                userId: null,
-                username: null,
-                avatarUrl: null,
-                authorDeleted: true,
-              ),
-            ],
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/fixtures/42/chat/messages');
+            expect(request.url.queryParameters, {
+              'limit': '25',
+              'before_id': '30',
+            });
+            expect(request.headers['Authorization'], 'Bearer test-session');
+            expect(request.headers['Accept'], 'application/json');
+            return http.Response(
+              jsonEncode({
+                'items': [
+                  _messageJson(messageId: 10),
+                  _messageJson(
+                    messageId: 20,
+                    userId: null,
+                    username: null,
+                    avatarUrl: null,
+                    authorDeleted: true,
+                  ),
+                ],
+              }),
+              200,
+            );
           }),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.example.test/v1'),
-      requestHeaders: const {'Authorization': 'Bearer test-session'},
+          baseUri: Uri.parse('https://api.example.test/v1'),
+          requestHeaders: () => const {'Authorization': 'Bearer test-session'}),
     );
 
     final messages = await repository.loadHistory(
@@ -60,15 +62,16 @@ void main() {
       () async {
     var requestCount = 0;
     final repository = ApiChatRepository(
-      client: MockClient((_) async {
-        requestCount++;
-        final items = requestCount == 1
-            ? [_messageJson(messageId: 20), _messageJson(messageId: 30)]
-            : [_messageJson(messageId: 10), _messageJson(messageId: 20)];
-        return http.Response(jsonEncode({'items': items}), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requestCount++;
+            final items = requestCount == 1
+                ? [_messageJson(messageId: 20), _messageJson(messageId: 30)]
+                : [_messageJson(messageId: 10), _messageJson(messageId: 20)];
+            return http.Response(jsonEncode({'items': items}), 200);
+          }),
+          baseUri: Uri.parse('https://api.example.test/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await repository.loadHistory(fixtureId: 42);
@@ -83,16 +86,17 @@ void main() {
       () async {
     var requestCount = 0;
     final repository = ApiChatRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(request.url.queryParameters, {
-          'limit': '100',
-          'after_id': '0',
-        });
-        return http.Response(jsonEncode({'items': []}), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(request.url.queryParameters, {
+              'limit': '100',
+              'after_id': '0',
+            });
+            return http.Response(jsonEncode({'items': []}), 200);
+          }),
+          baseUri: Uri.parse('https://api.example.test/v1/'),
+          requestHeaders: () => const {}),
     );
 
     expect(
@@ -135,9 +139,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiChatRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.example.test/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -158,17 +163,18 @@ void main() {
   test('reports a chat message with the authenticated normalized reason',
       () async {
     final repository = ApiChatRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/chat/messages/11/report');
-        expect(request.headers['Authorization'], 'Bearer test-session');
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Content-Type'], 'application/json');
-        expect(jsonDecode(request.body), {'reason': 'Spam'});
-        return http.Response(jsonEncode({'ok': true}), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      requestHeaders: const {'Authorization': 'Bearer test-session'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/chat/messages/11/report');
+            expect(request.headers['Authorization'], 'Bearer test-session');
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Content-Type'], 'application/json');
+            expect(jsonDecode(request.body), {'reason': 'Spam'});
+            return http.Response(jsonEncode({'ok': true}), 200);
+          }),
+          baseUri: Uri.parse('https://api.example.test/v1/'),
+          requestHeaders: () => const {'Authorization': 'Bearer test-session'}),
     );
 
     await repository.reportMessage(messageId: 11, reason: '  Spam  ');
@@ -178,15 +184,16 @@ void main() {
       () async {
     var requestCount = 0;
     final repository = ApiChatRepository(
-      client: MockClient((_) async {
-        requestCount++;
-        return switch (requestCount) {
-          1 => http.Response('Unavailable', 503),
-          _ => http.Response(jsonEncode({'ok': false}), 200),
-        };
-      }),
-      apiBaseUri: Uri.parse('https://api.example.test/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requestCount++;
+            return switch (requestCount) {
+              1 => http.Response('Unavailable', 503),
+              _ => http.Response(jsonEncode({'ok': false}), 200),
+            };
+          }),
+          baseUri: Uri.parse('https://api.example.test/v1/'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

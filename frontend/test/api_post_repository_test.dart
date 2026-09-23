@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/posts/api/api_post_repository.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
@@ -10,22 +11,24 @@ import 'package:onetouch/models/post.dart';
 void main() {
   test('requests and maps a team post feed with Bearer headers', () async {
     final repository = ApiPostRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/posts');
-        expect(request.url.queryParameters, {
-          'team_id': '83',
-          'sort': 'newest',
-          'period': 'all_time',
-          'limit': '50',
-          'offset': '0',
-        });
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(jsonEncode(_feedJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/posts');
+            expect(request.url.queryParameters, {
+              'team_id': '83',
+              'sort': 'newest',
+              'period': 'all_time',
+              'limit': '50',
+              'offset': '0',
+            });
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(jsonEncode(_feedJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final posts = await repository.loadPosts(teamId: 83);
@@ -47,23 +50,24 @@ void main() {
 
   test('sends category and device timezone for a date period', () async {
     final repository = ApiPostRepository(
-      client: MockClient((request) async {
-        expect(request.url.queryParameters, {
-          'team_id': '83',
-          'category': 'analysis',
-          'sort': 'popular',
-          'period': 'week',
-          'limit': '25',
-          'offset': '50',
-          'timezone': 'America/New_York',
-        });
-        return http.Response(
-          jsonEncode(_feedJson(items: const [], limit: 25, offset: 50)),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.queryParameters, {
+              'team_id': '83',
+              'category': 'analysis',
+              'sort': 'popular',
+              'period': 'week',
+              'limit': '25',
+              'offset': '50',
+              'timezone': 'America/New_York',
+            });
+            return http.Response(
+              jsonEncode(_feedJson(items: const [], limit: 25, offset: 50)),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     expect(
@@ -100,14 +104,15 @@ void main() {
         ],
       });
     final repository = ApiPostRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode(_feedJson(items: [deletedPost])),
-          200,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode(_feedJson(items: [deletedPost])),
+              200,
+            ),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final post = (await repository.loadPosts(teamId: 83)).single;
@@ -123,12 +128,13 @@ void main() {
   test('rejects invalid local query values before requesting', () async {
     var requests = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.loadPosts(teamId: 0), throwsRangeError);
@@ -175,9 +181,10 @@ void main() {
     ];
     var index = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async => responses[index++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[index++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -194,18 +201,20 @@ void main() {
 
   test('reports a post with Bearer authentication', () async {
     final repository = ApiPostRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/posts/42/report');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Content-Type'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        expect(jsonDecode(request.body), {'reason': 'Spam'});
-        return http.Response(jsonEncode({'ok': true}), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/posts/42/report');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Content-Type'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            expect(jsonDecode(request.body), {'reason': 'Spam'});
+            return http.Response(jsonEncode({'ok': true}), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     await expectLater(
@@ -217,12 +226,13 @@ void main() {
   test('rejects invalid report values before requesting', () async {
     var requests = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -252,9 +262,10 @@ void main() {
     ];
     var responseIndex = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async => responses[responseIndex++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[responseIndex++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -271,23 +282,25 @@ void main() {
 
   test('creates a text post with Bearer authentication', () async {
     final repository = ApiPostRepository(
-      client: MockClient((request) async {
-        expect(request.method, 'POST');
-        expect(request.url.path, '/v1/posts');
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Content-Type'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        expect(jsonDecode(request.body), {
-          'team_id': 83,
-          'category': 'analysis',
-          'title': 'Title',
-          'body': 'Body',
-          'attachment_ids': [7, 8],
-        });
-        return http.Response(jsonEncode({'post_id': 101}), 201);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.path, '/v1/posts');
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Content-Type'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            expect(jsonDecode(request.body), {
+              'team_id': 83,
+              'category': 'analysis',
+              'title': 'Title',
+              'body': 'Body',
+              'attachment_ids': [7, 8],
+            });
+            return http.Response(jsonEncode({'post_id': 101}), 201);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     expect(
@@ -307,12 +320,13 @@ void main() {
   test('rejects invalid creation values before requesting', () async {
     var requests = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 201);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 201);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final invalidInputs = [
@@ -383,9 +397,10 @@ void main() {
     ];
     var responseIndex = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async => responses[responseIndex++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[responseIndex++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
     final input = CreatePostInput(
       teamId: 83,
@@ -411,17 +426,19 @@ void main() {
   test('uses idempotent PUT and DELETE post-like endpoints', () async {
     var requestIndex = 0;
     final repository = ApiPostRepository(
-      client: MockClient((request) async {
-        requestIndex++;
-        expect(request.url.path, '/v1/posts/42/like');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        expect(request.method, requestIndex == 1 ? 'PUT' : 'DELETE');
-        return http.Response(jsonEncode({'ok': true}), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestIndex++;
+            expect(request.url.path, '/v1/posts/42/like');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            expect(request.method, requestIndex == 1 ? 'PUT' : 'DELETE');
+            return http.Response(jsonEncode({'ok': true}), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     await repository.setPostLiked(postId: 42, liked: true);
@@ -432,12 +449,13 @@ void main() {
   test('rejects an invalid post-like ID before requesting', () async {
     var requests = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async {
-        requests++;
-        return http.Response('{}', 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async {
+            requests++;
+            return http.Response('{}', 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -456,9 +474,10 @@ void main() {
     ];
     var responseIndex = 0;
     final repository = ApiPostRepository(
-      client: MockClient((_) async => responses[responseIndex++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[responseIndex++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(

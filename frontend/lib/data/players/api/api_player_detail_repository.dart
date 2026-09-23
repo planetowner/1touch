@@ -1,28 +1,19 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/models/player_detail.dart';
 
 class ApiPlayerDetailRepository implements PlayerDetailRepository {
-  ApiPlayerDetailRepository(
-      {required this.client, required this.baseUri, required this.headers});
-  final http.Client client;
-  final Uri baseUri;
-  final Map<String, String> headers;
+  ApiPlayerDetailRepository({required ApiClient api}) : _api = api;
+  final ApiClient _api;
 
   Future<Map<String, dynamic>> _get(
       String path, Map<String, String> query) async {
-    final uri = baseUri
+    final uri = _api.baseUri
         .resolve(path)
         .replace(queryParameters: query.isEmpty ? null : query);
-    final response = await client
-        .get(uri, headers: {'Accept': 'application/json', ...headers});
-    if (response.statusCode != 200) {
-      throw http.ClientException(
-          'Player detail request failed (${response.statusCode}).', uri);
-    }
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    final response = await _api.get(uri);
+    return _api.decodeJson<Map<String, dynamic>>(response);
   }
 
   @override
@@ -40,12 +31,6 @@ class ApiPlayerDetailRepository implements PlayerDetailRepository {
   @override
   Future<List<PlayerCandidate>> search(String query) async {
     final json = await _get('players/comparison-candidates', {'q': query});
-    return (json['players'] as List)
-        .map((r) => (
-              id: r['player_id'] as int,
-              name: r['name'] as String,
-              image: r['image'] as String?
-            ))
-        .toList();
+    return (json['players'] as List).cast<Map<String, dynamic>>().map(playerCandidateFromJson).toList();
   }
 }

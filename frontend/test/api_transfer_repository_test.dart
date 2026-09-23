@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/api/api_transfer_repository.dart';
 
@@ -10,20 +11,22 @@ void main() {
   test('requests, maps, and caches the latest team transfer window', () async {
     var requestCount = 0;
     final repository = ApiTransferRepository(
-      client: MockClient((request) async {
-        requestCount++;
-        expect(request.method, 'GET');
-        expect(request.url.path, '/v1/teams/83/transfers');
-        expect(request.url.queryParameters, isEmpty);
-        expect(request.headers['Accept'], 'application/json');
-        expect(request.headers['Authorization'], 'Bearer session-token');
-        return http.Response(
-          jsonEncode(_windowJson()),
-          200,
-        );
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {'Authorization': 'Bearer session-token'},
+      api: ApiClient(
+          client: MockClient((request) async {
+            requestCount++;
+            expect(request.method, 'GET');
+            expect(request.url.path, '/v1/teams/83/transfers');
+            expect(request.url.queryParameters, isEmpty);
+            expect(request.headers['Accept'], 'application/json');
+            expect(request.headers['Authorization'], 'Bearer session-token');
+            return http.Response(
+              jsonEncode(_windowJson()),
+              200,
+            );
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () =>
+              const {'Authorization': 'Bearer session-token'}),
     );
 
     final first = await repository.loadForTeam(83);
@@ -52,12 +55,13 @@ void main() {
 
   test('supports a trailing base-URI slash', () async {
     final repository = ApiTransferRepository(
-      client: MockClient((request) async {
-        expect(request.url.path, '/v1/teams/83/transfers');
-        return http.Response(jsonEncode(_windowJson()), 200);
-      }),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1/'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((request) async {
+            expect(request.url.path, '/v1/teams/83/transfers');
+            return http.Response(jsonEncode(_windowJson()), 200);
+          }),
+          baseUri: Uri.parse('https://api.1touch.football/v1/'),
+          requestHeaders: () => const {}),
     );
 
     expect(await repository.loadForTeam(83), isNotNull);
@@ -65,18 +69,19 @@ void main() {
 
   test('accepts a successful empty transfer window', () async {
     final repository = ApiTransferRepository(
-      client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({
-            'window_key': '2026/2027 summer',
-            'transfers_in': [],
-            'transfers_out': [],
-          }),
-          200,
-        ),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(
+              jsonEncode({
+                'window_key': '2026/2027 summer',
+                'transfers_in': [],
+                'transfers_out': [],
+              }),
+              200,
+            ),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final result = await repository.loadForTeam(83);
@@ -88,11 +93,12 @@ void main() {
 
   test('keeps different teams in separate cache entries', () async {
     final repository = ApiTransferRepository(
-      client: MockClient(
-        (_) async => http.Response(jsonEncode(_windowJson()), 200),
-      ),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient(
+            (_) async => http.Response(jsonEncode(_windowJson()), 200),
+          ),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     final first = await repository.loadForTeam(83);
@@ -105,9 +111,10 @@ void main() {
 
   test('maps not found to an unavailable team feature', () async {
     final repository = ApiTransferRepository(
-      client: MockClient((_) async => http.Response('Not found', 404)),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => http.Response('Not found', 404)),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(
@@ -124,9 +131,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiTransferRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     for (var i = 0; i < responses.length; i++) {
@@ -155,9 +163,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiTransferRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.loadForTeam(83), throwsFormatException);
@@ -178,9 +187,10 @@ void main() {
     ];
     var requestCount = 0;
     final repository = ApiTransferRepository(
-      client: MockClient((_) async => responses[requestCount++]),
-      apiBaseUri: Uri.parse('https://api.1touch.football/v1'),
-      requestHeaders: const {},
+      api: ApiClient(
+          client: MockClient((_) async => responses[requestCount++]),
+          baseUri: Uri.parse('https://api.1touch.football/v1'),
+          requestHeaders: () => const {}),
     );
 
     await expectLater(repository.loadForTeam(83), throwsFormatException);
