@@ -297,6 +297,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () => TeamSelectionSheet.show(
                             context,
                             initialTeamId: viewedTeamId,
+                            favoriteTeamId:
+                                currentUserPreferences.favoriteTeamId.value,
                             followingTeams: homeData.followingTeams,
                             onSwitch: _switchViewedTeam,
                           ),
