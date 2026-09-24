@@ -241,6 +241,77 @@ class TeamMatchingRegressionTests(unittest.TestCase):
 
 
 class LoaderTests(unittest.TestCase):
+    def test_missing_feed_images_use_article_metadata_without_replacing_feed_fields(self):
+        feeds = {
+            'rss': '''<rss><channel><item><title>바르셀로나 경기 소식</title>
+              <link>https://example.com/1</link><pubDate>Sat, 19 Sep 2026 17:00:00 GMT</pubDate>
+              </item></channel></rss>''',
+            'news_sitemap': '''<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+              xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+              <url><loc>https://example.com/1</loc><news:news>
+                <news:publication><news:language>ko</news:language></news:publication>
+                <news:publication_date>2026-09-19T17:00:00Z</news:publication_date>
+                <news:title>바르셀로나 경기 소식</news:title>
+              </news:news></url></urlset>''',
+        }
+        # 마이데일리 원문처럼 발행 시각이 없어도 피드의 제목·시각을 그대로 사용해요.
+        page = b'''<html lang="ko"><meta property="og:title" content="Different title">
+          <meta property="og:image" content="https://example.com/photo.jpg"></html>'''
+        for feed_format, feed in feeds.items():
+            with self.subTest(feed_format=feed_format):
+                source = {**SOURCE, 'format': feed_format}
+                original, = parse_feed(feed.encode(), source)
+                session = Mock()
+                session.get.side_effect = [Mock(content=feed.encode()), Mock(content=page)]
+                with patch.object(loader, 'save_sources'), patch.object(loader, 'save_articles') as save:
+                    report = loader.refresh(apply=True, sources=[source],
+                                            teams=[{'team_id': 83}], session=session, now=NOW)
+                saved, = save.call_args.args[1]
+                self.assertEqual(saved, {**original, 'image_url': 'https://example.com/photo.jpg', 'team_ids': [83]})
+                self.assertIsNone(report['sources'][0]['error'])
+                self.assertEqual([call.args[0] for call in session.get.call_args_list],
+                                 [SOURCE['feed_url'], 'https://example.com/1'])
+
+    def test_image_requests_skip_existing_images_unmatched_articles_and_dates_outside_window(self):
+        rows = [{**article(1, title='바르셀로나'), 'image_url': 'https://example.com/existing.jpg'},
+                article(2, title='다른 소식'), article(3, age=15, title='바르셀로나'),
+                article(4, age=-1, title='바르셀로나')]
+        session = Mock()
+        with patch.object(loader, 'read_source', return_value=rows), \
+                patch.object(loader, 'save_sources'), patch.object(loader, 'save_articles') as save:
+            loader.refresh(apply=True, sources=[SOURCE], teams=[{'team_id': 83}], session=session, now=NOW)
+        session.get.assert_not_called()
+        self.assertEqual([row['article_id'] for row in save.call_args.args[1]], [1, 2])
+        self.assertEqual(save.call_args.args[1][0]['image_url'], 'https://example.com/existing.jpg')
+
+    def test_html_articles_are_not_fetched_again_when_the_original_has_no_image(self):
+        source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
+        listing = b'<div class="news"><a href="/1">Article</a></div>'
+        page = '''<html lang="ko"><meta property="og:title" content="바르셀로나 소식">
+          <meta property="article:published_time" content="2026-09-19T17:00:00Z"></html>'''.encode()
+        session = Mock()
+        session.get.side_effect = [Mock(content=listing), Mock(content=page)]
+        report = loader.refresh(apply=False, sources=[source], teams=[{'team_id': 83}], session=session, now=NOW)
+        self.assertEqual(session.get.call_count, 2)
+        self.assertEqual(report['sources'][0]['matched'], 1)
+        self.assertIsNone(report['sources'][0]['error'])
+
+    def test_image_request_failure_keeps_the_article_and_continues_the_source(self):
+        rows = [article(1, title='바르셀로나 소식'), article(2, title='바르셀로나 경기')]
+        page = b'<meta name="og:image" content="https://example.com/photo.jpg">'
+        for response in (loader.requests.Timeout(), Mock(content=b'<html lang="ko">No image</html>')):
+            with self.subTest(response=response):
+                session = Mock()
+                session.get.side_effect = [response, Mock(content=page)]
+                with patch.object(loader, 'read_source', return_value=rows), \
+                        patch.object(loader, 'save_sources'), patch.object(loader, 'save_articles') as save:
+                    report = loader.refresh(apply=True, sources=[SOURCE], teams=[{'team_id': 83}], session=session, now=NOW)
+                saved = save.call_args.args[1]
+                self.assertEqual(len(saved), 2)
+                self.assertIsNone(saved[0]['image_url'])
+                self.assertEqual(saved[1]['image_url'], 'https://example.com/photo.jpg')
+                self.assertEqual(report['sources'][0]['error'], 'Timeout' if isinstance(response, Exception) else None)
+
     def test_shared_html_reader_deduplicates_links_and_uses_configured_selector(self):
         source = {**SOURCE, 'format': 'html', 'article_selector': '.news a[href]'}
         listing = b'''<div class="news"><a href="/1">Title</a><a href="/1">Image</a></div>
@@ -302,6 +373,7 @@ class LoaderTests(unittest.TestCase):
         saved = {**article(1), 'url_hash': 'a' * 64, 'team_ids': [6, 14]}
         with patch.object(db, 'transaction', transaction):
             loader.save_articles(SOURCE, [saved], NOW, None)
+        self.assertIn('image_url=COALESCE(VALUES(image_url), image_url)', cursor.execute.call_args_list[0].args[0])
         self.assertEqual(cursor.executemany.call_args.args[1], [(27, 6), (27, 14)])
         cursor.reset_mock()
         with patch.object(db, 'transaction', transaction):

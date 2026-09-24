@@ -155,16 +155,27 @@ def article_links(content: bytes, source: dict) -> list[str]:
     return list(dict.fromkeys(url for url in links if url))
 
 
-def parse_article_page(content: bytes, source: dict, url: str) -> dict | None:
+def _article_metadata(content: bytes, source: dict) -> dict:
     soup = BeautifulSoup(content, "html.parser")
     metadata = {tag.get("property", tag.get("name")): tag.get("content", "") for tag in soup.select("meta")}
     declared_language = (soup.html.get("lang", "") if soup.html else "").lower().split("-")[0]
     if declared_language and declared_language != source["language"]:
         raise ValueError("Article language does not match the source")
+    metadata["og:image"] = canonical_url(metadata.get("og:image", ""))
+    return metadata
+
+
+def parse_article_image(content: bytes, source: dict) -> str | None:
+    # 사이트맵 기사는 원문에 발행 시각이 없어도 대표 이미지를 보완할 수 있어요.
+    return _article_metadata(content, source)["og:image"]
+
+
+def parse_article_page(content: bytes, source: dict, url: str) -> dict | None:
+    metadata = _article_metadata(content, source)
     # OSEN·스포츠서울·스포츠동아는 같은 Open Graph 발행 메타데이터를 제공해요.
     return _article(source, title=metadata.get("og:title", ""), url=url,
                     published_at=metadata.get("article:published_time", ""),
-                    image_url=canonical_url(metadata.get("og:image", "")),
+                    image_url=metadata["og:image"],
                     categories=[metadata[k] for k in ("article:section", "og:category") if metadata.get(k)])
 
 
