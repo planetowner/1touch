@@ -29,7 +29,7 @@ String _minuteOrHourLabel(Duration difference, Locale locale) {
   return translateMessage(locale, key, {'count': count});
 }
 
-// 홈과 팀 화면의 다음 경기 날짜는 같은 형식으로 표시해요.
+// 홈·팀 정보·일정의 경기 날짜는 언어별로 같은 형식을 써요.
 String fixtureDateLabel(DateTime? kickoff, {required Locale locale}) {
   if (kickoff == null) return translateMessage(locale, 'Date TBD');
   final local = kickoff.toLocal();
