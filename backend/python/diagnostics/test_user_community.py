@@ -456,14 +456,15 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.request("PUT", "/v1/users/me/following/players", json={"player_ids": [268, 832]})
         self.assertEqual([x["player_id"] for x in self.request("GET", "/v1/users/me/following/players").json()["items"]], [268, 832])
 
-    def test_only_home_team_can_read_write_like_and_report(self):
+    def test_followed_teams_can_read_but_only_home_team_can_write_like_and_report(self):
         post_id = self.post()
         teams_repo.set_following_and_favorite(self.b, [6, 503], 503)
         for method, path, body in [("GET", f"/v1/posts/{post_id}", None), ("GET", "/v1/posts?team_id=6", None),
                                   ("GET", f"/v1/posts/{post_id}/comments", None), ("PUT", f"/v1/posts/{post_id}/like", None),
                                   ("POST", f"/v1/posts/{post_id}/report", {"reason": "Spam"}),
                                   ("POST", f"/v1/posts/{post_id}/comments", {"body": "comment"})]:
-            self.assertEqual(self.request(method, path, self.token_b, json=body).status_code, 403, path)
+            self.assertEqual(self.request(method, path, self.token_b, json=body).status_code,
+                             200 if method == "GET" else 403, path)
 
     def test_likes_are_idempotent_and_best_threshold_is_ten(self):
         post_id = self.post()

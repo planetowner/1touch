@@ -11,7 +11,7 @@ import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/data/teams/mock/team_season_catalog.dart';
 
 // 위젯 단위 테스트는 인증 후의 상태에서 시작해요. 제품의 HTTP 클라이언트만 대체해요.
-void setUpAppCatalog() {
+void setUpAppCatalog({int favoriteTeamId = 83}) {
   setUpAll(() async {
     await http.runWithClient(
         () => footballCatalog.initialize(),
@@ -104,7 +104,10 @@ void setUpAppCatalog() {
               return http.Response('{"detail":"Unstubbed request"}', 500);
             }));
   });
-  setUp(() => currentUserPreferences.applyServerSelection(
-      const UserTeamPreferences(
-          favoriteTeamId: 83, followedTeamIds: [83, 503, 19, 3468, 851])));
+  setUp(() {
+    currentUserPreferences.resetViewedTeam();
+    currentUserPreferences.applyServerSelection(UserTeamPreferences(
+        favoriteTeamId: favoriteTeamId,
+        followedTeamIds: [83, 503, 19, 3468, 851]));
+  });
 }

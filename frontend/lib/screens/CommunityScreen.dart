@@ -18,6 +18,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/features/community/community_header_slivers.dart';
+import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/features/community/community_post_body.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 
@@ -85,9 +86,7 @@ class _CommunityState extends State<Community>
   @override
   void didUpdateWidget(Community oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // The favorite team can change while this screen stays alive (its branch
-    // in the bottom-nav shell is kept in memory), so re-resolve when the
-    // parent route hands us a different teamId instead of only on first load.
+    // 탭 상태가 유지되므로 홈에서 조회 팀이 바뀌면 헤더와 콘텐츠를 함께 다시 불러와요.
     if (widget.teamId != oldWidget.teamId) {
       setState(() {
         _loadTeam();
@@ -246,59 +245,66 @@ class _CommunityState extends State<Community>
     final pageBackground = mainPageBackground(context);
     final team = _team;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: pageBackground,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        onPressed: _openPostComposer,
-        child: SvgPicture.asset(
-          'assets/addpost_icon.svg',
-          height: 40,
-          width: 40,
+    return CommunityAccessBuilder(
+      teamId: widget.teamId,
+      builder: (context, canParticipate) => Scaffold(
+        extendBodyBehindAppBar: true,
+        backgroundColor: pageBackground,
+        bottomNavigationBar:
+            canParticipate ? null : const CommunityReadOnlyNotice(),
+        floatingActionButton: canParticipate
+            ? FloatingActionButton(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                onPressed: _openPostComposer,
+                child: SvgPicture.asset(
+                  'assets/addpost_icon.svg',
+                  height: 40,
+                  width: 40,
+                ),
+              )
+            : null,
+        body: Stack(
+          children: [
+            NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                CommunitySliverAppBar(
+                  pageBackground: pageBackground,
+                  opacityFactor: opacityFactor,
+                  onSearch: () => context.push('/search'),
+                  onProfile: () => context.push('/profile'),
+                ),
+                CommunityTeamHeader(
+                  team: team,
+                  isLive: _isLive,
+                  followerCount: _followerCount,
+                  onTeamTap: isTeamPageSupported(team.teamId)
+                      ? () => openTeamPage(context, team.teamId)
+                      : null,
+                ),
+                CommunityPostTabHeader(
+                  controller: _tabController,
+                  onTap: _selectPostTab,
+                ),
+              ],
+              body: CommunityPostBody(
+                teamId: widget.teamId,
+                posts: _posts,
+                postRepository: _postRepository,
+                communityRepository: _communityRepository,
+                selectedSort: _selectedPostSort,
+                isLoading: _isLoadingPosts,
+                loadError: _postLoadError,
+                onRetry: _loadPosts,
+                onPostDetailClosed: () => _loadPosts(
+                  preserveCurrentPosts: true,
+                ),
+                onSortChanged: _selectPostSort,
+              ),
+            )
+          ],
         ),
-      ),
-      body: Stack(
-        children: [
-          NestedScrollView(
-            controller: _scrollController,
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              CommunitySliverAppBar(
-                pageBackground: pageBackground,
-                opacityFactor: opacityFactor,
-                onSearch: () => context.push('/search'),
-                onProfile: () => context.push('/profile'),
-              ),
-              CommunityTeamHeader(
-                team: team,
-                isLive: _isLive,
-                followerCount: _followerCount,
-                onTeamTap: isTeamPageSupported(team.teamId)
-                    ? () => openTeamPage(context, team.teamId)
-                    : null,
-              ),
-              CommunityPostTabHeader(
-                controller: _tabController,
-                onTap: _selectPostTab,
-              ),
-            ],
-            body: CommunityPostBody(
-              teamId: widget.teamId,
-              posts: _posts,
-              postRepository: _postRepository,
-              communityRepository: _communityRepository,
-              selectedSort: _selectedPostSort,
-              isLoading: _isLoadingPosts,
-              loadError: _postLoadError,
-              onRetry: _loadPosts,
-              onPostDetailClosed: () => _loadPosts(
-                preserveCurrentPosts: true,
-              ),
-              onSortChanged: _selectPostSort,
-            ),
-          )
-        ],
       ),
     );
   }

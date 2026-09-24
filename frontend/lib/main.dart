@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
-import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
@@ -149,9 +149,8 @@ final GoRouter _router = GoRouter(
           GoRoute(
             path: '/community',
             builder: (context, state) => ValueListenableBuilder<int>(
-              valueListenable: FavoriteTeam.id,
-              builder: (context, favoriteTeamId, _) =>
-                  Community(teamId: favoriteTeamId),
+              valueListenable: currentUserPreferences.viewedTeamId,
+              builder: (context, teamId, _) => Community(teamId: teamId),
             ),
           ),
         ]),
@@ -221,8 +220,6 @@ class MainScreen extends StatelessWidget {
   // The 'child' parameter is not needed for StatefulShellRoute.indexedStack
   const MainScreen({super.key, required this.navigationShell});
 
-  int getFavoriteTeamName() => FavoriteTeam.id.value;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -233,7 +230,7 @@ class MainScreen extends StatelessWidget {
         onTap: (index) {
           // Special case for the 'Team' tab (index 2)
           if (index == 2) {
-            openTeamPage(context, getFavoriteTeamName());
+            openTeamPage(context, currentUserPreferences.viewedTeamId.value);
             return; // Exit after handling the special case
           }
 
