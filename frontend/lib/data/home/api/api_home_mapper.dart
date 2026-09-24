@@ -62,6 +62,8 @@ HomeData homeDataFromApiResponse(
   }).toList(growable: false);
 
   return HomeData(
+    leaguePosition: response.standing?.position,
+    leagueRankDelta: response.standing?.rankDelta,
     favoriteTeam: favoriteTeam,
     followingTeams: followingTeams,
     nextMatch: response.nextMatch == null

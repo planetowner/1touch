@@ -10,11 +10,15 @@ class FavoriteTeamCard extends StatelessWidget {
     final appColors = AppColors.of(context);
     final match = team.liveMatch ?? team.nextMatch;
     final competitionContext = teamCompetitionContextResolver.resolve(team.id);
-    final leagueName = competitionContext?.competitionName ?? '';
+    final leagueName = competitionNameLabel(
+        context,
+        competitionContext?.competitionId,
+        competitionContext?.competitionName ?? '');
     final standingPosition = team.standing?['position'];
     final rank = standingPosition is int
         ? standingPosition
         : competitionContext?.currentPosition;
+    final rankDelta = team.standing?['rank_delta'] as int?;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -57,22 +61,31 @@ class FavoriteTeamCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            team.name,
+                            teamNameLabel(context, team.id, team.name),
                             // '1. Fußballclub Heidenheim 1846 e.V',
                             style: Heading3.style,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          // TODO(api-standings): Add movement when standings
-                          // exposes the team's previous position.
-                          Text(
-                            "$leagueName ${rank != null ? ordinal(rank, locale: Localizations.localeOf(context)) : '-'}",
-                            style: Body2.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  "$leagueName ${rank != null ? ordinal(rank, locale: Localizations.localeOf(context)) : '-'}",
+                                  key: const ValueKey('home-team-standing'),
+                                  style: Body2.style.copyWith(height: 1.3),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (rankDelta != null && rankDelta != 0)
+                                _StandingMovement(delta: rankDelta),
+                            ],
                           ),
                         ],
                       ),
-                    )
+                    ),
+                    const SizedBox(width: 24),
                   ],
                 ),
               ),
@@ -113,15 +126,15 @@ class FavoriteTeamCard extends StatelessWidget {
                     final away = fixtureAwayTeam(last, teamRepository);
                     final kickoff = last.kickoff;
                     return MatchCard2(
-                      date: kickoff == null
-                          ? tr(context, 'Date TBD')
-                          : DateFormat('EEE, MMM d h:mm a')
-                              .format(kickoff.toLocal()),
+                      date: fixtureDateLabel(kickoff,
+                          locale: Localizations.localeOf(context)),
                       venue: '',
-                      team1shortname: home.shortCode ?? home.name,
+                      team1shortname: home.shortCode ??
+                          teamNameLabel(context, home.teamId, home.name),
                       team1Logo: home.imagePath ?? '',
                       team1Id: home.teamId,
-                      team2shortname: away.shortCode ?? away.name,
+                      team2shortname: away.shortCode ??
+                          teamNameLabel(context, away.teamId, away.name),
                       team2Logo: away.imagePath ?? '',
                       team2Id: away.teamId,
                       homeScore: last.homeScore ?? 0,
@@ -133,6 +146,34 @@ class FavoriteTeamCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _StandingMovement extends StatelessWidget {
+  const _StandingMovement({required this.delta});
+
+  final int delta;
+
+  @override
+  Widget build(BuildContext context) {
+    final rising = delta > 0;
+    return Row(
+      key: const ValueKey('home-team-rank-movement'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Transform.flip(
+          flipY: !rising,
+          child: SvgPicture.asset(
+            rising
+                ? 'assets/standings/rank_up.svg'
+                : 'assets/standings/rank_down.svg',
+            width: 24,
+            height: 24,
+          ),
+        ),
+        Text('${delta.abs()}', style: Eyebrow.style.copyWith(height: 1.3)),
+      ],
     );
   }
 }

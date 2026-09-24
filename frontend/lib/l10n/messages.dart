@@ -358,7 +358,7 @@ const appMessages = <String, MessageTranslations>{
   "FOLLOWING PLAYERS": (ko: "팔로우한 선수", ja: "フォロー中の選手", zh: "关注的球员"),
   "Following Teams": (ko: "팔로우한 팀", ja: "フォロー中のチーム", zh: "关注的球队"),
   "Following Players": (ko: "팔로우한 선수", ja: "フォロー中の選手", zh: "关注的球员"),
-  "FAVORITE TEAM": (ko: "가장 좋아하는 팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
+  "FAVORITE TEAM": (ko: "좋아하는 팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
   "FAVORITE PLAYERS": (ko: "좋아하는 선수", ja: "お気に入りの選手", zh: "喜欢的球员"),
   "Following": (ko: "팔로잉", ja: "フォロー中", zh: "已关注"),
   "Followers": (ko: "팔로워", ja: "フォロワー", zh: "粉丝"),

@@ -1,13 +1,13 @@
 part of 'home_screen_features.dart';
 
 class TeamSelectionSheet extends StatefulWidget {
-  final int initialFavoriteTeamId;
+  final int initialTeamId;
   final List<Team> followingTeams;
   final FutureOr<void> Function(int teamId) onSwitch;
 
   const TeamSelectionSheet({
     super.key,
-    required this.initialFavoriteTeamId,
+    required this.initialTeamId,
     required this.followingTeams,
     required this.onSwitch,
   });
@@ -15,7 +15,7 @@ class TeamSelectionSheet extends StatefulWidget {
   // Static helper to show the sheet easily from anywhere
   static void show(
     BuildContext context, {
-    required int initialFavoriteTeamId,
+    required int initialTeamId,
     required List<Team> followingTeams,
     required FutureOr<void> Function(int teamId) onSwitch,
   }) {
@@ -27,7 +27,7 @@ class TeamSelectionSheet extends StatefulWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) => TeamSelectionSheet(
-        initialFavoriteTeamId: initialFavoriteTeamId,
+        initialTeamId: initialTeamId,
         followingTeams: followingTeams,
         onSwitch: onSwitch,
       ),
@@ -51,9 +51,9 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
       return <String, dynamic>{
         'id': team.teamId,
         'name': team.name,
-        'league': teamCompetitionContextResolver.labelFor(team.teamId),
+        'competition': teamCompetitionContextResolver.resolve(team.teamId),
         'logo': team.imagePath ?? '',
-        'isSelected': team.teamId == widget.initialFavoriteTeamId,
+        'isSelected': team.teamId == widget.initialTeamId,
       };
     }).toList();
   }
@@ -70,19 +70,12 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
       await widget.onSwitch(selected['id'] as int);
       if (!mounted) return;
       Navigator.of(context).pop();
-    } on FavoriteTeamCooldownException catch (error) {
-      if (!mounted) return;
-      setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
     } on Object {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              tr(context, 'Unable to change favorite team. Please try again.')),
+          content: Text(tr(context, 'Unable to load Home.')),
         ),
       );
     }
@@ -135,11 +128,14 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                     ),
                   ),
                   title: Text(
-                    team['name'],
+                    teamNameLabel(
+                        context, team['id'] as int, team['name'] as String),
                     style: Body1_b.style,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  subtitle: Text(team['league'] ?? '', style: Body2.style),
+                  subtitle: Text(
+                      teamCompetitionLabel(context, team['competition']),
+                      style: Body2.style),
                   trailing: team['isSelected']
                       ? Icon(Icons.check, color: colorScheme.onSurface)
                       : null,
