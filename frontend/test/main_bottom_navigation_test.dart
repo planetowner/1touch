@@ -40,6 +40,20 @@ void main() {
       expect(find.text('Players'), findsOneWidget);
       expect(find.text('Team'), findsOneWidget);
       expect(find.text('Community'), findsOneWidget);
+      const labels = ['Home', 'Team', 'Players', 'Community'];
+      const icons = [
+        Icons.home,
+        Icons.local_police_outlined,
+        Icons.person_outline,
+        Icons.people_alt_outlined
+      ];
+      for (var index = 0; index < labels.length; index++) {
+        final item = find.byKey(ValueKey('main-bottom-navigation-$index'));
+        expect(find.descendant(of: item, matching: find.text(labels[index])),
+            findsOneWidget);
+        expect(find.descendant(of: item, matching: find.byIcon(icons[index])),
+            findsOneWidget);
+      }
       expect(
         tester.getSize(find.byKey(
           const ValueKey('main-bottom-navigation-content'),

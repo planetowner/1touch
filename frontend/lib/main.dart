@@ -101,7 +101,7 @@ final GoRouter _router = GoRouter(
       },
     ),
 
-    // 메인 탭 (기존 그대로)
+    // 라우터와 하단 메뉴는 홈 → 팀 → 선수 → 커뮤니티 순서를 함께 사용해요.
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return MainScreen(navigationShell: navigationShell);
@@ -111,21 +111,6 @@ final GoRouter _router = GoRouter(
           GoRoute(
             path: '/home',
             builder: (context, state) => HomeScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/players',
-            builder: (context, state) => Players(),
-            routes: [
-              GoRoute(
-                path: ':id',
-                builder: (context, state) {
-                  final playerId = state.pathParameters['id']!;
-                  return PlayerCard(playerId: int.tryParse(playerId));
-                },
-              ),
-            ],
           ),
         ]),
         StatefulShellBranch(routes: [
@@ -140,6 +125,21 @@ final GoRouter _router = GoRouter(
                 builder: (context, state) {
                   final teamId = int.parse(state.pathParameters['id']!);
                   return TeamScreen(teamId: teamId);
+                },
+              ),
+            ],
+          ),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: '/players',
+            builder: (context, state) => Players(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final playerId = state.pathParameters['id']!;
+                  return PlayerCard(playerId: int.tryParse(playerId));
                 },
               ),
             ],
@@ -228,8 +228,8 @@ class MainScreen extends StatelessWidget {
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
-          // Special case for the 'Team' tab (index 2)
-          if (index == 2) {
+          // 팀 탭은 홈에서 현재 조회 중인 팀으로 열어요.
+          if (index == 1) {
             openTeamPage(context, currentUserPreferences.viewedTeamId.value);
             return; // Exit after handling the special case
           }
@@ -283,17 +283,17 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
               _buildItem(
                 context: context,
                 index: 1,
-                label: tr(context, 'Players'),
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
+                label: tr(context, 'Team'),
+                icon: Icons.local_police_outlined,
+                activeIcon: Icons.local_police,
                 foreground: foreground,
               ),
               _buildItem(
                 context: context,
                 index: 2,
-                label: tr(context, 'Team'),
-                icon: Icons.local_police_outlined,
-                activeIcon: Icons.local_police,
+                label: tr(context, 'Players'),
+                icon: Icons.person_outline,
+                activeIcon: Icons.person,
                 foreground: foreground,
               ),
               _buildItem(
