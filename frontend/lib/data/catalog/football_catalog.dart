@@ -53,24 +53,34 @@ class FootballCatalog implements TeamCompetitionContextResolver {
       List.unmodifiable(
           (json[key] as List).cast<Map<String, dynamic>>().map(parse));
 
+  Iterable<TeamSeasonMembership> get _currentMemberships => memberships.where(
+      (m) => seasons.value.any((s) => s.seasonId == m.seasonId && s.isCurrent));
+
   List<Team> currentTeams(int competitionId) {
-    final ids = memberships
-        .where((m) =>
-            m.competitionId == competitionId &&
-            seasons.value.any((s) => s.seasonId == m.seasonId && s.isCurrent))
+    final ids = _currentMemberships
+        .where((m) => m.competitionId == competitionId)
         .map((m) => m.teamId)
         .toSet();
     return teams.value.where((team) => ids.contains(team.teamId)).toList();
   }
 
+  List<Competition> currentCompetitions(int teamId) {
+    final ids = _currentMemberships
+        .where((m) => m.teamId == teamId)
+        .map((m) => m.competitionId)
+        .toSet();
+    return competitions.value
+        .where((c) => ids.contains(c.competitionId))
+        .toList();
+  }
+
   @override
   TeamCompetitionContext? resolve(int teamId) {
-    final membership = memberships
+    final membership = _currentMemberships
         .where((m) =>
             m.teamId == teamId &&
             TeamPageEligibility.domesticBigFiveCompetitionIds
-                .contains(m.competitionId) &&
-            seasons.value.any((s) => s.seasonId == m.seasonId && s.isCurrent))
+                .contains(m.competitionId))
         .firstOrNull;
     if (membership == null) return null;
     return TeamCompetitionContext(
