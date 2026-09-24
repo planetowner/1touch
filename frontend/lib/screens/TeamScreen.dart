@@ -367,8 +367,8 @@ class _TeamScreenState extends State<TeamScreen>
                       borderSide: BorderSide(color: colors.onSurface, width: 2),
                     ),
                     tabs: [
-                      Tab(text: tr(context, "Overview")),
-                      Tab(text: tr(context, "Matches")),
+                      Tab(text: teamScreenLabel(context, "Overview")),
+                      Tab(text: teamScreenLabel(context, "Matches")),
                       Tab(text: tr(context, "Standing")),
                       Tab(text: tr(context, "Squad")),
                       Tab(text: tr(context, "Analysis")),
