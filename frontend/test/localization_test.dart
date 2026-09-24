@@ -81,6 +81,67 @@ void main() {
     expect(fixtureDateLabel(null, locale: const Locale('zh')), '日期待定');
   });
 
+  test('past fixtures switch from days to weeks in all supported languages',
+      () {
+    final now = DateTime(2026, 9, 24, 12);
+    final cases = <int, List<String>>{
+      0: ['Today', '오늘', '今日', '今天'],
+      1: ['Yesterday', '어제', '昨日', '昨天'],
+      2: ['2 days ago', '2일 전', '2日前', '2天前'],
+      6: ['6 days ago', '6일 전', '6日前', '6天前'],
+      7: ['Last week', '지난주', '先週', '上周'],
+      13: ['Last week', '지난주', '先週', '上周'],
+      14: ['2 weeks ago', '2주 전', '2週間前', '2周前'],
+      35: ['5 weeks ago', '5주 전', '5週間前', '5周前'],
+      365: ['52 weeks ago', '52주 전', '52週間前', '52周前'],
+    };
+    for (final entry in cases.entries) {
+      final kickoff = DateTime(now.year, now.month, now.day - entry.key, 9);
+      expect(
+        appSupportedLocales.map(
+            (locale) => relativeDateLabel(kickoff, locale: locale, now: now)),
+        entry.value,
+        reason: '${entry.key} calendar days ago',
+      );
+    }
+  });
+
+  test('content uses minutes and hours today, then calendar days and weeks',
+      () {
+    final now = DateTime(2026, 9, 24, 12);
+    final cases = <DateTime, List<String>>{
+      DateTime(2026, 9, 24, 11, 59): ['1m ago', '1분 전', '1分前', '1分钟前'],
+      DateTime(2026, 9, 24, 11, 1): ['59m ago', '59분 전', '59分前', '59分钟前'],
+      DateTime(2026, 9, 24, 11): ['1h ago', '1시간 전', '1時間前', '1小时前'],
+      DateTime(2026, 9, 24, 10): ['2h ago', '2시간 전', '2時間前', '2小时前'],
+      DateTime(2026, 9, 23, 23, 59): ['Yesterday', '어제', '昨日', '昨天'],
+      DateTime(2026, 9, 22): ['2 days ago', '2일 전', '2日前', '2天前'],
+      DateTime(2026, 9, 17): ['Last week', '지난주', '先週', '上周'],
+      DateTime(2026, 8, 20): ['5 weeks ago', '5주 전', '5週間前', '5周前'],
+    };
+    for (final entry in cases.entries) {
+      expect(
+        appSupportedLocales.map((locale) => relativeDateLabel(entry.key,
+            locale: locale, now: now, showTimeToday: true)),
+        entry.value,
+      );
+    }
+  });
+
+  test('past fixtures use local calendar dates across midnight and DST', () {
+    final cases = [
+      (DateTime(2026, 1, 1, 0, 1), DateTime(2025, 12, 31, 23, 59)),
+      (DateTime(2026, 3, 9), DateTime(2026, 3, 8)),
+    ];
+    for (final (now, kickoff) in cases) {
+      expect(
+          relativeDateLabel(kickoff.toUtc(),
+              locale: const Locale('en'), now: now.toUtc()),
+          'Yesterday');
+    }
+    expect(relativeDateLabel(null, locale: const Locale('ko')), '날짜 미정');
+  });
+
   test('all translations preserve placeholders and contain nonempty text', () {
     Set<String> placeholders(String text) =>
         RegExp(r'\{\w+\}').allMatches(text).map((m) => m[0]!).toSet();
