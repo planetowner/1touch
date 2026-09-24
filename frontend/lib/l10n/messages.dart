@@ -1231,6 +1231,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法加载积分榜，请重试"
   ),
   "Round {round}": (ko: "{round}라운드", ja: "第{round}節", zh: "第{round}轮"),
+  "{leg} Leg": (ko: "{leg}차전", ja: "第{leg}戦", zh: "第{leg}回合"),
   "{points} Pts": (ko: "승점 {points}", ja: "勝点{points}", zh: "{points}积分"),
   "{points} pts": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
   "You’ve got {points} pts!": (
