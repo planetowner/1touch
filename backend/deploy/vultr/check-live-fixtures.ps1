@@ -2,7 +2,7 @@
 param()
 
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'ssh-common.ps1')
+. (Join-Path $PSScriptRoot 'ssh-common.ps1') -Target Lightsail
 
 # 실행 중인 API의 키로 읽기만 확인해요. 키 값과 공급자 응답 본문은 출력하지 않아요.
 # 새 코드 배포 전이라 기존 _get을 사용해요. 요청 항목은 test_live_preflight에서 새 수집기와 대조해요.
