@@ -576,7 +576,7 @@ class _MatchInfo extends StatelessWidget {
 
     return Column(
       children: [
-        _FixtureDateTime(
+        FixtureDateTime(
           label: fixtureDateLabel(match!.kickoff,
               locale: Localizations.localeOf(context)),
         ),
@@ -621,15 +621,16 @@ class _MatchInfo2 extends StatelessWidget {
       children: [
         SizedBox(
           width: width,
-          child: _FixtureDateTime(label: date),
+          child: FixtureDateTime(label: date),
         ),
       ],
     );
   }
 }
 
-class _FixtureDateTime extends StatelessWidget {
-  const _FixtureDateTime({required this.label});
+// 홈과 일정에서 날짜·시간을 각각 한 줄로 맞춰요.
+class FixtureDateTime extends StatelessWidget {
+  const FixtureDateTime({super.key, required this.label});
 
   final String label;
 
