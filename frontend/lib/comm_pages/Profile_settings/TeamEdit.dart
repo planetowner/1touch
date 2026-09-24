@@ -9,6 +9,7 @@ import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/features/team/team_name_with_favorite_star.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class FollowingTeamsEditResult {
@@ -453,26 +454,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            teamNameLabel(context, entry.teamId, entry.name),
-                            style: Heading5.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isPrimary)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Icon(
-                              Icons.star,
-                              color: Theme.of(context).colorScheme.onSurface,
-                              size: 20,
-                            ),
-                          ),
-                      ],
+                    TeamNameWithFavoriteStar(
+                      teamId: entry.teamId,
+                      name: entry.name,
+                      isFavorite: isPrimary,
+                      style: Heading5.style,
                     ),
                     if (teamCompetitionLabel(context, entry.competition)
                         .isNotEmpty) ...[

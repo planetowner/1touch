@@ -6,6 +6,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/HomeScreenFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -360,6 +361,8 @@ void main() {
         home: Scaffold(
           body: TeamSelectionSheet(
             initialTeamId: favoriteTeamId,
+            favoriteTeamId: favoriteTeamId,
+            standingsRepository: MockStandingRepository(standings: []),
             followingTeams: [teamRepository.requireById(favoriteTeamId)],
             onSwitch: (_) {},
           ),
@@ -369,7 +372,7 @@ void main() {
     await tester.pump();
 
     expect(expectedLabel, isNotEmpty);
-    expect(find.text(expectedLabel), findsAtLeastNWidgets(1));
+    expect(find.text('$expectedLabel -'), findsAtLeastNWidgets(1));
     expect(tester.takeException(), isNull);
   });
 }
