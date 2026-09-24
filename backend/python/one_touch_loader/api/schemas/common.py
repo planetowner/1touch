@@ -248,11 +248,13 @@ class TeamContractsResponse(BaseModel):
 
 
 class HomeResponse(BaseModel):
-    favorite_team: Optional[TeamOut] = None
+    favorite_team: Optional[TeamOut] = Field(default=None, description="홈에서 조회한 팀이에요. team_id를 생략하면 저장된 최애팀이에요.")
     following_teams: List[TeamOut] = []
+
+    standing: StandingRowOut | None = Field(default=None, description="조회 팀의 현재 자국 리그 순위와 직전 완료 라운드 대비 변동이에요.")
 
     next_match: Optional[FixtureOut] = None
     last_match: Optional[FixtureOut] = None
 
     calendar: List[FixtureOut] = []
-    highlights: TeamHighlightsResponse | None = Field(default=None, description="대표팀의 최근 하이라이트예요. viewer_country를 보내지 않거나 대표팀이 없으면 null이에요.")
+    highlights: TeamHighlightsResponse | None = Field(default=None, description="홈에서 조회한 팀의 최근 하이라이트예요. viewer_country를 보내지 않거나 조회 팀이 없으면 null이에요.")

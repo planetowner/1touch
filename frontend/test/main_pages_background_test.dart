@@ -75,7 +75,7 @@ class _StaticHomeRepository implements HomeRepository {
   const _StaticHomeRepository();
 
   @override
-  Future<HomeData> load({DateTime? start, DateTime? end}) async {
+  Future<HomeData> load({int? teamId, DateTime? start, DateTime? end}) async {
     const favoriteTeam = Team(
       teamId: 8,
       name: 'Liverpool',

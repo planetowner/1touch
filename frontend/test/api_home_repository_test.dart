@@ -7,6 +7,65 @@ import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/home/api/api_home_repository.dart';
 
 void main() {
+  test('maps the viewed team position and signed movement from Home', () async {
+    final payload = _homeJson(calendar: const []);
+    payload['standing'] = {
+      'team_id': 8,
+      'team_name': 'Liverpool',
+      'team_logo': null,
+      'position': 2,
+      'rank_delta': -1,
+      'matches_played': 5,
+      'won': 4,
+      'draw': 0,
+      'lost': 1,
+      'goals_for': 12,
+      'goals_against': 5,
+      'goal_diff': 7,
+      'points': 12,
+      'last5_form': ['W', 'W', 'W', 'L', 'W'],
+    };
+    final repository = ApiHomeRepository(
+      api: ApiClient(
+        client:
+            MockClient((_) async => http.Response(jsonEncode(payload), 200)),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      viewerCountry: 'US',
+    );
+    final home = await repository.load();
+    expect(home.leaguePosition, 2);
+    expect(home.leagueRankDelta, -1);
+  });
+
+  test('views another team using only a Home GET request', () async {
+    final requests = <http.Request>[];
+    final payload = _homeJson(calendar: const []);
+    payload['favorite_team'] = _teamJson(19, 'Arsenal', 'ARS');
+    payload['highlights'] = null;
+    final repository = ApiHomeRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          requests.add(request);
+          return http.Response(jsonEncode(payload), 200);
+        }),
+        baseUri: Uri.parse('https://api.example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+      viewerCountry: 'KR',
+    );
+
+    final home = await repository.load(teamId: 19);
+
+    expect(requests, hasLength(1));
+    expect(requests.single.method, 'GET');
+    expect(requests.single.url.path, '/v1/home');
+    expect(requests.single.url.queryParameters,
+        {'viewer_country': 'KR', 'team_id': '19'});
+    expect(home.favoriteTeam.teamId, 19);
+  });
+
   test('requests and maps Home with a UTC calendar boundary envelope',
       () async {
     final repository = ApiHomeRepository(
