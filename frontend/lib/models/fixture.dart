@@ -25,9 +25,13 @@ class Fixture {
   final String? roundName;
   final int? stageTypeId;
   final int? stageId;
+  final String? stageName;
   final int? groupId;
+  final String? leg;
   final int? legNumber; // 1 or 2 only (SQL CHECK constraint)
   final FixtureStatus status;
+  final int? stateId;
+  final String? stateName;
   // Kept as a string during the incremental repository migration. API mappers
   // normalize backend UTC values to offset-aware ISO 8601 before storing them.
   // Once every constructor is behind a mapper, replace this with DateTime?.
@@ -53,9 +57,13 @@ class Fixture {
     required this.roundName,
     this.stageTypeId,
     this.stageId,
+    this.stageName,
     this.groupId,
+    this.leg,
     this.legNumber,
     required this.status,
+    this.stateId,
+    this.stateName,
     required this.startingAt,
     this.homeScore,
     this.awayScore,
@@ -86,9 +94,13 @@ class Fixture {
       roundName: json['round_name'] as String?,
       stageTypeId: json['stage_type_id'] as int?,
       stageId: json['stage_id'] as int?,
+      stageName: json['stage_name'] as String?,
       groupId: json['group_id'] as int?,
+      leg: json['leg'] as String?,
       legNumber: json['leg_number'] as int?,
       status: _parseStatus(json['status'] as String?),
+      stateId: json['state_id'] as int?,
+      stateName: json['state_name'] as String?,
       startingAt: json['starting_at'] as String?,
       homeScore: json['home_score'] as int?,
       awayScore: json['away_score'] as int?,
