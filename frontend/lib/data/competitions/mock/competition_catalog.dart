@@ -74,23 +74,27 @@ const mockCompetitions = <Competition>[
       name: 'UEFA Europa League Play-offs',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/1371/1371.png'),
-  //   Domestic cups                      
+  //   Domestic cups
   Competition(
       competitionId: 24,
       name: 'FA Cup',
+      shortCode: 'FA Cup',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/24/24.png'),
   Competition(
       competitionId: 27,
       name: 'Carabao Cup (EFL Cup)',
+      shortCode: 'EFL Cup',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/27/27.png'),
   Competition(
       competitionId: 570,
       name: 'Copa del Rey',
+      shortCode: 'CDR',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/570/570.png'),
   Competition(
       competitionId: 390,
       name: 'Coppa Italia',
+      shortCode: 'Coppa Italia',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/390/390.png'),
   // Legacy mock-only competitions retained because fixture data references
@@ -107,4 +111,4 @@ const mockCompetitions = <Competition>[
           'https://cdn.sportmonks.com/images/soccer/leagues/569/569.png'),
 ];
 
-// 
+//
