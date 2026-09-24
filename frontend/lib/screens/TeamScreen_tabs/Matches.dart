@@ -117,10 +117,10 @@ class _MatchesTabState extends State<MatchesTab> {
       }
 
       setState(() {
-        // API는 최근 경기부터 내려줘요. 화면에서는 과거에서 미래로 이어져요.
-        pastMatches = results[0].reversed.toList(growable: false);
-        liveMatches = results[1].reversed.toList(growable: false);
-        upcomingMatches = results[2];
+        // 화면은 미래에서 과거로 이어져요. 가까운 일정부터 오는 예정 경기만 뒤집어요.
+        pastMatches = results[0];
+        liveMatches = results[1];
+        upcomingMatches = results[2].reversed.toList(growable: false);
         _isLoading = false;
         _loadError = null;
       });
@@ -226,12 +226,12 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   List<_MatchSectionData> get _sections => [
-        if (pastMatches.isNotEmpty)
+        if (upcomingMatches.isNotEmpty)
           _MatchSectionData(
-            type: _MatchSection.past,
-            title: tr(context, 'PAST'),
-            matches: pastMatches,
-            key: _pastSectionKey,
+            type: _MatchSection.upcoming,
+            title: tr(context, 'UPCOMING'),
+            matches: upcomingMatches,
+            key: _upcomingSectionKey,
           ),
         if (liveMatches.isNotEmpty)
           _MatchSectionData(
@@ -240,12 +240,12 @@ class _MatchesTabState extends State<MatchesTab> {
             matches: liveMatches,
             key: _liveSectionKey,
           ),
-        if (upcomingMatches.isNotEmpty)
+        if (pastMatches.isNotEmpty)
           _MatchSectionData(
-            type: _MatchSection.upcoming,
-            title: tr(context, 'UPCOMING'),
-            matches: upcomingMatches,
-            key: _upcomingSectionKey,
+            type: _MatchSection.past,
+            title: tr(context, 'PAST'),
+            matches: pastMatches,
+            key: _pastSectionKey,
           ),
       ];
 
@@ -291,8 +291,8 @@ class _MatchesTabState extends State<MatchesTab> {
       );
     }
     final visibleHeaderCount = _visibleHeaderCount.clamp(0, sections.length);
-    final olderPastCount =
-        (pastMatches.length - 2).clamp(0, pastMatches.length);
+    final laterUpcomingCount =
+        (upcomingMatches.length - 2).clamp(0, upcomingMatches.length);
     final pageBackground = mainPageBackground(context);
 
     return Column(
@@ -317,16 +317,16 @@ class _MatchesTabState extends State<MatchesTab> {
               CustomScrollView(
                 key: const ValueKey('matches-scroll'),
                 controller: _scrollController,
-                // 최근 지난 경기 두 개를 시작점에 두고, 이전 경기는 위로 이어 붙여요.
+                // 가까운 예정 경기 두 개에서 시작하고, 더 먼 일정은 위로 이어 붙여요.
                 center: _entrySliverKey,
                 slivers: [
-                  if (olderPastCount > 0)
+                  if (laterUpcomingCount > 0)
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (_, index) => buildMatchCard(
-                          pastMatches[olderPastCount - index - 1],
+                          upcomingMatches[laterUpcomingCount - index - 1],
                         ),
-                        childCount: olderPastCount,
+                        childCount: laterUpcomingCount,
                       ),
                     ),
                   for (var index = 0; index < sections.length; index++) ...[
@@ -370,13 +370,13 @@ class _MatchesTabState extends State<MatchesTab> {
                       delegate: SliverChildBuilderDelegate(
                         (_, matchIndex) => buildMatchCard(
                           sections[index].matches[matchIndex +
-                              (sections[index].type == _MatchSection.past
-                                  ? olderPastCount
+                              (sections[index].type == _MatchSection.upcoming
+                                  ? laterUpcomingCount
                                   : 0)],
                         ),
                         childCount: sections[index].matches.length -
-                            (sections[index].type == _MatchSection.past
-                                ? olderPastCount
+                            (sections[index].type == _MatchSection.upcoming
+                                ? laterUpcomingCount
                                 : 0),
                       ),
                     ),
@@ -386,9 +386,9 @@ class _MatchesTabState extends State<MatchesTab> {
                   ),
                 ],
               ),
-              if (pastMatches.length > 1 && visibleHeaderCount == 1)
+              if (upcomingMatches.length > 1 && visibleHeaderCount == 1)
                 Positioned(
-                  top: 16,
+                  top: 0,
                   left: 24,
                   right: 24,
                   height: 56,
@@ -396,7 +396,7 @@ class _MatchesTabState extends State<MatchesTab> {
                     child: DecoratedBox(
                       key: const ValueKey('matches-top-fade'),
                       decoration: BoxDecoration(
-                        // Figma의 첫 지난 경기 위에 놓인 56px 페이드예요.
+                        // 스크롤 경계부터 가려야 지나가는 카드 위에 밝은 띠가 남지 않아요.
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
