@@ -79,8 +79,10 @@ class _SubList extends StatelessWidget {
       children: subs.map((sub) {
         final children = [
           Flexible(
-            child: Text(sub.name,
-                style: Eyebrow.style, overflow: TextOverflow.ellipsis),
+            child: Text(
+                playerNameLabel(context, sub.playerId, sub.name, short: true),
+                style: Eyebrow.style,
+                overflow: TextOverflow.ellipsis),
           ),
           if (sub.subIn) ...[
             const SizedBox(width: 4),

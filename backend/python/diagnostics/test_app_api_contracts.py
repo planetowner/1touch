@@ -71,6 +71,8 @@ class AppApiContractsTests(unittest.TestCase):
             result = catalog_repo.get_catalog()
             response = catalog.CatalogResponse.model_validate(result).model_dump()
         self.assertIs(response['seasons'][0]['is_current'], True)
+        self.assertEqual(response['competitions'][1]['short_code'], 'UCL')
+        self.assertIn('short_code', fetch.call_args_list[1].args[0])
         for call in fetch.call_args_list:
             sql = call.args[0]
             self.assertTrue(sql.lstrip().startswith('SELECT'))

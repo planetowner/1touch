@@ -46,7 +46,10 @@ class PlayerOverviewTab extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Text(detail.currentPosition ?? '—'),
                                   const SizedBox(height: 8),
-                                  Text(detail.profile.teamName ?? '—'),
+                                  Text(teamNameLabel(
+                                      context,
+                                      detail.profile.teamId,
+                                      detail.profile.teamName ?? '—')),
                                   const SizedBox(height: 4),
                                   Text(detail.profile.nationality ?? '—'),
                                 ]))),
@@ -102,7 +105,9 @@ class PlayerOverviewTab extends StatelessWidget {
                                 PlayerRemoteImage(club.teamImage),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                    child: Text(club.teamName ?? '—',
+                                    child: Text(
+                                        teamNameLabel(context, club.teamId,
+                                            club.teamName ?? '—'),
                                         style: Body2_b.style)),
                                 const SizedBox(width: 8),
                                 Text(

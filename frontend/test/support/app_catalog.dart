@@ -34,6 +34,7 @@ void setUpAppCatalog() {
                           {
                             'competition_id': c.competitionId,
                             'name': c.name,
+                            'short_code': c.shortCode,
                             'image_path': c.imagePath,
                           }
                       ],

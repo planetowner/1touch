@@ -19,7 +19,10 @@ class TeamCompetitionContext {
   String get label {
     final name = competitionName;
     if (name == null) return '';
+    return labelWithCompetitionName(name);
+  }
 
+  String labelWithCompetitionName(String name) {
     final position = currentPosition;
     if (position == null) return name;
 

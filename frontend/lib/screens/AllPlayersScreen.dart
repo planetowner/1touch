@@ -253,9 +253,12 @@ class PlayerScreenHeader extends StatelessWidget {
                   child: FutureBuilder<PlayerDetail>(
                       future: id == null ? null : store.load(null),
                       builder: (_, snapshot) => Text(
-                          snapshot.data?.profile.name ??
-                              player?.fullName ??
-                              'Player',
+                          playerNameLabel(
+                              context,
+                              id,
+                              snapshot.data?.profile.name ??
+                                  player?.fullName ??
+                                  'Player'),
                           style:
                               Heading3.style.copyWith(color: foregroundColor),
                           maxLines: 1,

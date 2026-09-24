@@ -59,7 +59,11 @@ class TransferTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        transfer.playerName ?? tr(context, 'Unknown Player'),
+                        playerNameLabel(
+                            context,
+                            transfer.playerId,
+                            transfer.playerName ??
+                                tr(context, 'Unknown Player')),
                         style: Heading5.style,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -89,7 +93,11 @@ class TransferTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        transfer.otherTeamName ?? tr(context, 'Unknown Team'),
+                        teamNameLabel(
+                            context,
+                            transfer.otherTeamId,
+                            transfer.otherTeamName ??
+                                tr(context, 'Unknown Team')),
                         style: Body1.style,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -130,7 +138,10 @@ class TransferTile extends StatelessWidget {
     );
     return Semantics(
       button: true,
-      label: 'Open ${transfer.playerName ?? 'player'}',
+      label: tr(context, 'Open {name}', {
+        'name': playerNameLabel(
+            context, transfer.playerId, transfer.playerName ?? 'player')
+      }),
       child: InkWell(
         key: ValueKey('transfer-${transfer.transferId}'),
         onTap: () => openPlayerPage(context, transfer.playerId.toString()),
