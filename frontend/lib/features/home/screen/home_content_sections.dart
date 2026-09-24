@@ -132,7 +132,10 @@ class _HomeContentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${item.source} ${item.timeLabel}',
+                  relativeDateLabel(item.publishedAt,
+                      locale: Localizations.localeOf(context),
+                      showTimeToday: true,
+                      missingDateLabel: 'Latest'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Body2.style,
