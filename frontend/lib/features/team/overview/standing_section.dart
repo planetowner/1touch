@@ -169,9 +169,12 @@ class _StandingState extends State<Standing> {
       final repositoryTeam = teamRepository.findById(s.teamId);
       final responseName = s.teamName?.trim();
       final displayName = repositoryTeam?.shortCode ??
-          (responseName?.isNotEmpty ?? false ? responseName! : null) ??
-          repositoryTeam?.name ??
-          'Unknown Team';
+          teamNameLabel(
+              context,
+              s.teamId,
+              (responseName?.isNotEmpty ?? false ? responseName! : null) ??
+                  repositoryTeam?.name ??
+                  'Unknown Team');
       return {
         'rank': s.position,
         'team': displayName,
@@ -263,7 +266,10 @@ class _StandingState extends State<Standing> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                league?.name ?? tr(context, 'Unknown'),
+                                competitionNameLabel(
+                                    context,
+                                    league?.competitionId,
+                                    league?.name ?? tr(context, 'Unknown')),
                                 style: Heading4.style,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

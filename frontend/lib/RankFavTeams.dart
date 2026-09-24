@@ -4,7 +4,6 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
-import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -29,8 +28,8 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     _myTeams = List.from(widget.selectedTeams);
   }
 
-  String _leagueSubtitle(Team team) =>
-      teamCompetitionContextResolver.labelFor(team.teamId);
+  String _leagueSubtitle(Team team) => teamCompetitionLabel(
+      context, teamCompetitionContextResolver.resolve(team.teamId));
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
@@ -303,7 +302,7 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              team.name,
+                              teamNameLabel(context, team.teamId, team.name),
                               key: ValueKey('rank-team-name-${team.teamId}'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

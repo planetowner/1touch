@@ -56,14 +56,17 @@ const mockCompetitions = <Competition>[
   Competition(
       competitionId: 2,
       name: 'UEFA Champions League',
+      shortCode: 'UCL',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/2/2.png'),
   Competition(
       competitionId: 5,
       name: 'UEFA Europa League',
+      shortCode: 'UEL',
       imagePath: 'https://cdn.sportmonks.com/images/soccer/leagues/5/5.png'),
   Competition(
       competitionId: 2286,
       name: 'UEFA Conference League',
+      shortCode: 'UECL',
       imagePath:
           'https://cdn.sportmonks.com/images/soccer/leagues/2286/2286.png'),
   Competition(

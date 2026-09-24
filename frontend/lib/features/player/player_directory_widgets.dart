@@ -138,7 +138,8 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              player.name,
+                              playerNameLabel(
+                                  context, player.playerId, player.name),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
@@ -283,7 +284,7 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
                 if (_league != null)
                   _ActiveDirectoryFilterChip(
                     key: const ValueKey('active-ranking-league-filter'),
-                    label: leagueLabel,
+                    label: competitionNameLabel(context, _league, leagueLabel),
                     onRemove: _loading ? null : _clearLeague,
                   ),
                 if (_league != null && _position != null)
@@ -433,7 +434,7 @@ class _RankingRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      player.name,
+                      playerNameLabel(context, player.id, player.name),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Heading5.style,
@@ -546,7 +547,8 @@ class _WatchCard extends StatelessWidget {
         player.change >= 0 ? const Color(0xFF31C979) : const Color(0xFFFF5C5C);
     return Semantics(
       button: true,
-      label: 'Open ${player.name}',
+      label: tr(context, 'Open {name}',
+          {'name': playerNameLabel(context, player.id, player.name)}),
       child: InkWell(
         key: ValueKey('ones-to-watch-player-${player.id}'),
         onTap: () => context.push('/players/${player.id}'),
@@ -618,7 +620,7 @@ class _WatchCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        player.name,
+                        playerNameLabel(context, player.id, player.name),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Body1_b.style.copyWith(color: colors.onSurface),

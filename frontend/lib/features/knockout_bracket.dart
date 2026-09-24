@@ -1,3 +1,4 @@
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -299,7 +300,8 @@ class _BracketTeamRow extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            value?.shortCode ?? value?.name ?? 'TBD',
+            value?.shortCode ??
+                teamNameLabel(context, value?.teamId, value?.name ?? 'TBD'),
             style: textStyle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

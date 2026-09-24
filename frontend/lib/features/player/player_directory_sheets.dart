@@ -73,7 +73,8 @@ class _PlayerRankingFilterSheetState extends State<PlayerRankingFilterSheet> {
                   onTap: () => setState(() => _league = null)),
               for (final league in widget.leagues)
                 _FilterChoice(
-                    label: league.name,
+                    label:
+                        competitionNameLabel(context, league.id, league.name),
                     selected: _league == league.id,
                     divider: divider,
                     onTap: () => setState(() => _league = league.id)),
@@ -421,8 +422,12 @@ class _FollowingPlayerRow extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                     child: _PlayerIdentity(
-                  name: value?.profile.name ?? player.name,
-                  team: value?.profile.teamName,
+                  name: playerNameLabel(context, player.playerId,
+                      value?.profile.name ?? player.name),
+                  team: value?.profile.teamName == null
+                      ? null
+                      : teamNameLabel(context, value?.profile.teamId,
+                          value!.profile.teamName!),
                   number: value?.profile.jerseyNumber,
                   primary: primary,
                 )),
@@ -458,7 +463,9 @@ class _SearchPlayerRow extends StatelessWidget {
                 child: PlayerRemoteImage(player.image, size: 56),
               )),
               const SizedBox(width: 16),
-              Expanded(child: _PlayerIdentity(name: player.name)),
+              Expanded(
+                  child: _PlayerIdentity(
+                      name: playerNameLabel(context, player.id, player.name))),
               IconButton(
                 onPressed: onSelect,
                 icon: Icon(
@@ -549,7 +556,11 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
     final players = query.isEmpty
         ? widget.players
         : widget.players
-            .where((player) => player.name.toLowerCase().contains(query))
+            .where((player) =>
+                player.name.toLowerCase().contains(query) ||
+                playerNameLabel(context, player.id, player.name)
+                    .toLowerCase()
+                    .contains(query))
             .toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = Theme.of(context).colorScheme;
@@ -649,8 +660,11 @@ class _FullRankingRow extends StatelessWidget {
               builder: (_, snapshot) {
                 final profile = snapshot.data?.profile;
                 return _PlayerIdentity(
-                    name: player.name,
-                    team: profile?.teamName,
+                    name: playerNameLabel(context, player.id, player.name),
+                    team: profile?.teamName == null
+                        ? null
+                        : teamNameLabel(
+                            context, profile?.teamId, profile!.teamName!),
                     number: profile?.jerseyNumber);
               },
             )),

@@ -223,7 +223,8 @@ class _PlayerChip extends StatelessWidget {
                 const SizedBox(width: AppDropdownTokens.gap),
                 Expanded(
                   child: Text(
-                    player!.profile.name,
+                    playerNameLabel(
+                        context, player!.playerId, player!.profile.name),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

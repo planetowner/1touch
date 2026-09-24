@@ -130,7 +130,7 @@ class CommunityTeamHeader extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          team.name,
+                          teamNameLabel(context, team.teamId, team.name),
                           key: const ValueKey('community-team-name'),
                           style: Heading4.style.copyWith(
                             color: foreground,
