@@ -3,11 +3,7 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/team.dart';
 
-/// User-specific team and fixture data returned for the Home screen.
-///
-/// The app requires a favorite team before Home can be opened. Transport
-/// implementations must reject a missing favorite instead of creating this
-/// model with incomplete data.
+/// 홈에서 조회한 팀과 해당 팀의 경기·콘텐츠예요.
 @immutable
 class HomeData {
   HomeData({
@@ -17,16 +13,21 @@ class HomeData {
     required this.lastMatch,
     required List<HomeCalendarFixture> calendar,
     required List<HomeContentItem> highlights,
+    this.leaguePosition,
+    this.leagueRankDelta,
   })  : followingTeams = List.unmodifiable(followingTeams),
         calendar = List.unmodifiable(calendar),
         highlights = List.unmodifiable(highlights);
 
+  // 기존 API의 favorite_team 필드예요. 홈에서 팀을 전환하면 조회 팀을 담아요.
   final Team favoriteTeam;
   final List<Team> followingTeams;
   final Fixture? nextMatch;
   final Fixture? lastMatch;
   final List<HomeCalendarFixture> calendar;
   final List<HomeContentItem> highlights;
+  final int? leaguePosition;
+  final int? leagueRankDelta;
 
   Fixture? get liveMatch {
     for (final calendarFixture in calendar) {
@@ -40,7 +41,7 @@ class HomeData {
 
 /// A Home calendar fixture with the opponent data needed to render it.
 ///
-/// The opponent is contextual to the user's favorite team, so it belongs to
+/// The opponent is contextual to the viewed team, so it belongs to
 /// the Home aggregate instead of the stable [Fixture] entity.
 @immutable
 class HomeCalendarFixture {
