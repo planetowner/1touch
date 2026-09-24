@@ -5,7 +5,6 @@ import 'package:flutter/rendering.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
@@ -15,6 +14,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/fixture_labels.dart';
 
 class MatchesTab extends StatefulWidget {
@@ -32,7 +32,9 @@ class MatchesTab extends StatefulWidget {
 }
 
 class _MatchesTabState extends State<MatchesTab> {
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController =
+      ScrollController(keepScrollOffset: false);
+  final GlobalKey _entrySliverKey = GlobalKey();
   final GlobalKey _upcomingSectionKey = GlobalKey();
   final GlobalKey _liveSectionKey = GlobalKey();
   final GlobalKey _pastSectionKey = GlobalKey();
@@ -115,8 +117,9 @@ class _MatchesTabState extends State<MatchesTab> {
       }
 
       setState(() {
-        pastMatches = results[0];
-        liveMatches = results[1];
+        // API는 최근 경기부터 내려줘요. 화면에서는 과거에서 미래로 이어져요.
+        pastMatches = results[0].reversed.toList(growable: false);
+        liveMatches = results[1].reversed.toList(growable: false);
         upcomingMatches = results[2];
         _isLoading = false;
         _loadError = null;
@@ -155,26 +158,8 @@ class _MatchesTabState extends State<MatchesTab> {
   void _schedulePostLoadLayout() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      scrollToLiveSection();
       _syncHeaderStack();
     });
-  }
-
-  void scrollToLiveSection() {
-    if (liveMatches.isEmpty) return;
-
-    final box =
-        _liveSectionKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null) return;
-    final offset = box.localToGlobal(Offset.zero).dy;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final scrollOffset = _scrollController.offset +
-        offset -
-        (screenHeight / 2) +
-        (box.size.height / 2);
-    _scrollController.jumpTo(
-      scrollOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-    );
   }
 
   void _syncHeaderStack() {
@@ -228,8 +213,9 @@ class _MatchesTabState extends State<MatchesTab> {
         if (headerCountDelta != 0) {
           final correction =
               headerCountDelta * _MatchSectionHeader.sectionHeight;
-          final correctedOffset = (scrollOffsetBeforeLayout + correction)
-              .clamp(0.0, _scrollController.position.maxScrollExtent);
+          final correctedOffset = (scrollOffsetBeforeLayout + correction).clamp(
+              _scrollController.position.minScrollExtent,
+              _scrollController.position.maxScrollExtent);
           _applyingHeaderCorrection = true;
           _scrollController.jumpTo(correctedOffset);
           _applyingHeaderCorrection = false;
@@ -240,12 +226,12 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   List<_MatchSectionData> get _sections => [
-        if (upcomingMatches.isNotEmpty)
+        if (pastMatches.isNotEmpty)
           _MatchSectionData(
-            type: _MatchSection.upcoming,
-            title: tr(context, 'UPCOMING'),
-            matches: upcomingMatches,
-            key: _upcomingSectionKey,
+            type: _MatchSection.past,
+            title: tr(context, 'PAST'),
+            matches: pastMatches,
+            key: _pastSectionKey,
           ),
         if (liveMatches.isNotEmpty)
           _MatchSectionData(
@@ -254,12 +240,12 @@ class _MatchesTabState extends State<MatchesTab> {
             matches: liveMatches,
             key: _liveSectionKey,
           ),
-        if (pastMatches.isNotEmpty)
+        if (upcomingMatches.isNotEmpty)
           _MatchSectionData(
-            type: _MatchSection.past,
-            title: tr(context, 'PAST'),
-            matches: pastMatches,
-            key: _pastSectionKey,
+            type: _MatchSection.upcoming,
+            title: tr(context, 'UPCOMING'),
+            matches: upcomingMatches,
+            key: _upcomingSectionKey,
           ),
       ];
 
@@ -305,6 +291,9 @@ class _MatchesTabState extends State<MatchesTab> {
       );
     }
     final visibleHeaderCount = _visibleHeaderCount.clamp(0, sections.length);
+    final olderPastCount =
+        (pastMatches.length - 2).clamp(0, pastMatches.length);
+    final pageBackground = mainPageBackground(context);
 
     return Column(
       key: const ValueKey('matches-tab-layout'),
@@ -312,6 +301,7 @@ class _MatchesTabState extends State<MatchesTab> {
         Column(
           key: const ValueKey('matches-header-stack'),
           children: [
+            const SizedBox(height: 8),
             for (final section in sections.take(visibleHeaderCount))
               SizedBox(
                 key: ValueKey('matches-${section.type.name}-header'),
@@ -321,41 +311,104 @@ class _MatchesTabState extends State<MatchesTab> {
           ],
         ),
         Expanded(
-          child: CustomScrollView(
-            key: const ValueKey('matches-scroll'),
-            controller: _scrollController,
-            slivers: [
-              for (var index = 0; index < sections.length; index++) ...[
-                if (index > 0)
-                  SliverToBoxAdapter(
-                    child: SizedBox(
-                      key: sections[index].key,
-                      height: _MatchSectionHeader.sectionHeight,
-                      child: index < visibleHeaderCount
-                          ? const SizedBox.expand()
-                          : _MatchSectionHeader(
-                              key: ValueKey(
-                                'matches-inline-${sections[index].type.name}-header',
-                              ),
-                              title: sections[index].title,
-                            ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CustomScrollView(
+                key: const ValueKey('matches-scroll'),
+                controller: _scrollController,
+                // 최근 지난 경기 두 개를 시작점에 두고, 이전 경기는 위로 이어 붙여요.
+                center: _entrySliverKey,
+                slivers: [
+                  if (olderPastCount > 0)
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (_, index) => buildMatchCard(
+                          pastMatches[olderPastCount - index - 1],
+                        ),
+                        childCount: olderPastCount,
+                      ),
                     ),
-                  )
-                else
-                  SliverToBoxAdapter(
-                    child: SizedBox(key: sections[index].key, height: 0),
+                  for (var index = 0; index < sections.length; index++) ...[
+                    // 카드 아래 여백 16px에 8px을 더해 섹션 사이에만 선을 놓아요.
+                    if (index > 0)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                          child: Container(
+                            key: ValueKey(
+                                'matches-${sections[index].type.name}-divider'),
+                            height: 1,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? AppPalette.lightGrey
+                                    : AppColors.of(context).divider,
+                          ),
+                        ),
+                      ),
+                    if (index > 0)
+                      SliverToBoxAdapter(
+                        child: SizedBox(
+                          key: sections[index].key,
+                          height: _MatchSectionHeader.sectionHeight,
+                          child: index < visibleHeaderCount
+                              ? const SizedBox.expand()
+                              : _MatchSectionHeader(
+                                  key: ValueKey(
+                                    'matches-inline-${sections[index].type.name}-header',
+                                  ),
+                                  title: sections[index].title,
+                                ),
+                        ),
+                      )
+                    else
+                      SliverToBoxAdapter(
+                        key: _entrySliverKey,
+                        child: SizedBox(key: sections[index].key, height: 0),
+                      ),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (_, matchIndex) => buildMatchCard(
+                          sections[index].matches[matchIndex +
+                              (sections[index].type == _MatchSection.past
+                                  ? olderPastCount
+                                  : 0)],
+                        ),
+                        childCount: sections[index].matches.length -
+                            (sections[index].type == _MatchSection.past
+                                ? olderPastCount
+                                : 0),
+                      ),
+                    ),
+                  ],
+                  SliverPadding(
+                    padding: EdgeInsets.only(bottom: _trailingScrollExtent),
                   ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (_, matchIndex) =>
-                        buildMatchCard(sections[index].matches[matchIndex]),
-                    childCount: sections[index].matches.length,
+                ],
+              ),
+              if (pastMatches.length > 1 && visibleHeaderCount == 1)
+                Positioned(
+                  top: 16,
+                  left: 24,
+                  right: 24,
+                  height: 56,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      key: const ValueKey('matches-top-fade'),
+                      decoration: BoxDecoration(
+                        // Figma의 첫 지난 경기 위에 놓인 56px 페이드예요.
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            pageBackground,
+                            pageBackground.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ],
-              SliverPadding(
-                padding: EdgeInsets.only(bottom: _trailingScrollExtent),
-              ),
             ],
           ),
         ),
@@ -380,7 +433,6 @@ class _MatchesTabState extends State<MatchesTab> {
         fixtureRoundLabel(fixture, locale: Localizations.localeOf(context));
     final competitionAndRound = fixtureCompetitionLabel(context, fixture) ??
         (roundLabel != null ? '$leagueName • $roundLabel' : leagueName);
-    final kickoff = fixture.kickoff?.toLocal();
 
     return GestureDetector(
       onTap: () => GoRouter.of(context).push(
@@ -428,12 +480,9 @@ class _MatchesTabState extends State<MatchesTab> {
                 SizedBox(
                   width: isUpcoming ? 84 : 96,
                   child: isUpcoming
-                      ? Text(
-                          kickoff == null
-                              ? tr(context, 'DATE TBD')
-                              : DateFormat('E, MMM d\nh:mm a').format(kickoff),
-                          style: Body2.style,
-                          textAlign: TextAlign.center,
+                      ? FixtureDateTime(
+                          label: fixtureDateLabel(fixture.kickoff,
+                              locale: Localizations.localeOf(context)),
                         )
                       : FittedBox(
                           fit: BoxFit.scaleDown,
@@ -539,7 +588,7 @@ class _MatchSectionHeader extends StatelessWidget {
 
   const _MatchSectionHeader({super.key, required this.title});
 
-  static const double sectionHeight = 50;
+  static const double sectionHeight = 34;
 
   @override
   Widget build(BuildContext context) {
@@ -552,17 +601,15 @@ class _MatchSectionHeader extends StatelessWidget {
           const SizedBox(height: 16),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(tr(context, title), style: Body2_b.style),
+            child: Text(title, style: Body2_b.style.copyWith(height: 18 / 14)),
           ),
-          const Spacer(),
-          Container(height: 0.7, color: AppColors.of(context).divider),
         ],
       ),
     );
   }
 }
 
-enum _MatchSection { upcoming, live, past }
+enum _MatchSection { past, live, upcoming }
 
 class _MatchSectionData {
   final _MatchSection type;

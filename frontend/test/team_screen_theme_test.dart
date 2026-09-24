@@ -190,19 +190,19 @@ void main() {
               final headerStack = find.byKey(
                 const ValueKey('matches-header-stack'),
               );
-              final upcomingHeader = find.byKey(
-                const ValueKey('matches-upcoming-header'),
+              final pastHeader = find.byKey(
+                const ValueKey('matches-past-header'),
               );
               final matchesScroll = find.byKey(
                 const ValueKey('matches-scroll'),
               );
 
               expect(headerStack, findsOneWidget);
-              expect(upcomingHeader, findsOneWidget);
+              expect(pastHeader, findsOneWidget);
               expect(matchesScroll, findsOneWidget);
               expect(
                 find.descendant(
-                  of: upcomingHeader,
+                  of: pastHeader,
                   matching: find.byWidgetPredicate(
                     (widget) =>
                         widget is Container &&
@@ -214,7 +214,7 @@ void main() {
               expect(
                 find.descendant(
                   of: matchesScroll,
-                  matching: upcomingHeader,
+                  matching: pastHeader,
                 ),
                 findsNothing,
               );
@@ -646,7 +646,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(
-      find.byKey(const ValueKey('matches-upcoming-header')),
+      find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
     expect(
@@ -654,7 +654,7 @@ void main() {
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey('matches-past-header')),
+      find.byKey(const ValueKey('matches-upcoming-header')),
       findsNothing,
     );
     expect(
@@ -667,7 +667,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(
-      find.byKey(const ValueKey('matches-upcoming-header')),
+      find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
     expect(
@@ -676,10 +676,13 @@ void main() {
     );
     expect(
       find
-              .byKey(const ValueKey('matches-inline-past-header'))
+              .byKey(const ValueKey('matches-inline-upcoming-header'))
               .evaluate()
               .length +
-          find.byKey(const ValueKey('matches-past-header')).evaluate().length,
+          find
+              .byKey(const ValueKey('matches-upcoming-header'))
+              .evaluate()
+              .length,
       1,
     );
 
@@ -687,19 +690,19 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 
-    final upcomingHeader = find.byKey(
-      const ValueKey('matches-upcoming-header'),
+    final pastHeader = find.byKey(
+      const ValueKey('matches-past-header'),
     );
     final liveHeader = find.byKey(
       const ValueKey('matches-live-header'),
     );
-    final pastHeader = find.byKey(
-      const ValueKey('matches-past-header'),
+    final upcomingHeader = find.byKey(
+      const ValueKey('matches-upcoming-header'),
     );
 
-    expect(upcomingHeader, findsOneWidget);
-    expect(liveHeader, findsOneWidget);
     expect(pastHeader, findsOneWidget);
+    expect(liveHeader, findsOneWidget);
+    expect(upcomingHeader, findsOneWidget);
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('matches-header-stack')),
@@ -722,12 +725,12 @@ void main() {
       findsNothing,
     );
     expect(
-      tester.getTopLeft(upcomingHeader).dy,
+      tester.getTopLeft(pastHeader).dy,
       lessThan(tester.getTopLeft(liveHeader).dy),
     );
     expect(
       tester.getTopLeft(liveHeader).dy,
-      lessThan(tester.getTopLeft(pastHeader).dy),
+      lessThan(tester.getTopLeft(upcomingHeader).dy),
     );
 
     controller.jumpTo(0);
@@ -735,7 +738,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(
-      find.byKey(const ValueKey('matches-upcoming-header')),
+      find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
     expect(
@@ -743,7 +746,7 @@ void main() {
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey('matches-past-header')),
+      find.byKey(const ValueKey('matches-upcoming-header')),
       findsNothing,
     );
     expect(tester.takeException(), isNull);

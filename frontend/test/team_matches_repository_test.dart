@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Matches.dart';
 
@@ -51,7 +53,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(
-      find.byKey(const ValueKey('matches-upcoming-header')),
+      find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
     expect(
@@ -59,7 +61,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('matches-inline-past-header')),
+      find.byKey(const ValueKey('matches-inline-upcoming-header')),
       findsOneWidget,
     );
     expect(find.text(':'), findsNothing);
@@ -90,6 +92,171 @@ void main() {
     await tester.pump();
     expect(tester.takeException(), isNull);
   });
+
+  for (final hasLive in [false, true]) {
+    testWidgets(
+        'opens at the latest two past matches, with live=$hasLive and older matches above',
+        (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repository = MockFixtureRepository(fixtures: [
+        for (var index = 1; index <= 200; index++)
+          _fixture(index, FixtureStatus.past,
+              kickoff: DateTime(2026, 1, index)),
+        if (hasLive)
+          _fixture(201, FixtureStatus.live, kickoff: DateTime(2026, 1, 201)),
+        _fixture(203, FixtureStatus.upcoming, kickoff: DateTime(2026, 1, 203)),
+        _fixture(202, FixtureStatus.upcoming, kickoff: DateTime(2026, 1, 202)),
+      ]);
+
+      await tester.pumpWidget(_app(repository, teamId: 9));
+      await tester.pumpAndSettle();
+
+      final scroll = find.byKey(const ValueKey('matches-scroll'));
+      final controller = tester.widget<CustomScrollView>(scroll).controller!;
+      final penultimate = find.byKey(const ValueKey('team-fixture-card-199'));
+      final latest = find.byKey(const ValueKey('team-fixture-card-200'));
+      final next =
+          find.byKey(ValueKey('team-fixture-card-${hasLive ? 201 : 202}'));
+      expect(tester.getTopLeft(penultimate).dy,
+          closeTo(tester.getTopLeft(scroll).dy, 0.1));
+      expect(tester.getBottomLeft(penultimate).dy,
+          lessThanOrEqualTo(tester.getTopLeft(latest).dy));
+      expect(tester.getBottomLeft(latest).dy,
+          lessThan(tester.getTopLeft(next).dy));
+      expect(next.hitTestable(), findsOneWidget);
+      final nextSection = hasLive ? 'live' : 'upcoming';
+      final divider = find.byKey(ValueKey('matches-$nextSection-divider'));
+      final title = find.descendant(
+        of: find.byKey(ValueKey('matches-inline-$nextSection-header')),
+        matching: find.byType(Text),
+      );
+      // Figma는 마지막 카드 → 24px → 구분선 → 16px → 제목 → 16px → 카드예요.
+      expect(
+          tester.getTopLeft(divider).dy -
+              tester.getBottomLeft(_cardSurface(200)).dy,
+          closeTo(24, 0.1));
+      expect(tester.getTopLeft(title).dy - tester.getBottomLeft(divider).dy,
+          closeTo(16, 0.1));
+      expect(
+          tester.getTopLeft(_cardSurface(hasLive ? 201 : 202)).dy -
+              tester.getBottomLeft(title).dy,
+          closeTo(16, 0.1));
+      expect(tester.getSize(divider), const Size(345, 1));
+      expect(find.byKey(const ValueKey('matches-past-divider')), findsNothing);
+      expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('matches-header-stack')),
+            matching: find.byKey(ValueKey('matches-$nextSection-divider')),
+          ),
+          findsNothing);
+      expect(
+          tester
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-202')))
+              .dy,
+          lessThan(tester
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-203')))
+              .dy));
+
+      final fade = find.byKey(const ValueKey('matches-top-fade'));
+      expect(tester.getSize(fade).height, 56);
+      expect(tester.getTopLeft(fade).dy,
+          closeTo(tester.getTopLeft(penultimate).dy + 16, 0.1));
+      expect(controller.position.minScrollExtent, lessThan(0));
+      expect(controller.offset, 0);
+
+      await tester.drag(scroll, const Offset(0, 200));
+      await tester.pumpAndSettle();
+      expect(controller.offset, lessThan(0));
+      expect(find.byKey(const ValueKey('team-fixture-card-198')).hitTestable(),
+          findsOneWidget);
+      expect(
+          tester
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-198')))
+              .dy,
+          lessThan(tester.getTopLeft(penultimate).dy));
+
+      controller.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(penultimate).dy,
+          closeTo(tester.getTopLeft(scroll).dy, 0.1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final pastCount in [0, 1]) {
+    testWidgets(
+        'opens with $pastCount past matches without fading a sole match',
+        (tester) async {
+      final repository = MockFixtureRepository(fixtures: [
+        if (pastCount == 1) _fixture(1, FixtureStatus.past),
+        _fixture(2, FixtureStatus.upcoming),
+      ]);
+      await tester.pumpWidget(_app(repository, teamId: 9));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('matches-top-fade')), findsNothing);
+      final first =
+          find.byKey(ValueKey('team-fixture-card-${pastCount == 1 ? 1 : 2}'));
+      expect(first.hitTestable(), findsOneWidget);
+      expect(
+          tester.getTopLeft(first).dy,
+          closeTo(
+              tester
+                  .getTopLeft(find.byKey(const ValueKey('matches-scroll')))
+                  .dy,
+              0.1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final locale in [const Locale('ko'), const Locale('en')]) {
+    for (final width in [320.0, 393.0]) {
+      testWidgets('upcoming uses shared date lines for $locale at $width',
+          (tester) async {
+        tester.view.physicalSize = Size(width, 852);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final repository = MockFixtureRepository(fixtures: [
+          _fixture(1, FixtureStatus.past),
+          _fixture(2, FixtureStatus.live),
+          _fixture(3, FixtureStatus.upcoming,
+              kickoff: DateTime(2026, 10, 11, 11, 30)),
+        ]);
+        await tester.pumpWidget(_app(repository, teamId: 9, locale: locale));
+        await tester.pumpAndSettle();
+
+        final korean = locale.languageCode == 'ko';
+        expect(find.text(korean ? '지난 경기' : 'PAST'), findsOneWidget);
+        expect(find.text(korean ? '● 진행 중인 경기' : '• LIVE'), findsOneWidget);
+        expect(find.text(korean ? '다가오는 경기' : 'UPCOMING'), findsOneWidget);
+        final dateTime = find.descendant(
+          of: find.byKey(const ValueKey('team-fixture-card-3')),
+          matching: find.byType(FixtureDateTime),
+        );
+        final labels = tester
+            .widgetList<Text>(find.descendant(
+              of: dateTime,
+              matching: find.byType(Text),
+            ))
+            .toList();
+        expect(
+            labels.map((text) => text.data),
+            korean
+                ? ['10월 11일 (일)', '오전 11:30']
+                : ['Sun, Oct 11', '11:30\u202fAM']);
+        expect(
+            labels
+                .every((text) => text.maxLines == 1 && text.softWrap == false),
+            isTrue);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 
   testWidgets('shows an error and retries the complete request set',
       (tester) async {
@@ -246,8 +413,19 @@ void main() {
   });
 }
 
-Widget _app(MockFixtureRepository repository, {required int teamId}) {
+Finder _cardSurface(int fixtureId) => find
+    .descendant(
+      of: find.byKey(ValueKey('team-fixture-card-$fixtureId')),
+      matching: find.byType(DecoratedBox),
+    )
+    .first;
+
+Widget _app(MockFixtureRepository repository,
+    {required int teamId, Locale locale = const Locale('en')}) {
   return MaterialApp(
+    locale: locale,
+    supportedLocales: appSupportedLocales,
+    localizationsDelegates: appLocalizationDelegates,
     home: Scaffold(
       body: MatchesTab(
         team: {'id': teamId},
@@ -257,7 +435,7 @@ Widget _app(MockFixtureRepository repository, {required int teamId}) {
   );
 }
 
-Fixture _fixture(int fixtureId, FixtureStatus status) {
+Fixture _fixture(int fixtureId, FixtureStatus status, {DateTime? kickoff}) {
   return Fixture(
     fixtureId: fixtureId,
     competitionId: 8,
@@ -267,7 +445,7 @@ Fixture _fixture(int fixtureId, FixtureStatus status) {
     awayTeamId: 8,
     status: status,
     roundName: '1',
-    startingAt: '2026-09-12 15:00:00',
+    startingAt: kickoff?.toIso8601String() ?? '2026-09-12 15:00:00',
   );
 }
 

@@ -94,7 +94,8 @@ void fixtureRepositoryContract({
     expect(repository.forTeam(-1), isEmpty);
   });
 
-  test('loads backend-style team match windows newest first', () async {
+  test('loads past matches newest first and upcoming matches soonest first',
+      () async {
     expect(
       (await repository.loadForTeam(
         1,
@@ -108,7 +109,7 @@ void fixtureRepositoryContract({
     expect(
       (await repository.loadForTeam(1, status: FixtureStatus.upcoming))
           .map((fixture) => fixture.fixtureId),
-      [4, 3],
+      [3, 4],
     );
     expect(
       (await repository.loadForTeam(1, limit: 2, offset: 1))
