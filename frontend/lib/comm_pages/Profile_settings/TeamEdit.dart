@@ -24,13 +24,13 @@ class FollowingTeamsEditResult {
 class _TeamEntry {
   final int teamId;
   final String name;
-  final String leagueLabel;
+  final TeamCompetitionContext? competition;
   final String? imagePath;
 
   _TeamEntry({
     required this.teamId,
     required this.name,
-    required this.leagueLabel,
+    required this.competition,
     this.imagePath,
   });
 }
@@ -38,7 +38,7 @@ class _TeamEntry {
 _TeamEntry _toEntry(Team t) => _TeamEntry(
       teamId: t.teamId,
       name: t.name,
-      leagueLabel: teamCompetitionContextResolver.labelFor(t.teamId),
+      competition: teamCompetitionContextResolver.resolve(t.teamId),
       imagePath: t.imagePath,
     );
 
@@ -112,7 +112,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       setState(() {
         _isSearching = true;
         _filteredTeams = _allTeams
-            .where((t) => t.name.toLowerCase().contains(query))
+            .where((t) =>
+                t.name.toLowerCase().contains(query) ||
+                teamNameLabel(context, t.teamId, t.name)
+                    .toLowerCase()
+                    .contains(query))
             .toList();
         _selectedTeam = null;
         _conflictTeam = null;
@@ -332,7 +336,12 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                             text: tr(
                                 context,
                                 'You can follow one team per league. Following this team will replace {team}. Continue?',
-                                {'team': _conflictTeam!.name}),
+                                {
+                                  'team': teamNameLabel(
+                                      context,
+                                      _conflictTeam!.teamId,
+                                      _conflictTeam!.name)
+                                }),
                           ),
                         ),
                       ),
@@ -448,7 +457,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                       children: [
                         Flexible(
                           child: Text(
-                            entry.name,
+                            teamNameLabel(context, entry.teamId, entry.name),
                             style: Heading5.style,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -465,9 +474,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                           ),
                       ],
                     ),
-                    if (entry.leagueLabel.isNotEmpty) ...[
+                    if (teamCompetitionLabel(context, entry.competition)
+                        .isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(entry.leagueLabel, style: Eyebrow.style),
+                      Text(teamCompetitionLabel(context, entry.competition),
+                          style: Eyebrow.style),
                     ],
                   ],
                 ),
@@ -533,14 +544,14 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   ),
           ),
           title: Text(
-            team.name,
+            teamNameLabel(context, team.teamId, team.name),
             style: Heading5.style,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: team.leagueLabel.isNotEmpty
+          subtitle: teamCompetitionLabel(context, team.competition).isNotEmpty
               ? Text(
-                  team.leagueLabel,
+                  teamCompetitionLabel(context, team.competition),
                   style: Eyebrow.style,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

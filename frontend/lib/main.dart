@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/football_names_loader.dart';
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:go_router/go_router.dart';
 
 // Core & Data
@@ -34,6 +36,7 @@ void main() async {
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _footballNames = FootballNamesRepository(apiClient);
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
@@ -189,12 +192,14 @@ final GoRouter _router = GoRouter(
       path: '/profile/notification/team/:name',
       builder: (c, s) => TeamNotificationDetailPage(
         teamName: Uri.decodeComponent(s.pathParameters['name']!),
+        teamId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
       ),
     ),
     GoRoute(
       path: '/profile/notification/player/:name',
       builder: (c, s) => PlayerNotificationDetailPage(
         playerName: Uri.decodeComponent(s.pathParameters['name']!),
+        playerId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
       ),
     ),
     GoRoute(path: '/profile/preference', builder: (c, s) => PreferencePage()),
@@ -369,7 +374,14 @@ class MyApp extends StatelessWidget {
         localeListResolutionCallback: resolveAppLocale,
         builder: (context, child) {
           Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-          return child!;
+          return ListenableBuilder(
+            listenable: authSession,
+            builder: (context, _) => FootballNamesLoader(
+              repository: _footballNames,
+              enabled: authSession.isAuthenticated,
+              child: child!,
+            ),
+          );
         },
         theme: style.whitetheme,
         darkTheme: style.darktheme,

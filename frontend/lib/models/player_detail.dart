@@ -56,6 +56,8 @@ class PlayerDetailMatch {
       required this.date,
       required this.live,
       required this.competition,
+      this.competitionId,
+      this.opponentTeamId,
       required this.round,
       required this.opponent,
       required this.opponentImage,
@@ -68,6 +70,7 @@ class PlayerDetailMatch {
   final DateTime date;
   final bool live;
   final String competition;
+  final int? competitionId, opponentTeamId;
   final String? round;
   final String? opponent;
   final String? opponentImage;

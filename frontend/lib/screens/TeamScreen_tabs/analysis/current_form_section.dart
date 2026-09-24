@@ -343,8 +343,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   }
 
   Widget _comparisonLabel(CurrentFormOption option) {
-    final teamCode =
-        (option.teamShortCode ?? option.teamName ?? '').toUpperCase();
+    final teamCode = (option.teamShortCode ??
+            teamNameLabel(context, option.teamId, option.teamName ?? ''))
+        .toUpperCase();
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -742,7 +743,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
             _legendItem(
               comparisonColors.opponent,
               '${_compactSeasonLabel(comparison.seasonName)} '
-              '${(comparison.teamShortCode ?? comparison.teamName ?? '').toUpperCase()}',
+              '${(comparison.teamShortCode ?? teamNameLabel(context, comparison.teamId, comparison.teamName ?? '')).toUpperCase()}',
             ),
           ],
         ),
