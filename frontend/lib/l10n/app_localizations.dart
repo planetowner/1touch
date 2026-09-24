@@ -46,3 +46,10 @@ String translateMessage(Locale locale, String message,
 // 골키퍼 통계의 Save는 저장 버튼과 뜻이 달라요.
 String playerCategoryLabel(BuildContext context, String label) =>
     tr(context, label == 'Save' ? 'Shot stopping' : label);
+
+String teamScreenLabel(BuildContext context, String message) {
+  if (Localizations.localeOf(context).languageCode == 'ko') {
+    return teamScreenKoreanMessages[message] ?? tr(context, message);
+  }
+  return tr(context, message);
+}

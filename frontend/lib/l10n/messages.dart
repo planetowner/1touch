@@ -1,6 +1,13 @@
 // 화면 문구는 네 언어에서 같은 키로 관리해요.
 typedef MessageTranslations = ({String ko, String ja, String zh});
 
+// 다른 화면과 키가 같아도 팀 화면에서는 이 한국어 문구를 써요.
+const teamScreenKoreanMessages = <String, String>{
+  'Overview': '팀 정보',
+  'Matches': '일정',
+  'STANDING': '리그 순위',
+};
+
 const appMessages = <String, MessageTranslations>{
   "Email or username": (ko: "이메일 또는 아이디", ja: "メールアドレスまたはユーザー名", zh: "邮箱或用户名"),
   "Forgot password?": (ko: "비밀번호를 잊으셨나요?", ja: "パスワードをお忘れですか？", zh: "忘记密码？"),
@@ -444,8 +451,8 @@ const appMessages = <String, MessageTranslations>{
   "Overview": (ko: "개요", ja: "概要", zh: "概览"),
   "Matches": (ko: "경기", ja: "試合", zh: "比赛"),
   "MATCHES": (ko: "경기", ja: "試合", zh: "比赛"),
-  "Squad": (ko: "선수단", ja: "選手一覧", zh: "阵容"),
-  "Standing": (ko: "순위표", ja: "順位表", zh: "积分榜"),
+  "Squad": (ko: "스쿼드", ja: "選手一覧", zh: "阵容"),
+  "Standing": (ko: "순위", ja: "順位表", zh: "积分榜"),
   "STANDING": (ko: "순위표", ja: "順位表", zh: "积分榜"),
   "Analysis": (ko: "분석", ja: "分析", zh: "分析"),
   "ANALYSIS": (ko: "분석", ja: "分析", zh: "分析"),
@@ -629,8 +636,8 @@ const appMessages = <String, MessageTranslations>{
   ),
   "ASCENDING": (ko: "오름차순", ja: "昇順", zh: "升序"),
   "DESCENDING": (ko: "내림차순", ja: "降順", zh: "降序"),
-  "BEST ELEVEN": (ko: "베스트 일레븐", ja: "ベストイレブン", zh: "最佳十一人"),
-  "BEST XI": (ko: "베스트 일레븐", ja: "ベストイレブン", zh: "最佳十一人"),
+  "BEST ELEVEN": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
+  "BEST XI": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
   "No best eleven available": (
     ko: "베스트 일레븐 정보가 없어요",
     ja: "ベストイレブンの情報がありません",
@@ -707,7 +714,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "降格プレーオフの\n確率",
     zh: "参加保级附加赛的\n概率"
   ),
-  "INJURY STATUS": (ko: "부상 현황", ja: "負傷状況", zh: "伤病情况"),
+  "INJURY STATUS": (ko: "다친 선수", ja: "負傷状況", zh: "伤病情况"),
   "No current injuries": (ko: "현재 부상 선수가 없어요", ja: "現在、負傷者はいません", zh: "目前没有伤员"),
   "Unable to load injuries": (
     ko: "부상 정보를 불러오지 못했어요",
