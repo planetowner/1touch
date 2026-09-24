@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'support/test_match_analysis_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -11,6 +12,76 @@ import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
 
 void main() {
   setUpAppCatalog();
+  for (final locale in appSupportedLocales) {
+    testWidgets('possession uses a bar without a team toggle in $locale',
+        (tester) async {
+      await tester.binding.setSurfaceSize(const Size(393, 852));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final fixture = mockFixtures.first;
+      final repository = TestMatchAnalysisRepository(
+        MatchTacticalAnalysis(
+          fixtureId: fixture.fixtureId,
+          available: false,
+          home: null,
+          away: null,
+        ),
+        MatchShotMap(
+          fixtureId: fixture.fixtureId,
+          available: false,
+          homeCount: null,
+          awayCount: null,
+          shots: const [],
+        ),
+      );
+      final detail = _detailWithStatistics(fixture, [
+        _stat(fixture.homeTeamId, 'ball-possession', 40),
+        _stat(fixture.awayTeamId, 'ball-possession', 60),
+        _stat(fixture.homeTeamId, 'successful-passes-percentage', 87),
+        _stat(fixture.awayTeamId, 'successful-passes-percentage', 90),
+        _stat(fixture.homeTeamId, 'touches', 551),
+        _stat(fixture.awayTeamId, 'touches', 725),
+      ]);
+      await tester.pumpWidget(MaterialApp(
+        locale: locale,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        theme: app_style.darktheme,
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: AnalysisTab(
+              fixture: fixture,
+              detail: detail,
+              repository: repository,
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      final card = find.byKey(const ValueKey('match-analysis-possession-card'));
+      final bar = find.byKey(const ValueKey('match-possession-bar'));
+      expect(find.descendant(of: card, matching: find.byType(GestureDetector)),
+          findsNothing);
+      expect(
+          find.text(translateMessage(locale, 'Ball Possession')), findsNothing);
+      expect(find.text('40%'), findsOneWidget);
+      expect(find.text('60%'), findsOneWidget);
+      expect(
+          find.text(translateMessage(locale, 'Pass Accuracy')), findsOneWidget);
+      expect(find.text(translateMessage(locale, 'Touches')), findsOneWidget);
+      expect(tester.getSize(bar), const Size(297, 32));
+      expect(tester.getTopLeft(bar) - tester.getTopLeft(card),
+          const Offset(24, 24));
+      expect(
+          tester
+              .widget<FractionallySizedBox>(
+                  find.byKey(const ValueKey('match-possession-home-fill')))
+              .widthFactor,
+          0.4);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('renders real tactical values without the former pressure mocks',
       (tester) async {
     final fixture = mockFixtures.first;
