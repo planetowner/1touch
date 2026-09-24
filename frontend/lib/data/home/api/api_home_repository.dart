@@ -17,10 +17,11 @@ class ApiHomeRepository implements HomeRepository {
   final String _viewerCountry;
 
   @override
-  Future<HomeData> load({DateTime? start, DateTime? end}) async {
+  Future<HomeData> load({int? teamId, DateTime? start, DateTime? end}) async {
     const boundaryEnvelope = Duration(days: 1);
     final queryParameters = <String, String>{
       'viewer_country': _viewerCountry,
+      if (teamId != null) 'team_id': '$teamId',
       // The backend filters UTC database dates while Home displays device-local
       // dates. Include adjacent UTC dates so timezone-boundary fixtures are not
       // omitted; FixtureCalendar performs the final local-month filtering.

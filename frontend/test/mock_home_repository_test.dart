@@ -111,4 +111,23 @@ void main() {
       throwsStateError,
     );
   });
+
+  test('views a followed team without replacing the default favorite',
+      () async {
+    final repository = MockHomeRepository(
+      teamRepository: teamRepository,
+      fixtureRepository: fixtureRepository,
+      favoriteTeamId: () => 1,
+      followedTeamIds: () => const [1, 2],
+    );
+    final viewed = await repository.load(
+      teamId: 2,
+      start: DateTime(2026, 8, 1),
+      end: DateTime(2026, 8, 31),
+    );
+    expect(viewed.favoriteTeam.teamId, 2);
+    expect(viewed.calendar.map((item) => item.fixture.fixtureId), [3, 4, 2, 1]);
+    expect((await repository.load()).favoriteTeam.teamId, 1);
+    await expectLater(repository.load(teamId: 3), throwsStateError);
+  });
 }

@@ -340,7 +340,7 @@ void main() {
         theme: app_style.whitetheme,
         home: Scaffold(
           body: TeamSelectionSheet(
-            initialFavoriteTeamId: favoriteTeamId,
+            initialTeamId: favoriteTeamId,
             followingTeams: [teamRepository.requireById(favoriteTeamId)],
             onSwitch: (_) {},
           ),
