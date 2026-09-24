@@ -1,8 +1,45 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_detail_response.dart';
+import 'package:onetouch/data/fixtures/api/api_fixture_detail_mapper.dart';
 
 void main() {
   group('ApiFixtureDetailResponse', () {
+    test('preserves the API clock and state through the domain mapper', () {
+      final json = _detailJson()
+        ..['state_id'] = 22
+        ..['state_name'] = '2nd Half'
+        ..['status'] = 'live'
+        ..['clock'] = {
+          'period_type_id': 2,
+          'counts_from': 45,
+          'minutes': 65,
+          'seconds': 31,
+          'ticking': true,
+          'is_stale': false,
+          'sample_age_seconds': 12.5,
+        };
+      final response = ApiFixtureDetailResponse.fromJson(json);
+      final detail = fixtureDetailFromApiResponse(response);
+      expect(detail.fixture.stateId, 22);
+      expect(detail.fixture.stateName, '2nd Half');
+      final clock = detail.clock!;
+      expect(clock.periodTypeId, 2);
+      expect(clock.countsFrom, 45);
+      expect(clock.minutes, 65);
+      expect(clock.seconds, 31);
+      expect(clock.ticking, isTrue);
+      expect(clock.isStale, isFalse);
+      expect(clock.sampleAgeSeconds, 12.5);
+      expect(clock.receivedAt, response.clock!.receivedAt);
+      expect(clock.totalSecondsAt(clock.receivedAt), 65 * 60 + 31);
+
+      json['clock'] = null;
+      expect(
+          fixtureDetailFromApiResponse(ApiFixtureDetailResponse.fromJson(json))
+              .clock,
+          isNull);
+    });
+
     test('parses the verified fixture-detail response', () {
       final response = ApiFixtureDetailResponse.fromJson(_detailJson());
 
