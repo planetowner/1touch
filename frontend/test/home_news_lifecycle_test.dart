@@ -81,7 +81,7 @@ void main() {
 }
 
 List<HomeContentItem> _news(String title) => [
-      HomeContentItem(title: title, source: '공급자', timeLabel: '방금 전'),
+      HomeContentItem(title: title, source: '공급자', publishedAt: DateTime.now()),
     ];
 
 class _HomeRepository implements HomeRepository {

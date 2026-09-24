@@ -34,7 +34,8 @@ void main() {
   });
 
   for (final width in [320.0, 393.0, 430.0]) {
-    testWidgets('keeps league on one line and kickoff on two at $width',
+    testWidgets(
+        'keeps next kickoff on two lines and past date relative at $width',
         (tester) async {
       await tester.binding.setSurfaceSize(Size(width, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -52,8 +53,7 @@ void main() {
         '프리미어리그 6R',
         '10월 11일 (일)',
         '오전 11:30',
-        '9월 20일 (일)',
-        '오전 9:00',
+        '5주 전',
       ]) {
         final finder = find.text(label);
         expect(finder, findsOneWidget);
@@ -92,6 +92,7 @@ void main() {
 
 Future<void> _pumpCard(WidgetTester tester,
     {required int position, required int? delta}) async {
+  final now = DateTime.now();
   await tester.pumpWidget(MaterialApp(
     locale: const Locale('ko'),
     supportedLocales: appSupportedLocales,
@@ -118,7 +119,8 @@ Future<void> _pumpCard(WidgetTester tester,
               imagePath: 'https://example.test/city.png',
               standing: {'position': position, 'rank_delta': delta},
               nextMatch: _fixture(1, DateTime(2026, 10, 11, 11, 30), false),
-              lastMatch: _fixture(2, DateTime(2026, 9, 20, 9), true),
+              lastMatch: _fixture(
+                  2, DateTime(now.year, now.month, now.day - 35, 9), true),
             )),
           ),
         ),
