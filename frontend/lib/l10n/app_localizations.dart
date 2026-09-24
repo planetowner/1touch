@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:onetouch/l10n/messages.dart';
 
+export 'package:onetouch/l10n/football_name_labels.dart';
+
 const appSupportedLocales = [
   Locale('en'),
   Locale('ko'),

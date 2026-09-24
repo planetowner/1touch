@@ -209,7 +209,15 @@ class _TeamScreenState extends State<TeamScreen>
     }
 
     // 지역화한 문구는 화면을 그릴 때 만들어 언어 변경도 바로 반영해요.
-    final leagueName = team!['leagueName'] as String?;
+    final originalLeagueName = team!['leagueName'] as String?;
+    final leagueName = originalLeagueName == null
+        ? null
+        : competitionNameLabel(
+            context,
+            team_providers.teamCompetitionContextResolver
+                .resolve(widget.teamId)
+                ?.competitionId,
+            originalLeagueName);
     final rank = team!['position'];
     final positionLabel = leagueName == null
         ? ''
@@ -270,7 +278,8 @@ class _TeamScreenState extends State<TeamScreen>
                           children: [
                             Text(
                               // '1. Fußballclub Heidenheim 1846 e.V',
-                              team?['name'],
+                              teamNameLabel(context, widget.teamId,
+                                  team?['name'] as String? ?? ''),
                               style: Heading4.style
                                   .copyWith(color: appBarForeground),
                               maxLines: 1, // Ensure it stays on one line

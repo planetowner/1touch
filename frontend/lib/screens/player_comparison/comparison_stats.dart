@@ -4,12 +4,6 @@ class _ComparisonContent extends StatelessWidget {
   const _ComparisonContent({required this.p1, required this.p2});
   final PlayerDetail p1, p2;
 
-  String _abbrev(String name) => name
-      .split(RegExp(r'\s+'))
-      .where((part) => part.isNotEmpty)
-      .map((part) => part[0])
-      .join('. ');
-
   @override
   Widget build(BuildContext context) {
     final foreground = Theme.of(context).colorScheme.onSurface;
@@ -41,7 +35,8 @@ class _ComparisonContent extends StatelessWidget {
               Flexible(
                 child: _LegendDot(
                   color: colors.anchor,
-                  label: _abbrev(p1.profile.name),
+                  label: playerNameLabel(context, p1.playerId, p1.profile.name,
+                      short: true),
                   textColor: muted,
                 ),
               ),
@@ -49,7 +44,8 @@ class _ComparisonContent extends StatelessWidget {
               Flexible(
                 child: _LegendDot(
                   color: colors.opponent,
-                  label: _abbrev(p2.profile.name),
+                  label: playerNameLabel(context, p2.playerId, p2.profile.name,
+                      short: true),
                   textColor: muted,
                 ),
               ),

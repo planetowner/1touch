@@ -72,10 +72,12 @@ class _FixturesState extends State<Fixtures> {
                       date: fixtureDateLabel(lastMatch.kickoff,
                           locale: Localizations.localeOf(context)),
                       venue: '',
-                      team1shortname: home.shortCode ?? home.name,
+                      team1shortname: home.shortCode ??
+                          teamNameLabel(context, home.teamId, home.name),
                       team1Logo: home.imagePath ?? '',
                       team1Id: home.teamId,
-                      team2shortname: away.shortCode ?? away.name,
+                      team2shortname: away.shortCode ??
+                          teamNameLabel(context, away.teamId, away.name),
                       team2Logo: away.imagePath ?? '',
                       team2Id: away.teamId,
                       homeScore: lastMatch.homeScore ?? 0,

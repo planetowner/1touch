@@ -157,7 +157,7 @@ class _BestElevenPlayerDot extends StatelessWidget {
     final playerName = player.playerName?.trim();
     final label = playerName == null || playerName.isEmpty
         ? tr(context, 'Unknown')
-        : playerName.split(' ').last;
+        : playerNameLabel(context, player.playerId, playerName, short: true);
     return Semantics(
       button: true,
       label: 'Open $label',

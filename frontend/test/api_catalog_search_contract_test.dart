@@ -41,6 +41,7 @@ void main() {
     expect(requests, 1);
     expect(teams.findById(8)?.name, 'Example United');
     expect(competitions.domesticCompetitions.single.competitionId, 8);
+    expect(competitions.findById(2)?.shortCode, 'UCL');
     expect(seasons.currentForCompetition(8)?.seasonId, 28083);
     expect(seasons.currentForCompetition(8)?.startingAt, isNull);
     expect(catalog.currentTeams(8).map((t) => t.teamId), [8]);

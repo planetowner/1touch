@@ -1,4 +1,6 @@
-class AuthSession {
+import 'package:flutter/foundation.dart';
+
+class AuthSession extends ChangeNotifier {
   String? _accessToken;
 
   bool get isAuthenticated => _accessToken != null;
@@ -22,5 +24,6 @@ class AuthSession {
       );
     }
     _accessToken = normalizedAccessToken;
+    notifyListeners();
   }
 }

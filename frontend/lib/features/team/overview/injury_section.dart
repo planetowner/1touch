@@ -189,7 +189,8 @@ class _InjuryStatusState extends State<InjuryStatus> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        player.playerName,
+                        playerNameLabel(
+                            context, player.playerId, player.playerName),
                         style: Body1_b.style,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -213,7 +214,9 @@ class _InjuryStatusState extends State<InjuryStatus> {
     );
     return Semantics(
       button: true,
-      label: tr(context, 'Open {name}', {'name': player.playerName}),
+      label: tr(context, 'Open {name}', {
+        'name': playerNameLabel(context, player.playerId, player.playerName)
+      }),
       child: InkWell(
         key: ValueKey('injured-player-${player.playerId}'),
         onTap: () => openPlayerPage(context, player.playerId.toString()),
