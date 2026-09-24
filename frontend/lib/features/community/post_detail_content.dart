@@ -41,7 +41,7 @@ class PostDetailContent extends StatelessWidget {
   final Object? commentsError;
   final VoidCallback onRetryComments;
   final ValueChanged<PostComment>? onReply;
-  final Future<void> Function(String reason) onReport;
+  final Future<void> Function(String reason)? onReport;
 
   @override
   Widget build(BuildContext context) {
@@ -171,10 +171,12 @@ class PostDetailContent extends StatelessWidget {
                       icon: Icons.report_gmailerrorred_outlined,
                       label: 'report',
                       color: colors.onSurface,
-                      onTap: () => showReportDialog(
-                        context,
-                        onSubmit: onReport,
-                      ),
+                      onTap: onReport == null
+                          ? null
+                          : () => showReportDialog(
+                                context,
+                                onSubmit: onReport!,
+                              ),
                     ),
                   ],
                 ),

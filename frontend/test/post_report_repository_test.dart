@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'support/stub_community_repository.dart';
 import 'support/stub_post_comment_repository.dart';
 
 void main() {
+  setUpAppCatalog(favoriteTeamId: 9);
   testWidgets('submits the selected report reason on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
