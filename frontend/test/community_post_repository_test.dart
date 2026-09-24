@@ -3,6 +3,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
@@ -11,7 +13,38 @@ import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
-  setUpAppCatalog();
+  setUpAppCatalog(favoriteTeamId: 9);
+  testWidgets('a followed team feed is visible without a post composer',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 83, followedTeamIds: [83, 9]));
+    currentUserPreferences.viewTeam(9);
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+    ]);
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Community(
+        teamId: 9,
+        postRepository: repository,
+        communityRepository: const StubCommunityRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text(_loadedPost.title), findsOneWidget);
+    expect(find.byType(CommunityReadOnlyNotice), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(repository.lastTeamId, 9);
+
+    currentUserPreferences.applyServerSelection(
+        const UserTeamPreferences(favoriteTeamId: 9, followedTeamIds: [9, 83]));
+    await tester.pumpAndSettle();
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(CommunityReadOnlyNotice), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('loads posts through the repository on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));

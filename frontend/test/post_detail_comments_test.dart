@@ -1,3 +1,4 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
+  setUpAppCatalog(favoriteTeamId: 83);
   testWidgets('loads and renders real comments and reply indentation',
       (tester) async {
     _setScreenSize(tester);
