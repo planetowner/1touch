@@ -49,16 +49,18 @@ class RulesTests(CommunityDatabaseCase):
         english = self.request("GET", "/v1/community/rules?team_id=6&language=en").json()["rules"]
         self.assertEqual(english["items"][2]["body"], "Banter and friendly rivalry are welcome. Keep it fun and respectful.")
 
-    def test_authentication_and_home_team_access_still_apply_to_static_rules(self):
+    def test_authentication_and_followed_team_access_apply_to_static_rules(self):
         self.remove_rules_table()
         url = "/v1/community/rules?team_id=6&language=zh-Hans"
         self.assertEqual(self.client.get(url).status_code, 401)
         self.assertEqual(self.request("GET", url, self.token_b).status_code, 403)
-        # 여러 팔로우 팀이 있어도 커뮤니티 권한은 홈 최애팀 한 곳에만 있어요.
+        # 다른 팔로우 팀도 안내를 읽을 수 있고, 팔로우를 해제하면 조회 권한을 잃어요.
         self.execute("INSERT INTO user_following_teams VALUES (%s,8,6,1)", (self.b,))
-        self.assertEqual(self.request("GET", url, self.token_b).status_code, 403)
+        self.assertEqual(self.request("GET", url, self.token_b).status_code, 200)
         self.execute("UPDATE users SET favorite_team_id=6 WHERE user_id=%s", (self.b,))
         self.assertEqual(self.request("GET", url, self.token_b).status_code, 200)
+        self.assertEqual(self.request("GET", "/v1/community/rules?team_id=503&language=zh-Hans", self.token_b).status_code, 200)
+        self.execute("DELETE FROM user_following_teams WHERE user_id=%s AND team_id=503", (self.b,))
         self.assertEqual(self.request("GET", "/v1/community/rules?team_id=503&language=zh-Hans", self.token_b).status_code, 403)
 
     def test_language_is_explicit_and_admin_editing_is_not_exposed(self):
