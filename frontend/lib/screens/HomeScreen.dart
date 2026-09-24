@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
@@ -368,6 +369,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   FixtureCalendar(
                     allMatches: homeData.calendar,
                     favoriteTeamId: viewedTeamId,
+                    participatingCompetitions:
+                        footballCatalog.currentCompetitions(viewedTeamId),
                     onMonthChanged: _loadCalendarMonth,
                   ),
                   const SizedBox(height: 32),
