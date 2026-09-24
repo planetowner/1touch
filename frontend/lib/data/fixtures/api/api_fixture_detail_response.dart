@@ -1,4 +1,5 @@
 import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
+import 'package:clock/clock.dart' as time;
 
 /// Transport model for `GET /v1/fixtures/{fixture_id}`.
 ///
@@ -8,6 +9,7 @@ import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 class ApiFixtureDetailResponse {
   ApiFixtureDetailResponse({
     required this.fixture,
+    this.clock,
     required this.venueName,
     required this.expectedGoals,
     required List<ApiFixturePlayerExpectedGoalResponse> playerExpectedGoals,
@@ -30,6 +32,7 @@ class ApiFixtureDetailResponse {
         pressure = List.unmodifiable(pressure);
 
   final ApiFixtureResponse fixture;
+  final ApiFixtureClockResponse? clock;
   final String? venueName;
   final ApiFixtureExpectedGoalsResponse? expectedGoals;
   final List<ApiFixturePlayerExpectedGoalResponse> playerExpectedGoals;
@@ -45,6 +48,9 @@ class ApiFixtureDetailResponse {
   factory ApiFixtureDetailResponse.fromJson(Map<String, dynamic> json) {
     return ApiFixtureDetailResponse(
       fixture: ApiFixtureResponse.fromJson(json),
+      clock: json['clock'] == null
+          ? null
+          : _optionalObject(json, 'clock', ApiFixtureClockResponse.fromJson),
       venueName: _optionalString(json, 'venue_name'),
       expectedGoals: _optionalObject(
         json,
@@ -98,6 +104,27 @@ class ApiFixtureDetailResponse {
       ),
     );
   }
+}
+
+class ApiFixtureClockResponse {
+  ApiFixtureClockResponse.fromJson(Map<String, dynamic> json)
+      : periodTypeId = _optionalInt(json, 'period_type_id'),
+        countsFrom = _optionalInt(json, 'counts_from'),
+        minutes = _optionalInt(json, 'minutes'),
+        seconds = _optionalInt(json, 'seconds'),
+        ticking = json['ticking'] as bool,
+        isStale = json['is_stale'] as bool,
+        sampleAgeSeconds = _requiredDouble(json, 'sample_age_seconds'),
+        receivedAt = time.clock.now();
+
+  final int? periodTypeId;
+  final int? countsFrom;
+  final int? minutes;
+  final int? seconds;
+  final bool ticking;
+  final bool isStale;
+  final double sampleAgeSeconds;
+  final DateTime receivedAt;
 }
 
 class ApiFixtureExpectedGoalsResponse {

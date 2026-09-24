@@ -12,9 +12,11 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
+import 'package:onetouch/features/match_info/match_status_label.dart';
 
 import 'match_event_view_data.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class AnalysisTab extends StatefulWidget {
   final Fixture fixture;
@@ -34,7 +36,6 @@ class AnalysisTab extends StatefulWidget {
 
 class _AnalysisTabState extends State<AnalysisTab> {
   bool showHome = true;
-  bool get isLive => false;
   MatchTacticalAnalysis? _analysis;
   MatchShotMap? _shotMap;
   bool _isLoading = false;
@@ -140,15 +141,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 48),
+          // 탭 영역의 아래 여백 12px와 합쳐 Figma의 24px 간격을 맞춰요.
+          const SizedBox(height: 12),
           _buildScoreHeader(),
           if (matchEvents.isNotEmpty)
             MatchEventsSection(
               key: const ValueKey('match-analysis-events'),
               events: matchEvents,
             ),
-          if (widget.detail?.expectedGoals case final expectedGoals?)
+          if (widget.detail?.expectedGoals case final expectedGoals?) ...[
+            const SizedBox(height: 12),
             _buildXGSection(expectedGoals),
+          ],
           if (_isLoading) ...[
             const SizedBox(height: 48),
             const Center(child: CircularProgressIndicator()),
@@ -219,12 +223,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
       awayLogoAsset: away.imagePath ?? '',
       homeTeamId: home.teamId,
       awayTeamId: away.teamId,
-      homeTeamName: home.name,
-      awayTeamName: away.name,
+      homeTeamName: teamNameLabel(context, home.teamId, home.name),
+      awayTeamName: teamNameLabel(context, away.teamId, away.name),
       homeScore: widget.fixture.homeScore?.toString() ?? '#',
       awayScore: widget.fixture.awayScore?.toString() ?? '#',
-      statusLabel: isLive ? '42:02' : tr(context, 'Final'),
-      roundLabel: widget.fixture.roundName,
+      status: MatchStatusLabel(
+          fixture: widget.fixture, clock: widget.detail?.clock),
+      roundLabel: fixtureCompetitionLabel(context, widget.fixture) ??
+          fixtureRoundLabel(widget.fixture,
+              locale: Localizations.localeOf(context)),
     );
   }
 
@@ -286,18 +293,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final team = fixtureHomeTeam(widget.fixture, teamRepository);
     return team.shortCode?.trim().isNotEmpty == true
         ? team.shortCode!
-        : _shortName(team.name);
+        : teamNameLabel(context, team.teamId, team.name, short: true);
   }
 
   String get _awayCode {
     final team = fixtureAwayTeam(widget.fixture, teamRepository);
     return team.shortCode?.trim().isNotEmpty == true
         ? team.shortCode!
-        : _shortName(team.name);
+        : teamNameLabel(context, team.teamId, team.name, short: true);
   }
-
-  String _shortName(String name) =>
-      name.length <= 8 ? name : name.substring(0, 8);
 
   List<MatchShot> get _selectedShots => (_shotMap?.shots ?? const <MatchShot>[])
       .where(

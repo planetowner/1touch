@@ -103,6 +103,8 @@ void main() {
     final backIcon = tester.widget<Icon>(find.byIcon(Icons.arrow_back_ios_new));
 
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
+    expect(tester.widget<SliverAppBar>(find.byType(SliverAppBar)).backgroundColor,
+        scaffold.backgroundColor);
     expect(backIcon.color, app_style.AppPalette.black);
     expect(
       decorationColor(tester, const ValueKey('match-tab-0')),
@@ -232,7 +234,9 @@ void main() {
     final scaffold = tester.widget<Scaffold>(
       find.byKey(const ValueKey('match-screen-scaffold')),
     );
-    expect(scaffold.backgroundColor, Colors.black);
+    expect(scaffold.backgroundColor, app_style.AppPalette.black);
+    expect(tester.widget<SliverAppBar>(find.byType(SliverAppBar)).backgroundColor,
+        scaffold.backgroundColor);
     expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
       app_style.AppPalette.darkGrey,

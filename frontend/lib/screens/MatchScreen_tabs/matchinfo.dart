@@ -5,6 +5,7 @@ import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/KaneRest.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
+import 'package:onetouch/features/match_info/match_status_label.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
@@ -12,20 +13,19 @@ import 'package:onetouch/features/player/player_stat_value.dart';
 import '../../models/match_data.dart';
 import 'match_event_view_data.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class MatchInfoTab extends StatelessWidget {
   final Fixture fixture;
-  final String matchStatus; // "past" | "live"
   final FixtureDetail? detail;
 
   MatchInfoTab({
     super.key,
     required this.fixture,
-    required this.matchStatus,
     this.detail,
   });
 
-  bool get isLive => matchStatus == 'live';
+  bool get isLive => fixture.status == FixtureStatus.live;
 
   String? _metricValue(FixturePlayerStatMetric metric) {
     final value = playerMetricValue(metric);
@@ -70,6 +70,7 @@ class MatchInfoTab extends StatelessWidget {
         : fixtureAwayTeam(fixture, teamRepository);
     return PlayerMatchStatData(
       playerId: playerId,
+      teamId: teamId,
       teamPrimaryColor: team.primaryColor,
       name: lineup?.playerName ?? fallbackName,
       jerseyNumber: lineup?.jerseyNumber ?? fallbackJerseyNumber,
@@ -366,7 +367,7 @@ class MatchInfoTab extends StatelessWidget {
     final awaySubstitutes = _substitutes(fixture.awayTeamId);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.only(top: 12, bottom: 48),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -375,18 +376,21 @@ class MatchInfoTab extends StatelessWidget {
             awayLogoAsset: awayTeam.imagePath ?? '',
             homeTeamId: homeTeam.teamId,
             awayTeamId: awayTeam.teamId,
-            homeTeamName: homeTeam.displayName,
-            awayTeamName: awayTeam.displayName,
+            homeTeamName: teamNameLabel(
+                context, homeTeam.teamId, homeTeam.displayName,
+                short: true),
+            awayTeamName: teamNameLabel(
+                context, awayTeam.teamId, awayTeam.displayName,
+                short: true),
             homeScore: homeScore,
             awayScore: awayScore,
-            statusLabel: isLive ? tr(context, 'Live') : tr(context, 'Final'),
-            roundLabel: fixture.roundName,
+            status: MatchStatusLabel(fixture: fixture, clock: detail?.clock),
+            roundLabel: fixtureCompetitionLabel(context, fixture) ??
+                fixtureRoundLabel(fixture,
+                    locale: Localizations.localeOf(context)),
             venueLabel: detail?.venueName,
           ),
-          if (matchEvents.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            MatchEventsSection(events: matchEvents),
-          ],
+          if (matchEvents.isNotEmpty) MatchEventsSection(events: matchEvents),
           if (!isLive) ...[
             const SizedBox(height: 24),
             MatchHighlights(

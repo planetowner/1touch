@@ -15,6 +15,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class MatchesTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -370,13 +371,15 @@ class _MatchesTabState extends State<MatchesTab> {
     final isUpcoming = fixture.status == FixtureStatus.upcoming;
     final home = fixtureHomeTeam(fixture, teamRepository);
     final away = fixtureAwayTeam(fixture, teamRepository);
-    final leagueName =
+    final leagueName = competitionNameLabel(
+        context,
+        fixture.competitionId,
         competitionRepository.findById(fixture.competitionId)?.name ??
-            'Unknown';
-    final roundName = fixture.roundName?.trim();
-    final competitionAndRound = roundName?.isNotEmpty ?? false
-        ? '$leagueName • $roundName'
-        : leagueName;
+            'Unknown');
+    final roundLabel =
+        fixtureRoundLabel(fixture, locale: Localizations.localeOf(context));
+    final competitionAndRound = fixtureCompetitionLabel(context, fixture) ??
+        (roundLabel != null ? '$leagueName • $roundLabel' : leagueName);
     final kickoff = fixture.kickoff?.toLocal();
 
     return GestureDetector(
@@ -411,7 +414,8 @@ class _MatchesTabState extends State<MatchesTab> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          home.shortCode ?? home.name,
+                          home.shortCode ??
+                              teamNameLabel(context, home.teamId, home.name),
                           style: Heading5.style,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -456,7 +460,8 @@ class _MatchesTabState extends State<MatchesTab> {
                     children: [
                       Expanded(
                         child: Text(
-                          away.shortCode ?? away.name,
+                          away.shortCode ??
+                              teamNameLabel(context, away.teamId, away.name),
                           style: Heading5.style,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

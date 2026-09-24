@@ -35,6 +35,21 @@ void main() {
       );
 
       expect(fixture.roundName, isNull);
+      expect(fixture.stageName, isNull);
+      expect(fixture.leg, isNull);
+    });
+
+    test('preserves knockout stage and leg without a round', () {
+      final fixture = Fixture.fromJson(
+        _fixtureJson(status: 'upcoming')
+          ..['round_name'] = null
+          ..['stage_name'] = 'Quarter-finals'
+          ..['leg'] = '2/2',
+      );
+
+      expect(fixture.roundName, isNull);
+      expect(fixture.stageName, 'Quarter-finals');
+      expect(fixture.leg, '2/2');
     });
 
     test('preserves a missing kickoff as null', () {
