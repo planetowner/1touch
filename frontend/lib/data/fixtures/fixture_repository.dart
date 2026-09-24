@@ -24,7 +24,7 @@ abstract interface class FixtureRepository {
   /// cache selector used by existing screens during the incremental API
   /// migration.
   // API 순서(예정은 시간순, 나머지는 최신순)를 유지해요.
-  // 일정 화면은 최근 경기 묶음을 뒤집어 과거에서 미래로 보여줘요.
+  // 일정 화면은 예정 경기 묶음을 뒤집어 미래에서 과거로 보여줘요.
   Future<List<Fixture>> loadForTeam(
     int teamId, {
     FixtureStatus? status,

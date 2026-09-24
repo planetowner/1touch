@@ -53,7 +53,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(
-      find.byKey(const ValueKey('matches-past-header')),
+      find.byKey(const ValueKey('matches-upcoming-header')),
       findsOneWidget,
     );
     expect(
@@ -61,7 +61,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('matches-inline-upcoming-header')),
+      find.byKey(const ValueKey('matches-inline-past-header')),
       findsOneWidget,
     );
     expect(find.text(':'), findsNothing);
@@ -95,7 +95,7 @@ void main() {
 
   for (final hasLive in [false, true]) {
     testWidgets(
-        'opens at the latest two past matches, with live=$hasLive and older matches above',
+        'opens at the nearest two upcoming matches, with live=$hasLive and past matches below',
         (tester) async {
       tester.view.physicalSize = const Size(393, 852);
       tester.view.devicePixelRatio = 1;
@@ -108,8 +108,9 @@ void main() {
               kickoff: DateTime(2026, 1, index)),
         if (hasLive)
           _fixture(201, FixtureStatus.live, kickoff: DateTime(2026, 1, 201)),
-        _fixture(203, FixtureStatus.upcoming, kickoff: DateTime(2026, 1, 203)),
-        _fixture(202, FixtureStatus.upcoming, kickoff: DateTime(2026, 1, 202)),
+        for (var index = 202; index <= 401; index++)
+          _fixture(index, FixtureStatus.upcoming,
+              kickoff: DateTime(2026, 1, index)),
       ]);
 
       await tester.pumpWidget(_app(repository, teamId: 9));
@@ -117,18 +118,19 @@ void main() {
 
       final scroll = find.byKey(const ValueKey('matches-scroll'));
       final controller = tester.widget<CustomScrollView>(scroll).controller!;
-      final penultimate = find.byKey(const ValueKey('team-fixture-card-199'));
-      final latest = find.byKey(const ValueKey('team-fixture-card-200'));
+      final secondUpcoming =
+          find.byKey(const ValueKey('team-fixture-card-203'));
+      final nextUpcoming = find.byKey(const ValueKey('team-fixture-card-202'));
       final next =
-          find.byKey(ValueKey('team-fixture-card-${hasLive ? 201 : 202}'));
-      expect(tester.getTopLeft(penultimate).dy,
+          find.byKey(ValueKey('team-fixture-card-${hasLive ? 201 : 200}'));
+      expect(tester.getTopLeft(secondUpcoming).dy,
           closeTo(tester.getTopLeft(scroll).dy, 0.1));
-      expect(tester.getBottomLeft(penultimate).dy,
-          lessThanOrEqualTo(tester.getTopLeft(latest).dy));
-      expect(tester.getBottomLeft(latest).dy,
+      expect(tester.getBottomLeft(secondUpcoming).dy,
+          lessThanOrEqualTo(tester.getTopLeft(nextUpcoming).dy));
+      expect(tester.getBottomLeft(nextUpcoming).dy,
           lessThan(tester.getTopLeft(next).dy));
       expect(next.hitTestable(), findsOneWidget);
-      final nextSection = hasLive ? 'live' : 'upcoming';
+      final nextSection = hasLive ? 'live' : 'past';
       final divider = find.byKey(ValueKey('matches-$nextSection-divider'));
       final title = find.descendant(
         of: find.byKey(ValueKey('matches-inline-$nextSection-header')),
@@ -137,16 +139,17 @@ void main() {
       // Figma는 마지막 카드 → 24px → 구분선 → 16px → 제목 → 16px → 카드예요.
       expect(
           tester.getTopLeft(divider).dy -
-              tester.getBottomLeft(_cardSurface(200)).dy,
+              tester.getBottomLeft(_cardSurface(202)).dy,
           closeTo(24, 0.1));
       expect(tester.getTopLeft(title).dy - tester.getBottomLeft(divider).dy,
           closeTo(16, 0.1));
       expect(
-          tester.getTopLeft(_cardSurface(hasLive ? 201 : 202)).dy -
+          tester.getTopLeft(_cardSurface(hasLive ? 201 : 200)).dy -
               tester.getBottomLeft(title).dy,
           closeTo(16, 0.1));
       expect(tester.getSize(divider), const Size(345, 1));
-      expect(find.byKey(const ValueKey('matches-past-divider')), findsNothing);
+      expect(find.byKey(const ValueKey('matches-upcoming-divider')),
+          findsNothing);
       expect(
           find.descendant(
             of: find.byKey(const ValueKey('matches-header-stack')),
@@ -155,52 +158,72 @@ void main() {
           findsNothing);
       expect(
           tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-202')))
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-200')))
               .dy,
           lessThan(tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-203')))
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-199')))
               .dy));
 
       final fade = find.byKey(const ValueKey('matches-top-fade'));
       expect(tester.getSize(fade).height, 56);
       expect(tester.getTopLeft(fade).dy,
-          closeTo(tester.getTopLeft(penultimate).dy + 16, 0.1));
+          closeTo(tester.getTopLeft(scroll).dy, 0.1));
       expect(controller.position.minScrollExtent, lessThan(0));
       expect(controller.offset, 0);
+
+      // 카드를 중간까지 스크롤해도 페이드 앞에 밝은 띠가 생기지 않아야 해요.
+      controller.jumpTo(40);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(fade).dy,
+          closeTo(tester.getTopLeft(scroll).dy, 0.1));
+      controller.jumpTo(0);
+      await tester.pumpAndSettle();
 
       await tester.drag(scroll, const Offset(0, 200));
       await tester.pumpAndSettle();
       expect(controller.offset, lessThan(0));
+      expect(find.byKey(const ValueKey('team-fixture-card-204')).hitTestable(),
+          findsOneWidget);
+      expect(
+          tester
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-204')))
+              .dy,
+          lessThan(tester.getTopLeft(secondUpcoming).dy));
+
+      controller.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(secondUpcoming).dy,
+          closeTo(tester.getTopLeft(scroll).dy, 0.1));
+
+      await tester.drag(scroll, const Offset(0, -400));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('team-fixture-card-198')).hitTestable(),
           findsOneWidget);
       expect(
           tester
-              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-198')))
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-199')))
               .dy,
-          lessThan(tester.getTopLeft(penultimate).dy));
-
-      controller.jumpTo(0);
-      await tester.pumpAndSettle();
-      expect(tester.getTopLeft(penultimate).dy,
-          closeTo(tester.getTopLeft(scroll).dy, 0.1));
+          lessThan(tester
+              .getTopLeft(find.byKey(const ValueKey('team-fixture-card-198')))
+              .dy));
       expect(tester.takeException(), isNull);
     });
   }
 
-  for (final pastCount in [0, 1]) {
+  for (final upcomingCount in [0, 1]) {
     testWidgets(
-        'opens with $pastCount past matches without fading a sole match',
+        'opens with $upcomingCount upcoming matches without fading a sole match',
         (tester) async {
       final repository = MockFixtureRepository(fixtures: [
-        if (pastCount == 1) _fixture(1, FixtureStatus.past),
-        _fixture(2, FixtureStatus.upcoming),
+        _fixture(1, FixtureStatus.past),
+        if (upcomingCount == 1) _fixture(2, FixtureStatus.upcoming),
       ]);
       await tester.pumpWidget(_app(repository, teamId: 9));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('matches-top-fade')), findsNothing);
       final first =
-          find.byKey(ValueKey('team-fixture-card-${pastCount == 1 ? 1 : 2}'));
+          find.byKey(ValueKey('team-fixture-card-${upcomingCount == 1 ? 2 : 1}'));
       expect(first.hitTestable(), findsOneWidget);
       expect(
           tester.getTopLeft(first).dy,
