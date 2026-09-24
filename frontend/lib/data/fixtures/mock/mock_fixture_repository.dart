@@ -109,7 +109,8 @@ class MockFixtureRepository implements FixtureRepository {
       return (startDate == null || !kickoffDate.isBefore(startDate)) &&
           (endDate == null || !kickoffDate.isAfter(endDate));
     }).toList()
-      ..sort((a, b) => _compareChronologically(a, b, descending: true));
+      ..sort((a, b) => _compareChronologically(a, b,
+          descending: status != FixtureStatus.upcoming));
 
     return List.unmodifiable(matches.skip(offset).take(limit));
   }
