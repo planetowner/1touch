@@ -111,7 +111,7 @@ void main() {
     }
 
     // 먼저 두 탭을 열어둬야 처음 로드할 때뿐 아니라 유지된 화면도 바뀌는지 확인해요.
-    await tab(2);
+    await tab(1);
     expect(tester.widget<TeamScreen>(find.byType(TeamScreen)).teamId, 8);
     await tab(3);
     expect(tester.widget<Community>(find.byType(Community)).teamId, 8);
@@ -126,7 +126,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(currentUserPreferences.viewedTeamId.value, id);
 
-      await tab(2);
+      await tab(1);
       expect(router.routeInformationProvider.value.uri.path, '/team/$id');
       expect(tester.widget<TeamScreen>(find.byType(TeamScreen)).teamId, id);
       await tab(3);
@@ -145,6 +145,8 @@ void main() {
       expect(currentUserPreferences.favoriteTeamId.value, 8);
       expect(currentUserPreferences.followedTeamIds.value, [8, 19]);
     }
+    await tab(2);
+    expect(router.routeInformationProvider.value.uri.path, '/players');
     expect(requests.every((request) => request.method == 'GET'), isTrue);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
