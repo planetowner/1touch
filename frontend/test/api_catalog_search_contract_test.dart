@@ -45,6 +45,8 @@ void main() {
     expect(seasons.currentForCompetition(8)?.seasonId, 28083);
     expect(seasons.currentForCompetition(8)?.startingAt, isNull);
     expect(catalog.currentTeams(8).map((t) => t.teamId), [8]);
+    expect(catalog.currentCompetitions(8).map((c) => c.competitionId), [8]);
+    expect(catalog.currentCompetitions(19), isEmpty);
     expect(catalog.resolve(19), isNull);
     expect(catalog.resolve(8)?.seasonId, 28083);
     await teams.initialize();
