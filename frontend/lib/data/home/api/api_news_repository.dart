@@ -7,12 +7,9 @@ import 'package:onetouch/models/news_language.dart';
 class ApiNewsRepository implements NewsRepository {
   ApiNewsRepository({
     required ApiClient api,
-    DateTime Function()? now,
-  })  : _api = api,
-        _now = now ?? DateTime.now;
+  }) : _api = api;
 
   final ApiClient _api;
-  final DateTime Function() _now;
 
   @override
   Future<List<HomeContentItem>> loadForTeam(
@@ -36,8 +33,7 @@ class ApiNewsRepository implements NewsRepository {
     return List.unmodifiable(data.items.map((article) => HomeContentItem(
           title: article.title,
           source: article.source,
-          timeLabel: contentTimeLabel(article.publishedAt,
-              language: language, now: _now()),
+          publishedAt: article.publishedAt,
           imageUrl: article.imageUrl,
           destinationUrl: article.url,
         )));

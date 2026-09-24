@@ -126,7 +126,7 @@ class FavoriteTeamCard extends StatelessWidget {
                     final away = fixtureAwayTeam(last, teamRepository);
                     final kickoff = last.kickoff;
                     return MatchCard2(
-                      date: fixtureDateLabel(kickoff,
+                      date: relativeDateLabel(kickoff,
                           locale: Localizations.localeOf(context)),
                       venue: '',
                       team1shortname: home.shortCode ??

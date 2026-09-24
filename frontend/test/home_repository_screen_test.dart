@@ -107,7 +107,7 @@ void main() {
     );
 
     expect(find.text('Official API highlight'), findsOneWidget);
-    expect(find.text('Official channel 1h ago'), findsOneWidget);
+    expect(find.textContaining('Official channel'), findsNothing);
   });
 
   testWidgets('reloads calendar months and ignores a stale response',
@@ -427,12 +427,12 @@ class _RecordingNewsRepository implements NewsRepository {
 const _loadedContentItem = HomeContentItem(
   title: 'Repository content',
   source: 'Repository',
-  timeLabel: 'Now',
+  publishedAt: null,
 );
 
 const _apiHighlightItem = HomeContentItem(
   title: 'Official API highlight',
   source: 'Official channel',
-  timeLabel: '1h ago',
+  publishedAt: null,
   destinationUrl: 'https://www.youtube.com/watch?v=official',
 );

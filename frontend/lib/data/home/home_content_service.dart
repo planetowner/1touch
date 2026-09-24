@@ -152,7 +152,7 @@ class HomeContentService implements HomeContentRepository {
             return HomeContentItem(
               title: title,
               source: 'BBC Sport',
-              timeLabel: _relativeTime(publishedAt),
+              publishedAt: publishedAt,
               imageUrl: imageUrl,
               destinationUrl: destinationUrl,
             );
@@ -204,7 +204,7 @@ class HomeContentService implements HomeContentRepository {
             return HomeContentItem(
               title: title,
               source: author?.isNotEmpty == true ? author! : 'YouTube',
-              timeLabel: _relativeTime(publishedAt),
+              publishedAt: publishedAt,
               imageUrl: imageUrl,
               destinationUrl: 'https://www.youtube.com/watch?v=$videoId',
             );
@@ -224,16 +224,6 @@ class HomeContentService implements HomeContentRepository {
     } on FormatException {
       return null;
     }
-  }
-
-  String _relativeTime(DateTime? publishedAt) {
-    if (publishedAt == null) return 'Latest';
-    final difference = DateTime.now().toUtc().difference(publishedAt.toUtc());
-    if (difference.isNegative || difference.inMinutes < 1) return 'Just now';
-    if (difference.inMinutes < 60) return '${difference.inMinutes}m ago';
-    if (difference.inHours < 24) return '${difference.inHours}h ago';
-    if (difference.inDays < 7) return '${difference.inDays}d ago';
-    return DateFormat('MMM d').format(publishedAt.toLocal());
   }
 
   void dispose() => _client.close();

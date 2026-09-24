@@ -1044,6 +1044,10 @@ const appMessages = <String, MessageTranslations>{
   "{count} minutes ago": (ko: "{count}분 전", ja: "{count}分前", zh: "{count}分钟前"),
   "{count} hours ago": (ko: "{count}시간 전", ja: "{count}時間前", zh: "{count}小时前"),
   "{count} days ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
+  "Today": (ko: "오늘", ja: "今日", zh: "今天"),
+  "Yesterday": (ko: "어제", ja: "昨日", zh: "昨天"),
+  "Last week": (ko: "지난주", ja: "先週", zh: "上周"),
+  "{count} weeks ago": (ko: "{count}주 전", ja: "{count}週間前", zh: "{count}周前"),
   "Reactions": (ko: "반응", ja: "リアクション", zh: "互动"),
   "Match Reminder": (ko: "경기 알림", ja: "試合リマインダー", zh: "比赛提醒"),
   "Kickoff, Half Time, Full Time": (
