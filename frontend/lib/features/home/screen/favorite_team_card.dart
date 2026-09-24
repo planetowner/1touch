@@ -71,7 +71,8 @@ class FavoriteTeamCard extends StatelessWidget {
                             children: [
                               Flexible(
                                 child: Text(
-                                  "$leagueName ${rank != null ? ordinal(rank, locale: Localizations.localeOf(context)) : '-'}",
+                                  leaguePositionLabel(
+                                      context, leagueName, rank),
                                   key: const ValueKey('home-team-standing'),
                                   style: Body2.style.copyWith(height: 1.3),
                                   maxLines: 1,

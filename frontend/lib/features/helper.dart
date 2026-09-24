@@ -89,6 +89,14 @@ Widget competitionLogoFallback(int competitionId, {double size = 24}) {
 // UTILITIES & HELPERS
 //
 
+String leaguePositionLabel(
+    BuildContext context, String leagueName, int? position) {
+  final rank = position == null
+      ? '-'
+      : ordinal(position, locale: Localizations.localeOf(context));
+  return '$leagueName $rank';
+}
+
 String ordinal(int number, {Locale locale = const Locale('en')}) {
   if (locale.languageCode != 'en') {
     return translateMessage(locale, '{rank} place', {'rank': number});
