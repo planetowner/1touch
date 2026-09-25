@@ -19,12 +19,12 @@ void main() {
     );
   }
 
-  void expectPremierLeagueRows(WidgetTester tester, List<String> shortCodes) {
+  void expectPremierLeagueRows(WidgetTester tester, List<String> teamNames) {
     final card = find.byKey(const ValueKey('overview-standing-card-8'));
     expect(card, findsOneWidget);
-    for (final shortCode in shortCodes) {
+    for (final teamName in teamNames) {
       expect(
-        find.descendant(of: card, matching: find.text(shortCode)),
+        find.descendant(of: card, matching: find.text(teamName)),
         findsOneWidget,
       );
     }
@@ -34,7 +34,13 @@ void main() {
       (tester) async {
     await tester.pumpWidget(subject(9));
 
-    expectPremierLeagueRows(tester, ['MCI', 'ARS', 'NEW', 'LIV', 'BOU']);
+    expectPremierLeagueRows(tester, [
+      'Manchester City',
+      'Arsenal',
+      'Newcastle United',
+      'Liverpool',
+      'AFC Bournemouth',
+    ]);
     final shell = tester.widget<Container>(
       find.byKey(const ValueKey('overview-standing-shell-8')),
     );
@@ -43,28 +49,49 @@ void main() {
       lightModeCardShadows,
     );
     final card = find.byKey(const ValueKey('overview-standing-card-8'));
-    expect(find.descendant(of: card, matching: find.text('BRE')), findsNothing);
+    expect(
+      find.descendant(of: card, matching: find.text('Brentford')),
+      findsNothing,
+    );
   });
 
   testWidgets('shows positions 1–5 when the selected team is second',
       (tester) async {
     await tester.pumpWidget(subject(19));
 
-    expectPremierLeagueRows(tester, ['MCI', 'ARS', 'NEW', 'LIV', 'BOU']);
+    expectPremierLeagueRows(tester, [
+      'Manchester City',
+      'Arsenal',
+      'Newcastle United',
+      'Liverpool',
+      'AFC Bournemouth',
+    ]);
     final card = find.byKey(const ValueKey('overview-standing-card-8'));
-    expect(find.descendant(of: card, matching: find.text('BRE')), findsNothing);
+    expect(
+      find.descendant(of: card, matching: find.text('Brentford')),
+      findsNothing,
+    );
   });
 
   testWidgets('centers a lower-ranked team in the five-row window',
       (tester) async {
     await tester.pumpWidget(subject(6));
 
-    expectPremierLeagueRows(tester, ['BHA', 'MUN', 'TOT', 'AVL', 'EVE']);
+    expectPremierLeagueRows(tester, [
+      'Brighton & Hove Albion',
+      'Manchester United',
+      'Tottenham Hotspur',
+      'Aston Villa',
+      'Everton',
+    ]);
     final card = find.byKey(const ValueKey('overview-standing-card-8'));
-    expect(find.descendant(of: card, matching: find.text('CHE')), findsNothing);
+    expect(
+      find.descendant(of: card, matching: find.text('Chelsea')),
+      findsNothing,
+    );
   });
 
-  testWidgets('uses 16px gaps between the standings stat columns',
+  testWidgets('uses the reference padding and standings column spacing',
       (tester) async {
     await tester.pumpWidget(subject(9));
 
@@ -73,17 +100,28 @@ void main() {
       find.descendant(of: card, matching: find.byType(Table)),
     );
     final grid = tables.first.columnWidths!;
-    for (final column in [4, 6, 8]) {
-      expect((grid[column]! as FixedColumnWidth).value, 16);
+    expect((grid[0]! as FixedColumnWidth).value, 24);
+    expect((grid[2]! as FixedColumnWidth).value, 16);
+    for (final column in [4, 6, 8, 10]) {
+      expect((grid[column]! as FixedColumnWidth).value, 15);
     }
+
+    final header = tester.widget<Container>(
+      find.byKey(const ValueKey('overview-standing-header-8')),
+    );
+    final body = tester.widget<Padding>(
+      find.byKey(const ValueKey('overview-standing-body-8')),
+    );
+    expect(header.padding, const EdgeInsets.symmetric(horizontal: 24));
+    expect(body.padding, const EdgeInsets.fromLTRB(24, 16, 24, 24));
   });
 
-  testWidgets('centers W, D, and L values beneath their labels',
+  testWidgets('centers Pts, MP, W, D, and L values beneath their labels',
       (tester) async {
     await tester.pumpWidget(subject(9));
 
     final card = find.byKey(const ValueKey('overview-standing-card-8'));
-    for (final stat in ['win', 'draw', 'loss']) {
+    for (final stat in ['points', 'mp', 'win', 'draw', 'loss']) {
       final header = tester.widget<Align>(
         find.descendant(
           of: card,
@@ -103,6 +141,30 @@ void main() {
       expect(header.alignment, Alignment.center);
       expect(firstValue.alignment, Alignment.center);
     }
+
+    final orderedHeaders = ['points', 'mp', 'win', 'draw', 'loss']
+        .map(
+          (stat) => tester.getCenter(
+            find.descendant(
+              of: card,
+              matching: find.byKey(
+                ValueKey('overview-standing-$stat-header'),
+              ),
+            ),
+          ),
+        )
+        .toList();
+    for (var index = 1; index < orderedHeaders.length; index++) {
+      expect(
+          orderedHeaders[index].dx, greaterThan(orderedHeaders[index - 1].dx));
+    }
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('overview-standing-points-1')),
+        matching: find.text('92'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('reports the competition selected from an overview card',
