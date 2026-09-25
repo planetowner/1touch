@@ -35,7 +35,7 @@ class TeamAttributeRadar extends StatelessWidget {
     final resolvedComparisonColor =
         comparisonColor ?? Theme.of(context).colorScheme.onSurface;
     return SizedBox(
-      height: 260,
+      height: 238,
       child: RadarChart(
         RadarChartData(
           radarShape: RadarShape.polygon,
@@ -47,14 +47,15 @@ class TeamAttributeRadar extends StatelessWidget {
               const TextStyle(color: Colors.transparent, fontSize: 0),
           getTitle: (index, _) {
             final label = teamAttributeLabels[index];
-            final moveOutward = label == 'Progression' || label == 'Possession';
+            final isHorizontalEdgeLabel =
+                label == 'Progression' || label == 'Possession';
             return RadarChartTitle(
               text: tr(context, label),
               angle: 0,
-              positionPercentageOffset: moveOutward ? 0.3 : null,
+              positionPercentageOffset: isHorizontalEdgeLabel ? 0.3 : null,
             );
           },
-          titleTextStyle: Eyebrow.style,
+          titleTextStyle: Eyebrow.style.copyWith(height: 1.3),
           titlePositionPercentageOffset: 0.15,
           dataSets: [
             // MY TEAM — the selected team's primary color.
