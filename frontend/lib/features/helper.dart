@@ -224,6 +224,7 @@ class MatchCard2 extends StatelessWidget {
   final int awayScore;
   final Color? backgroundColor;
   final EdgeInsetsGeometry? contentPadding;
+  final TextStyle dateTextStyle;
 
   const MatchCard2({
     super.key,
@@ -239,6 +240,7 @@ class MatchCard2 extends StatelessWidget {
     required this.awayScore,
     this.backgroundColor,
     this.contentPadding,
+    this.dateTextStyle = Body2.style,
   });
 
   @override
@@ -301,6 +303,7 @@ class MatchCard2 extends StatelessWidget {
                       key: const ValueKey('last-match-date-time'),
                       date: date,
                       venue: venue,
+                      textStyle: dateTextStyle,
                     ),
                   ),
                   Row(
@@ -598,11 +601,13 @@ class _MatchInfo extends StatelessWidget {
 
 class _MatchInfo2 extends StatelessWidget {
   final String date, venue;
+  final TextStyle textStyle;
 
   const _MatchInfo2({
     super.key,
     required this.date,
     required this.venue,
+    required this.textStyle,
   });
 
   @override
@@ -611,7 +616,7 @@ class _MatchInfo2 extends StatelessWidget {
       children: [
         FixtureDateTime(
           label: date,
-          textStyle: Body1.style,
+          textStyle: textStyle,
         ),
       ],
     );

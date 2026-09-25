@@ -709,7 +709,7 @@ void main() {
     );
     expect(
       matchDateLines.map((line) => line.style),
-      everyElement(Body1.style),
+      everyElement(Body2.style),
     );
     expect(
       find.descendant(
