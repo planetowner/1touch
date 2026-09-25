@@ -510,6 +510,28 @@ class TransfersContractsTests(unittest.TestCase):
         row=transfers_repo.get_team_transfers_by_window(6,28083,window,date(2026,9,9))[0]
         self.assertIsNone(row["contract_end_date"])
 
+    def test_team_transfers_hide_earlier_unknown_destination_after_known_departure(self):
+        self.sql.executemany("INSERT INTO teams VALUES (?, ?, NULL, NULL)", [
+            (83, "FC Barcelona"), (75, "Chicago Fire"), (13332, "Atlético Madrid II"),
+        ])
+        self.sql.executemany("INSERT INTO players (player_id, display_name, image_path) VALUES (?, ?, NULL)", [
+            (31000, "Robert Lewandowski"), (37592786, "Ander Astralaga"), (40000, "Unresolved Player"),
+        ])
+        self.sql.executemany("INSERT INTO transfer_types VALUES (?, ?)", [(219, "Transfer"), (220, "Free Transfer")])
+        self.sql.executemany("INSERT INTO transfers VALUES (?, ?, ?, ?, ?, ?, ?)", [
+            (563075, 31000, 83, None, 219, None, "2026-07-01"),
+            (579013, 31000, 83, 75, 220, None, "2026-07-13"),
+            (563506, 37592786, 83, None, 219, None, "2026-07-01"),
+            (582422, 37592786, 83, 13332, 220, None, "2026-07-23"),
+            (990000, 40000, 83, None, 219, None, "2026-07-05"),
+        ])
+        window = {"start_date": date(2026, 7, 1), "end_date": date(2026, 9, 1)}
+
+        rows = transfers_repo.get_team_transfers_by_window(83, 28083, window, date(2026, 9, 9))
+
+        self.assertEqual([row["transfer_id"] for row in rows], [582422, 579013, 990000])
+        self.assertEqual(self.sql.execute("SELECT COUNT(*) FROM transfers").fetchone()[0], 5)
+
     def test_transfers_check_never_calls_writer(self):
         with patch.object(transfers,"load_senior_team_ids",return_value=SENIOR), patch.object(transfers,"SportmonksClient") as client, patch.object(transfers,"replace_player_transfers") as writer:
             client.return_value.iter_transfers_by_player.return_value=CASES["players"]["4313"]
