@@ -7,6 +7,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
 
@@ -148,6 +149,30 @@ void main() {
           tester.getCenter(find.text('MCI')).dy,
       32,
     );
+    expect(
+      tester
+          .widget<Icon>(
+            find.byKey(const ValueKey('standing-last-five-9-0')),
+          )
+          .icon,
+      Icons.check_circle,
+    );
+    expect(
+      tester
+          .widget<Icon>(
+            find.byKey(const ValueKey('standing-last-five-9-1')),
+          )
+          .icon,
+      Icons.remove_circle,
+    );
+    expect(
+      tester
+          .widget<Icon>(
+            find.byKey(const ValueKey('standing-last-five-9-2')),
+          )
+          .icon,
+      Icons.cancel,
+    );
     final firstMarker =
         find.byKey(const ValueKey('standing-qualification-marker-9'));
     final secondMarker =
@@ -175,6 +200,42 @@ void main() {
           tester.getTopRight(find.byKey(const ValueKey('standing-logo-9'))).dx,
       12,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('centers Korean standing headers over their data columns',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(_app(
+      _successfulStandingRepository(),
+      locale: const Locale('ko'),
+    ));
+    await tester.pump();
+
+    for (final column in ['gf', 'ga', 'gd', 'pts']) {
+      final header = find.byKey(ValueKey('standing-header-$column'));
+      final data = find.byKey(ValueKey('standing-stat-9-$column'));
+
+      expect(tester.getCenter(header).dx, tester.getCenter(data).dx);
+      expect(tester.getSize(header).width, 24);
+    }
+
+    for (final label in ['득점', '실점', '득실차', '승점']) {
+      final textRect = tester.getRect(find.text(label));
+      final headerRect = tester.getRect(
+        find.byKey(ValueKey('standing-header-${switch (label) {
+          '득점' => 'gf',
+          '실점' => 'ga',
+          '득실차' => 'gd',
+          _ => 'pts',
+        }}')),
+      );
+      expect(textRect.center.dx, headerRect.center.dx);
+      expect(textRect.width, lessThanOrEqualTo(headerRect.width));
+    }
+
     expect(tester.takeException(), isNull);
   });
 
@@ -568,8 +629,12 @@ Widget _app(
   _ControlledXgStandingRepository? xgRepository,
   int? requestedCompetitionId,
   int selectionRequestId = 0,
+  Locale? locale,
 }) {
   return MaterialApp(
+    locale: locale,
+    supportedLocales: const [Locale('en'), Locale('ko')],
+    localizationsDelegates: appLocalizationDelegates,
     theme: app_style.whitetheme,
     home: Scaffold(
       body: StandingTab(
@@ -612,7 +677,7 @@ Standing _standing({
     goalsAgainst: 2,
     goalDiff: 6,
     points: 7,
-    last5Form: const ['W', 'D'],
+    last5Form: const ['W', 'D', 'L'],
   );
 }
 
