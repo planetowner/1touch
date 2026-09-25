@@ -509,8 +509,19 @@ class _SquadTabState extends State<SquadTab> {
               .where((pos) => grouped.containsKey(pos))
               .expand((pos) => [
                     const SizedBox(height: 24),
-                    _PositionHeader(label: _positionLabel(pos)),
-                    _PlayerGrid(players: grouped[pos]!),
+                    _PositionHeader(
+                      key: ValueKey(
+                        'squad-position-${pos?.name ?? 'unavailable'}-header',
+                      ),
+                      label: _positionLabel(pos),
+                    ),
+                    const SizedBox(height: 16),
+                    _PlayerGrid(
+                      key: ValueKey(
+                        'squad-position-${pos?.name ?? 'unavailable'}-grid',
+                      ),
+                      players: grouped[pos]!,
+                    ),
                   ]),
         ],
       );
@@ -529,6 +540,7 @@ class _SquadTabState extends State<SquadTab> {
 
   Widget _filterRow() {
     return Row(
+      key: const ValueKey('squad-filter-row'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: _seasonDropdown()),
@@ -643,7 +655,7 @@ class _SquadTabState extends State<SquadTab> {
 class _PositionHeader extends StatelessWidget {
   final String label;
 
-  const _PositionHeader({required this.label});
+  const _PositionHeader({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -657,12 +669,13 @@ class _PositionHeader extends StatelessWidget {
 class _PlayerGrid extends StatelessWidget {
   final List<SquadPlayer> players;
 
-  const _PlayerGrid({required this.players});
+  const _PlayerGrid({super.key, required this.players});
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
       shrinkWrap: true,
+      padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: players.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -704,6 +717,7 @@ class _PlayerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
+                  key: ValueKey('squad-player-image-panel-${player.id}'),
                   flex: 4,
                   child: Stack(
                     children: [
@@ -717,7 +731,7 @@ class _PlayerCard extends StatelessWidget {
                       Positioned(
                         right: 10,
                         left: 50,
-                        top: 20,
+                        top: 16,
                         bottom: 0,
                         child: player.imageUrl != null
                             ? Image.network(
@@ -739,7 +753,7 @@ class _PlayerCard extends StatelessWidget {
 
                       if (player.jerseyNumber != null)
                         Positioned(
-                          top: 14,
+                          top: 12,
                           left: 12,
                           child: Text(
                             '${player.jerseyNumber}',
@@ -777,20 +791,6 @@ class _PlayerCard extends StatelessWidget {
                             style: Heading5.style,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          player.teamName == null
-                              ? player.teamLabel
-                              : [
-                                  teamNameLabel(
-                                      context, player.teamId, player.teamName!),
-                                  if (player.jerseyNumber != null)
-                                    '${player.jerseyNumber}',
-                                ].join(' • '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Body2.style,
-                        ),
                       ],
                     ),
                   ),
@@ -815,35 +815,29 @@ class _LeadershipBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return switch (role) {
-      TeamLeadershipRole.captain => Container(
-          key: ValueKey('squad-leadership-captain-$playerId'),
-          width: 24,
-          height: 18,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(color: AppPalette.white),
-          ),
-          child: const Text(
-            'C',
-            style: TextStyle(
-              color: AppPalette.white,
-              fontSize: 16,
-              height: 1,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      TeamLeadershipRole.viceCaptain => Text(
-          'VC',
-          key: ValueKey('squad-leadership-vice-captain-$playerId'),
-          style: const TextStyle(
-            color: AppPalette.white,
-            fontSize: 16,
-            height: 1,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-    };
+    final color = Theme.of(context).brightness == Brightness.dark
+        ? AppPalette.white
+        : AppPalette.black;
+    final label = role == TeamLeadershipRole.captain ? 'C' : 'VC';
+    final roleName =
+        role == TeamLeadershipRole.captain ? 'captain' : 'vice-captain';
+
+    return Container(
+      key: ValueKey('squad-leadership-$roleName-$playerId'),
+      width: 24,
+      height: 18,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        softWrap: false,
+        textAlign: TextAlign.center,
+        overflow: TextOverflow.visible,
+        style: Body2_b.style.copyWith(color: color, height: 1.3),
+      ),
+    );
   }
 }
