@@ -16,6 +16,16 @@ import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/l10n/messages.dart';
 
 void main() {
+  test('APP_LOCALE overrides supported languages and allows system fallback',
+      () {
+    expect(appLocaleOverride(''), isNull);
+    expect(appLocaleOverride('system'), isNull);
+    expect(appLocaleOverride('ko'), const Locale('ko'));
+    expect(appLocaleOverride('ja-JP'), const Locale('ja'));
+    expect(appLocaleOverride('zh_Hant'), appSupportedLocales.last);
+    expect(() => appLocaleOverride('fr'), throwsFormatException);
+  });
+
   test('onboarding copy matches the approved four-language wording', () {
     final expected = <String, List<String>>{
       'Continue with Kakao': [
