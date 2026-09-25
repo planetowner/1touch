@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
@@ -56,6 +57,11 @@ void main() {
             final jersey = find.byKey(const ValueKey('injury-jersey-1001'));
             final playerName = find.text('Injured Player');
             expect(find.text('10'), findsOneWidget);
+            expect(
+              tester.widget<Text>(jersey).style,
+              Heading5.style.copyWith(fontWeight: FontWeight.w400),
+            );
+            expect(tester.widget<Text>(playerName).style, Heading5.style);
             expect(
               tester.getTopLeft(jersey).dx,
               lessThan(tester.getTopLeft(playerName).dx),

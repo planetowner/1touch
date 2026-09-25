@@ -153,7 +153,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
         children: [
           CircleAvatar(
             radius: 37,
-            backgroundColor: appColors.cardBackground,
+            backgroundColor: appColors.subtleBackground,
             child: ClipOval(
               child: player.playerImage == null || player.playerImage!.isEmpty
                   ? Image.asset(
@@ -187,14 +187,16 @@ class _InjuryStatusState extends State<InjuryStatus> {
                     Text(
                       player.jerseyNumber?.toString() ?? '#',
                       key: ValueKey('injury-jersey-${player.playerId}'),
-                      style: Body1_b.style,
+                      style: Heading5.style.copyWith(
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         playerNameLabel(
                             context, player.playerId, player.playerName),
-                        style: Body1_b.style,
+                        style: Heading5.style,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
