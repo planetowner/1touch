@@ -15,7 +15,7 @@ class TeamPlayerInjury {
   final String typeName;
 
   /// 공급자가 제공한 부상 시작일과 종료일이에요.
-  /// 종료일까지는 복귀 예정 시점을 표시하고, 지난 부상은 화면에서 제외해요.
+  /// 종료일이 없거나 지났다면 복귀 시점은 미정이며, 명단은 API 응답을 따라요.
   final DateTime? startDate;
   final DateTime? endDate;
 

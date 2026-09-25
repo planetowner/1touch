@@ -2,7 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 String injuryReturnLabel(int? daysUntilReturn, {required Locale locale}) {
-  if (daysUntilReturn == null) {
+  // 현재 부상 명단에 남아 있다면 지난 종료일로 회복을 판단하지 않아요.
+  if (daysUntilReturn == null || daysUntilReturn < 0) {
     return translateMessage(locale, 'No return date yet');
   }
   if (daysUntilReturn == 0) {

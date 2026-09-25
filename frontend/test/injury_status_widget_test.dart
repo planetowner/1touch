@@ -149,7 +149,7 @@ void main() {
   }
 
   testWidgets(
-      'hides expired injuries and players with no remaining injuries',
+      'keeps reported injuries and players after their end dates pass',
       (tester) => withClock(Clock.fixed(DateTime(2026, 9, 24)), () async {
             final expired = TeamPlayerInjury(
               sidelineId: 6001,
@@ -193,17 +193,18 @@ void main() {
                 .pumpWidget(buildSubject(teamId: 83, repository: repository));
             await tester.pumpAndSettle();
 
-            expect(find.text('Expired Player'), findsNothing);
-            expect(find.byKey(const ValueKey('injury-6001')), findsNothing);
+            expect(find.text('Expired Player'), findsOneWidget);
+            expect(find.byKey(const ValueKey('injury-6001')), findsNWidgets(2));
             expect(find.text('Still Listed'), findsOneWidget);
             expect(find.text('Knock · Expected back today'), findsOneWidget);
             expect(find.text('Hamstring injury · No return date yet'),
-                findsOneWidget);
+                findsNWidgets(3));
             expect(report.players, hasLength(2));
             expect(report.players.last.injuries, hasLength(3));
           }));
 
-  testWidgets('shows an empty state after the last injury end date passes',
+  testWidgets(
+      'removes players only when a refreshed report no longer lists them',
       (tester) async {
     var today = DateTime(2026, 9, 24);
     await withClock(Clock(() => today), () async {
@@ -230,6 +231,17 @@ void main() {
 
       today = DateTime(2026, 9, 25);
       await tester.pumpWidget(buildSubject(teamId: 83, repository: repository));
+      await tester.pumpAndSettle();
+      expect(find.text('Injured Player'), findsOneWidget);
+      expect(
+          find.text('Hamstring injury · No return date yet'), findsOneWidget);
+      expect(find.byKey(const ValueKey('injury-empty')), findsNothing);
+
+      final refreshedRepository = _TestTeamInjuryRepository((teamId) async =>
+          TeamInjuryReport(teamId: teamId, seasonId: 25659, players: const []));
+      addTearDown(refreshedRepository.dispose);
+      await tester.pumpWidget(
+          buildSubject(teamId: 83, repository: refreshedRepository));
       await tester.pumpAndSettle();
       expect(find.text('Injured Player'), findsNothing);
       expect(find.byKey(const ValueKey('injury-empty')), findsOneWidget);

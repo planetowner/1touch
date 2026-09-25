@@ -99,16 +99,8 @@ class _InjuryStatusState extends State<InjuryStatus> {
       );
     }
     final today = time.clock.now().toLocal();
-    // 캐시의 원본은 유지하고, 종료일이 지난 부상과 남은 부상이 없는 선수만 숨겨요.
-    final players = (_report?.players ?? const <InjuredTeamPlayer>[])
-        .map((player) => (
-              player: player,
-              injuries: player.injuries
-                  .where((injury) => (injury.daysUntilReturn(today) ?? 0) >= 0)
-                  .toList(),
-            ))
-        .where((entry) => entry.injuries.isNotEmpty)
-        .toList();
+    // 종료일이 지나도 공급자의 현재 부상 명단에 남아 있으면 계속 보여줘요.
+    final players = _report?.players ?? const <InjuredTeamPlayer>[];
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
@@ -145,15 +137,14 @@ class _InjuryStatusState extends State<InjuryStatus> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...players.map((entry) => _buildInjuryTile(
-                            entry.player, entry.injuries, today)),
+                        ...players
+                            .map((player) => _buildInjuryTile(player, today)),
                       ],
                     ),
     );
   }
 
-  Widget _buildInjuryTile(InjuredTeamPlayer player,
-      List<TeamPlayerInjury> injuries, DateTime today) {
+  Widget _buildInjuryTile(InjuredTeamPlayer player, DateTime today) {
     final appColors = AppColors.of(context);
     final content = Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -211,7 +202,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                ...injuries.map(
+                ...player.injuries.map(
                   (injury) => Text(
                     _injuryLabel(injury, today),
                     key: ValueKey('injury-${injury.sidelineId}'),
