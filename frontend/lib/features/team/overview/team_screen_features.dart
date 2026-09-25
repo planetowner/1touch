@@ -8,6 +8,7 @@ import 'package:onetouch/l10n/injury_labels.dart';
 import 'package:onetouch/l10n/injury_type_names.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/player_navigation.dart';
+import 'package:onetouch/core/app_segmented_toggle.dart';
 import "package:onetouch/features/helper.dart";
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";

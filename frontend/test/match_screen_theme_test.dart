@@ -88,6 +88,10 @@ void main() {
   Color decorationColor(WidgetTester tester, Key key) =>
       boxDecoration(tester, key).color!;
 
+  Color decoratedBoxColor(WidgetTester tester, Key key) =>
+      (tester.widget<DecoratedBox>(find.byKey(key)).decoration as BoxDecoration)
+          .color!;
+
   testWidgets('upcoming match uses responsive light surfaces', (tester) async {
     await pumpMatch(
       tester,
@@ -103,16 +107,24 @@ void main() {
     final backIcon = tester.widget<Icon>(find.byIcon(Icons.arrow_back_ios_new));
 
     expect(scaffold.backgroundColor, app_style.AppPalette.lightModeDarkGrey);
-    expect(tester.widget<SliverAppBar>(find.byType(SliverAppBar)).backgroundColor,
+    expect(
+        tester.widget<SliverAppBar>(find.byType(SliverAppBar)).backgroundColor,
         scaffold.backgroundColor);
     expect(backIcon.color, app_style.AppPalette.black);
     expect(
       decorationColor(tester, const ValueKey('match-tab-0')),
-      app_style.AppPalette.white,
+      Colors.transparent,
     );
     expect(
       decorationColor(tester, const ValueKey('match-tab-1')),
-      app_style.AppPalette.lightGreyBox,
+      Colors.transparent,
+    );
+    expect(
+      decoratedBoxColor(
+        tester,
+        const ValueKey('match-tab-indicator-surface'),
+      ),
+      app_style.AppPalette.lightModeDarkGrey,
     );
     expect(
       tester.widget<Text>(find.text('MATCH PREVIEW')).style!.color,
@@ -165,11 +177,11 @@ void main() {
     await tester.pump();
     expect(
       decorationColor(tester, const ValueKey('match-tab-0')),
-      app_style.AppPalette.lightGreyBox,
+      Colors.transparent,
     );
     expect(
       decorationColor(tester, const ValueKey('match-tab-1')),
-      app_style.AppPalette.white,
+      Colors.transparent,
     );
     expect(
       decorationColor(tester, const ValueKey('match-h2h-wdl-card')),
@@ -235,7 +247,8 @@ void main() {
       find.byKey(const ValueKey('match-screen-scaffold')),
     );
     expect(scaffold.backgroundColor, app_style.AppPalette.black);
-    expect(tester.widget<SliverAppBar>(find.byType(SliverAppBar)).backgroundColor,
+    expect(
+        tester.widget<SliverAppBar>(find.byType(SliverAppBar)).backgroundColor,
         scaffold.backgroundColor);
     expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
