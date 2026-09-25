@@ -139,6 +139,33 @@ void main() {
     );
   });
 
+  testWidgets('opens the following teams editor from the profile icon',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      locale: const Locale('ko'),
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      home: Profile(
+        repository: _StaticCurrentUserRepository(),
+        followingTeamsRepository: _StaticFollowingTeamsRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final editIcon = find.byIcon(Icons.border_color).first;
+    await tester.ensureVisible(editIcon);
+    await tester.pumpAndSettle();
+    await tester.tap(editIcon);
+    await tester.pumpAndSettle();
+
+    final sheet = find.byKey(const ValueKey('profile-team-edit-sheet'));
+    expect(sheet, findsOneWidget);
+    expect(find.descendant(of: sheet, matching: find.text('API Barcelona')),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('opens the selected following team card', (tester) async {
     final router = GoRouter(
       initialLocation: '/profile',
