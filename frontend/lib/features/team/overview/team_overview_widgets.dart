@@ -12,6 +12,7 @@ class TransferTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final playerImage = transfer.playerImage;
     final transferValue = _transferValue(context, transfer);
+    final playerName = _playerName(context, transfer);
     final isLoan = (transfer.displayType ?? '').contains(tr(context, 'Loan'));
     final appColors = AppColors.of(context);
 
@@ -58,33 +59,14 @@ class TransferTile extends StatelessWidget {
                   builder: (context, constraints) => Row(
                     children: [
                       Expanded(
-                        child: Row(
-                          children: [
-                            if (transfer.jerseyNumber != null) ...[
-                              Text(
-                                '${transfer.jerseyNumber}',
-                                key: ValueKey(
-                                    'transfer-jersey-${transfer.transferId}'),
-                                style: Body1.style,
-                              ),
-                              const SizedBox(width: 12),
-                            ],
-                            Expanded(
-                              child: Text(
-                                playerNameLabel(
-                                    context,
-                                    transfer.playerId,
-                                    transfer.playerName ??
-                                        tr(context, 'Unknown Player')),
-                                key: ValueKey(
-                                    'transfer-player-name-${transfer.transferId}'),
-                                style: Body1_b.style,
-                                maxLines: 1,
-                                softWrap: false,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          playerName,
+                          key: ValueKey(
+                              'transfer-player-name-${transfer.transferId}'),
+                          style: Body1_b.style,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -171,14 +153,29 @@ class TransferTile extends StatelessWidget {
     return Semantics(
       button: true,
       label: tr(context, 'Open {name}', {
-        'name': playerNameLabel(
-            context, transfer.playerId, transfer.playerName ?? 'player')
+        'name': playerName,
       }),
       child: InkWell(
         key: ValueKey('transfer-${transfer.transferId}'),
         onTap: () => openPlayerPage(context, transfer.playerId.toString()),
         child: content,
       ),
+    );
+  }
+
+  static String _playerName(BuildContext context, TransferEntry transfer) {
+    final localized = playerNameLabel(
+      context,
+      transfer.playerId,
+      transfer.playerName ?? tr(context, 'Unknown Player'),
+    );
+
+    // Transfers do not provide a jersey number. Some localized name catalog
+    // entries may still contain a legacy jersey-number prefix, so keep that
+    // transport artifact out of this screen without changing shared labels.
+    return localized.replaceFirst(
+      RegExp(r'^\s*#?\d{1,3}(?:번)?(?:\s*[·•.()\-]\s*|\s+)'),
+      '',
     );
   }
 
