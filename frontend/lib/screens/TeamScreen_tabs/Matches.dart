@@ -44,7 +44,6 @@ class _MatchesTabState extends State<MatchesTab> {
 
   int _visibleHeaderCount = 1;
   bool _isAtLastUpcomingMatch = false;
-  bool _applyingHeaderCorrection = false;
   double _trailingScrollExtent = 24;
   bool _isLoading = true;
   Object? _loadError;
@@ -167,9 +166,7 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   void _syncHeaderStack() {
-    if (!mounted ||
-        _applyingHeaderCorrection ||
-        !_scrollController.hasClients) {
+    if (!mounted || !_scrollController.hasClients) {
       return;
     }
 
@@ -210,7 +207,6 @@ class _MatchesTabState extends State<MatchesTab> {
     final trailingExtentChanged =
         nextTrailingScrollExtent != _trailingScrollExtent;
     if (headerCountDelta != 0 || lastUpcomingChanged || trailingExtentChanged) {
-      final scrollOffsetBeforeLayout = _scrollController.offset;
       setState(() {
         _visibleHeaderCount = nextHeaderCount;
         _isAtLastUpcomingMatch = isAtLastUpcomingMatch;
@@ -218,17 +214,6 @@ class _MatchesTabState extends State<MatchesTab> {
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_scrollController.hasClients) return;
-
-        if (headerCountDelta != 0) {
-          final correction =
-              headerCountDelta * _MatchSectionHeader.sectionHeight;
-          final correctedOffset = (scrollOffsetBeforeLayout + correction).clamp(
-              _scrollController.position.minScrollExtent,
-              _scrollController.position.maxScrollExtent);
-          _applyingHeaderCorrection = true;
-          _scrollController.jumpTo(correctedOffset);
-          _applyingHeaderCorrection = false;
-        }
         _syncHeaderStack();
       });
     }
@@ -311,11 +296,18 @@ class _MatchesTabState extends State<MatchesTab> {
           key: const ValueKey('matches-header-stack'),
           children: [
             const SizedBox(height: 8),
-            for (final section in sections.take(visibleHeaderCount))
-              SizedBox(
-                key: ValueKey('matches-${section.type.name}-header'),
-                height: _MatchSectionHeader.sectionHeight,
-                child: _MatchSectionHeader(title: section.title),
+            SizedBox(
+              key: ValueKey('matches-${sections.first.type.name}-header'),
+              height: _MatchSectionHeader.sectionHeight,
+              child: _MatchSectionHeader(title: sections.first.title),
+            ),
+            for (var index = 1; index < sections.length; index++)
+              _AnimatedStickyHeaderSlot(
+                key: ValueKey(
+                  'matches-${sections[index].type.name}-header-transition',
+                ),
+                visible: index < visibleHeaderCount,
+                section: sections[index],
               ),
             const SizedBox(height: _MatchSectionHeader.cardSpacing),
           ],
@@ -635,6 +627,50 @@ class _MatchSectionHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AnimatedStickyHeaderSlot extends StatelessWidget {
+  final bool visible;
+  final _MatchSectionData section;
+
+  const _AnimatedStickyHeaderSlot({
+    super.key,
+    required this.visible,
+    required this.section,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.fastOutSlowIn,
+      switchOutCurve: Curves.fastOutSlowIn,
+      transitionBuilder: (child, animation) {
+        final opacity = Tween(begin: 0.72, end: 1.0).animate(animation);
+        final offset = Tween(
+          begin: const Offset(0, 4 / _MatchSectionHeader.sectionHeight),
+          end: Offset.zero,
+        ).animate(animation);
+        return SizeTransition(
+          sizeFactor: animation,
+          axisAlignment: -1,
+          child: FadeTransition(
+            opacity: opacity,
+            child: SlideTransition(position: offset, child: child),
+          ),
+        );
+      },
+      child: visible
+          ? SizedBox(
+              key: ValueKey('matches-${section.type.name}-header'),
+              height: _MatchSectionHeader.sectionHeight,
+              child: _MatchSectionHeader(title: section.title),
+            )
+          : SizedBox(
+              key: ValueKey('matches-${section.type.name}-header-hidden'),
+            ),
     );
   }
 }
