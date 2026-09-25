@@ -7,18 +7,7 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-
-enum Category { general, analysis, newsAndInsights }
-
-extension CategoryLabel on Category {
-  String get label {
-    return switch (this) {
-      Category.general => 'General',
-      Category.analysis => 'Analysis',
-      Category.newsAndInsights => 'News & Insights',
-    };
-  }
-}
+import 'package:onetouch/models/post.dart';
 
 class PostComposerFields extends StatelessWidget {
   const PostComposerFields({
@@ -32,11 +21,11 @@ class PostComposerFields extends StatelessWidget {
     required this.onRemoveMedia,
   });
 
-  final Category selectedCategory;
+  final PostCategory selectedCategory;
   final TextEditingController titleController;
   final TextEditingController bodyController;
   final List<XFile> mediaFiles;
-  final ValueChanged<Category> onCategoryChanged;
+  final ValueChanged<PostCategory> onCategoryChanged;
   final VoidCallback onPickMedia;
   final ValueChanged<int> onRemoveMedia;
 
@@ -73,7 +62,7 @@ class PostComposerFields extends StatelessWidget {
               curve: Curves.easeOut,
               width: categoryFilterWidth,
               height: AppDropdownTokens.height,
-              child: PopupMenuButton<Category>(
+              child: PopupMenuButton<PostCategory>(
                 initialValue: selectedCategory,
                 position: PopupMenuPosition.under,
                 offset: const Offset(0, 4),
@@ -87,9 +76,9 @@ class PostComposerFields extends StatelessWidget {
                   maxWidth: 220,
                 ),
                 onSelected: onCategoryChanged,
-                itemBuilder: (context) => Category.values
+                itemBuilder: (context) => PostCategory.values
                     .map(
-                      (category) => PopupMenuItem<Category>(
+                      (category) => PopupMenuItem<PostCategory>(
                         value: category,
                         child: Text(
                           tr(context, category.label).toUpperCase(),

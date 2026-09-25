@@ -12,9 +12,6 @@ import 'package:onetouch/data/posts/post_repository_provider.dart'
 import 'package:onetouch/features/community/post_attachment_publisher.dart';
 import 'package:onetouch/features/community/post_composer_widgets.dart';
 import 'package:onetouch/models/post.dart';
-
-export 'package:onetouch/features/community/post_composer_widgets.dart'
-    show Category;
 import 'package:onetouch/l10n/app_localizations.dart';
 
 typedef PostMediaPicker = Future<List<XFile>> Function();
@@ -38,7 +35,7 @@ class AddPost extends StatefulWidget {
 }
 
 class _AddPostState extends State<AddPost> {
-  Category _selectedCategory = Category.general;
+  PostCategory _selectedCategory = PostCategory.general;
   bool _isSubmitting = false;
 
   late ScrollController _scrollController;
@@ -93,17 +90,6 @@ class _AddPostState extends State<AddPost> {
     }
   }
 
-  PostCategory _mapCategory() {
-    switch (_selectedCategory) {
-      case Category.analysis:
-        return PostCategory.analysis;
-      case Category.newsAndInsights:
-        return PostCategory.news;
-      default:
-        return PostCategory.general;
-    }
-  }
-
   Future<void> _submitPost() async {
     if (_isSubmitting) return;
 
@@ -126,7 +112,7 @@ class _AddPostState extends State<AddPost> {
       ).publish(
         post: CreatePostInput(
           teamId: widget.teamId ?? FavoriteTeam.id.value,
-          category: _mapCategory(),
+          category: _selectedCategory,
           title: title,
           body: body,
         ),

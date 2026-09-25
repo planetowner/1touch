@@ -250,7 +250,7 @@ const appMessages = <String, MessageTranslations>{
   "About": (ko: "앱 정보", ja: "アプリについて", zh: "关于"),
   "Contact": (ko: "문의", ja: "お問い合わせ", zh: "联系我们"),
   "Contact Us": (ko: "문의하기", ja: "お問い合わせ", zh: "联系我们"),
-  "General": (ko: "일반", ja: "一般", zh: "通用"),
+  "General": (ko: "자유", ja: "一般", zh: "通用"),
   "Legal": (ko: "법적 고지", ja: "法的情報", zh: "法律信息"),
   "Preferences": (ko: "환경 설정", ja: "環境設定", zh: "偏好设置"),
   "Personal Info": (ko: "개인 정보", ja: "個人情報", zh: "个人信息"),
@@ -458,7 +458,8 @@ const appMessages = <String, MessageTranslations>{
   "ANALYSIS": (ko: "분석", ja: "分析", zh: "分析"),
   "News": (ko: "뉴스", ja: "ニュース", zh: "新闻"),
   "NEWS": (ko: "뉴스", ja: "ニュース", zh: "新闻"),
-  "News & Insights": (ko: "뉴스와 인사이트", ja: "ニュースとインサイト", zh: "新闻与洞察"),
+  "News & Insights": (ko: "뉴스·정보", ja: "ニュースとインサイト", zh: "新闻与洞察"),
+  "Fan Art": (ko: "팬아트", ja: "ファンアート", zh: "同人创作"),
   "HIGHLIGHTS": (ko: "하이라이트", ja: "ハイライト", zh: "集锦"),
   "HIGHLIGHTS UNAVAILABLE": (
     ko: "하이라이트를 볼 수 없어요",

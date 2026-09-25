@@ -1,7 +1,20 @@
 // GET /v1/posts item contract:
 // post_id | team_id | user_id | category | title | body | media_url | created_at
 
-enum PostCategory { general, analysis, news }
+// 탭과 글쓰기에서 같은 분류 순서와 이름을 사용해요. enum 이름은 API 값이에요.
+enum PostCategory {
+  general('General'),
+  analysis('Analysis'),
+  news('News & Insights'),
+  fanart('Fan Art');
+
+  const PostCategory(this.label);
+
+  final String label;
+
+  static PostCategory? tryParse(String raw) =>
+      values.where((category) => category.name == raw).firstOrNull;
+}
 
 class PostAttachment {
   final int attachmentId;
@@ -63,7 +76,8 @@ class Post {
       postId: json['post_id'] as int,
       teamId: json['team_id'] as int,
       userId: json['user_id'] as int?,
-      category: _parseCategory(json['category'] as String? ?? 'general'),
+      category: PostCategory.tryParse(json['category'] as String? ?? '') ??
+          PostCategory.general,
       title: json['title'] as String,
       body: json['body'] as String,
       mediaUrl: json['media_url'] as String?,
@@ -76,16 +90,5 @@ class Post {
       commentCount: json['comment_count'] as int? ?? 0,
       liked: json['liked'] as bool? ?? false,
     );
-  }
-
-  static PostCategory _parseCategory(String raw) {
-    switch (raw) {
-      case 'analysis':
-        return PostCategory.analysis;
-      case 'news':
-        return PostCategory.news;
-      default:
-        return PostCategory.general;
-    }
   }
 }
