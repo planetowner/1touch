@@ -21,6 +21,10 @@ import 'TeamScreen_tabs/index.dart';
 import '../models/team_overview.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
+const double _teamAppBarBaseToolbarHeight = 80;
+const double _teamAppBarLogoSize = 48;
+const double _teamAppBarMinimumContentTop = 47;
+
 class TeamScreen extends StatefulWidget {
   final int teamId;
   final TeamAttributeRepository? teamAttributeRepository;
@@ -228,6 +232,15 @@ class _TeamScreenState extends State<TeamScreen>
     final displayedTeamId = team!['id'] as int;
     final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     final appBarForeground = colors.onSurface;
+    final topInset = MediaQuery.paddingOf(context).top;
+    const baseToolbarVerticalPadding =
+        (_teamAppBarBaseToolbarHeight - _teamAppBarLogoSize) / 2;
+    final currentContentTop = topInset + baseToolbarVerticalPadding;
+    final additionalTopSpace = currentContentTop < _teamAppBarMinimumContentTop
+        ? _teamAppBarMinimumContentTop - currentContentTop
+        : 0.0;
+    final toolbarHeight = _teamAppBarBaseToolbarHeight + additionalTopSpace;
+    final toolbarContentOffset = additionalTopSpace / 2;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -252,101 +265,108 @@ class _TeamScreenState extends State<TeamScreen>
                 floating: true,
                 snap: true,
                 pinned: false,
-                toolbarHeight: 80,
+                toolbarHeight: toolbarHeight,
                 flexibleSpace: ColoredBox(color: pageBackground),
-                title: Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: isTeamPageSupported(displayedTeamId)
-                            ? () => openTeamPage(context, displayedTeamId)
-                            : null,
-                        child: SizedBox.square(
-                          key: const ValueKey('team-app-bar-logo'),
-                          dimension: 48,
-                          child: Image.network(
-                            team?['logo'],
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => teamLogoFallback(
-                              team!['id'] as int,
-                              size: 48,
+                title: Transform.translate(
+                  offset: Offset(0, toolbarContentOffset),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: isTeamPageSupported(displayedTeamId)
+                              ? () => openTeamPage(context, displayedTeamId)
+                              : null,
+                          child: SizedBox.square(
+                            key: const ValueKey('team-app-bar-logo'),
+                            dimension: _teamAppBarLogoSize,
+                            child: Image.network(
+                              team?['logo'],
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => teamLogoFallback(
+                                team!['id'] as int,
+                                size: 48,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              // '1. Fußballclub Heidenheim 1846 e.V',
-                              teamNameLabel(context, widget.teamId,
-                                  team?['name'] as String? ?? ''),
-                              style: Heading4.style
-                                  .copyWith(color: appBarForeground),
-                              maxLines: 1, // Ensure it stays on one line
-                              overflow: TextOverflow
-                                  .ellipsis, // Now this will work correctly
-                            ),
-                            if (positionLabel.isNotEmpty)
-                              Row(
-                                key: const ValueKey('team-context-label'),
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      positionLabel,
-                                      style: Body2.style
-                                          .copyWith(color: appBarForeground),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  if (team!['rankChange'] case final int delta
-                                      when delta != 0) ...[
-                                    Icon(
-                                      delta > 0
-                                          ? Icons.arrow_drop_up
-                                          : Icons.arrow_drop_down,
-                                      key: const ValueKey(
-                                        'team-rank-change-icon',
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                // '1. Fußballclub Heidenheim 1846 e.V',
+                                teamNameLabel(context, widget.teamId,
+                                    team?['name'] as String? ?? ''),
+                                style: Heading4.style
+                                    .copyWith(color: appBarForeground),
+                                maxLines: 1, // Ensure it stays on one line
+                                overflow: TextOverflow
+                                    .ellipsis, // Now this will work correctly
+                              ),
+                              if (positionLabel.isNotEmpty)
+                                Row(
+                                  key: const ValueKey('team-context-label'),
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        positionLabel,
+                                        style: Body2.style
+                                            .copyWith(color: appBarForeground),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      size: 16,
-                                      color:
-                                          delta > 0 ? Colors.green : Colors.red,
                                     ),
-                                    Text(
-                                      '${delta.abs()}',
-                                      key: const ValueKey(
-                                        'team-rank-change-value',
-                                      ),
-                                      style: Eyebrow.style.copyWith(
+                                    if (team!['rankChange'] case final int delta
+                                        when delta != 0) ...[
+                                      Icon(
+                                        delta > 0
+                                            ? Icons.arrow_drop_up
+                                            : Icons.arrow_drop_down,
+                                        key: const ValueKey(
+                                          'team-rank-change-icon',
+                                        ),
+                                        size: 16,
                                         color: delta > 0
                                             ? Colors.green
                                             : Colors.red,
                                       ),
-                                    ),
+                                      Text(
+                                        '${delta.abs()}',
+                                        key: const ValueKey(
+                                          'team-rank-change-value',
+                                        ),
+                                        style: Eyebrow.style.copyWith(
+                                          color: delta > 0
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      ),
+                                    ],
                                   ],
-                                ],
-                              ),
-                          ],
-                        ),
-                      )
-                    ],
+                                ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: IconButton(
-                      key: const Key('team-search-button'),
-                      onPressed: () => context.push('/search'),
-                      icon: Icon(
-                        Icons.search,
-                        size: 32,
-                        color: appBarForeground,
+                  Transform.translate(
+                    offset: Offset(0, toolbarContentOffset),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: IconButton(
+                        key: const Key('team-search-button'),
+                        onPressed: () => context.push('/search'),
+                        icon: Icon(
+                          Icons.search,
+                          size: 32,
+                          color: appBarForeground,
+                        ),
                       ),
                     ),
                   ),
