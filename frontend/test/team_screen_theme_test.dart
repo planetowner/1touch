@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/features/StandingFeatures.dart';
@@ -15,6 +16,7 @@ import 'package:onetouch/data/competitions/mock/season_catalog.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/screens/TeamScreen.dart';
 
 import 'support/test_team_overview_repository.dart';
@@ -640,6 +642,105 @@ void main() {
 
     expect(nextMatch.backgroundColor, app_style.AppPalette.lightGrey);
     expect(lastMatch.backgroundColor, app_style.AppPalette.darkGrey);
+    final nextMatchTeamNames = tester
+        .widgetList<Text>(
+          find.descendant(
+            of: find.byType(MatchCard),
+            matching: find.byType(Text),
+          ),
+        )
+        .where((text) => text.style == Body1.style)
+        .toList();
+    expect(nextMatchTeamNames, hasLength(2));
+    expect(
+      nextMatchTeamNames.map((text) => text.maxLines),
+      everyElement(1),
+    );
+    expect(
+      nextMatchTeamNames.map((text) => text.overflow),
+      everyElement(TextOverflow.ellipsis),
+    );
+    expect(
+      find.descendant(
+        of: find.byType(MatchCard),
+        matching: find.byType(FittedBox),
+      ),
+      findsNothing,
+    );
+    expect(
+      lastMatch.date,
+      fixtureDateLabel(
+        teamOverviewRepository.cachedForTeam(9)!.lastMatch!.kickoff,
+        locale: const Locale('en'),
+      ),
+    );
+    expect(lastMatch.date.split('\n'), hasLength(2));
+    final matchDateLines = tester.widgetList<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('last-match-date-time')),
+        matching: find.byType(Text),
+      ),
+    );
+    expect(matchDateLines, hasLength(2));
+    expect(
+      matchDateLines.map((line) => line.data),
+      orderedEquals(lastMatch.date.split('\n')),
+    );
+    expect(
+      matchDateLines.map((line) => line.style),
+      everyElement(Eyebrow.style),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('last-match-date-time')),
+        matching: find.byType(FittedBox),
+      ),
+      findsNothing,
+    );
+    expect(
+      matchDateLines.map((line) => line.overflow),
+      everyElement(TextOverflow.ellipsis),
+    );
+    final homeScoreRect = tester.getRect(
+      find.byKey(const ValueKey('last-match-home-score')),
+    );
+    final dateTimeRect = tester.getRect(
+      find.byKey(const ValueKey('last-match-date-time')),
+    );
+    final awayScoreRect = tester.getRect(
+      find.byKey(const ValueKey('last-match-away-score')),
+    );
+    final leadingGap = dateTimeRect.left - homeScoreRect.right;
+    final trailingGap = awayScoreRect.left - dateTimeRect.right;
+    expect(leadingGap, greaterThanOrEqualTo(30));
+    expect(trailingGap, greaterThanOrEqualTo(30));
+    expect(leadingGap, closeTo(trailingGap, 0.1));
+    final homeScoreBox = tester.widget<Container>(
+      find.descendant(
+        of: find.byKey(const ValueKey('last-match-home-score')),
+        matching: find.byType(Container),
+      ),
+    );
+    final homeScoreDecoration = homeScoreBox.decoration! as ShapeDecoration;
+    final homeScoreText = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('last-match-home-score')),
+        matching: find.text('1'),
+      ),
+    );
+    expect(
+      homeScoreBox.padding,
+      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    );
+    expect(homeScoreDecoration.color, const Color(0xFF090A0A));
+    expect(
+      (homeScoreDecoration.shape as RoundedRectangleBorder).borderRadius,
+      BorderRadius.circular(4),
+    );
+    expect(homeScoreText.style?.fontSize, 24);
+    expect(homeScoreText.style?.fontWeight, FontWeight.w700);
+    expect(homeScoreText.style?.height, 1.2);
+    expect(homeScoreText.style?.color, Colors.white);
     expect(
       (fixturesCard.decoration as BoxDecoration).color,
       app_style.AppPalette.darkGrey,
