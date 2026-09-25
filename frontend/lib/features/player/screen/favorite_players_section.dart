@@ -64,7 +64,12 @@ class FavoritePlayersSection extends StatelessWidget {
                                   width: 74,
                                   height: 74,
                                   child: ClipOval(
-                                      child: PlayerImage(player: player)),
+                                    child: ColoredBox(
+                                      color: AppColors.of(context)
+                                          .subtleBackground,
+                                      child: PlayerImage(player: player),
+                                    ),
+                                  ),
                                 ),
                                 Positioned(
                                   left: 0,

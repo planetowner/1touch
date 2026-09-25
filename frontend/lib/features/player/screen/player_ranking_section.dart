@@ -40,7 +40,10 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
                       width: 56,
                       height: 56,
                       child: ClipOval(
-                        child: PlayerImage(player: widget.players[i]),
+                        child: ColoredBox(
+                          color: AppColors.of(context).subtleBackground,
+                          child: PlayerImage(player: widget.players[i]),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -193,7 +196,12 @@ class FullRankingPopup extends StatelessWidget {
                           SizedBox(
                             width: 56,
                             height: 56,
-                            child: ClipOval(child: PlayerImage(player: player)),
+                            child: ClipOval(
+                              child: ColoredBox(
+                                color: AppColors.of(context).subtleBackground,
+                                child: PlayerImage(player: player),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
