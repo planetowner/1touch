@@ -98,7 +98,6 @@ class _TransferState extends State<Transfer> {
         key: ValueKey('transfer-unavailable'),
       );
     }
-    final appColors = AppColors.of(context);
     final incoming = _window?.incoming ?? const <TransferEntry>[];
     final outgoing = _window?.outgoing ?? const <TransferEntry>[];
     final list = showIn ? incoming : outgoing;
@@ -110,51 +109,23 @@ class _TransferState extends State<Transfer> {
         Padding(
           padding:
               const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  key: const ValueKey('transfer-in-toggle'),
-                  onTap: () => setState(() => showIn = true),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: showIn
-                          ? appColors.subtleBackground
-                          : Colors.transparent,
-                      border: Border.all(color: appColors.subtleBackground),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                        bottomLeft: Radius.circular(8),
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(tr(context, "IN"), style: Body2_b.style),
-                  ),
-                ),
+          child: AppSegmentedToggle<bool>(
+            containerKey: const ValueKey('transfer-toggle'),
+            indicatorSurfaceKey: const ValueKey('transfer-toggle-indicator'),
+            value: showIn,
+            options: [
+              AppSegmentedToggleOption(
+                value: true,
+                label: tr(context, 'IN'),
+                contentKey: const ValueKey('transfer-in-toggle'),
               ),
-              Expanded(
-                child: GestureDetector(
-                  key: const ValueKey('transfer-out-toggle'),
-                  onTap: () => setState(() => showIn = false),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: !showIn
-                          ? appColors.subtleBackground
-                          : Colors.transparent,
-                      border: Border.all(color: appColors.subtleBackground),
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(8),
-                        bottomRight: Radius.circular(8),
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(tr(context, "OUT"), style: Body2_b.style),
-                  ),
-                ),
+              AppSegmentedToggleOption(
+                value: false,
+                label: tr(context, 'OUT'),
+                contentKey: const ValueKey('transfer-out-toggle'),
               ),
             ],
+            onChanged: (value) => setState(() => showIn = value),
           ),
         ),
 

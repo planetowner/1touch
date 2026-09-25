@@ -21,6 +21,7 @@ class StandingTab extends StatefulWidget {
   final XgStandingRepository? xgStandingRepository;
   final int? requestedCompetitionId;
   final int selectionRequestId;
+  final ValueChanged<bool>? onBracketInteractionChanged;
 
   const StandingTab({
     super.key,
@@ -29,6 +30,7 @@ class StandingTab extends StatefulWidget {
     this.xgStandingRepository,
     this.requestedCompetitionId,
     this.selectionRequestId = 0,
+    this.onBracketInteractionChanged,
   });
 
   @override
@@ -42,6 +44,7 @@ class _StandingTabState extends State<StandingTab> {
   int selectedLeagueId = 8;
   int selectedSeasonId = 23614;
   bool isScrolledToEnd = false;
+  bool _isBracketInteracting = false;
 
   final ScrollController _horizontalScrollController = ScrollController();
 
@@ -407,6 +410,8 @@ class _StandingTabState extends State<StandingTab> {
     }
 
     return CustomScrollView(
+      physics:
+          _isBracketInteracting ? const NeverScrollableScrollPhysics() : null,
       slivers: [
         SliverList(
           delegate: SliverChildListDelegate(
@@ -563,8 +568,15 @@ class _StandingTabState extends State<StandingTab> {
           competitionId: selectedLeagueId,
           seasonId: selectedSeasonId,
           currentTeamId: currentTeamId,
+          onInteractionChanged: _handleBracketInteractionChanged,
         );
     }
+  }
+
+  void _handleBracketInteractionChanged(bool isInteracting) {
+    if (_isBracketInteracting == isInteracting) return;
+    setState(() => _isBracketInteracting = isInteracting);
+    widget.onBracketInteractionChanged?.call(isInteracting);
   }
 
   Widget _buildLeagueDropdown() {

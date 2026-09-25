@@ -3,6 +3,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/features/helper.dart';
 

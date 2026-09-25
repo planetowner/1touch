@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
+import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
 import 'package:onetouch/data/match_analysis/match_analysis_repository_provider.dart';
@@ -568,72 +569,24 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }
 
   Widget _buildTeamToggle() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final foreground = Theme.of(context).colorScheme.onSurface;
-    final selectedSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
-    final unselectedSurface =
-        isDark ? AppPalette.black : AppPalette.lightModeDarkGrey;
-    final selectedForeground = isDark ? AppPalette.white : AppPalette.black;
-
-    return Row(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => showHome = true),
-            child: Container(
-              key: const ValueKey('match-analysis-home-toggle'),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: showHome ? selectedSurface : unselectedSurface,
-                border: Border.all(
-                  color: isDark
-                      ? AppPalette.lightGrey
-                      : AppColors.of(context).divider,
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  bottomLeft: Radius.circular(8),
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _homeCode,
-                style: Body2_b.style.copyWith(
-                  color: showHome ? selectedForeground : foreground,
-                ),
-              ),
-            ),
-          ),
+    return AppSegmentedToggle<bool>(
+      containerKey: const ValueKey('match-analysis-team-toggle'),
+      indicatorSurfaceKey:
+          const ValueKey('match-analysis-team-toggle-indicator'),
+      value: showHome,
+      options: [
+        AppSegmentedToggleOption(
+          value: true,
+          label: _homeCode,
+          contentKey: const ValueKey('match-analysis-home-toggle'),
         ),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => showHome = false),
-            child: Container(
-              key: const ValueKey('match-analysis-away-toggle'),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: !showHome ? selectedSurface : unselectedSurface,
-                border: Border.all(
-                  color: isDark
-                      ? AppPalette.lightGrey
-                      : AppColors.of(context).divider,
-                ),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(8),
-                  bottomRight: Radius.circular(8),
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _awayCode,
-                style: Body2_b.style.copyWith(
-                  color: !showHome ? selectedForeground : foreground,
-                ),
-              ),
-            ),
-          ),
+        AppSegmentedToggleOption(
+          value: false,
+          label: _awayCode,
+          contentKey: const ValueKey('match-analysis-away-toggle'),
         ),
       ],
+      onChanged: (value) => setState(() => showHome = value),
     );
   }
 

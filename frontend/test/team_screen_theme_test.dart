@@ -501,6 +501,9 @@ void main() {
     final indicatorSurface = tester.widget<DecoratedBox>(
       find.byKey(const ValueKey('standing-view-indicator-surface')),
     );
+    final standingContent = tester.widget<Container>(
+      find.byKey(const ValueKey('standing-view-standing-content')),
+    );
     final xgContent = tester.widget<Container>(
       find.byKey(const ValueKey('standing-view-xg-table-content')),
     );
@@ -509,28 +512,14 @@ void main() {
         tester
             .getSize(find.byKey(const ValueKey('standing-view-toggle')))
             .height,
-        43);
+        closeTo(34.2, 0.01));
     expect(toggle.padding, isNull);
     final toggleDecoration = toggle.decoration as BoxDecoration;
-    expect(
-      toggleDecoration.color,
-      app_style.AppPalette.lightGrey,
-    );
+    expect(toggleDecoration.color, app_style.AppPalette.lightGrey);
     expect(toggleDecoration.borderRadius, BorderRadius.circular(8));
-    expect(toggleDecoration.border?.top.width, 2);
-    expect(toggleDecoration.border?.top.color, app_style.AppPalette.lightGrey);
+    expect(toggleDecoration.border, isNull);
     expect(standingSurface.color, Colors.transparent);
     expect(xgSurface.color, Colors.transparent);
-    expect(indicator.alignment, Alignment.centerRight);
-    expect(indicator.duration, const Duration(milliseconds: 180));
-    expect(indicator.curve, Curves.easeOutCubic);
-    expect(
-      indicatorSurface.decoration,
-      const BoxDecoration(
-        color: app_style.AppPalette.black,
-        borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
-      ),
-    );
     expect(
       standingSurface.borderRadius,
       const BorderRadius.horizontal(left: Radius.circular(8)),
@@ -541,8 +530,20 @@ void main() {
     );
     expect(
       xgContent.padding,
-      const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      const EdgeInsets.all(8),
     );
+    final standingDecoration = standingContent.decoration as BoxDecoration;
+    final xgDecoration = xgContent.decoration as BoxDecoration;
+    expect(standingDecoration.color, Colors.transparent);
+    expect(xgDecoration.color, Colors.transparent);
+    expect(indicator.alignment, Alignment.centerRight);
+    expect(indicator.duration, const Duration(milliseconds: 180));
+    expect(indicator.curve, Curves.easeOutCubic);
+    final selectedDecoration = indicatorSurface.decoration as BoxDecoration;
+    expect(selectedDecoration.color, app_style.AppPalette.black);
+    expect(selectedDecoration.border?.top.width, 2);
+    expect(
+        selectedDecoration.border?.top.color, app_style.AppPalette.lightGrey);
     expect(xgContent.alignment, Alignment.center);
     final xgTextStyle = xgContent.child! as AnimatedDefaultTextStyle;
     expect(xgTextStyle.style.leadingDistribution, TextLeadingDistribution.even);
@@ -560,7 +561,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('standing indicator slides smoothly between table types',
+  testWidgets('standing selection moves between table segments',
       (tester) async {
     var selectedView = StandingView.xgTable;
 
@@ -584,19 +585,22 @@ void main() {
 
     final indicator =
         find.byKey(const ValueKey('standing-view-indicator-surface'));
-    final startX = tester.getTopLeft(indicator).dx;
+    final standingTextStart = tester.getCenter(find.text('STANDING'));
+    final xgTextStart = tester.getCenter(find.text('XG TABLE'));
+    final indicatorStart = tester.getTopLeft(indicator).dx;
 
     await tester.tap(
       find.byKey(const ValueKey('standing-view-standing')),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 90));
-    final middleX = tester.getTopLeft(indicator).dx;
-    await tester.pump(const Duration(milliseconds: 100));
-    final endX = tester.getTopLeft(indicator).dx;
-
-    expect(middleX, lessThan(startX));
-    expect(middleX, greaterThan(endX));
+    final indicatorMiddle = tester.getTopLeft(indicator).dx;
+    expect(tester.getCenter(find.text('STANDING')), standingTextStart);
+    expect(tester.getCenter(find.text('XG TABLE')), xgTextStart);
+    expect(indicatorMiddle, lessThan(indicatorStart));
+    await tester.pumpAndSettle();
+    expect(tester.getCenter(find.text('STANDING')), standingTextStart);
+    expect(tester.getCenter(find.text('XG TABLE')), xgTextStart);
     expect(tester.takeException(), isNull);
   });
 
@@ -816,7 +820,7 @@ void main() {
     expect(seasonFilter.style?.color, app_style.AppPalette.black);
     expect(
       _effectiveTextColor(tester, find.text('STANDING').first),
-      app_style.AppPalette.white,
+      app_style.AppPalette.black,
     );
     expect(
       _effectiveTextColor(tester, find.text('XG TABLE')),

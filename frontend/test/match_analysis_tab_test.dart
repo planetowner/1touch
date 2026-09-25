@@ -275,10 +275,17 @@ void main() {
     );
     expect(
       (homeToggle.decoration as BoxDecoration).color,
-      app_style.AppPalette.white,
+      Colors.transparent,
     );
     expect(
       (awayToggle.decoration as BoxDecoration).color,
+      Colors.transparent,
+    );
+    final teamToggleIndicator = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('match-analysis-team-toggle-indicator')).first,
+    );
+    expect(
+      (teamToggleIndicator.decoration as BoxDecoration).color,
       app_style.AppPalette.lightModeDarkGrey,
     );
     expect(
