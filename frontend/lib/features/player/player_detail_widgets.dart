@@ -287,19 +287,25 @@ class PlayerStatCategories extends StatelessWidget {
     return Column(children: [
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Expanded(
-            child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(playerMetricValue(left.metric),
-                    style: Body2_b.style))),
+          child: Text(
+            playerMetricValue(left.metric),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            style: Body2_b.style,
+          ),
+        ),
         const SizedBox(width: 12),
         Expanded(
-            child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerRight,
-                child: Text(
-                    right == null ? '—' : playerMetricValue(right.metric),
-                    style: Body2_b.style))),
+          child: Text(
+            right == null ? '—' : playerMetricValue(right.metric),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: Body2_b.style,
+          ),
+        ),
       ]),
       const SizedBox(height: 4),
       if (share != null)
