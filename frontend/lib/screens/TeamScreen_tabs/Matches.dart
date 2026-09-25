@@ -20,11 +20,13 @@ import 'package:onetouch/l10n/fixture_labels.dart';
 class MatchesTab extends StatefulWidget {
   final Map<String, dynamic>? team;
   final FixtureRepository? fixtureRepository;
+  final VoidCallback? onTopOverscroll;
 
   const MatchesTab({
     super.key,
     required this.team,
     this.fixtureRepository,
+    this.onTopOverscroll,
   });
 
   @override
@@ -41,6 +43,7 @@ class _MatchesTabState extends State<MatchesTab> {
   final Map<_MatchSection, double> _sectionOffsets = {};
 
   int _visibleHeaderCount = 1;
+  bool _isAtLastUpcomingMatch = false;
   bool _applyingHeaderCorrection = false;
   double _trailingScrollExtent = 24;
   bool _isLoading = true;
@@ -152,6 +155,7 @@ class _MatchesTabState extends State<MatchesTab> {
     _loadError = null;
     _sectionOffsets.clear();
     _visibleHeaderCount = 1;
+    _isAtLastUpcomingMatch = false;
     _trailingScrollExtent = 24;
   }
 
@@ -199,12 +203,17 @@ class _MatchesTabState extends State<MatchesTab> {
     }
 
     final headerCountDelta = nextHeaderCount - _visibleHeaderCount;
+    final isAtLastUpcomingMatch = upcomingMatches.length > 1 &&
+        _scrollController.offset <=
+            _scrollController.position.minScrollExtent + 0.5;
+    final lastUpcomingChanged = isAtLastUpcomingMatch != _isAtLastUpcomingMatch;
     final trailingExtentChanged =
         nextTrailingScrollExtent != _trailingScrollExtent;
-    if (headerCountDelta != 0 || trailingExtentChanged) {
+    if (headerCountDelta != 0 || lastUpcomingChanged || trailingExtentChanged) {
       final scrollOffsetBeforeLayout = _scrollController.offset;
       setState(() {
         _visibleHeaderCount = nextHeaderCount;
+        _isAtLastUpcomingMatch = isAtLastUpcomingMatch;
         _trailingScrollExtent = nextTrailingScrollExtent;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -308,85 +317,105 @@ class _MatchesTabState extends State<MatchesTab> {
                 height: _MatchSectionHeader.sectionHeight,
                 child: _MatchSectionHeader(title: section.title),
               ),
+            const SizedBox(height: _MatchSectionHeader.cardSpacing),
           ],
         ),
         Expanded(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CustomScrollView(
-                key: const ValueKey('matches-scroll'),
-                controller: _scrollController,
-                // 가까운 예정 경기 두 개에서 시작하고, 더 먼 일정은 위로 이어 붙여요.
-                center: _entrySliverKey,
-                slivers: [
-                  if (laterUpcomingCount > 0)
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (_, index) => buildMatchCard(
-                          upcomingMatches[laterUpcomingCount - index - 1],
+              NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is OverscrollNotification &&
+                      notification.overscroll < 0 &&
+                      notification.metrics.pixels <=
+                          notification.metrics.minScrollExtent + 0.5) {
+                    widget.onTopOverscroll?.call();
+                  }
+                  return false;
+                },
+                child: CustomScrollView(
+                  key: const ValueKey('matches-scroll'),
+                  controller: _scrollController,
+                  // 가까운 예정 경기 두 개에서 시작하고, 더 먼 일정은 위로 이어 붙여요.
+                  center: _entrySliverKey,
+                  slivers: [
+                    if (laterUpcomingCount > 0)
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (_, index) => buildMatchCard(
+                            upcomingMatches[laterUpcomingCount - index - 1],
+                          ),
+                          childCount: laterUpcomingCount,
                         ),
-                        childCount: laterUpcomingCount,
                       ),
-                    ),
-                  for (var index = 0; index < sections.length; index++) ...[
-                    // 카드 아래 여백 16px에 8px을 더해 섹션 사이에만 선을 놓아요.
-                    if (index > 0)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-                          child: Container(
-                            key: ValueKey(
-                                'matches-${sections[index].type.name}-divider'),
-                            height: 1,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? AppPalette.lightGrey
-                                    : AppColors.of(context).divider,
+                    for (var index = 0; index < sections.length; index++) ...[
+                      // 카드 하단 8px에 16px을 더해 마지막 카드와 divider를 24px 띄워요.
+                      if (index > 0)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                            child: Container(
+                              key: ValueKey(
+                                  'matches-${sections[index].type.name}-divider'),
+                              height: 1,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppPalette.lightGrey
+                                  : AppColors.of(context).divider,
+                            ),
                           ),
                         ),
-                      ),
-                    if (index > 0)
-                      SliverToBoxAdapter(
-                        child: SizedBox(
-                          key: sections[index].key,
-                          height: _MatchSectionHeader.sectionHeight,
-                          child: index < visibleHeaderCount
-                              ? const SizedBox.expand()
-                              : _MatchSectionHeader(
-                                  key: ValueKey(
-                                    'matches-inline-${sections[index].type.name}-header',
+                      if (index > 0)
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            key: sections[index].key,
+                            height: _MatchSectionHeader.sectionHeight +
+                                _MatchSectionHeader.cardSpacing,
+                            child: index < visibleHeaderCount
+                                ? const SizedBox.expand()
+                                : Align(
+                                    alignment: Alignment.topCenter,
+                                    child: SizedBox(
+                                      height: _MatchSectionHeader.sectionHeight,
+                                      child: _MatchSectionHeader(
+                                        key: ValueKey(
+                                          'matches-inline-${sections[index].type.name}-header',
+                                        ),
+                                        title: sections[index].title,
+                                      ),
+                                    ),
                                   ),
-                                  title: sections[index].title,
-                                ),
+                          ),
+                        )
+                      else
+                        SliverToBoxAdapter(
+                          key: _entrySliverKey,
+                          child: SizedBox(key: sections[index].key, height: 0),
                         ),
-                      )
-                    else
-                      SliverToBoxAdapter(
-                        key: _entrySliverKey,
-                        child: SizedBox(key: sections[index].key, height: 0),
-                      ),
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (_, matchIndex) => buildMatchCard(
-                          sections[index].matches[matchIndex +
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (_, matchIndex) => buildMatchCard(
+                            sections[index].matches[matchIndex +
+                                (sections[index].type == _MatchSection.upcoming
+                                    ? laterUpcomingCount
+                                    : 0)],
+                          ),
+                          childCount: sections[index].matches.length -
                               (sections[index].type == _MatchSection.upcoming
                                   ? laterUpcomingCount
-                                  : 0)],
+                                  : 0),
                         ),
-                        childCount: sections[index].matches.length -
-                            (sections[index].type == _MatchSection.upcoming
-                                ? laterUpcomingCount
-                                : 0),
                       ),
+                    ],
+                    SliverPadding(
+                      padding: EdgeInsets.only(bottom: _trailingScrollExtent),
                     ),
                   ],
-                  SliverPadding(
-                    padding: EdgeInsets.only(bottom: _trailingScrollExtent),
-                  ),
-                ],
+                ),
               ),
-              if (upcomingMatches.length > 1 && visibleHeaderCount == 1)
+              if ((upcomingMatches.length > 1 && !_isAtLastUpcomingMatch) ||
+                  visibleHeaderCount > 1)
                 Positioned(
                   top: 0,
                   left: 24,
@@ -441,7 +470,7 @@ class _MatchesTabState extends State<MatchesTab> {
       ),
       child: Container(
         key: ValueKey('team-fixture-card-${fixture.fixtureId}'),
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: cardBackground,
@@ -589,6 +618,7 @@ class _MatchSectionHeader extends StatelessWidget {
   const _MatchSectionHeader({super.key, required this.title});
 
   static const double sectionHeight = 34;
+  static const double cardSpacing = 8;
 
   @override
   Widget build(BuildContext context) {
