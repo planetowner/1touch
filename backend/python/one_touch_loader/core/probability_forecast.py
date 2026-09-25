@@ -49,33 +49,45 @@ def with_probability_changes(events: list[dict], previous_events: list[dict]) ->
     return result
 
 
-def select_cards(events: list[dict], limit: int = 4) -> list[dict]:
+EUROPEAN_TITLE_EVENTS = {'ucl_winner', 'uel_winner', 'uecl_winner'}
+LEAGUE_CARD_EVENTS = {
+    'league_winner',
+    'top_4',
+    'direct_relegation',
+    'relegation_playoff',
+}
+
+
+def select_cards(events: list[dict], limit: int = 2) -> list[dict]:
+    """Select the two outcomes that are most useful on a team's overview.
+
+    A current European participant always gets its European title card plus
+    the most informative domestic outcome. Other clubs get Top 4 plus the
+    more informative of the title and relegation outcomes.
+    """
     candidates = []
     for event in events:
         p = event["probability"]
         if not 0 <= p <= 1 or not math.isfinite(p):
             raise ValueError("Invalid event probability")
-        if p in (0, 1):
-            continue
-        entropy = -p * math.log2(p) - (1 - p) * math.log2(1 - p)
+        entropy = (0 if p in (0, 1) else
+                   -p * math.log2(p) - (1 - p) * math.log2(1 - p))
         candidates.append({**event, "entropy": entropy})
-    candidates.sort(key=lambda e: (-e["entropy"], e["competition_id"], e["event"]))
-    selected, competitions, categories = [], set(), set()
-    # 사용자 확정: 대회별 하나 → 아직 없는 대회/종류 → 남은 정보량 순서예요.
-    # 잔류처럼 강등의 여사건은 생성하지 않아 같은 정보를 두 번 선택하지 않아요.
-    for mode in ("competition", "category", "remaining"):
-        for event in candidates:
-            if event in selected or len(selected) >= limit:
-                continue
-            pair = (event["competition_id"], event["category"])
-            if mode == "competition" and event["competition_id"] in competitions:
-                continue
-            if mode == "category" and pair in categories:
-                continue
-            selected.append(event)
-            competitions.add(event["competition_id"])
-            categories.add(pair)
-    return selected
+
+    def relevant(items):
+        return sorted(items, key=lambda e: (-e["entropy"], e["competition_id"], e["event"]))
+
+    european = relevant(e for e in candidates if e["event"] in EUROPEAN_TITLE_EVENTS)
+    league = relevant(e for e in candidates if e["event"] in LEAGUE_CARD_EVENTS)
+    if european:
+        return ([european[0]] + league[:1])[:limit]
+
+    top_four = next((e for e in league if e["event"] == 'top_4'), None)
+    secondary = relevant(e for e in league if e["event"] in {
+        'league_winner', 'direct_relegation', 'relegation_playoff'})
+    if top_four is not None:
+        return ([top_four] + secondary[:1])[:limit]
+    return league[:limit]
 
 
 def forecast_day(*, competition_id: int, season_id: int, teams: list[dict], fixtures: list[dict],
