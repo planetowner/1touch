@@ -301,99 +301,29 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         ? tr(context, 'SEASON')
         : _compactSeasonLabel(selectedOption.seasonName);
 
-    return PopupMenuButton<CurrentFormOption>(
+    return AppDropdown<CurrentFormOption>(
       key: const ValueKey('analysis-form-filter'),
-      tooltip: '',
-      padding: EdgeInsets.zero,
-      position: PopupMenuPosition.under,
-      color: AppColors.of(context).cardBackground,
+      value: selectedOption,
+      selectedLabel: tr(context, label),
+      minWidth: 86,
+      matchMenuWidth: true,
+      backgroundColor: AppColors.of(context).subtleBackground,
+      foregroundColor: colors.onSurface,
+      textStyle: Body2_b.style,
       enabled: !_isLoading,
-      onSelected: _changeComparison,
-      itemBuilder: (_) => _options
+      onChanged: _changeComparison,
+      options: _options
           .map(
-            (option) => PopupMenuItem<CurrentFormOption>(
+            (option) => AppDropdownOption<CurrentFormOption>(
               value: option,
-              child: _comparisonLabel(option),
+              label:
+                  '${_compactSeasonLabel(option.seasonName)} · ${(option.teamShortCode ?? teamNameLabel(context, option.teamId, option.teamName ?? '')).toUpperCase()}',
+              optionKey: ValueKey(
+                'analysis-form-option-${option.teamId}-${option.seasonId}',
+              ),
             ),
           )
           .toList(),
-      child: Container(
-        height: AppDropdownTokens.height,
-        constraints: const BoxConstraints(minWidth: 86),
-        padding: AppDropdownTokens.triggerPadding,
-        decoration: BoxDecoration(
-          color: AppColors.of(context).subtleBackground,
-          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              tr(context, label),
-              style: Body2_b.style.copyWith(color: colors.onSurface),
-            ),
-            const SizedBox(width: AppDropdownTokens.gap),
-            AppDropdownChevron(color: colors.onSurface),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _comparisonLabel(CurrentFormOption option) {
-    final teamCode = (option.teamShortCode ??
-            teamNameLabel(context, option.teamId, option.teamName ?? ''))
-        .toUpperCase();
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          _compactSeasonLabel(option.seasonName),
-          style: Body2_b.style.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(width: 1, height: 16, color: AppColors.of(context).divider),
-        const SizedBox(width: 8),
-        _teamLogo(option.teamLogo),
-        const SizedBox(width: 6),
-        // 짧은 이름이 없는 팀도 메뉴의 남은 너비 안에서 표시해요.
-        Flexible(
-          child: Text(
-            teamCode,
-            style: Body2_b.style.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _teamLogo(String? logo) {
-    if (logo == null || logo.isEmpty) {
-      return Icon(
-        Icons.shield,
-        size: 18,
-        color: AppColors.of(context).mutedForeground,
-      );
-    }
-
-    return Image.network(
-      logo,
-      width: 18,
-      height: 18,
-      errorBuilder: (_, __, ___) => Icon(
-        Icons.shield,
-        size: 18,
-        color: AppColors.of(context).mutedForeground,
-      ),
     );
   }
 
