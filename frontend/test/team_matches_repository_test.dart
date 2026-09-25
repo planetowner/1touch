@@ -141,6 +141,11 @@ void main() {
           lessThanOrEqualTo(tester.getTopLeft(nextUpcoming).dy));
       expect(tester.getBottomLeft(nextUpcoming).dy,
           lessThan(tester.getTopLeft(next).dy));
+      expect(
+        tester.getTopLeft(_cardSurface(202)).dy -
+            tester.getBottomLeft(_cardSurface(203)).dy,
+        closeTo(16, 0.1),
+      );
       expect(next.hitTestable(), findsOneWidget);
       final nextSection = hasLive ? 'live' : 'past';
       final divider = find.byKey(ValueKey('matches-$nextSection-divider'));
@@ -148,7 +153,7 @@ void main() {
         of: find.byKey(ValueKey('matches-inline-$nextSection-header')),
         matching: find.byType(Text),
       );
-      // Figma는 마지막 카드 → 24px → 구분선 → 16px → 제목 → 16px → 카드예요.
+      // Figma처럼 마지막 카드 → divider는 24px을 유지해요.
       expect(
           tester.getTopLeft(divider).dy -
               tester.getBottomLeft(_cardSurface(202)).dy,
@@ -182,6 +187,19 @@ void main() {
           closeTo(tester.getTopLeft(scroll).dy, 0.1));
       expect(controller.position.minScrollExtent, lessThan(0));
       expect(controller.offset, 0);
+
+      controller.jumpTo(controller.position.minScrollExtent);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('matches-top-fade')),
+        findsNothing,
+      );
+      controller.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('matches-top-fade')),
+        findsOneWidget,
+      );
 
       // 카드를 중간까지 스크롤해도 페이드 앞에 밝은 띠가 생기지 않아야 해요.
       controller.jumpTo(40);
@@ -430,6 +448,16 @@ void main() {
       find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
+    final fade = find.byKey(const ValueKey('matches-top-fade'));
+    expect(fade, findsOneWidget);
+    expect(tester.getSize(fade).height, 56);
+    expect(
+      tester.getTopLeft(fade).dy,
+      closeTo(
+        tester.getTopLeft(find.byKey(const ValueKey('matches-scroll'))).dy,
+        0.1,
+      ),
+    );
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('matches-header-stack')),
@@ -446,6 +474,48 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('reports a downward pull after reaching the first upcoming match',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    var topPulls = 0;
+    final repository = MockFixtureRepository(
+      fixtures: [
+        for (var index = 1; index <= 8; index++)
+          _fixture(
+            index,
+            FixtureStatus.upcoming,
+            kickoff: DateTime(2026, 1, index),
+          ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      _app(
+        repository,
+        teamId: 9,
+        onTopOverscroll: () => topPulls++,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scrollFinder = find.byKey(const ValueKey('matches-scroll'));
+    final controller =
+        tester.widget<CustomScrollView>(scrollFinder).controller!;
+    expect(controller.position.minScrollExtent, lessThan(0));
+
+    controller.jumpTo(controller.position.minScrollExtent);
+    await tester.pump();
+    await tester.drag(scrollFinder, const Offset(0, 120));
+    await tester.pump();
+
+    expect(topPulls, greaterThan(0));
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Finder _cardSurface(int fixtureId) => find
@@ -456,7 +526,9 @@ Finder _cardSurface(int fixtureId) => find
     .first;
 
 Widget _app(MockFixtureRepository repository,
-    {required int teamId, Locale locale = const Locale('en')}) {
+    {required int teamId,
+    Locale locale = const Locale('en'),
+    VoidCallback? onTopOverscroll}) {
   return MaterialApp(
     locale: locale,
     supportedLocales: appSupportedLocales,
@@ -465,6 +537,7 @@ Widget _app(MockFixtureRepository repository,
       body: MatchesTab(
         team: {'id': teamId},
         fixtureRepository: repository,
+        onTopOverscroll: onTopOverscroll,
       ),
     ),
   );
