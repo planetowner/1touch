@@ -60,7 +60,8 @@ void main() {
     Size(393, 852),
   ];
 
-  testWidgets('Team app bar keeps 16dp around its 48dp logo', (tester) async {
+  testWidgets('Team app bar keeps its content at least 47dp from the top',
+      (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -69,14 +70,20 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
-        home: TeamScreen(
-          fixtureRepository: fixtureRepository,
-          standingRepository: standingRepository,
-          currentFormRepository: currentFormRepository,
-          teamId: 9,
-          teamAttributeRepository: teamAttributeRepository,
-          teamOverviewRepository: teamOverviewRepository,
-          xgStandingRepository: xgStandingRepository,
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(393, 852),
+            padding: EdgeInsets.only(top: 20),
+          ),
+          child: TeamScreen(
+            fixtureRepository: fixtureRepository,
+            standingRepository: standingRepository,
+            currentFormRepository: currentFormRepository,
+            teamId: 9,
+            teamAttributeRepository: teamAttributeRepository,
+            teamOverviewRepository: teamOverviewRepository,
+            xgStandingRepository: xgStandingRepository,
+          ),
         ),
       ),
     );
@@ -86,9 +93,16 @@ void main() {
     final appBarLogo = tester.getSize(
       find.byKey(const ValueKey('team-app-bar-logo')),
     );
-    expect(appBar.toolbarHeight, 80);
+    expect(appBar.toolbarHeight, 91);
     expect(appBarLogo, const Size.square(48));
-    expect((appBar.toolbarHeight - appBarLogo.height) / 2, 16);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('team-app-bar-logo'))).dy,
+      47,
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const Key('team-search-button'))).dy,
+      47,
+    );
     expect(tester.takeException(), isNull);
   });
 
