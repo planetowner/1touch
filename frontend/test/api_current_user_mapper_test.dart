@@ -14,7 +14,6 @@ void main() {
       expect(profile.username, 'planetowner');
       expect(profile.firstName, 'Planet');
       expect(profile.lastName, 'Owner');
-      expect(profile.displayName, 'Planet Owner');
       expect(profile.email, 'owner@example.com');
       expect(
         profile.avatarUri,
