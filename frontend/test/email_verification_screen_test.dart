@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/SignComps/VerifyEmail.dart';
+import 'package:onetouch/SignComps/SignUp.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/data/auth/auth_repository.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
@@ -10,6 +12,59 @@ import 'package:onetouch/data/auth/email_code_challenge.dart';
 import 'package:onetouch/data/auth/google_identity_service.dart';
 
 void main() {
+  for (final locale in appSupportedLocales) {
+    testWidgets('signup preserves name meanings with $locale input order',
+        (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      EmailRegistrationDraft? draft;
+      final router = GoRouter(initialLocation: '/signup', routes: [
+        GoRoute(
+            path: '/signup',
+            builder: (_, __) => EmailSignUpScreen(
+                  authService: _service(_FakeAuthRepository(), AuthSession()),
+                )),
+        GoRoute(
+            path: '/auth/verify',
+            builder: (_, state) {
+              draft = state.extra! as EmailRegistrationDraft;
+              return const Scaffold(body: Text('Verification destination'));
+            }),
+      ]);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(
+        routerConfig: router,
+        locale: locale,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+      ));
+      await tester.pumpAndSettle();
+      final first = find.byKey(const ValueKey('signup-first-name-field'));
+      final last = find.byKey(const ValueKey('signup-last-name-field'));
+      expect(tester.getTopLeft(first).dy < tester.getTopLeft(last).dy,
+          locale.languageCode == 'en');
+      await tester.enterText(first, 'Given');
+      await tester.enterText(last, 'Family');
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.at(2), 'member');
+      await tester.enterText(fields.at(3), 'member@example.com');
+      await tester.enterText(fields.at(4), 'Password123');
+      await tester.ensureVisible(find.byType(Checkbox));
+      await tester.tap(find.byType(Checkbox));
+      await tester.pump();
+      final submit = find.byKey(const ValueKey('email-sign-up-button'));
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+      expect(find.text('Verification destination'), findsOneWidget);
+      expect(draft!.firstName, 'Given');
+      expect(draft!.lastName, 'Family');
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('submits the six-digit code and establishes the session',
       (tester) async {
     final repository = _FakeAuthRepository();

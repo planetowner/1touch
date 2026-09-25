@@ -1,7 +1,11 @@
+import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/features/community/community_access.dart';
+import 'package:onetouch/features/community/post_detail_content.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
@@ -10,6 +14,44 @@ import 'support/stub_community_repository.dart';
 import 'support/stub_post_comment_repository.dart';
 
 void main() {
+  setUpAppCatalog(favoriteTeamId: 9);
+  testWidgets('another followed team stays read-only until it is the favorite',
+      (tester) async {
+    _setScreenSize(tester);
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 83, followedTeamIds: [83, 9]));
+    currentUserPreferences.viewTeam(9);
+    final repository = _LikePostRepository([]);
+    await tester.pumpWidget(MaterialApp(
+      home: PostDetailScreen(
+        post: _post,
+        postRepository: repository,
+        communityRepository: const StubCommunityRepository(),
+        postCommentRepository: const StubPostCommentRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final content =
+        tester.widget<PostDetailContent>(find.byType(PostDetailContent));
+    expect(content.onLike, isNull);
+    expect(content.onReply, isNull);
+    expect(content.onReport, isNull);
+    expect(find.byType(PostDetailReplyBar), findsNothing);
+    expect(find.byType(CommunityReadOnlyNotice), findsOneWidget);
+    expect(find.text(_post.title), findsOneWidget);
+    expect(repository.updates, isEmpty);
+
+    currentUserPreferences.applyServerSelection(
+        const UserTeamPreferences(favoriteTeamId: 9, followedTeamIds: [9, 83]));
+    await tester.pumpAndSettle();
+    expect(find.byType(PostDetailReplyBar), findsOneWidget);
+    expect(find.byType(CommunityReadOnlyNotice), findsNothing);
+    expect(
+        tester.widget<PostDetailContent>(find.byType(PostDetailContent)).onLike,
+        isNotNull);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('optimistically likes and unlikes without duplicate requests',
       (tester) async {
     _setScreenSize(tester);

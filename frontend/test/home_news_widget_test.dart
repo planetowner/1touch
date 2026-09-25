@@ -27,12 +27,14 @@ void main() {
               HomeContentItem(
                   title: '선택한 팀의 긴 뉴스 제목이 두 줄을 넘어가면 말줄임표로 표시돼요 $i',
                   source: '포포투',
-                  timeLabel: '1시간 전',
+                  publishedAt: DateTime.now(),
                   destinationUrl: 'https://example.com/$i'),
           ]))),
         ));
         await tester.pumpAndSettle();
         expect(find.byIcon(Icons.article_outlined), findsNWidgets(3));
+        expect(find.text('포포투 · 방금 전'), findsNWidgets(3));
+        expect(find.textContaining('포포투'), findsNWidgets(3));
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const MaterialApp(
             locale: const Locale('ko'),
@@ -48,7 +50,7 @@ void main() {
 
   testWidgets('image failure keeps article title and destination enabled',
       (tester) async {
-    await tester.pumpWidget(const MaterialApp(
+    await tester.pumpWidget(MaterialApp(
         locale: const Locale('ko'),
         supportedLocales: appSupportedLocales,
         localizationsDelegates: appLocalizationDelegates,
@@ -57,7 +59,7 @@ void main() {
           HomeContentItem(
               title: '실제 기사',
               source: '실제 매체',
-              timeLabel: '1시간 전',
+              publishedAt: DateTime.now(),
               imageUrl: 'https://example.com/broken.jpg',
               destinationUrl: 'https://example.com/story'),
         ]))));
@@ -67,6 +69,47 @@ void main() {
     expect(tester.widget<GestureDetector>(find.byType(GestureDetector)).onTap,
         isNotNull);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('news and highlights share relative dates in the current locale',
+      (tester) async {
+    final now = DateTime.now();
+    final items = [
+      for (final days in [0, 1, 35])
+        HomeContentItem(
+          title: 'Content $days',
+          source: 'Channel or publisher',
+          publishedAt:
+              days == 0 ? now : DateTime(now.year, now.month, now.day - days),
+        ),
+    ];
+    final labels = {
+      'en': ['Just now', 'Yesterday', '5 weeks ago'],
+      'ko': ['방금 전', '어제', '5주 전'],
+      'ja': ['たった今', '昨日', '5週間前'],
+      'zh': ['刚刚', '昨天', '5周前'],
+    };
+    for (final locale in appSupportedLocales) {
+      await tester.pumpWidget(MaterialApp(
+        locale: locale,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(children: [
+              MyHighlights(highlights: items, fallbacks: const []),
+              MyNews(news: items),
+            ]),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      for (final label in labels[locale.languageCode]!) {
+        expect(find.text('Channel or publisher · $label'), findsNWidgets(2));
+      }
+      expect(find.textContaining('Channel or publisher'), findsNWidgets(6));
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('failure and loading are distinct from an empty feed',

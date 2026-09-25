@@ -80,7 +80,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
             '{season} {competition} · {position} · reference players with at least {minutes} minutes.',
             {
               'season': season?.name ?? tr(context, 'Current season'),
-              'competition': season?.competitionName ?? '',
+              'competition': competitionNameLabel(context,
+                  season?.competitionId, season?.competitionName ?? ''),
               'position': analysis.position ?? '—',
               'minutes': analysis.minimumMinutes
             }),

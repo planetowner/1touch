@@ -13,6 +13,7 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/data/posts/post_repository_provider.dart'
     as post_providers;
 import 'package:onetouch/features/community/post_detail_content.dart';
+import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -205,61 +206,70 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final pageBackground = mainPageBackground(context);
     final colors = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: pageBackground,
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          CustomScrollView(
-            controller: _scrollController, // Bind the controller
-            slivers: [
-              SliverAppBar(
-                // 4. Fade AppBar background to black as you scroll
-                backgroundColor: Color.lerp(
-                  Colors.transparent,
-                  pageBackground,
-                  opacityFactor,
-                ),
-                elevation: 0,
-                leading: IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios_new,
-                    color: colors.onSurface,
+    return CommunityAccessBuilder(
+      teamId: post.teamId,
+      builder: (context, canParticipate) => Scaffold(
+        backgroundColor: pageBackground,
+        extendBodyBehindAppBar: true,
+        body: Stack(
+          children: [
+            CustomScrollView(
+              controller: _scrollController, // Bind the controller
+              slivers: [
+                SliverAppBar(
+                  // 4. Fade AppBar background to black as you scroll
+                  backgroundColor: Color.lerp(
+                    Colors.transparent,
+                    pageBackground,
+                    opacityFactor,
                   ),
-                  onPressed: () => context.pop(),
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
+                      color: colors.onSurface,
+                    ),
+                    onPressed: () => context.pop(),
+                  ),
+                  toolbarHeight: 80,
+                  flexibleSpace: ColoredBox(color: pageBackground),
+                  floating: true,
+                  snap: true,
                 ),
-                toolbarHeight: 80,
-                flexibleSpace: ColoredBox(color: pageBackground),
-                floating: true,
-                snap: true,
-              ),
-              PostDetailContent(
-                post: post,
-                liked: _liked,
-                likeCount: _likeCount,
-                commentCount: _commentCount,
-                onLike: _isUpdatingLike ? null : _togglePostLike,
-                communityRepository: _communityRepository,
-                comments: _comments,
-                commentsLoading: _commentsLoading,
-                commentsError: _commentsError,
-                onRetryComments: _loadComments,
-                onReply: _isCreatingComment
-                    ? null
-                    : (comment) => setState(() => _replyTarget = comment),
-                onReport: (reason) => _postRepository.reportPost(
-                  postId: post.postId,
-                  reason: reason,
+                PostDetailContent(
+                  post: post,
+                  liked: _liked,
+                  likeCount: _likeCount,
+                  commentCount: _commentCount,
+                  onLike: !canParticipate || _isUpdatingLike
+                      ? null
+                      : _togglePostLike,
+                  communityRepository: _communityRepository,
+                  comments: _comments,
+                  commentsLoading: _commentsLoading,
+                  commentsError: _commentsError,
+                  onRetryComments: _loadComments,
+                  onReply: !canParticipate || _isCreatingComment
+                      ? null
+                      : (comment) => setState(() => _replyTarget = comment),
+                  onReport: !canParticipate
+                      ? null
+                      : (reason) => _postRepository.reportPost(
+                            postId: post.postId,
+                            reason: reason,
+                          ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      bottomNavigationBar: PostDetailReplyBar(
-        replyTarget: _replyTarget,
-        onCancelReply: () => setState(() => _replyTarget = null),
-        onSubmit: _submitComment,
+              ],
+            ),
+          ],
+        ),
+        bottomNavigationBar: canParticipate
+            ? PostDetailReplyBar(
+                replyTarget: _replyTarget,
+                onCancelReply: () => setState(() => _replyTarget = null),
+                onSubmit: _submitComment,
+              )
+            : const CommunityReadOnlyNotice(),
       ),
     );
   }

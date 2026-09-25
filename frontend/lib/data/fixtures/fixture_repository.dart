@@ -23,9 +23,8 @@ abstract interface class FixtureRepository {
   /// This temporarily coexists with [forTeam], which remains the synchronous
   /// cache selector used by existing screens during the incremental API
   /// migration.
-  // Preserve the backend's status-specific ordering. The Team Matches tab
-  // intentionally does not re-sort pages, so any ordering change belongs to
-  // the endpoint contract before paginated scrolling is introduced.
+  // API 순서(예정은 시간순, 나머지는 최신순)를 유지해요.
+  // 일정 화면은 예정 경기 묶음을 뒤집어 미래에서 과거로 보여줘요.
   Future<List<Fixture>> loadForTeam(
     int teamId, {
     FixtureStatus? status,

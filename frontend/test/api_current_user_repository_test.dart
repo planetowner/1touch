@@ -28,7 +28,7 @@ void main() {
 
     expect(profile.userId, 1);
     expect(profile.username, 'planetowner');
-    expect(profile.displayName, 'Planet Owner');
+    expect((profile.firstName, profile.lastName), ('Planet', 'Owner'));
     expect(profile.favoriteTeamId, 83);
     expect(
       profile.avatarUri,

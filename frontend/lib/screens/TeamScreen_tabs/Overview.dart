@@ -79,7 +79,7 @@ class _OverviewTabState extends State<OverviewTab> {
 
               if (hasStanding) ...[
                 const SizedBox(height: 32),
-                SectionHeader(title: tr(context, "STANDING")),
+                SectionHeader(title: teamScreenLabel(context, "STANDING")),
                 Standing(
                   teams: widget.team,
                   onCompetitionSelected: widget.onStandingCompetitionSelected,

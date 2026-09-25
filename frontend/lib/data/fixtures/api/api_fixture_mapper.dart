@@ -21,6 +21,8 @@ Fixture fixtureFromApiResponse(ApiFixtureResponse response) {
     groupId: response.groupId,
     leg: response.leg,
     status: _fixtureStatusFromApi(response.status),
+    stateId: response.stateId,
+    stateName: response.stateName,
     startingAt: _utcStartingAtFromApi(response.startingAt),
     homeScore: response.homeScore,
     awayScore: response.awayScore,

@@ -9,6 +9,37 @@ import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 
 void main() {
+  test('fan-art feed and creation use the same API category', () async {
+    final repository = ApiPostRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          if (request.method == 'GET') {
+            expect(request.url.queryParameters['category'], 'fanart');
+            return http.Response(jsonEncode(_feedJson(items: [
+              {..._postJson(), 'category': 'fanart'},
+            ])), 200);
+          }
+          expect(request.method, 'POST');
+          expect(jsonDecode(request.body)['category'], 'fanart');
+          return http.Response('{"post_id": 101}', 201);
+        }),
+        baseUri: Uri.parse('https://api.1touch.football/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+    final posts = await repository.loadPosts(
+      teamId: 83,
+      category: PostCategory.fanart,
+    );
+    expect(posts.single.category, PostCategory.fanart);
+    expect(await repository.createPost(CreatePostInput(
+      teamId: 83,
+      category: posts.single.category,
+      title: 'Fan art',
+      body: 'My drawing',
+    )), 101);
+  });
+
   test('requests and maps a team post feed with Bearer headers', () async {
     final repository = ApiPostRepository(
       api: ApiClient(

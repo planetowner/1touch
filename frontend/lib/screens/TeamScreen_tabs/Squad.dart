@@ -380,7 +380,7 @@ class _SquadTabState extends State<SquadTab> {
     void prepare() {
       _players = cached == null
           ? const []
-          : _presentPlayers(cached.players, teamName!, DateTime.now());
+          : _presentPlayers(cached.players, teamId!, teamName!, DateTime.now());
       _rosterIsCurrent = cached?.isCurrent;
       _isLoading = validTeam && cached == null;
       _loadError = null;
@@ -416,7 +416,8 @@ class _SquadTabState extends State<SquadTab> {
       if (!mounted || requestId != _loadRequestId) return;
 
       setState(() {
-        _players = _presentPlayers(roster.players, teamName, DateTime.now());
+        _players =
+            _presentPlayers(roster.players, teamId, teamName, DateTime.now());
         _rosterIsCurrent = roster.isCurrent;
         _isLoading = false;
         _loadError = null;
@@ -435,6 +436,7 @@ class _SquadTabState extends State<SquadTab> {
 
   List<SquadPlayer> _presentPlayers(
     List<TeamPlayerContract> contracts,
+    int teamId,
     String teamName,
     DateTime asOf,
   ) {
@@ -442,6 +444,7 @@ class _SquadTabState extends State<SquadTab> {
         .map((contract) => SquadPlayer.fromContract(
               contract,
               teamName: teamName,
+              teamId: teamId,
               asOf: asOf,
             ))
         .toList(growable: false);
@@ -813,7 +816,8 @@ class _PlayerCard extends StatelessWidget {
     final appColors = AppColors.of(context);
     return Semantics(
       button: true,
-      label: 'Open ${player.name}',
+      label: tr(context, 'Open {name}',
+          {'name': playerNameLabel(context, player.id, player.name)}),
       child: InkWell(
         key: ValueKey('squad-player-link-${player.id}'),
         onTap: () => openPlayerPage(context, player.id.toString()),
@@ -897,7 +901,7 @@ class _PlayerCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            player.name,
+                            playerNameLabel(context, player.id, player.name),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: Heading5.style,
@@ -905,7 +909,14 @@ class _PlayerCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          player.teamLabel,
+                          player.teamName == null
+                              ? player.teamLabel
+                              : [
+                                  teamNameLabel(
+                                      context, player.teamId, player.teamName!),
+                                  if (player.jerseyNumber != null)
+                                    '${player.jerseyNumber}',
+                                ].join(' • '),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Body2.style,

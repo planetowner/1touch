@@ -1,14 +1,12 @@
 import 'support/app_catalog.dart';
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/news_repository.dart';
-import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/team.dart';
@@ -109,7 +107,7 @@ void main() {
     );
 
     expect(find.text('Official API highlight'), findsOneWidget);
-    expect(find.text('Official channel 1h ago'), findsOneWidget);
+    expect(find.text('Official channel · Latest'), findsOneWidget);
   });
 
   testWidgets('reloads calendar months and ignores a stale response',
@@ -241,69 +239,122 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('switches the favorite through the backend and refreshes Home',
+  testWidgets('switches viewed teams repeatedly without changing preferences',
       (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
     final homeRepository = _ControlledHomeRepository();
-    final followingRepository = _RecordingFollowingTeamsRepository();
+    final newsRepository = _RecordingNewsRepository();
     final originalFavorite = currentUserPreferences.favoriteTeamId.value;
     final originalFollowing = currentUserPreferences.followedTeamIds.value;
-    addTearDown(() {
-      unawaited(
-        currentUserPreferences.updateTeamSelection([
-          originalFavorite,
-          ...originalFollowing.where((id) => id != originalFavorite),
-        ]),
-      );
+    const teams = [
+      Team(teamId: 83, name: 'FC Barcelona'),
+      Team(teamId: 503, name: 'FC Bayern München'),
+      Team(teamId: 9, name: 'Manchester City'),
+    ];
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 83,
+      followedTeamIds: [83, 503, 9],
+    ));
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      currentUserPreferences.applyServerSelection(UserTeamPreferences(
+        favoriteTeamId: originalFavorite,
+        followedTeamIds: originalFollowing,
+      ));
     });
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: app_style.whitetheme,
-        home: HomeScreen(
-          repository: homeRepository,
-          newsRepository: _RecordingNewsRepository(),
-          followingTeamsRepository: followingRepository,
-        ),
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: HomeScreen(
+        repository: homeRepository,
+        newsRepository: newsRepository,
       ),
-    );
-    homeRepository.calls.single.completer.complete(
-      _homeData(
-        favoriteTeam: const Team(teamId: 83, name: 'FC Barcelona'),
-        followingTeams: const [
-          Team(teamId: 83, name: 'FC Barcelona'),
-          Team(teamId: 9, name: 'Manchester City'),
-        ],
-      ),
-    );
-    await tester.pump();
+    ));
+    expect(homeRepository.calls.single.teamId, 83);
+    homeRepository.calls.single.completer.complete(_homeData(
+      favoriteTeam: teams.first,
+      followingTeams: teams,
+    ));
+    await tester.pumpAndSettle();
 
+    for (final team in [teams[2], teams[1], teams[0]]) {
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(team.name).last);
+      await tester.tap(find.text('SWITCH'));
+      await tester.pump();
+      expect(homeRepository.calls.last.teamId, team.teamId);
+      homeRepository.calls.last.completer.complete(_homeData(
+        favoriteTeam: team,
+        followingTeams: teams,
+        leaguePosition: team.teamId == 9 ? 2 : 1,
+        leagueRankDelta: team.teamId == 9 ? -1 : 2,
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text(team.name), findsOneWidget);
+      final standing =
+          tester.widget<Text>(find.byKey(const ValueKey('home-team-standing')));
+      expect(standing.data, endsWith(team.teamId == 9 ? '2nd' : '1st'));
+      expect(find.byKey(const ValueKey('home-team-rank-movement')),
+          findsOneWidget);
+      expect(newsRepository.teamIds.last, team.teamId);
+      expect(currentUserPreferences.favoriteTeamId.value, 83);
+      expect(currentUserPreferences.followedTeamIds.value, [83, 503, 9]);
+      expect(find.text('FAVORITE TEAM'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+    expect(homeRepository.calls, hasLength(4));
+  });
+
+  testWidgets('keeps the viewed team for calendar and preference refreshes',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final homeRepository = _ControlledHomeRepository();
+    const teams = [
+      Team(teamId: 83, name: 'FC Barcelona'),
+      Team(teamId: 503, name: 'FC Bayern München'),
+    ];
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: HomeScreen(
+        repository: homeRepository,
+        newsRepository: _RecordingNewsRepository(),
+      ),
+    ));
+    homeRepository.calls.last.completer
+        .complete(_homeData(favoriteTeam: teams.first, followingTeams: teams));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Manchester City'));
+    await tester.tap(find.text('FC Bayern München'));
     await tester.tap(find.text('SWITCH'));
+    await tester.pump();
+    homeRepository.calls.last.completer
+        .complete(_homeData(favoriteTeam: teams.last, followingTeams: teams));
     await tester.pumpAndSettle();
 
-    expect(followingRepository.savedTeamIds, [83, 9]);
-    expect(followingRepository.savedFavoriteTeamId, 9);
-    expect(currentUserPreferences.favoriteTeamId.value, 9);
-    expect(currentUserPreferences.followedTeamIds.value, [9, 83]);
-    expect(homeRepository.calls, hasLength(2));
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pump();
+    expect(homeRepository.calls.last.teamId, 503);
+    homeRepository.calls.last.completer
+        .complete(_homeData(favoriteTeam: teams.last, followingTeams: teams));
+    await tester.pumpAndSettle();
 
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 19, followedTeamIds: [19, 83, 503]));
+    await tester.pump();
+    expect(homeRepository.calls.last.teamId, 503);
+    homeRepository.calls.last.completer
+        .complete(_homeData(favoriteTeam: teams.last, followingTeams: teams));
+    await tester.pumpAndSettle();
+
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 19, followedTeamIds: [19, 83]));
+    await tester.pump();
+    expect(homeRepository.calls.last.teamId, 19);
     homeRepository.calls.last.completer.complete(
-      _homeData(
-        favoriteTeam: const Team(teamId: 9, name: 'Manchester City'),
-        followingTeams: const [
-          Team(teamId: 83, name: 'FC Barcelona'),
-          Team(teamId: 9, name: 'Manchester City'),
-        ],
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
-
-    expect(find.text('Manchester City'), findsOneWidget);
-    expect(find.byKey(const ValueKey('home-brand-gradient')), findsNothing);
+        _homeData(favoriteTeam: const Team(teamId: 19, name: 'Arsenal')));
+    await tester.pumpAndSettle();
+    expect(find.text('Arsenal'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
@@ -319,6 +370,8 @@ HomeData _homeData({
   Team favoriteTeam = const Team(teamId: 83, name: 'Alpha FC'),
   List<Team>? followingTeams,
   List<HomeContentItem> highlights = const [_apiHighlightItem],
+  int? leaguePosition,
+  int? leagueRankDelta,
 }) {
   return HomeData(
     favoriteTeam: favoriteTeam,
@@ -331,11 +384,15 @@ HomeData _homeData({
     lastMatch: null,
     calendar: const [],
     highlights: highlights,
+    leaguePosition: leaguePosition,
+    leagueRankDelta: leagueRankDelta,
   );
 }
 
 class _HomeLoadCall {
-  _HomeLoadCall({required this.start, required this.end});
+  _HomeLoadCall({this.teamId, required this.start, required this.end});
+
+  final int? teamId;
 
   final DateTime? start;
   final DateTime? end;
@@ -346,49 +403,23 @@ class _ControlledHomeRepository implements HomeRepository {
   final List<_HomeLoadCall> calls = [];
 
   @override
-  Future<HomeData> load({DateTime? start, DateTime? end}) {
-    final call = _HomeLoadCall(start: start, end: end);
+  Future<HomeData> load({int? teamId, DateTime? start, DateTime? end}) {
+    final call = _HomeLoadCall(teamId: teamId, start: start, end: end);
     calls.add(call);
     return call.completer.future;
   }
 }
 
-class _RecordingFollowingTeamsRepository implements FollowingTeamsRepository {
-  final ValueNotifier<List<Team>> _cache = ValueNotifier(const []);
-  List<int>? savedTeamIds;
-  int? savedFavoriteTeamId;
-
-  @override
-  ValueListenable<List<Team>> get cachedTeams => _cache;
-
-  @override
-  Future<List<Team>> load() async => _cache.value;
-
-  @override
-  Future<List<Team>> replaceFollowing({
-    required Iterable<int> teamIds,
-    required int favoriteTeamId,
-  }) async {
-    savedTeamIds = teamIds.toList();
-    savedFavoriteTeamId = favoriteTeamId;
-    const teams = [
-      Team(teamId: 83, name: 'FC Barcelona'),
-      Team(teamId: 9, name: 'Manchester City'),
-    ];
-    _cache.value = teams;
-    return teams;
-  }
-}
-
 class _RecordingNewsRepository implements NewsRepository {
-  int loadCalls = 0;
+  final teamIds = <int>[];
+  int get loadCalls => teamIds.length;
 
   @override
   Future<List<HomeContentItem>> loadForTeam(
     int teamId, {
     required String language,
   }) async {
-    loadCalls++;
+    teamIds.add(teamId);
     return const [_loadedContentItem];
   }
 }
@@ -396,12 +427,12 @@ class _RecordingNewsRepository implements NewsRepository {
 const _loadedContentItem = HomeContentItem(
   title: 'Repository content',
   source: 'Repository',
-  timeLabel: 'Now',
+  publishedAt: null,
 );
 
 const _apiHighlightItem = HomeContentItem(
   title: 'Official API highlight',
   source: 'Official channel',
-  timeLabel: '1h ago',
+  publishedAt: null,
   destinationUrl: 'https://www.youtube.com/watch?v=official',
 );

@@ -53,8 +53,12 @@ def snapshot_database() -> dict:
 
 
 def sha256(path: Path) -> str:
+    # macOS 기본 Python 3.9에는 hashlib.file_digest가 없어요.
+    digest = hashlib.sha256()
     with path.open("rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def export_transfer(output: Path, mysqldump: Path) -> None:

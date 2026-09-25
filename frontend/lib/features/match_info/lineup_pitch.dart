@@ -252,7 +252,8 @@ class _PlayerDot extends StatelessWidget {
           SizedBox(
             width: 64,
             child: Text(
-              player.name,
+              playerNameLabel(context, player.playerId, player.name,
+                  short: true),
               style: Eyebrow.style,
               textAlign: TextAlign.center,
               maxLines: 2,

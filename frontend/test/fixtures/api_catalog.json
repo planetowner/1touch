@@ -3,7 +3,10 @@
     {"team_id": 8, "name": "Example United", "short_name": "United", "short_code": "UNT", "image_path": null},
     {"team_id": 19, "name": "Example City", "short_name": null, "short_code": "CTY", "image_path": null}
   ],
-  "competitions": [{"competition_id": 8, "name": "Premier League", "image_path": null}],
+  "competitions": [
+    {"competition_id": 8, "name": "Premier League", "short_code": "PL", "image_path": null},
+    {"competition_id": 2, "name": "Champions League", "short_code": "UCL", "image_path": null}
+  ],
   "seasons": [
     {"season_id": 28083, "competition_id": 8, "name": "2026/2027", "is_current": true},
     {"season_id": 23614, "competition_id": 8, "name": "2024/2025", "is_current": false}

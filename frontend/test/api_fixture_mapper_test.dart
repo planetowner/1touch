@@ -45,9 +45,8 @@ void main() {
       expect(fixture.roundName, '3');
       expect(fixture.stageId, 77432101);
       expect(fixture.stageName, 'Regular Season');
-      expect(fixture.leg, '1/1');
-      expect(fixture.displayRoundLabel, 'Round 3');
       expect(fixture.groupId, 42);
+      expect(fixture.leg, '1/1');
       expect(fixture.startingAt, '2026-08-29T14:00:00.000Z');
       expect(fixture.kickoff, DateTime.utc(2026, 8, 29, 14));
       expect(fixture.homeScore, 2);

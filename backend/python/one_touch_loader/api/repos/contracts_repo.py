@@ -22,7 +22,7 @@ def get_team_contracts(team_id: int, season_id: int, *, descending: bool = False
     rows = fetch_all_dict(f"""
         SELECT sm.player_id, p.display_name AS player_name, p.image_path AS player_image,
                sm.position_group_id, sm.jersey_number, p.date_of_birth,
-               w.estimated_weekly_gross_eur, sm.leadership_role,
+               w.estimated_weekly_gross_eur,
                c.start_date, c.end_date
         FROM team_squad_members sm
         JOIN players p ON p.player_id=sm.player_id
@@ -32,4 +32,20 @@ def get_team_contracts(team_id: int, season_id: int, *, descending: bool = False
         WHERE sm.team_id=%s AND sm.season_id=%s
         ORDER BY {order_by}
     """, (is_current, team_id, season_id))
-    return {"team_id": team_id, "season_id": season_id, "is_current": is_current, "players": rows}
+    leadership = fetch_all_dict("""
+        SELECT a.player_id, p.display_name AS player_name, a.leadership_role
+        FROM team_leadership_assignments a
+        JOIN players p ON p.player_id=a.player_id
+        WHERE a.team_id=%s AND a.season_id=%s
+        ORDER BY CASE WHEN a.leadership_role='captain' THEN 0 ELSE 1 END, a.player_id
+    """, (team_id, season_id))
+    roles_by_player = {}
+    for assignment in leadership:
+        player_id = assignment["player_id"]
+        # 한 선수가 시즌 중 부주장에서 주장으로 바뀌면 명단 배지에는 주장을 보여줘요.
+        if player_id not in roles_by_player or assignment["leadership_role"] == "captain":
+            roles_by_player[player_id] = assignment["leadership_role"]
+    for row in rows:
+        row["leadership_role"] = roles_by_player.get(row["player_id"])
+    return {"team_id": team_id, "season_id": season_id, "is_current": is_current,
+            "players": rows, "leadership": leadership}

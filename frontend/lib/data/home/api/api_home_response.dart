@@ -1,6 +1,7 @@
 import 'package:onetouch/data/fixtures/api/api_fixture_response.dart';
 import 'package:onetouch/data/home/api/api_home_highlights_response.dart';
 import 'package:onetouch/data/teams/api/api_team_response.dart';
+import 'package:onetouch/data/standings/api/api_standing_response.dart';
 
 /// Transport model for `GET /v1/home`.
 class ApiHomeResponse {
@@ -11,6 +12,7 @@ class ApiHomeResponse {
     required this.lastMatch,
     required List<ApiFixtureResponse> calendar,
     required this.highlights,
+    this.standing,
   })  : followingTeams = List.unmodifiable(followingTeams),
         calendar = List.unmodifiable(calendar);
 
@@ -20,9 +22,14 @@ class ApiHomeResponse {
   final ApiFixtureResponse? lastMatch;
   final List<ApiFixtureResponse> calendar;
   final ApiTeamHighlightsResponse? highlights;
+  final ApiStandingRowResponse? standing;
 
   factory ApiHomeResponse.fromJson(Map<String, dynamic> json) {
     return ApiHomeResponse(
+      standing: json['standing'] == null
+          ? null
+          : ApiStandingRowResponse.fromJson(
+              json['standing'] as Map<String, dynamic>),
       favoriteTeam: _optionalObject(
         json,
         'favorite_team',

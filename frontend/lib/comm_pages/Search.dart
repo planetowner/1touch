@@ -393,7 +393,7 @@ class _SearchContentState extends State<SearchContent> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    player.name,
+                    playerNameLabel(context, player.id, player.name),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Heading4.style.copyWith(color: colors.onSurface),
@@ -432,14 +432,15 @@ class _SearchContentState extends State<SearchContent> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    team.name,
+                    teamNameLabel(context, team.teamId, team.name),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Heading4.style.copyWith(color: colors.onSurface),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    widget.competitionContextResolver.labelFor(team.teamId),
+                    teamCompetitionLabel(context,
+                        widget.competitionContextResolver.resolve(team.teamId)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Body1.style.copyWith(color: colors.onSurface),
@@ -563,7 +564,7 @@ class _SearchContentState extends State<SearchContent> {
         _buildTeamLogo(team, size: 44),
         const SizedBox(height: 6),
         Text(
-          team.shortCode ?? team.name,
+          team.shortCode ?? teamNameLabel(context, team.teamId, team.name),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,

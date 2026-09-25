@@ -25,12 +25,11 @@ void main() {
           }),
           baseUri: Uri.parse('https://api.example.com/v1'),
           requestHeaders: () => const {'Authorization': 'Bearer test'}),
-      now: () => DateTime.utc(2026, 9, 19, 18),
     );
     final items = await repository.loadForTeam(83, language: 'ko-KR');
     expect(items, hasLength(1));
     expect(items.single.title, '바르셀로나 경기 소식');
-    expect(items.single.timeLabel, '1시간 전');
+    expect(items.single.publishedAt, DateTime.utc(2026, 9, 19, 17));
     expect(items.single.imageUrl, isNull);
     expect(items.single.destinationUrl, 'https://example.com/article/1');
     expect(() => items.clear(), throwsUnsupportedError);
