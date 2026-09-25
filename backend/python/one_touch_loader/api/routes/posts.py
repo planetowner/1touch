@@ -6,7 +6,7 @@ from ..repos import posts_repo
 from ..services.community_periods import PostPeriod
 
 router = APIRouter()
-Category = Literal["general", "analysis", "news"]
+Category = Literal["general", "analysis", "news", "fanart"]
 
 
 class DraftBody(BaseModel):
