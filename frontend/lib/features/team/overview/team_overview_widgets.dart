@@ -54,31 +54,42 @@ class TransferTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Name, Fee
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        playerNameLabel(
-                            context,
-                            transfer.playerId,
-                            transfer.playerName ??
-                                tr(context, 'Unknown Player')),
-                        style: Heading5.style,
-                        overflow: TextOverflow.ellipsis,
+                LayoutBuilder(
+                  builder: (context, constraints) => Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          playerNameLabel(
+                              context,
+                              transfer.playerId,
+                              transfer.playerName ??
+                                  tr(context, 'Unknown Player')),
+                          key: ValueKey(
+                              'transfer-player-name-${transfer.transferId}'),
+                          style: Heading5.style,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        transferValue,
-                        style: Heading5.style,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
+                      const SizedBox(width: 8),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth / 4,
+                        ),
+                        child: Text(
+                          transferValue,
+                          key:
+                              ValueKey('transfer-value-${transfer.transferId}'),
+                          style: Heading5.style,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 6),
 
@@ -99,6 +110,8 @@ class TransferTile extends StatelessWidget {
                             transfer.otherTeamName ??
                                 tr(context, 'Unknown Team')),
                         style: Body1.style,
+                        maxLines: 1,
+                        softWrap: false,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),

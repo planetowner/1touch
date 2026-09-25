@@ -167,12 +167,13 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                       constraints: const BoxConstraints(),
                     ),
                     Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          tr(context, _getMonthName(_currentMonth.month)),
-                          style: Heading3.style,
-                        ),
+                      child: Text(
+                        tr(context, _getMonthName(_currentMonth.month)),
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: Heading3.style,
                       ),
                     ),
                     IconButton(

@@ -64,6 +64,8 @@ class FavoriteTeamCard extends StatelessWidget {
                             teamNameLabel(context, team.id, team.name),
                             // '1. Fußballclub Heidenheim 1846 e.V',
                             style: Heading3.style,
+                            maxLines: 1,
+                            softWrap: false,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),

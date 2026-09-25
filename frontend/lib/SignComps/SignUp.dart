@@ -246,19 +246,16 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.topLeft,
-                                child: Text(
-                                  tr(
-                                      context,
-                                      "By clicking sign up, I hereby agree and consent to\n"
-                                      "1Touch’s Terms & Conditions; I confirm that I have\n"
-                                      "read 1Touch’s Privacy Policy."),
-                                  maxLines: 3,
-                                  softWrap: false,
-                                  style: Body2.style,
-                                ),
+                              child: Text(
+                                tr(
+                                        context,
+                                        "By clicking sign up, I hereby agree and consent to\n"
+                                        "1Touch’s Terms & Conditions; I confirm that I have\n"
+                                        "read 1Touch’s Privacy Policy.")
+                                    .replaceAll('\n', ' '),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: Body2.style,
                               ),
                             ),
                           ],

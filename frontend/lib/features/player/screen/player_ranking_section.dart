@@ -58,6 +58,8 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
                           Text(
                             '${teamNameLabel(context, widget.players[i].teamId, widget.players[i].teamName)} • #${widget.players[i].jerseyNumber}',
                             style: Body2.style,
+                            maxLines: 1,
+                            softWrap: false,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],

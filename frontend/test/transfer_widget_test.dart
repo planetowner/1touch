@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -11,6 +13,13 @@ import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 
 void main() {
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+  });
+
   Widget buildSubject({
     required int teamId,
     required TransferRepository repository,
@@ -185,6 +194,52 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Player 101'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('player name uses space left by a short transfer value',
+      (tester) async {
+    tester.view.physicalSize = const Size(375, 667);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _TestTransferRepository(
+      (teamId) async => TeamTransferWindow(
+        teamId: teamId,
+        windowKey: '2026 summer',
+        incoming: const [
+          TransferEntry(
+            transferId: 77,
+            playerId: 1077,
+            playerName: 'Dominik Livakovic',
+            direction: TransferDirection.incoming,
+            typeId: 219,
+            amount: 8500000,
+          ),
+        ],
+        outgoing: const [],
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 9, repository: repository));
+    await tester.pumpAndSettle();
+
+    final name = find.byKey(const ValueKey('transfer-player-name-77'));
+    expect(name, findsOneWidget);
+    final paragraph = tester.renderObject<RenderParagraph>(name);
+    expect(
+      paragraph.didExceedMaxLines,
+      isFalse,
+      reason:
+          '${paragraph.text.toPlainText()} needs ${paragraph.getMaxIntrinsicWidth(double.infinity)}px but has ${paragraph.size.width}px',
+    );
+    final value = find.byKey(const ValueKey('transfer-value-77'));
+    expect(value, findsOneWidget);
+    expect(
+      tester.renderObject<RenderParagraph>(value).didExceedMaxLines,
+      isFalse,
+    );
     expect(tester.takeException(), isNull);
   });
 

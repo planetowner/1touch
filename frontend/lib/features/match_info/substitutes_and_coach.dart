@@ -82,6 +82,8 @@ class _SubList extends StatelessWidget {
             child: Text(
                 playerNameLabel(context, sub.playerId, sub.name, short: true),
                 style: Eyebrow.style,
+                maxLines: 1,
+                softWrap: false,
                 overflow: TextOverflow.ellipsis),
           ),
           if (sub.subIn) ...[
