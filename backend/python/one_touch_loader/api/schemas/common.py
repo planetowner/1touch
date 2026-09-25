@@ -240,11 +240,20 @@ class PlayerContractOut(BaseModel):
     )
 
 
+class TeamLeadershipOut(BaseModel):
+    player_id: int
+    player_name: str
+    leadership_role: Literal["captain", "vice_captain"]
+
+
 class TeamContractsResponse(BaseModel):
     team_id: int
     season_id: int
     is_current: bool = Field(description="현재 시즌 여부예요. false이면 계약 종료일 정렬 옵션을 숨겨주세요.")
     players: List[PlayerContractOut]
+    leadership: List[TeamLeadershipOut] = Field(
+        description="해당 시즌에 지정된 주장·부주장 전체예요. 시즌 중 교체된 선수도 포함해요.",
+    )
 
 
 class HomeResponse(BaseModel):
