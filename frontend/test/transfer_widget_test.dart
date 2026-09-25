@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
@@ -212,6 +213,7 @@ void main() {
             transferId: 77,
             playerId: 1077,
             playerName: 'Dominik Livakovic',
+            jerseyNumber: 13,
             direction: TransferDirection.incoming,
             typeId: 219,
             amount: 8500000,
@@ -226,7 +228,13 @@ void main() {
     await tester.pumpAndSettle();
 
     final name = find.byKey(const ValueKey('transfer-player-name-77'));
+    final jersey = find.byKey(const ValueKey('transfer-jersey-77'));
     expect(name, findsOneWidget);
+    expect(jersey, findsOneWidget);
+    expect(tester.widget<Text>(jersey).data, '13');
+    expect(tester.widget<Text>(jersey).style, Body1.style);
+    expect(tester.widget<Text>(name).style, Body1_b.style);
+    expect(tester.getTopLeft(jersey).dx, lessThan(tester.getTopLeft(name).dx));
     final paragraph = tester.renderObject<RenderParagraph>(name);
     expect(
       paragraph.didExceedMaxLines,
@@ -236,10 +244,66 @@ void main() {
     );
     final value = find.byKey(const ValueKey('transfer-value-77'));
     expect(value, findsOneWidget);
+    expect(tester.widget<Text>(value).style, Body1_b.style);
     expect(
       tester.renderObject<RenderParagraph>(value).didExceedMaxLines,
       isFalse,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows common transfer type labels without truncating them',
+      (tester) async {
+    useCompactScreen(tester);
+    final repository = _TestTransferRepository(
+      (teamId) async => TeamTransferWindow(
+        teamId: teamId,
+        windowKey: '2026 summer',
+        incoming: const [
+          TransferEntry(
+            transferId: 81,
+            playerId: 1081,
+            playerName: 'Free Player',
+            direction: TransferDirection.incoming,
+            typeId: 220,
+            displayType: 'Free Transfer',
+          ),
+          TransferEntry(
+            transferId: 82,
+            playerId: 1082,
+            playerName: 'Unknown Player',
+            direction: TransferDirection.incoming,
+            typeId: 219,
+          ),
+          TransferEntry(
+            transferId: 83,
+            playerId: 1083,
+            playerName: 'Loan Player',
+            direction: TransferDirection.incoming,
+            typeId: 218,
+            displayType: 'On Loan',
+          ),
+        ],
+        outgoing: const [],
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(teamId: 9, repository: repository));
+    await tester.pumpAndSettle();
+
+    for (final transferId in [81, 82, 83]) {
+      final value = find.byKey(ValueKey('transfer-value-$transferId'));
+      expect(value, findsOneWidget);
+      expect(
+        tester.renderObject<RenderParagraph>(value).didExceedMaxLines,
+        isFalse,
+        reason: '${tester.widget<Text>(value).data} should fit at 320px',
+      );
+    }
+    expect(find.text('Free Transfer'), findsOneWidget);
+    expect(find.text('Unknown'), findsOneWidget);
+    expect(find.text('On Loan'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
