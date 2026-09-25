@@ -2,12 +2,16 @@ import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/football_name_labels.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
 
@@ -31,12 +35,12 @@ void main() {
     expect(find.byKey(const ValueKey('standing-loading')), findsOneWidget);
     expect(repository.requests, [(competitionId: 8, seasonId: 28083)]);
 
-    final seasonDropdown = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('standing-season-filter')),
+    final seasonDropdown = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-season-filter-shell')),
     );
     expect(seasonDropdown.value, 28083);
     expect(
-      seasonDropdown.items!.map((item) => item.value),
+      seasonDropdown.options.map((item) => item.value),
       [28083, 25583, 23614],
     );
 
@@ -160,6 +164,14 @@ void main() {
     expect(
       tester
           .widget<Icon>(
+            find.byKey(const ValueKey('standing-last-five-9-0')),
+          )
+          .color,
+      Colors.green,
+    );
+    expect(
+      tester
+          .widget<Icon>(
             find.byKey(const ValueKey('standing-last-five-9-1')),
           )
           .icon,
@@ -222,13 +234,13 @@ void main() {
       expect(tester.getSize(header).width, 24);
     }
 
-    for (final label in ['득점', '실점', '득실차', '승점']) {
+    for (final label in ['득점', '실점', '득실', '승점']) {
       final textRect = tester.getRect(find.text(label));
       final headerRect = tester.getRect(
         find.byKey(ValueKey('standing-header-${switch (label) {
           '득점' => 'gf',
           '실점' => 'ga',
-          '득실차' => 'gd',
+          '득실' => 'gd',
           _ => 'pts',
         }}')),
       );
@@ -314,10 +326,10 @@ void main() {
 
     await tester.pumpWidget(_app(repository));
 
-    final seasonDropdown = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('standing-season-filter')),
+    final seasonDropdown = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-season-filter-shell')),
     );
-    seasonDropdown.onChanged!(23614);
+    seasonDropdown.onChanged(23614);
     await tester.pump();
 
     pending[28083]!.complete([_standing(teamName: 'Stale United')]);
@@ -511,10 +523,10 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
     await tester.pump();
 
-    final seasonDropdown = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('standing-season-filter')),
+    final seasonDropdown = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-season-filter-shell')),
     );
-    seasonDropdown.onChanged!(23614);
+    seasonDropdown.onChanged(23614);
     await tester.pump();
 
     pending[28083]!.complete([
@@ -566,11 +578,11 @@ void main() {
     );
     await tester.pump();
 
-    final leagueFilter = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('standing-league-filter')),
+    final leagueFilter = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-league-filter-shell')),
     );
-    final seasonFilter = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('standing-season-filter')),
+    final seasonFilter = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-season-filter-shell')),
     );
 
     expect(leagueFilter.value, 2);
@@ -596,6 +608,49 @@ void main() {
       contains((competitionId: 2, seasonId: 25580)),
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows the full Korean Champions League filter label',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _app(
+        _successfulStandingRepository(),
+        requestedCompetitionId: 2,
+        selectionRequestId: 1,
+        locale: const Locale('ko'),
+        names: const FootballNames(
+          competitions: {2: 'UEFA 챔피언스리그'},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final triggerLabel = find.descendant(
+      of: find.byKey(const ValueKey('standing-league-filter-shell')),
+      matching: find.text('챔피언스리그'),
+    );
+    expect(triggerLabel, findsOneWidget);
+    final triggerParagraph = tester.renderObject<RenderParagraph>(triggerLabel);
+    expect(
+      triggerParagraph.didExceedMaxLines,
+      isFalse,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('standing-league-filter-shell')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .renderObject<RenderParagraph>(
+            find.text('UEFA 챔피언스리그').last,
+          )
+          .didExceedMaxLines,
+      isFalse,
+    );
   });
 
   testWidgets('does not invent a default league for an unsupported team',
@@ -630,19 +685,23 @@ Widget _app(
   int? requestedCompetitionId,
   int selectionRequestId = 0,
   Locale? locale,
+  FootballNames names = const FootballNames(),
 }) {
   return MaterialApp(
     locale: locale,
     supportedLocales: const [Locale('en'), Locale('ko')],
     localizationsDelegates: appLocalizationDelegates,
     theme: app_style.whitetheme,
-    home: Scaffold(
-      body: StandingTab(
-        team: const {'id': 9},
-        regularStandingRepository: repository,
-        xgStandingRepository: xgRepository,
-        requestedCompetitionId: requestedCompetitionId,
-        selectionRequestId: selectionRequestId,
+    home: FootballNamesScope(
+      names: names,
+      child: Scaffold(
+        body: StandingTab(
+          team: const {'id': 9},
+          regularStandingRepository: repository,
+          xgStandingRepository: xgRepository,
+          requestedCompetitionId: requestedCompetitionId,
+          selectionRequestId: selectionRequestId,
+        ),
       ),
     ),
   );

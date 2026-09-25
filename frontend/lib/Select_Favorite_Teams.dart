@@ -1,4 +1,5 @@
-import 'dart:ui';
+import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -84,6 +85,31 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
 
   // --- OVERLAY LOGIC ---
 
+  double _leagueDropdownMenuWidth(BuildContext context) {
+    const style = Body2_b.style;
+    final textScaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    var longestLabel = 0.0;
+    for (final league in _leagues) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: competitionNameLabel(
+            context,
+            league.competitionId,
+            league.name,
+          ).toUpperCase(),
+          style: style,
+        ),
+        textDirection: direction,
+        textScaler: textScaler,
+        maxLines: 1,
+      )..layout();
+      longestLabel = math.max(longestLabel, painter.width);
+    }
+    final triggerWidth = MediaQuery.sizeOf(context).width * 0.6;
+    return math.max(triggerWidth, longestLabel + 80);
+  }
+
   void _toggleDropdown() => _isDropdownOpen ? _removeOverlay() : _showOverlay();
 
   void _removeOverlay() {
@@ -93,7 +119,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
   }
 
   void _showOverlay() {
-    final dropdownWidth = MediaQuery.of(context).size.width * 0.6;
+    final dropdownWidth = _leagueDropdownMenuWidth(context);
 
     _overlayEntry = OverlayEntry(
       builder: (context) {
@@ -110,82 +136,74 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
               child: CompositedTransformFollower(
                 link: _layerLink,
                 showWhenUnlinked: false,
-                offset: Offset.zero,
+                offset: const Offset(0, AppDropdownTokens.height + 4),
                 child: Material(
                   color: Colors.transparent,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color:
-                              appColors.cardBackground.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2)),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: _leagues.map((league) {
-                            final isSelected = league.name == selectedLeague;
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  selectedLeague = league.name;
-                                  _focusedIndex = 0;
-                                  _focusedTeam =
-                                      _leagueTeams[league.competitionId]?.first;
-                                });
-                                if (_pageController.hasClients) {
-                                  _pageController.jumpToPage(0);
-                                }
-                                _removeOverlay();
-                              },
-                              child: Padding(
-                                padding: AppDropdownTokens.triggerPadding,
-                                child: Row(
-                                  children: [
-                                    Image.network(
-                                      league.imagePath ?? '',
-                                      width: 24,
-                                      height: 24,
-                                      errorBuilder: (_, __, ___) =>
-                                          competitionLogoFallback(
-                                              league.competitionId,
-                                              size: 24),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: _leagues.map((league) {
+                          final isSelected = league.name == selectedLeague;
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedLeague = league.name;
+                                _focusedIndex = 0;
+                                _focusedTeam =
+                                    _leagueTeams[league.competitionId]?.first;
+                              });
+                              if (_pageController.hasClients) {
+                                _pageController.jumpToPage(0);
+                              }
+                              _removeOverlay();
+                            },
+                            child: Padding(
+                              padding: AppDropdownTokens.triggerPadding,
+                              child: Row(
+                                children: [
+                                  Image.network(
+                                    league.imagePath ?? '',
+                                    width: 24,
+                                    height: 24,
+                                    errorBuilder: (_, __, ___) =>
+                                        competitionLogoFallback(
+                                            league.competitionId,
+                                            size: 24),
+                                  ),
+                                  const SizedBox(
+                                    width: AppDropdownTokens.gap,
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      competitionNameLabel(context,
+                                              league.competitionId, league.name)
+                                          .toUpperCase(),
+                                      style: isSelected
+                                          ? Body2_b.style.copyWith(
+                                              fontWeight: FontWeight.bold)
+                                          : Body2_b.style.copyWith(
+                                              color: appColors.mutedForeground),
                                     ),
-                                    const SizedBox(
-                                      width: AppDropdownTokens.gap,
+                                  ),
+                                  if (isSelected)
+                                    AppDropdownChevron(
+                                      expanded: true,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     ),
-                                    Expanded(
-                                      child: Text(
-                                        competitionNameLabel(
-                                                context,
-                                                league.competitionId,
-                                                league.name)
-                                            .toUpperCase(),
-                                        style: isSelected
-                                            ? Body2_b.style.copyWith(
-                                                fontWeight: FontWeight.bold)
-                                            : Body2_b.style.copyWith(
-                                                color:
-                                                    appColors.mutedForeground),
-                                      ),
-                                    ),
-                                    if (isSelected)
-                                      AppDropdownChevron(
-                                        expanded: true,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
-                                  ],
-                                ),
+                                ],
                               ),
-                            );
-                          }).toList(),
-                        ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -537,15 +555,19 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
         onTap: _toggleDropdown,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.6,
-          padding: AppDropdownTokens.triggerPadding,
+          height: AppDropdownTokens.height,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
             border: Border.all(color: Colors.white12),
           ),
-          child: Row(
+          child: Stack(
             children: [
-              Expanded(
+              Positioned(
+                left: 16,
+                right: 40,
+                top: 8,
+                bottom: 8,
                 child: Row(
                   children: [
                     Image.network(
@@ -570,10 +592,13 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: AppDropdownTokens.gap),
-              AppDropdownChevron(
-                expanded: _isDropdownOpen,
-                color: onBrand,
+              Positioned(
+                right: 8,
+                top: 8,
+                child: AppDropdownChevron(
+                  expanded: _isDropdownOpen,
+                  color: onBrand,
+                ),
               ),
             ],
           ),
