@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
@@ -236,19 +237,15 @@ void main() {
               final toggle = find.byKey(
                 const ValueKey('standing-view-toggle'),
               );
-              final leagueFilter = tester.widget<DropdownButton<int>>(
-                find.byKey(const ValueKey('standing-league-filter')),
+              final leagueFilter = tester.widget<AppDropdown<int>>(
+                leagueShell,
               );
-              final seasonFilter = tester.widget<DropdownButton<int>>(
-                find.byKey(const ValueKey('standing-season-filter')),
+              final seasonFilter = tester.widget<AppDropdown<int>>(
+                seasonShell,
               );
               final filterLabels = [
-                ...leagueFilter.items!.map(
-                  (item) => (item.child as Text).data!,
-                ),
-                ...seasonFilter.items!.map(
-                  (item) => (item.child as Text).data!,
-                ),
+                ...leagueFilter.options.map((item) => item.label),
+                ...seasonFilter.options.map((item) => item.label),
               ];
 
               expect(
@@ -262,12 +259,9 @@ void main() {
                 closeTo(size.width - 48, 0.1),
               );
               expect(
-                tester.getSize(leagueShell).width,
-                closeTo((size.width - 64) / 2, 0.1),
-              );
-              expect(
-                tester.getSize(seasonShell).width,
-                closeTo((size.width - 64) / 2, 0.1),
+                tester.getSize(leagueShell).width +
+                    tester.getSize(seasonShell).width,
+                closeTo(size.width - 56, 0.1),
               );
               expect(
                 find.descendant(
@@ -810,14 +804,14 @@ void main() {
     await tester.drag(tabView, const Offset(-393, 0));
     await tester.pump(const Duration(milliseconds: 350));
 
-    final leagueFilter = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('standing-league-filter')),
+    final leagueFilter = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-league-filter-shell')),
     );
-    final seasonFilter = tester.widget<DropdownButton<int>>(
-      find.byKey(const ValueKey('standing-season-filter')),
+    final seasonFilter = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('standing-season-filter-shell')),
     );
-    expect(leagueFilter.style?.color, app_style.AppPalette.black);
-    expect(seasonFilter.style?.color, app_style.AppPalette.black);
+    expect(leagueFilter.foregroundColor, app_style.AppPalette.black);
+    expect(seasonFilter.foregroundColor, app_style.AppPalette.black);
     expect(
       _effectiveTextColor(tester, find.text('STANDING').first),
       app_style.AppPalette.black,
@@ -836,13 +830,13 @@ void main() {
     final attributesFilterFinder = find.byKey(
       const ValueKey('analysis-attributes-filter'),
     );
-    final attributesFilter = tester.widget<PopupMenuButton<int>>(
+    final attributesFilter = tester.widget<AppDropdown<int>>(
       attributesFilterFinder,
     );
     final formFilterFinder = find.byKey(
       const ValueKey('analysis-form-filter'),
     );
-    final formFilter = tester.widget<PopupMenuButton<CurrentFormOption>>(
+    final formFilter = tester.widget<AppDropdown<CurrentFormOption>>(
       formFilterFinder,
     );
 
@@ -870,21 +864,11 @@ void main() {
           ?.color,
       app_style.AppPalette.black,
     );
-    for (final entry in attributesFilter.itemBuilder(
-      tester.element(attributesFilterFinder),
-    )) {
-      final item = entry as PopupMenuItem<int>;
-      final label = (item.child as Text).data!;
-      expect(label, label.toUpperCase());
+    for (final option in attributesFilter.options) {
+      expect(option.label, option.label.toUpperCase());
     }
-    for (final entry in formFilter.itemBuilder(
-      tester.element(formFilterFinder),
-    )) {
-      final item = entry as PopupMenuItem<CurrentFormOption>;
-      final labels = (item.child as Row).children.whereType<Text>();
-      for (final text in labels) {
-        expect(text.data, text.data!.toUpperCase());
-      }
+    for (final option in formFilter.options) {
+      expect(option.label, option.label.toUpperCase());
     }
     await tester.pump(const Duration(milliseconds: 450));
     for (final key in const [

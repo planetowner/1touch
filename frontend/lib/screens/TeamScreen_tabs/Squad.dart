@@ -248,8 +248,6 @@ class _SquadTabState extends State<SquadTab> {
   bool _isLoading = true;
   SortOption _sortOption = SortOption.position;
   bool _isAscending = true;
-  bool _isDropdownOpen = false;
-  bool _isSeasonDropdownOpen = false;
   int? _selectedSeasonId;
   bool? _rosterIsCurrent;
   Object? _loadError;
@@ -353,7 +351,6 @@ class _SquadTabState extends State<SquadTab> {
   void _selectSeason(Season season) {
     setState(() {
       _selectedSeasonId = season.seasonId;
-      _isSeasonDropdownOpen = false;
       if (!season.isCurrent && _sortOption == SortOption.contractLength) {
         _sortOption = SortOption.position;
       }
@@ -534,9 +531,9 @@ class _SquadTabState extends State<SquadTab> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _seasonDropdown(),
+        Expanded(child: _seasonDropdown()),
         const SizedBox(width: 12),
-        _sortDropdown(),
+        Expanded(child: _sortDropdown()),
       ],
     );
   }
@@ -549,223 +546,96 @@ class _SquadTabState extends State<SquadTab> {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      key: const ValueKey('squad-season-dropdown'),
-      width: 88,
-      decoration: BoxDecoration(
-        color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          GestureDetector(
-            key: const ValueKey('squad-season-trigger'),
-            onTap: () => setState(() {
-              _isSeasonDropdownOpen = !_isSeasonDropdownOpen;
-              _isDropdownOpen = false;
-            }),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: AppDropdownTokens.triggerPadding,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        _seasonLabel(selectedSeason),
-                        style: Body2_b.style,
-                      ),
-                    ),
-                  ),
-                  AppDropdownChevron(
-                    expanded: _isSeasonDropdownOpen,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            child: _isSeasonDropdownOpen
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final season in seasons) _seasonDropdownItem(season),
-                      const SizedBox(height: 4),
-                    ],
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
-    );
-  }
+    final background = isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox;
+    final foreground = Theme.of(context).colorScheme.onSurface;
 
-  Widget _seasonDropdownItem(Season season) {
-    final selected = season.seasonId == _selectedSeasonId;
-    return GestureDetector(
-      key: ValueKey('squad-season-option-${season.seasonId}'),
-      onTap: () => _selectSeason(season),
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: AppDropdownTokens.triggerPadding,
-        child: Row(
-          children: [
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(_seasonLabel(season), style: Body2_b.style),
+    return AppDropdown<int>(
+      key: const ValueKey('squad-season-dropdown'),
+      triggerKey: const ValueKey('squad-season-trigger'),
+      value: selectedSeason.seasonId,
+      backgroundColor: background,
+      foregroundColor: foreground,
+      textStyle: Body2_b.style,
+      options: seasons
+          .map(
+            (season) => AppDropdownOption<int>(
+              value: season.seasonId,
+              label: _seasonLabel(season),
+              optionKey: ValueKey(
+                'squad-season-option-${season.seasonId}',
               ),
             ),
-            if (selected)
-              Icon(
-                Icons.check,
-                color: Theme.of(context).colorScheme.onSurface,
-                size: 16,
-              )
-            else
-              const SizedBox(width: 16),
-          ],
-        ),
-      ),
+          )
+          .toList(),
+      onChanged: (seasonId) {
+        final season = seasons.firstWhere((item) => item.seasonId == seasonId);
+        _selectSeason(season);
+      },
     );
   }
 
   Widget _sortDropdown() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    final background = isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final sortOptions = availableSquadSortOptions(isCurrent: _isCurrentSeason);
+
+    return AppDropdown<String>(
       key: const ValueKey('squad-sort-dropdown'),
-      width: 172,
-      decoration: BoxDecoration(
-        color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          GestureDetector(
-            onTap: () => setState(() {
-              _isDropdownOpen = !_isDropdownOpen;
-              _isSeasonDropdownOpen = false;
-            }),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: AppDropdownTokens.triggerPadding,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      tr(context, _sortOption.label).toUpperCase(),
-                      style: Body2_b.style,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  AppDropdownChevron(
-                    key: const ValueKey('squad-sort-arrow'),
-                    expanded: _isDropdownOpen,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ],
-              ),
-            ),
+      triggerKey: const ValueKey('squad-sort-trigger'),
+      chevronKey: const ValueKey('squad-sort-arrow'),
+      value: null,
+      selectedLabel: tr(context, _sortOption.label).toUpperCase(),
+      backgroundColor: background,
+      foregroundColor: foreground,
+      textStyle: Body2_b.style,
+      options: [
+        AppDropdownOption<String>(
+          value: 'direction-ascending',
+          label: tr(context, 'ASCENDING'),
+          optionKey: const ValueKey('squad-sort-option-ascending'),
+          selected: _isAscending,
+          selectedIconKey: ValueKey(
+            'squad-sort-selected-icon-${tr(context, 'ASCENDING')}',
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            child: _isDropdownOpen
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Section 1: Ascending / Descending
-                      _dropdownItem(
-                        label: tr(context, 'ASCENDING'),
-                        selected: _isAscending,
-                        onTap: () => setState(() {
-                          _isAscending = true;
-                          _isDropdownOpen = false;
-                        }),
-                      ),
-                      _dropdownItem(
-                        label: tr(context, 'DESCENDING'),
-                        selected: !_isAscending,
-                        onTap: () => setState(() {
-                          _isAscending = false;
-                          _isDropdownOpen = false;
-                        }),
-                      ),
-
-                      // Divider
-                      Container(
-                        height: 1,
-                        color: AppColors.of(context).divider,
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                      ),
-
-                      // Section 2: Sort fields
-                      ...availableSquadSortOptions(
-                        isCurrent: _isCurrentSeason,
-                      ).map((option) => _dropdownItem(
-                            label: option.label.toUpperCase(),
-                            selected: _sortOption == option,
-                            onTap: () => setState(() {
-                              _sortOption = option;
-                              _isDropdownOpen = false;
-                            }),
-                          )),
-
-                      const SizedBox(height: 4),
-                    ],
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dropdownItem({
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: AppDropdownTokens.triggerPadding,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(tr(context, label), style: Body2_b.style),
-              ),
-            ),
-            if (selected)
-              Icon(
-                key: ValueKey('squad-sort-selected-icon-$label'),
-                Icons.check,
-                color: Theme.of(context).colorScheme.onSurface,
-                size: 16,
-              )
-            else
-              const SizedBox(width: 16), // reserve same space as checkmark
-          ],
         ),
-      ),
+        AppDropdownOption<String>(
+          value: 'direction-descending',
+          label: tr(context, 'DESCENDING'),
+          optionKey: const ValueKey('squad-sort-option-descending'),
+          selected: !_isAscending,
+          selectedIconKey: ValueKey(
+            'squad-sort-selected-icon-${tr(context, 'DESCENDING')}',
+          ),
+        ),
+        for (var index = 0; index < sortOptions.length; index++)
+          AppDropdownOption<String>(
+            value: 'sort-${sortOptions[index].name}',
+            label: tr(context, sortOptions[index].label).toUpperCase(),
+            optionKey: ValueKey(
+              'squad-sort-option-${sortOptions[index].name}',
+            ),
+            selected: _sortOption == sortOptions[index],
+            dividerBefore: index == 0,
+            selectedIconKey: ValueKey(
+              'squad-sort-selected-icon-${sortOptions[index].label.toUpperCase()}',
+            ),
+          ),
+      ],
+      onChanged: (value) {
+        setState(() {
+          if (value == 'direction-ascending') {
+            _isAscending = true;
+          } else if (value == 'direction-descending') {
+            _isAscending = false;
+          } else {
+            final name = value.substring('sort-'.length);
+            _sortOption = sortOptions.firstWhere(
+              (option) => option.name == name,
+            );
+          }
+        });
+      },
     );
   }
 }

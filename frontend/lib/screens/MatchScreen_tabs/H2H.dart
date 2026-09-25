@@ -251,74 +251,30 @@ class _H2HTabState extends State<H2HTab> {
         children: [
           // Functional dropdown
           Flexible(
-            child: SizedBox(
+            child: AppDropdown<int>(
               key: const ValueKey('match-h2h-limit-dropdown'),
               width: 152,
-              height: AppDropdownTokens.height,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: surface,
-                  borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int>(
-                    isExpanded: true,
-                    isDense: true,
-                    value: _selectedMatches,
-                    dropdownColor: surface,
-                    borderRadius:
-                        BorderRadius.circular(AppDropdownTokens.radius),
-                    icon: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: AppDropdownChevron(color: foreground),
+              value: _selectedMatches,
+              backgroundColor: surface,
+              foregroundColor: foreground,
+              textStyle: Body2_b.style,
+              options: _matchOptions
+                  .map(
+                    (count) => AppDropdownOption<int>(
+                      value: count,
+                      label: tr(
+                        context,
+                        'Last {count} matches',
+                        {'count': count},
+                      ).toUpperCase(),
                     ),
-                    style: Body2_b.style.copyWith(color: foreground),
-                    onChanged: (val) {
-                      if (val == null || val == _selectedMatches) return;
-                      setState(() => _selectedMatches = val);
-                      _loadHeadToHead();
-                    },
-                    items: _matchOptions.map((n) {
-                      return DropdownMenuItem<int>(
-                        value: n,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 16),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              tr(context, 'Last {count} matches', {'count': n})
-                                  .toUpperCase(),
-                              maxLines: 1,
-                              softWrap: false,
-                              style: Body2_b.style.copyWith(color: foreground),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    selectedItemBuilder: (context) => _matchOptions.map((n) {
-                      return Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 16),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              tr(context, 'Last {count} matches',
-                                  {'count': _selectedMatches}).toUpperCase(),
-                              maxLines: 1,
-                              softWrap: false,
-                              style: Body2_b.style.copyWith(color: foreground),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value == _selectedMatches) return;
+                setState(() => _selectedMatches = value);
+                _loadHeadToHead();
+              },
             ),
           ),
           const SizedBox(width: 8),

@@ -62,61 +62,31 @@ class PostComposerFields extends StatelessWidget {
               curve: Curves.easeOut,
               width: categoryFilterWidth,
               height: AppDropdownTokens.height,
-              child: PopupMenuButton<PostCategory>(
-                initialValue: selectedCategory,
-                position: PopupMenuPosition.under,
-                offset: const Offset(0, 4),
-                color: AppPalette.white,
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 160,
-                  maxWidth: 220,
-                ),
-                onSelected: onCategoryChanged,
-                itemBuilder: (context) => PostCategory.values
+              child: AppDropdown<PostCategory>(
+                key: const ValueKey('community-category-filter'),
+                value: selectedCategory,
+                selectedLabel: selectedCategoryLabel,
+                width: categoryFilterWidth,
+                minWidth: 160,
+                backgroundColor: AppPalette.white,
+                foregroundColor: Colors.black,
+                textStyle: Body1_b.style,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x40000000),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+                options: PostCategory.values
                     .map(
-                      (category) => PopupMenuItem<PostCategory>(
+                      (category) => AppDropdownOption<PostCategory>(
                         value: category,
-                        child: Text(
-                          tr(context, category.label).toUpperCase(),
-                          style: Body1_b.style.copyWith(color: Colors.black),
-                        ),
+                        label: tr(context, category.label).toUpperCase(),
                       ),
                     )
                     .toList(),
-                child: Container(
-                  key: const ValueKey('community-category-filter'),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppPalette.white,
-                    borderRadius:
-                        BorderRadius.circular(AppDropdownTokens.radius),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x40000000),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          selectedCategoryLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Body1_b.style.copyWith(color: Colors.black),
-                        ),
-                      ),
-                      const SizedBox(width: AppDropdownTokens.gap),
-                      const AppDropdownChevron(color: Colors.black),
-                    ],
-                  ),
-                ),
+                onChanged: onCategoryChanged,
               ),
             ),
           ],

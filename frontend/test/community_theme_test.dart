@@ -8,6 +8,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/community/mock/community_catalog.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
+import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/AddPost.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -358,14 +359,14 @@ void main() {
       tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
       app_style.AppPalette.lightModeDarkGrey,
     );
-    final category = tester.widget<Container>(
+    final category = tester.widget<AppDropdown<PostCategory>>(
       find.byKey(const ValueKey('community-category-filter')),
     );
     final mediaPicker = tester.widget<Container>(
       find.byKey(const ValueKey('community-media-picker')),
     );
     expect(
-      (category.decoration as BoxDecoration).color,
+      category.backgroundColor,
       app_style.AppPalette.white,
     );
     expect(

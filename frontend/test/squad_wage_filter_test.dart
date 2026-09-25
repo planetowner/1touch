@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
@@ -63,30 +64,45 @@ void main() {
     );
     expect(repository.requestedSeasonIds, [27965]);
     expect(find.text('26/27'), findsOneWidget);
+    expect(
+      tester
+          .renderObject<RenderParagraph>(find.text('26/27'))
+          .didExceedMaxLines,
+      isFalse,
+    );
     await tester.tap(find.text('POSITION'));
     await tester.pumpAndSettle();
 
     expect(find.text('WAGE'), findsOneWidget);
     expect(find.text('CONTRACT LENGTH'), findsOneWidget);
     final dropdown = find.byKey(const ValueKey('squad-sort-dropdown'));
+    final trigger = find.byKey(const ValueKey('squad-sort-trigger'));
     final arrow = find.byKey(const ValueKey('squad-sort-arrow'));
+    final ascendingOption = find.byKey(
+      const ValueKey('squad-sort-option-ascending'),
+    );
+    final positionOption = find.byKey(
+      const ValueKey('squad-sort-option-position'),
+    );
     final ascendingCheck = find.byKey(
       const ValueKey('squad-sort-selected-icon-ASCENDING'),
     );
     final positionCheck = find.byKey(
       const ValueKey('squad-sort-selected-icon-POSITION'),
     );
-    expect(tester.getSize(dropdown).width, 172);
+    expect(tester.getSize(dropdown).width, 166.5);
     expect(
-      tester.getRect(dropdown).right - tester.getRect(arrow).right,
+      tester.getRect(trigger).right - tester.getRect(arrow).right,
       8,
     );
     expect(
-      tester.getRect(dropdown).right - tester.getRect(ascendingCheck).right,
+      tester.getRect(ascendingOption).right -
+          tester.getRect(ascendingCheck).right,
       8,
     );
     expect(
-      tester.getRect(dropdown).right - tester.getRect(positionCheck).right,
+      tester.getRect(positionOption).right -
+          tester.getRect(positionCheck).right,
       8,
     );
     expect(tester.takeException(), isNull);

@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
@@ -71,7 +72,7 @@ void main() {
     expect(chart.data.lineBarsData[1].color, Colors.white);
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
-    expect(tester.getSize(filter).width, lessThanOrEqualTo(145));
+    expect(tester.getSize(filter).width, lessThanOrEqualTo(272));
     expect(
       find.descendant(of: filter, matching: find.text('24/25')),
       findsOneWidget,
@@ -99,7 +100,9 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('BET').last);
+    await tester.tap(
+      find.byKey(const ValueKey('analysis-form-option-2-200')),
+    );
     await tester.pumpAndSettle();
 
     expect(queries, hasLength(2));
@@ -308,23 +311,34 @@ void main() {
     await tester.pumpAndSettle();
 
     final filterFinder = find.byKey(const ValueKey('analysis-form-filter'));
-    final popup = tester.widget<PopupMenuButton<CurrentFormOption>>(
+    final closedFilterWidth = tester.getSize(filterFinder).width;
+    final popup = tester.widget<AppDropdown<CurrentFormOption>>(
       filterFinder,
     );
     final options = await repository.loadOptions(83);
-    final menu = popup.itemBuilder(tester.element(filterFinder));
-    expect(menu, hasLength(options.length));
+    expect(popup.options, hasLength(options.length));
     expect(
-      menu
-          .cast<PopupMenuItem<CurrentFormOption>>()
-          .map((item) => (item.value!.teamId, item.value!.seasonId)),
+      popup.options.map((item) => (item.value.teamId, item.value.seasonId)),
       options.map((option) => (option.teamId, option.seasonId)),
     );
 
     await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
     await tester.pumpAndSettle();
 
-    expect(find.text('BAR'), findsWidgets);
+    expect(find.textContaining('BAR'), findsWidgets);
+    final firstOption = options.first;
+    expect(
+      tester
+          .getSize(
+            find.byKey(
+              ValueKey(
+                'analysis-form-option-${firstOption.teamId}-${firstOption.seasonId}',
+              ),
+            ),
+          )
+          .width,
+      closeTo(closedFilterWidth, 0.1),
+    );
     expect(tester.takeException(), isNull);
   });
 }

@@ -419,14 +419,7 @@ class _StandingTabState extends State<StandingTab> {
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                child: Row(
-                  key: const ValueKey('standing-filter-row'),
-                  children: [
-                    Expanded(child: _buildLeagueDropdown()),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildSeasonDropdown()),
-                  ],
-                ),
+                child: _buildFilterRow(),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -579,6 +572,84 @@ class _StandingTabState extends State<StandingTab> {
     widget.onBracketInteractionChanged?.call(isInteracting);
   }
 
+  Widget _buildFilterRow() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 8.0;
+        final available = constraints.maxWidth - gap;
+        final equalWidth = available / 2;
+        final selectedCompetition =
+            competitionRepository.findById(selectedLeagueId);
+        final fullLeagueLabel = selectedCompetition == null
+            ? ''
+            : competitionNameLabel(
+                context,
+                selectedCompetition.competitionId,
+                selectedCompetition.name,
+              ).toUpperCase();
+        final leagueLabel = _compactCompetitionFilterLabel(fullLeagueLabel);
+        final seasons = _seasonOptionsForCompetition(selectedLeagueId);
+        var seasonLabel = '';
+        for (final season in seasons) {
+          if (season.seasonId == selectedSeasonId) {
+            seasonLabel = season.name.toUpperCase();
+            break;
+          }
+        }
+
+        final leagueDesired = _filterTriggerWidth(leagueLabel);
+        final seasonDesired = _filterTriggerWidth(seasonLabel);
+        var leagueWidth = equalWidth;
+        var seasonWidth = equalWidth;
+        if (leagueLabel.runes.any((codePoint) => codePoint > 0x7f)) {
+          leagueWidth = available * 0.54;
+          seasonWidth = available - leagueWidth;
+        } else if (leagueDesired > equalWidth && seasonDesired < equalWidth) {
+          final requested = leagueDesired - equalWidth;
+          final spare = equalWidth - seasonDesired;
+          final borrowed = requested < spare ? requested : spare;
+          leagueWidth += borrowed;
+          seasonWidth -= borrowed;
+        } else if (seasonDesired > equalWidth && leagueDesired < equalWidth) {
+          final requested = seasonDesired - equalWidth;
+          final spare = equalWidth - leagueDesired;
+          final borrowed = requested < spare ? requested : spare;
+          seasonWidth += borrowed;
+          leagueWidth -= borrowed;
+        }
+
+        return Row(
+          key: const ValueKey('standing-filter-row'),
+          children: [
+            SizedBox(width: leagueWidth, child: _buildLeagueDropdown()),
+            const SizedBox(width: gap),
+            SizedBox(width: seasonWidth, child: _buildSeasonDropdown()),
+          ],
+        );
+      },
+    );
+  }
+
+  double _filterTriggerWidth(String label) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: Body2_b.style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final fallbackGlyphAllowance =
+        label.runes.any((codePoint) => codePoint > 0x7f) ? 12.0 : 0.0;
+    return painter.width + 64 + fallbackGlyphAllowance;
+  }
+
+  String _compactCompetitionFilterLabel(String label) {
+    if (label.startsWith('UEFA ') &&
+        label.runes.any((codePoint) => codePoint > 0x7f)) {
+      return label.substring(5);
+    }
+    return label;
+  }
+
   Widget _buildLeagueDropdown() {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
@@ -588,57 +659,47 @@ class _StandingTabState extends State<StandingTab> {
             .toList()
         : competitionRepository.allCompetitions;
 
-    return Container(
+    return AppDropdown<int>(
       key: const ValueKey('standing-league-filter-shell'),
-      height: AppDropdownTokens.height,
-      padding: const EdgeInsets.only(left: 16, right: 8),
-      decoration: ShapeDecoration(
-        color: appColors.subtleBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-        ),
+      triggerKey: const ValueKey('standing-league-filter'),
+      value: selectedLeagueId,
+      selectedLabel: _compactCompetitionFilterLabel(
+        competitionNameLabel(
+          context,
+          selectedLeagueId,
+          competitionRepository.findById(selectedLeagueId)?.name ?? '',
+        ).toUpperCase(),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          key: const ValueKey('standing-league-filter'),
-          value: selectedLeagueId,
-          isExpanded: true,
-          isDense: true,
-          icon: AppDropdownChevron(color: colors.onSurface),
-          dropdownColor: appColors.cardBackground,
-          style: Body2_b.style.copyWith(color: colors.onSurface),
-          onChanged: (val) {
-            if (val == null) return;
-            final season = _defaultSeasonForCompetition(val);
-            final previousView = _selectedView;
-            setState(() {
-              selectedLeagueId = val;
-              selectedSeasonId = season.seasonId;
-              _selectedView = _viewAfterSelectionChange(previousView);
-            });
-            if (_selectedView == StandingView.xgTable && _xgAvailable) {
-              _startXgLoad();
-            } else {
-              _resetXgState();
-            }
-            _startStandingLoad();
-          },
-          items: availableLeagues
-              .map(
-                (l) => DropdownMenuItem(
-                  value: l.competitionId,
-                  child: Text(
-                    competitionNameLabel(context, l.competitionId, l.name)
-                        .toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Body2_b.style.copyWith(color: colors.onSurface),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ),
+      backgroundColor: appColors.subtleBackground,
+      foregroundColor: colors.onSurface,
+      textStyle: Body2_b.style,
+      onChanged: (val) {
+        final season = _defaultSeasonForCompetition(val);
+        final previousView = _selectedView;
+        setState(() {
+          selectedLeagueId = val;
+          selectedSeasonId = season.seasonId;
+          _selectedView = _viewAfterSelectionChange(previousView);
+        });
+        if (_selectedView == StandingView.xgTable && _xgAvailable) {
+          _startXgLoad();
+        } else {
+          _resetXgState();
+        }
+        _startStandingLoad();
+      },
+      options: availableLeagues
+          .map(
+            (league) => AppDropdownOption<int>(
+              value: league.competitionId,
+              label: competitionNameLabel(
+                context,
+                league.competitionId,
+                league.name,
+              ).toUpperCase(),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -647,54 +708,34 @@ class _StandingTabState extends State<StandingTab> {
     final colors = Theme.of(context).colorScheme;
     final seasons = _seasonOptionsForCompetition(selectedLeagueId);
 
-    return Container(
+    return AppDropdown<int>(
       key: const ValueKey('standing-season-filter-shell'),
-      height: AppDropdownTokens.height,
-      padding: const EdgeInsets.only(left: 16, right: 8),
-      decoration: ShapeDecoration(
-        color: appColors.subtleBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-        ),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          key: const ValueKey('standing-season-filter'),
-          value: selectedSeasonId,
-          isExpanded: true,
-          isDense: true,
-          icon: AppDropdownChevron(color: colors.onSurface),
-          dropdownColor: appColors.cardBackground,
-          style: Body2_b.style.copyWith(color: colors.onSurface),
-          onChanged: (val) {
-            if (val == null) return;
-            final previousView = _selectedView;
-            setState(() {
-              selectedSeasonId = val;
-              _selectedView = _viewAfterSelectionChange(previousView);
-            });
-            if (_selectedView == StandingView.xgTable) {
-              _startXgLoad();
-            } else {
-              _resetXgState();
-            }
-            _startStandingLoad();
-          },
-          items: seasons
-              .map(
-                (s) => DropdownMenuItem(
-                  value: s.seasonId,
-                  child: Text(
-                    s.name.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Body2_b.style.copyWith(color: colors.onSurface),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ),
+      triggerKey: const ValueKey('standing-season-filter'),
+      value: selectedSeasonId,
+      backgroundColor: appColors.subtleBackground,
+      foregroundColor: colors.onSurface,
+      textStyle: Body2_b.style,
+      onChanged: (val) {
+        final previousView = _selectedView;
+        setState(() {
+          selectedSeasonId = val;
+          _selectedView = _viewAfterSelectionChange(previousView);
+        });
+        if (_selectedView == StandingView.xgTable) {
+          _startXgLoad();
+        } else {
+          _resetXgState();
+        }
+        _startStandingLoad();
+      },
+      options: seasons
+          .map(
+            (season) => AppDropdownOption<int>(
+              value: season.seasonId,
+              label: season.name.toUpperCase(),
+            ),
+          )
+          .toList(),
     );
   }
 
