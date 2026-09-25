@@ -16,6 +16,7 @@ import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
 import '../models/home_content_item.dart';
 import '../models/home_data.dart';
+import '../models/news_language.dart';
 import '../models/team_overview.dart';
 import 'package:onetouch/features/index.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -45,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<HomeContentItem> _news = const [];
   bool _isNewsLoading = false;
   bool _hasNewsError = false;
+  int? _newsTeamId;
   String _newsLanguage = '';
   bool? _wasTickerEnabled;
   int _homeRequestId = 0;
@@ -71,23 +73,25 @@ class _HomeScreenState extends State<HomeScreen> {
     currentUserPreferences.followedTeamIds
         .addListener(_onTeamPreferencesChanged);
     currentUserPreferences.viewedTeamId.addListener(_onTeamPreferencesChanged);
-    _loadHome(refreshContent: true);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final language = Localizations.localeOf(context).toLanguageTag();
+    final language = newsLanguageForLocale(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
     final tickerEnabled = TickerMode.valuesOf(context).enabled;
-    final languageChanged =
-        _newsLanguage.isNotEmpty && _newsLanguage != language;
+    final initialLoad = _newsLanguage.isEmpty;
+    final languageChanged = _newsLanguage != language;
     final returnedToTab = _wasTickerEnabled == false && tickerEnabled;
-    _newsLanguage = language;
     _wasTickerEnabled = tickerEnabled;
 
-    final homeData = _homeData;
-    if (homeData != null && (languageChanged || returnedToTab)) {
-      _loadNews(homeData.favoriteTeam.teamId);
+    if (initialLoad) {
+      // 첫 요청부터 화면 언어를 사용하고, 홈 응답을 기다리지 않아요.
+      _loadHome(refreshContent: true);
+    } else if (languageChanged || returnedToTab) {
+      _loadNews(currentUserPreferences.viewedTeamId.value);
     }
   }
 
@@ -113,6 +117,10 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
 
+    if (refreshContent) {
+      unawaited(_loadNews(teamId));
+    }
+
     try {
       final data = await _repository.load(
         teamId: teamId,
@@ -129,10 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _homeData = data;
         _isLoading = false;
       });
-
-      if (refreshContent) {
-        _loadNews(data.favoriteTeam.teamId);
-      }
     } on Object {
       if (!mounted || requestId != _homeRequestId) return;
       setState(() {
@@ -151,25 +155,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadNews(int teamId) async {
     final requestId = ++_newsRequestId;
+    final language = newsLanguageForLocale(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+    final sameFeed = _newsTeamId == teamId && _newsLanguage == language;
     setState(() {
-      _news = const [];
+      // 같은 팀·언어를 갱신할 때는 기존 카드와 이미지를 유지해요.
+      if (!sameFeed) _news = const [];
+      _newsTeamId = teamId;
+      _newsLanguage = language;
       _isNewsLoading = true;
       _hasNewsError = false;
     });
     try {
       final news = await _newsRepository.loadForTeam(
         teamId,
-        language: _newsLanguage,
+        language: language,
       );
       if (!mounted || requestId != _newsRequestId) return;
       setState(() {
         _news = news;
         _isNewsLoading = false;
       });
+      // 아래로 스크롤하기 전에 이미지를 준비하고, 화면 표시는 기다리지 않아요.
+      for (final item in news) {
+        final imageUrl = item.imageUrl;
+        if (imageUrl == null || imageUrl.isEmpty) continue;
+        unawaited(precacheImage(
+          NetworkImage(imageUrl),
+          context,
+          // 이미지 실패 표시는 공통 카드에서 처리하고 기사는 계속 보여줘요.
+          onError: (_, __) {},
+        ));
+      }
     } on Object {
       if (!mounted || requestId != _newsRequestId) return;
       setState(() {
-        _news = const [];
         _isNewsLoading = false;
         _hasNewsError = true;
       });
