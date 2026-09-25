@@ -9,6 +9,7 @@ import 'package:onetouch/data/catalog/football_catalog.dart';
 import 'package:onetouch/data/players/api/api_player_detail_repository.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/data/search/search_repository.dart';
+import 'package:onetouch/data/teams/team_page_eligibility.dart';
 
 String fixture(String name) =>
     File('test/fixtures/$name.json').readAsStringSync();
@@ -34,6 +35,10 @@ void main() {
     final teams = CatalogTeamRepository(catalog);
     final competitions = CatalogCompetitionRepository(catalog);
     final seasons = CatalogSeasonRepository(catalog);
+    final notifiedSeasonIds = <int?>[];
+    catalog.seasons.addListener(() {
+      notifiedSeasonIds.add(catalog.resolve(8)?.seasonId);
+    });
     final pending = Future.wait(
         [teams.initialize(), competitions.initialize(), seasons.initialize()]);
     gate.complete(http.Response(fixture('api_catalog'), 200));
@@ -49,6 +54,8 @@ void main() {
     expect(catalog.currentCompetitions(19), isEmpty);
     expect(catalog.resolve(19), isNull);
     expect(catalog.resolve(8)?.seasonId, 28083);
+    expect(catalog.resolve(8)?.competitionName, 'Premier League');
+    expect(notifiedSeasonIds, [28083]);
     await teams.initialize();
     expect(requests, 1);
   });
@@ -56,14 +63,96 @@ void main() {
   test('failed catalog retries without publishing partially parsed data',
       () async {
     var requests = 0;
+    final invalid = jsonDecode(fixture('api_catalog')) as Map<String, dynamic>;
+    invalid['memberships'] = [
+      ...(invalid['memberships'] as List),
+      {'team_id': 8},
+    ];
     final catalog = FootballCatalog(api: api((_) async {
       requests++;
-      return http.Response(requests == 1 ? '{}' : fixture('api_catalog'), 200);
+      return http.Response(
+          requests == 1 ? jsonEncode(invalid) : fixture('api_catalog'), 200);
     }));
     await expectLater(catalog.initialize(), throwsA(anything));
     expect(catalog.teams.value, isEmpty);
+    expect(catalog.seasons.value, isEmpty);
+    expect(catalog.competitions.value, isEmpty);
+    expect(catalog.memberships, isEmpty);
+    expect(catalog.resolve(8), isNull);
     await catalog.initialize();
     expect(catalog.teams.value, hasLength(2));
+    expect(catalog.resolve(8)?.seasonId, 28083);
+  });
+
+  test('current selectors preserve cup membership and domestic league choice',
+      () async {
+    final data = jsonDecode(fixture('api_catalog')) as Map<String, dynamic>;
+    (data['seasons'] as List).add({
+      'season_id': 30000,
+      'competition_id': 2,
+      'name': '2026/2027',
+      'is_current': true,
+    });
+    (data['memberships'] as List).insertAll(0, [
+      {'team_id': 8, 'season_id': 23614, 'competition_id': 8},
+      {'team_id': 19, 'season_id': 30000, 'competition_id': 2},
+      {'team_id': 8, 'season_id': 30000, 'competition_id': 2},
+    ]);
+    final catalog = FootballCatalog(
+        api: api((_) async => http.Response(jsonEncode(data), 200)));
+    await catalog.initialize();
+
+    expect(catalog.currentTeams(8).map((t) => t.teamId), [8]);
+    expect(catalog.currentTeams(2).map((t) => t.teamId), [8, 19]);
+    expect(catalog.currentCompetitions(8).map((c) => c.competitionId), [8, 2]);
+    expect(catalog.currentCompetitions(19).map((c) => c.competitionId), [2]);
+    expect(catalog.resolve(8)?.seasonId, 28083);
+    expect(catalog.resolve(8)?.competitionId, 8);
+    expect(catalog.resolve(19), isNull);
+    expect(catalog.resolve(-1), isNull);
+  });
+
+  test('team edit filtering stays responsive with production-sized catalog',
+      () async {
+    // 운영 기록과 행 수만 같은 합성 데이터로 수 초간 멈추던 연산을 확인해요.
+    final data = {
+      'teams':
+          List.generate(2116, (i) => {'team_id': i + 1, 'name': 'Team $i'}),
+      'competitions': [
+        {'competition_id': 8, 'name': 'Premier League'},
+      ],
+      'seasons': List.generate(
+          116,
+          (i) => {
+                'season_id': i + 1,
+                'competition_id': 8,
+                'name': '$i',
+                'is_current': i == 0,
+              }),
+      'memberships': List.generate(
+          7221,
+          (i) => {
+                'team_id': i % 2116 + 1,
+                'season_id': i % 116 + 1,
+                'competition_id': 8,
+              }),
+    };
+    final catalog = FootballCatalog(
+        api: api((_) async => http.Response(jsonEncode(data), 200)));
+    await catalog.initialize();
+    final eligibility = TeamPageEligibility(catalog);
+    final watch = Stopwatch()..start();
+    final contexts = CatalogTeamRepository(catalog)
+        .allTeams
+        .where((team) => eligibility.supports(team.teamId))
+        .map((team) => catalog.resolve(team.teamId))
+        .toList();
+    watch.stop();
+
+    expect(contexts, hasLength(63));
+    expect(contexts.every((context) => context?.seasonId == 1), isTrue);
+    expect(watch.elapsed, lessThan(const Duration(seconds: 1)),
+        reason: 'Opening the team editor must not block the UI for seconds.');
   });
 
   test('shared search response preserves Korean, nulls, zero scores and UTC',
