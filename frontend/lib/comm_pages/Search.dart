@@ -384,7 +384,12 @@ class _SearchContentState extends State<SearchContent> {
             SizedBox(
               width: 64,
               height: 64,
-              child: ClipOval(child: PlayerRemoteImage(player.image, size: 64)),
+              child: ClipOval(
+                child: ColoredBox(
+                  color: AppColors.of(context).subtleBackground,
+                  child: PlayerRemoteImage(player.image, size: 64),
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(

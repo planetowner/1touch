@@ -19,9 +19,10 @@ void main() {
     required TeamInjuryRepository repository,
     VoidCallback? onUnavailable,
     Locale? locale,
+    ThemeData? theme,
   }) {
     return MaterialApp(
-      theme: whitetheme,
+      theme: theme ?? whitetheme,
       locale: locale,
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationDelegates,
@@ -72,6 +73,27 @@ void main() {
             expect(find.byKey(const ValueKey('injury-5001')), findsOneWidget);
             expect(find.byKey(const ValueKey('injury-5002')), findsOneWidget);
           }));
+
+  testWidgets('player picture circle uses light grey in dark mode',
+      (tester) async {
+    final repository = _TestTeamInjuryRepository(
+      (teamId) async => _report(teamId: teamId),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      buildSubject(
+        teamId: 83,
+        repository: repository,
+        theme: darktheme,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar).first);
+    expect(avatar.backgroundColor, AppPalette.lightGrey);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final translation in [
     (

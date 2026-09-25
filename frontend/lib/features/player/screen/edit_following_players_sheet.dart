@@ -240,7 +240,12 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
               SizedBox(
                 width: 52,
                 height: 52,
-                child: ClipOval(child: PlayerImage(player: player)),
+                child: ClipOval(
+                  child: ColoredBox(
+                    color: AppColors.of(context).subtleBackground,
+                    child: PlayerImage(player: player),
+                  ),
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -319,7 +324,12 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
               leading: SizedBox(
                 width: 52,
                 height: 52,
-                child: ClipOval(child: PlayerImage(player: player)),
+                child: ClipOval(
+                  child: ColoredBox(
+                    color: AppColors.of(context).subtleBackground,
+                    child: PlayerImage(player: player),
+                  ),
+                ),
               ),
               title: Text(
                   playerNameLabel(
