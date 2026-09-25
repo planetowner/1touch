@@ -296,6 +296,7 @@ class _TeamScreenState extends State<TeamScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
+                                key: const ValueKey('team-app-bar-name'),
                                 // '1. Fußballclub Heidenheim 1846 e.V',
                                 teamNameLabel(context, widget.teamId,
                                     team?['name'] as String? ?? ''),
@@ -305,7 +306,8 @@ class _TeamScreenState extends State<TeamScreen>
                                 overflow: TextOverflow
                                     .ellipsis, // Now this will work correctly
                               ),
-                              if (positionLabel.isNotEmpty)
+                              if (positionLabel.isNotEmpty) ...[
+                                const SizedBox(height: 4),
                                 Row(
                                   key: const ValueKey('team-context-label'),
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,6 +349,7 @@ class _TeamScreenState extends State<TeamScreen>
                                     ],
                                   ],
                                 ),
+                              ],
                             ],
                           ),
                         )
