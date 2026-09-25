@@ -64,6 +64,8 @@ class _TeamScreenState extends State<TeamScreen>
   int? _requestedStandingCompetitionId;
   int _standingSelectionRequestId = 0;
   bool _isBracketInteracting = false;
+  bool _isRevealingTeamAppBar = false;
+  int _selectedTabIndex = 0;
 
   TeamOverviewRepository get _teamOverviewRepository =>
       widget.teamOverviewRepository ??
@@ -79,9 +81,15 @@ class _TeamScreenState extends State<TeamScreen>
         });
       });
 
-    _tabController = TabController(length: 5, vsync: this); // ✅ add init
+    _tabController = TabController(length: 5, vsync: this)
+      ..addListener(_handleTabChange);
 
     _startOverviewLoad(updateState: false);
+  }
+
+  void _handleTabChange() {
+    if (_selectedTabIndex == _tabController.index) return;
+    setState(() => _selectedTabIndex = _tabController.index);
   }
 
   @override
@@ -172,10 +180,28 @@ class _TeamScreenState extends State<TeamScreen>
     _tabController.animateTo(2);
   }
 
+  void _revealTeamAppBar() {
+    if (_isRevealingTeamAppBar ||
+        !_scrollController.hasClients ||
+        _scrollController.offset <= 0) {
+      return;
+    }
+    _isRevealingTeamAppBar = true;
+    _scrollController
+        .animateTo(
+          0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        )
+        .whenComplete(() => _isRevealingTeamAppBar = false);
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
-    _tabController.dispose();
+    _tabController
+      ..removeListener(_handleTabChange)
+      ..dispose();
     super.dispose();
   }
 
@@ -249,6 +275,7 @@ class _TeamScreenState extends State<TeamScreen>
         children: [
           NestedScrollView(
             controller: _scrollController,
+            floatHeaderSlivers: _selectedTabIndex != 1,
             physics: _isBracketInteracting
                 ? const NeverScrollableScrollPhysics()
                 : null,
@@ -267,6 +294,45 @@ class _TeamScreenState extends State<TeamScreen>
                 pinned: false,
                 toolbarHeight: toolbarHeight,
                 flexibleSpace: ColoredBox(color: pageBackground),
+                bottom: PreferredSize(
+                  key: const ValueKey('team-tab-header'),
+                  preferredSize: const Size.fromHeight(kTextTabBarHeight + 8),
+                  child: ColoredBox(
+                    color: pageBackground,
+                    child: SizedBox(
+                      height: kTextTabBarHeight + 8,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          labelColor: colors.onSurface,
+                          unselectedLabelColor: appColors.mutedForeground,
+                          indicatorColor: colors.onSurface,
+                          labelStyle: Heading5.style,
+                          unselectedLabelStyle: Heading5.style,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          dividerColor: Colors.transparent,
+                          padding: const EdgeInsets.only(left: 8),
+                          indicator: UnderlineTabIndicator(
+                            borderSide: BorderSide(
+                              color: colors.onSurface,
+                              width: 2,
+                            ),
+                          ),
+                          tabs: [
+                            Tab(text: teamScreenLabel(context, "Overview")),
+                            Tab(text: teamScreenLabel(context, "Matches")),
+                            Tab(text: tr(context, "Standing")),
+                            Tab(text: tr(context, "Squad")),
+                            Tab(text: tr(context, "Analysis")),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 title: Transform.translate(
                   offset: Offset(0, toolbarContentOffset),
                   child: Padding(
@@ -375,34 +441,6 @@ class _TeamScreenState extends State<TeamScreen>
                   ),
                 ],
               ),
-              SliverPersistentHeader(
-                pinned: false,
-                delegate: _TabBarDelegate(
-                  TabBar(
-                    controller: _tabController,
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.start,
-                    labelColor: colors.onSurface,
-                    unselectedLabelColor: appColors.mutedForeground,
-                    indicatorColor: colors.onSurface,
-                    labelStyle: Heading5.style,
-                    unselectedLabelStyle: Heading5.style,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    dividerColor: Colors.transparent,
-                    padding: const EdgeInsets.only(left: 8),
-                    indicator: UnderlineTabIndicator(
-                      borderSide: BorderSide(color: colors.onSurface, width: 2),
-                    ),
-                    tabs: [
-                      Tab(text: teamScreenLabel(context, "Overview")),
-                      Tab(text: teamScreenLabel(context, "Matches")),
-                      Tab(text: tr(context, "Standing")),
-                      Tab(text: tr(context, "Squad")),
-                      Tab(text: tr(context, "Analysis")),
-                    ],
-                  ),
-                ),
-              ),
             ],
             body: TabBarView(
               controller: _tabController,
@@ -416,7 +454,10 @@ class _TeamScreenState extends State<TeamScreen>
                   standingRepository: widget.standingRepository,
                 ),
                 MatchesTab(
-                    team: team, fixtureRepository: widget.fixtureRepository),
+                  team: team,
+                  fixtureRepository: widget.fixtureRepository,
+                  onTopOverscroll: _revealTeamAppBar,
+                ),
                 StandingTab(
                   team: team,
                   regularStandingRepository: widget.standingRepository,
@@ -442,30 +483,4 @@ class _TeamScreenState extends State<TeamScreen>
       ),
     );
   }
-}
-
-class _TabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar _tabBar;
-
-  _TabBarDelegate(this._tabBar);
-
-  @override
-  double get minExtent =>
-      _tabBar.preferredSize.height + 8; // a bit of top padding
-
-  @override
-  double get maxExtent => _tabBar.preferredSize.height + 8;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      // color: Colors.black, // solid bg so it looks clean when pinned
-      alignment: Alignment.centerLeft,
-      child: _tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_TabBarDelegate oldDelegate) => false;
 }

@@ -192,6 +192,11 @@ void main() {
           final colorScheme = Theme.of(context).colorScheme;
           final tabBar = tester.widget<TabBar>(find.byType(TabBar));
           final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+          final nestedScrollView =
+              tester.widget<NestedScrollView>(find.byType(NestedScrollView));
+          final tabHeader = tester.widget<PreferredSize>(
+            find.byKey(const ValueKey('team-tab-header')),
+          );
 
           expect(
             tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
@@ -200,6 +205,13 @@ void main() {
           expect(tabBar.labelColor, colorScheme.onSurface);
           expect(tabBar.indicatorColor, colorScheme.onSurface);
           expect(appBar.foregroundColor, colorScheme.onSurface);
+          expect(appBar.pinned, isFalse);
+          expect(nestedScrollView.floatHeaderSlivers, isTrue);
+          expect(appBar.bottom, same(tabHeader));
+          expect(tabHeader.preferredSize.height, kTextTabBarHeight + 8);
+          // SliverAppBar itself renders one internal persistent header. There
+          // must not be a second, independently scrolling tab header.
+          expect(find.byType(SliverPersistentHeader), findsOneWidget);
           expect(
               find.byKey(const ValueKey('team-brand-gradient')), findsNothing);
           expect(find.byKey(const ValueKey('team-app-bar-gradient')),
@@ -796,8 +808,7 @@ void main() {
     await tester.pump();
 
     await tester.drag(find.byType(TabBarView), const Offset(-393, 0));
-    await tester.pump(const Duration(milliseconds: 350));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     final matchesScrollFinder = find.byKey(
       const ValueKey('matches-scroll'),
@@ -806,6 +817,20 @@ void main() {
       matchesScrollFinder,
     );
     final controller = matchesScroll.controller!;
+
+    final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+    final nestedScrollView =
+        tester.widget<NestedScrollView>(find.byType(NestedScrollView));
+    expect(appBar.pinned, isFalse);
+    expect(nestedScrollView.floatHeaderSlivers, isFalse);
+    expect(
+        find.byKey(const ValueKey('matches-app-bar-clearance')), findsNothing);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('matches-header-stack'))).dy,
+      greaterThanOrEqualTo(
+        tester.getBottomLeft(find.byKey(const ValueKey('team-tab-header'))).dy,
+      ),
+    );
 
     controller.jumpTo(0);
     await tester.pump();
