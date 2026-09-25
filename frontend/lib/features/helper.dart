@@ -262,76 +262,65 @@ class MatchCard2 extends StatelessWidget {
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
-              final compact = constraints.maxWidth < 340;
-              final smallGap = compact ? 4.0 : 8.0;
-              final largeGap = compact ? 8.0 : 16.0;
+              final compact = constraints.maxWidth < 360;
+              final veryCompact = constraints.maxWidth < 270;
+              final teamWidth = veryCompact ? 24.0 : (compact ? 36.0 : 48.0);
+              final teamScoreGap = veryCompact ? 2.0 : 16.0;
+              final sectionSpacing = veryCompact
+                  ? 2.0
+                  : constraints.maxWidth < 300
+                      ? 20.0
+                      : 30.0;
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: sectionSpacing,
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: _TeamDisplay2(
-                      teamId: team1Id,
-                      teamName: team1shortname,
-                      teamLogo: team1Logo,
-                      logoSize: compact ? 36 : 48,
-                    ),
-                  ),
-                  SizedBox(width: smallGap),
-                  if (compact)
-                    Expanded(
-                      child: _ScoreBoard(
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: teamWidth,
+                        child: _TeamDisplay2(
+                          teamId: team1Id,
+                          teamName: team1shortname,
+                          teamLogo: team1Logo,
+                          logoSize: teamWidth,
+                        ),
+                      ),
+                      SizedBox(width: teamScoreGap),
+                      _ScoreBoard(
+                        key: const ValueKey('last-match-home-score'),
                         score: homeScore,
                         isDimmed: homeScore < awayScore,
-                        compact: true,
                       ),
-                    )
-                  else
-                    _ScoreBoard(
-                      score: homeScore,
-                      isDimmed: homeScore < awayScore,
-                      compact: false,
-                    ),
-                  SizedBox(width: largeGap),
-                  if (compact)
-                    Expanded(
-                      flex: 2,
-                      child: _MatchInfo2(
-                        date: date,
-                        venue: venue,
-                        width: double.infinity,
-                      ),
-                    )
-                  else
-                    _MatchInfo2(
+                    ],
+                  ),
+                  Expanded(
+                    child: _MatchInfo2(
+                      key: const ValueKey('last-match-date-time'),
                       date: date,
                       venue: venue,
-                      width: 80,
                     ),
-                  SizedBox(width: largeGap),
-                  if (compact)
-                    Expanded(
-                      child: _ScoreBoard(
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _ScoreBoard(
+                        key: const ValueKey('last-match-away-score'),
                         score: awayScore,
                         isDimmed: awayScore < homeScore,
-                        compact: true,
                       ),
-                    )
-                  else
-                    _ScoreBoard(
-                      score: awayScore,
-                      isDimmed: awayScore < homeScore,
-                      compact: false,
-                    ),
-                  SizedBox(width: smallGap),
-                  Expanded(
-                    flex: 2,
-                    child: _TeamDisplay2(
-                      teamId: team2Id,
-                      teamName: team2shortname,
-                      teamLogo: team2Logo,
-                      logoSize: compact ? 36 : 48,
-                    ),
+                      SizedBox(width: teamScoreGap),
+                      SizedBox(
+                        width: teamWidth,
+                        child: _TeamDisplay2(
+                          teamId: team2Id,
+                          teamName: team2shortname,
+                          teamLogo: team2Logo,
+                          logoSize: teamWidth,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               );
@@ -408,7 +397,6 @@ class SearchMatchCard extends StatelessWidget {
               const _ScoreBoard(
                 score: score1,
                 isDimmed: false,
-                compact: false,
               ),
 
               Padding(
@@ -438,7 +426,6 @@ class SearchMatchCard extends StatelessWidget {
               const _ScoreBoard(
                 score: score2,
                 isDimmed: true,
-                compact: false,
               ),
             ],
           ),
@@ -510,8 +497,14 @@ class _TeamDisplay extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 8),
-        Text(teamNameLabel(context, teamId, teamName, short: true),
-            textAlign: TextAlign.center, style: Eyebrow.style),
+        Text(
+          teamNameLabel(context, teamId, teamName, short: true),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+          style: Body1.style,
+        ),
       ],
     );
   }
@@ -587,16 +580,13 @@ class _MatchInfo extends StatelessWidget {
           color: AppColors.of(context).divider,
         ),
         const SizedBox(height: 8),
-        // 팀 로고 영역은 고정하고 긴 대회명은 중앙 영역 안에서 한 줄로 맞춰요.
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            competitionAndRound,
-            maxLines: 1,
-            softWrap: false,
-            textAlign: TextAlign.center,
-            style: Body2.style,
-          ),
+        Text(
+          competitionAndRound,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: Body2.style,
         ),
         const SizedBox(height: 4),
         // Text('Venue ID ${match?.venueId}', style: .style),
@@ -607,21 +597,20 @@ class _MatchInfo extends StatelessWidget {
 
 class _MatchInfo2 extends StatelessWidget {
   final String date, venue;
-  final double width;
 
   const _MatchInfo2({
+    super.key,
     required this.date,
     required this.venue,
-    required this.width,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          width: width,
-          child: FixtureDateTime(label: date),
+        FixtureDateTime(
+          label: date,
+          textStyle: Eyebrow.style,
         ),
       ],
     );
@@ -630,9 +619,14 @@ class _MatchInfo2 extends StatelessWidget {
 
 // 홈과 일정에서 날짜·시간을 각각 한 줄로 맞춰요.
 class FixtureDateTime extends StatelessWidget {
-  const FixtureDateTime({super.key, required this.label});
+  const FixtureDateTime({
+    super.key,
+    required this.label,
+    this.textStyle = Body2.style,
+  });
 
   final String label;
+  final TextStyle textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -640,13 +634,13 @@ class FixtureDateTime extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final line in label.split('\n'))
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(line,
-                maxLines: 1,
-                softWrap: false,
-                textAlign: TextAlign.center,
-                style: Body2.style.copyWith(height: 1.3)),
+          Text(
+            line,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: textStyle,
           ),
       ],
     );
@@ -656,41 +650,42 @@ class FixtureDateTime extends StatelessWidget {
 class _ScoreBoard extends StatelessWidget {
   final int score;
   final bool isDimmed;
-  final bool compact;
 
   const _ScoreBoard({
+    super.key,
     required this.score,
     required this.isDimmed,
-    required this.compact,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Opacity(
-      opacity: isDimmed ? 0.5 : 1.0,
-      child: Material(
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 4 : 12,
-            vertical: 8,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: ShapeDecoration(
+        color: const Color(0xFF090A0A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 8,
+        children: [
+          Opacity(
+            opacity: isDimmed ? 0.5 : 1.0,
+            child: Text(
+              score.toString(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontFamily: 'Archivo',
+                fontWeight: FontWeight.w700,
+                height: 1.2,
+              ),
+            ),
           ),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: colorScheme.onPrimary,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            score.toString(),
-            textAlign: TextAlign.center,
-            style: (compact ? Heading4.style : Heading3.style)
-                .copyWith(color: colorScheme.primary),
-          ),
-        ),
+        ],
       ),
     );
   }
