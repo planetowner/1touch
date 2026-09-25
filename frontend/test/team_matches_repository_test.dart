@@ -408,7 +408,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('stacks section headers without delayed entrance animations',
+  testWidgets('stacks section headers with a smooth entrance animation',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -448,6 +448,46 @@ void main() {
       find.byKey(const ValueKey('matches-past-header')),
       findsOneWidget,
     );
+    final liveTransition = find.byKey(
+      const ValueKey('matches-live-header-transition'),
+    );
+    Finder liveFade() => find
+        .ancestor(
+          of: find.byKey(const ValueKey('matches-live-header')),
+          matching: find.byType(FadeTransition),
+        )
+        .first;
+    expect(liveTransition, findsOneWidget);
+    expect(
+      tester.widget<FadeTransition>(liveFade()).opacity.value,
+      lessThan(1),
+    );
+    expect(
+      tester.widget<FadeTransition>(liveFade()).opacity.value,
+      greaterThanOrEqualTo(.72),
+    );
+
+    await tester.pump(const Duration(milliseconds: 220));
+    expect(tester.widget<FadeTransition>(liveFade()).opacity.value, 1);
+
+    controller.jumpTo(0);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(
+      find.byKey(const ValueKey('matches-live-header')),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<FadeTransition>(liveFade()).opacity.value,
+      inExclusiveRange(.72, 1),
+    );
+    await tester.pump(const Duration(milliseconds: 140));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('matches-live-header')),
+      findsNothing,
+    );
+
     final fade = find.byKey(const ValueKey('matches-top-fade'));
     expect(fade, findsOneWidget);
     expect(tester.getSize(fade).height, 56);
@@ -457,20 +497,6 @@ void main() {
         tester.getTopLeft(find.byKey(const ValueKey('matches-scroll'))).dy,
         0.1,
       ),
-    );
-    expect(
-      find.descendant(
-        of: find.byKey(const ValueKey('matches-header-stack')),
-        matching: find.byType(AnimatedSlide),
-      ),
-      findsNothing,
-    );
-    expect(
-      find.descendant(
-        of: find.byKey(const ValueKey('matches-header-stack')),
-        matching: find.byType(AnimatedOpacity),
-      ),
-      findsNothing,
     );
     expect(tester.takeException(), isNull);
   });
