@@ -69,7 +69,7 @@ class _FixturesState extends State<Fixtures> {
                     final home = fixtureHomeTeam(lastMatch, teamRepository);
                     final away = fixtureAwayTeam(lastMatch, teamRepository);
                     return MatchCard2(
-                      date: relativeDateLabel(lastMatch.kickoff,
+                      date: fixtureDateLabel(lastMatch.kickoff,
                           locale: Localizations.localeOf(context)),
                       venue: '',
                       team1shortname: home.shortCode ??
