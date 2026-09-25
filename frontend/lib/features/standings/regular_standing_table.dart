@@ -289,7 +289,7 @@ class StandingTable extends StatelessWidget {
               key: ValueKey('standing-last-five-$teamId-$index'),
               size: 16,
               color: switch (results[index]) {
-                'W' => Colors.blue,
+                'W' => Colors.green,
                 'D' => Colors.grey,
                 'L' => Colors.red,
                 _ => Theme.of(context).colorScheme.onSurface,

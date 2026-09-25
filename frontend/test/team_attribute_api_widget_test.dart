@@ -4,10 +4,12 @@ import 'dart:convert';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
@@ -129,9 +131,11 @@ void main() {
       lessThan(1),
     );
     expect(
-      tester.getTopLeft(chevron).dx - tester.getTopRight(season).dx,
-      lessThanOrEqualTo(8),
+      tester.getRect(filter).right - tester.getRect(chevron).right,
+      closeTo(8, 0.1),
     );
+    expect(tester.renderObject<RenderParagraph>(season).didExceedMaxLines,
+        isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -150,18 +154,15 @@ void main() {
     final filterFinder = find.byKey(
       const ValueKey('analysis-attributes-filter'),
     );
-    final filter = tester.widget<PopupMenuButton<int>>(
+    final filter = tester.widget<AppDropdown<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
     expect(
-      filter
-          .itemBuilder(tester.element(filterFinder))
-          .whereType<PopupMenuItem<int>>()
-          .map((item) => item.value),
+      filter.options.map((item) => item.value),
       [25659, 23621],
     );
 
-    filter.onSelected!(23621);
+    filter.onChanged(23621);
     await tester.pump();
 
     expect(
@@ -217,9 +218,9 @@ void main() {
       lessThan(1),
     );
     expect(
-      tester.getTopLeft(selectedChevron).dx -
-          tester.getTopRight(selectedSeason).dx,
-      lessThanOrEqualTo(8),
+      tester.getRect(filterFinder).right -
+          tester.getRect(selectedChevron).right,
+      closeTo(8, 0.1),
     );
     expect(find.text('24/25 FC BARCELONA'), findsOneWidget);
     final legendFinder = find.byKey(
@@ -266,10 +267,10 @@ void main() {
     await _pumpAttributes(tester, repository);
 
     tester
-        .widget<PopupMenuButton<int>>(
+        .widget<AppDropdown<int>>(
           find.byKey(const ValueKey('analysis-attributes-filter')),
         )
-        .onSelected!(23621);
+        .onChanged(23621);
     await tester.pump();
     await tester.pump();
 
@@ -342,18 +343,11 @@ void main() {
     await _pumpAttributes(tester, repository);
 
     expect(find.byType(RadarChart), findsOneWidget);
-    final filter = tester.widget<PopupMenuButton<int>>(
+    final filter = tester.widget<AppDropdown<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
     expect(
-      filter
-          .itemBuilder(
-            tester.element(
-              find.byKey(const ValueKey('analysis-attributes-filter')),
-            ),
-          )
-          .whereType<PopupMenuItem<int>>()
-          .map((item) => item.value),
+      filter.options.map((item) => item.value),
       [23621],
     );
   });
@@ -398,15 +392,15 @@ void main() {
     });
     await _pumpAttributes(tester, repository);
 
-    final firstFilter = tester.widget<PopupMenuButton<int>>(
+    final firstFilter = tester.widget<AppDropdown<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
-    firstFilter.onSelected!(25659);
+    firstFilter.onChanged(25659);
     await tester.pump();
-    final secondFilter = tester.widget<PopupMenuButton<int>>(
+    final secondFilter = tester.widget<AppDropdown<int>>(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
-    secondFilter.onSelected!(23621);
+    secondFilter.onChanged(23621);
     await tester.pump();
 
     responses[23621]!.complete(

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'support/fake_betting_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
@@ -178,10 +179,10 @@ void main() {
     expect(selectedLabel.maxLines, 1);
     expect(selectedLabel.softWrap, isFalse);
 
-    final dropdown = tester.widget<DropdownButton<int>>(
-      find.byType(DropdownButton<int>),
+    final dropdown = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('match-h2h-limit-dropdown')),
     );
-    dropdown.onChanged!(10);
+    dropdown.onChanged(10);
     await tester.pump();
     expect(find.byKey(const ValueKey('match-h2h-loading')), findsOneWidget);
     second.complete([_pastFixture(homeScore: 10)]);
@@ -233,10 +234,10 @@ void main() {
 
     await tester.pumpWidget(_testApp(repository: repository));
 
-    final dropdown = tester.widget<DropdownButton<int>>(
-      find.byType(DropdownButton<int>),
+    final dropdown = tester.widget<AppDropdown<int>>(
+      find.byKey(const ValueKey('match-h2h-limit-dropdown')),
     );
-    dropdown.onChanged!(10);
+    dropdown.onChanged(10);
     await tester.pump();
 
     second.complete([_pastFixture(homeScore: 10)]);

@@ -45,8 +45,12 @@ class _AnalysisSectionHeader extends StatelessWidget {
           children: [
             Text(tr(context, title), style: Body2_b.style),
             const SizedBox(width: 12),
-            const Spacer(),
-            control,
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: control,
+              ),
+            ),
           ],
         );
       },

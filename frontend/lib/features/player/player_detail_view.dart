@@ -96,36 +96,23 @@ class PlayerSeasonSelector extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final foreground = Theme.of(context).colorScheme.onSurface;
-    return Container(
-      height: AppDropdownTokens.height,
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-        boxShadow: appCardShadows(context),
-      ),
-      padding: const EdgeInsets.only(left: 16, right: 8),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: detail.selectedSeason?.id,
-          isExpanded: true,
-          isDense: true,
-          dropdownColor: surface,
-          icon: AppDropdownChevron(color: foreground),
-          style: Body2_b.style.copyWith(color: foreground),
-          hint: Text(tr(context, 'SELECT A SEASON')),
-          items: detail.seasons
-              .map((season) => DropdownMenuItem(
-                    value: season.id,
-                    child: Text(
-                      '${season.name} · ${competitionNameLabel(context, season.competitionId, season.competitionName)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ))
-              .toList(),
-          onChanged: onChanged,
-        ),
-      ),
+    return AppDropdown<int>(
+      value: detail.selectedSeason?.id,
+      hintText: tr(context, 'SELECT A SEASON'),
+      backgroundColor: surface,
+      foregroundColor: foreground,
+      textStyle: Body2_b.style,
+      boxShadow: appCardShadows(context),
+      options: detail.seasons
+          .map(
+            (season) => AppDropdownOption<int>(
+              value: season.id,
+              label:
+                  '${season.name} · ${competitionNameLabel(context, season.competitionId, season.competitionName)}',
+            ),
+          )
+          .toList(),
+      onChanged: (seasonId) => onChanged(seasonId),
     );
   }
 }

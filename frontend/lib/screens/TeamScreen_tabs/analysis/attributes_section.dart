@@ -300,48 +300,29 @@ class _AttributesSectionState extends State<AttributesSection> {
         ? tr(context, 'SEASON')
         : _compactSeasonLabel(selectedSeason.seasonName);
 
-    return PopupMenuButton<int>(
+    return AppDropdown<int>(
       key: const ValueKey('analysis-attributes-filter'),
-      tooltip: '',
-      padding: EdgeInsets.zero,
-      position: PopupMenuPosition.under,
-      color: AppColors.of(context).cardBackground,
-      onSelected: (seasonId) {
+      value: _selectedComparisonSeasonId,
+      selectedLabel: tr(context, label),
+      minWidth: 86,
+      matchMenuWidth: true,
+      backgroundColor: AppColors.of(context).subtleBackground,
+      foregroundColor: colors.onSurface,
+      textStyle: Body2_b.style,
+      onChanged: (seasonId) {
         unawaited(_loadComparison(seasonId));
       },
-      itemBuilder: (_) => _comparisonOptions
+      options: _comparisonOptions
           .map(
-            (season) => PopupMenuItem<int>(
+            (season) => AppDropdownOption<int>(
               value: season.seasonId,
-              child: Text(
-                _compactSeasonLabel(season.seasonName),
-                style: Body2_b.style.copyWith(color: colors.onSurface),
+              label: _compactSeasonLabel(season.seasonName),
+              optionKey: ValueKey(
+                'analysis-attributes-option-${season.seasonId}',
               ),
             ),
           )
           .toList(),
-      child: Container(
-        height: AppDropdownTokens.height,
-        constraints: const BoxConstraints(minWidth: 86),
-        padding: AppDropdownTokens.triggerPadding,
-        decoration: BoxDecoration(
-          color: AppColors.of(context).subtleBackground,
-          borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              tr(context, label),
-              style: Body2_b.style.copyWith(color: colors.onSurface),
-            ),
-            const SizedBox(width: AppDropdownTokens.gap),
-            AppDropdownChevron(color: colors.onSurface),
-          ],
-        ),
-      ),
     );
   }
 

@@ -281,10 +281,22 @@ void main() {
     expect(find.textContaining('90%'), findsNothing);
     expect(find.text('Default0'), findsOneWidget);
 
+    final formationFilter = find.byKey(
+      const ValueKey('analysis-formation-filter'),
+    );
+    final closedFilterWidth = tester.getSize(formationFilter).width;
     await tester.tap(
-      find.byKey(const ValueKey('analysis-formation-filter')),
+      formationFilter,
     );
     await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSize(
+            find.byKey(const ValueKey('app-dropdown-option-3-5-2')),
+          )
+          .width,
+      closeTo(closedFilterWidth, 0.1),
+    );
     await tester.tap(find.text('3-5-2').last);
     await tester.pumpAndSettle();
 
