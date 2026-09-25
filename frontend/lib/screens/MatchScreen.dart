@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_socket.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
@@ -16,7 +18,6 @@ import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/index.dart';
 
-import '../core/stylesheet_dark.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class MatchScreen extends StatefulWidget {
@@ -165,14 +166,9 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     // 상단 바와 본문이 같은 배경을 써야 색 경계가 생기지 않아요.
     final pageBackground = mainPageBackground(context);
-    const selectedSurface = AppPalette.white;
-    const selectedForeground = AppPalette.black;
-    final unselectedSurface =
-        isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox;
 
     return Scaffold(
       key: const ValueKey('match-screen-scaffold'),
@@ -218,45 +214,33 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: SingleChildScrollView(
-                key: const ValueKey('match-tab-scroll'),
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: List.generate(tabs.length, (index) {
-                    final isSelected = selectedIndex == index;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedIndex = index;
-                          });
-                        },
-                        child: Container(
-                          key: ValueKey('match-tab-$index'),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 16,
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  key: const ValueKey('match-tab-scroll'),
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    width: math.max(
+                      constraints.maxWidth - 48,
+                      tabs.length * 132.0,
+                    ),
+                    child: AppSegmentedToggle<int>(
+                      containerKey: const ValueKey('match-tab-toggle'),
+                      indicatorSurfaceKey:
+                          const ValueKey('match-tab-indicator-surface'),
+                      value: selectedIndex,
+                      options: [
+                        for (var index = 0; index < tabs.length; index++)
+                          AppSegmentedToggleOption(
+                            value: index,
+                            label: tr(context, tabs[index]),
+                            contentKey: ValueKey('match-tab-$index'),
                           ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? selectedSurface
-                                : unselectedSurface,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: appCardShadows(context),
-                          ),
-                          child: Text(
-                            tr(context, tabs[index]),
-                            style: Body2_b.style.copyWith(
-                              color:
-                                  isSelected ? selectedForeground : foreground,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
+                      ],
+                      onChanged: (index) =>
+                          setState(() => selectedIndex = index),
+                    ),
+                  ),
                 ),
               ),
             ),
