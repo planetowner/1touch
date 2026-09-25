@@ -11,6 +11,22 @@ const appSupportedLocales = [
   Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
 ];
 
+const _appLocaleEnvironment = String.fromEnvironment('APP_LOCALE');
+
+/// Optional build-time override used for localization testing. An empty value
+/// keeps the normal device-language resolution callback in control.
+Locale? appLocaleOverride([String value = _appLocaleEnvironment]) {
+  final normalized = value.trim().replaceAll('_', '-').toLowerCase();
+  if (normalized.isEmpty || normalized == 'system') return null;
+  final languageCode = normalized.split('-').first;
+  for (final locale in appSupportedLocales) {
+    if (locale.languageCode == languageCode) return locale;
+  }
+  throw FormatException(
+    'APP_LOCALE must be system, en, ko, ja, or zh.',
+  );
+}
+
 const appLocalizationDelegates = GlobalMaterialLocalizations.delegates;
 
 /// 화면 언어만 해석해요. 로그인 추천 지역은 DeviceRegion에서 따로 읽어요.
