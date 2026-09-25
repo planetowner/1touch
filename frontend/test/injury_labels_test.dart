@@ -3,6 +3,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/l10n/injury_labels.dart';
 
 void main() {
+  test('uses the same unknown return label for missing and past end dates', () {
+    const cases = [
+      (Locale('en'), 'No return date yet'),
+      (Locale('ko'), '언제 복귀할지 아직 몰라요'),
+      (Locale('ja'), 'いつ復帰できるかはまだわかりません'),
+      (
+        Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+        '暂时还不知道什么时候复出'
+      ),
+    ];
+    for (final (locale, expected) in cases) {
+      for (final days in <int?>[null, -1, -42]) {
+        expect(injuryReturnLabel(days, locale: locale), expected);
+      }
+    }
+  });
+
   test('uses days below a week and rounds longer periods up to weeks', () {
     const labels = {
       0: 'Expected back today',
