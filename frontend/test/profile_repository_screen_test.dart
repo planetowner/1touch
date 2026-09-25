@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Profile.dart';
+import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
@@ -14,6 +16,39 @@ import 'package:onetouch/models/team.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets(
+      'profile and personal info update name order when language changes',
+      (tester) async {
+    for (final page in [
+      Profile(
+        repository: _StaticCurrentUserRepository(),
+        followingTeamsRepository: _StaticFollowingTeamsRepository(),
+      ),
+      EditProfileScreen(profile: _profile()),
+    ]) {
+      for (final locale in appSupportedLocales) {
+        await tester.pumpWidget(MaterialApp(
+          locale: locale,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          home: page,
+        ));
+        await tester.pumpAndSettle();
+        final expected =
+            locale.languageCode == 'en' ? 'Planet Owner' : 'OwnerPlanet';
+        if (page is EditProfileScreen) {
+          final field = tester.widget<TextField>(
+            find.byKey(const ValueKey('profile-real-name-field')),
+          );
+          expect(field.controller!.text, expected);
+        } else {
+          expect(find.text(expected), findsOneWidget);
+        }
+        expect(tester.takeException(), isNull);
+      }
+    }
+  });
+
   testWidgets('loads current-user identity through the repository',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
