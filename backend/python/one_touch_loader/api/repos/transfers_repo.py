@@ -31,8 +31,19 @@ def get_team_transfers_by_window(team_id: int, season_id: int, window: dict, as_
         WHERE (tr.from_team_id=%s OR tr.to_team_id=%s) AND tr.transfer_date BETWEEN %s AND %s
         ORDER BY tr.transfer_date DESC, tr.transfer_id DESC
     """, (team_id, season_id, team_id, team_id, window["start_date"], min(as_of, window["end_date"])))
+    # 같은 팀을 떠난 뒤 목적지가 확인된 선수는 앞선 목적지 미상 카드만 숨겨요. 원문은 소속 기간 계산에 남겨요.
+    known_departures = {}
+    for row in rows:
+        if row["from_team_id"] == team_id and row["to_team_id"] is not None:
+            player_id = row["player_id"]
+            if player_id not in known_departures or row["transfer_date"] > known_departures[player_id]:
+                known_departures[player_id] = row["transfer_date"]
     # 원문·계약은 저장하지만 웹 대조 뒤에도 불확실한 선수의 이적 카드는 표시하지 않아요.
-    return [row for row in rows if row["player_id"] not in WITHHELD_PLAYER_MOVEMENTS]
+    return [row for row in rows if row["player_id"] not in WITHHELD_PLAYER_MOVEMENTS and not (
+        row["from_team_id"] == team_id and row["to_team_id"] is None
+        and row["player_id"] in known_departures
+        and known_departures[row["player_id"]] >= row["transfer_date"]
+    )]
 
 
 def get_player_club_history(player_id: int, as_of: date, *, query=None) -> dict:
