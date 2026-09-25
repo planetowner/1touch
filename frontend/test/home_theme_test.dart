@@ -248,12 +248,17 @@ void main() {
 
       final nextFinder = find.byKey(const ValueKey('match-card-surface'));
       final lastFinder = find.byKey(const ValueKey('last-match-card-surface'));
+      final lastTitle = find.byKey(const ValueKey('last-match-title'));
 
       expect(surfaceColor('home-favorite-team-surface'), testCase.outer);
       expect(surfaceColor('match-card-surface'), testCase.next);
       expect(surfaceColor('last-match-card-surface'), testCase.last);
       expect(find.text('NEXT MATCH'), findsOneWidget);
       expect(find.text('LIVE MATCH'), findsNothing);
+      expect(
+        tester.getTopLeft(lastTitle).dx - tester.getTopLeft(lastFinder).dx,
+        16,
+      );
       expect(
         tester.getBottomLeft(nextFinder).dy,
         closeTo(tester.getTopLeft(lastFinder).dy, 0.1),

@@ -255,10 +255,11 @@ class MatchCard2 extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            SizedBox(width: 8),
-            Text(tr(context, 'LAST MATCH'), style: Body1_b.style),
-          ]),
+          Text(
+            tr(context, 'LAST MATCH'),
+            key: const ValueKey('last-match-title'),
+            style: Body1_b.style,
+          ),
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
