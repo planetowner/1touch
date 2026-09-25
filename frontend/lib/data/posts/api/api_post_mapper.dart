@@ -2,14 +2,10 @@ import 'package:onetouch/data/posts/api/api_post_response.dart';
 import 'package:onetouch/models/post.dart';
 
 Post postFromApiResponse(ApiPostResponse response, {required Uri apiBaseUri}) {
-  final category = switch (response.category) {
-    'general' => PostCategory.general,
-    'analysis' => PostCategory.analysis,
-    'news' => PostCategory.news,
-    _ => throw FormatException(
+  final category = PostCategory.tryParse(response.category) ??
+      (throw FormatException(
         'Unrecognized post category "${response.category}".',
-      ),
-  };
+      ));
   if (DateTime.tryParse(response.createdAt) == null) {
     throw const FormatException('Expected created_at to be ISO 8601.');
   }

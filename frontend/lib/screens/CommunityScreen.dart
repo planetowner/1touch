@@ -80,7 +80,8 @@ class _CommunityState extends State<Community>
         });
       });
 
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+        length: CommunityPostTabHeader.categories.length, vsync: this);
   }
 
   @override
@@ -174,12 +175,7 @@ class _CommunityState extends State<Community>
   Future<void> _loadPosts({bool preserveCurrentPosts = false}) async {
     final requestId = ++_postRequestId;
     final preserveCurrent = preserveCurrentPosts && _posts.isNotEmpty;
-    final category = switch (_selectedTabIndex) {
-      1 => PostCategory.general,
-      2 => PostCategory.analysis,
-      3 => PostCategory.news,
-      _ => null,
-    };
+    final category = CommunityPostTabHeader.categories[_selectedTabIndex];
     setState(() {
       _isLoadingPosts = !preserveCurrent;
       _postLoadError = null;
