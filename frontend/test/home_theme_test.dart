@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
@@ -263,6 +264,13 @@ void main() {
         tester.getBottomLeft(nextFinder).dy,
         closeTo(tester.getTopLeft(lastFinder).dy, 0.1),
       );
+      final lastMatchDate = tester.widget<Text>(
+        find.descendant(
+          of: find.byKey(const ValueKey('last-match-date-time')),
+          matching: find.byType(Text),
+        ),
+      );
+      expect(lastMatchDate.style, Body2.style);
       expect(tester.takeException(), isNull);
     });
   }
