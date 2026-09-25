@@ -616,7 +616,8 @@ class _StandingTabState extends State<StandingTab> {
                 (l) => DropdownMenuItem(
                   value: l.competitionId,
                   child: Text(
-                    l.name.toUpperCase(),
+                    competitionNameLabel(context, l.competitionId, l.name)
+                        .toUpperCase(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Body2_b.style.copyWith(color: colors.onSurface),

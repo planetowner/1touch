@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/user_name_labels.dart';
 
 class ProfileFields extends StatefulWidget {
   const ProfileFields(
@@ -60,11 +61,13 @@ class _ProfileFieldsState extends State<ProfileFields> {
       key: _form,
       child: Column(children: [
         for (final field in [
-          if (widget.showNameFields) ...[
-            (_firstName, tr(context, 'First name'), 100),
-            (_lastName, tr(context, 'Last name'), 100)
-          ],
-          (_username, tr(context, 'Username'), 50)
+          if (widget.showNameFields)
+            ...orderedUserNameParts(
+              locale: Localizations.localeOf(context),
+              firstName: (_firstName, 'First name', 100),
+              lastName: (_lastName, 'Last name', 100),
+            ),
+          (_username, 'Username', 50)
         ])
           Padding(
               padding: const EdgeInsets.only(bottom: 24),

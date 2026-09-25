@@ -48,11 +48,15 @@ class _PlayerRankingBoxState extends State<PlayerRankingBox> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.players[i].fullName,
+                          Text(
+                              playerNameLabel(
+                                  context,
+                                  widget.players[i].externalPlayerId,
+                                  widget.players[i].fullName),
                               style: Heading5.style),
                           const SizedBox(height: 4),
                           Text(
-                            '${widget.players[i].teamName} • #${widget.players[i].jerseyNumber}',
+                            '${teamNameLabel(context, widget.players[i].teamId, widget.players[i].teamName)} • #${widget.players[i].jerseyNumber}',
                             style: Body2.style,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -194,10 +198,15 @@ class FullRankingPopup extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(player.fullName, style: Heading5.style),
+                                Text(
+                                    playerNameLabel(
+                                        context,
+                                        player.externalPlayerId,
+                                        player.fullName),
+                                    style: Heading5.style),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${player.teamName} • #${player.jerseyNumber}',
+                                  '${teamNameLabel(context, player.teamId, player.teamName)} • #${player.jerseyNumber}',
                                   style: Body2.style,
                                 ),
                               ],

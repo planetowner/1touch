@@ -679,7 +679,10 @@ void main() {
               .byKey(const ValueKey('matches-inline-past-header'))
               .evaluate()
               .length +
-          find.byKey(const ValueKey('matches-past-header')).evaluate().length,
+          find
+              .byKey(const ValueKey('matches-past-header'))
+              .evaluate()
+              .length,
       1,
     );
 

@@ -83,9 +83,10 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       return Column(
                         children: [
                           _listRow(
-                            label: teamName,
+                            label:
+                                teamNameLabel(context, entry.value, teamName),
                             onTap: () => context.push(
-                              '/profile/notification/team/${Uri.encodeComponent(teamName)}',
+                              '/profile/notification/team/${Uri.encodeComponent(teamName)}?id=${entry.value}',
                             ),
                           ),
                           if (i != teamIds.length - 1) _divider(context),
@@ -105,9 +106,10 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       return Column(
                         children: [
                           _listRow(
-                            label: player.name,
+                            label: playerNameLabel(
+                                context, player.playerId, player.name),
                             onTap: () => context.push(
-                              '/profile/notification/player/${Uri.encodeComponent(player.name)}',
+                              '/profile/notification/player/${Uri.encodeComponent(player.name)}?id=${player.playerId}',
                             ),
                           ),
                           if (i != players.length - 1) _divider(context),
@@ -199,7 +201,9 @@ class _NotificationListPageState extends State<NotificationListPage> {
 //  TEAM DETAIL
 class TeamNotificationDetailPage extends StatefulWidget {
   final String teamName;
-  const TeamNotificationDetailPage({super.key, required this.teamName});
+  final int? teamId;
+  const TeamNotificationDetailPage(
+      {super.key, required this.teamName, this.teamId});
 
   @override
   State<TeamNotificationDetailPage> createState() =>
@@ -268,7 +272,10 @@ class _TeamNotificationDetailPageState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.teamName.toUpperCase(),
+                        Text(
+                            teamNameLabel(
+                                    context, widget.teamId, widget.teamName)
+                                .toUpperCase(),
                             style: Body2_b.style),
                         const SizedBox(height: 24),
                         _switchRow(
@@ -376,7 +383,9 @@ class _TeamNotificationDetailPageState
 //  PLAYER DETAIL
 class PlayerNotificationDetailPage extends StatefulWidget {
   final String playerName;
-  const PlayerNotificationDetailPage({super.key, required this.playerName});
+  final int? playerId;
+  const PlayerNotificationDetailPage(
+      {super.key, required this.playerName, this.playerId});
 
   @override
   State<PlayerNotificationDetailPage> createState() =>
@@ -446,7 +455,10 @@ class _PlayerNotificationDetailPageState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.playerName.toUpperCase(),
+                        Text(
+                            playerNameLabel(
+                                    context, widget.playerId, widget.playerName)
+                                .toUpperCase(),
                             style: Body2_b.style),
                         const SizedBox(height: 24),
                         _switchRow(

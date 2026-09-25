@@ -12,9 +12,11 @@ import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/models/match_tactical_analysis.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
+import 'package:onetouch/features/match_info/match_status_label.dart';
 
 import 'match_event_view_data.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class AnalysisTab extends StatefulWidget {
   final Fixture fixture;
@@ -34,7 +36,6 @@ class AnalysisTab extends StatefulWidget {
 
 class _AnalysisTabState extends State<AnalysisTab> {
   bool showHome = true;
-  bool get isLive => false;
   MatchTacticalAnalysis? _analysis;
   MatchShotMap? _shotMap;
   bool _isLoading = false;
@@ -140,15 +141,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 48),
+          // 탭 영역의 아래 여백 12px와 합쳐 Figma의 24px 간격을 맞춰요.
+          const SizedBox(height: 12),
           _buildScoreHeader(),
           if (matchEvents.isNotEmpty)
             MatchEventsSection(
               key: const ValueKey('match-analysis-events'),
               events: matchEvents,
             ),
-          if (widget.detail?.expectedGoals case final expectedGoals?)
+          if (widget.detail?.expectedGoals case final expectedGoals?) ...[
+            const SizedBox(height: 12),
             _buildXGSection(expectedGoals),
+          ],
           if (_isLoading) ...[
             const SizedBox(height: 48),
             const Center(child: CircularProgressIndicator()),
@@ -219,12 +223,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
       awayLogoAsset: away.imagePath ?? '',
       homeTeamId: home.teamId,
       awayTeamId: away.teamId,
-      homeTeamName: home.displayName,
-      awayTeamName: away.displayName,
+      homeTeamName: teamNameLabel(context, home.teamId, home.name),
+      awayTeamName: teamNameLabel(context, away.teamId, away.name),
       homeScore: widget.fixture.homeScore?.toString() ?? '#',
       awayScore: widget.fixture.awayScore?.toString() ?? '#',
-      statusLabel: isLive ? '42:02' : tr(context, 'Final'),
-      roundLabel: widget.fixture.displayRoundLabel,
+      status: MatchStatusLabel(
+          fixture: widget.fixture, clock: widget.detail?.clock),
+      roundLabel: fixtureCompetitionLabel(context, widget.fixture) ??
+          fixtureRoundLabel(widget.fixture,
+              locale: Localizations.localeOf(context)),
     );
   }
 
@@ -286,18 +293,15 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final team = fixtureHomeTeam(widget.fixture, teamRepository);
     return team.shortCode?.trim().isNotEmpty == true
         ? team.shortCode!
-        : _shortName(team.name);
+        : teamNameLabel(context, team.teamId, team.name, short: true);
   }
 
   String get _awayCode {
     final team = fixtureAwayTeam(widget.fixture, teamRepository);
     return team.shortCode?.trim().isNotEmpty == true
         ? team.shortCode!
-        : _shortName(team.name);
+        : teamNameLabel(context, team.teamId, team.name, short: true);
   }
-
-  String _shortName(String name) =>
-      name.length <= 8 ? name : name.substring(0, 8);
 
   List<MatchShot> get _selectedShots => (_shotMap?.shots ?? const <MatchShot>[])
       .where(
@@ -400,6 +404,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           Text(tr(context, "POSSESSION"), style: Body2_b.style),
           const SizedBox(height: 16),
           Container(
+            key: const ValueKey('match-analysis-possession-card'),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: isDark ? AppPalette.darkGrey : AppPalette.white,
@@ -408,10 +413,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
             child: Column(
               children: [
-                _buildTeamToggle(),
-                const SizedBox(height: 24),
                 for (final row in rows)
-                  if (row.label == 'Ball Possession')
+                  // 번역된 이름 대신 통계 코드로 구분해야 모든 언어에서 막대가 보여요.
+                  if (row.code == 'ball-possession')
                     _buildPossessionBar(row.home, row.away)
                   else
                     _buildStatRow(
@@ -443,7 +447,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
             borderRadius: BorderRadius.circular(4),
             child: SizedBox(
               key: const ValueKey('match-possession-bar'),
-              height: 36,
+              height: 32,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -809,7 +813,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
     ];
   }
 
-  List<({String label, num home, num away, bool isPercent})> _possessionRows() {
+  List<({String code, String label, num home, num away, bool isPercent})>
+      _possessionRows() {
     final definitions = [
       (
         code: 'ball-possession',
@@ -828,6 +833,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         if (_pairedStatistic(definition.code)
             case final ({double home, double away}) pair)
           (
+            code: definition.code,
             label: definition.label,
             home: pair.home,
             away: pair.away,
@@ -916,6 +922,7 @@ class ShotMapPlot {
   final bool isGoal;
 }
 
+// 득점 여부와 관계없이 슈팅 지점은 같은 크기로 표시해요.
 const double shotMapMarkerRadius = 5;
 
 // Half-pitch shot map: goal along the bottom edge.
@@ -1260,6 +1267,7 @@ class _DefenseTerritoryPainter extends CustomPainter {
       arrowShoulder + defenseTerritoryArrowHeadWidth,
     );
     final arrowHeadTop = arrowY - size.height * 0.18;
+    // 몸통과 화살촉이 하나의 그라데이션으로 자연스럽게 이어지도록 전체 영역을 써요.
     final arrowBounds = Rect.fromLTRB(
       arrowShaft.left,
       arrowHeadTop,

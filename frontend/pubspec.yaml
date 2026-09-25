@@ -55,6 +55,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   intl: any
+  clock: ^1.1.2
   dotted_border: ^2.1.0
   shared_preferences: ^2.5.5
   flutter_secure_storage: ^9.2.4
@@ -102,6 +103,7 @@ flutter:
     - assets/animations/onetouch_logo_dark.json
     - assets/animations/onetouch_logo_light.json
     - assets/match_info/
+    - assets/standings/
 
 
 

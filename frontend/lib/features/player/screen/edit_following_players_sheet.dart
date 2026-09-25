@@ -251,7 +251,8 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                       children: [
                         Flexible(
                           child: Text(
-                            player.fullName,
+                            playerNameLabel(context, player.externalPlayerId,
+                                player.fullName),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Heading5.style.copyWith(
@@ -272,7 +273,7 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${player.teamName} #${player.jerseyNumber}',
+                      '${teamNameLabel(context, player.teamId, player.teamName)} #${player.jerseyNumber}',
                       style: Body2.style,
                     ),
                   ],
@@ -320,9 +321,12 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
                 height: 52,
                 child: ClipOval(child: PlayerImage(player: player)),
               ),
-              title: Text(player.fullName, style: Heading5.style),
+              title: Text(
+                  playerNameLabel(
+                      context, player.externalPlayerId, player.fullName),
+                  style: Heading5.style),
               subtitle: Text(
-                '${player.teamName} #${player.jerseyNumber}',
+                '${teamNameLabel(context, player.teamId, player.teamName)} #${player.jerseyNumber}',
                 style: Body2.style,
               ),
               trailing: Icon(

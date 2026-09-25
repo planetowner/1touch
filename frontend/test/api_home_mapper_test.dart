@@ -16,7 +16,6 @@ void main() {
           calendar: [_fixture(1003, FixtureStatus.live)],
           highlights: ApiTeamHighlightsResponse.fromJson(_highlightsJson()),
         ),
-        now: DateTime.utc(2026, 9, 18, 21),
       );
 
       expect(home.favoriteTeam.teamId, 8);
@@ -34,7 +33,7 @@ void main() {
       expect(home.liveMatch?.fixtureId, 1003);
       expect(home.highlights.single.title, 'Liverpool highlights');
       expect(home.highlights.single.source, 'Liverpool FC');
-      expect(home.highlights.single.timeLabel, '1h ago');
+      expect(home.highlights.single.publishedAt, DateTime.utc(2026, 9, 18, 20));
       expect(home.highlights.single.imageUrl, isNull);
       expect(
         home.highlights.single.destinationUrl,

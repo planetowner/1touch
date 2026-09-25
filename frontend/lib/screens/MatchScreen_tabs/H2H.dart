@@ -17,6 +17,7 @@ import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class H2HTab extends StatefulWidget {
   final Fixture fixture;
@@ -194,13 +195,18 @@ class _H2HTabState extends State<H2HTab> {
               ..._h2hMatches.map((f) {
                 final home = fixtureHomeTeam(f, teamRepository);
                 final away = fixtureAwayTeam(f, teamRepository);
-                final leagueName =
+                final leagueName = competitionNameLabel(
+                    context,
+                    f.competitionId,
                     competitionRepository.findById(f.competitionId)?.name ??
-                        'Unknown';
-                final roundLabel = f.displayRoundLabel;
-                final competitionAndRound = roundLabel != null
-                    ? '$leagueName · $roundLabel'
-                    : leagueName;
+                        'Unknown');
+                final roundLabel = fixtureRoundLabel(f,
+                    locale: Localizations.localeOf(context));
+                final competitionAndRound =
+                    fixtureCompetitionLabel(context, f) ??
+                        (roundLabel != null
+                            ? '$leagueName · $roundLabel'
+                            : leagueName);
                 return GestureDetector(
                   key: ValueKey('match-h2h-fixture-${f.fixtureId}'),
                   behavior: HitTestBehavior.opaque,
@@ -209,8 +215,10 @@ class _H2HTabState extends State<H2HTab> {
                     extra: f,
                   ),
                   child: _buildPastMatchCard(
-                    home.shortCode ?? home.name,
-                    away.shortCode ?? away.name,
+                    home.shortCode ??
+                        teamNameLabel(context, home.teamId, home.name),
+                    away.shortCode ??
+                        teamNameLabel(context, away.teamId, away.name),
                     home.imagePath ?? '',
                     away.imagePath ?? '',
                     home.teamId,

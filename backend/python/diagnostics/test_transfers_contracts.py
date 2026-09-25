@@ -55,6 +55,7 @@ class TransfersContractsTests(unittest.TestCase):
             CREATE TABLE seasons (season_id BIGINT PRIMARY KEY, competition_id BIGINT, name TEXT, is_current INT);
             CREATE TABLE team_seasons (team_id BIGINT, season_id BIGINT, PRIMARY KEY (team_id, season_id));
             CREATE TABLE team_squad_members (team_id BIGINT, season_id BIGINT, player_id BIGINT, jersey_number INT, position_group_id INT, leadership_role TEXT);
+            CREATE TABLE team_leadership_assignments (team_id BIGINT, season_id BIGINT, player_id BIGINT, leadership_role TEXT, PRIMARY KEY (team_id, season_id, leadership_role, player_id));
             CREATE TABLE player_wages (team_id BIGINT, season_id BIGINT, player_id BIGINT, estimated_weekly_gross_eur INT, PRIMARY KEY (team_id, season_id, player_id));
             CREATE TABLE team_transfers (id INT);
             CREATE TABLE transfer_windows (id INT);
@@ -375,6 +376,10 @@ class TransfersContractsTests(unittest.TestCase):
                 (6,28083,163152,NULL,NULL,NULL),
                 (6,25000,832,1,24,'captain'),
                 (18,28083,185658,10,27,'captain');
+            INSERT INTO team_leadership_assignments VALUES
+                (6,28083,997,'captain'),(6,28083,997,'vice_captain'),
+                (6,28083,832,'vice_captain'),(6,28083,4313,'vice_captain'),
+                (18,28083,185658,'captain');
             INSERT INTO player_contracts VALUES
                 (6,997,'2023-08-12','2027-06-30',NULL),
                 (6,4313,NULL,'2029-06-30',NULL),
@@ -405,6 +410,12 @@ class TransfersContractsTests(unittest.TestCase):
             "start_date":"2023-08-12", "end_date":"2027-06-30",
         })
         self.assertEqual(vice_captain["leadership_role"],"vice_captain")
+        self.assertEqual(body["leadership"],[
+            {"player_id":997,"player_name":"Existing 997","leadership_role":"captain"},
+            {"player_id":832,"player_name":"Existing 832","leadership_role":"vice_captain"},
+            {"player_id":997,"player_name":"Existing 997","leadership_role":"vice_captain"},
+            {"player_id":4313,"player_name":"Existing 4313","leadership_role":"vice_captain"},
+        ])
         self.assertEqual(vice_captain["date_of_birth"],"1992-07-08")
         self.assertIsNone(vice_captain["estimated_weekly_gross_eur"])
         for field in ("position_group_id","jersey_number","date_of_birth",
@@ -418,6 +429,7 @@ class TransfersContractsTests(unittest.TestCase):
             INSERT INTO team_squad_members VALUES
                 (6,25000,997,18,25,'vice_captain'), (6,25000,4313,7,27,NULL),
                 (6,28083,997,9,27,'captain'), (6,28083,163152,10,27,NULL);
+            INSERT INTO team_leadership_assignments VALUES (6,25000,997,'vice_captain'),(6,28083,997,'captain');
             INSERT INTO player_contracts VALUES
                 (6,997,'2023-08-12','2029-06-30',NULL),
                 (6,4313,'2024-07-01','2027-06-30',NULL);
@@ -460,7 +472,7 @@ class TransfersContractsTests(unittest.TestCase):
                 self.assertEqual(client.get(path).status_code,404)
         response = client.get("/v1/teams/6/contracts?season_id=28083")
         self.assertEqual(response.status_code,200)
-        self.assertEqual(response.json(),{"team_id":6,"season_id":28083,"is_current":True,"players":[]})
+        self.assertEqual(response.json(),{"team_id":6,"season_id":28083,"is_current":True,"players":[],"leadership":[]})
         for season_id in ("0","-1","invalid"):
             with self.subTest(season_id=season_id):
                 self.assertEqual(client.get(f"/v1/teams/6/contracts?season_id={season_id}").status_code,422)

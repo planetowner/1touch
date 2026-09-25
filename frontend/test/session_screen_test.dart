@@ -8,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 
 void main() {
   late Map<String, dynamic> account;
@@ -59,7 +60,8 @@ void main() {
       'onboarding_complete': true
     };
   });
-  Future<void> pump(WidgetTester tester) async {
+  Future<void> pump(WidgetTester tester,
+      {Locale locale = const Locale('en')}) async {
     final router = GoRouter(initialLocation: '/session', routes: [
       GoRoute(path: '/session', builder: (_, __) => const SessionScreen()),
       GoRoute(
@@ -73,7 +75,12 @@ void main() {
           builder: (_, __) => const Scaffold(body: Text('Sign In'))),
     ]);
     addTearDown(router.dispose);
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(MaterialApp.router(
+      routerConfig: router,
+      locale: locale,
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+    ));
     await tester.pumpAndSettle();
   }
 
@@ -89,32 +96,39 @@ void main() {
             r.headers['Authorization'] == 'Bearer ${authSession.accessToken}'),
         isTrue);
   });
-  testWidgets(
-      'incomplete social profile uses the same profile update endpoint before team selection',
-      (tester) async {
-    account.addAll({
-      'username': null,
-      'first_name': null,
-      'last_name': null,
-      'favorite_team_id': null,
-      'onboarding_complete': false
+  for (final locale in appSupportedLocales) {
+    testWidgets(
+        'incomplete social profile preserves name fields with $locale input order',
+        (tester) async {
+      account.addAll({
+        'username': null,
+        'first_name': null,
+        'last_name': null,
+        'favorite_team_id': null,
+        'onboarding_complete': false
+      });
+      await pump(tester, locale: locale);
+      expect(find.text(translateMessage(locale, 'Complete your profile')),
+          findsOneWidget);
+      final first = find.byKey(const ValueKey('profile-first-name-field'));
+      final last = find.byKey(const ValueKey('profile-last-name-field'));
+      expect(tester.getTopLeft(first).dy < tester.getTopLeft(last).dy,
+          locale.languageCode == 'en');
+      await tester.enterText(
+          find.byKey(const ValueKey('profile-first-name-field')), 'First');
+      await tester.enterText(
+          find.byKey(const ValueKey('profile-last-name-field')), 'Last');
+      await tester.enterText(
+          find.byKey(const ValueKey('profile-username-field')), 'chosen');
+      await tester.tap(find.text(translateMessage(locale, 'Save profile')));
+      await tester.pumpAndSettle();
+      expect(find.text('Select Teams Next'), findsOneWidget);
+      final update = requests.singleWhere((r) => r.method == 'PUT');
+      expect(jsonDecode(update.body),
+          {'username': 'chosen', 'first_name': 'First', 'last_name': 'Last'});
+      expect(isAppSessionReady, isFalse);
     });
-    await pump(tester);
-    expect(find.text('Complete your profile'), findsOneWidget);
-    await tester.enterText(
-        find.byKey(const ValueKey('profile-first-name-field')), 'First');
-    await tester.enterText(
-        find.byKey(const ValueKey('profile-last-name-field')), 'Last');
-    await tester.enterText(
-        find.byKey(const ValueKey('profile-username-field')), 'chosen');
-    await tester.tap(find.text('Save profile'));
-    await tester.pumpAndSettle();
-    expect(find.text('Select Teams Next'), findsOneWidget);
-    final update = requests.singleWhere((r) => r.method == 'PUT');
-    expect(jsonDecode(update.body),
-        {'username': 'chosen', 'first_name': 'First', 'last_name': 'Last'});
-    expect(isAppSessionReady, isFalse);
-  });
+  }
   testWidgets('a failed account load stays on a retry screen', (tester) async {
     fail = true;
     await pump(tester);

@@ -10,7 +10,7 @@ from ..deps import get_user_id
 from ..services.user_preferences import FavoriteTeamCooldownError
 from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set_following_and_favorite, find_team_current_context
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
-from ..repos.standings_repo import get_team_standing
+from ..repos.standings_repo import get_current_team_standing
 from ..repos.best_eleven_repo import get_best_eleven
 from ..repos.injuries_repo import get_team_injuries
 from ..repos.team_attributes_repo import get_team_attributes, list_team_attribute_seasons
@@ -165,11 +165,7 @@ def team_overview(team_id: int, user_id: int = Depends(get_user_id)):
     next_match = get_team_next_fixture(team_id)
     last_match = get_team_last_fixture(team_id)
 
-    standing = None
-    ctx = find_team_current_context(team_id)
-    if ctx:
-        competition_id, season_id = ctx
-        standing = get_team_standing(competition_id, season_id, team_id)
+    standing = get_current_team_standing(team_id)
 
     return {
         "team": team,

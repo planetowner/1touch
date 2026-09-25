@@ -24,7 +24,8 @@ def localized_names(locale: str) -> dict[str, dict[str, str]]:
     # 일본어·중국어 팀 짧은 이름은 아직 적재한 값이 없어 빈 목록으로 응답해요.
     catalogs = {'teams': ('teams', 'team_id', team), 'players': ('players', 'player_id', player),
                 'team_short_names': ('teams', 'team_id', team_short),
-                'player_short_names': ('players', 'player_id', player_short)}
+                'player_short_names': ('players', 'player_id', player_short),
+                'competitions': ('competitions', 'competition_id', team)}
     return _read_catalogs(catalogs)
 
 

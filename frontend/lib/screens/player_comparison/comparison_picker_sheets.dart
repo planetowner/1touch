@@ -220,7 +220,8 @@ class _ComparisonPlayerPickerSheetState
 
   Widget _playerTile(BuildContext context, PlayerDetail player) {
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final team = player.profile.teamName ?? 'Team unavailable';
+    final team = teamNameLabel(context, player.profile.teamId,
+        player.profile.teamName ?? 'Team unavailable');
     final number = player.profile.jerseyNumber;
     final subtitle = number == null ? team : '$team • #$number';
     return Material(
@@ -243,7 +244,8 @@ class _ComparisonPlayerPickerSheetState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      player.profile.name,
+                      playerNameLabel(
+                          context, player.playerId, player.profile.name),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -302,7 +304,8 @@ class _ComparisonSeasonPickerSheet extends StatelessWidget {
                 children: [
                   Center(
                     child: Text(
-                      player.profile.name,
+                      playerNameLabel(
+                          context, player.playerId, player.profile.name),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -357,7 +360,7 @@ class _ComparisonSeasonPickerSheet extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                group.team.toUpperCase(),
+                teamNameLabel(context, group.teamId, group.team).toUpperCase(),
                 style: TextStyle(
                   color: foreground,
                   fontSize: 16,
@@ -401,12 +404,14 @@ class _ComparisonSeasonPickerSheet extends StatelessWidget {
 
 class _SeasonGroup {
   const _SeasonGroup({
+    required this.teamId,
     required this.team,
     required this.image,
     required this.seasons,
   });
 
   final String team;
+  final int? teamId;
   final String? image;
   final List<PlayerDetailSeason> seasons;
 }
@@ -430,6 +435,7 @@ List<_SeasonGroup> _seasonGroups(PlayerDetail player) {
     assigned.addAll(seasons.map((season) => season.id));
     groups.add(
       _SeasonGroup(
+        teamId: club.teamId,
         team: club.teamName ?? 'Team unavailable',
         image: club.teamImage,
         seasons: seasons,
@@ -442,6 +448,7 @@ List<_SeasonGroup> _seasonGroups(PlayerDetail player) {
   if (unassigned.isNotEmpty || groups.isEmpty) {
     groups.add(
       _SeasonGroup(
+        teamId: player.profile.teamId,
         team: player.profile.teamName ?? 'Team unavailable',
         image: player.profile.teamImage,
         seasons: unassigned.isEmpty ? player.seasons : unassigned,

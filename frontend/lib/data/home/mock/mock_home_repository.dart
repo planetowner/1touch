@@ -20,12 +20,12 @@ class MockHomeRepository implements HomeRepository {
   final List<int> Function() _followedTeamIds;
 
   @override
-  Future<HomeData> load({DateTime? start, DateTime? end}) async {
+  Future<HomeData> load({int? teamId, DateTime? start, DateTime? end}) async {
     final followingTeams = [
       for (final teamId in _followedTeamIds())
         if (_teamRepository.findById(teamId) case final team?) team,
     ];
-    final favoriteTeamId = _favoriteTeamId();
+    final favoriteTeamId = teamId ?? _favoriteTeamId();
     final favoriteTeam = _teamRepository.findById(favoriteTeamId);
     if (favoriteTeam == null ||
         !followingTeams.any((team) => team.teamId == favoriteTeamId)) {

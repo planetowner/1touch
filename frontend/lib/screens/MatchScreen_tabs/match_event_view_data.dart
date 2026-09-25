@@ -27,6 +27,7 @@ List<Map<String, dynamic>> fixtureSummaryEventRows({
     }
     result.add({
       'player': playerName,
+      'playerId': event.playerId,
       'minute': _minuteLabel(event),
       'team': team,
       'type': type,
