@@ -611,7 +611,7 @@ class _MatchInfo2 extends StatelessWidget {
       children: [
         FixtureDateTime(
           label: date,
-          textStyle: Eyebrow.style,
+          textStyle: Body1.style,
         ),
       ],
     );
