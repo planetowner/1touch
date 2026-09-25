@@ -594,7 +594,7 @@ const appMessages = <String, MessageTranslations>{
   "L": (ko: "패", ja: "敗", zh: "负"),
   "GF": (ko: "득점", ja: "得点", zh: "进球"),
   "GA": (ko: "실점", ja: "失点", zh: "失球"),
-  "GD": (ko: "득실차", ja: "得失点差", zh: "净胜球"),
+  "GD": (ko: "득실", ja: "得失点差", zh: "净胜球"),
   "PTS": (ko: "승점", ja: "勝点", zh: "积分"),
   "Pts": (ko: "승점", ja: "勝点", zh: "积分"),
   "Collapse club names to short codes": (
