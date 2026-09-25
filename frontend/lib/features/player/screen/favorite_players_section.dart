@@ -92,7 +92,8 @@ class FavoritePlayersSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              player.fullName,
+                              playerNameLabel(context, player.externalPlayerId,
+                                  player.fullName),
                               style: Body1.style,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,

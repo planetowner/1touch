@@ -14,12 +14,19 @@ class TeamPlayerInjury {
   final int typeId;
   final String typeName;
 
-  /// Provider-supplied injury period boundaries.
-  ///
-  /// [endDate] is not a confirmed return date and must not be converted into
-  /// an estimated "weeks remaining" label.
+  /// 공급자가 제공한 부상 시작일과 종료일이에요.
+  /// 종료일이 없거나 지났다면 복귀 시점은 미정이며, 명단은 API 응답을 따라요.
   final DateTime? startDate;
   final DateTime? endDate;
+
+  int? daysUntilReturn(DateTime today) {
+    final end = endDate;
+    if (end == null) return null;
+    // 종료일은 시간대가 없는 날짜예요. 시차와 서머타임으로 하루가 달라지지 않게 해요.
+    return DateTime.utc(end.year, end.month, end.day)
+        .difference(DateTime.utc(today.year, today.month, today.day))
+        .inDays;
+  }
 }
 
 @immutable

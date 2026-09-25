@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/football_names_loader.dart';
+import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:go_router/go_router.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
-import 'package:onetouch/core/favorite_team.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
@@ -41,6 +43,7 @@ Future<void> runOneTouchApp({
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _footballNames = FootballNamesRepository(apiClient);
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
@@ -107,7 +110,7 @@ final GoRouter _router = GoRouter(
       },
     ),
 
-    // 메인 탭 (기존 그대로)
+    // 라우터와 하단 메뉴는 홈 → 팀 → 선수 → 커뮤니티 순서를 함께 사용해요.
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return MainScreen(navigationShell: navigationShell);
@@ -117,21 +120,6 @@ final GoRouter _router = GoRouter(
           GoRoute(
             path: '/home',
             builder: (context, state) => HomeScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/players',
-            builder: (context, state) => Players(),
-            routes: [
-              GoRoute(
-                path: ':id',
-                builder: (context, state) {
-                  final playerId = state.pathParameters['id']!;
-                  return PlayerCard(playerId: int.tryParse(playerId));
-                },
-              ),
-            ],
           ),
         ]),
         StatefulShellBranch(routes: [
@@ -153,11 +141,25 @@ final GoRouter _router = GoRouter(
         ]),
         StatefulShellBranch(routes: [
           GoRoute(
+            path: '/players',
+            builder: (context, state) => Players(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final playerId = state.pathParameters['id']!;
+                  return PlayerCard(playerId: int.tryParse(playerId));
+                },
+              ),
+            ],
+          ),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
             path: '/community',
             builder: (context, state) => ValueListenableBuilder<int>(
-              valueListenable: FavoriteTeam.id,
-              builder: (context, favoriteTeamId, _) =>
-                  Community(teamId: favoriteTeamId),
+              valueListenable: currentUserPreferences.viewedTeamId,
+              builder: (context, teamId, _) => Community(teamId: teamId),
             ),
           ),
         ]),
@@ -198,12 +200,14 @@ final GoRouter _router = GoRouter(
       path: '/profile/notification/team/:name',
       builder: (c, s) => TeamNotificationDetailPage(
         teamName: Uri.decodeComponent(s.pathParameters['name']!),
+        teamId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
       ),
     ),
     GoRoute(
       path: '/profile/notification/player/:name',
       builder: (c, s) => PlayerNotificationDetailPage(
         playerName: Uri.decodeComponent(s.pathParameters['name']!),
+        playerId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
       ),
     ),
     GoRoute(path: '/profile/preference', builder: (c, s) => PreferencePage()),
@@ -225,8 +229,6 @@ class MainScreen extends StatelessWidget {
   // The 'child' parameter is not needed for StatefulShellRoute.indexedStack
   const MainScreen({super.key, required this.navigationShell});
 
-  int getFavoriteTeamName() => FavoriteTeam.id.value;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -235,9 +237,9 @@ class MainScreen extends StatelessWidget {
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
-          // Special case for the 'Team' tab (index 2)
-          if (index == 2) {
-            openTeamPage(context, getFavoriteTeamName());
+          // 팀 탭은 홈에서 현재 조회 중인 팀으로 열어요.
+          if (index == 1) {
+            openTeamPage(context, currentUserPreferences.viewedTeamId.value);
             return; // Exit after handling the special case
           }
 
@@ -290,17 +292,17 @@ class OneTouchBottomNavigationBar extends StatelessWidget {
               _buildItem(
                 context: context,
                 index: 1,
-                label: tr(context, 'Players'),
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
+                label: tr(context, 'Team'),
+                icon: Icons.local_police_outlined,
+                activeIcon: Icons.local_police,
                 foreground: foreground,
               ),
               _buildItem(
                 context: context,
                 index: 2,
-                label: tr(context, 'Team'),
-                icon: Icons.local_police_outlined,
-                activeIcon: Icons.local_police,
+                label: tr(context, 'Players'),
+                icon: Icons.person_outline,
+                activeIcon: Icons.person,
                 foreground: foreground,
               ),
               _buildItem(
@@ -378,7 +380,14 @@ class MyApp extends StatelessWidget {
         localeListResolutionCallback: resolveAppLocale,
         builder: (context, child) {
           Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-          return child!;
+          return ListenableBuilder(
+            listenable: authSession,
+            builder: (context, _) => FootballNamesLoader(
+              repository: _footballNames,
+              enabled: authSession.isAuthenticated,
+              child: child!,
+            ),
+          );
         },
         theme: style.whitetheme,
         darkTheme: style.darktheme,

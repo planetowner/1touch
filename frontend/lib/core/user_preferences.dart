@@ -71,8 +71,10 @@ class CurrentUserPreferences {
   final UserTeamPreferences? _fallback;
 
   late final ValueNotifier<int> favoriteTeamId;
+  late final ValueNotifier<int> viewedTeamId;
   final followedTeamIds = ValueNotifier<List<int>>(const []);
   bool _hasFavorite = false;
+  int? _viewedTeamOverride;
 
   Future<void> initialize() async {
     await _teamRepository.initialize();
@@ -83,6 +85,20 @@ class CurrentUserPreferences {
   // 서버에서 이미 저장한 결과를 반영할 때는 PUT을 반복하지 않아요.
   void applyServerSelection(UserTeamPreferences preferences) =>
       _apply(preferences);
+
+  // 조회 팀은 세 탭이 함께 쓰는 임시 선택이에요. 서버의 최애팀 설정에는 저장하지 않아요.
+  void viewTeam(int teamId) {
+    if (!followedTeamIds.value.contains(teamId)) {
+      throw ArgumentError.value(teamId, 'teamId', 'Must be a followed team');
+    }
+    _viewedTeamOverride = teamId;
+    viewedTeamId.value = teamId;
+  }
+
+  void resetViewedTeam() {
+    _viewedTeamOverride = null;
+    if (_hasFavorite) viewedTeamId.value = favoriteTeamId.value;
+  }
 
   Future<void> updateTeamSelection(Iterable<int> rankedTeamIds) async {
     final selectedIds = _validDistinctTeamIds(rankedTeamIds);
@@ -161,9 +177,12 @@ class CurrentUserPreferences {
       favoriteTeamId.value = favoriteId;
     } else {
       favoriteTeamId = ValueNotifier(favoriteId);
+      viewedTeamId = ValueNotifier(favoriteId);
       _hasFavorite = true;
     }
     followedTeamIds.value = List.unmodifiable(selectedIds);
+    if (!selectedIds.contains(_viewedTeamOverride)) _viewedTeamOverride = null;
+    viewedTeamId.value = _viewedTeamOverride ?? favoriteId;
   }
 
   Future<void> _save(UserTeamPreferences preferences) async {

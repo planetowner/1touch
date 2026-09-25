@@ -114,10 +114,16 @@ class PlayerShortNamesTests(unittest.TestCase):
             if locale in ('en', 'ko'):
                 values.append([(83, 'Short team')])
             values.append([(184798, 'Short player')])
-            with patch.object(football_names, 'fetch_all', side_effect=values):
+            values.append([(564, 'League')])
+            with patch.object(football_names, 'fetch_all', side_effect=values) as fetch:
                 result = football_names.localized_names(locale)
             self.assertEqual(result['players'], {'184798': 'Full'})
             self.assertEqual(result['player_short_names'], {'184798': 'Short player'})
+            self.assertEqual(result['competitions'], {'564': 'League'})
+            column = 'name' if locale == 'en' else f'name_{locale}'
+            self.assertEqual(fetch.call_args.args[0],
+                             f'SELECT competition_id,{column} FROM competitions '
+                             f'WHERE {column} IS NOT NULL ORDER BY competition_id')
             if locale in ('ja', 'zh'):
                 self.assertEqual(result['team_short_names'], {})
 
@@ -132,10 +138,11 @@ class PlayerShortNamesTests(unittest.TestCase):
         self.assertEqual(client.get('/v1/football-names/ja/display').status_code, 401)
         app.dependency_overrides[get_user_id] = lambda: 1
         self.assertEqual(client.get('/v1/football-names/invalid/display').status_code, 422)
-        with patch.object(football_names, 'fetch_all', side_effect=[[], [(184798, 'リオネル・メッシ')], [(184798, 'L・メッシ')]]):
+        with patch.object(football_names, 'fetch_all', side_effect=[[], [(184798, 'リオネル・メッシ')], [(184798, 'L・メッシ')], [(564, 'ラ・リーガ')]]):
             result = client.get('/v1/football-names/ja/display')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()['player_short_names'], {'184798': 'L・メッシ'})
+        self.assertEqual(result.json()['competitions'], {'564': 'ラ・リーガ'})
 
     def test_migration_preserves_existing_names_and_rolls_back_all_languages(self):
         fixture = name_tests.MigrationTests()

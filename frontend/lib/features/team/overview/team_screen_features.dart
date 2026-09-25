@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'package:clock/clock.dart' as time;
 import 'package:onetouch/l10n/app_localizations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:onetouch/l10n/date_labels.dart';
+import 'package:onetouch/l10n/injury_labels.dart';
+import 'package:onetouch/l10n/injury_type_names.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import "package:onetouch/features/helper.dart";

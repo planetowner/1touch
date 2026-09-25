@@ -89,7 +89,8 @@ class PlayerPickerSheetState extends State<PlayerPickerSheet> {
                                     return ListTile(
                                         leading:
                                             PlayerRemoteImage(player.image),
-                                        title: Text(player.name),
+                                        title: Text(playerNameLabel(
+                                            context, player.id, player.name)),
                                         onTap: () =>
                                             Navigator.pop(context, player));
                                   });

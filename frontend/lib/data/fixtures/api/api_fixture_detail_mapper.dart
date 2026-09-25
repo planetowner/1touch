@@ -1,14 +1,28 @@
 import 'package:onetouch/data/fixtures/api/api_fixture_detail_response.dart';
 import 'package:onetouch/data/fixtures/api/api_fixture_mapper.dart';
 import 'package:onetouch/models/fixture_detail.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 
 FixtureDetail fixtureDetailFromApiResponse(
   ApiFixtureDetailResponse response,
 ) {
   final expectedGoals = response.expectedGoals;
+  final clock = response.clock;
 
   return FixtureDetail(
     fixture: fixtureFromApiResponse(response.fixture),
+    clock: clock == null
+        ? null
+        : FixtureClock(
+            periodTypeId: clock.periodTypeId,
+            countsFrom: clock.countsFrom,
+            minutes: clock.minutes,
+            seconds: clock.seconds,
+            ticking: clock.ticking,
+            isStale: clock.isStale,
+            sampleAgeSeconds: clock.sampleAgeSeconds,
+            receivedAt: clock.receivedAt,
+          ),
     venueName: response.venueName,
     expectedGoals: expectedGoals == null
         ? null

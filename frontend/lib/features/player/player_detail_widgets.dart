@@ -148,7 +148,9 @@ class PlayerCompetitionTable extends StatelessWidget {
             child: Row(children: [
               Expanded(
                   flex: 3,
-                  child: Text(competitions[index].name,
+                  child: Text(
+                      competitionNameLabel(context, competitions[index].id,
+                          competitions[index].name),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Heading5.style)),
@@ -204,8 +206,9 @@ class PlayerDetailMatchCard extends StatelessWidget {
               result: match.live ? tr(context, 'LIVE') : match.result ?? '—',
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
               competition:
-                  '${match.competition}${match.round == null ? '' : ' / ${match.round}'}',
-              opponentName: match.opponent,
+                  '${competitionNameLabel(context, match.competitionId, match.competition)}${match.round == null ? '' : ' / ${match.round}'}',
+              opponentName: teamNameLabel(
+                  context, match.opponentTeamId, match.opponent ?? '—'),
               againstLogo: match.opponentImage,
               remoteLogo: true,
               stats: [

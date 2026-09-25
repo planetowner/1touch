@@ -240,19 +240,30 @@ class PlayerContractOut(BaseModel):
     )
 
 
+class TeamLeadershipOut(BaseModel):
+    player_id: int
+    player_name: str
+    leadership_role: Literal["captain", "vice_captain"]
+
+
 class TeamContractsResponse(BaseModel):
     team_id: int
     season_id: int
     is_current: bool = Field(description="현재 시즌 여부예요. false이면 계약 종료일 정렬 옵션을 숨겨주세요.")
     players: List[PlayerContractOut]
+    leadership: List[TeamLeadershipOut] = Field(
+        description="해당 시즌에 지정된 주장·부주장 전체예요. 시즌 중 교체된 선수도 포함해요.",
+    )
 
 
 class HomeResponse(BaseModel):
-    favorite_team: Optional[TeamOut] = None
+    favorite_team: Optional[TeamOut] = Field(default=None, description="홈에서 조회한 팀이에요. team_id를 생략하면 저장된 최애팀이에요.")
     following_teams: List[TeamOut] = []
+
+    standing: StandingRowOut | None = Field(default=None, description="조회 팀의 현재 자국 리그 순위와 직전 완료 라운드 대비 변동이에요.")
 
     next_match: Optional[FixtureOut] = None
     last_match: Optional[FixtureOut] = None
 
     calendar: List[FixtureOut] = []
-    highlights: TeamHighlightsResponse | None = Field(default=None, description="대표팀의 최근 하이라이트예요. viewer_country를 보내지 않거나 대표팀이 없으면 null이에요.")
+    highlights: TeamHighlightsResponse | None = Field(default=None, description="홈에서 조회한 팀의 최근 하이라이트예요. viewer_country를 보내지 않거나 조회 팀이 없으면 null이에요.")

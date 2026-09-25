@@ -2,10 +2,11 @@
 from enum import Enum
 from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
-from ..services.community_access import require_favorite_team_access
+from ..services.community_access import require_favorite_team_access, require_community_read_access
 from ..services.community_periods import PostPeriod, period_bounds, public_row, utc_now
 from ..services.community_retention import UNPUBLISHED_RETENTION
 from .users_repo import get_user, lock_user, require_profile
+from .teams_repo import list_following_team_ids
 from .media_repo import remove_attachments
 from ..services.content_visibility import blocked_sql, public_author, require_visible_author
 
@@ -16,9 +17,13 @@ class PostSort(str, Enum):
     best = "best"
 
 
-def community_user(user_id: int, team_id: int) -> dict:
+def community_user(user_id: int, team_id: int, *, read_only: bool = False) -> dict:
     user = get_user(user_id)
-    check_community_user(user, team_id)
+    if read_only:
+        require_profile(user)
+        require_community_read_access(user["favorite_team_id"], list_following_team_ids(user_id), team_id)
+    else:
+        check_community_user(user, team_id)
     return user
 
 
@@ -36,7 +41,7 @@ def _post_team(post_id: int) -> int:
 
 def list_posts(user_id: int, team_id: int, category: str | None, sort: PostSort,
                period: PostPeriod, limit: int, offset: int, timezone: str | None = None) -> list[dict]:
-    community_user(user_id, team_id)
+    community_user(user_id, team_id, read_only=True)
     clauses, params = ["p.team_id=%s", "p.state='active'", f"NOT {blocked_sql('p.user_id')}"], [user_id, user_id, team_id, user_id]
     if category:
         clauses.append("p.category=%s")
@@ -69,7 +74,7 @@ def attachments_for_post(post_id: int) -> list[dict]:
 
 
 def get_post(user_id: int, post_id: int) -> dict:
-    community_user(user_id, _post_team(post_id))
+    community_user(user_id, _post_team(post_id), read_only=True)
     row = fetch_one_dict(f"""SELECT p.*,u.username,EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=p.user_id) AS has_avatar,
         (SELECT COUNT(*) FROM post_likes l WHERE l.post_id=p.post_id) AS like_count,
         (SELECT COUNT(*) FROM post_comments c WHERE c.post_id=p.post_id AND c.state='active' AND NOT {blocked_sql('c.user_id')}) AS comment_count,

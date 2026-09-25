@@ -21,6 +21,7 @@ class PlayerMatchStatSection {
 
 class PlayerMatchStatData {
   final int? playerId;
+  final int? teamId;
   final int teamPrimaryColor;
   final String name;
   final int? jerseyNumber;
@@ -34,6 +35,7 @@ class PlayerMatchStatData {
 
   const PlayerMatchStatData({
     this.playerId,
+    this.teamId,
     required this.teamPrimaryColor,
     required this.name,
     required this.jerseyNumber,
@@ -157,7 +159,8 @@ class _Header extends StatelessWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              player.name,
+                              playerNameLabel(
+                                  context, player.playerId, player.name),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style:
@@ -222,7 +225,7 @@ class _Header extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          player.club,
+                          teamNameLabel(context, player.teamId, player.club),
                           style: Body1.style.copyWith(color: Colors.white70),
                         ),
                         const SizedBox(height: 2),

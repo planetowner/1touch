@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -20,6 +20,7 @@ import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 
 class _StandingRow {
   final int pos;
@@ -183,8 +184,12 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
           MatchAttributeComparison(
             homeTeamId: widget.fixture.homeTeamId,
             awayTeamId: widget.fixture.awayTeamId,
-            homeTeamName: homeTeam.displayName,
-            awayTeamName: awayTeam.displayName,
+            homeTeamName: teamNameLabel(
+                context, homeTeam.teamId, homeTeam.displayName,
+                short: true),
+            awayTeamName: teamNameLabel(
+                context, awayTeam.teamId, awayTeam.displayName,
+                short: true),
             repository: widget.attributeRepository,
           ),
           const SizedBox(height: 48),
@@ -202,20 +207,20 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final home = fixtureHomeTeam(widget.fixture, teamRepository);
     final away = fixtureAwayTeam(widget.fixture, teamRepository);
     final kickoff = widget.fixture.kickoff?.toLocal();
-    final date = kickoff == null
-        ? tr(context, 'Date TBD')
-        : DateFormat('EEE, MMM d').format(kickoff);
-    final time = kickoff == null
-        ? tr(context, 'Time TBD')
-        : DateFormat('h:mm a').format(kickoff);
-    final roundLabel =
-        widget.fixture.displayRoundLabel ?? tr(context, 'Round TBD');
+    final labels =
+        matchKickoffLabels(kickoff, locale: Localizations.localeOf(context));
+    final date = labels.date;
+    final time = labels.time;
+    final roundLabel = fixtureCompetitionLabel(context, widget.fixture) ??
+        fixtureRoundLabel(widget.fixture,
+            locale: Localizations.localeOf(context)) ??
+        tr(context, 'Round TBD');
 
     return Row(
       children: [
         Expanded(
           child: _buildTeamBlock(
-            home.displayName,
+            teamNameLabel(context, home.teamId, home.displayName, short: true),
             home.imagePath ?? '',
             home.teamId,
           ),
@@ -240,7 +245,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         ),
         Expanded(
           child: _buildTeamBlock(
-            away.displayName,
+            teamNameLabel(context, away.teamId, away.displayName, short: true),
             away.imagePath ?? '',
             away.teamId,
           ),
@@ -346,12 +351,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
     final home = fixtureHomeTeam(h2h, teamRepository);
     final away = fixtureAwayTeam(h2h, teamRepository);
     final kickoff = h2h.kickoff?.toLocal();
-    final date = kickoff == null
-        ? tr(context, 'Date TBD')
-        : DateFormat('EEE, MMM d').format(kickoff);
-    final time = kickoff == null
-        ? tr(context, 'Time TBD')
-        : DateFormat('h:mm a').format(kickoff);
+    final labels =
+        matchKickoffLabels(kickoff, locale: Localizations.localeOf(context));
+    final date = labels.date;
+    final time = labels.time;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,12 +378,14 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final homeTeam = _buildSimpleTeamCol(
-                  home.shortCode ?? home.name,
+                  home.shortCode ??
+                      teamNameLabel(context, home.teamId, home.name),
                   home.imagePath ?? '',
                   home.teamId,
                 );
                 final awayTeam = _buildSimpleTeamCol(
-                  away.shortCode ?? away.name,
+                  away.shortCode ??
+                      teamNameLabel(context, away.teamId, away.name),
                   away.imagePath ?? '',
                   away.teamId,
                 );
@@ -532,9 +537,12 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       final repositoryTeam = teamRepository.findById(standing.teamId);
       final responseName = standing.teamName?.trim();
       final displayName = repositoryTeam?.shortCode ??
-          (responseName?.isNotEmpty ?? false ? responseName! : null) ??
-          repositoryTeam?.name ??
-          'Unknown Team';
+          teamNameLabel(
+              context,
+              standing.teamId,
+              (responseName?.isNotEmpty ?? false ? responseName! : null) ??
+                  repositoryTeam?.name ??
+                  'Unknown Team');
       return _StandingRow(
         pos: standing.position,
         name: displayName,
@@ -587,7 +595,8 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            league?.name ?? tr(context, 'Unknown'),
+                            competitionNameLabel(context, league?.competitionId,
+                                league?.name ?? tr(context, 'Unknown')),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from ...core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ..db import fetch_all_dict
+from .teams_repo import find_team_current_context
 
 
 def get_current_season_id_for_competition(competition_id: int) -> Optional[int]:
@@ -124,3 +125,11 @@ def get_team_standing(
         if row["team_id"] == team_id:
             return row
     return None
+
+
+def get_current_team_standing(team_id: int) -> Optional[Dict[str, Any]]:
+    # 홈과 팀 화면은 같은 현재 자국 리그의 순위·변동 값을 사용해요.
+    context = find_team_current_context(team_id)
+    if context is None:
+        return None
+    return get_team_standing(*context, team_id)

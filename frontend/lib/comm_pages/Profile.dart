@@ -13,7 +13,6 @@ import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as profile_provider;
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
-import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
     as following_teams_provider;
@@ -22,6 +21,7 @@ import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/user_name_labels.dart';
 
 class Profile extends StatefulWidget {
   const Profile({
@@ -372,7 +372,14 @@ class _ProfileState extends State<Profile> {
             ),
           ),
           const SizedBox(height: 12),
-          Text(profile.displayName, style: Heading5.style),
+          Text(
+            userNameLabel(
+              locale: Localizations.localeOf(context),
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+            ),
+            style: Heading5.style,
+          ),
           Opacity(
             opacity: 0.5,
             child: Text(
@@ -456,11 +463,13 @@ class _ProfileState extends State<Profile> {
         itemBuilder: (context, index) {
           final team = teams[index];
           final isFavorite = team.teamId == favoriteId;
-          final label = teamCompetitionContextResolver.labelFor(team.teamId);
+          final label = teamCompetitionLabel(
+              context, teamCompetitionContextResolver.resolve(team.teamId));
 
           return Semantics(
             button: true,
-            label: 'Open ${team.name}',
+            label: tr(context, 'Open {name}',
+                {'name': teamNameLabel(context, team.teamId, team.name)}),
             child: GestureDetector(
               key: ValueKey('profile-following-team-${team.teamId}'),
               behavior: HitTestBehavior.opaque,
@@ -490,7 +499,7 @@ class _ProfileState extends State<Profile> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
-                            team.name,
+                            teamNameLabel(context, team.teamId, team.name),
                             style: Body1_b.style,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,

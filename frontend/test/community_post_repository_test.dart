@@ -3,15 +3,49 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/user_preferences.dart';
+import 'package:onetouch/features/community/community_access.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/CommunityScreen.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'support/stub_community_repository.dart';
 
 void main() {
-  setUpAppCatalog();
+  setUpAppCatalog(favoriteTeamId: 9);
+  testWidgets('a followed team feed is visible without a post composer',
+      (tester) async {
+    _setScreenSize(tester, const Size(430, 932));
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 83, followedTeamIds: [83, 9]));
+    currentUserPreferences.viewTeam(9);
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+    ]);
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Community(
+        teamId: 9,
+        postRepository: repository,
+        communityRepository: const StubCommunityRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text(_loadedPost.title), findsOneWidget);
+    expect(find.byType(CommunityReadOnlyNotice), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(repository.lastTeamId, 9);
+
+    currentUserPreferences.applyServerSelection(
+        const UserTeamPreferences(favoriteTeamId: 9, followedTeamIds: [9, 83]));
+    await tester.pumpAndSettle();
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(CommunityReadOnlyNotice), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('loads posts through the repository on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
@@ -126,17 +160,16 @@ void main() {
 
   testWidgets('sends tab categories while preserving the selected sort',
       (tester) async {
-    _setScreenSize(tester, const Size(430, 932));
-    final repository = _ScriptedPostRepository([
-      () => Future.value(const [_loadedPost]),
-      () => Future.value(const [_loadedPost]),
-      () => Future.value(const [_loadedPost]),
-      () => Future.value(const [_loadedPost]),
-      () => Future.value(const [_loadedPost]),
-    ]);
+    _setScreenSize(tester, const Size(320, 568));
+    final repository = _ScriptedPostRepository(
+      List.generate(7, (_) => () => Future.value(const [_loadedPost])),
+    );
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
         theme: app_style.whitetheme,
         home: Community(
           teamId: 9,
@@ -148,15 +181,27 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.byKey(const ValueKey('community-filter-popular')),
+      find.text('인기순'),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('General'));
+    expect(
+      tester
+          .widget<TabBar>(find.byType(TabBar))
+          .tabs
+          .cast<Tab>()
+          .map((tab) => tab.text),
+      ['전체', '자유', '분석', '뉴스·정보', '팬아트'],
+    );
+    await tester.tap(find.text('자유'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Analysis'));
+    await tester.tap(find.text('분석'));
     await tester.pumpAndSettle();
-    tester.widget<TabBar>(find.byType(TabBar)).onTap!(3);
-    await tester.pumpAndSettle();
+    for (final label in ['뉴스·정보', '팬아트', '전체']) {
+      await tester.ensureVisible(find.text(label));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
 
     expect(
       repository.categories,
@@ -166,12 +211,16 @@ void main() {
         PostCategory.general,
         PostCategory.analysis,
         PostCategory.news,
+        PostCategory.fanart,
+        null,
       ],
     );
     expect(
       repository.sorts,
       [
         PostSort.newest,
+        PostSort.popular,
+        PostSort.popular,
         PostSort.popular,
         PostSort.popular,
         PostSort.popular,
@@ -303,7 +352,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('creates a post and reloads the repository on a tall screen',
+  testWidgets('creates a fan-art post and reloads the repository on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
     final repository = _ScriptedPostRepository(
@@ -328,6 +377,10 @@ void main() {
 
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('community-category-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('FAN ART'));
+    await tester.pumpAndSettle();
     await tester.enterText(
         find.widgetWithText(TextField, 'Title...'), 'Created post');
     await tester.enterText(
@@ -338,7 +391,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.createCalls, 1);
-    expect(repository.createdInput?.category, PostCategory.general);
+    expect(repository.createdInput?.category, PostCategory.fanart);
     expect(repository.createdInput?.title, 'Created post');
     expect(repository.createdInput?.body, 'Created body');
     expect(repository.calls, 2);

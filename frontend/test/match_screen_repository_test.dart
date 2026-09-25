@@ -1,5 +1,6 @@
 import 'support/app_catalog.dart';
 import 'dart:async';
+import 'package:clock/clock.dart' as time;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +10,7 @@ import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/matches/mock/fixture_catalog.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 import 'package:onetouch/models/fixture_detail.dart';
 import 'package:onetouch/screens/MatchScreen.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/Anal.dart';
@@ -16,6 +18,75 @@ import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets(
+      'refreshes kickoff, live, paused and finished states without reopening',
+      (tester) async {
+    final repository = _ControlledFixtureRepository();
+    await tester.pumpWidget(MaterialApp(
+      home: MatchScreen(
+        matchId: '${_fixture.fixtureId}',
+        matchStatus: 'upcoming',
+        repository: repository,
+      ),
+    ));
+    repository.calls.single
+        .complete(_detail(status: FixtureStatus.upcoming, stateId: 1));
+    await tester.pump();
+    expect(find.text('MATCH PREVIEW'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 15));
+    expect(repository.calls, hasLength(2));
+    // 응답이 느려도 다음 요청이 겹치지 않아요.
+    await tester.pump(const Duration(seconds: 30));
+    expect(repository.calls, hasLength(2));
+    final clock = FixtureClock(
+      periodTypeId: 2,
+      countsFrom: 45,
+      minutes: 65,
+      seconds: 31,
+      ticking: true,
+      isStale: false,
+      sampleAgeSeconds: 0,
+      receivedAt: time.clock.now(),
+    );
+    repository.calls.last.complete(
+        _detail(status: FixtureStatus.live, stateId: 22, clock: clock));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('MATCH INFO'), findsOneWidget);
+    expect(find.text('65:31'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 15));
+    repository.calls.last.completeError(StateError('offline'));
+    await tester.pump();
+    expect(find.text('Unable to load match.'), findsNothing);
+    expect(find.byType(MatchScoreHeader), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 15));
+    expect(repository.calls, hasLength(4));
+    repository.calls.last.complete(
+        _detail(status: FixtureStatus.live, stateId: 3, clock: clock));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Half Time'), findsOneWidget);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump(const Duration(seconds: 30));
+    expect(repository.calls, hasLength(4));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    expect(repository.calls, hasLength(5));
+    repository.calls.last.complete(_detail(stateId: 5, clock: clock));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Full Time'), findsOneWidget);
+    expect(find.text('ANALYSIS'), findsOneWidget);
+    expect(find.text('LIVE CHAT'), findsNothing);
+    await tester.pump(const Duration(seconds: 30));
+    expect(repository.calls, hasLength(5));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('loads a fixture detail asynchronously on a compact screen',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));
@@ -38,7 +109,7 @@ void main() {
     );
     expect(repository.calls, hasLength(1));
 
-    repository.calls.single.complete(_detail());
+    repository.calls.single.complete(_detail(status: FixtureStatus.upcoming));
     await tester.pump();
 
     expect(
@@ -72,7 +143,7 @@ void main() {
     await tester.pump();
     expect(repository.calls, hasLength(2));
 
-    repository.calls.last.complete(_detail());
+    repository.calls.last.complete(_detail(status: FixtureStatus.upcoming));
     await tester.pump();
 
     expect(
@@ -273,7 +344,7 @@ void main() {
     expect(coaches.coachA, 'Home Coach');
     expect(coaches.coachB, 'Away Coach');
     expect(scoreHeader.venueLabel, 'Test Stadium');
-    expect(scoreHeader.statusLabel, 'Final');
+    expect(find.text('Full Time'), findsOneWidget);
     expect(
       events.events,
       contains(
@@ -393,8 +464,7 @@ void main() {
         theme: app_style.darktheme,
         home: Scaffold(
           body: MatchInfoTab(
-            fixture: _fixture,
-            matchStatus: 'past',
+            fixture: detail.fixture,
             detail: detail,
           ),
         ),
@@ -473,8 +543,7 @@ void main() {
         theme: app_style.darktheme,
         home: Scaffold(
           body: MatchInfoTab(
-            fixture: _fixture,
-            matchStatus: 'past',
+            fixture: detail.fixture,
             detail: detail,
           ),
         ),
@@ -583,6 +652,15 @@ void main() {
     await tester.pump();
 
     final analysis = tester.widget<AnalysisTab>(find.byType(AnalysisTab));
+    final headerRect = tester.getRect(find.byType(MatchScoreHeader));
+    final tabRect = tester.getRect(find.byKey(const ValueKey('match-tab-2')));
+    expect(headerRect.top - tabRect.bottom, 24);
+    expect(headerRect.left, 24);
+    expect(headerRect.right, 430 - 24);
+    final eventsRect = tester.getRect(find.byType(MatchEventsSection));
+    final xgRect =
+        tester.getRect(find.byKey(const ValueKey('match-analysis-xg')));
+    expect(xgRect.top - eventsRect.bottom, 12);
     final events = tester.widget<MatchEventsSection>(
       find.byKey(const ValueKey('match-analysis-events')),
     );
@@ -696,6 +774,9 @@ final Fixture _fixture = mockFixtures.firstWhere(
 );
 
 FixtureDetail _detail({
+  FixtureStatus status = FixtureStatus.past,
+  int? stateId,
+  FixtureClock? clock,
   String? venueName,
   FixtureExpectedGoals? expectedGoals,
   List<FixtureCoach> coaches = const [],
@@ -707,8 +788,21 @@ FixtureDetail _detail({
   List<FixturePressurePoint> pressure = const [],
 }) {
   return FixtureDetail(
-    fixture: _fixture,
+    fixture: Fixture(
+      fixtureId: _fixture.fixtureId,
+      seasonId: _fixture.seasonId,
+      competitionId: _fixture.competitionId,
+      homeTeamId: _fixture.homeTeamId,
+      awayTeamId: _fixture.awayTeamId,
+      competitionType: _fixture.competitionType,
+      roundName: _fixture.roundName,
+      legNumber: _fixture.legNumber,
+      status: status,
+      stateId: stateId,
+      startingAt: _fixture.startingAt,
+    ),
     venueName: venueName,
+    clock: clock,
     expectedGoals: expectedGoals,
     playerExpectedGoals: const [],
     shots: const [],

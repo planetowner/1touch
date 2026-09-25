@@ -6,12 +6,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'ssh-common.ps1')
+. (Join-Path $PSScriptRoot 'ssh-common.ps1') -Target Lightsail
 $Service = $Service.ToLowerInvariant()
 $backendPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $pythonPath = (Get-Command python.exe -ErrorAction Stop).Source
 $tag = (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ')
-$remotePath = "/opt/1touch/transfer/$Service/$tag"
+$remotePath = "/home/ubuntu/onetouch-transfer/$Service/$tag"
 $credentialsFile = New-TemporaryFile
 $settingsProgram = "configure_$Service.py"
 $serverProgram = "prepare-$Service.sh"
@@ -27,7 +27,7 @@ try {
         (Join-Path $PSScriptRoot $settingsProgram), (Join-Path $PSScriptRoot 'environment_settings.py'),
         (Join-Path $PSScriptRoot 'prepare-service-settings.sh'),
         (Join-Path $PSScriptRoot $serverProgram), "${loginUser}@${serverIp}:$remotePath/"))
-    Write-Host 'sudo에는 서버 onetouch 계정 암호를 입력해요. 설정 저장과 읽기 전용 점검을 진행해요.'
+    Write-Host '서울 Lightsail 서버에 설정을 저장하고 읽기 전용 점검을 진행해요.'
     Invoke-AccessCommand $sshPath ($keyConnection + @("sudo bash $remotePath/$serverProgram"))
     Write-Host '서버 설정을 준비했어요. 실행 중인 API에는 다음 배포 때 반영돼요.'
 }

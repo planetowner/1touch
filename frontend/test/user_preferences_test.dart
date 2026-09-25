@@ -49,6 +49,54 @@ void main() {
     expect(repository.saved?.followedTeamIds, [19, 8]);
   });
 
+  test('viewed team is shared without saving or changing the favorite', () {
+    final repository = _FakeUserPreferencesRepository();
+    final preferences = CurrentUserPreferences(
+      repository: repository,
+      teamRepository: teamRepository,
+      fallback: fallback,
+    );
+    final changes = <int>[];
+    preferences.viewedTeamId
+        .addListener(() => changes.add(preferences.viewedTeamId.value));
+
+    expect(preferences.viewedTeamId.value, 83);
+    preferences.viewTeam(503);
+    preferences.viewTeam(83);
+    preferences.viewTeam(503);
+
+    expect(changes, [503, 83, 503]);
+    expect(preferences.favoriteTeamId.value, 83);
+    expect(preferences.followedTeamIds.value, [83, 503]);
+    expect(repository.saved, isNull);
+    expect(() => preferences.viewTeam(8), throwsArgumentError);
+    expect(preferences.viewedTeamId.value, 503);
+  });
+
+  test('keeps the viewed team until unfollowed or a session resets it', () {
+    final repository = _FakeUserPreferencesRepository();
+    final preferences = CurrentUserPreferences(
+      repository: repository,
+      teamRepository: teamRepository,
+      fallback: fallback,
+    );
+    preferences.viewTeam(503);
+    preferences.applyServerSelection(const UserTeamPreferences(
+        favoriteTeamId: 8, followedTeamIds: [8, 83, 503]));
+    expect(preferences.viewedTeamId.value, 503);
+
+    preferences.applyServerSelection(
+        const UserTeamPreferences(favoriteTeamId: 8, followedTeamIds: [8, 83]));
+    expect(preferences.viewedTeamId.value, 8);
+
+    preferences.viewTeam(83);
+    preferences.resetViewedTeam();
+    expect(preferences.viewedTeamId.value, 8);
+    preferences.applyServerSelection(fallback);
+    expect(preferences.viewedTeamId.value, 83);
+    expect(repository.saved, isNull);
+  });
+
   test('switching favorite keeps it inside followed teams', () async {
     final repository = _FakeUserPreferencesRepository();
     final preferences = CurrentUserPreferences(

@@ -18,6 +18,4 @@ class CurrentUserProfile {
   final Uri? avatarUri;
   final int favoriteTeamId;
   final DateTime createdAt;
-
-  String get displayName => '$firstName $lastName';
 }

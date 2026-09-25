@@ -6,9 +6,11 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
+import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/HomeScreenFeatures.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/competition.dart';
 import 'package:onetouch/models/team_overview.dart';
 
 void main() {
@@ -79,7 +81,10 @@ void main() {
                       leagueName: 'Premier League',
                     ),
                   ),
-                  FixtureCalendar(allMatches: [], favoriteTeamId: 8),
+                  FixtureCalendar(
+                      allMatches: [],
+                      favoriteTeamId: 8,
+                      participatingCompetitions: []),
                 ],
               ),
             ),
@@ -139,15 +144,30 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: FixtureCalendar(allMatches: [], favoriteTeamId: 8),
+              child: FixtureCalendar(
+                allMatches: [],
+                favoriteTeamId: 8,
+                participatingCompetitions: [
+                  Competition(
+                      competitionId: 2,
+                      name: 'Champions League',
+                      shortCode: 'UCL'),
+                  Competition(
+                      competitionId: 24, name: 'FA Cup', shortCode: 'FA Cup'),
+                  Competition(
+                      competitionId: 27,
+                      name: 'Carabao Cup',
+                      shortCode: 'EFL Cup'),
+                ],
+              ),
             ),
           ),
         ),
       );
 
-      final leagueLegend = find.text('League');
-      final europeLegend = find.text('Europe');
-      final cupLegend = find.text('Cup');
+      final europeLegend = find.text('UCL');
+      final cupLegend = find.text('FA Cup');
+      final leagueCupLegend = find.text('EFL Cup');
       expect(
         tester
                 .getTopLeft(
@@ -161,10 +181,10 @@ void main() {
                 .dy,
         closeTo(16, 0.1),
       );
-      expect(tester.getTopLeft(leagueLegend).dy,
-          closeTo(tester.getTopLeft(europeLegend).dy, 0.1));
       expect(tester.getTopLeft(europeLegend).dy,
           closeTo(tester.getTopLeft(cupLegend).dy, 0.1));
+      expect(tester.getTopLeft(cupLegend).dy,
+          closeTo(tester.getTopLeft(leagueCupLegend).dy, 0.1));
       expect(tester.takeException(), isNull);
     });
   }
@@ -340,7 +360,9 @@ void main() {
         theme: app_style.whitetheme,
         home: Scaffold(
           body: TeamSelectionSheet(
-            initialFavoriteTeamId: favoriteTeamId,
+            initialTeamId: favoriteTeamId,
+            favoriteTeamId: favoriteTeamId,
+            standingsRepository: MockStandingRepository(standings: []),
             followingTeams: [teamRepository.requireById(favoriteTeamId)],
             onSwitch: (_) {},
           ),
@@ -350,7 +372,7 @@ void main() {
     await tester.pump();
 
     expect(expectedLabel, isNotEmpty);
-    expect(find.text(expectedLabel), findsAtLeastNWidgets(1));
+    expect(find.text('$expectedLabel -'), findsAtLeastNWidgets(1));
     expect(tester.takeException(), isNull);
   });
 }

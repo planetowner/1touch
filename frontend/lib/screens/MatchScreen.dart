@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -48,7 +49,7 @@ class MatchScreen extends StatefulWidget {
   State<MatchScreen> createState() => _MatchScreenState();
 }
 
-class _MatchScreenState extends State<MatchScreen> {
+class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
   int selectedIndex = 0;
   late List<String> tabs;
   Fixture? fixture;
@@ -57,6 +58,14 @@ class _MatchScreenState extends State<MatchScreen> {
   bool _isLoading = false;
   bool _hasLoadError = false;
   BettingController? _betting;
+  Timer? _refreshTimer;
+  bool _requestInFlight = false;
+
+  List<String> _tabsFor(String status) => switch (status) {
+        'past' => ['MATCH INFO', 'HEAD TO HEAD', 'ANALYSIS'],
+        'live' => ['MATCH INFO', 'HEAD TO HEAD', 'LIVE CHAT'],
+        _ => ['MATCH PREVIEW', 'HEAD TO HEAD'],
+      };
 
   FixtureRepository get _repository =>
       widget.repository ?? fixture_provider.fixtureDetailRepository;
@@ -64,6 +73,8 @@ class _MatchScreenState extends State<MatchScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    tabs = _tabsFor(widget.matchStatus);
 
     _fixtureId = int.tryParse(widget.matchId);
     if (_fixtureId != null) {
@@ -77,23 +88,22 @@ class _MatchScreenState extends State<MatchScreen> {
       _isLoading = fixture == null;
       _loadFixture(_fixtureId!);
     }
-
-    if (widget.matchStatus == 'past') {
-      tabs = ['MATCH INFO', 'HEAD TO HEAD', 'ANALYSIS'];
-    } else if (widget.matchStatus == 'live') {
-      tabs = ['MATCH INFO', 'HEAD TO HEAD', 'LIVE CHAT'];
-    } else {
-      tabs = ['MATCH PREVIEW', 'HEAD TO HEAD'];
-    }
   }
 
-  Future<void> _loadFixture(int fixtureId) async {
+  Future<void> _loadFixture(int fixtureId, {bool refresh = false}) async {
+    if (_requestInFlight) return;
+    _requestInFlight = true;
+    _refreshTimer?.cancel();
     try {
       final detail = await _repository.loadDetail(fixtureId);
       if (!mounted) return;
       setState(() {
+        final selectedTab = tabs[selectedIndex];
         fixture = detail.fixture;
         _fixtureDetail = detail;
+        tabs = _tabsFor(detail.fixture.status.name);
+        final nextIndex = tabs.indexOf(selectedTab);
+        selectedIndex = nextIndex < 0 ? 0 : nextIndex;
         _isLoading = false;
         _hasLoadError = false;
       });
@@ -101,13 +111,44 @@ class _MatchScreenState extends State<MatchScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _hasLoadError = true;
+        // 재조회 실패로 이미 표시한 경기 전체를 오류 화면으로 바꾸지 않아요.
+        if (!refresh) _hasLoadError = true;
       });
+    } finally {
+      _requestInFlight = false;
+      _scheduleRefresh();
+    }
+  }
+
+  void _scheduleRefresh() {
+    _refreshTimer?.cancel();
+    if (!mounted || _fixtureId == null || _fixtureDetail == null) return;
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    if (lifecycle != null && lifecycle != AppLifecycleState.resumed) return;
+    if (fixture?.status != FixtureStatus.live &&
+        fixture?.status != FixtureStatus.upcoming) {
+      return;
+    }
+    // 서버의 라이브 수집 주기에 맞춰 점수·상태·시계를 함께 다시 받아요.
+    _refreshTimer = Timer(const Duration(seconds: 15),
+        () => _loadFixture(_fixtureId!, refresh: true));
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _refreshTimer?.cancel();
+    if (state == AppLifecycleState.resumed &&
+        _fixtureId != null &&
+        (fixture?.status == FixtureStatus.live ||
+            fixture?.status == FixtureStatus.upcoming)) {
+      _loadFixture(_fixtureId!, refresh: true);
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _refreshTimer?.cancel();
     _betting?.dispose();
     super.dispose();
   }
@@ -126,11 +167,8 @@ class _MatchScreenState extends State<MatchScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final scaffoldBackground =
-        isDark ? Colors.black : AppPalette.lightModeDarkGrey;
-    final appBarBackground = isDark
-        ? AppColors.of(context).pageBackground
-        : AppPalette.lightModeDarkGrey;
+    // 상단 바와 본문이 같은 배경을 써야 색 경계가 생기지 않아요.
+    final pageBackground = mainPageBackground(context);
     const selectedSurface = AppPalette.white;
     const selectedForeground = AppPalette.black;
     final unselectedSurface =
@@ -138,12 +176,12 @@ class _MatchScreenState extends State<MatchScreen> {
 
     return Scaffold(
       key: const ValueKey('match-screen-scaffold'),
-      backgroundColor: scaffoldBackground,
+      backgroundColor: pageBackground,
       body: NestedScrollView(
         key: const ValueKey('match-nested-scroll'),
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
-            backgroundColor: appBarBackground,
+            backgroundColor: pageBackground,
             elevation: 0,
             floating: true,
             snap: true,
@@ -284,7 +322,6 @@ class _MatchScreenState extends State<MatchScreen> {
       case 'MATCH INFO':
         return MatchInfoTab(
           fixture: fixture!,
-          matchStatus: widget.matchStatus,
           detail: _fixtureDetail,
         );
       case 'MATCH PREVIEW':

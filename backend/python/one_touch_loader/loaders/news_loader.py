@@ -8,25 +8,27 @@ import requests
 import xml.etree.ElementTree as ET
 
 from one_touch_loader.core.news import (
-    ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, article_links, load_sources, parse_article_page, parse_feed,
+    ALIASES_PATH, NEWS_MAX_AGE, TeamNewsMatcher, article_links, load_sources,
+    parse_article_image, parse_article_page, parse_feed,
 )
 
 
-def read_source(session, source: dict) -> list[dict]:
-    def get(url):
-        # 노컷뉴스는 XML 형식을 나열한 Accept에 406을 반환해요. 기본 */*로 요청해요.
-        response = session.get(url, timeout=20, headers={"User-Agent": "1Touch-News/1.0"})
-        response.raise_for_status()
-        return response.content
+def _get_content(session, url: str) -> bytes:
+    # 노컷뉴스는 XML 형식을 나열한 Accept에 406을 반환해요. 기본 */*로 요청해요.
+    response = session.get(url, timeout=20, headers={"User-Agent": "1Touch-News/1.0"})
+    response.raise_for_status()
+    return response.content
 
-    content = get(source["feed_url"])
+
+def read_source(session, source: dict) -> list[dict]:
+    content = _get_content(session, source["feed_url"])
     if source.get("format") != "html":
         return parse_feed(content, source)
     # RSS가 없는 매체도 같은 메타데이터·팀 판별·기간 규칙을 사용해요. 본문은 저장하지 않아요.
     links = article_links(content, source)
     if not links:
         raise ValueError("Article list has no matching links")
-    articles = [parse_article_page(get(url), source, url) for url in links]
+    articles = [parse_article_page(_get_content(session, url), source, url) for url in links]
     if not any(articles):
         raise ValueError("Article pages have no valid metadata")
     return [article for article in articles if article]
@@ -57,11 +59,13 @@ def save_articles(source: dict, articles: list[dict], checked_at: datetime, erro
     from one_touch_loader.core.db import transaction
     with transaction() as conn, conn.cursor() as cur:
         for article in articles:
+            # 원문 이미지 조회가 실패해도 이미 저장된 대표 이미지는 유지해요.
             cur.execute("""INSERT INTO news_articles
                 (source_key,language,title,url,url_hash,image_url,published_at,collected_at)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE
                 article_id=LAST_INSERT_ID(article_id), title=VALUES(title),
-                image_url=VALUES(image_url), published_at=VALUES(published_at), collected_at=VALUES(collected_at)
+                image_url=COALESCE(VALUES(image_url), image_url),
+                published_at=VALUES(published_at), collected_at=VALUES(collected_at)
                 """, (source["key"], source["language"], article["title"], article["url"],
                        article["url_hash"], article["image_url"], article["published_at"].replace(tzinfo=None),
                        checked_at.replace(tzinfo=None)))
@@ -97,7 +101,15 @@ def refresh(*, apply: bool, sources=None, teams=None, session=None, now=None) ->
                 for article in read_source(session, source):
                     if now - NEWS_MAX_AGE <= article["published_at"] <= now:
                         # 공급자 목록의 리그는 분류 정보예요. 이적·대륙 대회 기사의 다른 리그 팀도 연결해요.
-                        articles.append({**article, "team_ids": matcher.match(article)})
+                        article = {**article, "team_ids": matcher.match(article)}
+                        # 표시 대상 중 피드에 이미지가 없는 기사만 원문을 읽어요. HTML 공급자는 이미 읽었어요.
+                        if article["team_ids"] and not article["image_url"] and source.get("format") != "html":
+                            try:
+                                article["image_url"] = parse_article_image(_get_content(session, article["url"]), source)
+                            except (requests.RequestException, ValueError) as exc:
+                                # 대표 이미지 조회 실패로 기사와 나머지 수집 결과를 버리지 않아요.
+                                error = type(exc).__name__
+                        articles.append(article)
             except (requests.RequestException, ET.ParseError, ValueError) as exc:
                 # 원문 응답이나 URL을 오류에 출력하지 않고 실패한 공급자만 표시해요.
                 error = type(exc).__name__
