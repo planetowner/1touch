@@ -244,10 +244,10 @@ class _AttributesSectionState extends State<AttributesSection> {
           //   Radar chart container
           Container(
             key: const ValueKey('analysis-attributes-card'),
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+            padding: const EdgeInsets.symmetric(vertical: 25),
             decoration: BoxDecoration(
               color: AppColors.of(context).cardBackground,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(16),
               boxShadow: appCardShadows(context),
             ),
             child: TeamAttributeRadar(
