@@ -55,7 +55,7 @@ void main() {
     );
 
     final clubColumn = find.byKey(const ValueKey('standing-club-column'));
-    expect(tester.getSize(clubColumn).width, 146);
+    expect(tester.getSize(clubColumn).width, 130);
     await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
     await tester.pumpAndSettle();
 
@@ -63,13 +63,138 @@ void main() {
     expect(find.text('Second United'), findsOneWidget);
     expect(find.text('MCI'), findsNothing);
     expect(find.text('ARS'), findsNothing);
-    expect(tester.getSize(clubColumn).width, 216);
+    expect(tester.getSize(clubColumn).width, 226);
 
     await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
     await tester.pumpAndSettle();
     expect(find.text('MCI'), findsOneWidget);
     expect(find.text('ARS'), findsOneWidget);
-    expect(tester.getSize(clubColumn).width, 146);
+    expect(tester.getSize(clubColumn).width, 130);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('uses the approved standing table geometry', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(_app(_ControlledStandingRepository(
+      (_, __) async => [
+        _standing(teamName: 'API United'),
+        _standing(teamId: 19, position: 2, teamName: 'Second United'),
+      ],
+    )));
+    await tester.pump();
+
+    final card = find.byKey(const ValueKey('standing-table-card'));
+    final clubColumn = find.byKey(const ValueKey('standing-club-column'));
+    final cardWidget = tester.widget<Container>(card);
+    final decoration = cardWidget.decoration! as BoxDecoration;
+    final clubHeader = tester.widget<Container>(
+      find.byKey(const ValueKey('standing-club-header')),
+    );
+    final statsHeader = tester.widget<Container>(
+      find.byKey(const ValueKey('standing-stats-header')),
+    );
+
+    expect(tester.getSize(card).width, 345);
+    expect(tester.getSize(clubColumn).width, 130);
+    expect(decoration.borderRadius, BorderRadius.circular(24));
+    expect(clubHeader.padding, const EdgeInsets.fromLTRB(16, 24, 16, 16));
+    expect(statsHeader.padding, const EdgeInsets.fromLTRB(16, 24, 16, 16));
+    expect(
+      tester.getTopRight(clubColumn).dx -
+          tester
+              .getTopRight(find.byKey(const ValueKey('standing-club-name-9')))
+              .dx,
+      16,
+    );
+    expect(
+      tester.getTopLeft(find.text('Club')).dx,
+      tester.getTopLeft(find.text('MCI')).dx,
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('standing-logo-9'))).dx -
+          tester.getTopRight(find.byKey(const ValueKey('standing-rank-9'))).dx,
+      12,
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('standing-club-name-9'))).dx -
+          tester.getTopRight(find.byKey(const ValueKey('standing-logo-9'))).dx,
+      12,
+    );
+    expect(
+      tester
+          .getBottomLeft(find.byKey(const ValueKey('standing-club-header')))
+          .dy,
+      tester
+          .getBottomLeft(find.byKey(const ValueKey('standing-stats-header')))
+          .dy,
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('standing-header-divider'))),
+      const Size(345, 1),
+    );
+    expect(
+      tester.getCenter(find.text('W')).dx -
+          tester.getCenter(find.text('MP')).dx,
+      32,
+    );
+    final cardRight = tester.getTopRight(card).dx;
+    final gdRect = tester.getRect(find.text('GD'));
+    expect(gdRect.left, lessThan(cardRight));
+    expect(gdRect.right, greaterThan(cardRight));
+    expect(
+      tester.getCenter(find.text('ARS')).dy -
+          tester.getCenter(find.text('MCI')).dy,
+      32,
+    );
+    final firstMarker =
+        find.byKey(const ValueKey('standing-qualification-marker-9'));
+    final secondMarker =
+        find.byKey(const ValueKey('standing-qualification-marker-19'));
+    expect(tester.getSize(firstMarker), const Size(2, 24));
+    expect(tester.getSize(secondMarker), const Size(2, 24));
+    expect(
+      tester.getTopLeft(secondMarker).dy - tester.getBottomLeft(firstMarker).dy,
+      8,
+    );
+    await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
+    await tester.pumpAndSettle();
+    expect(tester.getSize(clubColumn).width, 209);
+    expect(
+      tester.getRect(find.text('L')).right,
+      lessThanOrEqualTo(cardRight),
+    );
+    expect(find.byKey(const ValueKey('standing-right-fade')), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Club')).dx,
+      tester.getTopLeft(find.text('API United')).dx,
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('standing-club-name-9'))).dx -
+          tester.getTopRight(find.byKey(const ValueKey('standing-logo-9'))).dx,
+      12,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps MP through L visible when club names expand on SE3',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(375, 667));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(_app(_successfulStandingRepository()));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
+    await tester.pumpAndSettle();
+
+    final card = find.byKey(const ValueKey('standing-table-card'));
+    final clubColumn = find.byKey(const ValueKey('standing-club-column'));
+    expect(tester.getSize(clubColumn).width, 191);
+    expect(
+      tester.getRect(find.text('L')).right,
+      lessThanOrEqualTo(tester.getRect(card).right),
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -160,6 +285,9 @@ void main() {
 
   testWidgets('loads xG standings only after the xG table is selected',
       (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     final xgRepository = _ControlledXgStandingRepository(
       (_, __) async => [_xgStanding(teamName: 'API Expected United')],
     );
@@ -185,12 +313,68 @@ void main() {
       (xgCard.decoration as BoxDecoration).boxShadow,
       app_style.lightModeCardShadows,
     );
+    final xgHeader = find.byKey(const ValueKey('standing-stats-header'));
+    expect(tester.getSize(xgHeader).width, 215);
+    expect(
+      tester.getTopRight(xgHeader).dx,
+      tester
+          .getTopRight(find.byKey(const ValueKey('xg-standing-table-card')))
+          .dx,
+    );
+    for (final title in ['MP', 'xG', 'xGA', 'xPts']) {
+      final headerText = tester.widget<Text>(find.text(title));
+      expect(headerText.maxLines, 1);
+      expect(headerText.softWrap, isFalse);
+    }
+    expect(
+      tester.getCenter(find.text('xG')).dx -
+          tester.getCenter(find.text('MP')).dx,
+      44,
+    );
+    expect(
+      tester.getCenter(find.text('xGA')).dx -
+          tester.getCenter(find.text('xG')).dx,
+      44,
+    );
+    expect(
+      tester.getCenter(find.text('xPts')).dx -
+          tester.getCenter(find.text('xGA')).dx,
+      44,
+    );
     await tester.tap(find.byKey(const ValueKey('standing-club-name-9')));
     await tester.pumpAndSettle();
     expect(find.text('API Expected United'), findsOneWidget);
     expect(find.byKey(const ValueKey('xg-standing-loading')), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  for (final screenWidth in [320.0, 430.0]) {
+    testWidgets('xG table fills the stats viewport at ${screenWidth.toInt()}px',
+        (tester) async {
+      await tester.binding.setSurfaceSize(Size(screenWidth, 852));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(_app(
+        _successfulStandingRepository(),
+        xgRepository: _ControlledXgStandingRepository(
+          (_, __) async => [_xgStanding()],
+        ),
+      ));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('standing-view-xg-table')));
+      await tester.pump();
+
+      final viewportWidth = screenWidth - 48 - 130;
+      final expectedContentWidth = viewportWidth < 215 ? 215.0 : viewportWidth;
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey('standing-stats-header')))
+            .width,
+        expectedContentWidth,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('shows cached xG rows while refreshing the selected query',
       (tester) async {
