@@ -11,7 +11,7 @@ class TransferTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playerImage = transfer.playerImage;
-    final transferValue = _transferValue(transfer);
+    final transferValue = _transferValue(context, transfer);
     final isLoan = (transfer.displayType ?? '').contains(tr(context, 'Loan'));
     final appColors = AppColors.of(context);
 
@@ -150,16 +150,29 @@ class TransferTile extends StatelessWidget {
     );
   }
 
-  static String _transferValue(TransferEntry transfer) {
-    if (transfer.typeId != 219) {
-      return transfer.displayType ?? '-';
+  static String _transferValue(BuildContext context, TransferEntry transfer) {
+    if (transfer.typeId == 219 && transfer.amount != null) {
+      // Temporary frontend-only rule: verified Sportmonks fixtures and public
+      // fees indicate confirmed transfer amounts are EUR. Remove this assumption
+      // when the backend starts returning authoritative currency metadata.
+      return '€${_compactAmount(transfer.amount!)}';
     }
-    if (transfer.amount == null) return 'Unknown';
 
-    // Temporary frontend-only rule: verified Sportmonks fixtures and public
-    // fees indicate confirmed transfer amounts are EUR. Remove this assumption
-    // when the backend starts returning authoritative currency metadata.
-    return '€${_compactAmount(transfer.amount!)}';
+    final original =
+        transfer.typeId == 219 ? 'Unknown' : transfer.displayType ?? '-';
+    // 영문은 기존 표기를 유지하고, 요청된 세 언어의 문구만 바꿔요.
+    if (Localizations.localeOf(context).languageCode == 'en') return original;
+
+    // 같은 이적 유형도 영입·방출 방향에 따라 문구가 달라요.
+    final message = switch ((transfer.typeId, transfer.direction)) {
+      (220, TransferDirection.incoming) => 'Free Transfer',
+      (220, TransferDirection.outgoing) => 'Contract expired',
+      (9688, TransferDirection.incoming) => 'Return from loan',
+      (218, TransferDirection.outgoing) => 'Loan transfer',
+      (219, _) => 'No information',
+      _ => null,
+    };
+    return message == null ? original : tr(context, message);
   }
 
   static Widget _contractDate(BuildContext context, TransferEntry transfer) {
