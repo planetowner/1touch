@@ -11,6 +11,7 @@ class TransferEntry {
     required this.typeId,
     this.playerName,
     this.playerImage,
+    this.jerseyNumber,
     this.otherTeamId,
     this.otherTeamName,
     this.displayType,
@@ -24,6 +25,7 @@ class TransferEntry {
   final int playerId;
   final String? playerName;
   final String? playerImage;
+  final int? jerseyNumber;
   final TransferDirection direction;
   final int typeId;
   final int? otherTeamId;
