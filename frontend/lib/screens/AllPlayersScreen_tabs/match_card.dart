@@ -67,45 +67,51 @@ class PlayerMatchCard extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              SizedBox(
-                key: const ValueKey('player-match-logo'),
-                width: 32,
-                height: 32,
-                child: againstLogo != null
-                    ? remoteLogo
-                        ? Image.network(againstLogo!,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) =>
-                                const SizedBox.shrink())
-                        : Image.asset(
-                            againstLogo!,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) =>
-                                const SizedBox.shrink(),
-                          )
-                    : null,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 3,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('$result  ( $score )', style: Heading5.style),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Row(
+              children: [
+                SizedBox(
+                  key: const ValueKey('player-match-logo'),
+                  width: 32,
+                  height: 32,
+                  child: againstLogo != null
+                      ? remoteLogo
+                          ? Image.network(againstLogo!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) =>
+                                  const SizedBox.shrink())
+                          : Image.asset(
+                              againstLogo!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) =>
+                                  const SizedBox.shrink(),
+                            )
+                      : null,
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                  flex: 2,
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: (constraints.maxWidth - 48) * 0.48,
+                  ),
                   child: Text(
-                      '${opponentName == null ? '' : '$opponentName · '}$competition',
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Eyebrow.style)),
-            ],
+                    '$result  ( $score )',
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: Heading5.style,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Text(
+                        '${opponentName == null ? '' : '$opponentName · '}$competition',
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: Eyebrow.style)),
+              ],
+            ),
           ),
         ),
         // Bottom box: stat label + value pills, then the rating badge.
