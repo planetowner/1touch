@@ -95,24 +95,60 @@ class StandingTable extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        _buildHeaderCell(context, tr(context, 'MP')),
+                        _buildHeaderCell(
+                          context,
+                          'MP',
+                          key: const ValueKey('standing-header-mp'),
+                        ),
                         const SizedBox(width: 8),
-                        _buildHeaderCell(context, tr(context, 'W')),
+                        _buildHeaderCell(
+                          context,
+                          'W',
+                          key: const ValueKey('standing-header-w'),
+                        ),
                         const SizedBox(width: 8),
-                        _buildHeaderCell(context, tr(context, 'D')),
+                        _buildHeaderCell(
+                          context,
+                          'D',
+                          key: const ValueKey('standing-header-d'),
+                        ),
                         const SizedBox(width: 8),
-                        _buildHeaderCell(context, tr(context, 'L')),
+                        _buildHeaderCell(
+                          context,
+                          'L',
+                          key: const ValueKey('standing-header-l'),
+                        ),
                         const SizedBox(width: 8),
-                        _buildHeaderCell(context, tr(context, 'GF')),
+                        _buildHeaderCell(
+                          context,
+                          'GF',
+                          key: const ValueKey('standing-header-gf'),
+                        ),
                         const SizedBox(width: 8),
-                        _buildHeaderCell(context, tr(context, 'GA')),
+                        _buildHeaderCell(
+                          context,
+                          'GA',
+                          key: const ValueKey('standing-header-ga'),
+                        ),
                         const SizedBox(width: 8),
-                        _buildHeaderCell(context, tr(context, 'GD')),
+                        _buildHeaderCell(
+                          context,
+                          'GD',
+                          key: const ValueKey('standing-header-gd'),
+                        ),
                         const SizedBox(width: 8),
-                        _buildHeaderCell(context, tr(context, 'Pts')),
+                        _buildHeaderCell(
+                          context,
+                          'Pts',
+                          key: const ValueKey('standing-header-pts'),
+                        ),
                         const SizedBox(width: 12),
-                        _buildHeaderCell(context, tr(context, 'Last 5'),
-                            isWide: true),
+                        _buildHeaderCell(
+                          context,
+                          'Last 5',
+                          isWide: true,
+                          key: const ValueKey('standing-header-last-five'),
+                        ),
                       ],
                     ),
                   ),
@@ -150,6 +186,7 @@ class StandingTable extends StatelessWidget {
 
   Widget _buildStatRow(BuildContext context, Map<String, dynamic> team) {
     final isCurrentTeam = team['teamId'] == currentTeamId;
+    final teamId = team['teamId'] as int;
     final cellStyle = Body2.style.copyWith(
       color: isCurrentTeam
           ? Theme.of(context).colorScheme.onSurface
@@ -164,55 +201,101 @@ class StandingTable extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _buildStatCell(context, '${team['mp']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${team['mp']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-mp'),
+          ),
           const SizedBox(width: 8),
-          _buildStatCell(context, '${team['w']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${team['w']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-w'),
+          ),
           const SizedBox(width: 8),
-          _buildStatCell(context, '${team['d']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${team['d']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-d'),
+          ),
           const SizedBox(width: 8),
-          _buildStatCell(context, '${team['l']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${team['l']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-l'),
+          ),
           const SizedBox(width: 8),
-          _buildStatCell(context, '${team['gf']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${team['gf']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-gf'),
+          ),
           const SizedBox(width: 8),
-          _buildStatCell(context, '${team['ga']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${team['ga']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-ga'),
+          ),
           const SizedBox(width: 8),
           _buildStatCell(
             context,
             '${(team['gf'] as int) - (team['ga'] as int)}',
             style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-gd'),
           ),
           const SizedBox(width: 8),
-          _buildStatCell(context, '${team['pts']}', style: cellStyle),
+          _buildStatCell(
+            context,
+            '${team['pts']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-pts'),
+          ),
           const SizedBox(width: 12),
-          _buildLastFive(context, List<String>.from(team['last5'] as List)),
+          _buildLastFive(
+            context,
+            List<String>.from(team['last5'] as List),
+            teamId: teamId,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildLastFive(BuildContext context, List<String> results) {
+  Widget _buildLastFive(
+    BuildContext context,
+    List<String> results, {
+    required int teamId,
+  }) {
     return SizedBox(
-      width: 100,
+      width: _standingLastFiveWidth,
       height: 20,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: results.map((result) {
-          Color color;
-          switch (result) {
-            case 'W':
-              color = Colors.blue;
-              break;
-            case 'D':
-              color = Colors.grey;
-              break;
-            case 'L':
-              color = Colors.red;
-              break;
-            default:
-              color = Theme.of(context).colorScheme.onSurface;
-          }
-          return Icon(Icons.check_circle, size: 20, color: color);
-        }).toList(),
+        children: [
+          for (var index = 0; index < results.length; index++)
+            Icon(
+              switch (results[index]) {
+                'W' => Icons.check_circle,
+                'D' => Icons.remove_circle,
+                'L' => Icons.cancel,
+                _ => Icons.help_outline,
+              },
+              key: ValueKey('standing-last-five-$teamId-$index'),
+              size: 16,
+              color: switch (results[index]) {
+                'W' => Colors.blue,
+                'D' => Colors.grey,
+                'L' => Colors.red,
+                _ => Theme.of(context).colorScheme.onSurface,
+              },
+            ),
+        ],
       ),
     );
   }
