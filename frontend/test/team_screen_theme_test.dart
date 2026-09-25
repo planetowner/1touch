@@ -923,7 +923,8 @@ void main() {
 
     controller.jumpTo(0);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump(const Duration(milliseconds: 240));
+    await tester.pumpAndSettle();
 
     expect(
       find.byKey(const ValueKey('matches-upcoming-header')),
