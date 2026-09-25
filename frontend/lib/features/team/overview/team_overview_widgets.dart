@@ -58,30 +58,49 @@ class TransferTile extends StatelessWidget {
                   builder: (context, constraints) => Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          playerNameLabel(
-                              context,
-                              transfer.playerId,
-                              transfer.playerName ??
-                                  tr(context, 'Unknown Player')),
-                          key: ValueKey(
-                              'transfer-player-name-${transfer.transferId}'),
-                          style: Heading5.style,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          children: [
+                            if (transfer.jerseyNumber != null) ...[
+                              Text(
+                                '${transfer.jerseyNumber}',
+                                key: ValueKey(
+                                    'transfer-jersey-${transfer.transferId}'),
+                                style: Body1.style,
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              child: Text(
+                                playerNameLabel(
+                                    context,
+                                    transfer.playerId,
+                                    transfer.playerName ??
+                                        tr(context, 'Unknown Player')),
+                                key: ValueKey(
+                                    'transfer-player-name-${transfer.transferId}'),
+                                style: Body1_b.style,
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 8),
                       ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: constraints.maxWidth / 4,
+                          // Transfer types such as "Free Transfer", "Unknown",
+                          // and "On Loan" need more room than compact fees.
+                          // Keep enough of the row available for the player name,
+                          // while showing the complete type whenever it fits.
+                          maxWidth: constraints.maxWidth * 0.75,
                         ),
                         child: Text(
                           transferValue,
                           key:
                               ValueKey('transfer-value-${transfer.transferId}'),
-                          style: Heading5.style,
+                          style: Body1_b.style,
                           maxLines: 1,
                           softWrap: false,
                           overflow: TextOverflow.ellipsis,

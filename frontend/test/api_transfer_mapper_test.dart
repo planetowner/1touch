@@ -8,7 +8,7 @@ void main() {
     final response = ApiTeamTransfersResponse.fromJson({
       'window_key': '2026/2027 summer',
       'transfers_in': [
-        _transferJson(transferId: 2, direction: 'in'),
+        _transferJson(transferId: 2, direction: 'in', jerseyNumber: 13),
         _transferJson(transferId: 1, direction: 'in'),
       ],
       'transfers_out': [
@@ -25,6 +25,7 @@ void main() {
     expect(window.outgoing.single.direction, TransferDirection.outgoing);
     expect(window.incoming.first.typeId, 219);
     expect(window.incoming.first.displayType, 'Transfer');
+    expect(window.incoming.first.jerseyNumber, 13);
     expect(() => window.incoming.clear(), throwsUnsupportedError);
   });
 
@@ -54,6 +55,7 @@ void main() {
 Map<String, dynamic> _transferJson({
   required int transferId,
   required String direction,
+  int? jerseyNumber,
 }) =>
     {
       'transfer_id': transferId,
@@ -64,7 +66,7 @@ Map<String, dynamic> _transferJson({
       'other_team_id': 10,
       'other_team_name': 'Other Team',
       'other_team_image': null,
-      'jersey_number': null,
+      'jersey_number': jerseyNumber,
       'type_id': 219,
       'display_type': 'Transfer',
       'amount': 22000000,
