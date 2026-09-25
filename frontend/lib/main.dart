@@ -375,6 +375,7 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: appThemeController,
       builder: (context, themeMode, _) => MaterialApp.router(
+        locale: appLocaleOverride(),
         supportedLocales: appSupportedLocales,
         localizationsDelegates: appLocalizationDelegates,
         localeListResolutionCallback: resolveAppLocale,
