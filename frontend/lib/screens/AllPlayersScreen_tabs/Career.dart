@@ -277,6 +277,8 @@ class _CareerTabState extends State<CareerTab> {
                           season.teamCode ??
                               teamNameLabel(
                                   context, season.teamId, season.teamName),
+                          maxLines: 1,
+                          softWrap: false,
                           overflow: TextOverflow.ellipsis,
                           style: Body2_b.style,
                         ),
@@ -320,6 +322,8 @@ class _CareerTabState extends State<CareerTab> {
                     child: Text(
                       competitionNameLabel(
                           context, competition.id, competition.name),
+                      maxLines: 1,
+                      softWrap: false,
                       overflow: TextOverflow.ellipsis,
                       style: Body2_b.style.copyWith(
                         color: AppColors.of(context).mutedForeground,

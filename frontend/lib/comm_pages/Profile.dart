@@ -501,6 +501,8 @@ class _ProfileState extends State<Profile> {
                           child: Text(
                             teamNameLabel(context, team.teamId, team.name),
                             style: Body1_b.style,
+                            maxLines: 1,
+                            softWrap: false,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),
@@ -511,6 +513,8 @@ class _ProfileState extends State<Profile> {
                           child: Text(
                             tr(context, label),
                             style: Eyebrow.style,
+                            maxLines: 1,
+                            softWrap: false,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),

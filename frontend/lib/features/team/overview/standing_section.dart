@@ -332,6 +332,8 @@ class _StandingState extends State<Standing> {
                     TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             Text(tr(context, "Club"),
                 key: const ValueKey('overview-standing-club-header'),
+                maxLines: 1,
+                softWrap: false,
                 overflow: TextOverflow.ellipsis,
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.onSurface)),

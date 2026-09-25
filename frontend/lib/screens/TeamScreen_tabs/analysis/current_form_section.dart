@@ -595,29 +595,26 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           children: [
             Expanded(
               flex: 3,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  tr(context, 'Round {round}', {'round': round}),
-                  maxLines: 1,
-                  style: Body2_b.style.copyWith(
-                    color: foreground.withValues(alpha: 0.55),
-                  ),
+              child: Text(
+                tr(context, 'Round {round}', {'round': round}),
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: Body2_b.style.copyWith(
+                  color: foreground.withValues(alpha: 0.55),
                 ),
               ),
             ),
             const SizedBox(width: 6),
             Expanded(
               flex: 2,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerRight,
-                child: Text(
-                  tr(context, '{points} Pts', {'points': points}),
-                  maxLines: 1,
-                  style: Body2_b.style.copyWith(color: foreground),
-                ),
+              child: Text(
+                tr(context, '{points} Pts', {'points': points}),
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: Body2_b.style.copyWith(color: foreground),
               ),
             ),
           ],
