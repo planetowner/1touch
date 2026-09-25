@@ -107,14 +107,30 @@ class ForecastPipelineTests(unittest.TestCase):
         self.assertEqual(result["remaining_fixtures"], 306)
         self.assertNotEqual(result["teams"]["1"]["what_if"]["fixture"]["fixture_id"], 1)
 
-    def test_entropy_selection_diversifies_competitions_and_categories(self):
+    def test_european_participant_gets_europe_and_most_relevant_league_card(self):
         events = [{"event": name, "competition_id": competition, "category": category, "probability": p}
-                  for name, competition, category, p in [("title", 8, "TITLE", .5), ("top4", 8, "FINISH", .49),
-                     ("top6", 8, "FINISH", .48), ("ucl", 2, "TITLE", .15), ("cup", 24, "TITLE", .2),
-                     ("relegation", 8, "RELEGATION", 0)]]
-        cards = select_cards(events)
-        self.assertEqual({e["event"] for e in cards}, {"title", "top4", "ucl", "cup"})
-        self.assertEqual(select_cards([events[-1]]), [])
+                  for name, competition, category, p in [("ucl_winner", 2, "TITLE", 0),
+                     ("league_winner", 8, "TITLE", .2), ("top_4", 8, "LEAGUE_FINISH", .9),
+                     ("top_6", 8, "LEAGUE_FINISH", .5),
+                     ("direct_relegation", 8, "RELEGATION", .01)]]
+        self.assertEqual([e["event"] for e in select_cards(events)],
+                         ["ucl_winner", "league_winner"])
+
+    def test_non_european_team_gets_top_four_and_relegation(self):
+        events = [{"event": name, "competition_id": 8, "category": category, "probability": p}
+                  for name, category, p in [("league_winner", "TITLE", .01),
+                     ("top_4", "LEAGUE_FINISH", .4),
+                     ("direct_relegation", "RELEGATION", .3)]]
+        self.assertEqual([e["event"] for e in select_cards(events)],
+                         ["top_4", "direct_relegation"])
+
+    def test_non_european_title_contender_gets_top_four_and_league_title(self):
+        events = [{"event": name, "competition_id": 8, "category": category, "probability": p}
+                  for name, category, p in [("league_winner", "TITLE", .35),
+                     ("top_4", "LEAGUE_FINISH", .75),
+                     ("direct_relegation", "RELEGATION", .01)]]
+        self.assertEqual([e["event"] for e in select_cards(events)],
+                         ["top_4", "league_winner"])
 
 
 class TrainingPipelineTests(unittest.TestCase):
