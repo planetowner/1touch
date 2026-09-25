@@ -34,28 +34,28 @@ class MyNews extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (news.isNotEmpty) {
+      return _HomeContentList(items: news);
+    }
     if (isLoading) {
       return const Padding(
         padding: EdgeInsets.all(24),
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    if (hasError || news.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(
-            hasError
-                ? tr(context, 'Unable to load news.')
-                : tr(context, 'No team news yet.'),
-            style: Body2.style,
-          ),
-          if (hasError && onRetry != null)
-            TextButton(onPressed: onRetry, child: Text(tr(context, 'Retry'))),
-        ]),
-      );
-    }
-    return _HomeContentList(items: news);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+          hasError
+              ? tr(context, 'Unable to load news.')
+              : tr(context, 'No team news yet.'),
+          style: Body2.style,
+        ),
+        if (hasError && onRetry != null)
+          TextButton(onPressed: onRetry, child: Text(tr(context, 'Retry'))),
+      ]),
+    );
   }
 }
 
