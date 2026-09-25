@@ -9,6 +9,7 @@ import 'package:onetouch/data/teams/team_competition_context.dart';
 import 'package:onetouch/data/teams/team_page_eligibility_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/features/team/team_name_with_favorite_star.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class FollowingTeamsEditResult {
@@ -24,13 +25,13 @@ class FollowingTeamsEditResult {
 class _TeamEntry {
   final int teamId;
   final String name;
-  final String leagueLabel;
+  final TeamCompetitionContext? competition;
   final String? imagePath;
 
   _TeamEntry({
     required this.teamId,
     required this.name,
-    required this.leagueLabel,
+    required this.competition,
     this.imagePath,
   });
 }
@@ -38,7 +39,7 @@ class _TeamEntry {
 _TeamEntry _toEntry(Team t) => _TeamEntry(
       teamId: t.teamId,
       name: t.name,
-      leagueLabel: teamCompetitionContextResolver.labelFor(t.teamId),
+      competition: teamCompetitionContextResolver.resolve(t.teamId),
       imagePath: t.imagePath,
     );
 
@@ -112,7 +113,11 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
       setState(() {
         _isSearching = true;
         _filteredTeams = _allTeams
-            .where((t) => t.name.toLowerCase().contains(query))
+            .where((t) =>
+                t.name.toLowerCase().contains(query) ||
+                teamNameLabel(context, t.teamId, t.name)
+                    .toLowerCase()
+                    .contains(query))
             .toList();
         _selectedTeam = null;
         _conflictTeam = null;
@@ -332,7 +337,12 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                             text: tr(
                                 context,
                                 'You can follow one team per league. Following this team will replace {team}. Continue?',
-                                {'team': _conflictTeam!.name}),
+                                {
+                                  'team': teamNameLabel(
+                                      context,
+                                      _conflictTeam!.teamId,
+                                      _conflictTeam!.name)
+                                }),
                           ),
                         ),
                       ),
@@ -444,30 +454,17 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            entry.name,
-                            style: Heading5.style,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isPrimary)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Icon(
-                              Icons.star,
-                              color: Theme.of(context).colorScheme.onSurface,
-                              size: 20,
-                            ),
-                          ),
-                      ],
+                    TeamNameWithFavoriteStar(
+                      teamId: entry.teamId,
+                      name: entry.name,
+                      isFavorite: isPrimary,
+                      style: Heading5.style,
                     ),
-                    if (entry.leagueLabel.isNotEmpty) ...[
+                    if (teamCompetitionLabel(context, entry.competition)
+                        .isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(entry.leagueLabel, style: Eyebrow.style),
+                      Text(teamCompetitionLabel(context, entry.competition),
+                          style: Eyebrow.style),
                     ],
                   ],
                 ),
@@ -533,14 +530,14 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
                   ),
           ),
           title: Text(
-            team.name,
+            teamNameLabel(context, team.teamId, team.name),
             style: Heading5.style,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: team.leagueLabel.isNotEmpty
+          subtitle: teamCompetitionLabel(context, team.competition).isNotEmpty
               ? Text(
-                  team.leagueLabel,
+                  teamCompetitionLabel(context, team.competition),
                   style: Eyebrow.style,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

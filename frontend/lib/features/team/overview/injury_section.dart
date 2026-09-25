@@ -98,6 +98,8 @@ class _InjuryStatusState extends State<InjuryStatus> {
         key: ValueKey('injury-unavailable'),
       );
     }
+    final today = time.clock.now().toLocal();
+    // 종료일이 지나도 공급자의 현재 부상 명단에 남아 있으면 계속 보여줘요.
     final players = _report?.players ?? const <InjuredTeamPlayer>[];
 
     return Container(
@@ -135,13 +137,14 @@ class _InjuryStatusState extends State<InjuryStatus> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...players.map(_buildInjuryTile),
+                        ...players
+                            .map((player) => _buildInjuryTile(player, today)),
                       ],
                     ),
     );
   }
 
-  Widget _buildInjuryTile(InjuredTeamPlayer player) {
+  Widget _buildInjuryTile(InjuredTeamPlayer player, DateTime today) {
     final appColors = AppColors.of(context);
     final content = Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -189,7 +192,8 @@ class _InjuryStatusState extends State<InjuryStatus> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        player.playerName,
+                        playerNameLabel(
+                            context, player.playerId, player.playerName),
                         style: Body1_b.style,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -200,7 +204,7 @@ class _InjuryStatusState extends State<InjuryStatus> {
                 const SizedBox(height: 4),
                 ...player.injuries.map(
                   (injury) => Text(
-                    _injuryLabel(injury),
+                    _injuryLabel(injury, today),
                     key: ValueKey('injury-${injury.sidelineId}'),
                     style: Body2.style,
                   ),
@@ -213,7 +217,9 @@ class _InjuryStatusState extends State<InjuryStatus> {
     );
     return Semantics(
       button: true,
-      label: tr(context, 'Open {name}', {'name': player.playerName}),
+      label: tr(context, 'Open {name}', {
+        'name': playerNameLabel(context, player.playerId, player.playerName)
+      }),
       child: InkWell(
         key: ValueKey('injured-player-${player.playerId}'),
         onTap: () => openPlayerPage(context, player.playerId.toString()),
@@ -222,26 +228,17 @@ class _InjuryStatusState extends State<InjuryStatus> {
     );
   }
 
-  String _injuryLabel(TeamPlayerInjury injury) {
-    final start = injury.startDate;
-    final end = injury.endDate;
-    if (start == null && end == null) return injury.typeName;
-
-    final period = switch ((start, end)) {
-      (final DateTime start, final DateTime end) =>
-        '${_formatInjuryDate(start)} – ${_formatInjuryDate(end)}',
-      (final DateTime start, null) =>
-        tr(context, 'Since {date}', {'date': _formatInjuryDate(start)}),
-      (null, final DateTime end) =>
-        tr(context, 'Through {date}', {'date': _formatInjuryDate(end)}),
-      _ => '',
-    };
-    return '${injury.typeName} • $period';
-  }
-
-  String _formatInjuryDate(DateTime date) {
-    // Injury dates are provider date-only values, so timezone conversion would
-    // risk shifting the displayed calendar day.
-    return DateFormat('MMM d, yyyy').format(date);
+  String _injuryLabel(TeamPlayerInjury injury, DateTime today) {
+    final locale = Localizations.localeOf(context);
+    final typeName = injuryTypeLabel(
+      locale,
+      injury.typeId,
+      injury.typeName,
+    );
+    final returnLabel = injuryReturnLabel(
+      injury.daysUntilReturn(today),
+      locale: locale,
+    );
+    return '$typeName · $returnLabel';
   }
 }

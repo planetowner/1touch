@@ -60,7 +60,7 @@ class MatchBettingSection extends StatelessWidget {
                 if (bet != null)
                   _BetReceipt(
                     bet: bet,
-                    label: _label(bet.outcome, homeTeam, awayTeam),
+                    label: _label(context, bet.outcome, homeTeam, awayTeam),
                   ),
                 if (controller.error != null) ...[
                   const SizedBox(height: 12),
@@ -249,6 +249,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                         ),
                                   title: Text(
                                     _label(
+                                      context,
                                       option.outcome,
                                       widget.homeTeam,
                                       widget.awayTeam,
@@ -275,7 +276,8 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                         ),
                       if (_choosingAmount) ...[
                         Text(
-                          _label(_selected!, widget.homeTeam, widget.awayTeam),
+                          _label(context, _selected!, widget.homeTeam,
+                              widget.awayTeam),
                           style: Heading5.style,
                         ),
                         const SizedBox(height: 12),
@@ -444,7 +446,7 @@ class MatchStatsHeader extends StatelessWidget {
                 .map(
                   (outcome) => Expanded(
                     child: Text(
-                      _label(outcome, homeTeam, awayTeam),
+                      _label(context, outcome, homeTeam, awayTeam),
                       textAlign: TextAlign.center,
                       style: Body2.style,
                     ),
@@ -706,7 +708,7 @@ class _LabeledTeam extends StatelessWidget {
           _TeamLogo(team: team),
           const SizedBox(height: 6),
           Text(
-            team.shortCode ?? team.name,
+            team.shortCode ?? teamNameLabel(context, team.teamId, team.name),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Body1_b.style,
@@ -719,10 +721,13 @@ Color _surface(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
         ? AppPalette.darkGrey
         : AppPalette.white;
-String _label(BetOutcome outcome, Team home, Team away) => switch (outcome) {
-      BetOutcome.homeWin => '${home.shortCode ?? home.name} Win',
+String _label(BuildContext context, BetOutcome outcome, Team home, Team away) =>
+    switch (outcome) {
+      BetOutcome.homeWin =>
+        '${home.shortCode ?? teamNameLabel(context, home.teamId, home.name)} Win',
       BetOutcome.draw => 'Draw',
-      BetOutcome.awayWin => '${away.shortCode ?? away.name} Win',
+      BetOutcome.awayWin =>
+        '${away.shortCode ?? teamNameLabel(context, away.teamId, away.name)} Win',
     };
 String _unavailable(String? reason) => switch (reason) {
       'unsupported_competition' =>

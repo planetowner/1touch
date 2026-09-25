@@ -6,6 +6,7 @@ from .common import TeamOut
 class CompetitionOut(BaseModel):
     competition_id: int
     name: str
+    short_code: str | None
     image_path: str | None
 
 

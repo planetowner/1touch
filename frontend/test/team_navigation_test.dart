@@ -37,14 +37,6 @@ void main() {
               ],
             ),
             StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/players',
-                  builder: (_, __) => const Text('Players'),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
               initialLocation: '/team/83',
               routes: [
                 GoRoute(
@@ -52,6 +44,14 @@ void main() {
                   builder: (_, state) => Text(
                     'Team ${state.pathParameters['id']}',
                   ),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/players',
+                  builder: (_, __) => const Text('Players'),
                 ),
               ],
             ),
@@ -74,7 +74,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Team 83'), findsOneWidget);
-    expect(find.text('Selected branch 2'), findsOneWidget);
+    expect(find.text('Selected branch 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

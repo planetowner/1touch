@@ -75,6 +75,10 @@ PlayerDetail playerDetailFromJson(Map<String, dynamic> j) {
               date: DateTime.parse('${r['starting_at']}Z'),
               live: ![5, 7, 8].contains(r['state_id']),
               competition: r['competition_name'] as String,
+              competitionId: r['competition_id'] as int?,
+              opponentTeamId: (r['team_id'] == r['home_team_id']
+                  ? r['away_team_id']
+                  : r['home_team_id']) as int?,
               round: r['round_name'] as String?,
               opponent: r['opponent_name'] as String?,
               opponentImage: r['opponent_image'] as String?,

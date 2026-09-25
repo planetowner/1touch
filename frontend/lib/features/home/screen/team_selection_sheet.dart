@@ -1,21 +1,26 @@
 part of 'home_screen_features.dart';
 
 class TeamSelectionSheet extends StatefulWidget {
-  final int initialFavoriteTeamId;
+  final int initialTeamId;
+  final int favoriteTeamId;
   final List<Team> followingTeams;
   final FutureOr<void> Function(int teamId) onSwitch;
+  final StandingRepository? standingsRepository;
 
   const TeamSelectionSheet({
     super.key,
-    required this.initialFavoriteTeamId,
+    required this.initialTeamId,
+    required this.favoriteTeamId,
     required this.followingTeams,
     required this.onSwitch,
+    this.standingsRepository,
   });
 
   // Static helper to show the sheet easily from anywhere
   static void show(
     BuildContext context, {
-    required int initialFavoriteTeamId,
+    required int initialTeamId,
+    required int favoriteTeamId,
     required List<Team> followingTeams,
     required FutureOr<void> Function(int teamId) onSwitch,
   }) {
@@ -27,7 +32,8 @@ class TeamSelectionSheet extends StatefulWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) => TeamSelectionSheet(
-        initialFavoriteTeamId: initialFavoriteTeamId,
+        initialTeamId: initialTeamId,
+        favoriteTeamId: favoriteTeamId,
         followingTeams: followingTeams,
         onSwitch: onSwitch,
       ),
@@ -48,12 +54,17 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
     _followingTeams = widget.followingTeams
         .where((team) => teamPageEligibility.supports(team.teamId))
         .map((team) {
+      final competition = teamCompetitionContextResolver.resolve(team.teamId)!;
       return <String, dynamic>{
         'id': team.teamId,
         'name': team.name,
-        'league': teamCompetitionContextResolver.labelFor(team.teamId),
+        'competition': competition,
+        // 순위 화면과 같은 저장소를 써서 같은 리그의 중복 요청과 표기 차이를 줄여요.
+        'standings': (widget.standingsRepository ?? standingRepository)
+            .loadForCompetition(competition.competitionId!,
+                seasonId: competition.seasonId),
         'logo': team.imagePath ?? '',
-        'isSelected': team.teamId == widget.initialFavoriteTeamId,
+        'isSelected': team.teamId == widget.initialTeamId,
       };
     }).toList();
   }
@@ -70,19 +81,12 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
       await widget.onSwitch(selected['id'] as int);
       if (!mounted) return;
       Navigator.of(context).pop();
-    } on FavoriteTeamCooldownException catch (error) {
-      if (!mounted) return;
-      setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
     } on Object {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              tr(context, 'Unable to change favorite team. Please try again.')),
+          content: Text(tr(context, 'Unable to load Home.')),
         ),
       );
     }
@@ -122,7 +126,10 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
               itemCount: _followingTeams.length,
               itemBuilder: (context, index) {
                 final team = _followingTeams[index];
+                final competition =
+                    team['competition'] as TeamCompetitionContext;
                 return ListTile(
+                  key: ValueKey('team-selection-${team['id']}'),
                   contentPadding: EdgeInsets.zero,
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
@@ -134,12 +141,28 @@ class _TeamSelectionSheetState extends State<TeamSelectionSheet> {
                           teamLogoFallback(team['id'] as int, size: 24),
                     ),
                   ),
-                  title: Text(
-                    team['name'],
+                  title: TeamNameWithFavoriteStar(
+                    teamId: team['id'] as int,
+                    name: team['name'] as String,
+                    // 체크는 이번 선택을, 별은 저장된 최애팀을 나타내요.
+                    isFavorite: team['id'] == widget.favoriteTeamId,
                     style: Body1_b.style,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  subtitle: Text(team['league'] ?? '', style: Body2.style),
+                  subtitle: FutureBuilder<List<Standing>>(
+                    future: team['standings'] as Future<List<Standing>>,
+                    builder: (context, snapshot) => Text(
+                      leaguePositionLabel(
+                        context,
+                        competitionNameLabel(context, competition.competitionId,
+                            competition.competitionName ?? ''),
+                        snapshot.data
+                            ?.where((row) => row.teamId == team['id'])
+                            .firstOrNull
+                            ?.position,
+                      ),
+                      style: Body2.style,
+                    ),
+                  ),
                   trailing: team['isSelected']
                       ? Icon(Icons.check, color: colorScheme.onSurface)
                       : null,

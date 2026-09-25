@@ -1,6 +1,19 @@
-﻿$serverIp = '158.247.195.63'
-$loginUser = 'onetouch'
-$keyPath = Join-Path $env:USERPROFILE '.ssh\onetouch-vultr'
+﻿param(
+    [ValidateSet('Vultr', 'Lightsail')]
+    [string]$Target = 'Vultr'
+)
+
+# 운영 배포와 기존 Vultr 초기 설정은 접속 절차가 같아 대상 정보만 달리 써요.
+if ($Target -eq 'Lightsail') {
+    $serverIp = '3.39.136.116'
+    $loginUser = 'ubuntu'
+    $keyPath = Join-Path $env:USERPROFILE '.ssh\onetouch-lightsail-seoul.pem'
+}
+else {
+    $serverIp = '158.247.195.63'
+    $loginUser = 'onetouch'
+    $keyPath = Join-Path $env:USERPROFILE '.ssh\onetouch-vultr'
+}
 $sshPath = (Get-Command ssh.exe -ErrorAction Stop).Source
 $scpPath = (Get-Command scp.exe -ErrorAction Stop).Source
 

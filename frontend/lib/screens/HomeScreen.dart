@@ -4,15 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
     as home_provider;
 import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/data/home/news_repository_provider.dart'
     as news_provider;
-import 'package:onetouch/data/teams/following_teams_repository.dart';
-import 'package:onetouch/data/teams/following_teams_repository_provider.dart'
-    as following_teams_provider;
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
@@ -27,12 +25,10 @@ class HomeScreen extends StatefulWidget {
     super.key,
     this.repository,
     this.newsRepository,
-    this.followingTeamsRepository,
   });
 
   final HomeRepository? repository;
   final NewsRepository? newsRepository;
-  final FollowingTeamsRepository? followingTeamsRepository;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -59,9 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
       widget.repository ?? home_provider.homeRepository;
   NewsRepository get _newsRepository =>
       widget.newsRepository ?? news_provider.newsRepository;
-  FollowingTeamsRepository get _followingTeamsRepository =>
-      widget.followingTeamsRepository ??
-      following_teams_provider.followingTeamsRepository;
 
   @override
   void initState() {
@@ -77,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         .addListener(_onTeamPreferencesChanged);
     currentUserPreferences.followedTeamIds
         .addListener(_onTeamPreferencesChanged);
+    currentUserPreferences.viewedTeamId.addListener(_onTeamPreferencesChanged);
     _loadHome(refreshContent: true);
   }
 
@@ -109,14 +103,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadHome({bool refreshContent = false}) async {
     final requestId = ++_homeRequestId;
-    if (_homeData == null) {
+    final teamId = currentUserPreferences.viewedTeamId.value;
+    if (_homeData?.favoriteTeam.teamId != teamId) {
+      // 다른 팀을 조회하는 동안 이전 팀의 카드와 늦게 도착한 뉴스를 보여주지 않아요.
+      ++_newsRequestId;
       setState(() {
+        _homeData = null;
         _isLoading = true;
       });
     }
 
     try {
       final data = await _repository.load(
+        teamId: teamId,
         start: _calendarMonth,
         end: DateTime(
           _calendarMonth.year,
@@ -143,20 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _switchFavoriteTeam(int teamId) async {
-    final homeData = _homeData;
-    if (homeData == null || homeData.favoriteTeam.teamId == teamId) return;
-
-    final savedTeams = await _followingTeamsRepository.replaceFollowing(
-      teamIds: homeData.followingTeams.map((team) => team.teamId),
-      favoriteTeamId: teamId,
-    );
-
-    currentUserPreferences.applyServerSelection(UserTeamPreferences(
-      favoriteTeamId: teamId,
-      followedTeamIds: savedTeams.map((team) => team.teamId).toList(),
-    ));
-  }
+  void _switchViewedTeam(int teamId) => currentUserPreferences.viewTeam(teamId);
 
   void _loadCalendarMonth(DateTime month) {
     _calendarMonth = month;
@@ -195,6 +181,8 @@ class _HomeScreenState extends State<HomeScreen> {
     currentUserPreferences.favoriteTeamId
         .removeListener(_onTeamPreferencesChanged);
     currentUserPreferences.followedTeamIds
+        .removeListener(_onTeamPreferencesChanged);
+    currentUserPreferences.viewedTeamId
         .removeListener(_onTeamPreferencesChanged);
     _scrollController.dispose();
     super.dispose();
@@ -236,16 +224,22 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final team = homeData.favoriteTeam;
-    final favoriteTeam = TeamOverview(
+    final viewedTeam = TeamOverview(
       id: team.teamId,
       name: team.name,
       shortName: team.shortCode ?? '',
       imagePath: team.imagePath ?? '',
+      standing: homeData.leaguePosition == null
+          ? null
+          : {
+              'position': homeData.leaguePosition,
+              'rank_delta': homeData.leagueRankDelta,
+            },
       liveMatch: homeData.liveMatch,
       nextMatch: homeData.nextMatch,
       lastMatch: homeData.lastMatch,
     );
-    final favoriteTeamId = favoriteTeam.id;
+    final viewedTeamId = viewedTeam.id;
     return Scaffold(
       backgroundColor: pageBackground,
       extendBodyBehindAppBar: true,
@@ -299,13 +293,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         SizedBox(
                           width: 16,
                         ),
-                        // New Dropdown Feature
                         GestureDetector(
                           onTap: () => TeamSelectionSheet.show(
                             context,
-                            initialFavoriteTeamId: favoriteTeamId,
+                            initialTeamId: viewedTeamId,
+                            favoriteTeamId:
+                                currentUserPreferences.favoriteTeamId.value,
                             followingTeams: homeData.followingTeams,
-                            onSwitch: _switchFavoriteTeam,
+                            onSwitch: _switchViewedTeam,
                           ),
                           child: Container(
                             padding: AppDropdownTokens.compactPadding,
@@ -318,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Row(
                               children: [
                                 Image.network(
-                                  favoriteTeam.imagePath,
+                                  viewedTeam.imagePath,
                                   height: 24,
                                   width: 24,
                                   errorBuilder: (_, __, ___) => Image.asset(
@@ -354,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 48),
                   SectionHeader(title: tr(context, "FAVORITE TEAM")),
-                  FavoriteTeamCard(team: favoriteTeam),
+                  FavoriteTeamCard(team: viewedTeam),
                   const SizedBox(height: 32),
                   Row(
                     children: [
@@ -375,7 +370,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   FixtureCalendar(
                     allMatches: homeData.calendar,
-                    favoriteTeamId: favoriteTeamId,
+                    favoriteTeamId: viewedTeamId,
+                    participatingCompetitions:
+                        footballCatalog.currentCompetitions(viewedTeamId),
                     onMonthChanged: _loadCalendarMonth,
                   ),
                   const SizedBox(height: 32),

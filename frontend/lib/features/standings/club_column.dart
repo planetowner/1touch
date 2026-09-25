@@ -121,7 +121,7 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               _isExpanded
-                                  ? teamName
+                                  ? teamNameLabel(context, teamId, teamName)
                                   : _shortCode(teamId, teamName),
                               maxLines: 1,
                               style: textStyle,

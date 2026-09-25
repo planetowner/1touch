@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/l10n/date_labels.dart';
+import 'package:onetouch/l10n/fixture_labels.dart';
 import "package:onetouch/core/style.dart";
 import "package:onetouch/core/stylesheet.dart";
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
@@ -88,6 +89,14 @@ Widget competitionLogoFallback(int competitionId, {double size = 24}) {
 // UTILITIES & HELPERS
 //
 
+String leaguePositionLabel(
+    BuildContext context, String leagueName, int? position) {
+  final rank = position == null
+      ? '-'
+      : ordinal(position, locale: Localizations.localeOf(context));
+  return '$leagueName $rank';
+}
+
 String ordinal(int number, {Locale locale = const Locale('en')}) {
   if (locale.languageCode != 'en') {
     return translateMessage(locale, '{rank} place', {'rank': number});
@@ -160,11 +169,11 @@ class MatchCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 300;
-              final gap = compact ? 12.0 : 24.0;
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
+                  SizedBox(
+                    width: compact ? 64 : 81,
                     child: _TeamDisplay(
                       teamId: homeTeam.teamId,
                       teamName: homeTeam.displayName,
@@ -172,14 +181,19 @@ class MatchCard extends StatelessWidget {
                       logoSize: compact ? 56 : 72,
                     ),
                   ),
-                  SizedBox(width: gap),
-                  _MatchInfo(
-                    match: match,
-                    leagueName: leagueName,
-                    width: compact ? 80 : 96,
-                  ),
-                  SizedBox(width: gap),
+                  const SizedBox(width: 8),
                   Expanded(
+                    child: _MatchInfo(
+                      match: match,
+                      leagueName: leagueName == null
+                          ? null
+                          : competitionNameLabel(
+                              context, match!.competitionId, leagueName!),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: compact ? 64 : 76,
                     child: _TeamDisplay(
                       teamId: awayTeam.teamId,
                       teamName: awayTeam.displayName,
@@ -496,7 +510,8 @@ class _TeamDisplay extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 8),
-        Text(teamName, textAlign: TextAlign.center, style: Eyebrow.style),
+        Text(teamNameLabel(context, teamId, teamName, short: true),
+            textAlign: TextAlign.center, style: Eyebrow.style),
       ],
     );
   }
@@ -542,32 +557,28 @@ class _TeamDisplay2 extends StatelessWidget {
 class _MatchInfo extends StatelessWidget {
   final Fixture? match;
   final String? leagueName;
-  final double width;
 
   const _MatchInfo({
     required this.match,
     this.leagueName,
-    required this.width,
   });
 
   @override
   Widget build(BuildContext context) {
-    final roundLabel = match?.displayRoundLabel;
-    final competitionAndRound = [
-      leagueName ?? 'League',
-      if (roundLabel != null) roundLabel,
-    ].join('  ');
+    final roundLabel =
+        fixtureRoundLabel(match, locale: Localizations.localeOf(context));
+    final competitionAndRound =
+        fixtureCompetitionLabel(context, match, competitionName: leagueName) ??
+            [
+              leagueName ?? 'League',
+              if (roundLabel != null) roundLabel,
+            ].join('  ');
 
     return Column(
       children: [
-        SizedBox(
-          width: width,
-          child: Text(
-            fixtureDateLabel(match!.kickoff,
-                locale: Localizations.localeOf(context)),
-            textAlign: TextAlign.center,
-            style: Body2.style,
-          ),
+        FixtureDateTime(
+          label: fixtureDateLabel(match!.kickoff,
+              locale: Localizations.localeOf(context)),
         ),
         const SizedBox(height: 8),
         Container(
@@ -576,12 +587,13 @@ class _MatchInfo extends StatelessWidget {
           color: AppColors.of(context).divider,
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          width: width,
+        // 팀 로고 영역은 고정하고 긴 대회명은 중앙 영역 안에서 한 줄로 맞춰요.
+        FittedBox(
+          fit: BoxFit.scaleDown,
           child: Text(
             competitionAndRound,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            softWrap: false,
             textAlign: TextAlign.center,
             style: Body2.style,
           ),
@@ -609,8 +621,33 @@ class _MatchInfo2 extends StatelessWidget {
       children: [
         SizedBox(
           width: width,
-          child: Text(date, textAlign: TextAlign.center, style: Body2.style),
+          child: FixtureDateTime(label: date),
         ),
+      ],
+    );
+  }
+}
+
+// 홈과 일정에서 날짜·시간을 각각 한 줄로 맞춰요.
+class FixtureDateTime extends StatelessWidget {
+  const FixtureDateTime({super.key, required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final line in label.split('\n'))
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(line,
+                maxLines: 1,
+                softWrap: false,
+                textAlign: TextAlign.center,
+                style: Body2.style.copyWith(height: 1.3)),
+          ),
       ],
     );
   }

@@ -1,6 +1,13 @@
 // 화면 문구는 네 언어에서 같은 키로 관리해요.
 typedef MessageTranslations = ({String ko, String ja, String zh});
 
+// 다른 화면과 키가 같아도 팀 화면에서는 이 한국어 문구를 써요.
+const teamScreenKoreanMessages = <String, String>{
+  'Overview': '팀 정보',
+  'Matches': '일정',
+  'STANDING': '리그 순위',
+};
+
 const appMessages = <String, MessageTranslations>{
   "Email or username": (ko: "이메일 또는 아이디", ja: "メールアドレスまたはユーザー名", zh: "邮箱或用户名"),
   "Forgot password?": (ko: "비밀번호를 잊으셨나요?", ja: "パスワードをお忘れですか？", zh: "忘记密码？"),
@@ -243,7 +250,7 @@ const appMessages = <String, MessageTranslations>{
   "About": (ko: "앱 정보", ja: "アプリについて", zh: "关于"),
   "Contact": (ko: "문의", ja: "お問い合わせ", zh: "联系我们"),
   "Contact Us": (ko: "문의하기", ja: "お問い合わせ", zh: "联系我们"),
-  "General": (ko: "일반", ja: "一般", zh: "通用"),
+  "General": (ko: "자유", ja: "一般", zh: "通用"),
   "Legal": (ko: "법적 고지", ja: "法的情報", zh: "法律信息"),
   "Preferences": (ko: "환경 설정", ja: "環境設定", zh: "偏好设置"),
   "Personal Info": (ko: "개인 정보", ja: "個人情報", zh: "个人信息"),
@@ -362,11 +369,11 @@ const appMessages = <String, MessageTranslations>{
   "All matches": (ko: "모든 경기", ja: "すべての試合", zh: "所有比赛"),
   "All positions": (ko: "모든 포지션", ja: "すべてのポジション", zh: "所有位置"),
   "EVENTS": (ko: "경기", ja: "試合", zh: "比赛"),
-  "FOLLOWING TEAMS": (ko: "팔로우한 팀", ja: "フォロー中のチーム", zh: "关注的球队"),
+  "FOLLOWING TEAMS": (ko: "팔로잉 팀", ja: "フォロー中のチーム", zh: "关注的球队"),
   "FOLLOWING PLAYERS": (ko: "팔로우한 선수", ja: "フォロー中の選手", zh: "关注的球员"),
-  "Following Teams": (ko: "팔로우한 팀", ja: "フォロー中のチーム", zh: "关注的球队"),
+  "Following Teams": (ko: "팔로잉 팀", ja: "フォロー中のチーム", zh: "关注的球队"),
   "Following Players": (ko: "팔로우한 선수", ja: "フォロー中の選手", zh: "关注的球员"),
-  "FAVORITE TEAM": (ko: "가장 좋아하는 팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
+  "FAVORITE TEAM": (ko: "좋아하는 팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
   "FAVORITE PLAYERS": (ko: "좋아하는 선수", ja: "お気に入りの選手", zh: "喜欢的球员"),
   "Following": (ko: "팔로잉", ja: "フォロー中", zh: "已关注"),
   "Followers": (ko: "팔로워", ja: "フォロワー", zh: "粉丝"),
@@ -401,6 +408,11 @@ const appMessages = <String, MessageTranslations>{
     ko: "팔로우한 팀을 변경하지 못했어요. 다시 시도해 주세요.",
     ja: "フォロー中のチームを変更できませんでした。もう一度お試しください。",
     zh: "无法更新关注的球队，请重试。"
+  ),
+  "You can post, comment and like only in your favorite team community.": (
+    ko: "최애팀 커뮤니티에서만 글·댓글·좋아요를 남길 수 있어요.",
+    ja: "投稿・コメント・いいねは、最も好きなチームのコミュニティでのみ利用できます。",
+    zh: "仅可在最喜欢的球队社区发帖、评论和点赞。"
   ),
   "Unable to change favorite team. Please try again.": (
     ko: "가장 좋아하는 팀을 변경하지 못했어요. 다시 시도해 주세요.",
@@ -447,14 +459,15 @@ const appMessages = <String, MessageTranslations>{
   "Overview": (ko: "개요", ja: "概要", zh: "概览"),
   "Matches": (ko: "경기", ja: "試合", zh: "比赛"),
   "MATCHES": (ko: "경기", ja: "試合", zh: "比赛"),
-  "Squad": (ko: "선수단", ja: "選手一覧", zh: "阵容"),
-  "Standing": (ko: "순위표", ja: "順位表", zh: "积分榜"),
+  "Squad": (ko: "스쿼드", ja: "選手一覧", zh: "阵容"),
+  "Standing": (ko: "순위", ja: "順位表", zh: "积分榜"),
   "STANDING": (ko: "순위표", ja: "順位表", zh: "积分榜"),
   "Analysis": (ko: "분석", ja: "分析", zh: "分析"),
   "ANALYSIS": (ko: "분석", ja: "分析", zh: "分析"),
   "News": (ko: "뉴스", ja: "ニュース", zh: "新闻"),
   "NEWS": (ko: "뉴스", ja: "ニュース", zh: "新闻"),
-  "News & Insights": (ko: "뉴스와 인사이트", ja: "ニュースとインサイト", zh: "新闻与洞察"),
+  "News & Insights": (ko: "뉴스·정보", ja: "ニュースとインサイト", zh: "新闻与洞察"),
+  "Fan Art": (ko: "팬아트", ja: "ファンアート", zh: "同人创作"),
   "HIGHLIGHTS": (ko: "하이라이트", ja: "ハイライト", zh: "集锦"),
   "HIGHLIGHTS UNAVAILABLE": (
     ko: "하이라이트를 볼 수 없어요",
@@ -505,13 +518,13 @@ const appMessages = <String, MessageTranslations>{
   "LIVE MATCH": (ko: "진행 중인 경기", ja: "ライブ中の試合", zh: "进行中的比赛"),
   "LIVE": (ko: "라이브", ja: "ライブ", zh: "直播"),
   "Live": (ko: "라이브", ja: "ライブ", zh: "直播"),
-  "• LIVE": (ko: "• 라이브", ja: "• ライブ", zh: "• 直播"),
+  "• LIVE": (ko: "● 진행 중인 경기", ja: "• ライブ", zh: "• 直播"),
   "FIXTURE": (ko: "경기 일정", ja: "試合日程", zh: "赛程"),
   "CALENDAR": (ko: "캘린더", ja: "カレンダー", zh: "日历"),
   "RECENT MATCHES": (ko: "최근 경기", ja: "最近の試合", zh: "近期比赛"),
   "PAST MATCHES": (ko: "지난 경기", ja: "過去の試合", zh: "过往比赛"),
   "PAST": (ko: "지난 경기", ja: "過去の試合", zh: "已结束"),
-  "UPCOMING": (ko: "예정 경기", ja: "今後の試合", zh: "即将开始"),
+  "UPCOMING": (ko: "다가오는 경기", ja: "今後の試合", zh: "即将开始"),
   "Date TBD": (ko: "날짜 미정", ja: "日程未定", zh: "日期待定"),
   "DATE TBD": (ko: "날짜 미정", ja: "日程未定", zh: "日期待定"),
   "Time TBD": (ko: "시간 미정", ja: "時間未定", zh: "时间待定"),
@@ -632,8 +645,8 @@ const appMessages = <String, MessageTranslations>{
   ),
   "ASCENDING": (ko: "오름차순", ja: "昇順", zh: "升序"),
   "DESCENDING": (ko: "내림차순", ja: "降順", zh: "降序"),
-  "BEST ELEVEN": (ko: "베스트 일레븐", ja: "ベストイレブン", zh: "最佳十一人"),
-  "BEST XI": (ko: "베스트 일레븐", ja: "ベストイレブン", zh: "最佳十一人"),
+  "BEST ELEVEN": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
+  "BEST XI": (ko: "베스트 11", ja: "ベストイレブン", zh: "最佳十一人"),
   "No best eleven available": (
     ko: "베스트 일레븐 정보가 없어요",
     ja: "ベストイレブンの情報がありません",
@@ -710,7 +723,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "降格プレーオフの\n確率",
     zh: "参加保级附加赛的\n概率"
   ),
-  "INJURY STATUS": (ko: "부상 현황", ja: "負傷状況", zh: "伤病情况"),
+  "INJURY STATUS": (ko: "다친 선수", ja: "負傷状況", zh: "伤病情况"),
   "No current injuries": (ko: "현재 부상 선수가 없어요", ja: "現在、負傷者はいません", zh: "目前没有伤员"),
   "Unable to load injuries": (
     ko: "부상 정보를 불러오지 못했어요",
@@ -1047,6 +1060,10 @@ const appMessages = <String, MessageTranslations>{
   "{count} minutes ago": (ko: "{count}분 전", ja: "{count}分前", zh: "{count}分钟前"),
   "{count} hours ago": (ko: "{count}시간 전", ja: "{count}時間前", zh: "{count}小时前"),
   "{count} days ago": (ko: "{count}일 전", ja: "{count}日前", zh: "{count}天前"),
+  "Today": (ko: "오늘", ja: "今日", zh: "今天"),
+  "Yesterday": (ko: "어제", ja: "昨日", zh: "昨天"),
+  "Last week": (ko: "지난주", ja: "先週", zh: "上周"),
+  "{count} weeks ago": (ko: "{count}주 전", ja: "{count}週間前", zh: "{count}周前"),
   "Reactions": (ko: "반응", ja: "リアクション", zh: "互动"),
   "Match Reminder": (ko: "경기 알림", ja: "試合リマインダー", zh: "比赛提醒"),
   "Kickoff, Half Time, Full Time": (
@@ -1203,7 +1220,7 @@ const appMessages = <String, MessageTranslations>{
   "Match interrupted": (ko: "잠시 경기 중단", ja: "試合が一時中断しています", zh: "比赛暂时中断"),
   "VAR check": (ko: "VAR 확인 중", ja: "VAR確認中", zh: "VAR检查中"),
   "Coming soon": (ko: "아직 준비 중이에요", ja: "準備中です", zh: "敬请期待"),
-  "SWITCH": (ko: "변경", ja: "切り替え", zh: "切换"),
+  "SWITCH": (ko: "선택한 팀으로 바꿔요", ja: "切り替え", zh: "切换"),
   "Ad": (ko: "광고", ja: "広告", zh: "广告"),
   "USER": (ko: "사용자", ja: "ユーザー", zh: "用户"),
   "January": (ko: "1월", ja: "1月", zh: "1月"),
@@ -1235,6 +1252,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法加载积分榜，请重试"
   ),
   "Round {round}": (ko: "{round}라운드", ja: "第{round}節", zh: "第{round}轮"),
+  "{leg} Leg": (ko: "{leg}차전", ja: "第{leg}戦", zh: "第{leg}回合"),
   "{points} Pts": (ko: "승점 {points}", ja: "勝点{points}", zh: "{points}积分"),
   "{points} pts": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
   "You’ve got {points} pts!": (
@@ -1546,8 +1564,36 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Shot stopping": (ko: "선방", ja: "シュートストップ", zh: "扑救"),
   "Expected Goals": (ko: "기대 득점", ja: "期待得点", zh: "预期进球"),
-  "Since {date}": (ko: "{date}부터", ja: "{date}から", zh: "自{date}起"),
-  "Through {date}": (ko: "{date}까지", ja: "{date}まで", zh: "截至{date}"),
+  "Expected back today": (
+    ko: "오늘 복귀할 예정이에요",
+    ja: "今日復帰する予定です",
+    zh: "预计今天复出"
+  ),
+  "Expected back in 1 day": (
+    ko: "1일 뒤 복귀할 예정이에요",
+    ja: "1日後に復帰する予定です",
+    zh: "预计1天后复出"
+  ),
+  "Expected back in {count} days": (
+    ko: "{count}일 뒤 복귀할 예정이에요",
+    ja: "{count}日後に復帰する予定です",
+    zh: "预计{count}天后复出"
+  ),
+  "Expected back in 1 week": (
+    ko: "1주 뒤 복귀할 예정이에요",
+    ja: "1週間後に復帰する予定です",
+    zh: "预计1周后复出"
+  ),
+  "Expected back in {count} weeks": (
+    ko: "{count}주 뒤 복귀할 예정이에요",
+    ja: "{count}週間後に復帰する予定です",
+    zh: "预计{count}周后复出"
+  ),
+  "No return date yet": (
+    ko: "언제 복귀할지 아직 몰라요",
+    ja: "いつ復帰できるかはまだわかりません",
+    zh: "暂时还不知道什么时候复出"
+  ),
   "Open {name}": (ko: "{name} 보기", ja: "{name}を開く", zh: "查看{name}"),
   "Top Scorer": (ko: "득점왕", ja: "得点王", zh: "最佳射手"),
   "Top Assists": (ko: "도움왕", ja: "アシスト王", zh: "助攻王"),

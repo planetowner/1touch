@@ -12,6 +12,7 @@ import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
     as avatar_provider;
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/user_name_labels.dart';
 
 typedef AvatarImagePicker = Future<XFile?> Function();
 
@@ -56,9 +57,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     final profile = widget.profile;
-    nameController = TextEditingController(
-      text: profile?.displayName ?? '',
-    );
+    nameController = TextEditingController();
     usernameController = TextEditingController(
       text: profile?.username ?? '',
     );
@@ -66,6 +65,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       text: profile?.email ?? '',
     );
     passwordController = TextEditingController(text: '••••••••');
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final profile = widget.profile;
+    nameController.text = profile == null
+        ? ''
+        : userNameLabel(
+            locale: Localizations.localeOf(context),
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+          );
   }
 
   Future<XFile?> _pickAvatar() =>

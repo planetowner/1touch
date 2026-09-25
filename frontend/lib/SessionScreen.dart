@@ -44,6 +44,10 @@ class _SessionScreenState extends State<SessionScreen> {
       await footballCatalog.initialize();
       final account = await currentUserRepository.loadAccount();
       if (!mounted) return;
+      // 새 로그인에서는 이전 계정의 탐색 팀을 이어받지 않아요.
+      if (_readyToken != authSession.accessToken) {
+        currentUserPreferences.resetViewedTeam();
+      }
       if ([account.username, account.firstName, account.lastName]
           .any((s) => s == null || s.isEmpty)) {
         setState(() => _incompleteProfile = account);

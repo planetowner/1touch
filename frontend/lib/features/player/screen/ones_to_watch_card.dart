@@ -15,7 +15,8 @@ class OnesToWatchCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Semantics(
       button: true,
-      label: 'Open ${player.fullName}',
+      label:
+          'Open ${playerNameLabel(context, player.externalPlayerId, player.fullName)}',
       child: GestureDetector(
         key: ValueKey('ones-to-watch-player-${player.id}'),
         behavior: HitTestBehavior.opaque,
@@ -96,7 +97,8 @@ class OnesToWatchCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        player.fullName,
+                        playerNameLabel(
+                            context, player.externalPlayerId, player.fullName),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Body1_b.style.copyWith(color: colors.onSurface),
@@ -104,7 +106,7 @@ class OnesToWatchCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${player.teamName} • ${player.jerseyNumber}',
+                        '${teamNameLabel(context, player.teamId, player.teamName)} • ${player.jerseyNumber}',
                         style: Eyebrow.style.copyWith(color: colors.onSurface),
                       ),
                     ],

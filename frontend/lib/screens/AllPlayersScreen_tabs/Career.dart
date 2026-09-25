@@ -101,7 +101,8 @@ class _CareerTabState extends State<CareerTab> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                (first.teamName ?? tr(context, 'Team unavailable'))
+                teamNameLabel(context, first.teamId,
+                        first.teamName ?? tr(context, 'Team unavailable'))
                     .toUpperCase(),
                 style: Body2_b.style,
               ),
@@ -117,11 +118,14 @@ class _CareerTabState extends State<CareerTab> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  honours
-                          .firstWhere(
-                              (item) => item.competitionId == competitionId)
-                          .competitionName ??
-                      'Competition unavailable',
+                  competitionNameLabel(
+                      context,
+                      competitionId,
+                      honours
+                              .firstWhere(
+                                  (item) => item.competitionId == competitionId)
+                              .competitionName ??
+                          'Competition unavailable'),
                   style: Heading5.style,
                 ),
               ),
@@ -158,7 +162,8 @@ class _CareerTabState extends State<CareerTab> {
     final competitions = <int, String>{};
     for (final season in history) {
       for (final competition in season.competitions) {
-        competitions[competition.id] = competition.name;
+        competitions[competition.id] =
+            competitionNameLabel(context, competition.id, competition.name);
       }
     }
     final visible = history
@@ -269,7 +274,9 @@ class _CareerTabState extends State<CareerTab> {
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
-                          season.teamCode ?? season.teamName,
+                          season.teamCode ??
+                              teamNameLabel(
+                                  context, season.teamId, season.teamName),
                           overflow: TextOverflow.ellipsis,
                           style: Body2_b.style,
                         ),
@@ -311,7 +318,8 @@ class _CareerTabState extends State<CareerTab> {
                   Expanded(
                     flex: 5,
                     child: Text(
-                      competition.name,
+                      competitionNameLabel(
+                          context, competition.id, competition.name),
                       overflow: TextOverflow.ellipsis,
                       style: Body2_b.style.copyWith(
                         color: AppColors.of(context).mutedForeground,

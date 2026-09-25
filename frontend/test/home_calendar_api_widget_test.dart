@@ -5,6 +5,7 @@ import 'package:onetouch/data/home/api/api_home_mapper.dart';
 import 'package:onetouch/data/home/api/api_home_response.dart';
 import 'package:onetouch/data/teams/api/api_team_response.dart';
 import 'package:onetouch/features/HomeScreenFeatures.dart';
+import 'package:onetouch/models/competition.dart';
 
 void main() {
   testWidgets('calendar displays opponent data carried by the Home API fixture',
@@ -77,6 +78,12 @@ void main() {
             child: FixtureCalendar(
               allMatches: home.calendar,
               favoriteTeamId: home.favoriteTeam.teamId,
+              participatingCompetitions: const [
+                Competition(
+                    competitionId: 2,
+                    name: 'Champions League',
+                    shortCode: 'UCL'),
+              ],
             ),
           ),
         ),

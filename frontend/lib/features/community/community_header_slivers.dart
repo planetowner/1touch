@@ -4,6 +4,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/team.dart';
+import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class CommunitySliverAppBar extends StatelessWidget {
@@ -130,7 +131,7 @@ class CommunityTeamHeader extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          team.name,
+                          teamNameLabel(context, team.teamId, team.name),
                           key: const ValueKey('community-team-name'),
                           style: Heading4.style.copyWith(
                             color: foreground,
@@ -179,6 +180,9 @@ class CommunityTeamHeader extends StatelessWidget {
 }
 
 class CommunityPostTabHeader extends StatelessWidget {
+  // 전체 탭만 분류 없이 조회하고, 나머지는 글쓰기와 같은 분류 목록을 써요.
+  static const categories = <PostCategory?>[null, ...PostCategory.values];
+
   const CommunityPostTabHeader({
     super.key,
     required this.controller,
@@ -213,10 +217,8 @@ class CommunityPostTabHeader extends StatelessWidget {
             borderSide: BorderSide(color: colors.onSurface, width: 2),
           ),
           tabs: [
-            Tab(text: tr(context, 'All')),
-            Tab(text: tr(context, 'General')),
-            Tab(text: tr(context, 'Analysis')),
-            Tab(text: tr(context, 'News & Insights')),
+            for (final category in categories)
+              Tab(text: tr(context, category?.label ?? 'All')),
           ],
           tabAlignment: TabAlignment.start,
         ),

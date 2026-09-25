@@ -4,7 +4,7 @@ class CalendarEvent {
   final Fixture fixture;
   final String opponentLogoUrl;
   final int opponentTeamId;
-  final Color dotColor;
+  final Color? dotColor;
   final int fixtureId;
   final String status; // 'past' | 'live' | 'upcoming'
 
@@ -21,12 +21,14 @@ class CalendarEvent {
 class FixtureCalendar extends StatefulWidget {
   final List<HomeCalendarFixture> allMatches;
   final int favoriteTeamId;
+  final List<Competition> participatingCompetitions;
   final ValueChanged<DateTime>? onMonthChanged;
 
   const FixtureCalendar({
     super.key,
     required this.allMatches,
     required this.favoriteTeamId,
+    required this.participatingCompetitions,
     this.onMonthChanged,
   });
 
@@ -38,8 +40,16 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
   DateTime _currentMonth =
       DateTime(DateTime.now().year, DateTime.now().month, 1);
 
-  // Dynamic events generator - automatically creates events for any month/year
-  Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(DateTime month) {
+  // 유럽대항전 → 자국 컵 → 잉글랜드 리그컵 순서로 색을 배정해요.
+  static int _competitionPriority(Competition competition) =>
+      switch (competition.competitionId) {
+        2 || 5 || 2286 => 0,
+        27 => 2,
+        _ => 1,
+      };
+
+  Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(
+      DateTime month, Map<int, Color> competitionColors) {
     final events = <DateTime, List<CalendarEvent>>{};
     final addedFixtureIds = <int>{};
 
@@ -57,17 +67,12 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
       if (dt.year != month.year || dt.month != month.month) continue;
 
       final opponent = calendarFixture.opponent;
-      final color = switch (fixture.competitionType) {
-        CompetitionType.league => Colors.red,
-        CompetitionType.europe => Colors.blue,
-        CompetitionType.cup => Colors.green,
-      };
 
       events.putIfAbsent(dateOnly, () => []).add(CalendarEvent(
             fixture: fixture,
             opponentLogoUrl: opponent.imagePath ?? '',
             opponentTeamId: opponent.teamId,
-            dotColor: color,
+            dotColor: competitionColors[fixture.competitionId],
             fixtureId: fixture.fixtureId,
             status: fixture.status.name,
           ));
@@ -110,7 +115,24 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    final events = _generateEventsForMonth(_currentMonth);
+    // 월별 경기 유무와 관계없이 참가 대회에 색을 배정해 범례와 경기 점을 함께 사용해요.
+    final competitions = widget.participatingCompetitions
+        .where((c) => !TeamPageEligibility.domesticBigFiveCompetitionIds
+            .contains(c.competitionId))
+        .toList()
+      ..sort((a, b) {
+        final priority =
+            _competitionPriority(a).compareTo(_competitionPriority(b));
+        return priority != 0
+            ? priority
+            : a.competitionId.compareTo(b.competitionId);
+      });
+    const palette = [Colors.red, Colors.blue, Colors.green];
+    final competitionColors = {
+      for (var i = 0; i < competitions.length; i++)
+        competitions[i].competitionId: palette[i],
+    };
+    final events = _generateEventsForMonth(_currentMonth, competitionColors);
     final appColors = AppColors.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -184,31 +206,35 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
         ),
 
         // Legend outside the calendar
-        Container(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          alignment: Alignment.centerRight,
-          child: FittedBox(
-            key: const ValueKey('fixture-calendar-legends'),
-            fit: BoxFit.scaleDown,
+        if (competitions.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             alignment: Alignment.centerRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildLegendDot(Colors.red, tr(context, 'League')),
-                const SizedBox(width: 16),
-                _buildLegendDot(Colors.blue, tr(context, 'Europe')),
-                const SizedBox(width: 16),
-                _buildLegendDot(Colors.green, tr(context, 'Cup')),
-              ],
+            child: FittedBox(
+              key: const ValueKey('fixture-calendar-legends'),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < competitions.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 16),
+                    _buildLegendDot(
+                      competitionColors[competitions[i].competitionId]!,
+                      competitions[i].shortCode!,
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }
 
   Widget _buildLegendDot(Color color, String label) {
     return Row(
+      key: ValueKey('calendar-legend-$label'),
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
@@ -217,7 +243,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
-        Text(tr(context, label), style: Body2_b.style),
+        Text(label, style: Body2_b.style),
       ],
     );
   }
@@ -362,18 +388,21 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                         size: 28,
                       ),
                     ),
-                    Positioned(
-                      top: 0,
-                      right: 3,
-                      child: Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: dayEvents.first.dotColor,
-                          shape: BoxShape.circle,
+                    if (dayEvents.first.dotColor != null)
+                      Positioned(
+                        top: 0,
+                        right: 3,
+                        child: Container(
+                          key: ValueKey(
+                              'calendar-fixture-dot-${dayEvents.first.fixtureId}'),
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: dayEvents.first.dotColor,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

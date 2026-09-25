@@ -8,6 +8,7 @@ import 'package:onetouch/data/auth/auth_request_exception.dart';
 import 'package:onetouch/data/auth/auth_service.dart';
 import 'package:onetouch/SignComps/VerifyEmail.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/l10n/user_name_labels.dart';
 
 class EmailSignUpScreen extends StatefulWidget {
   const EmailSignUpScreen({super.key, this.authService});
@@ -148,29 +149,25 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 12),
-                      Text(tr(context, 'First name'), style: Eyebrow.style),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _firstName,
-                        decoration: _dec(context, 'John'),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? tr(context, 'Enter first name')
-                            : null,
-                        style: Body1.style,
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(tr(context, 'Last name'), style: Eyebrow.style),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _lastName,
-                        decoration: _dec(context, 'Doe'),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? tr(context, 'Enter last name')
-                            : null,
-                        style: Body1.style,
-                      ),
-                      const SizedBox(height: 16),
+                      for (final field in orderedUserNameParts(
+                        locale: Localizations.localeOf(context),
+                        firstName: (_firstName, 'First name', 'John'),
+                        lastName: (_lastName, 'Last name', 'Doe'),
+                      )) ...[
+                        Text(tr(context, field.$2), style: Eyebrow.style),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          key: ValueKey(
+                              'signup-${field.$2.toLowerCase().replaceAll(' ', '-')}-field'),
+                          controller: field.$1,
+                          decoration: _dec(context, field.$3),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? tr(context, 'Enter ${field.$2.toLowerCase()}')
+                              : null,
+                          style: Body1.style,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       Text(tr(context, 'Username'), style: Eyebrow.style),
                       const SizedBox(height: 8),

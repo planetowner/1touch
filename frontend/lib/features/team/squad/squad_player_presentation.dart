@@ -28,6 +28,8 @@ class SquadPlayer {
     required this.id,
     required this.name,
     required this.teamLabel,
+    this.teamId,
+    this.teamName,
     this.jerseyNumber,
     this.position,
     this.age,
@@ -48,6 +50,8 @@ class SquadPlayer {
   final int id;
   final String name;
   final String teamLabel;
+  final int? teamId;
+  final String? teamName;
   final int? jerseyNumber;
   final Position? position;
   final int? age;
@@ -59,11 +63,14 @@ class SquadPlayer {
   factory SquadPlayer.fromContract(
     TeamPlayerContract contract, {
     required String teamName,
+    int? teamId,
     required DateTime asOf,
   }) {
     return SquadPlayer(
       id: contract.playerId,
       name: contract.playerName,
+      teamId: teamId,
+      teamName: teamName,
       teamLabel: contract.jerseyNumber == null
           ? teamName
           : '$teamName • ${contract.jerseyNumber}',

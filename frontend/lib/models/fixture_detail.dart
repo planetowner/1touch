@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:onetouch/models/fixture.dart';
+import 'package:onetouch/models/fixture_clock.dart';
 
 @immutable
 class FixtureDetail {
   FixtureDetail({
     required this.fixture,
+    this.clock,
     required this.venueName,
     required this.expectedGoals,
     required List<FixturePlayerExpectedGoal> playerExpectedGoals,
@@ -27,6 +29,7 @@ class FixtureDetail {
         pressure = List.unmodifiable(pressure);
 
   final Fixture fixture;
+  final FixtureClock? clock;
   final String? venueName;
   final FixtureExpectedGoals? expectedGoals;
   final List<FixturePlayerExpectedGoal> playerExpectedGoals;

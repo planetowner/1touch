@@ -17,10 +17,10 @@ void main() {
   setUpAppCatalog();
   testWidgets('changing team removes old news and rejects its late response',
       (tester) async {
-    final oldFavorite = currentUserPreferences.favoriteTeamId.value;
+    final oldViewedTeam = currentUserPreferences.viewedTeamId.value;
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
-      currentUserPreferences.favoriteTeamId.value = oldFavorite;
+      currentUserPreferences.viewTeam(oldViewedTeam);
     });
     final home = _HomeRepository();
     final content = _ContentRepository();
@@ -30,7 +30,7 @@ void main() {
     await tester.pump();
     expect(content.calls.single.teamId, 83);
     home.teamId = 3468;
-    currentUserPreferences.favoriteTeamId.value = 3468;
+    currentUserPreferences.viewTeam(3468);
     await tester.pump();
     await tester.pump();
     expect(content.calls.last.teamId, 3468);
@@ -81,14 +81,15 @@ void main() {
 }
 
 List<HomeContentItem> _news(String title) => [
-      HomeContentItem(title: title, source: '공급자', timeLabel: '방금 전'),
+      HomeContentItem(title: title, source: '공급자', publishedAt: DateTime.now()),
     ];
 
 class _HomeRepository implements HomeRepository {
   int teamId = 83;
   @override
-  Future<HomeData> load({DateTime? start, DateTime? end}) async => HomeData(
-        favoriteTeam: Team(teamId: teamId, name: '선택한 팀'),
+  Future<HomeData> load({int? teamId, DateTime? start, DateTime? end}) async =>
+      HomeData(
+        favoriteTeam: Team(teamId: teamId ?? this.teamId, name: '선택한 팀'),
         followingTeams: const [
           Team(teamId: 83, name: '바르셀로나'),
           Team(teamId: 3468, name: '레알 마드리드')

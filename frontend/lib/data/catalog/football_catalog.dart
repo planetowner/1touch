@@ -21,6 +21,8 @@ class FootballCatalog implements TeamCompetitionContextResolver {
   final competitions = ValueNotifier<List<Competition>>(const []);
   final seasons = ValueNotifier<List<Season>>(const []);
   List<TeamSeasonMembership> memberships = const [];
+  List<TeamSeasonMembership> _currentMemberships = const [];
+  Map<int, TeamCompetitionContext> _teamContexts = const {};
   Future<void>? _request;
   bool isLoaded = false;
 
@@ -37,7 +39,40 @@ class FootballCatalog implements TeamCompetitionContextResolver {
       final loadedSeasons = _rows(json, 'seasons', Season.fromJson);
       final loadedMemberships =
           _rows(json, 'memberships', TeamSeasonMembership.fromJson);
+
+      // 팀 편집 창이 멈추지 않도록 현재 소속을 한 번 계산해 함께 사용해요.
+      final currentSeasonIds = {
+        for (final season in loadedSeasons)
+          if (season.isCurrent) season.seasonId,
+      };
+      final currentMemberships = loadedMemberships
+          .where((membership) => currentSeasonIds.contains(membership.seasonId))
+          .toList(growable: false);
+      final teamContexts = <int, TeamCompetitionContext>{};
+      for (final membership in currentMemberships) {
+        if (!TeamPageEligibility.domesticBigFiveCompetitionIds
+            .contains(membership.competitionId)) {
+          continue;
+        }
+        // 기존 조회처럼 응답에서 먼저 나온 현재 리그 소속을 사용해요.
+        teamContexts.putIfAbsent(
+          membership.teamId,
+          () => TeamCompetitionContext(
+            teamId: membership.teamId,
+            seasonId: membership.seasonId,
+            competitionId: membership.competitionId,
+            competitionName: loadedCompetitions
+                .where((c) => c.competitionId == membership.competitionId)
+                .firstOrNull
+                ?.name,
+          ),
+        );
+      }
+
+      // 목록 변경 알림을 받는 화면도 준비된 소속 정보를 조회할 수 있어야 해요.
       memberships = loadedMemberships;
+      _currentMemberships = currentMemberships;
+      _teamContexts = teamContexts;
       seasons.value = loadedSeasons;
       competitions.value = loadedCompetitions;
       teams.value = loadedTeams;
@@ -54,35 +89,25 @@ class FootballCatalog implements TeamCompetitionContextResolver {
           (json[key] as List).cast<Map<String, dynamic>>().map(parse));
 
   List<Team> currentTeams(int competitionId) {
-    final ids = memberships
-        .where((m) =>
-            m.competitionId == competitionId &&
-            seasons.value.any((s) => s.seasonId == m.seasonId && s.isCurrent))
+    final ids = _currentMemberships
+        .where((m) => m.competitionId == competitionId)
         .map((m) => m.teamId)
         .toSet();
     return teams.value.where((team) => ids.contains(team.teamId)).toList();
   }
 
-  @override
-  TeamCompetitionContext? resolve(int teamId) {
-    final membership = memberships
-        .where((m) =>
-            m.teamId == teamId &&
-            TeamPageEligibility.domesticBigFiveCompetitionIds
-                .contains(m.competitionId) &&
-            seasons.value.any((s) => s.seasonId == m.seasonId && s.isCurrent))
-        .firstOrNull;
-    if (membership == null) return null;
-    return TeamCompetitionContext(
-      teamId: teamId,
-      seasonId: membership.seasonId,
-      competitionId: membership.competitionId,
-      competitionName: competitions.value
-          .where((c) => c.competitionId == membership.competitionId)
-          .firstOrNull
-          ?.name,
-    );
+  List<Competition> currentCompetitions(int teamId) {
+    final ids = _currentMemberships
+        .where((m) => m.teamId == teamId)
+        .map((m) => m.competitionId)
+        .toSet();
+    return competitions.value
+        .where((c) => ids.contains(c.competitionId))
+        .toList();
   }
+
+  @override
+  TeamCompetitionContext? resolve(int teamId) => _teamContexts[teamId];
 }
 
 class CatalogTeamRepository implements TeamRepository {

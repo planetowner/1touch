@@ -117,7 +117,7 @@ class PlayerSeasonSelector extends StatelessWidget {
               .map((season) => DropdownMenuItem(
                     value: season.id,
                     child: Text(
-                      '${season.name} · ${season.competitionName}',
+                      '${season.name} · ${competitionNameLabel(context, season.competitionId, season.competitionName)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
