@@ -91,12 +91,12 @@ class _MatchAttributeComparisonState extends State<MatchAttributeComparison> {
         const SizedBox(height: 16),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+          padding: const EdgeInsets.symmetric(vertical: 25),
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark
                 ? AppPalette.black
                 : AppPalette.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: appCardShadows(context),
           ),
           child: _loading

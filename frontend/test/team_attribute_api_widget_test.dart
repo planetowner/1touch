@@ -70,6 +70,11 @@ void main() {
         chart.data.getTitle!(4, 0).positionPercentageOffset,
         0.3,
       );
+      final titleTextStyle = chart.data.titleTextStyle!;
+      expect(titleTextStyle.fontSize, 12);
+      expect(titleTextStyle.fontFamily, 'Archivo');
+      expect(titleTextStyle.fontWeight, FontWeight.w400);
+      expect(titleTextStyle.height, 1.3);
       expect(
         chart.data.dataSets.every((dataSet) => dataSet.entryRadius == 0),
         isTrue,
@@ -106,6 +111,12 @@ void main() {
     );
 
     final titleCenter = tester.getCenter(find.text('ATTRIBUTES'));
+    expect(
+      tester.getSize(
+        find.byKey(const ValueKey('analysis-attributes-card')),
+      ),
+      const Size(345, 288),
+    );
     final filterCenter = tester.getCenter(
       find.byKey(const ValueKey('analysis-attributes-filter')),
     );
