@@ -1555,8 +1555,36 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Shot stopping": (ko: "선방", ja: "シュートストップ", zh: "扑救"),
   "Expected Goals": (ko: "기대 득점", ja: "期待得点", zh: "预期进球"),
-  "Since {date}": (ko: "{date}부터", ja: "{date}から", zh: "自{date}起"),
-  "Through {date}": (ko: "{date}까지", ja: "{date}まで", zh: "截至{date}"),
+  "Expected back today": (
+    ko: "오늘 복귀할 예정이에요",
+    ja: "今日復帰する予定です",
+    zh: "预计今天复出"
+  ),
+  "Expected back in 1 day": (
+    ko: "1일 뒤 복귀할 예정이에요",
+    ja: "1日後に復帰する予定です",
+    zh: "预计1天后复出"
+  ),
+  "Expected back in {count} days": (
+    ko: "{count}일 뒤 복귀할 예정이에요",
+    ja: "{count}日後に復帰する予定です",
+    zh: "预计{count}天后复出"
+  ),
+  "Expected back in 1 week": (
+    ko: "1주 뒤 복귀할 예정이에요",
+    ja: "1週間後に復帰する予定です",
+    zh: "预计1周后复出"
+  ),
+  "Expected back in {count} weeks": (
+    ko: "{count}주 뒤 복귀할 예정이에요",
+    ja: "{count}週間後に復帰する予定です",
+    zh: "预计{count}周后复出"
+  ),
+  "No return date yet": (
+    ko: "언제 복귀할지 아직 몰라요",
+    ja: "いつ復帰できるかはまだわかりません",
+    zh: "暂时还不知道什么时候复出"
+  ),
   "Open {name}": (ko: "{name} 보기", ja: "{name}を開く", zh: "查看{name}"),
   "Top Scorer": (ko: "득점왕", ja: "得点王", zh: "最佳射手"),
   "Top Assists": (ko: "도움왕", ja: "アシスト王", zh: "助攻王"),
