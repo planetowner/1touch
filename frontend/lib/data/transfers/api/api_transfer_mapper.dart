@@ -45,14 +45,14 @@ TransferEntry _entryFromApiResponse(
     );
   }
 
-  // Other-team imagery and currency remain at the transport boundary until
-  // a frontend feature has defined how it will present them.
+  // The response also carries other-team imagery, jersey and currency. Keep
+  // those values at the transport boundary until a frontend feature has
+  // defined how it will present them.
   return TransferEntry(
     transferId: response.transferId,
     playerId: response.playerId,
     playerName: response.playerName,
     playerImage: response.playerImage,
-    jerseyNumber: response.jerseyNumber,
     direction: direction,
     typeId: response.typeId,
     otherTeamId: response.otherTeamId,

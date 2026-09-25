@@ -11,6 +11,7 @@ import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
 import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_transfer_window.dart';
 
 void main() {
@@ -25,8 +26,12 @@ void main() {
     required int teamId,
     required TransferRepository repository,
     VoidCallback? onUnavailable,
+    Locale locale = const Locale('en'),
   }) {
     return MaterialApp(
+      locale: locale,
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
       theme: whitetheme,
       home: Scaffold(
         body: SingleChildScrollView(
@@ -213,7 +218,6 @@ void main() {
             transferId: 77,
             playerId: 1077,
             playerName: 'Dominik Livakovic',
-            jerseyNumber: 13,
             direction: TransferDirection.incoming,
             typeId: 219,
             amount: 8500000,
@@ -228,13 +232,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final name = find.byKey(const ValueKey('transfer-player-name-77'));
-    final jersey = find.byKey(const ValueKey('transfer-jersey-77'));
     expect(name, findsOneWidget);
-    expect(jersey, findsOneWidget);
-    expect(tester.widget<Text>(jersey).data, '13');
-    expect(tester.widget<Text>(jersey).style, Body1.style);
     expect(tester.widget<Text>(name).style, Body1_b.style);
-    expect(tester.getTopLeft(jersey).dx, lessThan(tester.getTopLeft(name).dx));
     final paragraph = tester.renderObject<RenderParagraph>(name);
     expect(
       paragraph.didExceedMaxLines,
@@ -304,6 +303,113 @@ void main() {
     expect(find.text('Free Transfer'), findsOneWidget);
     expect(find.text('Unknown'), findsOneWidget);
     expect(find.text('On Loan'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows Korean transfer type labels in full with Body1_b',
+      (tester) async {
+    useCompactScreen(tester);
+    final repository = _TestTransferRepository(
+      (teamId) async => TeamTransferWindow(
+        teamId: teamId,
+        windowKey: '2026 summer',
+        incoming: const [
+          TransferEntry(
+            transferId: 91,
+            playerId: 1091,
+            playerName: 'Free Player',
+            direction: TransferDirection.incoming,
+            typeId: 220,
+            displayType: 'Free Transfer',
+          ),
+          TransferEntry(
+            transferId: 92,
+            playerId: 1092,
+            playerName: 'Unknown Player',
+            direction: TransferDirection.incoming,
+            typeId: 219,
+          ),
+          TransferEntry(
+            transferId: 93,
+            playerId: 1093,
+            playerName: 'Loan Player',
+            direction: TransferDirection.outgoing,
+            typeId: 218,
+            displayType: 'On Loan',
+          ),
+          TransferEntry(
+            transferId: 94,
+            playerId: 1094,
+            playerName: 'Returning Player',
+            direction: TransferDirection.incoming,
+            typeId: 9688,
+            displayType: 'Return from loan',
+          ),
+        ],
+        outgoing: const [],
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(
+      teamId: 9,
+      repository: repository,
+      locale: const Locale('ko'),
+    ));
+    await tester.pumpAndSettle();
+
+    const expectedLabels = <int, String>{
+      91: '자유 계약',
+      92: '정보 없음',
+      93: '임대',
+      94: '임대 복귀',
+    };
+    for (final entry in expectedLabels.entries) {
+      final value = find.byKey(ValueKey('transfer-value-${entry.key}'));
+      expect(value, findsOneWidget);
+      expect(tester.widget<Text>(value).data, entry.value);
+      expect(tester.widget<Text>(value).style, Body1_b.style);
+      expect(
+        tester.renderObject<RenderParagraph>(value).didExceedMaxLines,
+        isFalse,
+        reason: '${entry.value} should fit at 320px',
+      );
+    }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('does not show a legacy jersey prefix in a Korean player name',
+      (tester) async {
+    final repository = _TestTransferRepository(
+      (teamId) async => TeamTransferWindow(
+        teamId: teamId,
+        windowKey: '2026 summer',
+        incoming: const [
+          TransferEntry(
+            transferId: 95,
+            playerId: 1095,
+            playerName: '13번 도미닉 리바코비치',
+            direction: TransferDirection.incoming,
+            typeId: 220,
+            displayType: 'Free Transfer',
+          ),
+        ],
+        outgoing: const [],
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(buildSubject(
+      teamId: 9,
+      repository: repository,
+      locale: const Locale('ko'),
+    ));
+    await tester.pumpAndSettle();
+
+    final name = find.byKey(const ValueKey('transfer-player-name-95'));
+    expect(name, findsOneWidget);
+    expect(tester.widget<Text>(name).data, '도미닉 리바코비치');
+    expect(find.text('13번 도미닉 리바코비치'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
