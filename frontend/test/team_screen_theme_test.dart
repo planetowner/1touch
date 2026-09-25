@@ -642,6 +642,14 @@ void main() {
 
     expect(nextMatch.backgroundColor, app_style.AppPalette.lightGrey);
     expect(lastMatch.backgroundColor, app_style.AppPalette.darkGrey);
+    final lastMatchSurface =
+        find.byKey(const ValueKey('last-match-card-surface'));
+    final lastMatchTitle = find.byKey(const ValueKey('last-match-title'));
+    expect(
+      tester.getTopLeft(lastMatchTitle).dx -
+          tester.getTopLeft(lastMatchSurface).dx,
+      16,
+    );
     final nextMatchTeamNames = tester
         .widgetList<Text>(
           find.descendant(
