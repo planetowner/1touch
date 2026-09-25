@@ -59,6 +59,7 @@ class _TeamScreenState extends State<TeamScreen>
   int _loadRequestId = 0;
   int? _requestedStandingCompetitionId;
   int _standingSelectionRequestId = 0;
+  bool _isBracketInteracting = false;
 
   TeamOverviewRepository get _teamOverviewRepository =>
       widget.teamOverviewRepository ??
@@ -235,6 +236,9 @@ class _TeamScreenState extends State<TeamScreen>
         children: [
           NestedScrollView(
             controller: _scrollController,
+            physics: _isBracketInteracting
+                ? const NeverScrollableScrollPhysics()
+                : null,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverAppBar(
                 automaticallyImplyLeading: false,
@@ -379,6 +383,9 @@ class _TeamScreenState extends State<TeamScreen>
             ],
             body: TabBarView(
               controller: _tabController,
+              physics: _isBracketInteracting
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
               children: [
                 OverviewTab(
                   team: team,
@@ -393,6 +400,10 @@ class _TeamScreenState extends State<TeamScreen>
                   xgStandingRepository: widget.xgStandingRepository,
                   requestedCompetitionId: _requestedStandingCompetitionId,
                   selectionRequestId: _standingSelectionRequestId,
+                  onBracketInteractionChanged: (isInteracting) {
+                    if (_isBracketInteracting == isInteracting) return;
+                    setState(() => _isBracketInteracting = isInteracting);
+                  },
                 ),
                 SquadTab(team: team),
                 AnalysisTab(
