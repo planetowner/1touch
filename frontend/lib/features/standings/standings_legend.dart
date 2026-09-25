@@ -15,11 +15,15 @@ class StandingsLegend extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 20,
-        runSpacing: 8,
-        children: tiers.map((tier) => _LegendItem(tier: tier)).toList(),
+      child: SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          alignment: WrapAlignment.end,
+          runAlignment: WrapAlignment.end,
+          spacing: 20,
+          runSpacing: 8,
+          children: tiers.map((tier) => _LegendItem(tier: tier)).toList(),
+        ),
       ),
     );
   }
@@ -33,6 +37,7 @@ class _LegendItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      key: ValueKey('standing-legend-${tier.name}'),
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
