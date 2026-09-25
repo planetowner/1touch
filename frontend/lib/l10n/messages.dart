@@ -744,6 +744,11 @@ const appMessages = <String, MessageTranslations>{
   "TO": (ko: "새 팀", ja: "移籍先", zh: "去向"),
   "LOAN": (ko: "임대", ja: "期限付き移籍", zh: "租借"),
   "Loan": (ko: "임대", ja: "期限付き移籍", zh: "租借"),
+  "Free Transfer": (ko: "자유 계약", ja: "フリー移籍", zh: "自由转会"),
+  "Contract expired": (ko: "계약 만료", ja: "契約満了", zh: "合同到期"),
+  "Return from loan": (ko: "임대 복귀", ja: "レンタル復帰", zh: "租借回归"),
+  "Loan transfer": (ko: "임대", ja: "レンタル移籍", zh: "租借"),
+  "No information": (ko: "정보 없음", ja: "情報なし", zh: "暂无信息"),
   "TROPHIES": (ko: "우승 기록", ja: "タイトル", zh: "荣誉"),
   "Team trophy records unavailable": (
     ko: "팀 우승 기록이 없어요",
