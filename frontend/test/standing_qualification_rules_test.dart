@@ -98,6 +98,12 @@ void main() {
       expect(find.text('REL'), findsOneWidget);
       expect(find.text('UCL Q'), findsNothing);
       expect(find.text('REL PO'), findsNothing);
+      expect(
+        tester
+            .getRect(find.byKey(const ValueKey('standing-legend-relegation')))
+            .right,
+        size.width - 24,
+      );
       expect(tester.takeException(), isNull);
     });
   }

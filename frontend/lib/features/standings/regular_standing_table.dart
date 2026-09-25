@@ -19,28 +19,49 @@ class StandingTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 24, right: 24),
-      child: Container(
-        key: const ValueKey('standing-table-card'),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: appCardShadows(context),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _ExpandableClubColumn(
-                standings: standings,
-                currentTeamId: currentTeamId,
-                leagueId: leagueId,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final expandedClubWidth =
+              (constraints.maxWidth - 136).clamp(130.0, 226.0).toDouble();
+
+          return Container(
+            key: const ValueKey('standing-table-card'),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: appCardShadows(context),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Stack(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ExpandableClubColumn(
+                        standings: standings,
+                        currentTeamId: currentTeamId,
+                        leagueId: leagueId,
+                        expandedWidth: expandedClubWidth,
+                      ),
+                      Expanded(child: _buildStatsSide(context)),
+                    ],
+                  ),
+                  Positioned(
+                    key: const ValueKey('standing-header-divider'),
+                    left: 0,
+                    right: 0,
+                    top: 59,
+                    child: Container(
+                      height: 1,
+                      color: AppColors.of(context).divider,
+                    ),
+                  ),
+                ],
               ),
-              Container(width: 1, color: AppColors.of(context).divider),
-              Expanded(child: _buildStatsSide(context)),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -48,57 +69,83 @@ class StandingTable extends StatelessWidget {
   Widget _buildStatsSide(BuildContext context) {
     return Container(
       color: AppColors.of(context).cardBackground,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        controller: horizontalScrollController,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                topRight:
-                    isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
-              ),
-              child: Container(
-                color: AppColors.of(context).subtleBackground,
-                padding: const EdgeInsets.only(
-                  left: 24,
-                  right: 16,
-                  top: 24,
-                  bottom: 16,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: horizontalScrollController,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topRight: isScrolledToEnd
+                        ? const Radius.circular(24)
+                        : Radius.zero,
+                  ),
+                  child: Container(
+                    key: const ValueKey('standing-stats-header'),
+                    height: 59,
+                    color: AppColors.of(context).subtleBackground,
+                    padding: const EdgeInsets.fromLTRB(
+                      _standingTableHorizontalPadding,
+                      24,
+                      _standingTableHorizontalPadding,
+                      16,
+                    ),
+                    child: Row(
+                      children: [
+                        _buildHeaderCell(context, tr(context, 'MP')),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(context, tr(context, 'W')),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(context, tr(context, 'D')),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(context, tr(context, 'L')),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(context, tr(context, 'GF')),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(context, tr(context, 'GA')),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(context, tr(context, 'GD')),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(context, tr(context, 'Pts')),
+                        const SizedBox(width: 12),
+                        _buildHeaderCell(context, tr(context, 'Last 5'),
+                            isWide: true),
+                      ],
+                    ),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    _buildHeaderCell(context, tr(context, 'MP')),
-                    _buildHeaderCell(context, tr(context, 'W')),
-                    _buildHeaderCell(context, tr(context, 'D')),
-                    _buildHeaderCell(context, tr(context, 'L')),
-                    _buildHeaderCell(context, tr(context, 'GF')),
-                    _buildHeaderCell(context, tr(context, 'GA')),
-                    _buildHeaderCell(context, tr(context, 'GD')),
-                    _buildHeaderCell(context, tr(context, 'Pts')),
-                    _buildHeaderCell(context, tr(context, 'Last 5'),
-                        isWide: true),
-                  ],
+                const SizedBox(height: 24),
+                ..._buildStatRows(context),
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    bottomRight: isScrolledToEnd
+                        ? const Radius.circular(24)
+                        : Radius.zero,
+                  ),
+                  child: Container(
+                    height: 24,
+                    color: AppColors.of(context).cardBackground,
+                  ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(height: 24),
-            ...standings.map((team) => _buildStatRow(context, team)),
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                bottomRight:
-                    isScrolledToEnd ? const Radius.circular(16) : Radius.zero,
-              ),
-              child: Container(
-                height: 24,
-                color: AppColors.of(context).cardBackground,
-              ),
-            ),
-          ],
-        ),
+          ),
+          if (!isScrolledToEnd) _buildStandingRightFade(context),
+        ],
       ),
     );
+  }
+
+  List<Widget> _buildStatRows(BuildContext context) {
+    return [
+      for (var index = 0; index < standings.length; index++) ...[
+        _buildStatRow(context, standings[index]),
+        if (index != standings.length - 1) const SizedBox(height: 12),
+      ],
+    ];
   }
 
   Widget _buildStatRow(BuildContext context, Map<String, dynamic> team) {
@@ -112,21 +159,31 @@ class StandingTable extends StatelessWidget {
 
     return Container(
       color: AppColors.of(context).cardBackground,
-      padding: const EdgeInsets.only(left: 24, right: 16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: _standingTableHorizontalPadding,
+      ),
       child: Row(
         children: [
           _buildStatCell(context, '${team['mp']}', style: cellStyle),
+          const SizedBox(width: 8),
           _buildStatCell(context, '${team['w']}', style: cellStyle),
+          const SizedBox(width: 8),
           _buildStatCell(context, '${team['d']}', style: cellStyle),
+          const SizedBox(width: 8),
           _buildStatCell(context, '${team['l']}', style: cellStyle),
+          const SizedBox(width: 8),
           _buildStatCell(context, '${team['gf']}', style: cellStyle),
+          const SizedBox(width: 8),
           _buildStatCell(context, '${team['ga']}', style: cellStyle),
+          const SizedBox(width: 8),
           _buildStatCell(
             context,
             '${(team['gf'] as int) - (team['ga'] as int)}',
             style: cellStyle,
           ),
+          const SizedBox(width: 8),
           _buildStatCell(context, '${team['pts']}', style: cellStyle),
+          const SizedBox(width: 12),
           _buildLastFive(context, List<String>.from(team['last5'] as List)),
         ],
       ),
@@ -136,7 +193,7 @@ class StandingTable extends StatelessWidget {
   Widget _buildLastFive(BuildContext context, List<String> results) {
     return SizedBox(
       width: 100,
-      height: 44,
+      height: 20,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: results.map((result) {
@@ -154,7 +211,7 @@ class StandingTable extends StatelessWidget {
             default:
               color = Theme.of(context).colorScheme.onSurface;
           }
-          return Icon(Icons.check_circle, size: 19, color: color);
+          return Icon(Icons.check_circle, size: 20, color: color);
         }).toList(),
       ),
     );
