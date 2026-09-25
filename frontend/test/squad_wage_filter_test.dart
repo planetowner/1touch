@@ -249,6 +249,8 @@ void main() {
     );
     final captainBadge = tester.widget<Container>(captain);
     final captainDecoration = captainBadge.decoration! as BoxDecoration;
+    final viceCaptainBadge = tester.widget<Container>(viceCaptain);
+    final viceCaptainDecoration = viceCaptainBadge.decoration! as BoxDecoration;
 
     expect(captain, findsOneWidget);
     expect(tester.getSize(captain), const Size(24, 18));
@@ -256,8 +258,119 @@ void main() {
     expect(
         find.descendant(of: captain, matching: find.text('C')), findsOneWidget);
     expect(viceCaptain, findsOneWidget);
-    expect(tester.widget<Text>(viceCaptain).style?.color, AppPalette.white);
-    expect(find.text('VC'), findsOneWidget);
+    expect(tester.getSize(viceCaptain), const Size(24, 18));
+    expect(viceCaptainDecoration.border, Border.all(color: AppPalette.white));
+    final viceCaptainText = find.descendant(
+      of: viceCaptain,
+      matching: find.text('VC'),
+    );
+    expect(
+      tester.widget<Text>(viceCaptainText).style?.color,
+      AppPalette.white,
+    );
+    expect(tester.widget<Text>(viceCaptainText).style?.fontSize, 14);
+    expect(tester.widget<Text>(viceCaptainText).style?.fontFamily, 'Archivo');
+    expect(tester.widget<Text>(viceCaptainText).style?.height, 1.3);
+    expect(
+      tester.renderObject<RenderParagraph>(viceCaptainText).didExceedMaxLines,
+      isFalse,
+    );
+
+    final firstImagePanel = find.byKey(
+      const ValueKey('squad-player-image-panel-1'),
+    );
+    expect(
+      tester.getTopLeft(captain).dx - tester.getTopLeft(firstImagePanel).dx,
+      12,
+    );
+    expect(
+      tester.getBottomLeft(firstImagePanel).dy -
+          tester.getBottomLeft(captain).dy,
+      12,
+    );
+    expect(
+      tester
+              .getTopLeft(
+                find.byKey(const ValueKey('squad-jersey-number-1')),
+              )
+              .dy -
+          tester.getTopLeft(firstImagePanel).dy,
+      12,
+    );
+
+    final filter = find.byKey(const ValueKey('squad-filter-row'));
+    final header = find.byKey(const ValueKey('squad-position-FW-header'));
+    final firstCard = find.byKey(const ValueKey('squad-player-card-1'));
+    expect(
+      tester.getTopLeft(header).dy - tester.getBottomLeft(filter).dy,
+      24,
+    );
+    expect(
+      tester.getTopLeft(firstCard).dy - tester.getBottomLeft(header).dy,
+      16,
+    );
+    expect(find.text('FC Barcelona • 9'), findsNothing);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: whitetheme,
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: _FakeTeamContractRepository(
+              includeLeadershipPlayers: true,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (final badge in [captain, viceCaptain]) {
+      final container = tester.widget<Container>(badge);
+      final decoration = container.decoration! as BoxDecoration;
+      final text = tester.widget<Text>(
+        find.descendant(of: badge, matching: find.byType(Text)),
+      );
+      expect(decoration.border, Border.all(color: AppPalette.black));
+      expect(text.style?.color, AppPalette.black);
+    }
+  });
+
+  testWidgets('keeps 24px between a position grid and the next header',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: darktheme,
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: _FakeTeamContractRepository(
+              includeMultiplePositions: true,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final goalkeeperGrid = find.byKey(
+      const ValueKey('squad-position-GK-grid'),
+    );
+    final forwardHeader = find.byKey(
+      const ValueKey('squad-position-FW-header'),
+    );
+    expect(
+      tester.getTopLeft(forwardHeader).dy -
+          tester.getBottomLeft(goalkeeperGrid).dy,
+      24,
+    );
+    expect(tester.takeException(), isNull);
   });
 }
 
@@ -266,6 +379,7 @@ class _FakeTeamContractRepository implements TeamContractRepository {
     this.failuresRemaining = 0,
     this.returnEmpty = false,
     this.includeLeadershipPlayers = false,
+    this.includeMultiplePositions = false,
   });
 
   final ValueNotifier<Map<TeamContractQuery, TeamContractRoster>> _cache =
@@ -274,6 +388,7 @@ class _FakeTeamContractRepository implements TeamContractRepository {
   int failuresRemaining;
   final bool returnEmpty;
   final bool includeLeadershipPlayers;
+  final bool includeMultiplePositions;
 
   @override
   ValueListenable<Map<TeamContractQuery, TeamContractRoster>>
@@ -317,6 +432,13 @@ class _FakeTeamContractRepository implements TeamContractRepository {
                   positionGroup: TeamPositionGroup.forward,
                   jerseyNumber: 10,
                   leadershipRole: TeamLeadershipRole.viceCaptain,
+                ),
+              if (includeMultiplePositions)
+                const TeamPlayerContract(
+                  playerId: 3,
+                  playerName: 'Goalkeeper',
+                  positionGroup: TeamPositionGroup.goalkeeper,
+                  jerseyNumber: 1,
                 ),
             ],
     );
