@@ -98,6 +98,19 @@ void main() {
     expect(appBar.toolbarHeight, 91);
     expect(appBarLogo, const Size.square(48));
     expect(
+      tester
+              .getTopLeft(
+                find.byKey(const ValueKey('team-context-label')),
+              )
+              .dy -
+          tester
+              .getBottomLeft(
+                find.byKey(const ValueKey('team-app-bar-name')),
+              )
+              .dy,
+      closeTo(4, 0.1),
+    );
+    expect(
       tester.getTopLeft(find.byKey(const ValueKey('team-app-bar-logo'))).dy,
       47,
     );
