@@ -32,6 +32,28 @@ void main() {
       throwsUnsupportedError,
     );
   });
+
+  test('counts calendar days without shifting the provider end date', () {
+    final injury = TeamPlayerInjury(
+      sidelineId: 5001,
+      typeId: 535,
+      typeName: 'Hamstring injury',
+      endDate: DateTime.utc(2026, 11, 2),
+    );
+
+    expect(injury.daysUntilReturn(DateTime(2026, 9, 21, 23, 59)), 42);
+    expect(injury.daysUntilReturn(DateTime(2026, 11, 1, 23, 59)), 1);
+    expect(injury.daysUntilReturn(DateTime(2026, 11, 2, 23, 59)), 0);
+    expect(injury.daysUntilReturn(DateTime(2026, 11, 3)), -1);
+    expect(
+        _report()
+            .players
+            .single
+            .injuries
+            .single
+            .daysUntilReturn(DateTime(2026, 9, 24)),
+        isNull);
+  });
 }
 
 TeamInjuryReport _report() {
