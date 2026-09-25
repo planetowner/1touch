@@ -83,6 +83,7 @@ class _FixturesState extends State<Fixtures> {
                       homeScore: lastMatch.homeScore ?? 0,
                       awayScore: lastMatch.awayScore ?? 0,
                       backgroundColor: lastMatchBackground,
+                      dateTextStyle: Body2.style,
                       contentPadding: isLight
                           ? const EdgeInsets.fromLTRB(16, 16, 16, 24)
                           : null,
