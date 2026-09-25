@@ -419,7 +419,14 @@ class _StandingTabState extends State<StandingTab> {
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                child: _buildFilterRow(),
+                child: Row(
+                  key: const ValueKey('standing-filter-row'),
+                  children: [
+                    Expanded(child: _buildLeagueDropdown()),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildSeasonDropdown()),
+                  ],
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,84 +579,6 @@ class _StandingTabState extends State<StandingTab> {
     widget.onBracketInteractionChanged?.call(isInteracting);
   }
 
-  Widget _buildFilterRow() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const gap = 8.0;
-        final available = constraints.maxWidth - gap;
-        final equalWidth = available / 2;
-        final selectedCompetition =
-            competitionRepository.findById(selectedLeagueId);
-        final fullLeagueLabel = selectedCompetition == null
-            ? ''
-            : competitionNameLabel(
-                context,
-                selectedCompetition.competitionId,
-                selectedCompetition.name,
-              ).toUpperCase();
-        final leagueLabel = _compactCompetitionFilterLabel(fullLeagueLabel);
-        final seasons = _seasonOptionsForCompetition(selectedLeagueId);
-        var seasonLabel = '';
-        for (final season in seasons) {
-          if (season.seasonId == selectedSeasonId) {
-            seasonLabel = season.name.toUpperCase();
-            break;
-          }
-        }
-
-        final leagueDesired = _filterTriggerWidth(leagueLabel);
-        final seasonDesired = _filterTriggerWidth(seasonLabel);
-        var leagueWidth = equalWidth;
-        var seasonWidth = equalWidth;
-        if (leagueLabel.runes.any((codePoint) => codePoint > 0x7f)) {
-          leagueWidth = available * 0.54;
-          seasonWidth = available - leagueWidth;
-        } else if (leagueDesired > equalWidth && seasonDesired < equalWidth) {
-          final requested = leagueDesired - equalWidth;
-          final spare = equalWidth - seasonDesired;
-          final borrowed = requested < spare ? requested : spare;
-          leagueWidth += borrowed;
-          seasonWidth -= borrowed;
-        } else if (seasonDesired > equalWidth && leagueDesired < equalWidth) {
-          final requested = seasonDesired - equalWidth;
-          final spare = equalWidth - leagueDesired;
-          final borrowed = requested < spare ? requested : spare;
-          seasonWidth += borrowed;
-          leagueWidth -= borrowed;
-        }
-
-        return Row(
-          key: const ValueKey('standing-filter-row'),
-          children: [
-            SizedBox(width: leagueWidth, child: _buildLeagueDropdown()),
-            const SizedBox(width: gap),
-            SizedBox(width: seasonWidth, child: _buildSeasonDropdown()),
-          ],
-        );
-      },
-    );
-  }
-
-  double _filterTriggerWidth(String label) {
-    final painter = TextPainter(
-      text: TextSpan(text: label, style: Body2_b.style),
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-      maxLines: 1,
-    )..layout();
-    final fallbackGlyphAllowance =
-        label.runes.any((codePoint) => codePoint > 0x7f) ? 12.0 : 0.0;
-    return painter.width + 64 + fallbackGlyphAllowance;
-  }
-
-  String _compactCompetitionFilterLabel(String label) {
-    if (label.startsWith('UEFA ') &&
-        label.runes.any((codePoint) => codePoint > 0x7f)) {
-      return label.substring(5);
-    }
-    return label;
-  }
-
   Widget _buildLeagueDropdown() {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
@@ -663,13 +592,6 @@ class _StandingTabState extends State<StandingTab> {
       key: const ValueKey('standing-league-filter-shell'),
       triggerKey: const ValueKey('standing-league-filter'),
       value: selectedLeagueId,
-      selectedLabel: _compactCompetitionFilterLabel(
-        competitionNameLabel(
-          context,
-          selectedLeagueId,
-          competitionRepository.findById(selectedLeagueId)?.name ?? '',
-        ).toUpperCase(),
-      ),
       backgroundColor: appColors.subtleBackground,
       foregroundColor: colors.onSurface,
       textStyle: Body2_b.style,

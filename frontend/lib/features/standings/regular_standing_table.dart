@@ -97,6 +97,12 @@ class StandingTable extends StatelessWidget {
                       children: [
                         _buildHeaderCell(
                           context,
+                          'Pts',
+                          key: const ValueKey('standing-header-pts'),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildHeaderCell(
+                          context,
                           'MP',
                           key: const ValueKey('standing-header-mp'),
                         ),
@@ -135,12 +141,6 @@ class StandingTable extends StatelessWidget {
                           context,
                           'GD',
                           key: const ValueKey('standing-header-gd'),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderCell(
-                          context,
-                          'Pts',
-                          key: const ValueKey('standing-header-pts'),
                         ),
                         const SizedBox(width: 12),
                         _buildHeaderCell(
@@ -203,6 +203,13 @@ class StandingTable extends StatelessWidget {
         children: [
           _buildStatCell(
             context,
+            '${team['pts']}',
+            style: cellStyle,
+            key: ValueKey('standing-stat-$teamId-pts'),
+          ),
+          const SizedBox(width: 8),
+          _buildStatCell(
+            context,
             '${team['mp']}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-mp'),
@@ -248,13 +255,6 @@ class StandingTable extends StatelessWidget {
             '${(team['gf'] as int) - (team['ga'] as int)}',
             style: cellStyle,
             key: ValueKey('standing-stat-$teamId-gd'),
-          ),
-          const SizedBox(width: 8),
-          _buildStatCell(
-            context,
-            '${team['pts']}',
-            style: cellStyle,
-            key: ValueKey('standing-stat-$teamId-pts'),
           ),
           const SizedBox(width: 12),
           _buildLastFive(

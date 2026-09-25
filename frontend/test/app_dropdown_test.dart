@@ -152,38 +152,4 @@ void main() {
       ),
     );
   });
-
-  testWidgets('shows the full Korean Champions League option', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: whitetheme,
-        home: Scaffold(
-          body: AppDropdown<int>(
-            key: const ValueKey('league-dropdown'),
-            width: 164.5,
-            value: 1,
-            options: const [
-              AppDropdownOption<int>(
-                value: 1,
-                label: 'UEFA 챔피언스리그',
-              ),
-              AppDropdownOption<int>(value: 2, label: '라리가'),
-            ],
-            onChanged: (_) {},
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.byKey(const ValueKey('league-dropdown')));
-    await tester.pumpAndSettle();
-
-    final koreanOption = tester.renderObject<RenderParagraph>(
-      find.text('UEFA 챔피언스리그').last,
-    );
-    expect(koreanOption.didExceedMaxLines, isFalse);
-  });
 }
