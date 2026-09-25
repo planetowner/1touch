@@ -259,9 +259,12 @@ void main() {
                 closeTo(size.width - 48, 0.1),
               );
               expect(
-                tester.getSize(leagueShell).width +
-                    tester.getSize(seasonShell).width,
-                closeTo(size.width - 56, 0.1),
+                tester.getSize(leagueShell).width,
+                closeTo((size.width - 64) / 2, 0.1),
+              );
+              expect(
+                tester.getSize(seasonShell).width,
+                closeTo((size.width - 64) / 2, 0.1),
               );
               expect(
                 find.descendant(

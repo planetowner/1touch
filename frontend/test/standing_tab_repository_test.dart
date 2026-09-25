@@ -2,16 +2,13 @@ import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
-import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
 import 'package:onetouch/features/api_knockout_bracket.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/l10n/football_name_labels.dart';
 import 'package:onetouch/models/standing.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Standing.dart';
 
@@ -139,15 +136,20 @@ void main() {
       tester.getSize(find.byKey(const ValueKey('standing-header-divider'))),
       const Size(345, 1),
     );
-    expect(
-      tester.getCenter(find.text('W')).dx -
-          tester.getCenter(find.text('MP')).dx,
-      32,
-    );
+    const orderedColumns = ['pts', 'mp', 'w', 'd', 'l', 'gf', 'ga', 'gd'];
+    for (var index = 1; index < orderedColumns.length; index++) {
+      final previous = find.byKey(
+        ValueKey('standing-header-${orderedColumns[index - 1]}'),
+      );
+      final current = find.byKey(
+        ValueKey('standing-header-${orderedColumns[index]}'),
+      );
+      expect(tester.getCenter(current).dx - tester.getCenter(previous).dx, 32);
+    }
     final cardRight = tester.getTopRight(card).dx;
-    final gdRect = tester.getRect(find.text('GD'));
-    expect(gdRect.left, lessThan(cardRight));
-    expect(gdRect.right, greaterThan(cardRight));
+    final gaRect = tester.getRect(find.text('GA'));
+    expect(gaRect.left, lessThan(cardRight));
+    expect(gaRect.right, greaterThan(cardRight));
     expect(
       tester.getCenter(find.text('ARS')).dy -
           tester.getCenter(find.text('MCI')).dy,
@@ -199,7 +201,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.getSize(clubColumn).width, 209);
     expect(
-      tester.getRect(find.text('L')).right,
+      tester.getRect(find.text('D')).right,
       lessThanOrEqualTo(cardRight),
     );
     expect(find.byKey(const ValueKey('standing-right-fade')), findsOneWidget);
@@ -251,7 +253,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('keeps MP through L visible when club names expand on SE3',
+  testWidgets('keeps Pts through D visible when club names expand on SE3',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(375, 667));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -265,7 +267,7 @@ void main() {
     final clubColumn = find.byKey(const ValueKey('standing-club-column'));
     expect(tester.getSize(clubColumn).width, 191);
     expect(
-      tester.getRect(find.text('L')).right,
+      tester.getRect(find.byKey(const ValueKey('standing-header-d'))).right,
       lessThanOrEqualTo(tester.getRect(card).right),
     );
     expect(tester.takeException(), isNull);
@@ -610,49 +612,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shows the full Korean Champions League filter label',
-      (tester) async {
-    await tester.binding.setSurfaceSize(const Size(393, 852));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(
-      _app(
-        _successfulStandingRepository(),
-        requestedCompetitionId: 2,
-        selectionRequestId: 1,
-        locale: const Locale('ko'),
-        names: const FootballNames(
-          competitions: {2: 'UEFA 챔피언스리그'},
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final triggerLabel = find.descendant(
-      of: find.byKey(const ValueKey('standing-league-filter-shell')),
-      matching: find.text('챔피언스리그'),
-    );
-    expect(triggerLabel, findsOneWidget);
-    final triggerParagraph = tester.renderObject<RenderParagraph>(triggerLabel);
-    expect(
-      triggerParagraph.didExceedMaxLines,
-      isFalse,
-    );
-
-    await tester.tap(
-      find.byKey(const ValueKey('standing-league-filter-shell')),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .renderObject<RenderParagraph>(
-            find.text('UEFA 챔피언스리그').last,
-          )
-          .didExceedMaxLines,
-      isFalse,
-    );
-  });
-
   testWidgets('does not invent a default league for an unsupported team',
       (tester) async {
     final repository = _successfulStandingRepository();
@@ -685,23 +644,19 @@ Widget _app(
   int? requestedCompetitionId,
   int selectionRequestId = 0,
   Locale? locale,
-  FootballNames names = const FootballNames(),
 }) {
   return MaterialApp(
     locale: locale,
     supportedLocales: const [Locale('en'), Locale('ko')],
     localizationsDelegates: appLocalizationDelegates,
     theme: app_style.whitetheme,
-    home: FootballNamesScope(
-      names: names,
-      child: Scaffold(
-        body: StandingTab(
-          team: const {'id': 9},
-          regularStandingRepository: repository,
-          xgStandingRepository: xgRepository,
-          requestedCompetitionId: requestedCompetitionId,
-          selectionRequestId: selectionRequestId,
-        ),
+    home: Scaffold(
+      body: StandingTab(
+        team: const {'id': 9},
+        regularStandingRepository: repository,
+        xgStandingRepository: xgRepository,
+        requestedCompetitionId: requestedCompetitionId,
+        selectionRequestId: selectionRequestId,
       ),
     ),
   );
