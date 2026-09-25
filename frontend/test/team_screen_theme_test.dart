@@ -677,26 +677,26 @@ void main() {
     );
     expect(
       lastMatch.date,
-      fixtureDateLabel(
+      relativeDateLabel(
         teamOverviewRepository.cachedForTeam(9)!.lastMatch!.kickoff,
         locale: const Locale('en'),
       ),
     );
-    expect(lastMatch.date.split('\n'), hasLength(2));
+    expect(lastMatch.date.split('\n'), hasLength(1));
     final matchDateLines = tester.widgetList<Text>(
       find.descendant(
         of: find.byKey(const ValueKey('last-match-date-time')),
         matching: find.byType(Text),
       ),
     );
-    expect(matchDateLines, hasLength(2));
+    expect(matchDateLines, hasLength(1));
     expect(
       matchDateLines.map((line) => line.data),
       orderedEquals(lastMatch.date.split('\n')),
     );
     expect(
       matchDateLines.map((line) => line.style),
-      everyElement(Eyebrow.style),
+      everyElement(Body1.style),
     );
     expect(
       find.descendant(
