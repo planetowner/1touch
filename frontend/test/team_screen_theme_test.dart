@@ -468,7 +468,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('standing toggle rounds both segment surfaces', (tester) async {
+  testWidgets('standing toggle uses the approved segment geometry',
+      (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: app_style.darktheme,
@@ -500,12 +501,24 @@ void main() {
     final indicatorSurface = tester.widget<DecoratedBox>(
       find.byKey(const ValueKey('standing-view-indicator-surface')),
     );
+    final xgContent = tester.widget<Container>(
+      find.byKey(const ValueKey('standing-view-xg-table-content')),
+    );
 
-    expect(toggle.padding, const EdgeInsets.all(2));
     expect(
-      (toggle.decoration as BoxDecoration).color,
+        tester
+            .getSize(find.byKey(const ValueKey('standing-view-toggle')))
+            .height,
+        43);
+    expect(toggle.padding, isNull);
+    final toggleDecoration = toggle.decoration as BoxDecoration;
+    expect(
+      toggleDecoration.color,
       app_style.AppPalette.lightGrey,
     );
+    expect(toggleDecoration.borderRadius, BorderRadius.circular(8));
+    expect(toggleDecoration.border?.top.width, 2);
+    expect(toggleDecoration.border?.top.color, app_style.AppPalette.lightGrey);
     expect(standingSurface.color, Colors.transparent);
     expect(xgSurface.color, Colors.transparent);
     expect(indicator.alignment, Alignment.centerRight);
@@ -515,16 +528,32 @@ void main() {
       indicatorSurface.decoration,
       const BoxDecoration(
         color: app_style.AppPalette.black,
-        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
       ),
     );
     expect(
       standingSurface.borderRadius,
-      const BorderRadius.all(Radius.circular(6)),
+      const BorderRadius.horizontal(left: Radius.circular(8)),
     );
     expect(
       xgSurface.borderRadius,
-      const BorderRadius.all(Radius.circular(6)),
+      const BorderRadius.horizontal(right: Radius.circular(8)),
+    );
+    expect(
+      xgContent.padding,
+      const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+    );
+    expect(xgContent.alignment, Alignment.center);
+    final xgTextStyle = xgContent.child! as AnimatedDefaultTextStyle;
+    expect(xgTextStyle.style.leadingDistribution, TextLeadingDistribution.even);
+    expect(xgTextStyle.child, isA<Text>());
+    expect(
+      (xgTextStyle.child as Text).textAlign,
+      TextAlign.center,
+    );
+    expect(
+      (xgTextStyle.child as Text).textHeightBehavior?.leadingDistribution,
+      TextLeadingDistribution.even,
     );
     expect(standingSurface.clipBehavior, Clip.antiAlias);
     expect(xgSurface.clipBehavior, Clip.antiAlias);
@@ -679,10 +708,7 @@ void main() {
               .byKey(const ValueKey('matches-inline-past-header'))
               .evaluate()
               .length +
-          find
-              .byKey(const ValueKey('matches-past-header'))
-              .evaluate()
-              .length,
+          find.byKey(const ValueKey('matches-past-header')).evaluate().length,
       1,
     );
 

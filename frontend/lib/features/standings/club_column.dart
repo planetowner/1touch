@@ -5,19 +5,21 @@ class _ExpandableClubColumn extends StatefulWidget {
     required this.standings,
     required this.currentTeamId,
     required this.leagueId,
+    required this.expandedWidth,
   });
 
   final List<Map<String, dynamic>> standings;
   final int? currentTeamId;
   final int leagueId;
+  final double expandedWidth;
 
   @override
   State<_ExpandableClubColumn> createState() => _ExpandableClubColumnState();
 }
 
 class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
-  static const _collapsedWidth = 146.0;
-  static const _expandedWidth = 216.0;
+  static const _collapsedWidth = 130.0;
+  static const _maximumExpandedWidth = 226.0;
 
   bool _isExpanded = false;
 
@@ -25,36 +27,94 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
 
   @override
   Widget build(BuildContext context) {
+    final expandedWidth = widget.expandedWidth
+        .clamp(_collapsedWidth, _maximumExpandedWidth)
+        .toDouble();
+    const horizontalPadding = _standingTableHorizontalPadding;
+    final teamNameWidth =
+        _isExpanded ? expandedWidth - (horizontalPadding * 2) - 66 : 32.0;
+
     return AnimatedContainer(
       key: const ValueKey('standing-club-column'),
-      width: _isExpanded ? _expandedWidth : _collapsedWidth,
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      color: AppColors.of(context).cardBackground,
+      width: _isExpanded ? expandedWidth : _collapsedWidth,
+      duration: Duration.zero,
+      decoration: BoxDecoration(
+        color: AppColors.of(context).cardBackground,
+      ),
+      foregroundDecoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(color: AppColors.of(context).divider),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
+            key: const ValueKey('standing-club-header'),
             width: double.infinity,
+            height: 59,
             color: AppColors.of(context).subtleBackground,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(
-              left: 24,
-              right: 24,
-              top: 24,
-              bottom: 16,
+            padding: const EdgeInsets.fromLTRB(
+              _standingTableHorizontalPadding,
+              24,
+              _standingTableHorizontalPadding,
+              16,
             ),
-            child: Text(tr(context, 'Club'), style: Body1.style),
+            child: Row(
+              children: [
+                const SizedBox(width: 18),
+                const SizedBox(width: 12),
+                const SizedBox(width: 24),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: teamNameWidth,
+                  child: Text(
+                    tr(context, 'Club'),
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
+                    style: Body1.style,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
-          ...widget.standings.map((team) => _buildClubRow(context, team)),
+          ..._buildClubRows(
+            context,
+            horizontalPadding: horizontalPadding,
+            teamNameWidth: teamNameWidth,
+          ),
           const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildClubRow(BuildContext context, Map<String, dynamic> team) {
+  List<Widget> _buildClubRows(
+    BuildContext context, {
+    required double horizontalPadding,
+    required double teamNameWidth,
+  }) {
+    return [
+      for (var index = 0; index < widget.standings.length; index++) ...[
+        _buildClubRow(
+          context,
+          widget.standings[index],
+          horizontalPadding: horizontalPadding,
+          teamNameWidth: teamNameWidth,
+        ),
+        if (index != widget.standings.length - 1) const SizedBox(height: 12),
+      ],
+    ];
+  }
+
+  Widget _buildClubRow(
+    BuildContext context,
+    Map<String, dynamic> team, {
+    required double horizontalPadding,
+    required double teamNameWidth,
+  }) {
     final teamId = team['teamId'] as int;
     final teamName = '${team['team']}';
     final isCurrentTeam = teamId == widget.currentTeamId;
@@ -69,41 +129,51 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
 
     return SizedBox(
       width: double.infinity,
-      child: Row(
+      height: 20,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Container(
-            width: 4,
-            height: 44,
-            color: marker?.color ?? Colors.transparent,
+          Positioned(
+            left: 0,
+            top: -2,
+            child: Container(
+              key: ValueKey('standing-qualification-marker-$teamId'),
+              width: 2,
+              height: 24,
+              color: marker?.color ?? Colors.transparent,
+            ),
           ),
-          Expanded(
+          Positioned.fill(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: Row(
                 children: [
                   SizedBox(
-                    width: 24,
+                    key: ValueKey('standing-rank-$teamId'),
+                    width: 18,
                     child: Text(
                       '${team['rank']}',
                       style: textStyle,
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
+                    key: ValueKey('standing-logo-$teamId'),
                     onTap: isTeamPageSupported(teamId)
                         ? () => openTeamPage(context, teamId)
                         : null,
                     child: Image.network(
                       '${team['logo']}',
-                      width: 20,
-                      height: 20,
+                      width: 24,
+                      height: 24,
                       errorBuilder: (_, __, ___) =>
-                          teamLogoFallback(teamId, size: 20),
+                          teamLogoFallback(teamId, size: 24),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  SizedBox(
+                    width: teamNameWidth,
                     child: Semantics(
                       button: true,
                       label: _isExpanded
@@ -119,14 +189,28 @@ class _ExpandableClubColumnState extends State<_ExpandableClubColumn> {
                           child: Align(
                             key: ValueKey(_isExpanded),
                             alignment: Alignment.centerLeft,
-                            child: Text(
-                              _isExpanded
-                                  ? teamNameLabel(context, teamId, teamName)
-                                  : _shortCode(teamId, teamName),
-                              maxLines: 1,
-                              style: textStyle,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            child: _isExpanded
+                                ? Text(
+                                    key:
+                                        ValueKey('standing-club-label-$teamId'),
+                                    teamNameLabel(context, teamId, teamName),
+                                    maxLines: 1,
+                                    textAlign: TextAlign.left,
+                                    style: textStyle,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                : FittedBox(
+                                    key:
+                                        ValueKey('standing-club-label-$teamId'),
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      _shortCode(teamId, teamName),
+                                      maxLines: 1,
+                                      softWrap: false,
+                                      style: textStyle,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
