@@ -17,10 +17,12 @@ class Standing extends StatefulWidget {
 }
 
 class _StandingState extends State<Standing> {
-  // grid widths (tweak if needed)
-  static const double _rankW = 32;
-  static const double _gapW = 16;
-  static const double _statW = 28;
+  static const double _rankW = 24;
+  static const double _clubToStatsGap = 16;
+  static const double _statGap = 15;
+  static const double _pointsW = 24;
+  static const double _matchesPlayedW = 22;
+  static const double _resultStatW = 18;
 
   List<standing_model.Standing> _standings = const [];
   bool _isLoading = false;
@@ -168,16 +170,17 @@ class _StandingState extends State<Standing> {
     final allRows = _standings.map((s) {
       final repositoryTeam = teamRepository.findById(s.teamId);
       final responseName = s.teamName?.trim();
-      final displayName = repositoryTeam?.shortCode ??
-          teamNameLabel(
-              context,
-              s.teamId,
-              (responseName?.isNotEmpty ?? false ? responseName! : null) ??
-                  repositoryTeam?.name ??
-                  'Unknown Team');
+      final displayName = teamNameLabel(
+        context,
+        s.teamId,
+        (responseName?.isNotEmpty ?? false ? responseName! : null) ??
+            repositoryTeam?.name ??
+            'Unknown Team',
+      );
       return {
         'rank': s.position,
         'team': displayName,
+        'pts': s.points.toString(),
         'mp': s.matchesPlayed.toString(),
         'w': s.won.toString(),
         'd': s.draw.toString(),
@@ -222,13 +225,13 @@ class _StandingState extends State<Standing> {
       child: Container(
         key: ValueKey('overview-standing-shell-$leagueId'),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: appCardShadows(context),
         ),
         child: Material(
           color: bodyBackground,
           elevation: 0,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: widget.onCompetitionSelected == null
@@ -263,7 +266,7 @@ class _StandingState extends State<Standing> {
                               errorBuilder: (_, __, ___) =>
                                   competitionLogoFallback(leagueId, size: 24),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 competitionNameLabel(
@@ -277,7 +280,7 @@ class _StandingState extends State<Standing> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         // columns header line (uses same table grid as body)
                         _columnsHeader(),
                         SizedBox(
@@ -286,13 +289,10 @@ class _StandingState extends State<Standing> {
                       ],
                     ),
                   ),
-                  // divider
-                  Container(height: 1, color: appColors.divider),
-
                   // body rows table (aligned with header)
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                    key: ValueKey('overview-standing-body-$leagueId'),
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                     child: _rowsTable(rows),
                   ),
                 ],
@@ -308,14 +308,16 @@ class _StandingState extends State<Standing> {
   Map<int, TableColumnWidth> get _grid => const {
         0: FixedColumnWidth(_rankW), // #
         1: FlexColumnWidth(), // Club
-        2: FixedColumnWidth(_gapW), // Club → MP
-        3: FixedColumnWidth(_statW), // MP
-        4: FixedColumnWidth(_gapW), // MP → W
-        5: FixedColumnWidth(_statW), // W
-        6: FixedColumnWidth(_gapW), // W → D
-        7: FixedColumnWidth(_statW), // D
-        8: FixedColumnWidth(_gapW), // D → L
-        9: FixedColumnWidth(_statW), // L
+        2: FixedColumnWidth(_clubToStatsGap), // Club → Pts
+        3: FixedColumnWidth(_pointsW), // Pts
+        4: FixedColumnWidth(_statGap), // Pts → MP
+        5: FixedColumnWidth(_matchesPlayedW), // MP
+        6: FixedColumnWidth(_statGap), // MP → W
+        7: FixedColumnWidth(_resultStatW), // W
+        8: FixedColumnWidth(_statGap), // W → D
+        9: FixedColumnWidth(_resultStatW), // D
+        10: FixedColumnWidth(_statGap), // D → L
+        11: FixedColumnWidth(_resultStatW), // L
       };
 
   Widget _columnsHeader() {
@@ -329,12 +331,25 @@ class _StandingState extends State<Standing> {
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             Text(tr(context, "Club"),
+                key: const ValueKey('overview-standing-club-header'),
                 overflow: TextOverflow.ellipsis,
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             const SizedBox.shrink(),
             Align(
-                alignment: Alignment.centerRight,
+                key: const ValueKey('overview-standing-points-header'),
+                alignment: Alignment.center,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(tr(context, "Pts"),
+                      maxLines: 1,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface)),
+                )),
+            const SizedBox.shrink(),
+            Align(
+                key: const ValueKey('overview-standing-mp-header'),
+                alignment: Alignment.center,
                 child: Text(tr(context, "MP"),
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface))),
@@ -371,22 +386,28 @@ class _StandingState extends State<Standing> {
     return Table(
       columnWidths: _grid,
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      children: data.map((r) {
+      children: data.indexed.map((entry) {
+        final index = entry.$1;
+        final r = entry.$2;
         final bool hl = r["hl"] == true;
         final Color c = hl ? colors.onSurface : muted;
         final FontWeight w = hl ? FontWeight.w700 : FontWeight.w400;
+        final rowPadding = EdgeInsets.only(
+          bottom: index == data.length - 1 ? 0 : 16,
+        );
 
         return TableRow(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8), // gap here
+              padding: rowPadding,
               child: Text("${r["rank"]}",
                   style: TextStyle(color: c, fontWeight: w)),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: rowPadding,
               child: Text(
                 r["team"],
+                key: ValueKey('overview-standing-team-${r["rank"]}'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: c, fontWeight: w),
@@ -394,15 +415,25 @@ class _StandingState extends State<Standing> {
             ),
             const SizedBox.shrink(),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: rowPadding,
               child: Align(
-                  alignment: Alignment.centerRight,
+                  key: ValueKey('overview-standing-points-${r["rank"]}'),
+                  alignment: Alignment.center,
+                  child:
+                      Text(r["pts"], style: Heading5.style.copyWith(color: c))),
+            ),
+            const SizedBox.shrink(),
+            Padding(
+              padding: rowPadding,
+              child: Align(
+                  key: ValueKey('overview-standing-mp-${r["rank"]}'),
+                  alignment: Alignment.center,
                   child:
                       Text(r["mp"], style: Heading5.style.copyWith(color: c))),
             ),
             const SizedBox.shrink(),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: rowPadding,
               child: Align(
                   key: ValueKey('overview-standing-win-${r["rank"]}'),
                   alignment: Alignment.center,
@@ -411,7 +442,7 @@ class _StandingState extends State<Standing> {
             ),
             const SizedBox.shrink(),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: rowPadding,
               child: Align(
                   key: ValueKey('overview-standing-draw-${r["rank"]}'),
                   alignment: Alignment.center,
@@ -420,7 +451,7 @@ class _StandingState extends State<Standing> {
             ),
             const SizedBox.shrink(),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: rowPadding,
               child: Align(
                   key: ValueKey('overview-standing-loss-${r["rank"]}'),
                   alignment: Alignment.center,
