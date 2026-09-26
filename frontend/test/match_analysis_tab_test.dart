@@ -73,6 +73,14 @@ void main() {
       expect(tester.getTopLeft(bar) - tester.getTopLeft(card),
           const Offset(24, 24));
       expect(
+        tester
+            .widget<Column>(find.byKey(
+              const ValueKey('match-analysis-possession-stat-rows'),
+            ))
+            .spacing,
+        8,
+      );
+      expect(
           tester
               .widget<FractionallySizedBox>(
                   find.byKey(const ValueKey('match-possession-home-fill')))
@@ -204,6 +212,14 @@ void main() {
           .selectedTeamColor,
       tester.widget<ProgressionDiagram>(find.byType(ProgressionDiagram)).color,
     );
+    expect(
+      tester
+          .widget<DefenseTerritoryDiagram>(
+            find.byType(DefenseTerritoryDiagram),
+          )
+          .rightToLeft,
+      isFalse,
+    );
     expect(defenseTerritoryOpacity(-20.8), closeTo(0.292, 0.0001));
     expect(defenseTerritoryOpacity(23.4), closeTo(0.734, 0.0001));
     expect(defenseTerritoryOpacity(-2.7), closeTo(0.473, 0.0001));
@@ -245,6 +261,16 @@ void main() {
     expect(find.text('Carries into Final Third'), findsNothing);
     expect(find.text('Key Passes'), findsOneWidget);
     expect(_keyPassRowText(tester), ['25', 'Key Passes', '4']);
+    for (final section in [
+      'attack',
+      'progression',
+      'defense',
+    ]) {
+      final statRows = tester.widget<Column>(
+        find.byKey(ValueKey('match-analysis-$section-stat-rows')),
+      );
+      expect(statRows.spacing, 8, reason: section);
+    }
     expect(find.text('Recoveries'), findsNothing);
     expect(find.text('Ball Possession'), findsNothing);
     expect(find.text('61%'), findsOneWidget);
@@ -320,6 +346,14 @@ void main() {
           )
           .selectedTeamColor,
       awayProgression.color,
+    );
+    expect(
+      tester
+          .widget<DefenseTerritoryDiagram>(
+            find.byType(DefenseTerritoryDiagram),
+          )
+          .rightToLeft,
+      isTrue,
     );
     expect(tester.takeException(), isNull);
 
