@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 
-/// 최종 온보딩의 글꼴을 인증 화면 안에서만 적용해요.
+/// 인증 화면에서도 앱의 현재 locale 타이포그래피를 사용해요.
 abstract final class AuthStyles {
-  static final body = Body1.style
-      .copyWith(fontFamily: 'Pretendard', height: 1.6, letterSpacing: 0);
-  static final label = Body2.style
-      .copyWith(fontFamily: 'Pretendard', height: 1.6, letterSpacing: 0);
-  static final emphasis = Body2_b.style
-      .copyWith(fontFamily: 'Pretendard', height: 1.6, letterSpacing: 0);
+  static TextStyle get body => Body1.style;
+  static TextStyle get label => Body2.style;
+  static TextStyle get emphasis => Body2_b.style;
 
   static Color background(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark

@@ -151,6 +151,8 @@ void main() {
         tester.state<NestedScrollViewState>(find.byType(NestedScrollView));
     final outerController = nestedScrollView.controller!;
     final innerController = nestedState.innerController;
+    final initialAppBarTop =
+        tester.getTopLeft(find.byKey(const ValueKey('team-app-bar-logo'))).dy;
 
     await tester.drag(find.byType(NestedScrollView), const Offset(0, -700));
     await tester.pumpAndSettle();
@@ -158,6 +160,8 @@ void main() {
       outerController.offset + innerController.offset,
       greaterThan(0),
     );
+    expect(initialAppBarTop, greaterThanOrEqualTo(0));
+    expect(find.byKey(const ValueKey('team-app-bar-logo')), findsNothing);
 
     mainTabActions.select(1);
     await tester.pumpAndSettle();
@@ -256,8 +260,17 @@ void main() {
           expect(tabBar.labelColor, colorScheme.onSurface);
           expect(tabBar.indicatorColor, colorScheme.onSurface);
           expect(appBar.foregroundColor, colorScheme.onSurface);
+          expect(
+            appBar.backgroundColor,
+            tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
+          );
+          expect(appBar.surfaceTintColor, Colors.transparent);
+          expect(appBar.scrolledUnderElevation, 0);
+          expect(appBar.forceMaterialTransparency, isFalse);
+          expect(appBar.floating, isFalse);
+          expect(appBar.snap, isFalse);
           expect(appBar.pinned, isFalse);
-          expect(nestedScrollView.floatHeaderSlivers, isTrue);
+          expect(nestedScrollView.floatHeaderSlivers, isFalse);
           expect(appBar.bottom, same(tabHeader));
           expect(tabHeader.preferredSize.height, kTextTabBarHeight + 8);
           // SliverAppBar itself renders one internal persistent header. There

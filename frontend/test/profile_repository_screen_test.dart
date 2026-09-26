@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Profile.dart';
 import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/profile/current_user_repository.dart';
@@ -163,6 +164,32 @@ void main() {
     expect(sheet, findsOneWidget);
     expect(find.descendant(of: sheet, matching: find.text('API Barcelona')),
         findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Korean following-team cards fit the taller typography',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = const Locale('en'));
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.lightThemeForLocale(const Locale('ko')),
+      locale: const Locale('ko'),
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      home: Profile(
+        repository: _StaticCurrentUserRepository(),
+        followingTeamsRepository: _StaticFollowingTeamsRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final teamCard = find.byKey(
+      const ValueKey('profile-following-team-83'),
+    );
+    expect(teamCard, findsOneWidget);
+    expect(tester.getSize(teamCard).height, 168);
     expect(tester.takeException(), isNull);
   });
 
