@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/standing.dart' as standing_model;
 
 void main() {
@@ -165,6 +166,37 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('keeps the Korean matches-played header on one line',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: Scaffold(
+          body: Standing(
+            teams: const <String, dynamic>{'id': 9},
+            repository: MockStandingRepository(),
+          ),
+        ),
+      ),
+    );
+
+    final header = find.byKey(
+      const ValueKey('overview-standing-mp-header'),
+    );
+    final label = tester.widget<Text>(
+      find.descendant(of: header, matching: find.text('경기')),
+    );
+    expect(label.maxLines, 1);
+    expect(label.softWrap, isFalse);
+    expect(
+      find.descendant(of: header, matching: find.byType(FittedBox)),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('reports the competition selected from an overview card',
