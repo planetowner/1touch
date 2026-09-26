@@ -230,8 +230,46 @@ void main() {
         home: Scaffold(
       body: BettingParticipationCard(controller: controller),
     )));
-    expect(find.text('Won · 400 pts returned'), findsOneWidget);
-    expect(find.text('Draw · 100 pts'), findsOneWidget);
+    expect(
+        find.text('You earned 400 points from this bet! 🎉'), findsOneWidget);
+    expect(find.text('Won · 400 pts returned'), findsNothing);
+    expect(find.text('Draw · 100 pts'), findsNothing);
+
+    final card = find.byKey(const ValueKey('match-h2h-bets-card'));
+    final receipt = find.byKey(const ValueKey('match-h2h-bet-receipt'));
+    expect(receipt, findsOneWidget);
+    expect(
+      (tester.widget<Container>(card).decoration! as BoxDecoration).color,
+      AppPalette.white,
+    );
+    expect(tester.getTopLeft(receipt).dy,
+        greaterThanOrEqualTo(tester.getBottomLeft(card).dy));
+    expect(tester.getTopLeft(receipt).dx, tester.getTopLeft(card).dx);
+    expect(
+      find.descendant(
+        of: card,
+        matching: find.text('You earned 400 points from this bet! 🎉'),
+      ),
+      findsNothing,
+    );
+    final summary = tester.widget<Text>(find.descendant(
+      of: receipt,
+      matching: find.byType(Text),
+    ));
+    expect(summary.textAlign, TextAlign.left);
+    expect(summary.maxLines, 1);
+
+    await tester.pumpWidget(MaterialApp(
+      theme: ThemeData(brightness: Brightness.dark),
+      home: Scaffold(
+        body: BettingParticipationCard(controller: controller),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(
+      (tester.widget<Container>(card).decoration! as BoxDecoration).color,
+      AppPalette.darkGrey,
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   });

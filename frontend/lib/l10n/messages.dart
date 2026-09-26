@@ -1275,6 +1275,27 @@ const appMessages = <String, MessageTranslations>{
   "{leg} Leg": (ko: "{leg}차전", ja: "第{leg}戦", zh: "第{leg}回合"),
   "{points} Pts": (ko: "승점 {points}", ja: "勝点{points}", zh: "{points}积分"),
   "{points} pts": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
+  "{points} points": (ko: "{points}포인트", ja: "{points}ポイント", zh: "{points}积分"),
+  "You earned {points} from this bet! 🎉": (
+    ko: "이 베팅으로 {points}를 획득했어요! 🎉",
+    ja: "このベットで{points}獲得しました！🎉",
+    zh: "你从这次投注中赢得了{points}！🎉"
+  ),
+  "You used {stake} pts · {return} pts if correct": (
+    ko: "{stake}포인트 사용 · 적중 시 {return}포인트",
+    ja: "{stake}ポイント使用 · 的中時{return}ポイント",
+    zh: "使用{stake}积分 · 猜中可得{return}积分"
+  ),
+  "You earned no points from this bet.": (
+    ko: "이 베팅에서 획득한 포인트가 없어요.",
+    ja: "このベットで獲得したポイントはありません。",
+    zh: "这次投注没有赢得积分。"
+  ),
+  "{points} were refunded from this bet.": (
+    ko: "이 베팅에서 {points}를 환불받았어요.",
+    ja: "このベットから{points}払い戻されました。",
+    zh: "这次投注已退还{points}。"
+  ),
   "You’ve got {points} pts!": (
     ko: "{points}포인트가 있어요!",
     ja: "{points}ポイントあります！",

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
@@ -238,71 +237,80 @@ class _H2HTabState extends State<H2HTab> {
 
   Widget _buildDropdownRow() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isKorean = Localizations.localeOf(context).languageCode == 'ko';
     final foreground = Theme.of(context).colorScheme.onSurface;
     final surface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final againstTeam = _againstTeamId == widget.fixture.homeTeamId
         ? fixtureHomeTeam(widget.fixture, teamRepository)
         : fixtureAwayTeam(widget.fixture, teamRepository);
+    final dropdown = Flexible(
+      child: AppDropdown<int>(
+        key: const ValueKey('match-h2h-limit-dropdown'),
+        width: 152,
+        value: _selectedMatches,
+        backgroundColor: surface,
+        foregroundColor: foreground,
+        textStyle: Body2_b.style,
+        options: _matchOptions
+            .map(
+              (count) => AppDropdownOption<int>(
+                value: count,
+                label: tr(
+                  context,
+                  'Last {count} matches',
+                  {'count': count},
+                ).toUpperCase(),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value == _selectedMatches) return;
+          setState(() => _selectedMatches = value);
+          _loadHeadToHead();
+        },
+      ),
+    );
+    final againstLogo = Container(
+      key: ValueKey('match-h2h-against-team-$_againstTeamId'),
+      width: 40,
+      height: 40,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.transparent,
+      ),
+      child: GestureDetector(
+        // Match screen is on the root navigator; '/team/:id' is on the
+        // shell's navigator. go() (not push()) so it actually surfaces.
+        onTap: isTeamPageSupported(_againstTeamId)
+            ? () => openTeamPage(context, _againstTeamId)
+            : null,
+        child: Image.network(
+          againstTeam.imagePath ?? '',
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) =>
+              teamLogoFallback(_againstTeamId, size: 40),
+        ),
+      ),
+    );
+    final againstLabel = Text(
+      tr(context, 'AGAINST'),
+      key: const ValueKey('match-h2h-against-label'),
+      style: Body2_b.style,
+    );
+    final against = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: isKorean
+          ? [againstLogo, const SizedBox(width: 8), againstLabel]
+          : [againstLabel, const SizedBox(width: 8), againstLogo],
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Functional dropdown
-          Flexible(
-            child: AppDropdown<int>(
-              key: const ValueKey('match-h2h-limit-dropdown'),
-              width: 152,
-              value: _selectedMatches,
-              backgroundColor: surface,
-              foregroundColor: foreground,
-              textStyle: Body2_b.style,
-              options: _matchOptions
-                  .map(
-                    (count) => AppDropdownOption<int>(
-                      value: count,
-                      label: tr(
-                        context,
-                        'Last {count} matches',
-                        {'count': count},
-                      ).toUpperCase(),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value == _selectedMatches) return;
-                setState(() => _selectedMatches = value);
-                _loadHeadToHead();
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(tr(context, 'AGAINST'), style: Body2_b.style),
-          const SizedBox(width: 8),
-          Container(
-            key: ValueKey('match-h2h-against-team-$_againstTeamId'),
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-            ),
-            child: GestureDetector(
-              // Match screen is on the root navigator; '/team/:id' is on the
-              // shell's navigator. go() (not push()) so it actually surfaces.
-              onTap: isTeamPageSupported(_againstTeamId)
-                  ? () => openTeamPage(context, _againstTeamId)
-                  : null,
-              child: Image.network(
-                againstTeam.imagePath ?? '',
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) =>
-                    teamLogoFallback(_againstTeamId, size: 40),
-              ),
-            ),
-          ),
-        ],
+        children: isKorean
+            ? [against, const SizedBox(width: 8), dropdown]
+            : [dropdown, const SizedBox(width: 8), against],
       ),
     );
   }
@@ -362,21 +370,14 @@ class _H2HTabState extends State<H2HTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
     final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
-    final perspectiveIsHome = _perspectiveTeamId == widget.fixture.homeTeamId;
-    final anchorTeam = perspectiveIsHome ? homeTeam : awayTeam;
-    final opponentTeam = perspectiveIsHome ? awayTeam : homeTeam;
-    final comparisonColors = TeamComparisonColorResolver.resolve(
-      anchorTeamName: anchorTeam.name,
-      anchorPrimaryFallback: Color(anchorTeam.primaryColor),
-      opponentTeamName: opponentTeam.name,
-      opponentPrimaryFallback: Color(opponentTeam.primaryColor),
-      background: isDark ? AppPalette.lightGrey : AppPalette.white,
+    final barColors = resolveBettingBarColors(
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      // Use the same comparison surface as Match Preview so a team does not
+      // change palette colors when the user switches tabs.
+      background: isDark ? AppPalette.darkGrey : AppPalette.white,
+      anchorTeamId: _perspectiveTeamId,
     );
-    final homeColor =
-        perspectiveIsHome ? comparisonColors.anchor : comparisonColors.opponent;
-    final awayColor =
-        perspectiveIsHome ? comparisonColors.opponent : comparisonColors.anchor;
-    final drawColor = Color.lerp(homeColor, awayColor, 0.5)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,7 +386,7 @@ class _H2HTabState extends State<H2HTab> {
         const SizedBox(height: 16),
         BettingParticipationCard(
           controller: widget.bettingController,
-          barColors: [homeColor, drawColor, awayColor],
+          barColors: barColors,
         ),
       ],
     );

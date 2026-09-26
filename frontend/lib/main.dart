@@ -192,7 +192,11 @@ final GoRouter _router = GoRouter(
     GoRoute(
         path: '/notifications',
         builder: (c, s) => const NotificationInboxPage()),
-    GoRoute(path: '/profile', builder: (c, s) => Profile()),
+    GoRoute(
+      path: '/profile',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (c, s) => Profile(),
+    ),
     GoRoute(
       path: '/profile/edit',
       builder: (c, s) => EditProfileScreen(
@@ -221,7 +225,11 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/profile/preference', builder: (c, s) => PreferencePage()),
     GoRoute(path: '/profile/about', builder: (c, s) => AboutPage()),
     GoRoute(path: '/profile/contact', builder: (c, s) => ContactPage()),
-    GoRoute(path: '/search', builder: (c, s) => Search()),
+    GoRoute(
+      path: '/search',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (c, s) => Search(),
+    ),
     GoRoute(
       path: '/compare',
       builder: (context, state) => PlayerComparisonScreen(
