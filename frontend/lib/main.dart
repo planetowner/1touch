@@ -4,6 +4,7 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/football_names_loader.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/services/mobile_ads_service.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
@@ -33,7 +34,11 @@ import 'package:onetouch/Onboarding.dart';
 import 'package:onetouch/select_favorite_teams.dart';
 import 'package:onetouch/WelcomeScreen.dart';
 
-Future<void> main() => runOneTouchApp();
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MobileAdsService.initialize();
+  await runOneTouchApp();
+}
 
 Future<void> runOneTouchApp({
   Future<bool> Function()? restoreSession,

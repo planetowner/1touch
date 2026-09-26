@@ -21,6 +21,7 @@ import '../models/news_language.dart';
 import '../models/team_overview.dart';
 import 'package:onetouch/features/index.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -392,6 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     FavoriteTeamCard(team: viewedTeam),
                     const SizedBox(height: 32),
                     Row(
+                      key: const ValueKey('home-calendar-title-row'),
                       children: [
                         SectionHeader(title: tr(context, "CALENDAR")),
                         const Spacer(),
@@ -422,35 +424,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       fallbacks: const [],
                     ),
                     const SizedBox(height: 32),
-                    SectionHeader(title: tr(context, "NEWS")),
+                    SectionHeader(
+                      key: const ValueKey('home-news-title'),
+                      title: tr(context, "NEWS"),
+                    ),
                     MyNews(
                       news: _news,
                       isLoading: _isNewsLoading,
                       hasError: _hasNewsError,
                       onRetry: () => _loadNews(homeData.favoriteTeam.teamId),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Container(
-                        width: 395,
-                        height: 108,
-                        padding: const EdgeInsets.all(8),
-                        decoration: ShapeDecoration(
-                          color:
-                              Theme.of(context).brightness == Brightness.light
-                                  ? AppPalette.black
-                                  : AppPalette.darkGrey,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: Center(
-                          child: Text(
-                            tr(context, "Ad"),
-                            style: Heading4.style.copyWith(
-                              color: AppPalette.white,
-                            ),
-                          ),
-                        ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: BannerAdWidget(
+                        key: ValueKey('home-banner-ad'),
                       ),
                     ),
                   ]),
