@@ -9,6 +9,8 @@ import 'package:onetouch/models/team.dart';
 
 const competitions = {
   8: Competition(competitionId: 8, name: 'Premier League', shortCode: 'PL'),
+  82: Competition(competitionId: 82, name: 'Bundesliga', shortCode: 'BL'),
+  301: Competition(competitionId: 301, name: 'Ligue 1', shortCode: 'L1'),
   564: Competition(competitionId: 564, name: 'La Liga', shortCode: 'LALIGA'),
   2: Competition(competitionId: 2, name: 'Champions League', shortCode: 'UCL'),
   5: Competition(competitionId: 5, name: 'Europa League', shortCode: 'UEL'),
@@ -28,7 +30,7 @@ HomeCalendarFixture match(int competitionId, DateTime kickoff) =>
         homeTeamId: 8,
         awayTeamId: 19,
         competitionType: switch (competitionId) {
-          8 || 564 => CompetitionType.league,
+          8 || 82 || 301 || 564 => CompetitionType.league,
           2 || 5 || 2286 => CompetitionType.europe,
           _ => CompetitionType.cup,
         },
@@ -82,7 +84,11 @@ void main() {
       (
         name: 'UEL and Copa',
         ids: [570, 564, 5],
-        colors: {'UEL': Colors.red, 'CDR': Colors.blue}
+        colors: {
+          'UEL': Colors.red,
+          'CDR': Colors.blue,
+          'LALIGA': Colors.green,
+        }
       ),
       (
         name: 'UCL and two English cups',
@@ -90,21 +96,48 @@ void main() {
         colors: {
           'UCL': Colors.red,
           'FA Cup': Colors.blue,
-          'EFL Cup': Colors.green
+          'EFL Cup': Colors.green,
+          'Premier League': Colors.orange,
         }
       ),
-      (name: 'only Carabao', ids: [27, 8], colors: {'EFL Cup': Colors.red}),
+      (
+        name: 'only Carabao',
+        ids: [27, 8],
+        colors: {'EFL Cup': Colors.red, 'Premier League': Colors.blue}
+      ),
       (
         name: 'two English cups',
         ids: [27, 8, 24],
-        colors: {'FA Cup': Colors.red, 'EFL Cup': Colors.blue}
+        colors: {
+          'FA Cup': Colors.red,
+          'EFL Cup': Colors.blue,
+          'Premier League': Colors.green,
+        }
       ),
       (
         name: 'UECL and Copa',
         ids: [570, 2286, 564],
-        colors: {'UECL': Colors.red, 'CDR': Colors.blue}
+        colors: {
+          'UECL': Colors.red,
+          'CDR': Colors.blue,
+          'LALIGA': Colors.green,
+        }
       ),
-      (name: 'league only', ids: [8], colors: {}),
+      (
+        name: 'Premier League uses its proper name',
+        ids: [8],
+        colors: {'Premier League': Colors.red}
+      ),
+      (
+        name: 'Bundesliga uses its proper name',
+        ids: [82],
+        colors: {'Bundesliga': Colors.red}
+      ),
+      (
+        name: 'League 1 uses its proper name',
+        ids: [301],
+        colors: {'League 1': Colors.red}
+      ),
     ]) {
       testWidgets(
           '${scenario.name} uses participation priority in ${locale.languageCode}',
@@ -121,7 +154,13 @@ void main() {
         expectLegend(tester, scenario.colors);
         for (final id in scenario.ids) {
           final dot = find.byKey(ValueKey('calendar-fixture-dot-$id'));
-          final color = scenario.colors[competitions[id]!.shortCode];
+          final competition = competitions[id]!;
+          final legendLabel = switch (competition.competitionId) {
+            8 || 82 => competition.name,
+            301 => 'League 1',
+            _ => competition.shortCode ?? competition.name,
+          };
+          final color = scenario.colors[legendLabel];
           if (color == null) {
             expect(dot, findsNothing);
           } else {
@@ -151,18 +190,27 @@ void main() {
     ], [
       match(24, DateTime(now.year, now.month + 1, 15)),
     ], const Locale('en')));
-    expectLegend(tester, {'UCL': Colors.red, 'FA Cup': Colors.blue});
+    expectLegend(tester, {
+      'UCL': Colors.red,
+      'FA Cup': Colors.blue,
+      'Premier League': Colors.green
+    });
     expect(find.byType(Image), findsNothing);
     await tester.tap(find.byIcon(Icons.chevron_right));
     await tester.pump();
-    expectLegend(tester, {'UCL': Colors.red, 'FA Cup': Colors.blue});
+    expectLegend(tester, {
+      'UCL': Colors.red,
+      'FA Cup': Colors.blue,
+      'Premier League': Colors.green
+    });
     final dot = tester.widget<Container>(
         find.byKey(const ValueKey('calendar-fixture-dot-24')));
     expect((dot.decoration as BoxDecoration).color, Colors.blue);
 
     // 홈에서 조회 팀을 바꾸면 새 참가 목록을 기준으로 다시 배정해요.
     await tester.pumpWidget(calendar([8, 27], [], const Locale('en')));
-    expectLegend(tester, {'EFL Cup': Colors.red});
+    expectLegend(
+        tester, {'EFL Cup': Colors.red, 'Premier League': Colors.blue});
     expect(tester.takeException(), isNull);
   });
 }

@@ -40,12 +40,24 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
   DateTime _currentMonth =
       DateTime(DateTime.now().year, DateTime.now().month, 1);
 
-  // 유럽대항전 → 자국 컵 → 잉글랜드 리그컵 순서로 색을 배정해요.
+  // 유럽대항전 → 자국 컵 → 잉글랜드 리그컵 → 자국 리그 순서로
+  // 색을 배정해 기존 컵 색상을 유지하면서 리그도 항상 표시해요.
   static int _competitionPriority(Competition competition) =>
       switch (competition.competitionId) {
         2 || 5 || 2286 => 0,
         27 => 2,
+        8 || 82 || 301 || 384 || 564 => 3,
         _ => 1,
+      };
+
+  static String _competitionLegendLabel(Competition competition) =>
+      switch (competition.competitionId) {
+        8 => competition.name,
+        // `BL` is the provider's short code, but it is not the approved
+        // user-facing abbreviation for the Bundesliga calendar legend.
+        82 => competition.name,
+        301 => 'League 1',
+        _ => competition.shortCode ?? competition.name,
       };
 
   Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(
@@ -116,10 +128,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
   @override
   Widget build(BuildContext context) {
     // 월별 경기 유무와 관계없이 참가 대회에 색을 배정해 범례와 경기 점을 함께 사용해요.
-    final competitions = widget.participatingCompetitions
-        .where((c) => !TeamPageEligibility.domesticBigFiveCompetitionIds
-            .contains(c.competitionId))
-        .toList()
+    final competitions = widget.participatingCompetitions.toList()
       ..sort((a, b) {
         final priority =
             _competitionPriority(a).compareTo(_competitionPriority(b));
@@ -127,10 +136,17 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
             ? priority
             : a.competitionId.compareTo(b.competitionId);
       });
-    const palette = [Colors.red, Colors.blue, Colors.green];
+    const palette = [
+      Colors.red,
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.cyan,
+    ];
     final competitionColors = {
       for (var i = 0; i < competitions.length; i++)
-        competitions[i].competitionId: palette[i],
+        competitions[i].competitionId: palette[i % palette.length],
     };
     final events = _generateEventsForMonth(_currentMonth, competitionColors);
     final appColors = AppColors.of(context);
@@ -139,70 +155,72 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     return Column(
       children: [
         // Calendar container
-        Container(
-          key: const ValueKey('fixture-calendar-card'),
-          decoration: BoxDecoration(
-            color: appColors.cardBackground,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: appCardShadows(context),
-          ),
-          margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Container(
-                padding: EdgeInsets.all(24),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: _previousMonth,
-                      icon: Icon(
-                        Icons.chevron_left,
-                        color: colorScheme.onSurface,
-                        size: 24,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+          child: Container(
+            key: const ValueKey('fixture-calendar-card'),
+            decoration: BoxDecoration(
+              color: appColors.cardBackground,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: appCardShadows(context),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: EdgeInsets.all(24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: _previousMonth,
+                        icon: Icon(
+                          Icons.chevron_left,
+                          color: colorScheme.onSurface,
+                          size: 24,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    Expanded(
-                      child: Text(
-                        tr(context, _getMonthName(_currentMonth.month)),
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: Heading3.style,
+                      Expanded(
+                        child: Text(
+                          tr(context, _getMonthName(_currentMonth.month)),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: Heading3.style,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: _nextMonth,
-                      icon: Icon(
-                        Icons.chevron_right,
-                        color: colorScheme.onSurface,
-                        size: 24,
+                      IconButton(
+                        onPressed: _nextMonth,
+                        icon: Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.onSurface,
+                          size: 24,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              // Calendar grid
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    // thin divider under the month title
-                    _buildCalendarGrid(events),
-                  ],
+                // Calendar grid
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      // thin divider under the month title
+                      _buildCalendarGrid(events),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 32),
-            ],
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
 
@@ -222,7 +240,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                     if (i > 0) const SizedBox(width: 16),
                     _buildLegendDot(
                       competitionColors[competitions[i].competitionId]!,
-                      competitions[i].shortCode!,
+                      _competitionLegendLabel(competitions[i]),
                     ),
                   ],
                 ],
