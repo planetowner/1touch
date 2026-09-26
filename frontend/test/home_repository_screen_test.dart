@@ -174,6 +174,48 @@ void main() {
     expect(find.text('Official channel · Latest'), findsOneWidget);
   });
 
+  testWidgets('home app bar follows the 345 by 48 reference spacing',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledHomeRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    final logo = tester.getRect(
+      find.byKey(const ValueKey('home-app-bar-logo')),
+    );
+    final search = tester.getRect(
+      find.byKey(const ValueKey('home-app-bar-search')),
+    );
+    final teamPicker = tester.getRect(
+      find.byKey(const ValueKey('home-app-bar-team-picker')),
+    );
+    final profile = tester.getRect(
+      find.byKey(const ValueKey('home-app-bar-profile')),
+    );
+
+    expect(logo.left, 24);
+    expect(logo.width, 120);
+    expect(logo.height, closeTo(17.1094, 0.001));
+    expect(search.size, const Size(32, 32));
+    expect(teamPicker.size, const Size(64, 40));
+    expect(profile.size, const Size(32, 32));
+    expect(teamPicker.left - search.right, 16);
+    expect(profile.left - teamPicker.right, 16);
+    expect(393 - profile.right, 24);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('news title starts 48px below the final highlight card',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));

@@ -306,25 +306,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   clipBehavior: Clip.antiAlias,
                   title: Padding(
                     padding: const EdgeInsets.only(left: 24),
-                    child: SvgPicture.asset(
-                      'assets/app_logo.svg',
-                      height: 23,
+                    child: SizedBox(
+                      key: const ValueKey('home-app-bar-logo'),
                       width: 120,
-                      colorFilter: ColorFilter.mode(
-                        appBarForeground,
-                        BlendMode.srcIn,
+                      height: 17.1094,
+                      child: SvgPicture.asset(
+                        'assets/app_logo.svg',
+                        fit: BoxFit.fill,
+                        colorFilter: ColorFilter.mode(
+                          appBarForeground,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                   ),
                   actions: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: 24),
                       child: Row(
                         children: [
                           IconButton(
+                            key: const ValueKey('home-app-bar-search'),
                             onPressed: () {
                               context.push('/search');
                             },
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 32,
+                              height: 32,
+                            ),
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                             icon: Icon(
                               Icons.search,
                               color: appBarForeground,
@@ -344,6 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               onSwitch: _switchViewedTeam,
                             ),
                             child: Container(
+                              key: const ValueKey('home-app-bar-team-picker'),
                               padding: AppDropdownTokens.compactPadding,
                               decoration: BoxDecoration(
                                 color: AppPalette.white.withValues(alpha: 0.2),
@@ -372,9 +386,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 16,
                           ),
                           IconButton(
+                            key: const ValueKey('home-app-bar-profile'),
                             onPressed: () {
                               context.push('/profile');
                             },
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 32,
+                              height: 32,
+                            ),
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                             icon: Icon(
                               Icons.account_circle_outlined,
                               color: appBarForeground,

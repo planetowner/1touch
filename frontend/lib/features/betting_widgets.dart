@@ -26,7 +26,7 @@ class MatchBettingSection extends StatelessWidget {
           final bet = market?.bet;
           return Container(
             key: const ValueKey('match-betting-card'),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             decoration: BoxDecoration(
               color: _surface(context),
               borderRadius: BorderRadius.circular(16),
@@ -174,6 +174,10 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
               .where((option) => option.outcome == _selected)
               .firstOrNull;
           final total = selectedOption?.totalReturn(_amount);
+          final optionDividerColor =
+              Theme.of(context).brightness == Brightness.dark
+                  ? AppPalette.lightGrey
+                  : AppColors.of(context).divider;
           return Container(
             key: const ValueKey('match-betting-modal'),
             constraints: BoxConstraints(
@@ -238,15 +242,22 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                 type: MaterialType.transparency,
                                 child: ListTile(
                                   contentPadding: EdgeInsets.zero,
-                                  leading: option.outcome == BetOutcome.draw
-                                      ? const Icon(Icons.handshake_outlined,
-                                          size: 36)
-                                      : _TeamLogo(
-                                          team: option.outcome ==
-                                                  BetOutcome.homeWin
-                                              ? widget.homeTeam
-                                              : widget.awayTeam,
-                                        ),
+                                  leading: SizedBox.square(
+                                    dimension: 48,
+                                    child: option.outcome == BetOutcome.draw
+                                        ? _DrawTeamLogos(
+                                            homeTeam: widget.homeTeam,
+                                            awayTeam: widget.awayTeam,
+                                          )
+                                        : Center(
+                                            child: _TeamLogo(
+                                              team: option.outcome ==
+                                                      BetOutcome.homeWin
+                                                  ? widget.homeTeam
+                                                  : widget.awayTeam,
+                                            ),
+                                          ),
+                                  ),
                                   title: Text(
                                     _label(
                                       context,
@@ -270,7 +281,13 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                                           ),
                                 ),
                               ),
-                              const Divider(),
+                              Divider(
+                                key: ValueKey(
+                                  'match-betting-option-divider-'
+                                  '${option.outcome.name}',
+                                ),
+                                color: optionDividerColor,
+                              ),
                             ],
                           ),
                         ),
@@ -393,46 +410,57 @@ class MatchStatsHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: _LabeledTeam(team: homeTeam)),
-              Expanded(
-                flex: 3,
-                child: Row(
-                  children: options
-                      .map(
-                        (option) => Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 3),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppPalette.black,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: FittedBox(
-                                  child: Text(
-                                    '${option.decimalOdds.toStringAsFixed(2)}×',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
+              SizedBox(
+                key: const ValueKey('match-betting-home-team'),
+                width: 40,
+                child: _LabeledTeam(team: homeTeam),
+              ),
+              const Spacer(),
+              Row(
+                key: const ValueKey('match-betting-outcome-group'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var index = 0; index < options.length; index++) ...[
+                    if (index > 0) const SizedBox(width: 8),
+                    Column(
+                      children: [
+                        Container(
+                          key: ValueKey('match-betting-odds-box-$index'),
+                          width: 48,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppPalette.black,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '${options[index].decimalOdds.toStringAsFixed(2)}×',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(height: 5),
-                              Text(['W', 'D', 'L'][option.outcome.index]),
-                            ],
+                            ),
                           ),
                         ),
-                      )
-                      .toList(),
-                ),
+                        const SizedBox(height: 5),
+                        Text(
+                          ['W', 'D', 'L'][options[index].outcome.index],
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
-              Expanded(child: _LabeledTeam(team: awayTeam)),
+              const Spacer(),
+              SizedBox(
+                key: const ValueKey('match-betting-away-team'),
+                width: 40,
+                child: _LabeledTeam(team: awayTeam),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -681,22 +709,119 @@ class _BetButton extends StatelessWidget {
 }
 
 class _TeamLogo extends StatelessWidget {
-  const _TeamLogo({required this.team});
+  const _TeamLogo({required this.team, this.size = 40});
   final Team team;
+  final double size;
+
   @override
   Widget build(BuildContext context) {
     final path = team.imagePath;
     return path == null || path.isEmpty
-        ? teamLogoFallback(team.teamId, size: 40)
+        ? teamLogoFallback(team.teamId, size: size)
         : Image.network(
             path,
-            width: 40,
-            height: 40,
+            width: size,
+            height: size,
             fit: BoxFit.contain,
             errorBuilder: (_, __, ___) =>
-                teamLogoFallback(team.teamId, size: 40),
+                teamLogoFallback(team.teamId, size: size),
           );
   }
+}
+
+class _DrawTeamLogos extends StatelessWidget {
+  const _DrawTeamLogos({required this.homeTeam, required this.awayTeam});
+
+  final Team homeTeam;
+  final Team awayTeam;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+        children: [
+          Positioned.fill(
+            child: ClipPath(
+              key: const ValueKey('match-betting-draw-home-clip'),
+              clipper: const _DrawLogoHalfClipper(keepTopLeft: true),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: SizedBox.square(
+                  key: const ValueKey('match-betting-draw-home-logo'),
+                  dimension: 36,
+                  child: _TeamLogo(team: homeTeam, size: 36),
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: ClipPath(
+              key: const ValueKey('match-betting-draw-away-clip'),
+              clipper: const _DrawLogoHalfClipper(keepTopLeft: false),
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: SizedBox.square(
+                  key: const ValueKey('match-betting-draw-away-logo'),
+                  dimension: 36,
+                  child: _TeamLogo(team: awayTeam, size: 36),
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _DrawLogoDividerPainter(
+                  Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+}
+
+class _DrawLogoHalfClipper extends CustomClipper<Path> {
+  const _DrawLogoHalfClipper({required this.keepTopLeft});
+
+  final bool keepTopLeft;
+
+  @override
+  Path getClip(Size size) => keepTopLeft
+      ? (Path()
+        ..moveTo(0, 0)
+        ..lineTo(size.width, 0)
+        ..lineTo(0, size.height)
+        ..close())
+      : (Path()
+        ..moveTo(size.width, 0)
+        ..lineTo(size.width, size.height)
+        ..lineTo(0, size.height)
+        ..close());
+
+  @override
+  bool shouldReclip(_DrawLogoHalfClipper oldClipper) =>
+      keepTopLeft != oldClipper.keepTopLeft;
+}
+
+class _DrawLogoDividerPainter extends CustomPainter {
+  const _DrawLogoDividerPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawLine(
+      Offset(0, size.height),
+      Offset(size.width, 0),
+      Paint()
+        ..color = color
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_DrawLogoDividerPainter oldDelegate) =>
+      color != oldDelegate.color;
 }
 
 class _LabeledTeam extends StatelessWidget {

@@ -75,6 +75,41 @@ void main() {
       await tester.ensureVisible(find.text('PLACE A BET'));
       await tester.tap(find.text('PLACE A BET'));
       await tester.pumpAndSettle();
+      final drawHomeLogo = tester.getRect(
+        find.byKey(const ValueKey('match-betting-draw-home-logo')),
+      );
+      final drawAwayLogo = tester.getRect(
+        find.byKey(const ValueKey('match-betting-draw-away-logo')),
+      );
+      expect(
+        find.byKey(const ValueKey('match-betting-draw-home-clip')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('match-betting-draw-away-clip')),
+        findsOneWidget,
+      );
+      expect(drawHomeLogo.overlaps(drawAwayLogo), isTrue);
+      expect(drawAwayLogo.left, greaterThan(drawHomeLogo.left));
+      expect(drawAwayLogo.top, greaterThan(drawHomeLogo.top));
+      expect(
+        tester
+            .widget<Divider>(
+              find.byKey(
+                const ValueKey('match-betting-option-divider-draw'),
+              ),
+            )
+            .color,
+        size.width == 320
+            ? AppColors.of(
+                tester.element(
+                  find.byKey(
+                    const ValueKey('match-betting-option-divider-draw'),
+                  ),
+                ),
+              ).divider
+            : AppPalette.lightGrey,
+      );
       await tester.ensureVisible(find.widgetWithText(ListTile, 'Draw'));
       await tester.tap(find.widgetWithText(ListTile, 'Draw'));
       await tester.pump();

@@ -9,8 +9,11 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
+import 'package:onetouch/core/style.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/features/helper.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
 
@@ -67,6 +70,23 @@ void main() {
     expect(requests.single.path, '/v1/competitions/8/standings');
     expect(requests.single.queryParameters, isEmpty);
     expect(find.text('Current season leader'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('match-preview-standing-pts-header')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byKey(
+                const ValueKey('match-preview-standing-pts-999999'),
+              ),
+              matching: find.byType(Text),
+            ),
+          )
+          .data,
+      '7',
+    );
     expect(standings.cachedForCompetition(8)!.single.seasonId, 28083);
     expect(tester.takeException(), isNull);
   });
@@ -95,6 +115,80 @@ void main() {
     expect(
       find.byKey(const ValueKey('match-preview-h2h-card')),
       findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('latest H2H reuses the last-match card with a relative date',
+      (tester) async {
+    final sixDaysAgo = DateTime.now().subtract(const Duration(days: 6));
+    final previousMeeting = Fixture(
+      fixtureId: 901,
+      seasonId: 25583,
+      competitionId: 8,
+      homeTeamId: 8,
+      awayTeamId: 19,
+      competitionType: CompetitionType.league,
+      roundName: '5',
+      status: FixtureStatus.past,
+      startingAt: sixDaysAgo.toIso8601String(),
+      homeScore: 2,
+      awayScore: 1,
+    );
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => [previousMeeting],
+    );
+
+    await tester.pumpWidget(
+      _testApp(
+        fixture: _firstSelectedFixture,
+        repository: repository,
+        locale: const Locale('ko'),
+      ),
+    );
+    await tester.pump();
+
+    final card = tester.widget<MatchCard2>(find.byType(MatchCard2));
+    expect(card.showTitle, isFalse);
+    expect(card.date, '6일 전');
+    expect(
+      card.contentPadding,
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    );
+    expect(card.borderRadius, BorderRadius.circular(24));
+    expect(find.text('6일 전'), findsOneWidget);
+    expect(find.text('LAST MATCH'), findsNothing);
+    expect(find.text('지난 경기'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('latest H2H uses dark-mode Dark Grey', (tester) async {
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => [_pastFixture()],
+    );
+    final betting = fakeBettingController(_firstSelectedFixture.fixtureId);
+    addTearDown(betting.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: darktheme,
+        home: Scaffold(
+          body: MatchPreviewTab(
+            bettingController: betting,
+            fixture: _firstSelectedFixture,
+            fixtureRepository: repository,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final surface = tester.widget<Container>(
+      find.byKey(const ValueKey('match-preview-h2h-surface')),
+    );
+    expect(
+      (surface.decoration as BoxDecoration).color,
+      AppPalette.darkGrey,
     );
     expect(tester.takeException(), isNull);
   });
@@ -236,10 +330,14 @@ Future<void> _setSize(WidgetTester tester, Size size) async {
 Widget _testApp({
   required Fixture fixture,
   required _RecordingFixtureRepository repository,
+  Locale locale = const Locale('en'),
 }) {
   final betting = fakeBettingController(fixture.fixtureId);
   addTearDown(betting.dispose);
   return MaterialApp(
+    locale: locale,
+    supportedLocales: appSupportedLocales,
+    localizationsDelegates: appLocalizationDelegates,
     home: Scaffold(
       body: MatchPreviewTab(
         bettingController: betting,

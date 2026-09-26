@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/app_segmented_toggle.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/chat/chat_repository.dart';
 import 'package:onetouch/data/chat/chat_socket.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
@@ -192,6 +191,8 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
             centerTitle: true,
             actions: [
               IconButton(
+                key: const ValueKey('match-search-button'),
+                tooltip: tr(context, 'Search'),
                 onPressed: () {
                   context.push('/search');
                 },
@@ -199,6 +200,8 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
               ),
               SizedBox(width: 8),
               IconButton(
+                key: const ValueKey('match-profile-button'),
+                tooltip: tr(context, 'Profile'),
                 padding: EdgeInsets.only(right: 24),
                 onPressed: () {
                   context.push('/profile');
@@ -214,33 +217,24 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  key: const ValueKey('match-tab-scroll'),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: SizedBox(
-                    width: math.max(
-                      constraints.maxWidth - 48,
-                      tabs.length * 132.0,
-                    ),
-                    child: AppSegmentedToggle<int>(
-                      containerKey: const ValueKey('match-tab-toggle'),
-                      indicatorSurfaceKey:
-                          const ValueKey('match-tab-indicator-surface'),
-                      value: selectedIndex,
-                      options: [
-                        for (var index = 0; index < tabs.length; index++)
-                          AppSegmentedToggleOption(
-                            value: index,
-                            label: tr(context, tabs[index]),
-                            contentKey: ValueKey('match-tab-$index'),
-                          ),
-                      ],
-                      onChanged: (index) =>
-                          setState(() => selectedIndex = index),
-                    ),
-                  ),
+              child: SingleChildScrollView(
+                key: const ValueKey('match-tab-scroll'),
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  key: const ValueKey('match-tab-list'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var index = 0; index < tabs.length; index++) ...[
+                      if (index > 0) const SizedBox(width: 8),
+                      _MatchPillTab(
+                        surfaceKey: ValueKey('match-tab-$index'),
+                        label: tr(context, tabs[index]),
+                        selected: selectedIndex == index,
+                        onTap: () => setState(() => selectedIndex = index),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
@@ -337,5 +331,74 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
       default:
         return const SizedBox.shrink();
     }
+  }
+}
+
+class _MatchPillTab extends StatelessWidget {
+  const _MatchPillTab({
+    required this.surfaceKey,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Key surfaceKey;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background = selected
+        ? AppPalette.white
+        : isDark
+            ? AppPalette.lightGrey
+            : AppPalette.lightGreyBox;
+    final foreground = selected
+        ? AppPalette.black
+        : isDark
+            ? AppPalette.white
+            : AppPalette.black;
+    const radius = BorderRadius.all(Radius.circular(16));
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          splashFactory: NoSplash.splashFactory,
+          highlightColor: Colors.transparent,
+          child: Container(
+            key: surfaceKey,
+            height: 34,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(borderRadius: radius).copyWith(
+              color: background,
+            ),
+            child: Text(
+              label,
+              maxLines: 1,
+              softWrap: false,
+              textAlign: TextAlign.center,
+              style: Body2_b.style.copyWith(
+                color: foreground,
+                height: 1.3,
+                leadingDistribution: TextLeadingDistribution.even,
+              ),
+              textHeightBehavior: const TextHeightBehavior(
+                leadingDistribution: TextLeadingDistribution.even,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
