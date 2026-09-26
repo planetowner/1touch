@@ -4,6 +4,7 @@ class BestElevenPitch extends StatelessWidget {
   BestElevenPitch({
     super.key,
     required this.teamId,
+    required this.formation,
     required List<BestElevenEntry> players,
   }) : _players = List.unmodifiable(
           players.map(
@@ -17,6 +18,7 @@ class BestElevenPitch extends StatelessWidget {
         );
 
   final int teamId;
+  final String formation;
   final List<_BestElevenPitchPlayer> _players;
 
   @override
@@ -35,20 +37,9 @@ class BestElevenPitch extends StatelessWidget {
       playerCircleColor,
     );
 
-    final Map<int, List<_BestElevenPitchPlayer>> byRow = {};
-    for (final player in _players) {
-      final parts = player.slotKey.split(':');
-      final row = int.parse(parts[0]);
-      byRow.putIfAbsent(row, () => []).add(player);
-    }
-    for (final list in byRow.values) {
-      list.sort((a, b) {
-        final aColumn = int.parse(a.slotKey.split(':')[1]);
-        final bColumn = int.parse(b.slotKey.split(':')[1]);
-        return aColumn.compareTo(bColumn);
-      });
-    }
-    final rowKeys = byRow.keys.toList()..sort((a, b) => b.compareTo(a));
+    final normalizedFormation = formation.trim();
+    final layout = bestElevenFormationLayouts[normalizedFormation] ??
+        buildFallbackBestElevenLayout(normalizedFormation);
 
     return Container(
       key: const ValueKey('team-best-eleven-card'),
@@ -61,81 +52,46 @@ class BestElevenPitch extends StatelessWidget {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         clipBehavior: Clip.antiAlias,
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
-          decoration: BoxDecoration(color: pitchBackground),
-          child: Column(
-            children: [
-              CustomPaint(
-                painter: _HalfCirclePainter(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: rowKeys.map((key) {
-                      final rowPlayers = byRow[key]!;
-                      return _BestElevenRow(
-                        players: rowPlayers,
-                        playerCircleColor: playerCircleColor,
-                        jerseyNumberColor: jerseyNumberColor,
-                        isDefensiveRow: key == rowKeys.last,
-                      );
-                    }).toList(),
+          child: AspectRatio(
+            aspectRatio: BestElevenFormationLayout.designSize.width /
+                BestElevenFormationLayout.designSize.height,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final scaleX = constraints.maxWidth /
+                    BestElevenFormationLayout.designSize.width;
+                final scaleY = constraints.maxHeight /
+                    BestElevenFormationLayout.designSize.height;
+                return CustomPaint(
+                  painter: _HalfCirclePainter(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.15),
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      for (final player in _players)
+                        if (layout.positionForSlot(player.slotKey)
+                            case final position?)
+                          Positioned(
+                            left: position.dx * scaleX - 31,
+                            top: position.dy * scaleY - 16,
+                            child: _BestElevenPlayerDot(
+                              player: player,
+                              circleColor: playerCircleColor,
+                              jerseyNumberColor: jerseyNumberColor,
+                            ),
+                          ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _BestElevenRow extends StatelessWidget {
-  const _BestElevenRow({
-    required this.players,
-    required this.playerCircleColor,
-    required this.jerseyNumberColor,
-    this.isDefensiveRow = false,
-  });
-
-  final List<_BestElevenPitchPlayer> players;
-  final Color playerCircleColor;
-  final Color jerseyNumberColor;
-  final bool isDefensiveRow;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget dotWithOffset(int columnIndex) {
-      var topOffset = 0.0;
-      if (isDefensiveRow && players.length == 4) {
-        if (columnIndex == 0 || columnIndex == players.length - 1) {
-          topOffset = -10;
-        }
-      }
-      return Padding(
-        padding: const EdgeInsets.only(top: 0),
-        child: Transform.translate(
-          offset: Offset(0, topOffset),
-          child: _BestElevenPlayerDot(
-            player: players[columnIndex],
-            circleColor: playerCircleColor,
-            jerseyNumberColor: jerseyNumberColor,
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(players.length, dotWithOffset),
       ),
     );
   }
