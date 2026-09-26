@@ -169,19 +169,21 @@ class MatchCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final compact = constraints.maxWidth < 300;
+              final infoGap = compact ? 0.0 : 8.0;
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SizedBox(
-                    width: compact ? 64 : 81,
+                    width: compact ? 72 : 81,
                     child: _TeamDisplay(
                       teamId: homeTeam.teamId,
                       teamName: homeTeam.displayName,
                       teamLogo: homeTeam.imagePath ?? '',
-                      logoSize: compact ? 56 : 72,
+                      logoSize: 72,
+                      logoKey: const ValueKey('next-match-home-logo'),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: infoGap),
                   Expanded(
                     child: _MatchInfo(
                       match: match,
@@ -191,14 +193,15 @@ class MatchCard extends StatelessWidget {
                               context, match!.competitionId, leagueName!),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: infoGap),
                   SizedBox(
-                    width: compact ? 64 : 76,
+                    width: compact ? 72 : 76,
                     child: _TeamDisplay(
                       teamId: awayTeam.teamId,
                       teamName: awayTeam.displayName,
                       teamLogo: awayTeam.imagePath ?? '',
-                      logoSize: compact ? 56 : 72,
+                      logoSize: 72,
+                      logoKey: const ValueKey('next-match-away-logo'),
                     ),
                   ),
                 ],
@@ -265,16 +268,15 @@ class MatchCard2 extends StatelessWidget {
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
-              final compact = constraints.maxWidth < 360;
               final veryCompact = constraints.maxWidth < 270;
-              final teamWidth = veryCompact ? 24.0 : (compact ? 36.0 : 48.0);
-              final teamScoreGap = veryCompact ? 2.0 : 16.0;
+              const teamWidth = 48.0;
+              const teamScoreGap = 16.0;
               final sectionSpacing = veryCompact
-                  ? 2.0
+                  ? 0.0
                   : constraints.maxWidth < 300
-                      ? 20.0
+                      ? 0.0
                       : 30.0;
-              return Row(
+              final matchRow = Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 spacing: sectionSpacing,
                 children: [
@@ -288,6 +290,7 @@ class MatchCard2 extends StatelessWidget {
                           teamName: team1shortname,
                           teamLogo: team1Logo,
                           logoSize: teamWidth,
+                          logoKey: const ValueKey('last-match-home-logo'),
                         ),
                       ),
                       SizedBox(width: teamScoreGap),
@@ -322,11 +325,22 @@ class MatchCard2 extends StatelessWidget {
                           teamName: team2shortname,
                           teamLogo: team2Logo,
                           logoSize: teamWidth,
+                          logoKey: const ValueKey('last-match-away-logo'),
                         ),
                       ),
                     ],
                   ),
                 ],
+              );
+              if (!veryCompact) return matchRow;
+              return SizedBox(
+                height: 92,
+                child: OverflowBox(
+                  alignment: Alignment.center,
+                  minWidth: constraints.maxWidth + 16,
+                  maxWidth: constraints.maxWidth + 16,
+                  child: matchRow,
+                ),
               );
             },
           ),
@@ -473,12 +487,14 @@ class _TeamDisplay extends StatelessWidget {
   final int teamId;
   final String teamName, teamLogo;
   final double logoSize;
+  final Key? logoKey;
 
   const _TeamDisplay({
     required this.teamId,
     required this.teamName,
     required this.teamLogo,
     required this.logoSize,
+    this.logoKey,
   });
 
   @override
@@ -486,20 +502,19 @@ class _TeamDisplay extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (teamLogo.isNotEmpty)
-          SizedBox(
-            width: logoSize,
-            height: logoSize,
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: Image.network(
-                teamLogo,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) =>
-                    teamLogoFallback(teamId, size: logoSize),
-              ),
-            ),
-          ),
+        SizedBox(
+          key: logoKey,
+          width: logoSize,
+          height: logoSize,
+          child: teamLogo.isEmpty
+              ? teamLogoFallback(teamId, size: logoSize)
+              : Image.network(
+                  teamLogo,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      teamLogoFallback(teamId, size: logoSize),
+                ),
+        ),
         const SizedBox(height: 8),
         Text(
           teamNameLabel(context, teamId, teamName, short: true),
@@ -518,12 +533,14 @@ class _TeamDisplay2 extends StatelessWidget {
   final int teamId;
   final String teamName, teamLogo;
   final double logoSize;
+  final Key? logoKey;
 
   const _TeamDisplay2({
     required this.teamId,
     required this.teamName,
     required this.teamLogo,
     required this.logoSize,
+    this.logoKey,
   });
 
   @override
@@ -531,12 +548,18 @@ class _TeamDisplay2 extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.network(
-          teamLogo,
+        SizedBox(
+          key: logoKey,
           width: logoSize,
           height: logoSize,
-          errorBuilder: (_, __, ___) =>
-              teamLogoFallback(teamId, size: logoSize),
+          child: teamLogo.isEmpty
+              ? teamLogoFallback(teamId, size: logoSize)
+              : Image.network(
+                  teamLogo,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      teamLogoFallback(teamId, size: logoSize),
+                ),
         ),
         const SizedBox(height: 8),
         Text(
