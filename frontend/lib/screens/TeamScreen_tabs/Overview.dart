@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/injuries/team_injury_repository.dart';
@@ -8,6 +7,7 @@ import 'package:onetouch/data/transfers/transfer_repository.dart';
 import 'package:onetouch/features/TeamScreenFeatures.dart';
 import 'package:onetouch/features/team/best_eleven/team_best_eleven_section.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/widgets/ads/banner_ad_widget.dart';
 
 class OverviewTab extends StatefulWidget {
   final Map<String, dynamic>? team;
@@ -65,7 +65,6 @@ class _OverviewTabState extends State<OverviewTab> {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
     final hasStanding = widget.team?['standing'] != null;
     return CustomScrollView(
       slivers: [
@@ -118,26 +117,10 @@ class _OverviewTabState extends State<OverviewTab> {
                 ),
               ],
 
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Container(
-                  key: const ValueKey('team-overview-ad-card'),
-                  width: double.infinity,
-                  height: 108,
-                  decoration: ShapeDecoration(
-                    color: isLight ? AppPalette.black : AppPalette.lightGrey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    shadows: appCardShadows(context),
-                  ),
-                  child: Center(
-                    child: Text(
-                      tr(context, "Ad"),
-                      textAlign: TextAlign.center,
-                      style: Heading4.style.copyWith(color: AppPalette.white),
-                    ),
-                  ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: BannerAdWidget(
+                  key: ValueKey('team-overview-banner-ad'),
                 ),
               ),
               const SizedBox(height: 50),

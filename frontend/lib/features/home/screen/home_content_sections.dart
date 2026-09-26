@@ -15,7 +15,11 @@ class MyHighlights extends StatelessWidget {
       ? Padding(
           padding: EdgeInsets.all(24),
           child: Text(tr(context, 'No highlights available yet.')))
-      : _HomeContentList(items: highlights, fallbacks: fallbacks);
+      : _HomeContentList(
+          items: highlights,
+          fallbacks: fallbacks,
+          addTrailingItemSpacing: false,
+        );
 }
 
 class MyNews extends StatelessWidget {
@@ -60,10 +64,15 @@ class MyNews extends StatelessWidget {
 }
 
 class _HomeContentList extends StatelessWidget {
-  const _HomeContentList({required this.items, this.fallbacks = const []});
+  const _HomeContentList({
+    required this.items,
+    this.fallbacks = const [],
+    this.addTrailingItemSpacing = true,
+  });
 
   final List<HomeContentItem> items;
   final List<HomeContentItem> fallbacks;
+  final bool addTrailingItemSpacing;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +83,10 @@ class _HomeContentList extends StatelessWidget {
         children: List.generate(
           items.length,
           (index) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(
+              bottom:
+                  index < items.length - 1 || addTrailingItemSpacing ? 16 : 0,
+            ),
             child: _HomeContentCard(
               key: ValueKey('${items[index].destinationUrl}-$index'),
               item: items[index],
