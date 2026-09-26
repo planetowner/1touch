@@ -4,6 +4,7 @@ import 'package:clock/clock.dart' as time;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
@@ -18,6 +19,48 @@ import 'package:onetouch/screens/MatchScreen_tabs/matchinfo.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('search and profile app-bar buttons open their routes',
+      (tester) async {
+    final repository = _ControlledFixtureRepository();
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => MatchScreen(
+            matchId: '${_fixture.fixtureId}',
+            matchStatus: 'upcoming',
+            repository: repository,
+          ),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (_, __) => const Scaffold(body: Text('search-route')),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (_, __) => const Scaffold(body: Text('profile-route')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    repository.calls.single.complete(_detail());
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('match-search-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('search-route'), findsOneWidget);
+
+    router.pop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('match-profile-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('profile-route'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
       'refreshes kickoff, live, paused and finished states without reopening',
       (tester) async {
