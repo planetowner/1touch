@@ -22,23 +22,49 @@ void main() {
   testWidgets('search and profile app-bar buttons open their routes',
       (tester) async {
     final repository = _ControlledFixtureRepository();
+    final rootNavigatorKey = GlobalKey<NavigatorState>();
     final router = GoRouter(
-      initialLocation: '/',
+      initialLocation: '/home',
+      navigatorKey: rootNavigatorKey,
       routes: [
-        GoRoute(
-          path: '/',
-          builder: (_, __) => MatchScreen(
-            matchId: '${_fixture.fixtureId}',
-            matchStatus: 'upcoming',
-            repository: repository,
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, navigationShell) => Scaffold(
+            body: navigationShell,
           ),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  builder: (context, __) => Scaffold(
+                    body: TextButton(
+                      onPressed: () => context.push(
+                        '/match/${_fixture.fixtureId}?status=upcoming',
+                      ),
+                      child: const Text('open-match'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/match/:matchId',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, state) => MatchScreen(
+              matchId: state.pathParameters['matchId']!,
+              matchStatus: 'upcoming',
+              repository: repository),
         ),
         GoRoute(
           path: '/search',
+          parentNavigatorKey: rootNavigatorKey,
           builder: (_, __) => const Scaffold(body: Text('search-route')),
         ),
         GoRoute(
           path: '/profile',
+          parentNavigatorKey: rootNavigatorKey,
           builder: (_, __) => const Scaffold(body: Text('profile-route')),
         ),
       ],
@@ -46,6 +72,9 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.text('open-match'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
     repository.calls.single.complete(_detail());
     await tester.pump();
 
@@ -59,6 +88,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('profile-route'), findsOneWidget);
     expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets(
