@@ -113,12 +113,6 @@ const Map<String, BestElevenFormationLayout> bestElevenFormationLayouts = {
     [Offset(132, 120), Offset(214, 120)],
     [Offset(124, 48), Offset(222, 48)],
   ]),
-  '4-1-2-3': BestElevenFormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(173, 192)],
-    [Offset(124, 128), Offset(222, 128)],
-    [Offset(48, 72), Offset(173, 44), Offset(298, 72)],
-  ]),
   '4-3-2-1': BestElevenFormationLayout([
     [Offset(48, 236), Offset(132, 268), Offset(214, 268), Offset(298, 236)],
     [Offset(90, 172), Offset(173, 200), Offset(253.5, 172)],
