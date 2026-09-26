@@ -101,14 +101,14 @@ class MatchEventsSection extends StatelessWidget {
         Expanded(
           child: eventColumn(homeRows, 'home'),
         ),
-        // 선수명 끝과 중앙 아이콘의 레이어 경계를 14.5px 떨어뜨려요.
-        const SizedBox(width: 14.5),
+        // 레퍼런스의 8px 간격으로 양 팀 이벤트와 중앙 아이콘을 분리해요.
+        const SizedBox(width: 8),
         SizedBox(
           key: ValueKey('match-events-icon-$type'),
           width: 20,
           child: Center(child: _eventTypeIcon(type)),
         ),
-        const SizedBox(width: 14.5),
+        const SizedBox(width: 8),
         Expanded(
           child: eventColumn(awayRows, 'away'),
         ),

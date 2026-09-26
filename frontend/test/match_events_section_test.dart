@@ -65,7 +65,7 @@ void main() {
               find.descendant(of: row, matching: find.text(name));
           final nameRect = tester.getRect(nameFinder);
           expect(home ? icon.left - nameRect.right : nameRect.left - icon.right,
-              closeTo(14.5, 0.001));
+              closeTo(8, 0.001));
 
           final wrapFinder =
               find.descendant(of: row, matching: find.byType(Wrap));

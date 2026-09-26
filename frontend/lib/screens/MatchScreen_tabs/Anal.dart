@@ -340,6 +340,29 @@ class _AnalysisTabState extends State<AnalysisTab> {
     final awayShots = _shotMap?.awayCount;
     final homeGoals = _goalCount(widget.fixture.homeTeamId);
     final awayGoals = _goalCount(widget.fixture.awayTeamId);
+    final statRows = <Widget>[
+      if (_shotMap?.available == true) ...[
+        _buildStatRow(tr(context, 'Goals'), homeGoals, awayGoals),
+        _buildStatRow(
+          tr(context, 'Shots on Target'),
+          homeShots,
+          awayShots,
+        ),
+      ],
+      // 키패스는 Opta 전술 분석과 별개인 Sportmonks 팀 통계를 사용해요.
+      if (keyPasses != null)
+        _buildStatRow(
+          tr(context, 'Key Passes'),
+          keyPasses.home,
+          keyPasses.away,
+        ),
+      if (_analysis?.available == true)
+        _buildStatRow(
+          tr(context, 'Passes into Final Third'),
+          _homeAnalysis?.attack.completedPassesIntoFinalThird,
+          _awayAnalysis?.attack.completedPassesIntoFinalThird,
+        ),
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -367,24 +390,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
                     color: selectedTeamColor,
                     lineColor: foreground.withValues(alpha: 0.30),
                   ),
-                  const SizedBox(height: 24),
-                  _buildStatRow(tr(context, 'Goals'), homeGoals, awayGoals),
-                  _buildStatRow(
-                      tr(context, 'Shots on Target'), homeShots, awayShots),
                 ],
-                // 키패스는 Opta 전술 분석과 별개인 Sportmonks 팀 통계를 사용해요.
-                if (keyPasses != null)
-                  _buildStatRow(
-                    tr(context, 'Key Passes'),
-                    keyPasses.home,
-                    keyPasses.away,
-                  ),
-                if (_analysis?.available == true) ...[
-                  _buildStatRow(
-                    tr(context, 'Passes into Final Third'),
-                    _homeAnalysis?.attack.completedPassesIntoFinalThird,
-                    _awayAnalysis?.attack.completedPassesIntoFinalThird,
-                  ),
+                if (statRows.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _buildStatRows('attack', statRows),
                 ],
               ],
             ),
@@ -397,6 +406,18 @@ class _AnalysisTabState extends State<AnalysisTab> {
   Widget _buildPossessionBlock() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rows = _possessionRows();
+    final possession =
+        rows.where((row) => row.code == 'ball-possession').firstOrNull;
+    final statRows = [
+      for (final row in rows)
+        if (row.code != 'ball-possession')
+          _buildStatRow(
+            row.label,
+            row.home,
+            row.away,
+            suffix: row.isPercent ? '%' : '',
+          ),
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
@@ -414,17 +435,12 @@ class _AnalysisTabState extends State<AnalysisTab> {
             ),
             child: Column(
               children: [
-                for (final row in rows)
-                  // 번역된 이름 대신 통계 코드로 구분해야 모든 언어에서 막대가 보여요.
-                  if (row.code == 'ball-possession')
-                    _buildPossessionBar(row.home, row.away)
-                  else
-                    _buildStatRow(
-                      row.label,
-                      row.home,
-                      row.away,
-                      suffix: row.isPercent ? '%' : '',
-                    ),
+                // 번역된 이름 대신 통계 코드로 구분해야 모든 언어에서 막대가 보여요.
+                if (possession != null)
+                  _buildPossessionBar(possession.home, possession.away),
+                if (possession != null && statRows.isNotEmpty)
+                  const SizedBox(height: 24),
+                if (statRows.isNotEmpty) _buildStatRows('possession', statRows),
               ],
             ),
           ),
@@ -440,58 +456,51 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
     final total = home + away;
     final fraction = total <= 0 ? 0.5 : (home / total).clamp(0.0, 1.0);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: SizedBox(
-              key: const ValueKey('match-possession-bar'),
-              height: 32,
-              child: Stack(
-                fit: StackFit.expand,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        key: const ValueKey('match-possession-bar'),
+        height: 32,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(
+              key: const ValueKey('match-possession-away-fill'),
+              color: comparisonColors.opponent,
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                key: const ValueKey('match-possession-home-fill'),
+                widthFactor: fraction,
+                heightFactor: 1,
+                child: ColoredBox(color: comparisonColors.anchor),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ColoredBox(
-                    key: const ValueKey('match-possession-away-fill'),
-                    color: comparisonColors.opponent,
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: FractionallySizedBox(
-                      key: const ValueKey('match-possession-home-fill'),
-                      widthFactor: fraction,
-                      heightFactor: 1,
-                      child: ColoredBox(color: comparisonColors.anchor),
+                  Text(
+                    _formatNumber(home, suffix: '%'),
+                    style: Heading4.style.copyWith(
+                      color: _readableTextColor(comparisonColors.anchor),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _formatNumber(home, suffix: '%'),
-                          style: Heading4.style.copyWith(
-                            color: _readableTextColor(comparisonColors.anchor),
-                          ),
-                        ),
-                        Text(
-                          _formatNumber(away, suffix: '%'),
-                          style: Heading4.style.copyWith(
-                            color: _readableTextColor(
-                              comparisonColors.opponent,
-                            ),
-                          ),
-                        ),
-                      ],
+                  Text(
+                    _formatNumber(away, suffix: '%'),
+                    style: Heading4.style.copyWith(
+                      color: _readableTextColor(
+                        comparisonColors.opponent,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -534,21 +543,23 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 labelColor: _readableTextColor(selectedTeamColor),
               ),
               const SizedBox(height: 24),
-              _buildStatRow(
-                tr(context, 'Completed Passes'),
-                _homeAnalysis?.progression.completedPasses,
-                _awayAnalysis?.progression.completedPasses,
-              ),
-              _buildStatRow(
-                tr(context, 'Progressive Passes'),
-                _homeAnalysis?.progression.progressivePasses,
-                _awayAnalysis?.progression.progressivePasses,
-              ),
-              _buildStatRow(
-                tr(context, 'Passes into Final Third'),
-                _homeAnalysis?.attack.completedPassesIntoFinalThird,
-                _awayAnalysis?.attack.completedPassesIntoFinalThird,
-              ),
+              _buildStatRows('progression', [
+                _buildStatRow(
+                  tr(context, 'Completed Passes'),
+                  _homeAnalysis?.progression.completedPasses,
+                  _awayAnalysis?.progression.completedPasses,
+                ),
+                _buildStatRow(
+                  tr(context, 'Progressive Passes'),
+                  _homeAnalysis?.progression.progressivePasses,
+                  _awayAnalysis?.progression.progressivePasses,
+                ),
+                _buildStatRow(
+                  tr(context, 'Passes into Final Third'),
+                  _homeAnalysis?.attack.completedPassesIntoFinalThird,
+                  _awayAnalysis?.attack.completedPassesIntoFinalThird,
+                ),
+              ]),
             ],
           ),
         ),
@@ -598,41 +609,44 @@ class _AnalysisTabState extends State<AnalysisTab> {
   }) {
     final foreground = Theme.of(context).colorScheme.onSurface;
     final mutedForeground = AppColors.of(context).mutedForeground;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 40,
-            child: Text(
-              _formatNumber(home, suffix: suffix),
-              style: Heading5.style.copyWith(
-                color: showHome ? foreground : mutedForeground,
-              ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          width: 40,
+          child: Text(
+            _formatNumber(home, suffix: suffix),
+            style: Heading5.style.copyWith(
+              color: showHome ? foreground : mutedForeground,
             ),
           ),
-          Expanded(
-            child: Text(
-              tr(context, label),
-              style: Body1.style,
-              textAlign: TextAlign.center,
-            ),
+        ),
+        Expanded(
+          child: Text(
+            tr(context, label),
+            style: Body1.style,
+            textAlign: TextAlign.center,
           ),
-          SizedBox(
-            width: 40,
-            child: Text(
-              _formatNumber(away, suffix: suffix),
-              style: Heading5.style.copyWith(
-                color: !showHome ? foreground : mutedForeground,
-              ),
-              textAlign: TextAlign.right,
+        ),
+        SizedBox(
+          width: 40,
+          child: Text(
+            _formatNumber(away, suffix: suffix),
+            style: Heading5.style.copyWith(
+              color: !showHome ? foreground : mutedForeground,
             ),
+            textAlign: TextAlign.right,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+
+  Widget _buildStatRows(String section, List<Widget> rows) => Column(
+        key: ValueKey('match-analysis-$section-stat-rows'),
+        spacing: 8,
+        children: rows,
+      );
 
   Widget _buildDefenseBlock() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -690,6 +704,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                     lineColor: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.55),
+                    rightToLeft: !showHome,
                   ),
                 ],
                 if (zoneDeltas == null && missingPositionCount > 0) ...[
@@ -706,8 +721,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 ],
                 if (rows.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  for (final row in rows)
-                    _buildStatRow(row.label, row.home, row.away),
+                  _buildStatRows('defense', [
+                    for (final row in rows)
+                      _buildStatRow(row.label, row.home, row.away),
+                  ]),
                 ],
               ],
             ),
@@ -1131,11 +1148,13 @@ class _ProgressionPainter extends CustomPainter {
 // attacking thirds. Each value is the selected team's share minus its
 // opponent's share, so the three displayed differences sum to roughly zero.
 class DefenseTerritoryDiagram extends StatelessWidget {
+  final bool rightToLeft;
   final List<double> zoneDeltas;
   final Color selectedTeamColor;
   final Color lineColor;
   const DefenseTerritoryDiagram({
     super.key,
+    this.rightToLeft = false,
     required this.zoneDeltas,
     required this.selectedTeamColor,
     required this.lineColor,
@@ -1153,6 +1172,7 @@ class DefenseTerritoryDiagram extends StatelessWidget {
             zoneDeltas,
             selectedTeamColor,
             lineColor,
+            rightToLeft,
           ),
         ),
       ),
@@ -1164,10 +1184,12 @@ class _DefenseTerritoryPainter extends CustomPainter {
   final List<double> zoneDeltas;
   final Color selectedTeamColor;
   final Color lineColor;
+  final bool rightToLeft;
   const _DefenseTerritoryPainter(
     this.zoneDeltas,
     this.selectedTeamColor,
     this.lineColor,
+    this.rightToLeft,
   );
 
   @override
@@ -1229,6 +1251,11 @@ class _DefenseTerritoryPainter extends CustomPainter {
     );
     final arrowPaint = Paint()
       ..shader = defenseTerritoryArrowGradient.createShader(arrowBounds);
+    canvas.save();
+    if (rightToLeft) {
+      canvas.translate(size.width, 0);
+      canvas.scale(-1, 1);
+    }
     canvas.drawRect(arrowShaft, arrowPaint);
     canvas.drawPath(
       Path()
@@ -1238,6 +1265,7 @@ class _DefenseTerritoryPainter extends CustomPainter {
         ..close(),
       arrowPaint,
     );
+    canvas.restore();
 
     for (var index = 0; index < 3; index += 1) {
       final value = zoneDeltas[index];
@@ -1268,7 +1296,8 @@ class _DefenseTerritoryPainter extends CustomPainter {
   bool shouldRepaint(covariant _DefenseTerritoryPainter oldDelegate) =>
       oldDelegate.zoneDeltas != zoneDeltas ||
       oldDelegate.selectedTeamColor != selectedTeamColor ||
-      oldDelegate.lineColor != lineColor;
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.rightToLeft != rightToLeft;
 }
 
 double defenseTerritoryOpacity(double zoneDelta) =>
