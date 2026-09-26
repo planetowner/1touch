@@ -223,11 +223,14 @@ class MatchCard2 extends StatelessWidget {
       team2Logo;
   final int team1Id;
   final int team2Id;
-  final int homeScore;
-  final int awayScore;
+  final int? homeScore;
+  final int? awayScore;
   final Color? backgroundColor;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? dateTextStyle;
+  final bool showTitle;
+  final BorderRadiusGeometry? borderRadius;
+  final Key surfaceKey;
 
   const MatchCard2({
     super.key,
@@ -244,6 +247,9 @@ class MatchCard2 extends StatelessWidget {
     this.backgroundColor,
     this.contentPadding,
     this.dateTextStyle,
+    this.showTitle = true,
+    this.borderRadius,
+    this.surfaceKey = const ValueKey('last-match-card-surface'),
   });
 
   @override
@@ -251,26 +257,35 @@ class MatchCard2 extends StatelessWidget {
     // Example scores
 
     return Container(
-      key: const ValueKey('last-match-card-surface'),
+      key: surfaceKey,
       padding:
           contentPadding ?? const EdgeInsets.only(left: 16, right: 16, top: 16),
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.of(context).cardBackground,
+        borderRadius: borderRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            tr(context, 'LAST MATCH'),
-            key: const ValueKey('last-match-title'),
-            style: Body1_b.style,
-          ),
-          const SizedBox(height: 16),
+          if (showTitle) ...[
+            Text(
+              tr(context, 'LAST MATCH'),
+              key: const ValueKey('last-match-title'),
+              style: Body1_b.style,
+            ),
+            const SizedBox(height: 16),
+          ],
           LayoutBuilder(
             builder: (context, constraints) {
               final veryCompact = constraints.maxWidth < 270;
               const teamWidth = 48.0;
               const teamScoreGap = 16.0;
+              final homeDimmed = homeScore != null &&
+                  awayScore != null &&
+                  homeScore! < awayScore!;
+              final awayDimmed = homeScore != null &&
+                  awayScore != null &&
+                  awayScore! < homeScore!;
               final sectionSpacing = veryCompact
                   ? 0.0
                   : constraints.maxWidth < 300
@@ -297,7 +312,7 @@ class MatchCard2 extends StatelessWidget {
                       _ScoreBoard(
                         key: const ValueKey('last-match-home-score'),
                         score: homeScore,
-                        isDimmed: homeScore < awayScore,
+                        isDimmed: homeDimmed,
                       ),
                     ],
                   ),
@@ -315,7 +330,7 @@ class MatchCard2 extends StatelessWidget {
                       _ScoreBoard(
                         key: const ValueKey('last-match-away-score'),
                         score: awayScore,
-                        isDimmed: awayScore < homeScore,
+                        isDimmed: awayDimmed,
                       ),
                       SizedBox(width: teamScoreGap),
                       SizedBox(
@@ -677,7 +692,7 @@ class FixtureDateTime extends StatelessWidget {
 }
 
 class _ScoreBoard extends StatelessWidget {
-  final int score;
+  final int? score;
   final bool isDimmed;
 
   const _ScoreBoard({
@@ -703,7 +718,7 @@ class _ScoreBoard extends StatelessWidget {
           Opacity(
             opacity: isDimmed ? 0.5 : 1.0,
             child: Text(
-              score.toString(),
+              score?.toString() ?? '-',
               textAlign: TextAlign.center,
               style: Heading3.style.copyWith(
                 color: Colors.white,
