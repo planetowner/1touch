@@ -4,11 +4,14 @@ import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
 import 'package:onetouch/data/current_form/mock/mock_current_form_repository.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
@@ -18,9 +21,13 @@ void main() {
     required int? teamId,
     required CurrentFormRepository repository,
     ThemeData? theme,
+    Locale locale = const Locale('en'),
   }) {
     return MaterialApp(
       theme: theme ?? whitetheme,
+      locale: locale,
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
       home: Scaffold(
         body: SingleChildScrollView(
           child: CurrentFormSection(
@@ -39,7 +46,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  testWidgets('loads the same team previous season by default at compact width',
+  testWidgets('shows only current points by default at compact width',
       (tester) async {
     useScreen(tester, const Size(320, 568));
     final queries = <CurrentFormComparisonQuery>[];
@@ -55,11 +62,19 @@ void main() {
     await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
     await tester.pumpAndSettle();
 
+    expect(
+      tester
+          .widget<Padding>(
+            find.byKey(const ValueKey('analysis-current-form-section')),
+          )
+          .padding,
+      const EdgeInsets.fromLTRB(24, 32, 24, 0),
+    );
     expect(queries, hasLength(1));
     expect(queries.single.seasonId, 200);
     expect(queries.single.compareTeamId, 1);
-    expect(queries.single.compareSeasonId, 100);
-    expect(find.text('24/25 PREV'), findsOneWidget);
+    expect(queries.single.compareSeasonId, 200);
+    expect(find.text('24/25 PREV'), findsNothing);
     final chartCard = tester.widget<Container>(
       find.byKey(const ValueKey('analysis-current-form-chart-card')),
     );
@@ -68,15 +83,30 @@ void main() {
       lightModeCardShadows,
     );
     final chart = tester.widget<LineChart>(find.byType(LineChart));
+    expect(chart.data.lineBarsData, hasLength(1));
     expect(chart.data.lineBarsData.first.color, const Color(0xFFD82457));
-    expect(chart.data.lineBarsData[1].color, Colors.white);
+    final pointsLabel = find.byKey(
+      const ValueKey('analysis-current-form-points-label'),
+    );
+    expect(tester.widget<RotatedBox>(pointsLabel).quarterTurns, 1);
+    final chartCardRect = tester.getRect(
+      find.byKey(const ValueKey('analysis-current-form-chart-card')),
+    );
+    final pointsLabelRect = tester.getRect(pointsLabel);
+    expect(pointsLabelRect.left - chartCardRect.left, 16);
+    expect(pointsLabelRect.top - chartCardRect.top, 16);
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
-    expect(tester.getSize(filter).width, lessThanOrEqualTo(272));
+    expect(tester.getSize(filter).width, 165);
     expect(
-      find.descendant(of: filter, matching: find.text('24/25')),
+      find.descendant(of: filter, matching: find.text('SEASON')),
       findsOneWidget,
     );
+    final legend = find.byKey(const ValueKey('analysis-current-form-legend'));
+    expect(find.descendant(of: legend, matching: find.text('CURRENT')),
+        findsOneWidget);
+    expect(find.descendant(of: legend, matching: find.textContaining('PREV')),
+        findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -138,7 +168,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(optionAttempts, 2);
-    expect(find.text('24/25 RECOVERED'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('analysis-current-form-chart-card')),
+      findsOneWidget,
+    );
+    expect(find.text('24/25 RECOVERED'), findsNothing);
   });
 
   testWidgets('ignores a stale comparison after the selected team changes',
@@ -191,7 +225,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('STALE'), findsNothing);
-    expect(find.text('24/25 FRESH'), findsOneWidget);
+    expect(find.textContaining('FRESH'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('analysis-current-form-chart-card')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('does not load or invent a fallback when no team is available',
@@ -259,7 +297,45 @@ void main() {
     await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('24/25 TALL'), findsOneWidget);
+    expect(find.text('24/25 TALL'), findsNothing);
+    expect(
+      tester.widget<LineChart>(find.byType(LineChart)).data.lineBarsData,
+      hasLength(1),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('uses one grid cell for the Korean points axis label',
+      (tester) async {
+    useScreen(tester, const Size(393, 852));
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => _optionsForTeam(1),
+      comparisonLoader: (query) async =>
+          _comparisonFor(query, comparisonShortCode: 'PREV'),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      buildSubject(
+        teamId: 1,
+        repository: repository,
+        locale: const Locale('ko'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('승점'), findsOneWidget);
+    final pointsLabel = tester.widget<Text>(find.text('승점'));
+    expect(pointsLabel.style, Body2_b.style);
+    expect(pointsLabel.style?.fontSize, 14);
+    expect(pointsLabel.style?.fontWeight, FontWeight.w700);
+    expect(pointsLabel.style?.height, 1.2);
+    final grid = tester.widget<CustomPaint>(
+      find.byKey(const ValueKey('analysis-current-form-grid')),
+    );
+    final dynamic painter = grid.painter;
+    expect(painter.divisionCount, 11);
+    expect(painter.insetLineCount, 2);
     expect(tester.takeException(), isNull);
   });
 
@@ -281,10 +357,21 @@ void main() {
         );
         await tester.pumpAndSettle();
 
+        await tester.tap(
+          find.byKey(const ValueKey('analysis-form-filter')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('analysis-form-option-1-100')),
+        );
+        await tester.pumpAndSettle();
+
         final chart = find.byKey(
           const ValueKey('analysis-current-form-chart'),
         );
-        await tester.tapAt(tester.getCenter(chart));
+        final chartRect = tester.getRect(chart);
+        final selectedPointX = chartRect.left + chartRect.width / 36;
+        await tester.tapAt(Offset(selectedPointX, chartRect.center.dy));
         await tester.pump();
 
         final expectedBoxColor = isDark ? AppPalette.black : AppPalette.white;
@@ -295,8 +382,43 @@ void main() {
           final box = tester.widget<Container>(find.byKey(key));
           expect((box.decoration! as BoxDecoration).color, expectedBoxColor);
         }
+        final lineChart = tester.widget<LineChart>(find.byType(LineChart));
+        expect(lineChart.data.maxX, 36);
+        expect(lineChart.data.maxY, 108);
+        final comparisonTooltipRect = tester.getRect(
+          find.byKey(
+            const ValueKey('analysis-current-form-comparison-tooltip'),
+          ),
+        );
+        final currentTooltipRect = tester.getRect(
+          find.byKey(
+            const ValueKey('analysis-current-form-current-tooltip'),
+          ),
+        );
+        bool isHorizontallyAdjacent(Rect rect) =>
+            (rect.left - (selectedPointX + 8)).abs() < 0.01 ||
+            (rect.right - (selectedPointX - 8)).abs() < 0.01;
+        expect(isHorizontallyAdjacent(comparisonTooltipRect), isTrue);
+        expect(isHorizontallyAdjacent(currentTooltipRect), isTrue);
+        expect(comparisonTooltipRect.center.dy,
+            lessThan(currentTooltipRect.center.dy));
+        expect(
+          currentTooltipRect.center.dy - comparisonTooltipRect.center.dy,
+          closeTo(40, 0.01),
+        );
         expect(find.text('Round 1'), findsNWidgets(2));
         expect(find.text('1 Pts'), findsNWidgets(2));
+        for (final label in ['Round 1', '1 Pts']) {
+          for (final element in find.text(label).evaluate()) {
+            final paragraph = element.renderObject! as RenderParagraph;
+            expect(
+              paragraph.didExceedMaxLines,
+              isFalse,
+              reason:
+                  '$label size=${paragraph.size} intrinsic=${paragraph.getMaxIntrinsicWidth(double.infinity)}',
+            );
+          }
+        }
         expect(tester.takeException(), isNull);
       },
     );
@@ -316,17 +438,28 @@ void main() {
       filterFinder,
     );
     final options = await repository.loadOptions(83);
-    expect(popup.options, hasLength(options.length));
+    final baseline = options.firstWhere((option) => option.teamId == 83);
+    final visibleOptions = options
+        .where(
+          (option) =>
+              option.teamId != baseline.teamId ||
+              option.seasonId != baseline.seasonId,
+        )
+        .toList();
+    expect(popup.options, hasLength(visibleOptions.length));
     expect(
       popup.options.map((item) => (item.value.teamId, item.value.seasonId)),
-      options.map((option) => (option.teamId, option.seasonId)),
+      visibleOptions.map((option) => (option.teamId, option.seasonId)),
     );
+    expect(popup.width, 165);
+    expect(popup.matchMenuWidth, isFalse);
+    expect(popup.maxMenuHeight, 272);
 
     await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('BAR'), findsWidgets);
-    final firstOption = options.first;
+    final firstOption = visibleOptions.first;
     expect(
       tester
           .getSize(
@@ -337,7 +470,7 @@ void main() {
             ),
           )
           .width,
-      closeTo(closedFilterWidth, 0.1),
+      greaterThanOrEqualTo(closedFilterWidth),
     );
     expect(tester.takeException(), isNull);
   });
