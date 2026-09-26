@@ -37,9 +37,9 @@ class BestElevenPitch extends StatelessWidget {
       playerCircleColor,
     );
 
-    final normalizedFormation = formation.trim();
-    final layout = bestElevenFormationLayouts[normalizedFormation] ??
-        buildFallbackBestElevenLayout(normalizedFormation);
+    final layoutFormation = bestElevenLayoutFormation(formation);
+    final layout = bestElevenFormationLayouts[layoutFormation] ??
+        buildFallbackBestElevenLayout(layoutFormation);
 
     return Container(
       key: const ValueKey('team-best-eleven-card'),
@@ -74,7 +74,12 @@ class BestElevenPitch extends StatelessWidget {
                     clipBehavior: Clip.none,
                     children: [
                       for (final player in _players)
-                        if (layout.positionForSlot(player.slotKey)
+                        if (layout.positionForSlot(
+                          bestElevenLayoutSlotKey(
+                            formation,
+                            player.slotKey,
+                          ),
+                        )
                             case final position?)
                           Positioned(
                             left: position.dx * scaleX - 31,

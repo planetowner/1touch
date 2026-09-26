@@ -113,6 +113,12 @@ const Map<String, BestElevenFormationLayout> bestElevenFormationLayouts = {
     [Offset(132, 120), Offset(214, 120)],
     [Offset(124, 48), Offset(222, 48)],
   ]),
+  '4-1-2-3': BestElevenFormationLayout([
+    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
+    [Offset(173, 192)],
+    [Offset(124, 128), Offset(222, 128)],
+    [Offset(48, 72), Offset(173, 44), Offset(298, 72)],
+  ]),
   '4-3-2-1': BestElevenFormationLayout([
     [Offset(48, 236), Offset(132, 268), Offset(214, 268), Offset(298, 236)],
     [Offset(90, 172), Offset(173, 200), Offset(253.5, 172)],
@@ -177,11 +183,6 @@ const Map<String, BestElevenFormationLayout> bestElevenFormationLayouts = {
     [Offset(48, 108), Offset(173, 124), Offset(298, 108)],
     [Offset(124, 48), Offset(222, 48)],
   ]),
-  '4-3-3': BestElevenFormationLayout([
-    [Offset(48, 220), Offset(132, 252), Offset(214, 252), Offset(298, 220)],
-    [Offset(99, 152), Offset(173, 152), Offset(247, 152)],
-    [Offset(48, 72), Offset(173, 44), Offset(298, 72)],
-  ]),
   '5-4-1': BestElevenFormationLayout([
     [
       Offset(48, 224),
@@ -240,6 +241,31 @@ const Map<String, BestElevenFormationLayout> bestElevenFormationLayouts = {
   ]),
 };
 
+/// Converts an API/display formation into the formation used for positioning.
+///
+/// The API keeps `4-3-3` as the user-facing name, while Best XI uses the
+/// 4-1-2-3 pitch arrangement for both 4-3-3 and 4-1-2-3.
+String bestElevenLayoutFormation(String formation) {
+  final normalized = formation.trim();
+  final compact = normalized.replaceAll('-', '');
+  if (compact == '433' || compact == '4123') return '4-1-2-3';
+  return normalized;
+}
+
+/// Translates 4-3-3 API rows to their corresponding 4-1-2-3 pitch rows.
+String bestElevenLayoutSlotKey(String formation, String slotKey) {
+  if (formation.trim().replaceAll('-', '') != '433') return slotKey;
+  return switch (slotKey) {
+    '3:1' => '4:1',
+    '3:2' => '3:1',
+    '3:3' => '4:2',
+    '4:1' => '5:1',
+    '4:2' => '5:2',
+    '4:3' => '5:3',
+    _ => slotKey,
+  };
+}
+
 BestElevenFormationLayout buildFallbackBestElevenLayout(String formation) {
   final counts = formation
       .split('-')
@@ -248,7 +274,7 @@ BestElevenFormationLayout buildFallbackBestElevenLayout(String formation) {
       .where((count) => count > 0)
       .toList();
   if (counts.fold<int>(0, (sum, count) => sum + count) != 10) {
-    return bestElevenFormationLayouts['4-3-3']!;
+    return bestElevenFormationLayouts['4-1-2-3']!;
   }
 
   const bottom = 252.0;
