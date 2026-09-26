@@ -322,6 +322,15 @@ void main() {
     await tester.pump();
 
     expect(
+      tester
+          .widget<Padding>(
+            find.byKey(const ValueKey('analysis-best-eleven-section')),
+          )
+          .padding,
+      const EdgeInsets.fromLTRB(24, 32, 24, 0),
+    );
+
+    expect(
       find.byKey(const ValueKey('analysis-best-eleven-error')),
       findsOneWidget,
     );
