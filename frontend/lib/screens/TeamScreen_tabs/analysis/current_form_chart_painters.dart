@@ -4,12 +4,14 @@ class _CurrentFormGridPainter extends CustomPainter {
   const _CurrentFormGridPainter({
     required this.color,
     required this.topLineInset,
+    required this.divisionCount,
+    this.insetLineCount,
   });
 
   final Color color;
   final double topLineInset;
-
-  static const int _divisionCount = 8;
+  final int divisionCount;
+  final int? insetLineCount;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -17,16 +19,23 @@ class _CurrentFormGridPainter extends CustomPainter {
       ..color = color
       ..strokeWidth = 1;
 
-    for (var index = 0; index <= _divisionCount; index++) {
-      final y = size.height * index / _divisionCount;
-      final startX = index < 3 ? topLineInset : 0.0;
+    final effectiveInsetLineCount = (insetLineCount ?? 3).clamp(
+      0,
+      divisionCount + 1,
+    );
+    for (var index = 0; index <= divisionCount; index++) {
+      final y = size.height * index / divisionCount;
+      final startX = index < effectiveInsetLineCount ? topLineInset : 0.0;
       canvas.drawLine(Offset(startX, y), Offset(size.width, y), paint);
     }
   }
 
   @override
   bool shouldRepaint(_CurrentFormGridPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.topLineInset != topLineInset;
+      oldDelegate.color != color ||
+      oldDelegate.topLineInset != topLineInset ||
+      oldDelegate.divisionCount != divisionCount ||
+      oldDelegate.insetLineCount != insetLineCount;
 }
 
 class _CurrentFormSelectionPainter extends CustomPainter {

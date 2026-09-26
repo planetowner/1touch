@@ -52,41 +52,35 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final baselineOption = teamId == null || cachedOptions == null
         ? null
         : _baselineOption(cachedOptions, teamId);
-    final selectedOption = teamId == null || cachedOptions == null
-        ? null
-        : _defaultOption(cachedOptions, teamId);
-    final cachedComparison = selectedOption == null
+    final bootstrapOption = baselineOption;
+    final cachedComparison = bootstrapOption == null
         ? null
         : _repository.cachedComparisonFor(
             teamId!,
             seasonId: baselineOption?.seasonId,
-            compareTeamId: selectedOption.teamId,
-            compareSeasonId: selectedOption.seasonId,
+            compareTeamId: bootstrapOption.teamId,
+            compareSeasonId: bootstrapOption.seasonId,
           );
 
     _options = cachedOptions ?? const [];
     _baselineSeasonId = baselineOption?.seasonId;
-    _selectedOption = selectedOption;
+    _selectedOption = null;
     _comparison = cachedComparison;
     _selectedFormRound = null;
     _loadFailed = false;
     _isLoading = teamId != null &&
         (cachedOptions == null ||
-            (baselineOption != null &&
-                selectedOption != null &&
-                cachedComparison == null));
+            (bootstrapOption != null && cachedComparison == null));
 
     if (teamId == null) return;
     if (cachedOptions == null) {
       unawaited(_loadOptions(teamId, requestId));
-    } else if (baselineOption != null &&
-        selectedOption != null &&
-        cachedComparison == null) {
+    } else if (bootstrapOption != null && cachedComparison == null) {
       unawaited(
         _loadComparison(
           teamId,
-          baselineOption.seasonId,
-          selectedOption,
+          bootstrapOption.seasonId,
+          bootstrapOption,
           requestId,
         ),
       );
@@ -99,33 +93,31 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       if (!mounted || requestId != _loadRequestId) return;
 
       final baselineOption = _baselineOption(options, teamId);
-      final selectedOption = _defaultOption(options, teamId);
-      final cachedComparison = baselineOption == null || selectedOption == null
+      final bootstrapOption = baselineOption;
+      final cachedComparison = bootstrapOption == null
           ? null
           : _repository.cachedComparisonFor(
               teamId,
-              seasonId: baselineOption.seasonId,
-              compareTeamId: selectedOption.teamId,
-              compareSeasonId: selectedOption.seasonId,
+              seasonId: bootstrapOption.seasonId,
+              compareTeamId: bootstrapOption.teamId,
+              compareSeasonId: bootstrapOption.seasonId,
             );
       setState(() {
         _options = options;
         _baselineSeasonId = baselineOption?.seasonId;
-        _selectedOption = selectedOption;
+        _selectedOption = null;
         _comparison = cachedComparison;
-        _isLoading = baselineOption != null &&
-            selectedOption != null &&
-            cachedComparison == null;
+        _isLoading = bootstrapOption != null && cachedComparison == null;
       });
 
       if (baselineOption != null &&
-          selectedOption != null &&
+          bootstrapOption != null &&
           cachedComparison == null) {
         unawaited(
           _loadComparison(
             teamId,
             baselineOption.seasonId,
-            selectedOption,
+            bootstrapOption,
             requestId,
           ),
         );
@@ -164,19 +156,6 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         _loadFailed = true;
       });
     }
-  }
-
-  CurrentFormOption? _defaultOption(
-    List<CurrentFormOption> options,
-    int teamId,
-  ) {
-    final sameTeam =
-        options.where((option) => option.teamId == teamId).toList();
-    // Backend options are newest-first, so the second same-team row is the
-    // previous season while the full list remains available for comparison.
-    if (sameTeam.length > 1) return sameTeam[1];
-    if (sameTeam.isNotEmpty) return sameTeam.first;
-    return null;
   }
 
   CurrentFormOption? _baselineOption(
@@ -244,7 +223,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      key: const ValueKey('analysis-current-form-section'),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -305,14 +285,19 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       key: const ValueKey('analysis-form-filter'),
       value: selectedOption,
       selectedLabel: tr(context, label),
-      minWidth: 86,
-      matchMenuWidth: true,
+      width: 165,
+      maxMenuHeight: 272,
       backgroundColor: AppColors.of(context).subtleBackground,
       foregroundColor: colors.onSurface,
       textStyle: Body2_b.style,
       enabled: !_isLoading,
       onChanged: _changeComparison,
       options: _options
+          .where(
+            (option) =>
+                option.teamId != _teamId ||
+                option.seasonId != _baselineSeasonId,
+          )
           .map(
             (option) => AppDropdownOption<CurrentFormOption>(
               value: option,
@@ -354,6 +339,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final data = _comparison!;
     final current = data.current;
     final comparison = data.comparison;
+    final showComparison = _selectedOption != null;
     final currentTeam = teamRepository.findById(current.teamId);
     final comparisonTeam = teamRepository.findById(comparison.teamId);
     final comparisonColors = TeamComparisonColorResolver.resolve(
@@ -368,13 +354,16 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     );
     final teamPrimaryColor = comparisonColors.anchor;
     final comparisonColor = comparisonColors.opponent;
-    final maxRound = math.max(2, data.maxRound);
-    final maxPoints = math.max(5, ((data.maxPoints + 4) ~/ 5) * 5).toDouble();
+    const maxRound = 36;
+    const maximumPointsPerRound = 3.0;
+    const maxPoints = maxRound * maximumPointsPerRound;
+    const horizontalGridLineCount = 12;
     final selectedRound = _selectedFormRound;
     final currentPoint =
         selectedRound == null ? null : _pointAtRound(current, selectedRound);
-    final comparisonPoint =
-        selectedRound == null ? null : _pointAtRound(comparison, selectedRound);
+    final comparisonPoint = !showComparison || selectedRound == null
+        ? null
+        : _pointAtRound(comparison, selectedRound);
     final gridColor = colorScheme.onSurface.withValues(
       alpha: isDark ? 0.32 : 0.18,
     );
@@ -397,6 +386,77 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                   constraints.maxWidth,
                   constraints.maxHeight,
                 );
+                final pointsAxisLabel = tr(context, 'POINTS');
+                const pointsAxisLabelStyle = Body2_b.style;
+                final pointsAxisLabelPainter = TextPainter(
+                  text: TextSpan(
+                    text: pointsAxisLabel,
+                    style: pointsAxisLabelStyle,
+                  ),
+                  textDirection: Directionality.of(context),
+                  textScaler: MediaQuery.textScalerOf(context),
+                  maxLines: 1,
+                )..layout();
+                final gridCellHeight =
+                    chartSize.height / (horizontalGridLineCount - 1);
+                final isKorean =
+                    Localizations.localeOf(context).languageCode == 'ko';
+                final occupiedGridCells = isKorean
+                    ? 1
+                    : math.max(
+                        1,
+                        (pointsAxisLabelPainter.width / gridCellHeight).ceil(),
+                      );
+                final insetLineCount = math.min(
+                  horizontalGridLineCount,
+                  occupiedGridCells + 1,
+                );
+                var currentTooltipCenterY = currentPoint == null
+                    ? null
+                    : chartSize.height *
+                        (1 - currentPoint.cumulativePoints / maxPoints);
+                var comparisonTooltipCenterY = comparisonPoint == null
+                    ? null
+                    : chartSize.height *
+                        (1 - comparisonPoint.cumulativePoints / maxPoints);
+                if (currentPoint != null &&
+                    comparisonPoint != null &&
+                    currentTooltipCenterY != null &&
+                    comparisonTooltipCenterY != null) {
+                  const tooltipHeight = 32.0;
+                  const tooltipGap = 8.0;
+                  const minimumCenterSeparation = tooltipHeight + tooltipGap;
+                  final distance =
+                      (currentTooltipCenterY - comparisonTooltipCenterY).abs();
+                  if (distance < minimumCenterSeparation) {
+                    final midpoint =
+                        (currentTooltipCenterY + comparisonTooltipCenterY) / 2;
+                    var upperCenter = midpoint - minimumCenterSeparation / 2;
+                    var lowerCenter = midpoint + minimumCenterSeparation / 2;
+                    const minimumCenter = tooltipHeight / 2;
+                    final maximumCenter = chartSize.height - minimumCenter;
+                    if (upperCenter < minimumCenter) {
+                      lowerCenter += minimumCenter - upperCenter;
+                      upperCenter = minimumCenter;
+                    }
+                    if (lowerCenter > maximumCenter) {
+                      upperCenter -= lowerCenter - maximumCenter;
+                      lowerCenter = maximumCenter;
+                    }
+                    if (currentPoint.cumulativePoints >
+                        comparisonPoint.cumulativePoints) {
+                      currentTooltipCenterY = upperCenter;
+                      comparisonTooltipCenterY = lowerCenter;
+                    } else if (currentPoint.cumulativePoints <
+                        comparisonPoint.cumulativePoints) {
+                      currentTooltipCenterY = lowerCenter;
+                      comparisonTooltipCenterY = upperCenter;
+                    } else {
+                      comparisonTooltipCenterY = upperCenter;
+                      currentTooltipCenterY = lowerCenter;
+                    }
+                  }
+                }
                 return GestureDetector(
                   key: const ValueKey('analysis-current-form-chart'),
                   behavior: HitTestBehavior.opaque,
@@ -411,9 +471,14 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                     children: [
                       Positioned.fill(
                         child: CustomPaint(
+                          key: const ValueKey(
+                            'analysis-current-form-grid',
+                          ),
                           painter: _CurrentFormGridPainter(
                             color: gridColor,
-                            topLineInset: 68,
+                            topLineInset: 34,
+                            divisionCount: horizontalGridLineCount - 1,
+                            insetLineCount: insetLineCount,
                           ),
                         ),
                       ),
@@ -445,7 +510,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                                   const LineTouchData(enabled: false),
                               lineBarsData: [
                                 _formLine(current, teamPrimaryColor),
-                                _formLine(comparison, comparisonColor),
+                                if (showComparison)
+                                  _formLine(comparison, comparisonColor),
                               ],
                             ),
                           ),
@@ -471,12 +537,17 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                           ),
                         ),
                       Positioned(
-                        left: 4,
+                        left: 0,
                         top: 0,
                         child: RotatedBox(
-                          quarterTurns: 3,
-                          child:
-                              Text(tr(context, 'POINTS'), style: Body2_b.style),
+                          key: const ValueKey(
+                            'analysis-current-form-points-label',
+                          ),
+                          quarterTurns: 1,
+                          child: Text(
+                            pointsAxisLabel,
+                            style: pointsAxisLabelStyle,
+                          ),
                         ),
                       ),
                       if (selectedRound != null && comparisonPoint != null)
@@ -486,6 +557,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                           points: comparisonPoint.cumulativePoints,
                           maxRound: maxRound,
                           maxPoints: maxPoints,
+                          verticalCenter: comparisonTooltipCenterY,
                           placeBefore: true,
                           isDark: isDark,
                           key: const ValueKey(
@@ -499,6 +571,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                           points: currentPoint.cumulativePoints,
                           maxRound: maxRound,
                           maxPoints: maxPoints,
+                          verticalCenter: currentTooltipCenterY,
                           placeBefore: false,
                           isDark: isDark,
                           key: const ValueKey(
@@ -553,19 +626,78 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     required int points,
     required int maxRound,
     required double maxPoints,
+    required double? verticalCenter,
     required bool placeBefore,
     required bool isDark,
     required Key key,
   }) {
-    const tooltipWidth = 128.0;
-    const tooltipHeight = 40.0;
-    const gap = 10.0;
+    const pointRadius = 4.0;
+    const pointToTooltipGap = 4.0;
+    const anchorGap = pointRadius + pointToTooltipGap;
+    const horizontalTooltipAllowance = 24.0;
+    const contentGap = 8.0;
+    const tooltipPadding = 8.0;
+    final tooltipTextStyle = Eyebrow.style.copyWith(
+      fontWeight: FontWeight.w700,
+    );
+    final roundLabel = tr(context, 'Round {round}', {'round': round});
+    final pointsLabel = tr(context, '{points} Pts', {'points': points});
+    final textScaler = MediaQuery.textScalerOf(context);
+    final textDirection = Directionality.of(context);
+    final roundPainter = TextPainter(
+      text: TextSpan(text: roundLabel, style: tooltipTextStyle),
+      textDirection: textDirection,
+      textScaler: textScaler,
+      maxLines: 1,
+    )..layout();
+    final pointsPainter = TextPainter(
+      text: TextSpan(text: pointsLabel, style: tooltipTextStyle),
+      textDirection: textDirection,
+      textScaler: textScaler,
+      maxLines: 1,
+    )..layout();
+    final preferredTooltipWidth = math.min(
+      chartSize.width,
+      roundPainter.width +
+          pointsPainter.width +
+          contentGap +
+          tooltipPadding * 2 +
+          4,
+    );
+    final tooltipHeight = math.max(roundPainter.height, pointsPainter.height) +
+        tooltipPadding * 2 +
+        2;
     final anchorX = chartSize.width * round / maxRound;
     final anchorY = chartSize.height * (1 - points / maxPoints);
-    final left = (placeBefore ? anchorX - tooltipWidth - gap : anchorX + gap)
-        .clamp(0.0, math.max(0.0, chartSize.width - tooltipWidth))
-        .toDouble();
-    final top = (placeBefore ? anchorY - tooltipHeight - gap : anchorY + gap)
+    final availableLeft = math.max(
+      0.0,
+      anchorX - anchorGap + horizontalTooltipAllowance,
+    );
+    final availableRight = math.max(
+      0.0,
+      chartSize.width - anchorX - anchorGap + horizontalTooltipAllowance,
+    );
+    const fitTolerance = 0.01;
+    final fitsOnLeft = availableLeft + fitTolerance >= preferredTooltipWidth;
+    final fitsOnRight = availableRight + fitTolerance >= preferredTooltipWidth;
+    final minimumTooltipWidth =
+        pointsPainter.width + contentGap + tooltipPadding * 2 + 4;
+    var placeOnLeft = placeBefore;
+    if (placeOnLeft && !fitsOnLeft && fitsOnRight) {
+      placeOnLeft = false;
+    } else if (!placeOnLeft && !fitsOnRight && fitsOnLeft) {
+      placeOnLeft = true;
+    } else if (!fitsOnLeft && !fitsOnRight) {
+      final preferredSpace = placeOnLeft ? availableLeft : availableRight;
+      if (preferredSpace + fitTolerance < minimumTooltipWidth) {
+        placeOnLeft = availableLeft >= availableRight;
+      }
+    }
+    final availableWidth = placeOnLeft ? availableLeft : availableRight;
+    final tooltipWidth = math.min(preferredTooltipWidth, availableWidth);
+    final left =
+        placeOnLeft ? anchorX - anchorGap - tooltipWidth : anchorX + anchorGap;
+    final top = ((verticalCenter ?? anchorY) - tooltipHeight / 2)
         .clamp(0.0, math.max(0.0, chartSize.height - tooltipHeight))
         .toDouble();
     final foreground = isDark ? AppPalette.white : AppPalette.black;
@@ -577,10 +709,10 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
       height: tooltipHeight,
       child: Container(
         key: key,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: const EdgeInsets.all(tooltipPadding),
         decoration: BoxDecoration(
           color: isDark ? AppPalette.black : AppPalette.white,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(4),
           boxShadow: isDark
               ? null
               : const [
@@ -593,29 +725,24 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         ),
         child: Row(
           children: [
-            Expanded(
-              flex: 3,
+            Flexible(
               child: Text(
-                tr(context, 'Round {round}', {'round': round}),
+                roundLabel,
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.ellipsis,
-                style: Body2_b.style.copyWith(
+                style: tooltipTextStyle.copyWith(
                   color: foreground.withValues(alpha: 0.55),
                 ),
               ),
             ),
-            const SizedBox(width: 6),
-            Expanded(
-              flex: 2,
-              child: Text(
-                tr(context, '{points} Pts', {'points': points}),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.right,
-                style: Body2_b.style.copyWith(color: foreground),
-              ),
+            const SizedBox(width: contentGap),
+            Text(
+              pointsLabel,
+              maxLines: 1,
+              softWrap: false,
+              textAlign: TextAlign.right,
+              style: tooltipTextStyle.copyWith(color: foreground),
             ),
           ],
         ),
@@ -644,6 +771,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final appColors = AppColors.of(context);
     final current = _comparison!.current;
     final comparison = _comparison!.comparison;
+    final showComparison = _selectedOption != null;
     final currentTeam = teamRepository.findById(current.teamId);
     final comparisonTeam = teamRepository.findById(comparison.teamId);
     final comparisonColors = TeamComparisonColorResolver.resolve(
@@ -667,11 +795,12 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           runSpacing: 8,
           children: [
             _legendItem(comparisonColors.anchor, tr(context, 'CURRENT')),
-            _legendItem(
-              comparisonColors.opponent,
-              '${_compactSeasonLabel(comparison.seasonName)} '
-              '${(comparison.teamShortCode ?? teamNameLabel(context, comparison.teamId, comparison.teamName ?? '')).toUpperCase()}',
-            ),
+            if (showComparison)
+              _legendItem(
+                comparisonColors.opponent,
+                '${_compactSeasonLabel(comparison.seasonName)} '
+                '${(comparison.teamShortCode ?? teamNameLabel(context, comparison.teamId, comparison.teamName ?? '')).toUpperCase()}',
+              ),
           ],
         ),
       ),

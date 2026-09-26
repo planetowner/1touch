@@ -245,7 +245,7 @@ const appMessages = <String, MessageTranslations>{
   "Bets": (ko: "베팅", ja: "予想", zh: "竞猜"),
   "BET": (ko: "베팅", ja: "予想", zh: "竞猜"),
   "BETTING": (ko: "베팅", ja: "予想", zh: "竞猜"),
-  "POINTS": (ko: "포인트", ja: "ポイント", zh: "积分"),
+  "POINTS": (ko: "승점", ja: "ポイント", zh: "积分"),
   "SETTINGS": (ko: "설정", ja: "設定", zh: "设置"),
   "About": (ko: "앱 정보", ja: "アプリについて", zh: "关于"),
   "Contact": (ko: "문의", ja: "お問い合わせ", zh: "联系我们"),
@@ -702,6 +702,21 @@ const appMessages = <String, MessageTranslations>{
     ko: "리그\n우승 확률",
     ja: "リーグ\n優勝確率",
     zh: "联赛\n夺冠概率"
+  ),
+  "Chances to win\nUCL Trophy": (
+    ko: "UCL\n우승 확률",
+    ja: "UCL\n優勝確率",
+    zh: "UCL\n夺冠概率"
+  ),
+  "Chances to win\nUEL Trophy": (
+    ko: "UEL\n우승 확률",
+    ja: "UEL\n優勝確率",
+    zh: "UEL\n夺冠概率"
+  ),
+  "Chances to win\nUECL Trophy": (
+    ko: "UECL\n우승 확률",
+    ja: "UECL\n優勝確率",
+    zh: "UECL\n夺冠概率"
   ),
   "Chances to finish\nTOP 4": (
     ko: "4위 이내\n진입 확률",
@@ -1569,11 +1584,7 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Shot stopping": (ko: "선방", ja: "シュートストップ", zh: "扑救"),
   "Expected Goals": (ko: "기대 득점", ja: "期待得点", zh: "预期进球"),
-  "Expected back today": (
-    ko: "오늘 복귀할 예정이에요",
-    ja: "今日復帰する予定です",
-    zh: "预计今天复出"
-  ),
+  "Expected back today": (ko: "오늘 복귀할 예정이에요", ja: "今日復帰する予定です", zh: "预计今天复出"),
   "Expected back in 1 day": (
     ko: "1일 뒤 복귀할 예정이에요",
     ja: "1日後に復帰する予定です",
