@@ -57,7 +57,6 @@ class _TeamScreenState extends State<TeamScreen>
   late final ScrollController _scrollController;
   late final TabController _tabController;
   final GlobalKey<NestedScrollViewState> _nestedScrollKey = GlobalKey();
-  double _scrollOffset = 0.0;
 
   Map<String, dynamic>? team;
   bool isLoading = true;
@@ -77,12 +76,7 @@ class _TeamScreenState extends State<TeamScreen>
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController()
-      ..addListener(() {
-        setState(() {
-          _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
-        });
-      });
+    _scrollController = ScrollController();
 
     _tabController = TabController(length: 5, vsync: this)
       ..addListener(_handleTabChange);
@@ -288,7 +282,6 @@ class _TeamScreenState extends State<TeamScreen>
             ? '$leagueName ${ordinal(rank, locale: Localizations.localeOf(context))}'
             : leagueName;
     final displayedTeamId = team!['id'] as int;
-    final double opacityFactor = (_scrollOffset / 150.0).clamp(0.0, 1.0);
     final appBarForeground = colors.onSurface;
     final topInset = MediaQuery.paddingOf(context).top;
     const baseToolbarVerticalPadding =
@@ -301,7 +294,6 @@ class _TeamScreenState extends State<TeamScreen>
     final toolbarContentOffset = additionalTopSpace / 2;
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
       backgroundColor: pageBackground,
       body: Stack(
         children: [
@@ -311,22 +303,22 @@ class _TeamScreenState extends State<TeamScreen>
             child: NestedScrollView(
               key: _nestedScrollKey,
               controller: _scrollController,
-              floatHeaderSlivers: _selectedTabIndex != 1,
+              floatHeaderSlivers: false,
               physics: _isBracketInteracting
                   ? const NeverScrollableScrollPhysics()
                   : const AlwaysScrollableScrollPhysics(),
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 SliverAppBar(
                   automaticallyImplyLeading: false,
-                  backgroundColor: Color.lerp(
-                    Colors.transparent,
-                    pageBackground,
-                    opacityFactor,
-                  ),
+                  backgroundColor: pageBackground,
                   foregroundColor: appBarForeground,
                   elevation: 0,
-                  floating: true,
-                  snap: true,
+                  scrolledUnderElevation: 0,
+                  surfaceTintColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  forceMaterialTransparency: false,
+                  floating: false,
+                  snap: false,
                   pinned: false,
                   toolbarHeight: toolbarHeight,
                   flexibleSpace: ColoredBox(color: pageBackground),

@@ -485,7 +485,7 @@ class BettingParticipationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('1Touch', style: Body2_b.style),
+                Text('1Touch', style: Body2_b.style),
                 const SizedBox(height: 12),
                 if (market?.available == true)
                   BettingProbabilityBar(

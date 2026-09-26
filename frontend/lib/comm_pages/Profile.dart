@@ -452,9 +452,22 @@ class _ProfileState extends State<Profile> {
     final appColors = AppColors.of(context);
     final teams = _followingTeams;
     final favoriteId = _favoriteTeamId!;
+    final textScaler = MediaQuery.textScalerOf(context);
+    final teamNameStyle = Body1_b.style;
+    final competitionStyle = Eyebrow.style;
+    final requiredCardHeight = 32 +
+        80 +
+        8 +
+        textScaler.scale(teamNameStyle.fontSize!) *
+            (teamNameStyle.height ?? 1) +
+        4 +
+        textScaler.scale(competitionStyle.fontSize!) *
+            (competitionStyle.height ?? 1);
+    final cardHeight =
+        requiredCardHeight > 165 ? requiredCardHeight.ceilToDouble() : 165.0;
 
     return SizedBox(
-      height: 165,
+      height: cardHeight,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         scrollDirection: Axis.horizontal,
@@ -500,7 +513,7 @@ class _ProfileState extends State<Profile> {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
                             teamNameLabel(context, team.teamId, team.name),
-                            style: Body1_b.style,
+                            style: teamNameStyle,
                             maxLines: 1,
                             softWrap: false,
                             overflow: TextOverflow.ellipsis,
@@ -512,7 +525,7 @@ class _ProfileState extends State<Profile> {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
                             tr(context, label),
-                            style: Eyebrow.style,
+                            style: competitionStyle,
                             maxLines: 1,
                             softWrap: false,
                             overflow: TextOverflow.ellipsis,

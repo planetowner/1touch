@@ -387,7 +387,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                   constraints.maxHeight,
                 );
                 final pointsAxisLabel = tr(context, 'POINTS');
-                const pointsAxisLabelStyle = Body2_b.style;
+                final pointsAxisLabelStyle = Body2_b.style;
                 final pointsAxisLabelPainter = TextPainter(
                   text: TextSpan(
                     text: pointsAxisLabel,
