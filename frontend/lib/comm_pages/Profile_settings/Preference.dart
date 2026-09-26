@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 // import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'PreferenceDetails.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
@@ -13,6 +14,14 @@ class PreferencePage extends StatefulWidget {
 }
 
 class _PreferencePageState extends State<PreferencePage> {
+  static const Map<String, Locale> _languageOptions = {
+    'English': Locale('en'),
+    'Korean': Locale('ko'),
+    'Japanese': Locale('ja'),
+    'Chinese': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+  };
+
+  late String _language;
   String _unit = "Metric (cm)";
   String _currency = "USD (\$)";
 
@@ -24,6 +33,24 @@ class _PreferencePageState extends State<PreferencePage> {
     "KRW (₩)",
     "JPY (¥)"
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _language = _languageOptions.entries
+        .firstWhere(
+          (entry) =>
+              entry.value.languageCode ==
+              appLocaleController.value.languageCode,
+          orElse: () => _languageOptions.entries.first,
+        )
+        .key;
+  }
+
+  Future<void> _savePreferences() async {
+    await appLocaleController.setLocale(_languageOptions[_language]!);
+    if (mounted) Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +97,16 @@ class _PreferencePageState extends State<PreferencePage> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
-                      _buildPreferenceSection(tr(context, "LANGUAGE"),
-                          tr(context, "Follows your device language")),
+                      _buildPreferenceSection(
+                        tr(context, "LANGUAGE"),
+                        _language,
+                        onTap: () => _navigateAndSelect(
+                          tr(context, "Language"),
+                          _languageOptions.keys.toList(growable: false),
+                          _language,
+                          (value) => _language = value,
+                        ),
+                      ),
                       _buildDivider(),
                       const SizedBox(
                         height: 12,
@@ -105,9 +140,7 @@ class _PreferencePageState extends State<PreferencePage> {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: _savePreferences,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             Theme.of(context).colorScheme.onSurface,

@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as style;
 import 'package:onetouch/core/api_config.dart';
 import 'package:onetouch/core/theme_controller.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/SessionScreen.dart';
@@ -38,6 +39,7 @@ Future<void> runOneTouchApp({
 }) async {
   WidgetsFlutterBinding.ensureInitialized();
   await appThemeController.initialize();
+  await appLocaleController.initialize();
   await (restoreSession ?? auth_provider.authService.restoreSession)();
   runApp(const MyApp());
 }
@@ -374,26 +376,29 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: appThemeController,
-      builder: (context, themeMode, _) => MaterialApp.router(
-        locale: appLocaleOverride(),
-        supportedLocales: appSupportedLocales,
-        localizationsDelegates: appLocalizationDelegates,
-        localeListResolutionCallback: resolveAppLocale,
-        builder: (context, child) {
-          Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-          return ListenableBuilder(
-            listenable: authSession,
-            builder: (context, _) => FootballNamesLoader(
-              repository: _footballNames,
-              enabled: authSession.isAuthenticated,
-              child: child!,
-            ),
-          );
-        },
-        theme: style.whitetheme,
-        darkTheme: style.darktheme,
-        themeMode: themeMode,
-        routerConfig: _router,
+      builder: (context, themeMode, _) => ValueListenableBuilder<Locale>(
+        valueListenable: appLocaleController,
+        builder: (context, locale, _) => MaterialApp.router(
+          locale: locale,
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          localeListResolutionCallback: resolveAppLocale,
+          builder: (context, child) {
+            Intl.defaultLocale = Localizations.localeOf(context).languageCode;
+            return ListenableBuilder(
+              listenable: authSession,
+              builder: (context, _) => FootballNamesLoader(
+                repository: _footballNames,
+                enabled: authSession.isAuthenticated,
+                child: child!,
+              ),
+            );
+          },
+          theme: style.whitetheme,
+          darkTheme: style.darktheme,
+          themeMode: themeMode,
+          routerConfig: _router,
+        ),
       ),
     );
   }
