@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/standings/mock/mock_standing_repository.dart';
 import 'package:onetouch/models/fixture_detail.dart';
@@ -88,10 +89,6 @@ void main() {
   Color decorationColor(WidgetTester tester, Key key) =>
       boxDecoration(tester, key).color!;
 
-  Color decoratedBoxColor(WidgetTester tester, Key key) =>
-      (tester.widget<DecoratedBox>(find.byKey(key)).decoration as BoxDecoration)
-          .color!;
-
   testWidgets('upcoming match uses responsive light surfaces', (tester) async {
     await pumpMatch(
       tester,
@@ -113,18 +110,24 @@ void main() {
     expect(backIcon.color, app_style.AppPalette.black);
     expect(
       decorationColor(tester, const ValueKey('match-tab-0')),
-      Colors.transparent,
+      app_style.AppPalette.white,
     );
     expect(
       decorationColor(tester, const ValueKey('match-tab-1')),
-      Colors.transparent,
+      app_style.AppPalette.lightGreyBox,
     );
+    final firstTabRect = tester.getRect(
+      find.byKey(const ValueKey('match-tab-0')),
+    );
+    final secondTabRect = tester.getRect(
+      find.byKey(const ValueKey('match-tab-1')),
+    );
+    expect(firstTabRect.height, 34);
+    expect(secondTabRect.height, 34);
+    expect(secondTabRect.left - firstTabRect.right, 8);
     expect(
-      decoratedBoxColor(
-        tester,
-        const ValueKey('match-tab-indicator-surface'),
-      ),
-      app_style.AppPalette.lightModeDarkGrey,
+      boxDecoration(tester, const ValueKey('match-tab-0')).borderRadius,
+      BorderRadius.circular(16),
     );
     expect(
       tester.widget<Text>(find.text('MATCH PREVIEW')).style!.color,
@@ -134,9 +137,58 @@ void main() {
       tester.widget<Text>(find.text('HEAD TO HEAD')).style!.color,
       app_style.AppPalette.black,
     );
+    final homeTeam = tester.getRect(
+      find.byKey(const ValueKey('match-preview-home-team')),
+    );
+    final awayTeam = tester.getRect(
+      find.byKey(const ValueKey('match-preview-away-team')),
+    );
+    expect(homeTeam.left, 24);
+    expect(homeTeam.width, 72);
+    expect(awayTeam.width, 72);
+    expect(awayTeam.right, 320 - 24);
     expect(
       decorationColor(tester, const ValueKey('match-betting-card')),
       app_style.AppPalette.white,
+    );
+    expect(
+      tester
+          .widget<Container>(
+            find.byKey(const ValueKey('match-betting-card')),
+          )
+          .padding,
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    );
+    final bettingCard = tester.getRect(
+      find.byKey(const ValueKey('match-betting-card')),
+    );
+    final bettingHomeTeam = tester.getRect(
+      find.byKey(const ValueKey('match-betting-home-team')),
+    );
+    final bettingAwayTeam = tester.getRect(
+      find.byKey(const ValueKey('match-betting-away-team')),
+    );
+    expect(bettingHomeTeam.left - bettingCard.left, 16);
+    expect(bettingHomeTeam.width, 40);
+    expect(bettingAwayTeam.width, 40);
+    expect(bettingCard.right - bettingAwayTeam.right, 16);
+    final outcomeGroup = tester.getRect(
+      find.byKey(const ValueKey('match-betting-outcome-group')),
+    );
+    final winBox = tester.getRect(
+      find.byKey(const ValueKey('match-betting-odds-box-0')),
+    );
+    final drawBox = tester.getRect(
+      find.byKey(const ValueKey('match-betting-odds-box-1')),
+    );
+    final lossBox = tester.getRect(
+      find.byKey(const ValueKey('match-betting-odds-box-2')),
+    );
+    expect(drawBox.left - winBox.right, 8);
+    expect(lossBox.left - drawBox.right, 8);
+    expect(
+      outcomeGroup.left - bettingHomeTeam.right,
+      closeTo(bettingAwayTeam.left - outcomeGroup.right, 0.01),
     );
     expect(
       boxDecoration(
@@ -149,6 +201,24 @@ void main() {
       decorationColor(tester, const ValueKey('match-preview-standing-header')),
       app_style.AppPalette.white,
     );
+    expect(
+      decorationColor(tester, const ValueKey('match-preview-standing-body')),
+      app_style.AppPalette.lightGreyBox,
+    );
+    expect(
+      tester
+          .widget<Container>(
+            find.byKey(const ValueKey('match-preview-standing-body')),
+          )
+          .padding,
+      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+    );
+    final standingClubHeader = tester.widget<Text>(
+      find.byKey(const ValueKey('match-preview-standing-club-header')),
+    );
+    expect(standingClubHeader.style!.fontSize, Body2.style.fontSize);
+    expect(standingClubHeader.style!.fontWeight, Body2.style.fontWeight);
+    expect(standingClubHeader.style!.color, app_style.AppPalette.black);
 
     await tester.ensureVisible(find.text('PLACE A BET'));
     await tester.pump();
@@ -177,11 +247,11 @@ void main() {
     await tester.pump();
     expect(
       decorationColor(tester, const ValueKey('match-tab-0')),
-      Colors.transparent,
+      app_style.AppPalette.lightGreyBox,
     );
     expect(
       decorationColor(tester, const ValueKey('match-tab-1')),
-      Colors.transparent,
+      app_style.AppPalette.white,
     );
     expect(
       decorationColor(tester, const ValueKey('match-h2h-wdl-card')),
@@ -260,6 +330,41 @@ void main() {
         const ValueKey('match-betting-card'),
       ).boxShadow,
       isEmpty,
+    );
+    expect(
+      decorationColor(tester, const ValueKey('match-tab-0')),
+      app_style.AppPalette.white,
+    );
+    expect(
+      decorationColor(tester, const ValueKey('match-tab-1')),
+      app_style.AppPalette.lightGrey,
+    );
+    expect(
+      decorationColor(tester, const ValueKey('match-preview-standing-header')),
+      app_style.AppPalette.lightGrey,
+    );
+    expect(
+      decorationColor(tester, const ValueKey('match-preview-standing-body')),
+      app_style.AppPalette.darkGrey,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(
+              const ValueKey('match-preview-standing-club-header'),
+            ),
+          )
+          .style!
+          .color,
+      app_style.AppPalette.white,
+    );
+    expect(
+      tester.widget<Text>(find.text('MATCH PREVIEW')).style!.color,
+      app_style.AppPalette.black,
+    );
+    expect(
+      tester.widget<Text>(find.text('HEAD TO HEAD')).style!.color,
+      app_style.AppPalette.white,
     );
     expect(tester.takeException(), isNull);
   });
