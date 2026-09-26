@@ -12,6 +12,7 @@ import 'package:onetouch/core/theme_controller.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
@@ -239,9 +240,16 @@ class MainScreen extends StatelessWidget {
       bottomNavigationBar: OneTouchBottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
+          void notifyRootScreen() {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              mainTabActions.select(index);
+            });
+          }
+
           // 팀 탭은 홈에서 현재 조회 중인 팀으로 열어요.
           if (index == 1) {
             openTeamPage(context, currentUserPreferences.viewedTeamId.value);
+            notifyRootScreen();
             return; // Exit after handling the special case
           }
 
@@ -251,8 +259,9 @@ class MainScreen extends StatelessWidget {
           // is already the current one.
           navigationShell.goBranch(
             index,
-            initialLocation: index == navigationShell.currentIndex,
+            initialLocation: true,
           );
+          notifyRootScreen();
         },
       ),
     );

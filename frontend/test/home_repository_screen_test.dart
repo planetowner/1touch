@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/home/home_repository.dart';
@@ -80,6 +81,69 @@ void main() {
     await tester.pump();
 
     expect(find.text('Alpha FC'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('pull refresh reloads Home data and news', (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledHomeRepository();
+    final newsRepository = _RecordingNewsRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: newsRepository,
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    final indicator =
+        tester.widget<RefreshIndicator>(find.byType(RefreshIndicator));
+    final refresh = indicator.onRefresh();
+    await tester.pump();
+
+    expect(repository.calls, hasLength(2));
+    expect(newsRepository.loadCalls, 2);
+
+    repository.calls.last.completer.complete(_homeData());
+    await refresh;
+    await tester.pumpAndSettle();
+
+    expect(find.text('Alpha FC'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Home tab action returns the root screen to the top',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledHomeRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    final scrollView =
+        tester.widget<CustomScrollView>(find.byType(CustomScrollView));
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -900));
+    await tester.pumpAndSettle();
+    expect(scrollView.controller!.offset, greaterThan(0));
+
+    mainTabActions.select(0);
+    await tester.pumpAndSettle();
+
+    expect(scrollView.controller!.offset, 0);
     expect(tester.takeException(), isNull);
   });
 
