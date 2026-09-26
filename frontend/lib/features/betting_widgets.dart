@@ -1,11 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/features/betting/betting_controller.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/betting.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+
+List<Color> resolveBettingBarColors({
+  required Team homeTeam,
+  required Team awayTeam,
+  required Color background,
+  int? anchorTeamId,
+}) {
+  final anchorIsAway = anchorTeamId == awayTeam.teamId;
+  final anchorTeam = anchorIsAway ? awayTeam : homeTeam;
+  final opponentTeam = anchorIsAway ? homeTeam : awayTeam;
+  final comparisonColors = TeamComparisonColorResolver.resolve(
+    anchorTeamName: anchorTeam.name,
+    anchorPrimaryFallback: Color(anchorTeam.primaryColor),
+    opponentTeamName: opponentTeam.name,
+    opponentPrimaryFallback: Color(opponentTeam.primaryColor),
+    background: background,
+  );
+  final homeColor =
+      anchorIsAway ? comparisonColors.opponent : comparisonColors.anchor;
+  final awayColor =
+      anchorIsAway ? comparisonColors.anchor : comparisonColors.opponent;
+  return [homeColor, Color.lerp(homeColor, awayColor, 0.5)!, awayColor];
+}
 
 class MatchBettingSection extends StatelessWidget {
   const MatchBettingSection({
@@ -13,10 +37,12 @@ class MatchBettingSection extends StatelessWidget {
     required this.controller,
     required this.homeTeam,
     required this.awayTeam,
+    this.anchorTeamId,
   });
   final BettingController controller;
   final Team homeTeam;
   final Team awayTeam;
+  final int? anchorTeamId;
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
@@ -39,6 +65,7 @@ class MatchBettingSection extends StatelessWidget {
                     homeTeam: homeTeam,
                     awayTeam: awayTeam,
                     options: market!.options,
+                    anchorTeamId: anchorTeamId,
                   ),
                 if (market == null && controller.loading)
                   const Padding(
@@ -87,6 +114,7 @@ class MatchBettingSection extends StatelessWidget {
                                 controller: controller,
                                 homeTeam: homeTeam,
                                 awayTeam: awayTeam,
+                                anchorTeamId: anchorTeamId,
                               ),
                             ),
                   ),
@@ -138,10 +166,12 @@ class BettingFlowModal extends StatefulWidget {
     required this.controller,
     required this.homeTeam,
     required this.awayTeam,
+    this.anchorTeamId,
   });
   final BettingController controller;
   final Team homeTeam;
   final Team awayTeam;
+  final int? anchorTeamId;
   @override
   State<BettingFlowModal> createState() => _BettingFlowModalState();
 }
@@ -232,6 +262,7 @@ class _BettingFlowModalState extends State<BettingFlowModal> {
                         homeTeam: widget.homeTeam,
                         awayTeam: widget.awayTeam,
                         options: market.options,
+                        anchorTeamId: widget.anchorTeamId,
                       ),
                       const SizedBox(height: 20),
                       if (!_choosingAmount)
@@ -401,89 +432,102 @@ class MatchStatsHeader extends StatelessWidget {
     required this.homeTeam,
     required this.awayTeam,
     required this.options,
+    this.anchorTeamId,
   });
   final Team homeTeam;
   final Team awayTeam;
   final List<BettingOption> options;
+  final int? anchorTeamId;
+
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          Row(
-            children: [
-              SizedBox(
-                key: const ValueKey('match-betting-home-team'),
-                width: 40,
-                child: _LabeledTeam(team: homeTeam),
-              ),
-              const Spacer(),
-              Row(
-                key: const ValueKey('match-betting-outcome-group'),
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var index = 0; index < options.length; index++) ...[
-                    if (index > 0) const SizedBox(width: 8),
-                    Column(
-                      children: [
-                        Container(
-                          key: ValueKey('match-betting-odds-box-$index'),
-                          width: 48,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppPalette.black,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              '${options[index].decimalOdds.toStringAsFixed(2)}×',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+  Widget build(BuildContext context) {
+    final barColors = resolveBettingBarColors(
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      background: _surface(context),
+      anchorTeamId: anchorTeamId,
+    );
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            SizedBox(
+              key: const ValueKey('match-betting-home-team'),
+              width: 40,
+              child: _LabeledTeam(team: homeTeam),
+            ),
+            const Spacer(),
+            Row(
+              key: const ValueKey('match-betting-outcome-group'),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var index = 0; index < options.length; index++) ...[
+                  if (index > 0) const SizedBox(width: 8),
+                  Column(
+                    children: [
+                      Container(
+                        key: ValueKey('match-betting-odds-box-$index'),
+                        width: 48,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppPalette.black,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${options[index].decimalOdds.toStringAsFixed(2)}×',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 5),
-                        Text(
-                          ['W', 'D', 'L'][options[index].outcome.index],
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-              const Spacer(),
-              SizedBox(
-                key: const ValueKey('match-betting-away-team'),
-                width: 40,
-                child: _LabeledTeam(team: awayTeam),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          if (options.isNotEmpty)
-            BettingProbabilityBar(
-              values: options.map((option) => option.probability).toList(),
-            ),
-          const SizedBox(height: 8),
-          Row(
-            children: BetOutcome.values
-                .map(
-                  (outcome) => Expanded(
-                    child: Text(
-                      _label(context, outcome, homeTeam, awayTeam),
-                      textAlign: TextAlign.center,
-                      style: Body2.style,
-                    ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        ['W', 'D', 'L'][options[index].outcome.index],
+                      ),
+                    ],
                   ),
-                )
-                .toList(),
+                ],
+              ],
+            ),
+            const Spacer(),
+            SizedBox(
+              key: const ValueKey('match-betting-away-team'),
+              width: 40,
+              child: _LabeledTeam(team: awayTeam),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        if (options.isNotEmpty)
+          BettingProbabilityBar(
+            values: options.map((option) => option.probability).toList(),
+            colors: barColors,
           ),
-        ],
-      );
+        const SizedBox(height: 8),
+        Row(
+          children: BetOutcome.values
+              .map(
+                (outcome) => Expanded(
+                  child: Text(
+                    _label(context, outcome, homeTeam, awayTeam),
+                    textAlign: TextAlign.center,
+                    style: Body2.style,
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
 }
 
 class BettingParticipationCard extends StatelessWidget {
