@@ -352,9 +352,17 @@ class _StandingState extends State<Standing> {
             Align(
                 key: const ValueKey('overview-standing-mp-header'),
                 alignment: Alignment.center,
-                child: Text(tr(context, "MP"),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    tr(context, "MP"),
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface))),
+                        color: Theme.of(context).colorScheme.onSurface),
+                  ),
+                )),
             const SizedBox.shrink(),
             Align(
                 key: const ValueKey('overview-standing-win-header'),
