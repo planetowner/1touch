@@ -174,6 +174,70 @@ void main() {
     expect(find.text('Official channel · Latest'), findsOneWidget);
   });
 
+  testWidgets('news title starts 48px below the final highlight card',
+      (tester) async {
+    await _setScreenSize(tester, const Size(430, 932));
+    final repository = _ControlledHomeRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    final newsTitle = find.byKey(const ValueKey('home-news-title'));
+    await tester.scrollUntilVisible(
+      newsTitle,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    final highlightCard = find.byKey(
+      const ValueKey('https://www.youtube.com/watch?v=official-0'),
+    );
+    expect(
+      tester.getTopLeft(newsTitle).dy - tester.getBottomLeft(highlightCard).dy,
+      48,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('calendar starts 16px below its title row', (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledHomeRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    final titleRow = find.byKey(
+      const ValueKey('home-calendar-title-row'),
+    );
+    final calendarCard = find.byKey(
+      const ValueKey('fixture-calendar-card'),
+    );
+
+    expect(
+      tester.getTopLeft(calendarCard).dy - tester.getBottomLeft(titleRow).dy,
+      16,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('reloads calendar months and ignores a stale response',
       (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
