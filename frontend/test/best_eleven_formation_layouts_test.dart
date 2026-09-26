@@ -30,15 +30,26 @@ void main() {
     }
   });
 
-  test('4-3-3 keeps the staggered Figma coordinates', () {
-    final layout = bestElevenFormationLayouts['4-3-3']!;
+  test('4-3-3 uses the 4-1-2-3 layout without becoming a layout code', () {
+    expect(bestElevenFormationLayouts.containsKey('4-3-3'), isFalse);
+    expect(bestElevenLayoutFormation('4-3-3'), '4-1-2-3');
+    expect(bestElevenLayoutFormation('433'), '4-1-2-3');
+    expect(bestElevenLayoutFormation('4-1-2-3'), '4-1-2-3');
+
+    final layout = bestElevenFormationLayouts['4-1-2-3']!;
 
     expect(layout.positionForSlot('1:1'), const Offset(173, 340));
     expect(layout.positionForSlot('2:1'), const Offset(48, 220));
     expect(layout.positionForSlot('2:2'), const Offset(132, 252));
-    expect(layout.positionForSlot('3:2'), const Offset(173, 152));
-    expect(layout.positionForSlot('4:1'), const Offset(48, 72));
-    expect(layout.positionForSlot('4:2'), const Offset(173, 44));
+    expect(layout.positionForSlot('3:1'), const Offset(173, 192));
+    expect(layout.positionForSlot('4:1'), const Offset(124, 128));
+    expect(layout.positionForSlot('5:1'), const Offset(48, 72));
+    expect(layout.positionForSlot('5:2'), const Offset(173, 44));
+
+    expect(bestElevenLayoutSlotKey('4-3-3', '3:1'), '4:1');
+    expect(bestElevenLayoutSlotKey('4-3-3', '3:2'), '3:1');
+    expect(bestElevenLayoutSlotKey('4-3-3', '3:3'), '4:2');
+    expect(bestElevenLayoutSlotKey('4-3-3', '4:2'), '5:2');
   });
 
   test('unknown valid formations receive a complete fallback layout', () {
@@ -108,7 +119,9 @@ void main() {
     expect(relativeCircleCenter('1:1'), const Offset(173, 340));
     expect(relativeCircleCenter('2:1'), const Offset(48, 220));
     expect(relativeCircleCenter('2:2'), const Offset(132, 252));
-    expect(relativeCircleCenter('3:2'), const Offset(173, 152));
+    expect(relativeCircleCenter('3:1'), const Offset(124, 128));
+    expect(relativeCircleCenter('3:2'), const Offset(173, 192));
+    expect(relativeCircleCenter('3:3'), const Offset(222, 128));
     expect(relativeCircleCenter('4:2'), const Offset(173, 44));
     expect(tester.takeException(), isNull);
   });
