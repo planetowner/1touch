@@ -55,6 +55,7 @@ class AppDropdown<T> extends StatefulWidget {
     this.chevronKey,
     this.width,
     this.minWidth,
+    this.maxMenuHeight,
     this.matchMenuWidth = false,
     this.enabled = true,
     this.backgroundColor,
@@ -72,6 +73,7 @@ class AppDropdown<T> extends StatefulWidget {
   final Key? chevronKey;
   final double? width;
   final double? minWidth;
+  final double? maxMenuHeight;
   final bool matchMenuWidth;
   final bool enabled;
   final Color? backgroundColor;
@@ -153,7 +155,11 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         borderRadius: BorderRadius.circular(AppDropdownTokens.radius),
       ),
       menuPadding: AppDropdownTokens.menuPadding,
-      constraints: BoxConstraints.tightFor(width: menuWidth),
+      constraints: BoxConstraints(
+        minWidth: menuWidth,
+        maxWidth: menuWidth,
+        maxHeight: widget.maxMenuHeight ?? double.infinity,
+      ),
       position: RelativeRect.fromLTRB(
         left,
         top,
