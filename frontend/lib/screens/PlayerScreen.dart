@@ -28,7 +28,8 @@ class Players extends StatefulWidget {
 
 class _PlayersState extends State<Players> {
   late ScrollController _scrollController;
-  int _refreshEpoch = 0;
+  final _rankingKey = GlobalKey<PlayerRankingPanelState>();
+  final _watchKey = GlobalKey<PlayersToWatchState>();
 
   @override
   void initState() {
@@ -44,9 +45,11 @@ class _PlayersState extends State<Players> {
 
   Future<void> _refreshPlayers() async {
     final controller = widget.followingController ?? playerFollowingController;
-    await controller.load();
-    if (!mounted) return;
-    setState(() => _refreshEpoch += 1);
+    await Future.wait<void>([
+      controller.load(),
+      if (_rankingKey.currentState case final ranking?) ranking.refresh(),
+      if (_watchKey.currentState case final watch?) watch.refresh(),
+    ]);
   }
 
   @override
@@ -133,7 +136,6 @@ class _PlayersState extends State<Players> {
               ],
             ),
             SliverToBoxAdapter(
-              key: ValueKey('players-refresh-$_refreshEpoch'),
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -146,6 +148,7 @@ class _PlayersState extends State<Players> {
                           searchRepository: widget.detailRepository),
                       const SizedBox(height: 32),
                       PlayerRankingPanel(
+                          key: _rankingKey,
                           repository:
                               widget.repository ?? playerDirectoryRepository,
                           detailRepository: widget.detailRepository,
@@ -153,6 +156,7 @@ class _PlayersState extends State<Players> {
                               playerFollowingController),
                       const SizedBox(height: 48),
                       PlayersToWatch(
+                          key: _watchKey,
                           repository:
                               widget.repository ?? playerDirectoryRepository),
                       const SizedBox(height: 144),
