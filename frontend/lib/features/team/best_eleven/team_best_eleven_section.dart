@@ -10,6 +10,7 @@ import 'package:onetouch/data/best_eleven/best_eleven_repository.dart';
 import 'package:onetouch/data/best_eleven/best_eleven_repository_provider.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/models/team_best_eleven.dart';
+import 'package:onetouch/features/team/best_eleven/best_eleven_formation_layouts.dart';
 
 import 'package:onetouch/l10n/app_localizations.dart';
 part 'best_eleven_formation_filter.dart';
@@ -203,7 +204,11 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: BestElevenPitch(teamId: widget.teamId!, players: players),
+      child: BestElevenPitch(
+        teamId: widget.teamId!,
+        formation: _lineup!.formation,
+        players: players,
+      ),
     );
   }
 
@@ -211,7 +216,8 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      key: const ValueKey('analysis-best-eleven-section'),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -264,6 +270,7 @@ class _TeamBestElevenSectionState extends State<TeamBestElevenSection> {
           else
             BestElevenPitch(
               teamId: widget.teamId!,
+              formation: _lineup!.formation,
               players: _lineup!.players,
             ),
         ],
