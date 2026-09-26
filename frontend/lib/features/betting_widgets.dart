@@ -545,115 +545,156 @@ class BettingParticipationCard extends StatelessWidget {
         animation: controller,
         builder: (context, _) {
           final market = controller.market;
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          return Container(
-            key: const ValueKey('match-h2h-bets-card'),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isDark ? AppPalette.lightGrey : AppPalette.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: appCardShadows(context),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('1Touch', style: Body2_b.style),
-                const SizedBox(height: 12),
-                if (market?.available == true)
-                  BettingProbabilityBar(
-                    values: market!.options
-                        .map((option) => option.probability)
-                        .toList(),
-                    colors: barColors,
-                  )
-                else
-                  Text(controller.loading
-                      ? tr(context, 'Loading…')
-                      : tr(context, 'Prediction unavailable.')),
-                const SizedBox(height: 20),
-                Text(tr(context, 'USER'), style: Body2_b.style),
-                const SizedBox(height: 12),
-                if (market?.userProbabilities != null)
-                  BettingProbabilityBar(
-                    values: market!.userProbabilities!,
-                    colors: barColors,
-                    selected:
-                        ['open', 'won', 'lost'].contains(market.bet?.status)
-                            ? market.bet?.outcome
-                            : null,
-                  )
-                else
-                  Text(
-                    controller.loading
-                        ? tr(context, 'Loading…')
-                        : market == null
-                            ? tr(context, 'Unable to load bets.')
-                            : tr(context, 'No bets yet.'),
-                  ),
-                if (market != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    tr(context, '{count} participants · Home / Draw / Away',
-                        {'count': market.participantCount}),
-                    style: Body2.style,
-                  ),
-                ],
-                if (market?.bet != null)
-                  _BetReceipt(
-                    bet: market!.bet!,
-                    label: [
-                      'Home Win',
-                      'Draw',
-                      'Away Win'
-                    ][market.bet!.outcome.index],
-                  ),
-                if (market?.bet?.isOpen == true && !controller.beforeKickoff)
-                  TextButton(
-                    onPressed: controller.loading ? null : controller.load,
-                    child: Text(tr(context, 'REFRESH RESULT')),
-                  ),
-                if (controller.error != null)
-                  TextButton(
-                    onPressed: controller.load,
-                    child: Text(tr(context, 'RETRY')),
-                  ),
-              ],
-            ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                key: const ValueKey('match-h2h-bets-card'),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.of(context).cardBackground,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: appCardShadows(context),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('1Touch', style: Body2_b.style),
+                    const SizedBox(height: 12),
+                    if (market?.available == true)
+                      BettingProbabilityBar(
+                        values: market!.options
+                            .map((option) => option.probability)
+                            .toList(),
+                        colors: barColors,
+                      )
+                    else
+                      Text(controller.loading
+                          ? tr(context, 'Loading…')
+                          : tr(context, 'Prediction unavailable.')),
+                    const SizedBox(height: 20),
+                    Text(tr(context, 'USER'), style: Body2_b.style),
+                    const SizedBox(height: 12),
+                    if (market?.userProbabilities != null)
+                      BettingProbabilityBar(
+                        values: market!.userProbabilities!,
+                        colors: barColors,
+                        selected:
+                            ['open', 'won', 'lost'].contains(market.bet?.status)
+                                ? market.bet?.outcome
+                                : null,
+                      )
+                    else
+                      Text(
+                        controller.loading
+                            ? tr(context, 'Loading…')
+                            : market == null
+                                ? tr(context, 'Unable to load bets.')
+                                : tr(context, 'No bets yet.'),
+                      ),
+                    if (market != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        tr(context, '{count} participants · Home / Draw / Away',
+                            {'count': market.participantCount}),
+                        style: Body2.style,
+                      ),
+                    ],
+                    if (market?.bet?.isOpen == true &&
+                        !controller.beforeKickoff)
+                      TextButton(
+                        onPressed: controller.loading ? null : controller.load,
+                        child: Text(tr(context, 'REFRESH RESULT')),
+                      ),
+                    if (controller.error != null)
+                      TextButton(
+                        onPressed: controller.load,
+                        child: Text(tr(context, 'RETRY')),
+                      ),
+                  ],
+                ),
+              ),
+              if (market?.bet != null)
+                _BetReceipt(
+                  key: const ValueKey('match-h2h-bet-receipt'),
+                  bet: market!.bet!,
+                  label: [
+                    'Home Win',
+                    'Draw',
+                    'Away Win'
+                  ][market.bet!.outcome.index],
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  textAlign: TextAlign.left,
+                  compact: true,
+                ),
+            ],
           );
         },
       );
 }
 
 class _BetReceipt extends StatelessWidget {
-  const _BetReceipt({required this.bet, required this.label});
+  const _BetReceipt({
+    super.key,
+    required this.bet,
+    required this.label,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.textAlign = TextAlign.center,
+    this.compact = false,
+  });
+
   final FixtureBet bet;
   final String label;
+  final CrossAxisAlignment crossAxisAlignment;
+  final TextAlign textAlign;
+  final bool compact;
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context) {
+    if (compact) {
+      return Padding(
         padding: const EdgeInsets.only(top: 16),
-        child: Column(
-          children: [
-            Text(
-              '${tr(context, label)} · ${tr(context, '{points} pts', {
-                    'points': bet.stake
-                  })}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text.rich(
+              _compactBetReceipt(context, bet),
+              maxLines: 1,
+              textAlign: TextAlign.left,
             ),
-            const SizedBox(height: 4),
-            Text(
-              bet.isOpen
-                  ? tr(
-                      context,
-                      'Return if correct: {points} pts (includes stake)',
-                      {'points': bet.potentialReturn})
-                  : _settled(context, bet),
-              textAlign: TextAlign.center,
-            ),
-          ],
+          ),
         ),
       );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: crossAxisAlignment,
+        children: [
+          Text(
+            '${tr(context, label)} · ${tr(context, '{points} pts', {
+                  'points': bet.stake
+                })}',
+            textAlign: textAlign,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            bet.isOpen
+                ? tr(
+                    context,
+                    'Return if correct: {points} pts (includes stake)',
+                    {'points': bet.potentialReturn})
+                : _settled(context, bet),
+            textAlign: textAlign,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class BettingProbabilityBar extends StatelessWidget {
@@ -915,3 +956,64 @@ String _settled(BuildContext context, FixtureBet bet) => switch (bet.status) {
         tr(context, 'Refunded · {points} pts returned', {'points': bet.payout}),
       _ => tr(context, 'Waiting for the result'),
     };
+
+TextSpan _compactBetReceipt(BuildContext context, FixtureBet bet) {
+  if (bet.isOpen) {
+    return TextSpan(
+      text: tr(
+        context,
+        'You used {stake} pts · {return} pts if correct',
+        {'stake': bet.stake, 'return': bet.potentialReturn},
+      ),
+      style: Body1.style,
+    );
+  }
+
+  if (bet.status == 'won') {
+    return _pointEmphasis(
+      context,
+      'You earned {points} from this bet! 🎉',
+      bet.payout,
+    );
+  }
+
+  if (bet.status == 'lost') {
+    return TextSpan(
+      text: tr(context, 'You earned no points from this bet.'),
+      style: Body1.style,
+    );
+  }
+
+  if (bet.status == 'refunded' || bet.status == 'cancelled') {
+    return _pointEmphasis(
+      context,
+      '{points} were refunded from this bet.',
+      bet.payout,
+    );
+  }
+
+  return TextSpan(
+    text: tr(context, 'Waiting for the result'),
+    style: Body1.style,
+  );
+}
+
+TextSpan _pointEmphasis(
+  BuildContext context,
+  String message,
+  int points,
+) {
+  final pointText = tr(context, '{points} points', {'points': points});
+  final sentence = tr(context, message, {'points': pointText});
+  final pointStart = sentence.indexOf(pointText);
+  if (pointStart < 0) return TextSpan(text: sentence, style: Body1.style);
+
+  return TextSpan(
+    style: Body1.style,
+    children: [
+      TextSpan(text: sentence.substring(0, pointStart)),
+      TextSpan(text: pointText, style: Body1_b.style),
+      TextSpan(text: sentence.substring(pointStart + pointText.length)),
+    ],
+  );
+}

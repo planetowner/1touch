@@ -10,6 +10,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/features/betting_widgets.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/screens/MatchScreen_tabs/H2H.dart';
 
@@ -117,6 +118,77 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('upcoming H2H keeps the Match Preview betting colors',
+      (tester) async {
+    await _setSize(tester, const Size(430, 932));
+    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+    currentUserPreferences.favoriteTeamId.value = 83;
+    addTearDown(
+      () => currentUserPreferences.favoriteTeamId.value = originalFavorite,
+    );
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => const [],
+    );
+    final betting = fakeBettingController(_rayoGetafeFixture.fixtureId);
+    await betting.load();
+
+    Future<void> pumpH2H(ThemeData theme) => tester.pumpWidget(
+          MaterialApp(
+            theme: theme,
+            darkTheme: theme,
+            themeMode: theme.brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            home: Scaffold(
+              body: H2HTab(
+                fixture: _rayoGetafeFixture,
+                fixtureRepository: repository,
+                bettingController: betting,
+              ),
+            ),
+          ),
+        );
+
+    await pumpH2H(ThemeData.light());
+    await tester.pump();
+
+    var renderedBar = tester.widget<BettingProbabilityBar>(
+      find.descendant(
+        of: find.byKey(const ValueKey('match-h2h-bets-card')),
+        matching: find.byType(BettingProbabilityBar),
+      ),
+    );
+    expect(renderedBar.colors!.first, const Color(0xFFCDA23F));
+    expect(renderedBar.colors!.last, const Color(0xFF0D6BCB));
+    expect(
+      renderedBar.colors![1],
+      Color.lerp(renderedBar.colors!.first, renderedBar.colors!.last, 0.5),
+    );
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await pumpH2H(ThemeData.dark());
+    await tester.pump();
+
+    expect(
+      Theme.of(
+        tester.element(find.byKey(const ValueKey('match-h2h-bets-card'))),
+      ).brightness,
+      Brightness.dark,
+    );
+    renderedBar = tester.widget<BettingProbabilityBar>(
+      find.descendant(
+        of: find.byKey(const ValueKey('match-h2h-bets-card')),
+        matching: find.byType(BettingProbabilityBar),
+      ),
+    );
+    expect(renderedBar.colors!.first, const Color(0xFFCDA23F));
+    expect(renderedBar.colors!.last, const Color(0xFF0D6BCB));
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    betting.dispose();
+  });
+
   testWidgets('falls back to the selected match home team perspective',
       (tester) async {
     await _setSize(tester, const Size(430, 932));
@@ -144,6 +216,29 @@ void main() {
           .data,
       '1',
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('puts the opponent before the match limit in Korean',
+      (tester) async {
+    await _setSize(tester, const Size(430, 932));
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => [_pastFixture()],
+    );
+
+    await tester.pumpWidget(
+      _testApp(repository: repository, locale: const Locale('ko')),
+    );
+    await tester.pump();
+
+    final logo = find.byKey(const ValueKey('match-h2h-against-team-19'));
+    final label = find.byKey(const ValueKey('match-h2h-against-label'));
+    final dropdown = find.byKey(const ValueKey('match-h2h-limit-dropdown'));
+
+    expect(find.text('상대로'), findsOneWidget);
+    expect(find.text('최근 5경기'), findsOneWidget);
+    expect(tester.getCenter(logo).dx, lessThan(tester.getCenter(label).dx));
+    expect(tester.getCenter(label).dx, lessThan(tester.getCenter(dropdown).dx));
     expect(tester.takeException(), isNull);
   });
 
@@ -302,10 +397,16 @@ Future<void> _setSize(WidgetTester tester, Size size) async {
   addTearDown(() => tester.binding.setSurfaceSize(null));
 }
 
-Widget _testApp({required _RecordingFixtureRepository repository}) {
+Widget _testApp({
+  required _RecordingFixtureRepository repository,
+  Locale? locale,
+}) {
   final betting = fakeBettingController(_selectedFixture.fixtureId);
   addTearDown(betting.dispose);
   return MaterialApp(
+    locale: locale,
+    supportedLocales: appSupportedLocales,
+    localizationsDelegates: appLocalizationDelegates,
     home: Scaffold(
       body: H2HTab(
         bettingController: betting,
@@ -326,6 +427,18 @@ const _selectedFixture = Fixture(
   roundName: '10',
   status: FixtureStatus.upcoming,
   startingAt: '2026-09-20 15:00:00',
+);
+
+const _rayoGetafeFixture = Fixture(
+  fixtureId: 1002,
+  seasonId: 25583,
+  competitionId: 8,
+  homeTeamId: 377,
+  awayTeamId: 106,
+  competitionType: CompetitionType.league,
+  roundName: '11',
+  status: FixtureStatus.upcoming,
+  startingAt: '2026-09-27 15:00:00',
 );
 
 Fixture _pastFixture({int homeScore = 2}) {
