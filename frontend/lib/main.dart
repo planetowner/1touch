@@ -403,8 +403,8 @@ class MyApp extends StatelessWidget {
               ),
             );
           },
-          theme: style.whitetheme,
-          darkTheme: style.darktheme,
+          theme: style.lightThemeForLocale(locale),
+          darkTheme: style.darkThemeForLocale(locale),
           themeMode: themeMode,
           routerConfig: _router,
         ),

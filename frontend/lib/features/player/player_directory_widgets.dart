@@ -601,7 +601,7 @@ class _WatchCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('##', style: Heading2.style),
+                            Text('##', style: Heading2.style),
                             Row(
                               children: [
                                 Icon(

@@ -112,7 +112,15 @@ const _lightColors = AppColors(
   onBrand: AppPalette.black,
 );
 
-ThemeData _buildTheme(Brightness brightness, AppColors colors) {
+List<String>? _fontFamilyFallbackFor(Locale locale) =>
+    locale.languageCode == 'ko' ? const ['Pretendard'] : null;
+
+ThemeData _buildTheme(
+  Brightness brightness,
+  AppColors colors, {
+  String fontFamily = 'Archivo',
+  List<String>? fontFamilyFallback,
+}) {
   final isDark = brightness == Brightness.dark;
   final foreground = isDark ? AppPalette.white : AppPalette.black;
   final inverseForeground = isDark ? AppPalette.black : AppPalette.white;
@@ -131,7 +139,8 @@ ThemeData _buildTheme(Brightness brightness, AppColors colors) {
     useMaterial3: true,
     brightness: brightness,
     colorScheme: colorScheme,
-    fontFamily: 'Archivo',
+    fontFamily: fontFamily,
+    fontFamilyFallback: fontFamilyFallback,
   );
 
   return base.copyWith(
@@ -143,7 +152,8 @@ ThemeData _buildTheme(Brightness brightness, AppColors colors) {
     textTheme: base.textTheme.apply(
       bodyColor: foreground,
       displayColor: foreground,
-      fontFamily: 'Archivo',
+      fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: colors.pageBackground,
@@ -184,3 +194,15 @@ ThemeData _buildTheme(Brightness brightness, AppColors colors) {
 
 final ThemeData darktheme = _buildTheme(Brightness.dark, _darkColors);
 final ThemeData whitetheme = _buildTheme(Brightness.light, _lightColors);
+
+ThemeData darkThemeForLocale(Locale locale) => _buildTheme(
+      Brightness.dark,
+      _darkColors,
+      fontFamilyFallback: _fontFamilyFallbackFor(locale),
+    );
+
+ThemeData lightThemeForLocale(Locale locale) => _buildTheme(
+      Brightness.light,
+      _lightColors,
+      fontFamilyFallback: _fontFamilyFallbackFor(locale),
+    );
