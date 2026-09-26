@@ -86,7 +86,7 @@ class _SelectFavoriteTeamsScreenState extends State<SelectFavoriteTeamsScreen> {
   // --- OVERLAY LOGIC ---
 
   double _leagueDropdownMenuWidth(BuildContext context) {
-    const style = Body2_b.style;
+    final style = Body2_b.style;
     final textScaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
     var longestLabel = 0.0;
