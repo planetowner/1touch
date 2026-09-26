@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/data/players/player_directory_repository.dart';
+import 'package:onetouch/models/following_player.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'support/player_detail_fixture.dart';
@@ -84,6 +88,46 @@ void main() {
     expect(find.byKey(const ValueKey('favorite-player-number-badge')),
         findsNothing);
     expect(find.byIcon(Icons.help_outline), findsNWidgets(2));
+  });
+
+  testWidgets('pull refresh waits for every Players API request',
+      (tester) async {
+    final directory = _ControlledRefreshDirectoryRepository();
+    final following = _ControlledRefreshFollowingRepository();
+    await pump(tester, repository: directory, following: following);
+
+    final indicator =
+        tester.widget<RefreshIndicator>(find.byType(RefreshIndicator));
+    var completed = false;
+    final refresh = indicator.onRefresh().whenComplete(() => completed = true);
+    await tester.pump();
+
+    expect(directory.rankingCalls, 2);
+    expect(directory.watchCalls, 2);
+    expect(following.loadCalls, 2);
+    expect(completed, isFalse);
+
+    following.refreshCompleter.complete(const []);
+    await tester.pump();
+    expect(completed, isFalse);
+
+    directory.rankingRefreshCompleter.complete(
+      const PlayerRankingPage(
+        season: '2026/2027',
+        leagues: [],
+        items: [],
+        total: 0,
+      ),
+    );
+    await tester.pump();
+    expect(completed, isFalse);
+
+    directory.watchRefreshCompleter.complete(const []);
+    await refresh;
+    await tester.pumpAndSettle();
+
+    expect(completed, isTrue);
+    expect(tester.takeException(), isNull);
   });
   testWidgets(
       'league and position filters reach the API and unavailable league stays empty',
@@ -187,4 +231,49 @@ void main() {
     expect(find.text('Ranked player 6'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _ControlledRefreshDirectoryRepository
+    extends FakePlayerDirectoryRepository {
+  int rankingCalls = 0;
+  int watchCalls = 0;
+  final rankingRefreshCompleter = Completer<PlayerRankingPage>();
+  final watchRefreshCompleter = Completer<List<PlayerWatch>>();
+
+  @override
+  Future<PlayerRankingPage> ranking({
+    int? league,
+    String? position,
+    int offset = 0,
+  }) {
+    rankingCalls += 1;
+    if (rankingCalls == 1) {
+      return super.ranking(
+        league: league,
+        position: position,
+        offset: offset,
+      );
+    }
+    return rankingRefreshCompleter.future;
+  }
+
+  @override
+  Future<List<PlayerWatch>> watch() {
+    watchCalls += 1;
+    if (watchCalls == 1) return super.watch();
+    return watchRefreshCompleter.future;
+  }
+}
+
+class _ControlledRefreshFollowingRepository
+    extends FakeFollowingPlayersRepository {
+  int loadCalls = 0;
+  final refreshCompleter = Completer<List<FollowingPlayer>>();
+
+  @override
+  Future<List<FollowingPlayer>> load() {
+    loadCalls += 1;
+    if (loadCalls == 1) return super.load();
+    return refreshCompleter.future;
+  }
 }

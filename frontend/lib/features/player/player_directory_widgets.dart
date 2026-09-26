@@ -176,10 +176,10 @@ class PlayerRankingPanel extends StatefulWidget {
   final String? position;
 
   @override
-  State<PlayerRankingPanel> createState() => _PlayerRankingPanelState();
+  State<PlayerRankingPanel> createState() => PlayerRankingPanelState();
 }
 
-class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
+class PlayerRankingPanelState extends State<PlayerRankingPanel> {
   late int? _league = widget.league;
   late String? _position = widget.position;
   PlayerRankingPage? _page;
@@ -216,6 +216,8 @@ class _PlayerRankingPanelState extends State<PlayerRankingPanel> {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  Future<void> refresh() => _load();
 
   Future<void> _filters() async {
     final selection = await showModalBottomSheet<PlayerRankingFilterSelection>(
@@ -472,12 +474,24 @@ class PlayersToWatch extends StatefulWidget {
   final PlayerDirectoryRepository repository;
 
   @override
-  State<PlayersToWatch> createState() => _PlayersToWatchState();
+  State<PlayersToWatch> createState() => PlayersToWatchState();
 }
 
-class _PlayersToWatchState extends State<PlayersToWatch> {
+class PlayersToWatchState extends State<PlayersToWatch> {
   late Future<List<PlayerWatch>> _request =
       Future.sync(widget.repository.watch);
+
+  Future<void> refresh() async {
+    final request = Future.sync(widget.repository.watch);
+    setState(() {
+      _request = request;
+    });
+    try {
+      await request;
+    } on Object {
+      // FutureBuilder renders the retry state for this request.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
