@@ -896,7 +896,7 @@ const appMessages = <String, MessageTranslations>{
   "Lose": (ko: "패", ja: "負け", zh: "负"),
   "Home Win": (ko: "홈 승", ja: "ホーム勝利", zh: "主胜"),
   "Away Win": (ko: "원정 승", ja: "アウェイ勝利", zh: "客胜"),
-  "AGAINST": (ko: "상대", ja: "対戦相手", zh: "对手"),
+  "AGAINST": (ko: "상대로", ja: "対戦相手", zh: "对手"),
   "LINEUP": (ko: "선발 명단", ja: "スターティングメンバー", zh: "首发阵容"),
   "COACH": (ko: "감독", ja: "監督", zh: "主教练"),
   "SUBSTITUTES": (ko: "교체 선수", ja: "控え選手", zh: "替补球员"),

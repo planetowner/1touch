@@ -10,8 +10,10 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/standings/api/api_standing_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
+import 'package:onetouch/features/betting_widgets.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -115,6 +117,31 @@ void main() {
     expect(
       find.byKey(const ValueKey('match-preview-h2h-card')),
       findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('anchors betting colors to a participating favorite team',
+      (tester) async {
+    final originalFavorite = currentUserPreferences.favoriteTeamId.value;
+    currentUserPreferences.favoriteTeamId.value = 19;
+    addTearDown(
+      () => currentUserPreferences.favoriteTeamId.value = originalFavorite,
+    );
+    final repository = _RecordingFixtureRepository(
+      loader: (_, __) async => const [],
+    );
+
+    await tester.pumpWidget(
+      _testApp(fixture: _firstSelectedFixture, repository: repository),
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<MatchBettingSection>(find.byType(MatchBettingSection))
+          .anchorTeamId,
+      19,
     );
     expect(tester.takeException(), isNull);
   });

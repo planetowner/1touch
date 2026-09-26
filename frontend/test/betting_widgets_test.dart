@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/data/teams/mock/mock_team_repository.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
@@ -38,6 +39,57 @@ void main() {
       expect(controller.market!.wallet.balance, 900);
     },
   );
+
+  testWidgets('keeps the anchor primary and advances a similar opponent color',
+      (tester) async {
+    final repository = FakeBettingRepository();
+    final controller = BettingController(fixtureId: 1, repository: repository);
+    await controller.load();
+    final teams = MockTeamRepository();
+    final home = teams.requireById(83);
+    final away = teams.requireById(459);
+    final homePalette = TeamComparisonColorResolver.paletteFor(
+      teamName: home.name,
+      primaryFallback: Color(home.primaryColor),
+    );
+    final awayPalette = TeamComparisonColorResolver.paletteFor(
+      teamName: away.name,
+      primaryFallback: Color(away.primaryColor),
+    );
+
+    Future<void> pumpWithAnchor(int anchorTeamId) => tester.pumpWidget(
+          MaterialApp(
+            theme: whitetheme,
+            home: Scaffold(
+              body: MatchBettingSection(
+                controller: controller,
+                homeTeam: home,
+                awayTeam: away,
+                anchorTeamId: anchorTeamId,
+              ),
+            ),
+          ),
+        );
+
+    await pumpWithAnchor(home.teamId);
+    var colors = tester
+        .widget<BettingProbabilityBar>(find.byType(BettingProbabilityBar))
+        .colors!;
+    expect(colors.first, homePalette.primary);
+    expect(colors.last, awayPalette.secondary);
+    expect(colors[1], Color.lerp(colors.first, colors.last, 0.5));
+
+    await pumpWithAnchor(away.teamId);
+    colors = tester
+        .widget<BettingProbabilityBar>(find.byType(BettingProbabilityBar))
+        .colors!;
+    expect(colors.first, homePalette.secondary);
+    expect(colors.last, awayPalette.primary);
+    expect(colors[1], Color.lerp(colors.first, colors.last, 0.5));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets('place edit cancel at $size', (tester) async {

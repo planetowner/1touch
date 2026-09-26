@@ -4,6 +4,7 @@ import 'package:onetouch/l10n/date_labels.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
@@ -85,8 +86,20 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   @override
   void initState() {
     super.initState();
+    currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
     _loadLatestHeadToHead();
     _loadCurrentStandings();
+  }
+
+  @override
+  void dispose() {
+    currentUserPreferences.favoriteTeamId
+        .removeListener(_handleFavoriteChanged);
+    super.dispose();
+  }
+
+  void _handleFavoriteChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -159,6 +172,11 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   Widget build(BuildContext context) {
     final homeTeam = fixtureHomeTeam(widget.fixture, teamRepository);
     final awayTeam = fixtureAwayTeam(widget.fixture, teamRepository);
+    final favoriteTeamId = currentUserPreferences.favoriteTeamId.value;
+    final bettingAnchorTeamId =
+        favoriteTeamId == homeTeam.teamId || favoriteTeamId == awayTeam.teamId
+            ? favoriteTeamId
+            : homeTeam.teamId;
 
     return SingleChildScrollView(
       child: Column(
@@ -181,6 +199,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             controller: widget.bettingController,
             homeTeam: homeTeam,
             awayTeam: awayTeam,
+            anchorTeamId: bettingAnchorTeamId,
           ),
 
           const SizedBox(height: 48),
@@ -403,7 +422,6 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   Widget _buildStandingTable() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final appColors = AppColors.of(context);
     final headerSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final bodySurface = isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox;
     final league = competitionRepository.findById(widget.fixture.competitionId);
