@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_navigation.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/data/standings/standing_repository.dart';
 import 'package:onetouch/data/fixtures/fixture_repository.dart';
@@ -55,6 +56,7 @@ class _TeamScreenState extends State<TeamScreen>
     with SingleTickerProviderStateMixin {
   late final ScrollController _scrollController;
   late final TabController _tabController;
+  final GlobalKey<NestedScrollViewState> _nestedScrollKey = GlobalKey();
   double _scrollOffset = 0.0;
 
   Map<String, dynamic>? team;
@@ -66,6 +68,7 @@ class _TeamScreenState extends State<TeamScreen>
   bool _isBracketInteracting = false;
   bool _isRevealingTeamAppBar = false;
   int _selectedTabIndex = 0;
+  final List<int> _tabRefreshEpochs = List<int>.filled(5, 0);
 
   TeamOverviewRepository get _teamOverviewRepository =>
       widget.teamOverviewRepository ??
@@ -83,6 +86,7 @@ class _TeamScreenState extends State<TeamScreen>
 
     _tabController = TabController(length: 5, vsync: this)
       ..addListener(_handleTabChange);
+    mainTabActions.addListener(_handleMainTabAction);
 
     _startOverviewLoad(updateState: false);
   }
@@ -90,6 +94,33 @@ class _TeamScreenState extends State<TeamScreen>
   void _handleTabChange() {
     if (_selectedTabIndex == _tabController.index) return;
     setState(() => _selectedTabIndex = _tabController.index);
+  }
+
+  void _handleMainTabAction() {
+    if (mainTabActions.tabIndex != 1) return;
+    if (_tabController.index != 0) {
+      _tabController.animateTo(0, duration: Duration.zero);
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showRootAppBar();
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  void _showRootAppBar() {
+    final innerController = _nestedScrollKey.currentState?.innerController;
+    if (innerController?.hasClients ?? false) {
+      innerController!.jumpTo(innerController.position.minScrollExtent);
+    }
+    if (!mounted || !_scrollController.hasClients) return;
+    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+  }
+
+  Future<void> _refreshTeam() async {
+    final requestId = ++_loadRequestId;
+    final selectedTab = _selectedTabIndex;
+    setState(() => _tabRefreshEpochs[selectedTab] += 1);
+    await _loadOverview(widget.teamId, requestId);
   }
 
   @override
@@ -198,6 +229,7 @@ class _TeamScreenState extends State<TeamScreen>
 
   @override
   void dispose() {
+    mainTabActions.removeListener(_handleMainTabAction);
     _scrollController.dispose();
     _tabController
       ..removeListener(_handleTabChange)
@@ -273,210 +305,234 @@ class _TeamScreenState extends State<TeamScreen>
       backgroundColor: pageBackground,
       body: Stack(
         children: [
-          NestedScrollView(
-            controller: _scrollController,
-            floatHeaderSlivers: _selectedTabIndex != 1,
-            physics: _isBracketInteracting
-                ? const NeverScrollableScrollPhysics()
-                : null,
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                backgroundColor: Color.lerp(
-                  Colors.transparent,
-                  pageBackground,
-                  opacityFactor,
-                ),
-                foregroundColor: appBarForeground,
-                elevation: 0,
-                floating: true,
-                snap: true,
-                pinned: false,
-                toolbarHeight: toolbarHeight,
-                flexibleSpace: ColoredBox(color: pageBackground),
-                bottom: PreferredSize(
-                  key: const ValueKey('team-tab-header'),
-                  preferredSize: const Size.fromHeight(kTextTabBarHeight + 8),
-                  child: ColoredBox(
-                    color: pageBackground,
-                    child: SizedBox(
-                      height: kTextTabBarHeight + 8,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: TabBar(
-                          controller: _tabController,
-                          isScrollable: true,
-                          tabAlignment: TabAlignment.start,
-                          labelColor: colors.onSurface,
-                          unselectedLabelColor: appColors.mutedForeground,
-                          indicatorColor: colors.onSurface,
-                          labelStyle: Heading5.style,
-                          unselectedLabelStyle: Heading5.style,
-                          indicatorSize: TabBarIndicatorSize.label,
-                          dividerColor: Colors.transparent,
-                          padding: const EdgeInsets.only(left: 8),
-                          indicator: UnderlineTabIndicator(
-                            borderSide: BorderSide(
-                              color: colors.onSurface,
-                              width: 2,
+          RefreshIndicator(
+            onRefresh: _refreshTeam,
+            notificationPredicate: (notification) => notification.depth <= 1,
+            child: NestedScrollView(
+              key: _nestedScrollKey,
+              controller: _scrollController,
+              floatHeaderSlivers: _selectedTabIndex != 1,
+              physics: _isBracketInteracting
+                  ? const NeverScrollableScrollPhysics()
+                  : const AlwaysScrollableScrollPhysics(),
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  backgroundColor: Color.lerp(
+                    Colors.transparent,
+                    pageBackground,
+                    opacityFactor,
+                  ),
+                  foregroundColor: appBarForeground,
+                  elevation: 0,
+                  floating: true,
+                  snap: true,
+                  pinned: false,
+                  toolbarHeight: toolbarHeight,
+                  flexibleSpace: ColoredBox(color: pageBackground),
+                  bottom: PreferredSize(
+                    key: const ValueKey('team-tab-header'),
+                    preferredSize: const Size.fromHeight(kTextTabBarHeight + 8),
+                    child: ColoredBox(
+                      color: pageBackground,
+                      child: SizedBox(
+                        height: kTextTabBarHeight + 8,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: TabBar(
+                            controller: _tabController,
+                            isScrollable: true,
+                            tabAlignment: TabAlignment.start,
+                            labelColor: colors.onSurface,
+                            unselectedLabelColor: appColors.mutedForeground,
+                            indicatorColor: colors.onSurface,
+                            labelStyle: Heading5.style,
+                            unselectedLabelStyle: Heading5.style,
+                            indicatorSize: TabBarIndicatorSize.label,
+                            dividerColor: Colors.transparent,
+                            padding: const EdgeInsets.only(left: 8),
+                            indicator: UnderlineTabIndicator(
+                              borderSide: BorderSide(
+                                color: colors.onSurface,
+                                width: 2,
+                              ),
                             ),
+                            tabs: [
+                              Tab(text: teamScreenLabel(context, "Overview")),
+                              Tab(text: teamScreenLabel(context, "Matches")),
+                              Tab(text: tr(context, "Standing")),
+                              Tab(text: tr(context, "Squad")),
+                              Tab(text: tr(context, "Analysis")),
+                            ],
                           ),
-                          tabs: [
-                            Tab(text: teamScreenLabel(context, "Overview")),
-                            Tab(text: teamScreenLabel(context, "Matches")),
-                            Tab(text: tr(context, "Standing")),
-                            Tab(text: tr(context, "Squad")),
-                            Tab(text: tr(context, "Analysis")),
-                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-                title: Transform.translate(
-                  offset: Offset(0, toolbarContentOffset),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: isTeamPageSupported(displayedTeamId)
-                              ? () => openTeamPage(context, displayedTeamId)
-                              : null,
-                          child: SizedBox.square(
-                            key: const ValueKey('team-app-bar-logo'),
-                            dimension: _teamAppBarLogoSize,
-                            child: Image.network(
-                              team?['logo'],
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => teamLogoFallback(
-                                team!['id'] as int,
-                                size: 48,
+                  title: Transform.translate(
+                    offset: Offset(0, toolbarContentOffset),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: isTeamPageSupported(displayedTeamId)
+                                ? () => openTeamPage(context, displayedTeamId)
+                                : null,
+                            child: SizedBox.square(
+                              key: const ValueKey('team-app-bar-logo'),
+                              dimension: _teamAppBarLogoSize,
+                              child: Image.network(
+                                team?['logo'],
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => teamLogoFallback(
+                                  team!['id'] as int,
+                                  size: 48,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                key: const ValueKey('team-app-bar-name'),
-                                // '1. Fußballclub Heidenheim 1846 e.V',
-                                teamNameLabel(context, widget.teamId,
-                                    team?['name'] as String? ?? ''),
-                                style: Heading4.style
-                                    .copyWith(color: appBarForeground),
-                                maxLines: 1, // Ensure it stays on one line
-                                overflow: TextOverflow
-                                    .ellipsis, // Now this will work correctly
-                              ),
-                              if (positionLabel.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  key: const ValueKey('team-context-label'),
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        positionLabel,
-                                        style: Body2.style
-                                            .copyWith(color: appBarForeground),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    if (team!['rankChange'] case final int delta
-                                        when delta != 0) ...[
-                                      Icon(
-                                        delta > 0
-                                            ? Icons.arrow_drop_up
-                                            : Icons.arrow_drop_down,
-                                        key: const ValueKey(
-                                          'team-rank-change-icon',
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  key: const ValueKey('team-app-bar-name'),
+                                  // '1. Fußballclub Heidenheim 1846 e.V',
+                                  teamNameLabel(context, widget.teamId,
+                                      team?['name'] as String? ?? ''),
+                                  style: Heading4.style
+                                      .copyWith(color: appBarForeground),
+                                  maxLines: 1, // Ensure it stays on one line
+                                  overflow: TextOverflow
+                                      .ellipsis, // Now this will work correctly
+                                ),
+                                if (positionLabel.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    key: const ValueKey('team-context-label'),
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          positionLabel,
+                                          style: Body2.style.copyWith(
+                                              color: appBarForeground),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        size: 16,
-                                        color: delta > 0
-                                            ? Colors.green
-                                            : Colors.red,
                                       ),
-                                      Text(
-                                        '${delta.abs()}',
-                                        key: const ValueKey(
-                                          'team-rank-change-value',
-                                        ),
-                                        style: Eyebrow.style.copyWith(
+                                      if (team!['rankChange']
+                                          case final int delta
+                                          when delta != 0) ...[
+                                        Icon(
+                                          delta > 0
+                                              ? Icons.arrow_drop_up
+                                              : Icons.arrow_drop_down,
+                                          key: const ValueKey(
+                                            'team-rank-change-icon',
+                                          ),
+                                          size: 16,
                                           color: delta > 0
                                               ? Colors.green
                                               : Colors.red,
                                         ),
-                                      ),
+                                        Text(
+                                          '${delta.abs()}',
+                                          key: const ValueKey(
+                                            'team-rank-change-value',
+                                          ),
+                                          style: Eyebrow.style.copyWith(
+                                            color: delta > 0
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        ),
+                                      ],
                                     ],
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ],
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                actions: [
-                  Transform.translate(
-                    offset: Offset(0, toolbarContentOffset),
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: IconButton(
-                        key: const Key('team-search-button'),
-                        onPressed: () => context.push('/search'),
-                        icon: Icon(
-                          Icons.search,
-                          size: 32,
-                          color: appBarForeground,
-                        ),
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
-            body: TabBarView(
-              controller: _tabController,
-              physics: _isBracketInteracting
-                  ? const NeverScrollableScrollPhysics()
-                  : null,
-              children: [
-                OverviewTab(
-                  team: team,
-                  onStandingCompetitionSelected: _openStandingCompetition,
-                  standingRepository: widget.standingRepository,
-                ),
-                MatchesTab(
-                  team: team,
-                  fixtureRepository: widget.fixtureRepository,
-                  onTopOverscroll: _revealTeamAppBar,
-                ),
-                StandingTab(
-                  team: team,
-                  regularStandingRepository: widget.standingRepository,
-                  xgStandingRepository: widget.xgStandingRepository,
-                  requestedCompetitionId: _requestedStandingCompetitionId,
-                  selectionRequestId: _standingSelectionRequestId,
-                  onBracketInteractionChanged: (isInteracting) {
-                    if (_isBracketInteracting == isInteracting) return;
-                    setState(() => _isBracketInteracting = isInteracting);
-                  },
-                ),
-                SquadTab(team: team),
-                AnalysisTab(
-                  team: team,
-                  repository: widget.teamAttributeRepository,
-                  probabilityRepository: widget.teamProbabilityRepository,
-                  currentFormRepository: widget.currentFormRepository,
+                  actions: [
+                    Transform.translate(
+                      offset: Offset(0, toolbarContentOffset),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: IconButton(
+                          key: const Key('team-search-button'),
+                          onPressed: () => context.push('/search'),
+                          icon: Icon(
+                            Icons.search,
+                            size: 32,
+                            color: appBarForeground,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
+              body: TabBarView(
+                controller: _tabController,
+                physics: _isBracketInteracting
+                    ? const NeverScrollableScrollPhysics()
+                    : null,
+                children: [
+                  OverviewTab(
+                    key: ValueKey(
+                      'team-overview-refresh-${_tabRefreshEpochs[0]}',
+                    ),
+                    team: team,
+                    onStandingCompetitionSelected: _openStandingCompetition,
+                    standingRepository: widget.standingRepository,
+                  ),
+                  MatchesTab(
+                    key: ValueKey(
+                      'team-matches-refresh-${_tabRefreshEpochs[1]}',
+                    ),
+                    team: team,
+                    fixtureRepository: widget.fixtureRepository,
+                    onTopOverscroll: _revealTeamAppBar,
+                  ),
+                  StandingTab(
+                    key: ValueKey(
+                      'team-standing-refresh-${_tabRefreshEpochs[2]}',
+                    ),
+                    team: team,
+                    regularStandingRepository: widget.standingRepository,
+                    xgStandingRepository: widget.xgStandingRepository,
+                    requestedCompetitionId: _requestedStandingCompetitionId,
+                    selectionRequestId: _standingSelectionRequestId,
+                    onBracketInteractionChanged: (isInteracting) {
+                      if (_isBracketInteracting == isInteracting) return;
+                      setState(() => _isBracketInteracting = isInteracting);
+                    },
+                  ),
+                  SquadTab(
+                    key: ValueKey(
+                      'team-squad-refresh-${_tabRefreshEpochs[3]}',
+                    ),
+                    team: team,
+                  ),
+                  AnalysisTab(
+                    key: ValueKey(
+                      'team-analysis-refresh-${_tabRefreshEpochs[4]}',
+                    ),
+                    team: team,
+                    repository: widget.teamAttributeRepository,
+                    probabilityRepository: widget.teamProbabilityRepository,
+                    currentFormRepository: widget.currentFormRepository,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
