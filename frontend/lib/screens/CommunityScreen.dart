@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/community/community_repository_provider.dart'
@@ -44,6 +45,7 @@ class _CommunityState extends State<Community>
     with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
   late TabController _tabController;
+  final GlobalKey<NestedScrollViewState> _nestedScrollKey = GlobalKey();
   double _scrollOffset = 0.0;
   int _selectedTabIndex = 0;
   PostSort _selectedPostSort = PostSort.newest;
@@ -82,7 +84,36 @@ class _CommunityState extends State<Community>
 
     _tabController = TabController(
         length: CommunityPostTabHeader.categories.length, vsync: this);
+    mainTabActions.addListener(_handleMainTabAction);
   }
+
+  void _handleMainTabAction() {
+    if (mainTabActions.tabIndex != 3) return;
+    if (_selectedTabIndex != 0) {
+      _selectedTabIndex = 0;
+      _tabController.animateTo(0, duration: Duration.zero);
+      _loadPosts();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showRootAppBar();
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  void _showRootAppBar() {
+    final innerController = _nestedScrollKey.currentState?.innerController;
+    if (innerController?.hasClients ?? false) {
+      innerController!.jumpTo(innerController.position.minScrollExtent);
+    }
+    if (!mounted || !_scrollController.hasClients) return;
+    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+  }
+
+  Future<void> _refreshCommunity() => Future.wait<void>([
+        _loadLiveStatus(),
+        _loadFollowerCount(),
+        _loadPosts(preserveCurrentPosts: true),
+      ]);
 
   @override
   void didUpdateWidget(Community oldWidget) {
@@ -230,6 +261,7 @@ class _CommunityState extends State<Community>
 
   @override
   void dispose() {
+    mainTabActions.removeListener(_handleMainTabAction);
     _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
@@ -262,41 +294,47 @@ class _CommunityState extends State<Community>
             : null,
         body: Stack(
           children: [
-            NestedScrollView(
-              controller: _scrollController,
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                CommunitySliverAppBar(
-                  pageBackground: pageBackground,
-                  opacityFactor: opacityFactor,
-                  onSearch: () => context.push('/search'),
-                  onProfile: () => context.push('/profile'),
+            RefreshIndicator(
+              onRefresh: _refreshCommunity,
+              notificationPredicate: (notification) => notification.depth <= 1,
+              child: NestedScrollView(
+                key: _nestedScrollKey,
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  CommunitySliverAppBar(
+                    pageBackground: pageBackground,
+                    opacityFactor: opacityFactor,
+                    onSearch: () => context.push('/search'),
+                    onProfile: () => context.push('/profile'),
+                  ),
+                  CommunityTeamHeader(
+                    team: team,
+                    isLive: _isLive,
+                    followerCount: _followerCount,
+                    onTeamTap: isTeamPageSupported(team.teamId)
+                        ? () => openTeamPage(context, team.teamId)
+                        : null,
+                  ),
+                  CommunityPostTabHeader(
+                    controller: _tabController,
+                    onTap: _selectPostTab,
+                  ),
+                ],
+                body: CommunityPostBody(
+                  teamId: widget.teamId,
+                  posts: _posts,
+                  postRepository: _postRepository,
+                  communityRepository: _communityRepository,
+                  selectedSort: _selectedPostSort,
+                  isLoading: _isLoadingPosts,
+                  loadError: _postLoadError,
+                  onRetry: _loadPosts,
+                  onPostDetailClosed: () => _loadPosts(
+                    preserveCurrentPosts: true,
+                  ),
+                  onSortChanged: _selectPostSort,
                 ),
-                CommunityTeamHeader(
-                  team: team,
-                  isLive: _isLive,
-                  followerCount: _followerCount,
-                  onTeamTap: isTeamPageSupported(team.teamId)
-                      ? () => openTeamPage(context, team.teamId)
-                      : null,
-                ),
-                CommunityPostTabHeader(
-                  controller: _tabController,
-                  onTap: _selectPostTab,
-                ),
-              ],
-              body: CommunityPostBody(
-                teamId: widget.teamId,
-                posts: _posts,
-                postRepository: _postRepository,
-                communityRepository: _communityRepository,
-                selectedSort: _selectedPostSort,
-                isLoading: _isLoadingPosts,
-                loadError: _postLoadError,
-                onRetry: _loadPosts,
-                onPostDetailClosed: () => _loadPosts(
-                  preserveCurrentPosts: true,
-                ),
-                onSortChanged: _selectPostSort,
               ),
             )
           ],

@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/standings/mock/mock_xg_standing_repository.dart';
@@ -117,6 +118,56 @@ void main() {
     expect(
       tester.getTopLeft(find.byKey(const Key('team-search-button'))).dy,
       47,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Team tab action restores the first feature and visible app bar',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: TeamScreen(
+          fixtureRepository: fixtureRepository,
+          standingRepository: standingRepository,
+          currentFormRepository: currentFormRepository,
+          teamId: 9,
+          teamAttributeRepository: teamAttributeRepository,
+          teamOverviewRepository: teamOverviewRepository,
+          xgStandingRepository: xgStandingRepository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final nestedScrollView =
+        tester.widget<NestedScrollView>(find.byType(NestedScrollView));
+    final nestedState =
+        tester.state<NestedScrollViewState>(find.byType(NestedScrollView));
+    final outerController = nestedScrollView.controller!;
+    final innerController = nestedState.innerController;
+
+    await tester.drag(find.byType(NestedScrollView), const Offset(0, -700));
+    await tester.pumpAndSettle();
+    expect(
+      outerController.offset + innerController.offset,
+      greaterThan(0),
+    );
+
+    mainTabActions.select(1);
+    await tester.pumpAndSettle();
+
+    expect(innerController.offset, innerController.position.minScrollExtent);
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 0);
+    expect(find.byKey(const ValueKey('team-app-bar-logo')), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('team-app-bar-logo'))).dy,
+      greaterThanOrEqualTo(0),
     );
     expect(tester.takeException(), isNull);
   });

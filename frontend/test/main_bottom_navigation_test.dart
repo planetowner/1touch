@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/main.dart';
 
@@ -83,4 +85,78 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('a bottom tab tap opens that branch root and announces it',
+      (tester) async {
+    final router = GoRouter(
+      initialLocation: '/players/42',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) =>
+              MainScreen(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  builder: (context, state) => const Text('home-root'),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/team',
+                  builder: (context, state) => const Text('team-root'),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/players',
+                  builder: (context, state) => const Text('players-root'),
+                  routes: [
+                    GoRoute(
+                      path: ':id',
+                      builder: (context, state) => const Text('player-detail'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/community',
+                  builder: (context, state) => const Text('community-root'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/players/42');
+
+    await tester.tap(
+      find.byKey(const ValueKey('main-bottom-navigation-0')),
+    );
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/home');
+    expect(mainTabActions.tabIndex, 0);
+
+    await tester.tap(
+      find.byKey(const ValueKey('main-bottom-navigation-2')),
+    );
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/players');
+    expect(mainTabActions.tabIndex, 2);
+    expect(find.text('players-root'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

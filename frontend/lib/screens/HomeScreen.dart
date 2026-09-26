@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/home/home_repository_provider.dart'
@@ -67,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _scrollOffset = _scrollController.offset.clamp(0.0, 150.0);
         });
       });
+    mainTabActions.addListener(_handleMainTabAction);
 
     currentUserPreferences.favoriteTeamId
         .addListener(_onTeamPreferencesChanged);
@@ -103,6 +105,19 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       _loadHome(refreshContent: true);
     });
+  }
+
+  void _handleMainTabAction() {
+    if (mainTabActions.tabIndex != 0 || !_scrollController.hasClients) return;
+    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+  }
+
+  Future<void> _refreshHome() async {
+    final teamId = currentUserPreferences.viewedTeamId.value;
+    await Future.wait<void>([
+      _loadHome(),
+      _loadNews(teamId),
+    ]);
   }
 
   Future<void> _loadHome({bool refreshContent = false}) async {
@@ -199,6 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    mainTabActions.removeListener(_handleMainTabAction);
     currentUserPreferences.favoriteTeamId
         .removeListener(_onTeamPreferencesChanged);
     currentUserPreferences.followedTeamIds
@@ -266,176 +282,181 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              SliverAppBar(
-                backgroundColor: Color.lerp(
-                  Colors.transparent,
-                  pageBackground,
-                  opacityFactor,
-                ),
-                foregroundColor: appBarForeground,
-                elevation: 0,
-                floating: true,
-                snap: true,
-                toolbarHeight: 80,
-                centerTitle: false,
-                titleSpacing: 0,
-                flexibleSpace: ColoredBox(color: pageBackground),
-                clipBehavior: Clip.antiAlias,
-                title: Padding(
-                  padding: const EdgeInsets.only(left: 24),
-                  child: SvgPicture.asset(
-                    'assets/app_logo.svg',
-                    height: 23,
-                    width: 120,
-                    colorFilter: ColorFilter.mode(
-                      appBarForeground,
-                      BlendMode.srcIn,
+          RefreshIndicator(
+            onRefresh: _refreshHome,
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: Color.lerp(
+                    Colors.transparent,
+                    pageBackground,
+                    opacityFactor,
+                  ),
+                  foregroundColor: appBarForeground,
+                  elevation: 0,
+                  floating: true,
+                  snap: true,
+                  toolbarHeight: 80,
+                  centerTitle: false,
+                  titleSpacing: 0,
+                  flexibleSpace: ColoredBox(color: pageBackground),
+                  clipBehavior: Clip.antiAlias,
+                  title: Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: SvgPicture.asset(
+                      'assets/app_logo.svg',
+                      height: 23,
+                      width: 120,
+                      colorFilter: ColorFilter.mode(
+                        appBarForeground,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
-                ),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            context.push('/search');
-                          },
-                          icon: Icon(
-                            Icons.search,
-                            color: appBarForeground,
-                            size: 32,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 16,
-                        ),
-                        GestureDetector(
-                          onTap: () => TeamSelectionSheet.show(
-                            context,
-                            initialTeamId: viewedTeamId,
-                            favoriteTeamId:
-                                currentUserPreferences.favoriteTeamId.value,
-                            followingTeams: homeData.followingTeams,
-                            onSwitch: _switchViewedTeam,
-                          ),
-                          child: Container(
-                            padding: AppDropdownTokens.compactPadding,
-                            decoration: BoxDecoration(
-                              color: AppPalette.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(
-                                AppDropdownTokens.radius,
-                              ),
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              context.push('/search');
+                            },
+                            icon: Icon(
+                              Icons.search,
+                              color: appBarForeground,
+                              size: 32,
                             ),
-                            child: Row(
-                              children: [
-                                Image.network(
-                                  viewedTeam.imagePath,
-                                  height: 24,
-                                  width: 24,
-                                  errorBuilder: (_, __, ___) => Image.asset(
-                                    'TeamLogos/Barcelona.png',
+                          ),
+                          SizedBox(
+                            width: 16,
+                          ),
+                          GestureDetector(
+                            onTap: () => TeamSelectionSheet.show(
+                              context,
+                              initialTeamId: viewedTeamId,
+                              favoriteTeamId:
+                                  currentUserPreferences.favoriteTeamId.value,
+                              followingTeams: homeData.followingTeams,
+                              onSwitch: _switchViewedTeam,
+                            ),
+                            child: Container(
+                              padding: AppDropdownTokens.compactPadding,
+                              decoration: BoxDecoration(
+                                color: AppPalette.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(
+                                  AppDropdownTokens.radius,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Image.network(
+                                    viewedTeam.imagePath,
                                     height: 24,
                                     width: 24,
+                                    errorBuilder: (_, __, ___) => Image.asset(
+                                      'TeamLogos/Barcelona.png',
+                                      height: 24,
+                                      width: 24,
+                                    ),
                                   ),
-                                ),
-                                AppDropdownChevron(color: appBarForeground),
-                              ],
+                                  AppDropdownChevron(color: appBarForeground),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          width: 16,
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            context.push('/profile');
-                          },
-                          icon: Icon(
-                            Icons.account_circle_outlined,
-                            color: appBarForeground,
-                            size: 32,
+                          SizedBox(
+                            width: 16,
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              context.push('/profile');
+                            },
+                            icon: Icon(
+                              Icons.account_circle_outlined,
+                              color: appBarForeground,
+                              size: 32,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 48),
+                    SectionHeader(title: tr(context, "FAVORITE TEAM")),
+                    FavoriteTeamCard(team: viewedTeam),
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        SectionHeader(title: tr(context, "CALENDAR")),
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 24),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.sync,
+                              color: colorScheme.onSurface,
+                              size: 24,
+                            ),
+                            onPressed: () => SyncDialog.show(context),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 48),
-                  SectionHeader(title: tr(context, "FAVORITE TEAM")),
-                  FavoriteTeamCard(team: viewedTeam),
-                  const SizedBox(height: 32),
-                  Row(
-                    children: [
-                      SectionHeader(title: tr(context, "CALENDAR")),
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 24),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.sync,
-                            color: colorScheme.onSurface,
-                            size: 24,
-                          ),
-                          onPressed: () => SyncDialog.show(context),
+                    FixtureCalendar(
+                      allMatches: homeData.calendar,
+                      favoriteTeamId: viewedTeamId,
+                      participatingCompetitions:
+                          footballCatalog.currentCompetitions(viewedTeamId),
+                      onMonthChanged: _loadCalendarMonth,
+                    ),
+                    const SizedBox(height: 32),
+                    SectionHeader(title: tr(context, "HIGHLIGHTS")),
+                    MyHighlights(
+                      highlights: homeData.highlights,
+                      fallbacks: const [],
+                    ),
+                    const SizedBox(height: 32),
+                    SectionHeader(title: tr(context, "NEWS")),
+                    MyNews(
+                      news: _news,
+                      isLoading: _isNewsLoading,
+                      hasError: _hasNewsError,
+                      onRetry: () => _loadNews(homeData.favoriteTeam.teamId),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Container(
+                        width: 395,
+                        height: 108,
+                        padding: const EdgeInsets.all(8),
+                        decoration: ShapeDecoration(
+                          color:
+                              Theme.of(context).brightness == Brightness.light
+                                  ? AppPalette.black
+                                  : AppPalette.darkGrey,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                         ),
-                      ),
-                    ],
-                  ),
-                  FixtureCalendar(
-                    allMatches: homeData.calendar,
-                    favoriteTeamId: viewedTeamId,
-                    participatingCompetitions:
-                        footballCatalog.currentCompetitions(viewedTeamId),
-                    onMonthChanged: _loadCalendarMonth,
-                  ),
-                  const SizedBox(height: 32),
-                  SectionHeader(title: tr(context, "HIGHLIGHTS")),
-                  MyHighlights(
-                    highlights: homeData.highlights,
-                    fallbacks: const [],
-                  ),
-                  const SizedBox(height: 32),
-                  SectionHeader(title: tr(context, "NEWS")),
-                  MyNews(
-                    news: _news,
-                    isLoading: _isNewsLoading,
-                    hasError: _hasNewsError,
-                    onRetry: () => _loadNews(homeData.favoriteTeam.teamId),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Container(
-                      width: 395,
-                      height: 108,
-                      padding: const EdgeInsets.all(8),
-                      decoration: ShapeDecoration(
-                        color: Theme.of(context).brightness == Brightness.light
-                            ? AppPalette.black
-                            : AppPalette.darkGrey,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: Center(
-                        child: Text(
-                          tr(context, "Ad"),
-                          style: Heading4.style.copyWith(
-                            color: AppPalette.white,
+                        child: Center(
+                          child: Text(
+                            tr(context, "Ad"),
+                            style: Heading4.style.copyWith(
+                              color: AppPalette.white,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ]),
-              ),
-            ],
+                  ]),
+                ),
+              ],
+            ),
           ),
         ],
       ),
