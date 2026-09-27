@@ -57,32 +57,10 @@ class OnesToWatchCard extends StatelessWidget {
                       Positioned(
                         top: 10,
                         left: 10,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('#${player.jerseyNumber}',
-                                style: Heading2.style),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  player.rankingChange < 0
-                                      ? Icons.arrow_drop_down
-                                      : Icons.arrow_drop_up,
-                                  color: const Color(0xFFE8003D),
-                                  size: 24,
-                                ),
-                                Text(
-                                  '${player.rankingChange.abs()}',
-                                  style: Body2_b.style.copyWith(
-                                    color: colors.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        child: Text(
+                          '#${player.jerseyNumber}',
+                          key: ValueKey('ones-to-watch-jersey-${player.id}'),
+                          style: Heading2.style,
                         ),
                       ),
                     ],
