@@ -64,15 +64,17 @@ class PlayerSurface extends StatelessWidget {
   const PlayerSurface(
       {super.key,
       required this.child,
-      this.padding = const EdgeInsets.all(16)});
+      this.padding = const EdgeInsets.all(16),
+      this.color});
   final Widget child;
   final EdgeInsets padding;
+  final Color? color;
   @override
   Widget build(BuildContext context) => Container(
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-          color: AppColors.of(context).cardBackground,
+          color: color ?? AppColors.of(context).cardBackground,
           borderRadius: BorderRadius.circular(16),
           boxShadow: appCardShadows(context)),
       child: child);
@@ -299,8 +301,8 @@ class PlayerStatCategories extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(
-                child:
-                    Text(tr(context, stat.metric.label), style: Body2_b.style)),
+                child: Text(appStatLabel(context, stat.metric.label),
+                    style: Body2_b.style)),
             if (comparison == null)
               Text(playerMetricValue(stat.metric), style: Body2_b.style)
           ]),

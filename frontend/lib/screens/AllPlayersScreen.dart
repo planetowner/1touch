@@ -27,7 +27,7 @@ double playerDetailOverviewGradientHeight(
     _playerDetailOverviewPadding +
     topBlockHeight;
 
-double playerDetailTabGradientHeight(double topInset) =>
+double playerDetailHeaderGradientHeight(double topInset) =>
     topInset + _playerDetailAppBarHeight + _playerDetailTabBarHeight;
 
 class PlayerCard extends StatefulWidget {
@@ -74,9 +74,7 @@ class _PlayerCardState extends State<PlayerCard>
 
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
-      setState(() {
-        currentTabIndex = _tabController.index;
-      });
+      setState(() => currentTabIndex = _tabController.index);
     });
   }
 
@@ -110,16 +108,28 @@ class _PlayerCardState extends State<PlayerCard>
     final gradientColors = isDark
         ? const [Color(0xFF282929), Color(0x00282929)]
         : const [Color(0x333D3D3D), Color(0x003D3D3D)];
-
-    final double topInset = MediaQuery.of(context).padding.top;
-    final double overviewGradientHeight = playerDetailOverviewGradientHeight(
+    final topInset = MediaQuery.paddingOf(context).top;
+    final appBarExtent = topInset + _playerDetailAppBarHeight;
+    final headerExtent = playerDetailHeaderGradientHeight(topInset);
+    final splitColor = Color.lerp(
+      gradientColors.last,
+      gradientColors.first,
+      appBarExtent / headerExtent,
+    )!;
+    final appBarGradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [gradientColors.last, splitColor],
+    );
+    final tabBarGradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [splitColor, gradientColors.first],
+    );
+    final overviewGradientHeight = playerDetailOverviewGradientHeight(
       topInset,
       topBlockHeight: _overviewTopBlockHeight,
     );
-    final double gradientHeight = isOverviewTab
-        ? overviewGradientHeight
-        // Other tabs: fade ends just past the tab bar.
-        : playerDetailTabGradientHeight(topInset);
 
     return PlayerDetailScope(
         store: _detailStore,
@@ -128,37 +138,31 @@ class _PlayerCardState extends State<PlayerCard>
           backgroundColor: pageBackground,
           body: Stack(
             children: [
-              // Global gradient behind everything including tab bar.
-              // AnimatedPositioned smoothly eases the height between the tall
-              // Overview gradient and the compact one on the other tabs, so the
-              // fade point glides into place instead of snapping on tab change.
-              AnimatedPositioned(
-                key: const ValueKey('player-detail-gradient-position'),
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                top: 0,
-                left: 0,
-                right: 0,
-                height: gradientHeight,
-                child: IgnorePointer(
-                  child: AnimatedOpacity(
-                    opacity: gradientOpacity,
-                    duration: const Duration(milliseconds: 50),
-                    child: Container(
-                      key: const ValueKey('player-detail-gradient'),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: gradientColors,
+              if (isOverviewTab)
+                Positioned(
+                  key: const ValueKey(
+                      'player-detail-overview-gradient-position'),
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: overviewGradientHeight,
+                  child: IgnorePointer(
+                    child: AnimatedOpacity(
+                      opacity: gradientOpacity,
+                      duration: const Duration(milliseconds: 50),
+                      child: Container(
+                        key: const ValueKey('player-detail-overview-gradient'),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: gradientColors,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-
-              // Main content
               NestedScrollView(
                 controller: _scrollController,
                 physics: const ClampingScrollPhysics(),
@@ -175,11 +179,17 @@ class _PlayerCardState extends State<PlayerCard>
                     snap: true,
                     pinned: false,
                     toolbarHeight: _playerDetailAppBarHeight,
-                    flexibleSpace: PlayerScreenHeader(
-                      player: widget.player,
-                      playerId: widget.id,
-                      horizontalPadding: 24,
-                      foregroundColor: gradientForeground,
+                    flexibleSpace: Container(
+                      key: const ValueKey('player-detail-gradient'),
+                      decoration: BoxDecoration(
+                        gradient: isOverviewTab ? null : appBarGradient,
+                      ),
+                      child: PlayerScreenHeader(
+                        player: widget.player,
+                        playerId: widget.id,
+                        horizontalPadding: 24,
+                        foregroundColor: gradientForeground,
+                      ),
                     ),
                   ),
                   SliverPersistentHeader(
@@ -210,8 +220,14 @@ class _PlayerCardState extends State<PlayerCard>
                         ],
                         tabAlignment: TabAlignment.start,
                       ),
-                      opacityFactor: opacityFactor, // ADD THIS
-                      backgroundColor: pageBackground,
+                      backgroundGradient: isOverviewTab ? null : tabBarGradient,
+                      backgroundColor: isOverviewTab
+                          ? Color.lerp(
+                              Colors.transparent,
+                              pageBackground,
+                              opacityFactor,
+                            )
+                          : null,
                     ),
                   ),
                 ],
@@ -361,12 +377,12 @@ class _PlayerFollowButtonState extends State<PlayerFollowButton> {
 
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
-  final double opacityFactor;
-  final Color backgroundColor;
+  final Gradient? backgroundGradient;
+  final Color? backgroundColor;
 
   _TabBarDelegate(
     this._tabBar, {
-    required this.opacityFactor,
+    required this.backgroundGradient,
     required this.backgroundColor,
   });
 
@@ -380,14 +396,18 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Color.lerp(Colors.transparent, backgroundColor, opacityFactor),
+      key: const ValueKey('player-detail-tab-gradient'),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        gradient: backgroundGradient,
+      ),
       child: _tabBar,
     );
   }
 
   @override
   bool shouldRebuild(_TabBarDelegate oldDelegate) {
-    return oldDelegate.opacityFactor != opacityFactor ||
+    return oldDelegate.backgroundGradient != backgroundGradient ||
         oldDelegate.backgroundColor != backgroundColor;
   }
 }

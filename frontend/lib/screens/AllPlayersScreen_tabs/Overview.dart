@@ -174,22 +174,38 @@ class PlayerOverviewTab extends StatelessWidget {
                       child: Column(children: [
                         if (detail.clubs.isEmpty)
                           Text(tr(context, 'Club history unavailable')),
-                        for (final club in detail.clubs)
-                          Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: Row(children: [
-                                PlayerRemoteImage(club.teamImage),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                    child: Text(
-                                        teamNameLabel(context, club.teamId,
-                                            club.teamName ?? '—'),
-                                        style: Body2_b.style)),
-                                const SizedBox(width: 8),
-                                Text(
-                                    '${club.startDate?.year ?? '—'}–${club.endDate?.year ?? ''}',
-                                    style: Body2.style)
-                              ])),
+                        for (var index = 0;
+                            index < detail.clubs.length;
+                            index++) ...[
+                          Row(
+                            key: ValueKey(
+                                'player-club-history-row-${detail.clubs[index].teamId}'),
+                            children: [
+                              PlayerRemoteImage(
+                                detail.clubs[index].teamImage,
+                                key: ValueKey(
+                                    'player-club-history-logo-${detail.clubs[index].teamId}'),
+                                size: 24,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                  child: Text(
+                                      teamNameLabel(
+                                          context,
+                                          detail.clubs[index].teamId,
+                                          detail.clubs[index].teamName ?? '—'),
+                                      key: ValueKey(
+                                          'player-club-history-name-${detail.clubs[index].teamId}'),
+                                      style: Heading5.style)),
+                              const SizedBox(width: 8),
+                              Text(
+                                  '${detail.clubs[index].startDate?.year ?? '—'}–${detail.clubs[index].endDate?.year ?? ''}',
+                                  style: Body2.style)
+                            ],
+                          ),
+                          if (index != detail.clubs.length - 1)
+                            const SizedBox(height: 16),
+                        ],
                       ]))),
             ]));
       });

@@ -63,6 +63,42 @@ String translateMessage(Locale locale, String message,
 String playerCategoryLabel(BuildContext context, String label) =>
     tr(context, label == 'Save' ? 'Shot stopping' : label);
 
+String appStatLabel(BuildContext context, String label) {
+  final localized = tr(context, label);
+  if (Localizations.localeOf(context).languageCode != 'en') return localized;
+  const minorWords = {
+    'a',
+    'an',
+    'and',
+    'at',
+    'by',
+    'for',
+    'from',
+    'in',
+    'of',
+    'on',
+    'or',
+    'per',
+    'the',
+    'to',
+    'with',
+  };
+  var wordIndex = 0;
+  return localized.replaceAllMapped(RegExp(r'[A-Za-z]+'), (match) {
+    final word = match.group(0)!;
+    final lower = word.toLowerCase();
+    final isFirstWord = wordIndex++ == 0;
+    final hasIntentionalCapital =
+        word.length > 1 && word.substring(1).contains(RegExp(r'[A-Z]'));
+    if (word == word.toUpperCase() || hasIntentionalCapital) return word;
+    if (!isFirstWord && minorWords.contains(lower)) return lower;
+    return '${lower[0].toUpperCase()}${lower.substring(1)}';
+  });
+}
+
+String playerMetricLabel(BuildContext context, String label) =>
+    appStatLabel(context, label);
+
 String teamScreenLabel(BuildContext context, String message) {
   if (Localizations.localeOf(context).languageCode == 'ko') {
     return teamScreenKoreanMessages[message] ?? tr(context, message);
