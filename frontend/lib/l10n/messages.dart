@@ -230,7 +230,6 @@ const appMessages = <String, MessageTranslations>{
   "FINISH": (ko: "완료", ja: "完了", zh: "完成"),
   "Home": (ko: "홈", ja: "ホーム", zh: "首页"),
   "Players": (ko: "선수", ja: "選手", zh: "球员"),
-  "Team": (ko: "팀", ja: "チーム", zh: "球队"),
   "Community": (ko: "커뮤니티", ja: "コミュニティ", zh: "社区"),
   "MY TEAM": (ko: "내 팀", ja: "マイチーム", zh: "我的球队"),
   "PLAYER": (ko: "선수", ja: "選手", zh: "球员"),
@@ -687,6 +686,79 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法加载近期状态"
   ),
   "PROBABILITY": (ko: "예상 확률", ja: "予測確率", zh: "预测概率"),
+  "Probability": (ko: "예상 확률", ja: "予測確率", zh: "预测概率"),
+  "PROBABILITY HISTORY": (ko: "예상 확률 변화", ja: "予測確率の推移", zh: "预测概率走势"),
+  "PROJECTED FINAL POSITION": (ko: "예상 최종 순위", ja: "予想最終順位", zh: "预计最终排名"),
+  "PROJECTED POINTS": (ko: "예상 승점", ja: "予想勝点", zh: "预计积分"),
+  "Likely range of": (ko: "예상 범위", ja: "予想範囲", zh: "预计范围"),
+  "WHAT IF?": (ko: "만약에?", ja: "もしも？", zh: "如果？"),
+  "What if?": (ko: "만약에?", ja: "もしも？", zh: "如果？"),
+  "IF {team}'S NEXT MATCH ENDS WITH": (
+    ko: "{team}의 다음 경기 결과가",
+    ja: "{team}の次の試合結果が",
+    zh: "如果{team}下一场比赛结果是"
+  ),
+  "Team": (ko: "팀", ja: "チーム", zh: "球队"),
+  "Round": (ko: "라운드", ja: "ラウンド", zh: "轮次"),
+  "Next match": (ko: "다음 경기", ja: "次の試合", zh: "下一场比赛"),
+  "LEAGUE WINNER PROBABILITY": (ko: "리그 우승 확률", ja: "リーグ優勝確率", zh: "联赛夺冠概率"),
+  "TOP 4 PROBABILITY": (ko: "TOP 4 확률", ja: "トップ4確率", zh: "前四概率"),
+  "RELEGATION PROBABILITY": (ko: "강등 확률", ja: "降格確率", zh: "降级概率"),
+  "If win": (ko: "승리 시", ja: "勝利時", zh: "获胜时"),
+  "If draw": (ko: "무승부 시", ja: "引き分け時", zh: "平局时"),
+  "If loss": (ko: "패배 시", ja: "敗戦時", zh: "失利时"),
+  "What-if data is unavailable.": (
+    ko: "What if 데이터를 이용할 수 없어요.",
+    ja: "What ifデータを利用できません。",
+    zh: "What if 数据不可用。"
+  ),
+  "What-if data is unavailable for this outcome.": (
+    ko: "이 결과의 What if 데이터를 이용할 수 없어요.",
+    ja: "この結果のWhat ifデータを利用できません。",
+    zh: "此结果的 What if 数据不可用。"
+  ),
+  "A win could change {team}'s probability by {win} percentage points, while a loss could change it by {loss} points.":
+      (
+    ko: "승리하면 {team}의 확률이 {win}%p, 패배하면 {loss}%p 변할 수 있어요.",
+    ja: "勝利すると{team}の確率が{win}ポイント、敗戦すると{loss}ポイント変化する可能性があります。",
+    zh: "获胜可能使{team}的概率变化{win}个百分点，失利则可能变化{loss}个百分点。"
+  ),
+  "Chances to Win\nLeague Trophy": (
+    ko: "리그\n우승 확률",
+    ja: "リーグ\n優勝確率",
+    zh: "联赛\n夺冠概率"
+  ),
+  "Chances to Win\nUCL Trophy": (
+    ko: "UCL\n우승 확률",
+    ja: "UCL\n優勝確率",
+    zh: "UCL\n夺冠概率"
+  ),
+  "Chances to Win\nUEL Trophy": (
+    ko: "UEL\n우승 확률",
+    ja: "UEL\n優勝確率",
+    zh: "UEL\n夺冠概率"
+  ),
+  "Chances to Win\nUECL Trophy": (
+    ko: "UECL\n우승 확률",
+    ja: "UECL\n優勝確率",
+    zh: "UECL\n夺冠概率"
+  ),
+  "Chances to Finish\nTop 4": (
+    ko: "4위 이내\n진입 확률",
+    ja: "4位以内の\n確率",
+    zh: "进入前四的\n概率"
+  ),
+  "Chances to Finish\nTop 6": (
+    ko: "6위 이내\n진입 확률",
+    ja: "6位以内の\n確率",
+    zh: "进入前六的\n概率"
+  ),
+  "Chances of\nRelegation": (ko: "강등\n확률", ja: "降格の\n確率", zh: "降级的\n概率"),
+  "Chances of Relegation\nPlayoff": (
+    ko: "강등 플레이오프\n진출 확률",
+    ja: "降格プレーオフの\n確率",
+    zh: "参加保级附加赛的\n概率"
+  ),
   "Prediction unavailable.": (
     ko: "예측 정보가 없어요.",
     ja: "予測データがありません。",
@@ -728,11 +800,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "6位以内の\n確率",
     zh: "进入前六的\n概率"
   ),
-  "Chances of\nDIRECT RELEGATION": (
-    ko: "직접\n강등 확률",
-    ja: "自動降格の\n確率",
-    zh: "直接降级的\n概率"
-  ),
+  "Chances of\nRELEGATION": (ko: "강등\n확률", ja: "降格の\n確率", zh: "降级的\n概率"),
   "Chances of\nRELEGATION PLAYOFF": (
     ko: "강등 플레이오프\n진출 확률",
     ja: "降格プレーオフの\n確率",

@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
-import 'package:onetouch/features/player/player_picker_sheet.dart';
-import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
@@ -300,18 +298,7 @@ class PlayerScreenHeader extends StatelessWidget {
                 PlayerFollowButton(playerId: id, color: foregroundColor),
               IconButton(
                   key: const ValueKey('player-search-button'),
-                  onPressed: () async {
-                    final candidate =
-                        await showModalBottomSheet<PlayerCandidate>(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (_) => PlayerPickerSheet(
-                                repository: store.repository ??
-                                    playerDetailRepository));
-                    if (candidate != null && context.mounted) {
-                      context.push('/players/${candidate.id}');
-                    }
-                  },
+                  onPressed: () => context.push('/search'),
                   icon: Icon(Icons.search, size: 32, color: foregroundColor)),
               IconButton(
                   key: const ValueKey('player-compare-button'),

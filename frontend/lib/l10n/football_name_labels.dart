@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/teams/team_competition_context.dart';
 
 class FootballNamesScope extends InheritedWidget {
@@ -29,8 +30,28 @@ String playerNameLabel(BuildContext context, int? id, String original,
         {bool short = false}) =>
     FootballNamesScope.of(context).player(id, original, short: short);
 
+String normalizeCompetitionDisplayLabel(String label) => label.replaceAll(
+      RegExp(r'\bLA\s*LIGA\b', caseSensitive: false),
+      'LA LIGA',
+    );
+
 String competitionNameLabel(BuildContext context, int? id, String original) =>
-    FootballNamesScope.of(context).competition(id, original);
+    normalizeCompetitionDisplayLabel(
+      FootballNamesScope.of(context).competition(id, original),
+    );
+
+String competitionShortNameLabel(
+    BuildContext context, int? id, String original) {
+  final shortCode = footballCatalog.competitions.value
+      .where((competition) => competition.competitionId == id)
+      .firstOrNull
+      ?.shortCode
+      ?.trim();
+  if (shortCode != null && shortCode.isNotEmpty) {
+    return normalizeCompetitionDisplayLabel(shortCode);
+  }
+  return competitionNameLabel(context, id, original);
+}
 
 String teamCompetitionLabel(
         BuildContext context, TeamCompetitionContext? team) =>

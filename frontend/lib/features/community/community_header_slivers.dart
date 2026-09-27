@@ -41,6 +41,7 @@ class CommunitySliverAppBar extends StatelessWidget {
       title: Padding(
         padding: const EdgeInsets.only(left: 24),
         child: SvgPicture.asset(
+          key: const ValueKey('community-app-logo'),
           'assets/app_logo.svg',
           height: 23,
           width: 120,
@@ -52,21 +53,38 @@ class CommunitySliverAppBar extends StatelessWidget {
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 8),
+          padding: const EdgeInsets.only(right: 24),
           child: Row(
             children: [
               IconButton(
                 key: const ValueKey('community-search-button'),
                 onPressed: onSearch,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(
+                  width: 32,
+                  height: 32,
+                ),
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 icon: Icon(
                   Icons.search,
                   size: 32,
                   color: foreground,
                 ),
               ),
+              const SizedBox(width: 16),
               IconButton(
                 key: const ValueKey('community-profile-button'),
                 onPressed: onProfile,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(
+                  width: 32,
+                  height: 32,
+                ),
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 icon: Icon(
                   Icons.account_circle_outlined,
                   size: 32,
@@ -102,11 +120,13 @@ class CommunityTeamHeader extends StatelessWidget {
 
     return SliverToBoxAdapter(
       child: Padding(
+        key: const ValueKey('community-team-header-padding'),
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             GestureDetector(
+              key: const ValueKey('community-team-logo'),
               onTap: onTeamTap,
               child: team.imagePath != null
                   ? Image.network(

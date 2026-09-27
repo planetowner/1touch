@@ -28,14 +28,14 @@ String formatFixtureCompetitionLabel(
   required String competitionName,
   String? competitionShortCode,
 }) {
-  var name = competitionName;
+  var name = normalizeCompetitionDisplayLabel(competitionName);
   if (locale.languageCode == 'en' &&
       _abbreviatedCompetitionIds.contains(fixture.competitionId)) {
     if (competitionShortCode == null || competitionShortCode.trim().isEmpty) {
       throw StateError(
           'Competition ${fixture.competitionId} requires short_code.');
     }
-    name = competitionShortCode;
+    name = normalizeCompetitionDisplayLabel(competitionShortCode);
   }
   final round = fixtureRoundLabel(fixture, locale: locale);
   return [name, if (round != null) round].join(_separator(locale));

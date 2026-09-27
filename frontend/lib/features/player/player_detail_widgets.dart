@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
@@ -117,15 +116,8 @@ class PlayerCompetitionTable extends StatelessWidget {
   final List<PlayerCompetitionRecord> competitions;
 
   String _competitionLabel(
-      BuildContext context, PlayerCompetitionRecord competition) {
-    final shortCode = footballCatalog.competitions.value
-        .where((item) => item.competitionId == competition.id)
-        .firstOrNull
-        ?.shortCode
-        ?.trim();
-    if (shortCode != null && shortCode.isNotEmpty) return shortCode;
-    return competitionNameLabel(context, competition.id, competition.name);
-  }
+          BuildContext context, PlayerCompetitionRecord competition) =>
+      competitionShortNameLabel(context, competition.id, competition.name);
 
   @override
   Widget build(BuildContext context) {

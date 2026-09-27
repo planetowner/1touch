@@ -123,6 +123,11 @@ void main() {
   for (final entry in competitions.entries) {
     final (english, korean, code) = entry.value;
     final abbreviated = {2, 5, 2286}.contains(entry.key);
+    final expectedEnglish = entry.key == 564
+        ? 'LA LIGA'
+        : abbreviated
+            ? code
+            : english;
     test('uses the approved competition name for $english', () {
       final fixture =
           _fixture(competitionId: entry.key, round: '7', leg: '1/1');
@@ -131,7 +136,7 @@ void main() {
               locale: const Locale('en'),
               competitionName: english,
               competitionShortCode: code),
-          '${abbreviated ? code : english} · Round 7');
+          '$expectedEnglish · Round 7');
       expect(
           formatFixtureCompetitionLabel(fixture,
               locale: const Locale('ko'),

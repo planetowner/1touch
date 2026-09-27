@@ -9,8 +9,6 @@ import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
-import 'package:onetouch/features/player/player_picker_sheet.dart';
-import 'package:onetouch/models/player_detail.dart';
 
 class Players extends StatefulWidget {
   const Players(
@@ -97,34 +95,52 @@ class _PlayersState extends State<Players> {
               ),
               actions: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: 24),
                   child: Row(
                     children: [
                       IconButton(
-                        onPressed: () async {
-                          final player =
-                              await showModalBottomSheet<PlayerCandidate>(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (_) => PlayerPickerSheet(
-                                      repository: widget.detailRepository));
-                          if (player != null && context.mounted) {
-                            context.push('/players/${player.id}');
-                          }
-                        },
+                        key: const ValueKey('players-search-button'),
+                        onPressed: () => context.push('/search'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 32,
+                        ),
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         icon: Icon(
                           Icons.search,
                           size: 32,
                           color: colors.onSurface,
                         ),
                       ),
+                      const SizedBox(width: 16),
                       IconButton(
                         onPressed: () => context.push('/compare'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 32,
+                        ),
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         icon: Icon(Icons.safety_divider,
                             size: 32, color: colors.onSurface),
                       ),
+                      const SizedBox(width: 16),
                       IconButton(
+                        key: const ValueKey('players-profile-button'),
                         onPressed: () => context.push('/profile'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 32,
+                        ),
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         icon: Icon(
                           Icons.account_circle_outlined,
                           size: 32,

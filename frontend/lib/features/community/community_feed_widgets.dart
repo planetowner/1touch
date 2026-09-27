@@ -1,10 +1,12 @@
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/api_image_headers.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
+import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
@@ -134,8 +136,10 @@ class _SortChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => onTap(sort),
-      child: Container(
+      child: AnimatedContainer(
         key: ValueKey('community-filter-${label.toLowerCase()}'),
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isDark
@@ -152,13 +156,15 @@ class _SortChip extends StatelessWidget {
                   ),
                 ],
         ),
-        child: Text(
-          tr(context, label).toUpperCase(),
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
           style: Body2_b.style.copyWith(
             color: isDark
                 ? (isSelected ? AppPalette.black : AppPalette.white)
                 : colors.onSurface,
           ),
+          child: Text(tr(context, label).toUpperCase()),
         ),
       ),
     );
@@ -253,25 +259,39 @@ class _PostCard extends StatelessWidget {
               Builder(
                 builder: (context) {
                   final size = MediaQuery.sizeOf(context).width * 0.4;
-                  return Container(
-                    width: size * 0.8,
-                    height: size,
-                    decoration: BoxDecoration(
-                      color: AppPalette.lightGrey,
-                      borderRadius: BorderRadius.circular(12),
+                  return GestureDetector(
+                    key: ValueKey(
+                      'community-post-${post.postId}-media-open',
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        post.mediaUrl!,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'assets/highlight1.png',
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => showCommunityAttachmentViewer(
+                      context,
+                      mediaUrl: post.mediaUrl!,
+                    ),
+                    child: Container(
+                      width: size * 0.8,
+                      height: size,
+                      decoration: BoxDecoration(
+                        color: AppPalette.lightGrey,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          post.mediaUrl!,
+                          key: ValueKey(
+                            'community-post-${post.postId}-media',
+                          ),
+                          headers: apiImageHeaders(post.mediaUrl!),
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              color: appColors.mutedForeground,
+                            ),
+                          ),
                         ),
                       ),
                     ),

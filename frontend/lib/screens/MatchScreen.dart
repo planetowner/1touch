@@ -190,26 +190,44 @@ class _MatchScreenState extends State<MatchScreen> with WidgetsBindingObserver {
             ),
             centerTitle: true,
             actions: [
-              IconButton(
-                key: const ValueKey('match-search-button'),
-                tooltip: tr(context, 'Search'),
-                onPressed: () {
-                  context.push('/search');
-                },
-                icon: Icon(Icons.search, size: 28, color: foreground),
-              ),
-              SizedBox(width: 8),
-              IconButton(
-                key: const ValueKey('match-profile-button'),
-                tooltip: tr(context, 'Profile'),
-                padding: EdgeInsets.only(right: 24),
-                onPressed: () {
-                  context.push('/profile');
-                },
-                icon: Icon(
-                  Icons.account_circle_outlined,
-                  size: 28,
-                  color: foreground,
+              Padding(
+                padding: const EdgeInsets.only(right: 24),
+                child: Row(
+                  children: [
+                    IconButton(
+                      key: const ValueKey('match-search-button'),
+                      tooltip: tr(context, 'Search'),
+                      onPressed: () => context.push('/search'),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      icon: Icon(Icons.search, size: 28, color: foreground),
+                    ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      key: const ValueKey('match-profile-button'),
+                      tooltip: tr(context, 'Profile'),
+                      onPressed: () => context.push('/profile'),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      icon: Icon(
+                        Icons.account_circle_outlined,
+                        size: 28,
+                        color: foreground,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -55,9 +55,9 @@ class _CommunityState extends State<Community>
   int _liveFixtureRequestId = 0;
   int? _followerCount;
   int _followerRequestId = 0;
-  List<Post> _posts = const [];
-  bool _isLoadingPosts = true;
-  Object? _postLoadError;
+  late final List<List<Post>> _postsByTab;
+  late final List<bool> _isLoadingPostsByTab;
+  late final List<Object?> _postLoadErrorsByTab;
   int _postRequestId = 0;
 
   PostRepository get _postRepository =>
@@ -73,7 +73,11 @@ class _CommunityState extends State<Community>
     _loadTeam();
     _loadLiveStatus();
     _loadFollowerCount();
-    _loadPosts();
+
+    final tabCount = CommunityPostTabHeader.categories.length;
+    _postsByTab = List.generate(tabCount, (_) => const <Post>[]);
+    _isLoadingPostsByTab = List<bool>.filled(tabCount, true);
+    _postLoadErrorsByTab = List<Object?>.filled(tabCount, null);
 
     _scrollController = ScrollController()
       ..addListener(() {
@@ -82,9 +86,17 @@ class _CommunityState extends State<Community>
         });
       });
 
-    _tabController = TabController(
-        length: CommunityPostTabHeader.categories.length, vsync: this);
+    _tabController = TabController(length: tabCount, vsync: this)
+      ..addListener(_handlePostTabChange);
     mainTabActions.addListener(_handleMainTabAction);
+    _loadPosts();
+  }
+
+  void _handlePostTabChange() {
+    final index = _tabController.index;
+    if (_selectedTabIndex == index) return;
+    _selectedTabIndex = index;
+    _loadPosts();
   }
 
   void _handleMainTabAction() {
@@ -123,6 +135,7 @@ class _CommunityState extends State<Community>
       setState(() {
         _loadTeam();
         _isLive = false;
+        _resetPostFeeds();
       });
       _loadLiveStatus();
       _loadFollowerCount();
@@ -139,7 +152,17 @@ class _CommunityState extends State<Community>
     }
     if (widget.teamId == oldWidget.teamId &&
         widget.postRepository != oldWidget.postRepository) {
+      _resetPostFeeds();
       _loadPosts();
+    }
+  }
+
+  void _resetPostFeeds() {
+    _postRequestId++;
+    for (var index = 0; index < _postsByTab.length; index++) {
+      _postsByTab[index] = const <Post>[];
+      _isLoadingPostsByTab[index] = true;
+      _postLoadErrorsByTab[index] = null;
     }
   }
 
@@ -205,11 +228,13 @@ class _CommunityState extends State<Community>
 
   Future<void> _loadPosts({bool preserveCurrentPosts = false}) async {
     final requestId = ++_postRequestId;
-    final preserveCurrent = preserveCurrentPosts && _posts.isNotEmpty;
-    final category = CommunityPostTabHeader.categories[_selectedTabIndex];
+    final tabIndex = _selectedTabIndex;
+    final preserveCurrent =
+        preserveCurrentPosts && _postsByTab[tabIndex].isNotEmpty;
+    final category = CommunityPostTabHeader.categories[tabIndex];
     setState(() {
-      _isLoadingPosts = !preserveCurrent;
-      _postLoadError = null;
+      _isLoadingPostsByTab[tabIndex] = !preserveCurrent;
+      _postLoadErrorsByTab[tabIndex] = null;
     });
 
     try {
@@ -220,14 +245,14 @@ class _CommunityState extends State<Community>
       );
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
-        _posts = posts;
-        _isLoadingPosts = false;
+        _postsByTab[tabIndex] = posts;
+        _isLoadingPostsByTab[tabIndex] = false;
       });
     } catch (error) {
       if (!mounted || requestId != _postRequestId) return;
       setState(() {
-        _postLoadError = preserveCurrent ? null : error;
-        _isLoadingPosts = false;
+        _postLoadErrorsByTab[tabIndex] = preserveCurrent ? null : error;
+        _isLoadingPostsByTab[tabIndex] = false;
       });
     }
   }
@@ -235,7 +260,13 @@ class _CommunityState extends State<Community>
   void _selectPostSort(PostSort sort) {
     if (_selectedPostSort == sort) return;
     _selectedPostSort = sort;
-    _loadPosts();
+    for (var index = 0; index < _postsByTab.length; index++) {
+      if (index == _selectedTabIndex) continue;
+      _postsByTab[index] = const <Post>[];
+      _isLoadingPostsByTab[index] = true;
+      _postLoadErrorsByTab[index] = null;
+    }
+    _loadPosts(preserveCurrentPosts: true);
   }
 
   void _selectPostTab(int index) {
@@ -263,6 +294,7 @@ class _CommunityState extends State<Community>
   void dispose() {
     mainTabActions.removeListener(_handleMainTabAction);
     _scrollController.dispose();
+    _tabController.removeListener(_handlePostTabChange);
     _tabController.dispose();
     super.dispose();
   }
@@ -321,19 +353,27 @@ class _CommunityState extends State<Community>
                     onTap: _selectPostTab,
                   ),
                 ],
-                body: CommunityPostBody(
-                  teamId: widget.teamId,
-                  posts: _posts,
-                  postRepository: _postRepository,
-                  communityRepository: _communityRepository,
-                  selectedSort: _selectedPostSort,
-                  isLoading: _isLoadingPosts,
-                  loadError: _postLoadError,
-                  onRetry: _loadPosts,
-                  onPostDetailClosed: () => _loadPosts(
-                    preserveCurrentPosts: true,
-                  ),
-                  onSortChanged: _selectPostSort,
+                body: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    for (var index = 0;
+                        index < CommunityPostTabHeader.categories.length;
+                        index++)
+                      CommunityPostBody(
+                        teamId: widget.teamId,
+                        posts: _postsByTab[index],
+                        postRepository: _postRepository,
+                        communityRepository: _communityRepository,
+                        selectedSort: _selectedPostSort,
+                        isLoading: _isLoadingPostsByTab[index],
+                        loadError: _postLoadErrorsByTab[index],
+                        onRetry: _loadPosts,
+                        onPostDetailClosed: () => _loadPosts(
+                          preserveCurrentPosts: true,
+                        ),
+                        onSortChanged: _selectPostSort,
+                      ),
+                  ],
                 ),
               ),
             )

@@ -60,11 +60,12 @@ class _CareerTabState extends State<CareerTab> {
 
   Widget _trophies(List<PlayerHonour> honours) {
     final teams = <int, List<PlayerHonour>>{};
-    for (final honour in honours) {
+    for (final honour in honours.where(_hasCompleteHonourData)) {
       teams.putIfAbsent(honour.teamId, () => []).add(honour);
     }
     return PlayerSurface(
       key: const ValueKey('player-career-trophies-card'),
+      color: AppColors.of(context).subtleBackground,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,6 +89,13 @@ class _CareerTabState extends State<CareerTab> {
       ),
     );
   }
+
+  bool _hasCompleteHonourData(PlayerHonour honour) =>
+      honour.teamId > 0 &&
+      honour.competitionId > 0 &&
+      (honour.teamName?.trim().isNotEmpty ?? false) &&
+      (honour.competitionName?.trim().isNotEmpty ?? false) &&
+      (honour.season?.trim().isNotEmpty ?? false);
 
   Widget _teamHonours(List<PlayerHonour> honours) {
     final first = honours.first;
@@ -118,7 +126,7 @@ class _CareerTabState extends State<CareerTab> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  competitionNameLabel(
+                  competitionShortNameLabel(
                       context,
                       competitionId,
                       honours
@@ -162,8 +170,8 @@ class _CareerTabState extends State<CareerTab> {
     final competitions = <int, String>{};
     for (final season in history) {
       for (final competition in season.competitions) {
-        competitions[competition.id] =
-            competitionNameLabel(context, competition.id, competition.name);
+        competitions[competition.id] = competitionShortNameLabel(
+            context, competition.id, competition.name);
       }
     }
     final visible = history
@@ -197,6 +205,7 @@ class _CareerTabState extends State<CareerTab> {
         const SizedBox(height: 16),
         PlayerSurface(
           key: const ValueKey('player-career-history-card'),
+          color: AppColors.of(context).subtleBackground,
           child: Column(
             children: [
               _header(),
@@ -213,12 +222,20 @@ class _CareerTabState extends State<CareerTab> {
 
   Widget _header() {
     final style = Body2.style.copyWith(
-      color: AppColors.of(context).mutedForeground,
+      color: Theme.of(context).colorScheme.onSurface,
     );
     return Row(
       children: [
         Expanded(flex: 2, child: Text(tr(context, 'Season'), style: style)),
-        Expanded(flex: 3, child: Text(tr(context, 'Team'), style: style)),
+        Expanded(
+          flex: 3,
+          child: Text(
+            tr(context, 'Team'),
+            key: const ValueKey('player-career-team-header'),
+            textAlign: TextAlign.center,
+            style: style,
+          ),
+        ),
         Expanded(
             flex: 2,
             child: Text(tr(context, 'MP'),
@@ -265,7 +282,11 @@ class _CareerTabState extends State<CareerTab> {
             child: Row(
               children: [
                 Expanded(
-                    flex: 2, child: Text(season.season, style: Body2_b.style)),
+                    flex: 2,
+                    child: Text(
+                      _compactSeasonLabel(season.season),
+                      style: Body2_b.style,
+                    )),
                 Expanded(
                   flex: 3,
                   child: Row(
@@ -320,7 +341,7 @@ class _CareerTabState extends State<CareerTab> {
                   Expanded(
                     flex: 5,
                     child: Text(
-                      competitionNameLabel(
+                      competitionShortNameLabel(
                           context, competition.id, competition.name),
                       maxLines: 1,
                       softWrap: false,
@@ -352,6 +373,13 @@ class _CareerTabState extends State<CareerTab> {
         child: Text(text, textAlign: TextAlign.center, style: Body2_b.style),
       );
 
+  String _compactSeasonLabel(String season) {
+    final normalized = season.trim();
+    final match = RegExp(r'^(\d{4})/(\d{4})$').firstMatch(normalized);
+    if (match == null) return normalized;
+    return '${match.group(1)!.substring(2)}/${match.group(2)!.substring(2)}';
+  }
+
   Widget _rating(double? rating) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
         decoration: BoxDecoration(
@@ -373,13 +401,19 @@ class _CareerTabState extends State<CareerTab> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           children: [
             ListTile(
-              title: Text(tr(context, 'ALL LEAGUES')),
+              title: Text(
+                tr(context, 'ALL LEAGUES'),
+                style: Body2_b.style,
+              ),
               trailing: _competition == null ? const Icon(Icons.check) : null,
               onTap: () => Navigator.pop(context, 0),
             ),
             for (final entry in competitions.entries)
               ListTile(
-                title: Text(entry.value.toUpperCase()),
+                title: Text(
+                  entry.value.toUpperCase(),
+                  style: Body2_b.style,
+                ),
                 trailing:
                     _competition == entry.key ? const Icon(Icons.check) : null,
                 onTap: () => Navigator.pop(context, entry.key),

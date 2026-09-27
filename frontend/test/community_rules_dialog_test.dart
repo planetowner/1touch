@@ -61,7 +61,8 @@ void main() {
     expect(find.text('커뮤니티 이용 약속'), findsOneWidget);
     expect(find.text('서로 존중해요'), findsOneWidget);
     expect(find.text('의견으로 이야기해주세요.'), findsOneWidget);
-    expect(find.text('확인했어요'), findsOneWidget);
+    expect(find.text('이해했습니다!'), findsOneWidget);
+    expect(find.text('확인했어요'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -110,6 +111,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Rules from API'), findsOneWidget);
+    expect(find.text('I UNDERSTAND!'), findsOneWidget);
+    expect(find.text('Got it'), findsNothing);
     expect(repository.teamIds, [83, 83]);
     expect(
       repository.languages,
