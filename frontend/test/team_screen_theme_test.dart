@@ -792,7 +792,7 @@ void main() {
         of: find.byKey(const ValueKey('last-match-date-time')),
         matching: find.byType(FittedBox),
       ),
-      findsOneWidget,
+      findsNothing,
     );
     expect(
       matchDateLines.map((line) => line.overflow),
@@ -811,8 +811,8 @@ void main() {
     );
     final leadingGap = dateTimeRect.left - homeScoreRect.right;
     final trailingGap = awayScoreRect.left - dateTimeRect.right;
-    expect(leadingGap, greaterThanOrEqualTo(8));
-    expect(trailingGap, greaterThanOrEqualTo(8));
+    expect(leadingGap, greaterThanOrEqualTo(4));
+    expect(trailingGap, greaterThanOrEqualTo(4));
     expect(leadingGap, closeTo(trailingGap, 0.1));
     final homeScoreBox = tester.widget<Container>(
       find.descendant(

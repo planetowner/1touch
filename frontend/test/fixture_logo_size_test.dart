@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/helper.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -7,6 +8,11 @@ import 'support/app_catalog.dart';
 
 void main() {
   setUpAppCatalog();
+  setUpAll(() async {
+    await (FontLoader('Archivo')
+          ..addFont(rootBundle.load('assets/fonts/Archivo-Variable.ttf')))
+        .load();
+  });
 
   for (final width in [320.0, 430.0]) {
     testWidgets('fixture logos stay fixed at ${width.toInt()}px screen width',
@@ -69,6 +75,13 @@ void main() {
       expect(lastWeek.maxLines, 1);
       expect(lastWeek.softWrap, isFalse);
       expect(lastWeek.overflow, TextOverflow.visible);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('last-match-date-time')),
+          matching: find.byType(FittedBox),
+        ),
+        findsNothing,
+      );
       expect(
         tester
                 .getTopLeft(
