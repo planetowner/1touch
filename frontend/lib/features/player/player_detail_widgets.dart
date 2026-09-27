@@ -160,7 +160,7 @@ class PlayerCompetitionTable extends StatelessWidget {
                   child: Text('WR',
                       textAlign: TextAlign.center, style: headerStyle)),
               Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: Text(tr(context, 'Rating'),
                       textAlign: TextAlign.right, style: headerStyle)),
             ]),
@@ -199,7 +199,7 @@ class PlayerCompetitionTable extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: Heading5.style)),
                     Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: Align(
                             alignment: Alignment.centerRight,
                             child: Container(
@@ -244,7 +244,7 @@ class PlayerDetailMatchCard extends StatelessWidget {
   final PlayerDetailMatch match;
   @override
   Widget build(BuildContext context) => Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: InkWell(
           onTap: () => context.push(
               '/match/${match.id}?status=${match.live ? 'live' : 'past'}'),
@@ -253,13 +253,17 @@ class PlayerDetailMatchCard extends StatelessWidget {
               score: '${match.homeScore ?? '—'} - ${match.awayScore ?? '—'}',
               competition:
                   '${competitionNameLabel(context, match.competitionId, match.competition)}${match.round == null ? '' : ' / ${match.round}'}',
-              opponentName: teamNameLabel(
-                  context, match.opponentTeamId, match.opponent ?? '—'),
               againstLogo: match.opponentImage,
               remoteLogo: true,
               stats: [
                 for (final metric in match.metrics)
-                  {'label': metric.label, 'value': playerMetricValue(metric)}
+                  {
+                    'label': metric.label,
+                    'value': playerMetricValue(
+                      metric,
+                      zeroForMissingCount: true,
+                    )
+                  }
               ],
               rating: match.rating?.toStringAsFixed(1) ?? '—')));
 }
