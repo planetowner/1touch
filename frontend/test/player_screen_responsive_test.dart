@@ -40,6 +40,48 @@ void main() {
     );
     expect(backing.width, 32);
     expect(backing.height, 32);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('player-match-result'))).dx -
+          tester
+              .getTopRight(find.byKey(const ValueKey('player-match-logo')))
+              .dx,
+      8,
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('player-match-score'))).dx -
+          tester
+              .getTopRight(find.byKey(const ValueKey('player-match-result')))
+              .dx,
+      16,
+    );
+    expect(
+      tester
+              .getTopRight(find.byKey(const ValueKey('player-match-card-top')))
+              .dx -
+          tester
+              .getTopRight(
+                  find.byKey(const ValueKey('player-match-competition')))
+              .dx,
+      16,
+    );
+    expect(
+      tester
+              .getTopLeft(
+                  find.byKey(const ValueKey('player-match-stat-value-Touches')))
+              .dx -
+          tester.getTopRight(find.text('Touch')).dx,
+      8,
+    );
+    expect(
+      tester
+              .getTopRight(
+                  find.byKey(const ValueKey('player-match-card-bottom')))
+              .dx -
+          tester
+              .getTopRight(find.byKey(const ValueKey('player-match-rating')))
+              .dx,
+      16,
+    );
   });
 
   testWidgets('overview jersey number removes top leading beside player image',
@@ -284,7 +326,17 @@ void main() {
     final overviewCards = tester
         .widgetList<PlayerDetailMatchCard>(find.byType(PlayerDetailMatchCard))
         .toList();
+    final overviewMatchBoxes = find.byKey(const ValueKey('player-match-card'));
     expect(overviewCards.length, 3);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('player-matches-arrow'))),
+      const Size.square(24),
+    );
+    expect(
+      tester.getTopLeft(overviewMatchBoxes.at(1)).dy -
+          tester.getBottomLeft(overviewMatchBoxes.at(0)).dy,
+      16,
+    );
     expect(overviewCards.first.match.metrics.map((m) => m.code),
         ['goals', 'assists', 'shots']);
     await tester.tap(find.text('Matches').first);

@@ -146,10 +146,20 @@ class PlayerOverviewTab extends StatelessWidget {
               const SizedBox(height: 48),
               PlayerSection(
                   title: tr(context, 'MATCHES'),
-                  trailing: IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      tooltip: tr(context, 'All matches'),
-                      onPressed: onMatches),
+                  trailing: SizedBox.square(
+                    dimension: 24,
+                    child: IconButton(
+                        key: const ValueKey('player-matches-arrow'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 24,
+                          height: 24,
+                        ),
+                        iconSize: 24,
+                        icon: const Icon(Icons.chevron_right),
+                        tooltip: tr(context, 'All matches'),
+                        onPressed: onMatches),
+                  ),
                   child: Column(children: [
                     if (detail.matches.isEmpty)
                       Text(tr(context, 'No appearances this season')),
