@@ -23,6 +23,7 @@ import 'package:onetouch/models/current_form.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
 import 'package:onetouch/models/team_attribute_season_option.dart';
 import 'package:onetouch/models/team_probability.dart';
+import 'package:onetouch/screens/TeamProbabilityScreen.dart';
 
 part 'analysis/analysis_shared.dart';
 part 'analysis/attributes_section.dart';
@@ -47,7 +48,7 @@ class AnalysisTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
