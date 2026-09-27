@@ -340,7 +340,7 @@ class _StatSection extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(tr(context, section.rows[i].label),
+                      Text(appStatLabel(context, section.rows[i].label),
                           style: Body1.style),
                       const Spacer(),
                       Text(section.rows[i].value, style: Body1_b.style),

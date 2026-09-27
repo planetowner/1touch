@@ -640,7 +640,7 @@ void main() {
     );
     expect(find.text('Home Substitute'), findsWidgets);
     expect(find.text('PASSING'), findsOneWidget);
-    expect(find.text('Accurate passes'), findsOneWidget);
+    expect(find.text('Accurate Passes'), findsOneWidget);
     expect(find.text('12 / 15'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
