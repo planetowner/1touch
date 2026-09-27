@@ -143,7 +143,7 @@ class PlayerMatchCard extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      competition,
+                      normalizeCompetitionDisplayLabel(competition),
                       key: const ValueKey('player-match-competition'),
                       textAlign: TextAlign.right,
                       maxLines: 1,

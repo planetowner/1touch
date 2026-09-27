@@ -30,6 +30,15 @@ Color mainPageBackground(BuildContext context) {
       : AppColors.of(context).pageBackground;
 }
 
+const double appBarMinimumContentTop = 47;
+
+double appBarContentTop(BuildContext context) {
+  final topInset = MediaQuery.paddingOf(context).top;
+  return topInset < appBarMinimumContentTop
+      ? appBarMinimumContentTop
+      : topInset;
+}
+
 double responsiveBrandGradientHeight(BuildContext context) {
   return (MediaQuery.sizeOf(context).height * 0.70)
       .clamp(550.0, 650.0)

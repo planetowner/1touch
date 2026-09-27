@@ -1,12 +1,15 @@
 import 'package:onetouch/l10n/date_labels.dart';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/api_image_headers.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/community/community_repository.dart';
 import 'package:onetouch/data/post_comments/post_comment_repository.dart';
 import 'package:onetouch/features/community/community_engagement.dart';
 import 'package:onetouch/features/community/community_identity.dart';
+import 'package:onetouch/features/community/community_attachment_viewer.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/post_comment.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/GroundRules.dart';
@@ -28,6 +31,7 @@ class PostDetailContent extends StatelessWidget {
     required this.onRetryComments,
     required this.onReply,
     required this.onReport,
+    this.shareInvoker,
   });
 
   final Post post;
@@ -42,6 +46,35 @@ class PostDetailContent extends StatelessWidget {
   final VoidCallback onRetryComments;
   final ValueChanged<PostComment>? onReply;
   final Future<void> Function(String reason)? onReport;
+  final Future<ShareResult> Function(ShareParams params)? shareInvoker;
+
+  Future<void> _sharePost(BuildContext context) async {
+    final renderBox = context.findRenderObject();
+    final shareOrigin = renderBox is RenderBox && renderBox.hasSize
+        ? renderBox.localToGlobal(Offset.zero) & renderBox.size
+        : null;
+    final params = ShareParams(
+      title: '1Touch',
+      subject: post.title,
+      text: communityPostShareText(post),
+      sharePositionOrigin: shareOrigin,
+    );
+
+    try {
+      await (shareInvoker ?? SharePlus.instance.share)(params);
+    } catch (error, stackTrace) {
+      debugPrint('Community post share failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr(context, 'Unable to share post. Please try again.'),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,10 +195,16 @@ class PostDetailContent extends StatelessWidget {
                       ),
                       color: colors.onSurface,
                     ),
-                    _PostAction(
-                      icon: Icons.share,
-                      label: 'share',
-                      color: colors.onSurface,
+                    Builder(
+                      builder: (shareContext) => _PostAction(
+                        actionKey: const ValueKey(
+                          'community-detail-share-action',
+                        ),
+                        icon: Icons.share,
+                        label: 'share',
+                        color: colors.onSurface,
+                        onTap: () => _sharePost(shareContext),
+                      ),
                     ),
                     _PostAction(
                       icon: Icons.report_gmailerrorred_outlined,
@@ -197,6 +236,8 @@ class PostDetailContent extends StatelessWidget {
     );
   }
 }
+
+String communityPostShareText(Post post) => '${post.title}\n\n${post.body}';
 
 class PostDetailReplyBar extends StatefulWidget {
   const PostDetailReplyBar({
@@ -417,19 +458,28 @@ class _PostMediaPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Image.network(
-          mediaUrl,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
-            color: AppPalette.lightGrey,
-            child: Icon(
-              Icons.image_not_supported_outlined,
-              color: AppColors.of(context).mutedForeground,
-              size: 48,
+    return GestureDetector(
+      key: const ValueKey('community-detail-media-open'),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => showCommunityAttachmentViewer(
+        context,
+        mediaUrl: mediaUrl,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Image.network(
+            mediaUrl,
+            headers: apiImageHeaders(mediaUrl),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              color: AppPalette.lightGrey,
+              child: Icon(
+                Icons.image_not_supported_outlined,
+                color: AppColors.of(context).mutedForeground,
+                size: 48,
+              ),
             ),
           ),
         ),
@@ -544,9 +594,16 @@ class _PostCommentRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
+            key: ValueKey('community-comment-avatar-${comment.commentId}'),
             radius: 12,
             backgroundColor: isDark ? Colors.white24 : AppPalette.lightGrey,
-            backgroundImage: avatarUrl == null ? null : NetworkImage(avatarUrl),
+            backgroundImage: avatarUrl == null
+                ? null
+                : NetworkImage(
+                    avatarUrl,
+                    headers: apiImageHeaders(avatarUrl),
+                  ),
+            onBackgroundImageError: avatarUrl == null ? null : (_, __) {},
           ),
           const SizedBox(width: 8),
           Expanded(

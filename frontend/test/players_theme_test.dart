@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/models/following_player.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_widgets.dart';
+import 'package:onetouch/features/player/player_picker_sheet.dart';
 import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
 
@@ -66,6 +68,19 @@ void main() {
         expect(find.byKey(const ValueKey('active-ranking-position-filter')),
             findsNothing);
         expect(
+          tester.getSize(find.byKey(const ValueKey('players-profile-button'))),
+          const Size.square(32),
+        );
+        expect(
+          size.width -
+              tester
+                  .getTopRight(
+                    find.byKey(const ValueKey('players-profile-button')),
+                  )
+                  .dx,
+          24,
+        );
+        expect(
             find.byKey(const ValueKey('players-brand-gradient')), findsNothing);
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
         await tester.pumpAndSettle();
@@ -94,6 +109,46 @@ void main() {
     expect(find.byKey(const ValueKey('favorite-player-number-badge')),
         findsNothing);
     expect(find.byIcon(Icons.help_outline), findsNWidgets(2));
+  });
+
+  testWidgets('main player search opens the shared search page',
+      (tester) async {
+    final followingController = PlayerFollowingController(
+      repository: FakeFollowingPlayersRepository(),
+    );
+    addTearDown(followingController.dispose);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => Players(
+            repository: FakePlayerDirectoryRepository(),
+            detailRepository: FakePlayerDetailRepository(),
+            followingController: followingController,
+          ),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (_, __) => const Scaffold(
+            key: ValueKey('shared-search-page'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('players-search-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('shared-search-page')),
+      findsOneWidget,
+    );
+    expect(find.byType(PlayerPickerSheet), findsNothing);
   });
 
   testWidgets('ranking title sits 16px above its card without filters',

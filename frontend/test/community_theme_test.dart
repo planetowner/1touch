@@ -122,9 +122,39 @@ void main() {
         2,
       );
       expect(tabBar.padding, const EdgeInsets.only(left: 8));
+      final teamHeaderPadding = tester.widget<Padding>(
+        find.byKey(const ValueKey('community-team-header-padding')),
+      );
+      expect(
+          teamHeaderPadding.padding, const EdgeInsets.fromLTRB(24, 16, 24, 16));
+      expect(
+        tester.getSize(find.byKey(const ValueKey('community-team-logo'))),
+        const Size.square(52),
+      );
+      final appLogoCenter =
+          tester.getCenter(find.byKey(const ValueKey('community-app-logo')));
+      final searchCenter = tester
+          .getCenter(find.byKey(const ValueKey('community-search-button')));
+      final profileCenter = tester
+          .getCenter(find.byKey(const ValueKey('community-profile-button')));
+      expect(searchCenter.dy, appLogoCenter.dy);
+      expect(profileCenter.dy, appLogoCenter.dy);
+      expect(
+        tester.getSize(find.byKey(const ValueKey('community-profile-button'))),
+        const Size.square(32),
+      );
+      expect(
+        tester.getSize(find.byType(MaterialApp)).width -
+            tester
+                .getTopRight(
+                  find.byKey(const ValueKey('community-profile-button')),
+                )
+                .dx,
+        24,
+      );
 
       if (testCase.name == 'light') {
-        final popular = tester.widget<Container>(
+        final popular = tester.widget<AnimatedContainer>(
           find.byKey(const ValueKey('community-filter-popular')),
         );
         final groundRules = tester.widget<Container>(
@@ -139,7 +169,7 @@ void main() {
           app_style.AppPalette.white,
         );
       } else {
-        final popular = tester.widget<Container>(
+        final popular = tester.widget<AnimatedContainer>(
           find.byKey(const ValueKey('community-filter-popular')),
         );
         final groundRules = tester.widget<Container>(
@@ -236,7 +266,7 @@ void main() {
     final dialog = tester.widget<Dialog>(
       find.byKey(const ValueKey('community-ground-rules-dialog')),
     );
-    expect(dialog.backgroundColor, app_style.AppPalette.white);
+    expect(dialog.backgroundColor, app_style.AppPalette.lightGreyBox);
     final firstNumberX = tester
         .getTopLeft(find.byKey(const ValueKey('ground-rule-number-1')))
         .dx;
@@ -300,7 +330,7 @@ void main() {
     final dialog = tester.widget<Dialog>(
       find.byKey(const ValueKey('community-ground-rules-dialog')),
     );
-    expect(dialog.backgroundColor, app_style.AppPalette.darkGrey);
+    expect(dialog.backgroundColor, app_style.AppPalette.lightGrey);
     await tester.tap(find.text('I UNDERSTAND!'));
     await tester.pumpAndSettle();
 
