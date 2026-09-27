@@ -584,9 +584,14 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
               },
             ),
           ),
+          const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
-            child: Text(tr(context, 'ROUND'), style: Body2_b.style),
+            child: Text(
+              tr(context, 'ROUND'),
+              key: const ValueKey('analysis-current-form-round-label'),
+              style: Body2_b.style,
+            ),
           ),
         ],
       ),
