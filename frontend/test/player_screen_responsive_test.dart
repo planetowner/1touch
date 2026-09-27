@@ -432,6 +432,24 @@ void main() {
         ['goals', 'assists', 'shots']);
     await tester.tap(find.text('Matches').first);
     await tester.pumpAndSettle();
+    final matchesSelector = tester.widget<PlayerSeasonSelector>(
+      find.byType(PlayerSeasonSelector),
+    );
+    final matchesSelectorRect = tester.getRect(
+      find.byKey(ValueKey(
+          'player-matches-season-${matchesSelector.detail.selectedSeason?.id}')),
+    );
+    expect(matchesSelector.width, double.infinity);
+    expect(matchesSelectorRect.left, 24);
+    expect(
+      matchesSelectorRect.right,
+      tester.getSize(find.byType(MaterialApp)).width - 24,
+    );
+    expect(
+      tester.getTopLeft(find.text('RECENT MATCHES')).dy -
+          matchesSelectorRect.bottom,
+      32,
+    );
     final matches = tester
         .widgetList<PlayerDetailMatchCard>(find.byType(PlayerDetailMatchCard))
         .toList();

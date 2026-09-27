@@ -36,8 +36,9 @@ class _MatchesTabState extends State<MatchesTab> {
                 key: ValueKey(
                     'player-matches-season-${detail.selectedSeason?.id}'),
                 detail: detail,
+                width: double.infinity,
                 onChanged: (id) => setState(() => _seasonId = id)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             if (detail.matches.any((m) => m.live)) ...[
               PlayerSection(
                   title: tr(context, 'LIVE'),
