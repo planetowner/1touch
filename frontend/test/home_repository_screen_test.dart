@@ -174,7 +174,7 @@ void main() {
     expect(find.text('Official channel · Latest'), findsOneWidget);
   });
 
-  testWidgets('home app bar follows the 345 by 48 reference spacing',
+  testWidgets('home app bar uses the shared app logo size and spacing',
       (tester) async {
     await _setScreenSize(tester, const Size(393, 852));
     final repository = _ControlledHomeRepository();
@@ -205,8 +205,8 @@ void main() {
     );
 
     expect(logo.left, 24);
-    expect(logo.width, 120);
-    expect(logo.height, closeTo(17.1094, 0.001));
+    expect(logo.width, closeTo(113.2308, 0.001));
+    expect(logo.height, 23);
     expect(search.size, const Size(32, 32));
     expect(teamPicker.size, const Size(64, 40));
     expect(profile.size, const Size(32, 32));

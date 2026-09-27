@@ -57,7 +57,8 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
         // user-facing abbreviation for the Bundesliga calendar legend.
         82 => competition.name,
         301 => 'League 1',
-        _ => competition.shortCode ?? competition.name,
+        _ => normalizeCompetitionDisplayLabel(
+            competition.shortCode ?? competition.name),
       };
 
   Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(

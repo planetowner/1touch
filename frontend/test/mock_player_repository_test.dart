@@ -8,6 +8,7 @@ import 'package:onetouch/data/teams/mock/team_trophy_catalog.dart';
 import 'package:onetouch/models/player.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/Career.dart';
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/data/players/api/api_player_detail_response.dart';
@@ -142,6 +143,22 @@ void main() {
         'competition_name': 'Ligue 1',
         'season_name': '2024/2025'
       },
+      {
+        'team_id': 99901,
+        'team_name': 'Korea Republic U23',
+        'team_image': null,
+        'competition_id': 99902,
+        'competition_name': 'Coupe de France',
+        'season_name': null
+      },
+      {
+        'team_id': 99903,
+        'team_name': null,
+        'team_image': null,
+        'competition_id': 99904,
+        'competition_name': null,
+        'season_name': '2023/2024'
+      },
     ];
     final detail = playerDetailFromJson(json);
     await tester.binding.setSurfaceSize(const Size(430, 932));
@@ -154,6 +171,8 @@ void main() {
                 child: CareerTab(playerId: detail.playerId)))));
     await tester.pumpAndSettle();
     expect(find.text('PARIS SAINT-GERMAIN'), findsOneWidget);
+    expect(find.text('KOREA REPUBLIC U23'), findsNothing);
+    expect(find.text('Coupe de France'), findsNothing);
     expect(find.text('PERSONAL'), findsNothing);
     final first = detail.career.first;
     final key = '${first.season}-${first.teamId}';
@@ -180,12 +199,26 @@ void main() {
                 child: CareerTab(playerId: detail.playerId)))));
     await tester.pumpAndSettle();
     final id = detail.career.first.competitions.first.id;
+    expect(find.text('26/27'), findsOneWidget);
+    expect(find.text('2026/2027'), findsNothing);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('player-career-team-header')))
+          .textAlign,
+      TextAlign.center,
+    );
     final filter = find.byKey(const Key('career-competition-filter'));
     await tester.ensureVisible(filter);
     await tester.tap(filter);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(
-        ListTile, detail.career.first.competitions.first.name.toUpperCase()));
+    final optionLabel =
+        detail.career.first.competitions.first.name.toUpperCase();
+    final optionTile = find.widgetWithText(ListTile, optionLabel);
+    final optionText = tester.widget<Text>(
+      find.descendant(of: optionTile, matching: find.text(optionLabel)),
+    );
+    expect(optionText.style, Body2_b.style);
+    await tester.tap(optionTile);
     await tester.pumpAndSettle();
     final filteredSeason = find.byKey(Key(
         'career-season-${detail.career.first.season}-${detail.career.first.teamId}'));

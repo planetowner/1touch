@@ -306,17 +306,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   clipBehavior: Clip.antiAlias,
                   title: Padding(
                     padding: const EdgeInsets.only(left: 24),
-                    child: SizedBox(
+                    child: SvgPicture.asset(
                       key: const ValueKey('home-app-bar-logo'),
+                      'assets/app_logo.svg',
+                      height: 23,
                       width: 120,
-                      height: 17.1094,
-                      child: SvgPicture.asset(
-                        'assets/app_logo.svg',
-                        fit: BoxFit.fill,
-                        colorFilter: ColorFilter.mode(
-                          appBarForeground,
-                          BlendMode.srcIn,
-                        ),
+                      colorFilter: ColorFilter.mode(
+                        appBarForeground,
+                        BlendMode.srcIn,
                       ),
                     ),
                   ),

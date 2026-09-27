@@ -65,11 +65,11 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
     return Dialog(
       key: const ValueKey('community-ground-rules-dialog'),
-      backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
+      backgroundColor: appColors.subtleBackground,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -213,7 +213,7 @@ class _GroundRulesDialogState extends State<_GroundRulesDialog> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
-                          rules.confirmLabel,
+                          tr(context, 'I UNDERSTAND!'),
                           style: Body2_b.style.copyWith(
                             color: colors.onPrimary,
                           ),
