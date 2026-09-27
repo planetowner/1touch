@@ -280,17 +280,45 @@ class MatchCard2 extends StatelessWidget {
               final veryCompact = constraints.maxWidth < 270;
               const teamWidth = 48.0;
               const teamScoreGap = 16.0;
+              final resolvedDateStyle = dateTextStyle ?? Body2.style;
               final homeDimmed = homeScore != null &&
                   awayScore != null &&
                   homeScore! < awayScore!;
               final awayDimmed = homeScore != null &&
                   awayScore != null &&
                   awayScore! < homeScore!;
-              final sectionSpacing = veryCompact
-                  ? 0.0
-                  : constraints.maxWidth < 300
-                      ? 0.0
-                      : 30.0;
+
+              double textWidth(String value, TextStyle style) {
+                final painter = TextPainter(
+                  text: TextSpan(text: value, style: style),
+                  textDirection: Directionality.of(context),
+                  textScaler: MediaQuery.textScalerOf(context),
+                  locale: Localizations.maybeLocaleOf(context),
+                  maxLines: 1,
+                )..layout();
+                final width = painter.width;
+                painter.dispose();
+                return width;
+              }
+
+              final scoreStyle = Heading3.style.copyWith(color: Colors.white);
+              final homeScoreWidth =
+                  textWidth(homeScore?.toString() ?? '-', scoreStyle) + 24;
+              final awayScoreWidth =
+                  textWidth(awayScore?.toString() ?? '-', scoreStyle) + 24;
+              final fixedContentWidth = teamWidth * 2 +
+                  teamScoreGap * 2 +
+                  homeScoreWidth +
+                  awayScoreWidth;
+              final dateWidth = date
+                  .split('\n')
+                  .map((line) => textWidth(line, resolvedDateStyle))
+                  .fold(
+                      0.0, (widest, width) => width > widest ? width : widest);
+              final spacingRoom =
+                  constraints.maxWidth - fixedContentWidth - dateWidth;
+              final sectionSpacing =
+                  (spacingRoom / 2).clamp(8.0, 30.0).toDouble();
               final matchRow = Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 spacing: sectionSpacing,
@@ -321,7 +349,7 @@ class MatchCard2 extends StatelessWidget {
                       key: const ValueKey('last-match-date-time'),
                       date: date,
                       venue: venue,
-                      textStyle: dateTextStyle ?? Body2.style,
+                      textStyle: resolvedDateStyle,
                     ),
                   ),
                   Row(
@@ -650,13 +678,13 @@ class _MatchInfo2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FixtureDateTime(
-          label: date,
-          textStyle: textStyle,
-        ),
-      ],
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: FixtureDateTime(
+        label: date,
+        textStyle: textStyle,
+        overflow: TextOverflow.visible,
+      ),
     );
   }
 }
@@ -667,10 +695,16 @@ class FixtureDateTime extends StatelessWidget {
     super.key,
     required this.label,
     this.textStyle,
+    this.overflow = TextOverflow.ellipsis,
+    this.maxLines = 1,
+    this.softWrap = false,
   });
 
   final String label;
   final TextStyle? textStyle;
+  final TextOverflow overflow;
+  final int maxLines;
+  final bool softWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -680,9 +714,9 @@ class FixtureDateTime extends StatelessWidget {
         for (final line in label.split('\n'))
           Text(
             line,
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.ellipsis,
+            maxLines: maxLines,
+            softWrap: softWrap,
+            overflow: overflow,
             textAlign: TextAlign.center,
             style: textStyle ?? Body2.style,
           ),
