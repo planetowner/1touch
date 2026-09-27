@@ -315,10 +315,12 @@ class MatchCard2 extends StatelessWidget {
                   .map((line) => textWidth(line, resolvedDateStyle))
                   .fold(
                       0.0, (widest, width) => width > widest ? width : widest);
+              // 측정값과 실제 RenderBox 사이의 소수점 오차로 날짜가 미세하게
+              // 축소되지 않도록 날짜 영역에 8px의 안전 여유를 먼저 배정해요.
               final spacingRoom =
-                  constraints.maxWidth - fixedContentWidth - dateWidth;
+                  constraints.maxWidth - fixedContentWidth - dateWidth - 8;
               final sectionSpacing =
-                  (spacingRoom / 2).clamp(8.0, 30.0).toDouble();
+                  (spacingRoom / 2).clamp(4.0, 30.0).toDouble();
               final matchRow = Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 spacing: sectionSpacing,
@@ -678,13 +680,10 @@ class _MatchInfo2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: FixtureDateTime(
-        label: date,
-        textStyle: textStyle,
-        overflow: TextOverflow.visible,
-      ),
+    return FixtureDateTime(
+      label: date,
+      textStyle: textStyle,
+      overflow: TextOverflow.visible,
     );
   }
 }
