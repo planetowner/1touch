@@ -876,7 +876,7 @@ const appMessages = <String, MessageTranslations>{
   "Passing": (ko: "패스", ja: "パス", zh: "传球"),
   "Physical": (ko: "피지컬", ja: "フィジカル", zh: "身体"),
   "Reaction": (ko: "반응", ja: "反応", zh: "反应"),
-  "Dominance": (ko: "지배력", ja: "支配力", zh: "统治力"),
+  "Dominance": (ko: "기회창출", ja: "支配力", zh: "统治力"),
   "MATCH INFO": (ko: "경기 정보", ja: "試合情報", zh: "比赛信息"),
   "MATCH PREVIEW": (ko: "경기 프리뷰", ja: "試合プレビュー", zh: "赛前分析"),
   "HEAD TO HEAD": (ko: "상대 전적", ja: "対戦成績", zh: "交锋记录"),
@@ -1005,6 +1005,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "投稿を読み込めませんでした。",
     zh: "无法加载帖子。"
   ),
+  "Unable to share post. Please try again.": (
+    ko: "게시물을 공유하지 못했어요. 다시 시도해 주세요.",
+    ja: "投稿を共有できませんでした。もう一度お試しください。",
+    zh: "无法分享帖子，请重试。"
+  ),
   "Unable to update like. Please try again.": (
     ko: "좋아요를 변경하지 못했어요. 다시 시도해 주세요.",
     ja: "いいねを更新できませんでした。もう一度お試しください。",
@@ -1053,6 +1058,7 @@ const appMessages = <String, MessageTranslations>{
     zh: "无法提交举报，请重试。"
   ),
   "Community Ground Rules": (ko: "커뮤니티 이용 규칙", ja: "コミュニティルール", zh: "社区规则"),
+  "I UNDERSTAND!": (ko: "이해했습니다!", ja: "理解しました！", zh: "我明白了！"),
   "Unable to load community rules.": (
     ko: "커뮤니티 이용 규칙을 불러오지 못했어요.",
     ja: "コミュニティルールを読み込めませんでした。",
