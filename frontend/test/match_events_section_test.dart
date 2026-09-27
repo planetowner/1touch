@@ -67,16 +67,18 @@ void main() {
           expect(home ? icon.left - nameRect.right : nameRect.left - icon.right,
               closeTo(8, 0.001));
 
-          final wrapFinder =
-              find.descendant(of: row, matching: find.byType(Wrap));
-          final wrapRect = tester.getRect(wrapFinder);
-          final wrap = tester.widget<Wrap>(wrapFinder);
+          final minuteAreaFinder = find.descendant(
+            of: row,
+            matching: find.byKey(const ValueKey('match-event-minute-area')),
+          );
+          final minuteAreaRect = tester.getRect(minuteAreaFinder);
           expect(
               home
-                  ? nameRect.left - wrapRect.right
-                  : wrapRect.left - nameRect.right,
+                  ? nameRect.left - minuteAreaRect.right
+                  : minuteAreaRect.left - nameRect.right,
               closeTo(8, 0.001));
-          expect(home ? wrapRect.left : wrapRect.right, home ? 24 : width - 24);
+          expect(home ? minuteAreaRect.left : minuteAreaRect.right,
+              home ? 24 : width - 24);
 
           final times = [
             for (var i = 0; i < minutes.length; i++)
@@ -87,28 +89,138 @@ void main() {
           ];
           for (var i = 0; i < times.length; i++) {
             final time = times[i];
-            expect(time.left, greaterThanOrEqualTo(wrapRect.left - 0.001));
-            expect(time.right, lessThanOrEqualTo(wrapRect.right + 0.001));
+            expect(
+                time.left, greaterThanOrEqualTo(minuteAreaRect.left - 0.001));
+            expect(time.right, lessThanOrEqualTo(minuteAreaRect.right + 0.001));
             expect(time.height, times.first.height);
             if (i > 0 && time.top != times[i - 1].top) {
               final previousLine =
                   times.where((r) => r.top == times[i - 1].top);
+              final previousWrapFinder = find.ancestor(
+                of: find.descendant(
+                  of: row,
+                  matching: find.text(
+                    '${minutes[i - 1]}${i - 1 < minutes.length - 1 ? ',' : ''}',
+                  ),
+                ),
+                matching: find.byType(Wrap),
+              );
+              final spacing = tester.widget<Wrap>(previousWrapFinder).spacing;
               final usedWidth =
                   previousLine.fold(0.0, (sum, r) => sum + r.width) +
-                      wrap.spacing * (previousLine.length - 1);
+                      spacing * (previousLine.length - 1);
               // 다음 시각이 들어갈 공간이 없을 때만 줄을 바꿔요.
-              expect(usedWidth + wrap.spacing + time.width,
-                  greaterThan(wrapRect.width));
+              expect(usedWidth + spacing + time.width,
+                  greaterThan(minuteAreaRect.width));
             }
             final sameLine = times.where((r) => r.top == time.top).toList();
-            expect(home ? sameLine.first.left : sameLine.last.right,
-                closeTo(home ? wrapRect.left : wrapRect.right, 0.001));
+            final lineWrapFinder = find.ancestor(
+              of: find.descendant(
+                of: row,
+                matching: find.text(
+                  '${minutes[i]}${i < minutes.length - 1 ? ',' : ''}',
+                ),
+              ),
+              matching: find.byType(Wrap),
+            );
+            final lineWrap = tester.widget<Wrap>(lineWrapFinder);
+            if (sameLine.length == 1) {
+              expect(lineWrap.alignment, WrapAlignment.center);
+              final lineTops = times.map((rect) => rect.top).toSet().toList()
+                ..sort();
+              final lineIndex = lineTops.indexOf(time.top);
+              if (lineIndex == 0) {
+                expect(
+                    time.center.dx, closeTo(minuteAreaRect.center.dx, 0.001));
+              } else {
+                final previousLine =
+                    times.where((rect) => rect.top == lineTops[lineIndex - 1]);
+                final previousLeft = previousLine
+                    .map((rect) => rect.left)
+                    .reduce((a, b) => a < b ? a : b);
+                final previousRight = previousLine
+                    .map((rect) => rect.right)
+                    .reduce((a, b) => a > b ? a : b);
+                expect(
+                  time.center.dx,
+                  closeTo((previousLeft + previousRight) / 2, 0.001),
+                );
+              }
+            } else {
+              expect(lineWrap.alignment,
+                  home ? WrapAlignment.start : WrapAlignment.end);
+              expect(
+                  home ? sameLine.first.left : sameLine.last.right,
+                  closeTo(home ? minuteAreaRect.left : minuteAreaRect.right,
+                      0.001));
+            }
           }
         }
         expect(tester.takeException(), isNull);
       }
     });
   }
+
+  testWidgets('centers a lone minute on the second wrapped line',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(350, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: const Scaffold(
+          body: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: MatchEventsSection(
+              events: [
+                {
+                  'player': 'Valverde',
+                  'minute': "20'",
+                  'team': 'home',
+                  'type': 'goal',
+                },
+                {
+                  'player': 'Valverde',
+                  'minute': "27'",
+                  'team': 'home',
+                  'type': 'goal',
+                },
+                {
+                  'player': 'Valverde',
+                  'minute': "42'",
+                  'team': 'home',
+                  'type': 'goal',
+                },
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final row = find.byKey(
+      const ValueKey('match-event-home-goal-Valverde'),
+    );
+    final minute20 = tester.getRect(
+      find.descendant(of: row, matching: find.text("20',")),
+    );
+    final minute27 = tester.getRect(
+      find.descendant(of: row, matching: find.text("27',")),
+    );
+    final minute42 = tester.getRect(
+      find.descendant(of: row, matching: find.text("42'")),
+    );
+
+    expect(minute20.top, minute27.top);
+    expect(minute42.top, greaterThan(minute20.top));
+    expect(
+      minute42.center.dx,
+      closeTo((minute20.left + minute27.right) / 2, 0.001),
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   for (final size in [const Size(320, 568), const Size(430, 932)]) {
     testWidgets(
@@ -184,6 +296,28 @@ void main() {
       expect(homeSecondY - tester.getBottomLeft(find.text('Morata')).dy, 8);
       expect(tester.getBottomLeft(find.byType(MatchEventsSection)).dy,
           tester.getBottomLeft(find.text('Oscar Bobb')).dy);
+
+      for (final event in [
+        ('home', 'Morata', "16'"),
+        ('home', 'Pablo', "45+2'"),
+        ('away', 'Rodrigo Muniz', "13'"),
+        ('away', 'Cesar Palacios', "37'"),
+        ('away', 'Oscar Bobb', "78'"),
+      ]) {
+        final row = find.byKey(
+          ValueKey('match-event-${event.$1}-goal-${event.$2}'),
+        );
+        final wrapFinder =
+            find.descendant(of: row, matching: find.byType(Wrap));
+        final minuteFinder =
+            find.descendant(of: row, matching: find.text(event.$3));
+
+        expect(tester.widget<Wrap>(wrapFinder).alignment, WrapAlignment.center);
+        expect(
+          tester.getRect(minuteFinder).center.dx,
+          closeTo(tester.getRect(wrapFinder).center.dx, 0.001),
+        );
+      }
       expect(tester.takeException(), isNull);
     });
   }
