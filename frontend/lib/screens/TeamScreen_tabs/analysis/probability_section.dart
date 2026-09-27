@@ -115,7 +115,7 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
 
     return Padding(
       key: const ValueKey('team-probability-section'),
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -141,7 +141,8 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
           else if (_snapshot case final snapshot?)
             LayoutBuilder(
               builder: (context, constraints) {
-                const gap = 16.0;
+                // 345px content width: 165px card + 15px gap + 165px card.
+                const gap = 15.0;
                 final cardWidth = (constraints.maxWidth - gap) / 2;
                 return Wrap(
                   key: const ValueKey('team-probability-cards'),
@@ -151,7 +152,8 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
                     for (final card in snapshot.cards)
                       SizedBox(
                         width: cardWidth,
-                        child: _probabilityBox(context, card),
+                        height: 165,
+                        child: _probabilityBox(context, snapshot, card),
                       ),
                   ],
                 );
@@ -164,66 +166,119 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
 
   Widget _probabilityBox(
     BuildContext context,
+    TeamProbabilitySnapshot snapshot,
     TeamProbabilityCard card,
   ) {
     final delta = card.changePercentagePoints;
     final showDelta = delta != null && delta != 0;
     final isUp = delta != null && delta > 0;
 
-    return Container(
+    return InkWell(
       key: ValueKey('team-probability-card-${card.event}'),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.of(context).cardBackground,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(_eventTitle(card.event), style: Body1.style),
-          const SizedBox(height: 36),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  '${(card.probability * 100).round()}',
-                  key: ValueKey('team-probability-value-${card.event}'),
-                  style: Heading1.style,
-                ),
-                Text('%', style: Heading4.style),
-                if (showDelta) ...[
-                  const SizedBox(width: 4),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      IgnoreBaseline(
-                        child: Icon(
-                          isUp ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                          key: ValueKey(
-                            'team-probability-delta-icon-${card.event}',
-                          ),
-                          color: isUp ? Colors.blueAccent : Colors.redAccent,
-                          size: 24,
-                        ),
-                      ),
-                      Text(
-                        _formatDelta(delta.abs()),
-                        key: ValueKey('team-probability-delta-${card.event}'),
-                        style: Heading5.style,
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
+      borderRadius: BorderRadius.circular(24),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => TeamProbabilityScreen(
+            teamId: snapshot.teamId,
+            event: card.event,
+            initialSnapshot: snapshot,
+            repository: widget.repository,
           ),
-        ],
+        ),
+      ),
+      child: Ink(
+        key: ValueKey('team-probability-surface-${card.event}'),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.of(context).cardBackground,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: appCardShadows(context),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              key: ValueKey('team-probability-title-slot-${card.event}'),
+              width: double.infinity,
+              height: 39,
+              child: Text(
+                _eventTitle(card.event),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Body1.style.copyWith(height: 1.3),
+              ),
+            ),
+            SizedBox(
+              key: ValueKey('team-probability-footer-${card.event}'),
+              width: double.infinity,
+              height: 43,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: OverflowBox(
+                      alignment: Alignment.bottomLeft,
+                      minWidth: 0,
+                      maxWidth: double.infinity,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${(card.probability * 100).round()}',
+                            key: ValueKey(
+                              'team-probability-value-${card.event}',
+                            ),
+                            style: Heading1.style.copyWith(height: 0.9),
+                          ),
+                          Text(
+                            '%',
+                            key: ValueKey(
+                              'team-probability-percent-${card.event}',
+                            ),
+                            style: Heading4.style.copyWith(height: 1.2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (showDelta)
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Row(
+                        key: ValueKey(
+                          'team-probability-delta-row-${card.event}',
+                        ),
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isUp ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                            key: ValueKey(
+                              'team-probability-delta-icon-${card.event}',
+                            ),
+                            color: isUp
+                                ? const Color(0xFF36CC7A)
+                                : const Color(0xFFFF5C5C),
+                            size: 24,
+                          ),
+                          Text(
+                            '${_formatDelta(delta.abs())}%',
+                            key: ValueKey(
+                              'team-probability-delta-${card.event}',
+                            ),
+                            style: Heading5.style.copyWith(height: 1.1),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -231,9 +286,12 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
   String _eventTitle(String event) {
     return switch (event) {
       'league_winner' => tr(context, 'Chances to win\nLEAGUE Trophy'),
+      'ucl_winner' => tr(context, 'Chances to win\nUCL Trophy'),
+      'uel_winner' => tr(context, 'Chances to win\nUEL Trophy'),
+      'uecl_winner' => tr(context, 'Chances to win\nUECL Trophy'),
       'top_4' => tr(context, 'Chances to finish\nTOP 4'),
       'top_6' => tr(context, 'Chances to finish\nTOP 6'),
-      'direct_relegation' => tr(context, 'Chances of\nDIRECT RELEGATION'),
+      'direct_relegation' => tr(context, 'Chances of\nRELEGATION'),
       'relegation_playoff' => tr(context, 'Chances of\nRELEGATION PLAYOFF'),
       _ => event
           .split('_')
