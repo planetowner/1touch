@@ -604,8 +604,12 @@ class _SettingsListState extends State<SettingsList> {
       );
 
   Widget _settingItem(
-      {required IconData icon, required String title, VoidCallback? onTap}) {
+      {required Key itemKey,
+      required IconData icon,
+      required String title,
+      VoidCallback? onTap}) {
     return ListTile(
+      key: itemKey,
       leading: Icon(icon),
       title: Text(tr(context, title), style: Body1.style),
       trailing: const Icon(Icons.arrow_forward_ios),
@@ -619,12 +623,14 @@ class _SettingsListState extends State<SettingsList> {
     return Column(
       children: [
         _settingItem(
+          itemKey: const ValueKey('profile-setting-personal-info'),
           icon: Icons.badge_outlined,
           title: tr(context, 'Personal Info'),
           onTap: widget.onPersonalInfo,
         ),
         _divider(),
         _settingItem(
+          itemKey: const ValueKey('profile-setting-notification'),
           icon: Icons.notifications_none,
           title: tr(context, 'Notification'),
           onTap: () {
@@ -633,6 +639,7 @@ class _SettingsListState extends State<SettingsList> {
         ),
         _divider(),
         _settingItem(
+          itemKey: const ValueKey('profile-setting-preferences'),
           icon: Icons.language_rounded,
           title: tr(context, 'Preferences'),
           onTap: () {
@@ -643,14 +650,17 @@ class _SettingsListState extends State<SettingsList> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ListTile(
+            key: const ValueKey('profile-setting-dark-theme'),
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.brightness_4_outlined),
             title: Text(tr(context, "Dark Theme"), style: Body1.style),
             trailing: const AppThemeSwitch(),
+            onTap: appThemeController.toggle,
           ),
         ),
         _divider(),
         _settingItem(
+          itemKey: const ValueKey('profile-setting-contact'),
           icon: Icons.chat_outlined,
           title: tr(context, 'Contact Us'),
           onTap: () {
@@ -659,6 +669,7 @@ class _SettingsListState extends State<SettingsList> {
         ),
         _divider(),
         _settingItem(
+          itemKey: const ValueKey('profile-setting-about'),
           icon: Icons.info_outline,
           title: tr(context, 'About'),
           onTap: () {

@@ -9,6 +9,50 @@ import 'package:onetouch/data/profile/profile_avatar_repository.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 
 void main() {
+  testWidgets('uses the compact profile editor layout', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: _EditProfileHost(
+          repository: _RecordingAvatarRepository(),
+          profile: _profile(),
+          pickAvatar: () async => null,
+        ),
+      ),
+    );
+    await tester.tap(find.text('OPEN'));
+    await tester.pumpAndSettle();
+
+    final avatarCenter = tester.getCenter(find.byType(CircleAvatar));
+    final cameraCenter = tester.getCenter(
+      find.byKey(const ValueKey('profile-avatar-action')),
+    );
+    final usernameField = tester.widget<TextField>(
+      find.byKey(const ValueKey('profile-username-field')),
+    );
+    final fieldFinders = [
+      find.byKey(const ValueKey('profile-real-name-field')),
+      find.byKey(const ValueKey('profile-username-field')),
+      find.byKey(const ValueKey('profile-email-field')),
+      find.byKey(const ValueKey('profile-password-field')),
+    ];
+
+    expect(cameraCenter, avatarCenter);
+    expect(usernameField.textAlign, TextAlign.right);
+    expect(usernameField.decoration?.filled, isFalse);
+    expect(
+      fieldFinders.map(tester.getTopRight).map((point) => point.dx).toSet(),
+      hasLength(1),
+    );
+    expect(find.text('UPDATE INFO'), findsOneWidget);
+    expect(find.text('Save profile'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('uses a Cupertino action sheet on iOS', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

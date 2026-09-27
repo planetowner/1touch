@@ -228,6 +228,69 @@ void main() {
     expect(find.text('Team 83'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('profile setting rows open their routes', (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final destinations = <String, String>{
+      'profile-setting-personal-info': '/profile/edit',
+      'profile-setting-notification': '/profile/notification',
+      'profile-setting-preferences': '/profile/preference',
+      'profile-setting-contact': '/profile/contact',
+      'profile-setting-about': '/profile/about',
+    };
+    final router = GoRouter(
+      initialLocation: '/profile',
+      routes: [
+        GoRoute(
+          path: '/profile',
+          builder: (_, __) => Profile(
+            repository: _StaticCurrentUserRepository(),
+            followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          ),
+        ),
+        for (final route in destinations.values)
+          GoRoute(
+            path: route,
+            builder: (_, __) => Scaffold(body: Text('route:$route')),
+          ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: app_style.whitetheme,
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byType(CustomScrollView),
+      const Offset(0, -2400),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ListTile>(
+            find.byKey(const ValueKey('profile-setting-dark-theme')),
+          )
+          .onTap,
+      isNotNull,
+    );
+
+    for (final entry in destinations.entries) {
+      final item = find.byKey(ValueKey(entry.key));
+      await tester.ensureVisible(item);
+      await tester.pumpAndSettle();
+      await tester.tap(item);
+      await tester.pumpAndSettle();
+
+      expect(find.text('route:${entry.value}'), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+    }
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _setScreenSize(WidgetTester tester, Size size) async {
