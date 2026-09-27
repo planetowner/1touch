@@ -860,6 +860,8 @@ const appMessages = <String, MessageTranslations>{
   "Goal": (ko: "골", ja: "ゴール", zh: "进球"),
   "Goals": (ko: "골", ja: "ゴール", zh: "进球"),
   "Assist": (ko: "도움", ja: "アシスト", zh: "助攻"),
+  "Assists": (ko: "도움", ja: "アシスト", zh: "助攻"),
+  "Shot": (ko: "슈팅", ja: "シュート", zh: "射门"),
   "Goal\nContributions": (ko: "공격\n포인트", ja: "ゴール\n関与", zh: "参与\n进球"),
   "Win Rate": (ko: "승률", ja: "勝率", zh: "胜率"),
   "Minutes Played\nPer Game": (

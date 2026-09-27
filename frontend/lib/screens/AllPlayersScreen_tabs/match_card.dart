@@ -3,6 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
+String _singularMatchStatLabel(BuildContext context, String label) {
+  final localized = tr(context, label);
+  if (Localizations.localeOf(context).languageCode != 'en') return localized;
+  return localized.replaceAllMapped(RegExp(r'\b[A-Za-z]+\b'), (match) {
+    final word = match.group(0)!;
+    final lower = word.toLowerCase();
+    if (lower.length > 3 && lower.endsWith('ies')) {
+      return '${word.substring(0, word.length - 3)}y';
+    }
+    if (lower.endsWith('sses') ||
+        lower.endsWith('shes') ||
+        lower.endsWith('ches') ||
+        lower.endsWith('xes') ||
+        lower.endsWith('zes')) {
+      return word.substring(0, word.length - 2);
+    }
+    if (lower.length > 1 && lower.endsWith('s') && !lower.endsWith('ss')) {
+      return word.substring(0, word.length - 1);
+    }
+    return word;
+  });
+}
+
 /// A single player match box, shared by the Overview "MATCHES" preview and the
 /// Matches tab so every box follows the same detailed design:
 
@@ -14,7 +37,6 @@ class PlayerMatchCard extends StatelessWidget {
   final List<Map<String, String>> stats; // [{"label": "Goal", "value": "1"}]
   final String rating; // e.g. "8.4"
   final bool remoteLogo;
-  final String? opponentName;
 
   const PlayerMatchCard({
     super.key,
@@ -25,7 +47,6 @@ class PlayerMatchCard extends StatelessWidget {
     required this.rating,
     this.againstLogo,
     this.remoteLogo = false,
-    this.opponentName,
   });
 
   /// Convenience for the map-shaped mock data used across the player tabs.
@@ -91,25 +112,47 @@ class PlayerMatchCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: (constraints.maxWidth - 48) * 0.48,
+                    maxWidth: constraints.maxWidth * 0.62,
                   ),
-                  child: Text(
-                    '$result  ( $score )',
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    style: Heading5.style,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        result,
+                        key: const ValueKey('player-match-result'),
+                        maxLines: 1,
+                        softWrap: false,
+                        style: Heading5.style,
+                      ),
+                      const SizedBox(width: 16),
+                      Flexible(
+                        child: Text(
+                          '( $score )',
+                          key: const ValueKey('player-match-score'),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: Heading5.style,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
                     child: Text(
-                        '${opponentName == null ? '' : '$opponentName · '}$competition',
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: Eyebrow.style)),
+                      competition,
+                      key: const ValueKey('player-match-competition'),
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: Eyebrow.style,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -127,36 +170,52 @@ class PlayerMatchCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              ...stats.map((stat) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          tr(context, stat["label"]!),
-                          textAlign: TextAlign.center,
-                          maxLines: 3,
-                          style: Eyebrow.style,
+              Expanded(
+                child: Row(
+                  children: [
+                    for (var index = 0; index < stats.length; index++) ...[
+                      Flexible(
+                        child: Row(
+                          key: ValueKey(
+                              'player-match-stat-pair-${stats[index]["label"]}'),
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _singularMatchStatLabel(
+                                    context, stats[index]["label"]!),
+                                textAlign: TextAlign.left,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Eyebrow.style,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              key: ValueKey(
+                                  'player-match-stat-value-${stats[index]["label"]}'),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: statColor,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(stats[index]["value"]!,
+                                  style: Body2_b.style),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: statColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(stat["value"]!, style: Body2_b.style),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+                      ),
+                      if (index != stats.length - 1) const SizedBox(width: 16),
+                    ],
+                  ],
+                ),
+              ),
+              if (stats.isNotEmpty) const SizedBox(width: 16),
               // Rating badge sits on the app's near-black chip, distinct from
               // the grey stat pills.
               Container(
+                key: const ValueKey('player-match-rating'),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: AppPalette.black,
