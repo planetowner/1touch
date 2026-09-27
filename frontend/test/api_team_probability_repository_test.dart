@@ -44,7 +44,29 @@ void main() {
     expect(first.cards.first.probability, 0.324);
     expect(first.cards.first.changePercentagePoints, 2.4);
     expect(first.cards.last.changePercentagePoints, isNull);
+    expect(first.maximumPoints, 114);
+    expect(first.positions.first.position, 1);
+    expect(first.positions.first.probability, 0.324);
+    expect(first.projectedPoints.mean, 82.4);
+    expect(first.projectedPoints.likelyRange.lower, 75);
+    expect(first.projectedPoints.likelyRange.upper, 90);
+    expect(first.projectedPoints.changePoints, 1.2);
+    expect(first.history, hasLength(1));
+    expect(first.history.first.played, 4);
+    expect(first.history.first.event('league_winner')?.probability, 0.3);
     expect(first.pendingOutcomes, ['ucl_qualification', 'cup_outcomes']);
+    expect(first.whatIf?.fixture.fixtureId, 901);
+    expect(first.whatIf?.fixture.homeTeamId, 83);
+    expect(first.whatIf?.fixture.probabilities, [0.55, 0.25, 0.2]);
+    expect(first.whatIf?.scenarios.map((item) => item.outcome), [
+      'win',
+      'draw',
+      'loss',
+    ]);
+    expect(
+      first.whatIf?.scenarios.first.event('league_winner')?.probability,
+      0.38,
+    );
     expect(repository.cachedForTeam(83), same(first));
     expect(repository.cachedForTeam(83, seasonId: 27965), same(first));
     expect(() => first.cards.clear(), throwsUnsupportedError);
@@ -192,6 +214,16 @@ Map<String, dynamic> _probabilityJson({
     'season_id': seasonId,
     'season_name': '2026/2027',
     'as_of': '2026-09-18T00:00:00Z',
+    'maximum_points': 114,
+    'positions': [
+      {'position': 1, 'probability': 0.324},
+      {'position': 2, 'probability': 0.28},
+    ],
+    'projected_points': {
+      'mean': 82.4,
+      'likely_range': {'lower': 75, 'upper': 90},
+      'change_points': 1.2,
+    },
     'comparison': {
       'basis': 'previous_league_fixture_utc_day_start',
       'available': comparisonAvailable,
@@ -215,6 +247,60 @@ Map<String, dynamic> _probabilityJson({
         'entropy': null,
       },
     ],
+    'history': [
+      {
+        'as_of': '2026-09-11T00:00:00Z',
+        'played': 4,
+        'expected_points': 80.8,
+        'events': [
+          {
+            'event': 'league_winner',
+            'competition_id': 564,
+            'category': 'TITLE',
+            'probability': 0.3,
+            'change_pp': null,
+            'entropy': 0.92,
+          },
+        ],
+      },
+    ],
+    'what_if': {
+      'fixture': {
+        'fixture_id': 901,
+        'home_team_id': 83,
+        'away_team_id': 90,
+        'starting_at': '2026-09-27T19:00:00Z',
+        'round_name': '6',
+        'probabilities': [0.55, 0.25, 0.2],
+      },
+      'scenarios': [
+        _whatIfScenario('win', 0.38),
+        _whatIfScenario('draw', 0.29),
+        _whatIfScenario('loss', 0.21),
+      ],
+    },
     'pending_outcomes': ['ucl_qualification', 'cup_outcomes'],
   };
 }
+
+Map<String, dynamic> _whatIfScenario(String outcome, double probability) => {
+      'outcome': outcome,
+      'events': [
+        {
+          'event': 'league_winner',
+          'competition_id': 564,
+          'category': 'TITLE',
+          'probability': probability,
+          'change_pp': null,
+          'entropy': null,
+        },
+      ],
+      'positions': [
+        {'position': 1, 'probability': probability},
+      ],
+      'projected_points': {
+        'mean': 82.4,
+        'likely_range': {'lower': 75, 'upper': 90},
+        'change_points': null,
+      },
+    };

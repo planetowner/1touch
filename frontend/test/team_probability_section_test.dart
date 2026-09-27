@@ -22,14 +22,24 @@ void main() {
     ]);
     final repository = _StubProbabilityRepository(initial: {83: snapshot});
 
-    await tester.pumpWidget(_app(repository: repository));
+    await tester.pumpWidget(
+      _app(repository: repository, theme: app_style.whitetheme),
+    );
     await tester.pump();
 
     expect(find.text('PROBABILITY'), findsOneWidget);
+    expect(
+      tester
+          .widget<Padding>(
+            find.byKey(const ValueKey('team-probability-section')),
+          )
+          .padding,
+      const EdgeInsets.fromLTRB(24, 32, 24, 0),
+    );
     expect(find.text('Chances to win\nLEAGUE Trophy'), findsOneWidget);
     expect(find.text('Chances to finish\nTOP 4'), findsOneWidget);
     expect(find.text('Chances to finish\nTOP 6'), findsOneWidget);
-    expect(find.text('Chances of\nDIRECT RELEGATION'), findsOneWidget);
+    expect(find.text('Chances of\nRELEGATION'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('team-probability-value-league_winner')),
       findsOneWidget,
@@ -38,6 +48,49 @@ void main() {
     expect(find.text('100'), findsOneWidget);
     expect(find.text('42'), findsOneWidget);
     expect(find.text('4'), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(
+              const ValueKey('team-probability-value-league_winner'),
+            ),
+          )
+          .style
+          ?.fontSize,
+      48,
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(
+              const ValueKey('team-probability-percent-league_winner'),
+            ),
+          )
+          .style
+          ?.fontSize,
+      20,
+    );
+    final probabilitySurface = tester.widget<Ink>(
+      find.byKey(
+        const ValueKey('team-probability-surface-league_winner'),
+      ),
+    );
+    expect(
+      tester.getSize(
+        find.byKey(
+          const ValueKey('team-probability-surface-league_winner'),
+        ),
+      ),
+      const Size(165, 165),
+    );
+    expect(
+      (probabilitySurface.decoration as BoxDecoration).borderRadius,
+      BorderRadius.circular(24),
+    );
+    expect(
+      (probabilitySurface.decoration as BoxDecoration).boxShadow,
+      app_style.lightModeCardShadows,
+    );
 
     final upIcon = tester.widget<Icon>(
       find.byKey(
@@ -45,8 +98,8 @@ void main() {
       ),
     );
     expect(upIcon.icon, Icons.arrow_drop_up);
-    expect(upIcon.color, Colors.blueAccent);
-    expect(find.text('1.25'), findsOneWidget);
+    expect(upIcon.color, const Color(0xFF36CC7A));
+    expect(find.text('1.25%'), findsOneWidget);
 
     final downIcon = tester.widget<Icon>(
       find.byKey(
@@ -54,8 +107,8 @@ void main() {
       ),
     );
     expect(downIcon.icon, Icons.arrow_drop_down);
-    expect(downIcon.color, Colors.redAccent);
-    expect(find.text('2.5'), findsOneWidget);
+    expect(downIcon.color, const Color(0xFFFF5C5C));
+    expect(find.text('2.5%'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('team-probability-delta-icon-top_4')),
       findsNothing,
@@ -64,6 +117,56 @@ void main() {
       find.byKey(const ValueKey('team-probability-delta-icon-top_6')),
       findsNothing,
     );
+    final probabilityBottom = tester.getBottomLeft(
+      find.byKey(
+        const ValueKey('team-probability-percent-league_winner'),
+      ),
+    );
+    final deltaBottom = tester.getBottomLeft(
+      find.byKey(
+        const ValueKey('team-probability-delta-row-league_winner'),
+      ),
+    );
+    expect(probabilityBottom.dy, deltaBottom.dy);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('aligns one-line and two-line probability card contents',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _StubProbabilityRepository(
+      initial: {
+        83: _snapshot(cards: [
+          _card('custom'),
+          _card('league_winner'),
+          _card('ucl_winner'),
+        ]),
+      },
+    );
+
+    await tester.pumpWidget(_app(repository: repository));
+    await tester.pump();
+
+    expect(find.text('Chances to win\nUCL Trophy'), findsOneWidget);
+    final oneLineTitle = find.byKey(
+      const ValueKey('team-probability-title-slot-custom'),
+    );
+    final twoLineTitle = find.byKey(
+      const ValueKey('team-probability-title-slot-league_winner'),
+    );
+    expect(tester.getSize(oneLineTitle).height, 39);
+    expect(tester.getSize(twoLineTitle).height, 39);
+
+    final oneLineFooter = tester.getTopLeft(
+      find.byKey(const ValueKey('team-probability-footer-custom')),
+    );
+    final twoLineFooter = tester.getTopLeft(
+      find.byKey(const ValueKey('team-probability-footer-league_winner')),
+    );
+    expect(oneLineFooter.dy, twoLineFooter.dy);
     expect(tester.takeException(), isNull);
   });
 
@@ -149,14 +252,42 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('opens the selected probability detail', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _StubProbabilityRepository(
+      initial: {
+        83: _snapshot(cards: [_card('league_winner', probability: 0.32)]),
+      },
+    );
+
+    await tester.pumpWidget(_app(repository: repository));
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey('team-probability-card-league_winner')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('team-probability-detail-screen')),
+      findsOneWidget,
+    );
+    expect(find.text('Probability'), findsOneWidget);
+    expect(find.text('32'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _app({
   required TeamProbabilityRepository repository,
   int teamId = 83,
+  ThemeData? theme,
 }) {
   return MaterialApp(
-    theme: app_style.darktheme,
+    theme: theme ?? app_style.darktheme,
     home: Scaffold(
       body: SingleChildScrollView(
         child: ProbabilitySection(
@@ -179,11 +310,21 @@ TeamProbabilitySnapshot _snapshot({
     seasonId: 27965,
     seasonName: '2026/2027',
     asOf: DateTime.utc(2026, 9, 18),
+    maximumPoints: 114,
+    positions: const [
+      TeamPositionProbability(position: 1, probability: 0.5),
+    ],
+    projectedPoints: const TeamProjectedPoints(
+      mean: 82.4,
+      likelyRange: TeamPointsInterval(lower: 75, upper: 90),
+      changePoints: 1.2,
+    ),
     comparison: TeamProbabilityComparison(
       available: true,
       asOf: DateTime.utc(2026, 9, 16),
     ),
     cards: cards,
+    history: const [],
     pendingOutcomes: const [],
   );
 }
