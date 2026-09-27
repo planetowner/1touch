@@ -159,8 +159,10 @@ class _EventRowContent extends StatelessWidget {
         // 이름은 실제 글자 폭을 쓰되, 좁은 화면에서도 시간 하나는 온전히 보여줘요.
         final maxNameWidth = (constraints.maxWidth - 8 - widestMinute)
             .clamp(0.0, constraints.maxWidth);
+        final resolvedNameWidth = nameWidth.clamp(0.0, maxNameWidth).toDouble();
+        final minuteAreaWidth = constraints.maxWidth - 8 - resolvedNameWidth;
         final nameText = SizedBox(
-          width: nameWidth.clamp(0.0, maxNameWidth),
+          width: resolvedNameWidth,
           child: Text(name,
               style: style,
               maxLines: 1,
@@ -168,14 +170,81 @@ class _EventRowContent extends StatelessWidget {
               textAlign: alignRight ? TextAlign.left : TextAlign.right,
               overflow: TextOverflow.ellipsis),
         );
-        final minuteText = Expanded(
-          child: Wrap(
-            alignment: alignRight ? WrapAlignment.end : WrapAlignment.start,
-            spacing: spaceWidth,
-            // 추가시간을 포함한 시각 하나를 쪼개지 않고 다음 줄로 넘겨요.
+
+        // Wrap은 모든 줄에 같은 정렬을 적용하므로, 마지막 줄에 시간 하나만
+        // 남았을 때 그 시간만 중앙에 둘 수 있도록 줄을 먼저 계산해요.
+        final minuteLines = <List<String>>[];
+        var currentLine = <String>[];
+        var currentLineWidth = 0.0;
+        for (final minute in minutes) {
+          final minuteWidth = textWidth(minute);
+          final nextWidth = currentLine.isEmpty
+              ? minuteWidth
+              : currentLineWidth + spaceWidth + minuteWidth;
+          if (currentLine.isNotEmpty && nextWidth > minuteAreaWidth) {
+            minuteLines.add(currentLine);
+            currentLine = <String>[];
+            currentLineWidth = 0;
+          }
+          currentLine.add(minute);
+          currentLineWidth = currentLine.length == 1
+              ? minuteWidth
+              : currentLineWidth + spaceWidth + minuteWidth;
+        }
+        if (currentLine.isNotEmpty) minuteLines.add(currentLine);
+
+        double lineWidth(List<String> line) =>
+            line.fold(0.0, (width, minute) => width + textWidth(minute)) +
+            spaceWidth * (line.length - 1);
+
+        final minuteLineWidths = minuteLines.map(lineWidth).toList();
+        final minuteLineLefts = <double>[];
+        for (var index = 0; index < minuteLines.length; index++) {
+          final line = minuteLines[index];
+          final width = minuteLineWidths[index];
+          final maxLeft = (minuteAreaWidth - width).clamp(0.0, minuteAreaWidth);
+          double left;
+          if (line.length == 1) {
+            // 한 시각만 다음 줄에 남으면 전체 영역이 아니라 바로 위 시각
+            // 묶음의 가운데 아래에 배치해 시각 관계를 바로 읽을 수 있게 해요.
+            left = index == 0
+                ? maxLeft / 2
+                : minuteLineLefts[index - 1] +
+                    (minuteLineWidths[index - 1] - width) / 2;
+          } else {
+            left = alignRight ? maxLeft : 0;
+          }
+          minuteLineLefts.add(left.clamp(0.0, maxLeft).toDouble());
+        }
+
+        final minuteText = SizedBox(
+          key: const ValueKey('match-event-minute-area'),
+          width: minuteAreaWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final minute in minutes)
-                Text(minute, style: style, maxLines: 1, softWrap: false),
+              for (var index = 0; index < minuteLines.length; index++)
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: minuteLineLefts[index],
+                    right: minuteAreaWidth -
+                        minuteLineLefts[index] -
+                        minuteLineWidths[index],
+                  ),
+                  child: Wrap(
+                    alignment: minuteLines[index].length == 1
+                        ? WrapAlignment.center
+                        : alignRight
+                            ? WrapAlignment.end
+                            : WrapAlignment.start,
+                    spacing: spaceWidth,
+                    children: [
+                      for (final minute in minuteLines[index])
+                        Text(minute,
+                            style: style, maxLines: 1, softWrap: false),
+                    ],
+                  ),
+                ),
             ],
           ),
         );
