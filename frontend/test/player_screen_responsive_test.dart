@@ -1,4 +1,5 @@
 import 'support/app_catalog.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -563,6 +564,65 @@ void main() {
     expect(repository.calls.last.seasonId, selector.detail.seasons.last.id);
     expect(find.text('ATTRIBUTES'), findsOneWidget);
     expect(find.text('Coming soon'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('performance chart follows the team current form format',
+      (tester) async {
+    final repository = FakePlayerDetailRepository();
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: PlayerCard(player: player, detailRepository: repository),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Analysis').first);
+    await tester.pumpAndSettle();
+
+    final card = find.byKey(const ValueKey('player-performance-card'));
+    final chart = find.byKey(const ValueKey('player-performance-chart'));
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+
+    final lineChart = tester.widget<LineChart>(
+      find.descendant(of: chart, matching: find.byType(LineChart)),
+    );
+    final axisLabel = tester.widget<RotatedBox>(
+      find.byKey(const ValueKey('player-performance-axis-label')),
+    );
+    expect(tester.getSize(card).height, 346);
+    expect(lineChart.data.minX, 0);
+    expect(lineChart.data.maxX, 36);
+    expect(lineChart.data.minY, 0);
+    expect(lineChart.data.maxY, 10);
+    expect(lineChart.data.lineBarsData.single.dotData.show, isFalse);
+    expect(
+      find.byKey(const ValueKey('player-performance-grid')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+              .getTopLeft(
+                  find.byKey(const ValueKey('player-performance-round-label')))
+              .dy -
+          tester
+              .getBottomLeft(
+                  find.byKey(const ValueKey('player-performance-grid')))
+              .dy,
+      12,
+    );
+    expect(axisLabel.quarterTurns, 1);
+
+    final chartRect = tester.getRect(chart);
+    await tester.tapAt(Offset(
+      chartRect.left + chartRect.width * 7 / 36,
+      chartRect.center.dy,
+    ));
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('player-performance-tooltip')),
+      findsOneWidget,
+    );
+    expect(find.text('Round 7'), findsOneWidget);
+    expect(find.text('Rating 6.94'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('failed detail has retry without mock competitions',
