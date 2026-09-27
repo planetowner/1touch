@@ -14,6 +14,7 @@ import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
+import 'package:onetouch/core/keyboard_dismiss.dart';
 import 'package:onetouch/SessionScreen.dart';
 import 'package:onetouch/core/api_client_provider.dart';
 import 'package:onetouch/data/catalog/football_catalog_provider.dart';
@@ -423,12 +424,14 @@ class MyApp extends StatelessWidget {
           localeListResolutionCallback: resolveAppLocale,
           builder: (context, child) {
             Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-            return ListenableBuilder(
-              listenable: authSession,
-              builder: (context, _) => FootballNamesLoader(
-                repository: _footballNames,
-                enabled: authSession.isAuthenticated,
-                child: child!,
+            return AppKeyboardDismissBoundary(
+              child: ListenableBuilder(
+                listenable: authSession,
+                builder: (context, _) => FootballNamesLoader(
+                  repository: _footballNames,
+                  enabled: authSession.isAuthenticated,
+                  child: child!,
+                ),
               ),
             );
           },

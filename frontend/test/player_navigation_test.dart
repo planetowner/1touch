@@ -157,6 +157,14 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    expect(
+      find.byKey(ValueKey('ones-to-watch-jersey-${player.id}')),
+      findsOneWidget,
+    );
+    expect(find.text('#${player.jerseyNumber}'), findsOneWidget);
+    expect(find.text('${player.rankingChange.abs()}'), findsNothing);
+    expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
+    expect(find.byIcon(Icons.arrow_drop_down), findsNothing);
     await tester.tap(find.byKey(ValueKey('ones-to-watch-player-${player.id}')));
     await tester.pumpAndSettle();
 

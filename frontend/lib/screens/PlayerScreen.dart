@@ -72,6 +72,7 @@ class _PlayersState extends State<Players> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverAppBar(
+              key: const ValueKey('players-app-bar'),
               backgroundColor: pageBackground,
               foregroundColor: colors.onSurface,
               elevation: 0,
@@ -137,8 +138,9 @@ class _PlayersState extends State<Players> {
             ),
             SliverToBoxAdapter(
               child: SafeArea(
+                top: false,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
