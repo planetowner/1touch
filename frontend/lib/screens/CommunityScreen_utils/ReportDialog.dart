@@ -195,68 +195,78 @@ void showThanksDialog(BuildContext context) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
     backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
     builder: (context) {
       final colors = Theme.of(context).colorScheme;
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Title and close
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  tr(context, "Report"),
-                  style: Heading4.style.copyWith(color: colors.onSurface),
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Icon(Icons.close, color: colors.onSurface),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            Icon(
-              Icons.check_circle_outline,
-              size: 48,
-              color: colors.onSurface,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              tr(context, "Thanks for your report!"),
-              style: Heading5.style,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              tr(context,
-                  "Thanks again for your report — we’ve got your back, and your fellow 1touchers too. Every report helps make 1touch a safer, better place for everyone."),
-              style: Body2.style,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: colors.onSurface,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  tr(context, "DONE"),
-                  style: Body2_b.style.copyWith(color: colors.onPrimary),
-                ),
+      return SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              key: const ValueKey('community-report-thanks'),
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        tr(context, "Report"),
+                        style: Heading4.style.copyWith(color: colors.onSurface),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Icon(Icons.close, color: colors.onSurface),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 48,
+                    color: colors.onSurface,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    tr(context, "Thanks for your report!"),
+                    style: Heading5.style,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    tr(context,
+                        "Thanks again for your report — we’ve got your back, and your fellow 1touchers too. Every report helps make 1touch a safer, better place for everyone."),
+                    style: Body2.style,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: colors.onSurface,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        tr(context, "DONE"),
+                        style: Body2_b.style.copyWith(color: colors.onPrimary),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            )
-          ],
+            ),
+          ),
         ),
       );
     },

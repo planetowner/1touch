@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
@@ -20,6 +21,35 @@ void main() {
     expect(playerDetailHeaderGradientHeight(59), 207);
     expect(playerDetailOverviewGradientHeight(20), 364);
     expect(playerDetailOverviewGradientHeight(59), 403);
+  });
+
+  testWidgets('player detail search opens the shared search page',
+      (tester) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => PlayerCard(
+            player: player,
+            detailRepository: FakePlayerDetailRepository(),
+          ),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (_, __) => const Scaffold(
+            key: ValueKey('shared-search-page'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('player-search-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('shared-search-page')), findsOneWidget);
   });
 
   testWidgets('match crests render without a background tile', (tester) async {
@@ -377,6 +407,29 @@ void main() {
           expect(tester.takeException(), isNull,
               reason: '$tab after scrolling');
           if (tab == 'Career') {
+            final trophiesCard = tester.widget<PlayerSurface>(
+              find.byKey(const ValueKey('player-career-trophies-card')),
+            );
+            final historyCard = tester.widget<PlayerSurface>(
+              find.byKey(const ValueKey('player-career-history-card')),
+            );
+            final teamHeader = tester.widget<Text>(
+              find.byKey(const ValueKey('player-career-team-header')),
+            );
+            final expectedCareerCardColor = dark
+                ? app_style.AppPalette.lightGrey
+                : app_style.AppPalette.lightGreyBox;
+            expect(
+              trophiesCard.color,
+              expectedCareerCardColor,
+            );
+            expect(historyCard.color, expectedCareerCardColor);
+            expect(
+              teamHeader.style?.color,
+              dark ? app_style.AppPalette.white : app_style.AppPalette.black,
+            );
+            expect(find.text('UCL'), findsOneWidget);
+            expect(find.text('Champions League'), findsNothing);
             expect(find.text('PERSONAL'), findsNothing);
             expect(
                 find.text('Team trophy records unavailable'), findsOneWidget);
@@ -518,7 +571,7 @@ void main() {
     expect(noteText.style?.height, 1.3);
     expect(find.text('UCL'), findsOneWidget);
     expect(find.text('Champions League'), findsNothing);
-    expect(find.text('La Liga'), findsOneWidget);
+    expect(find.text('LA LIGA'), findsOneWidget);
     expect(tester.getSize(ratingFinder).height, 32);
     expect(ratingBox.padding, const EdgeInsets.all(8));
     expect(ratingDecoration.color, app_style.AppPalette.black);

@@ -230,6 +230,73 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('community tabs change with a horizontal swipe', (tester) async {
+    _setScreenSize(tester, const Size(393, 852));
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+      () => Future.value(const [_loadedPost]),
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(TabBarView), const Offset(-300, 0));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller?.index, 1);
+    expect(repository.categories, [null, PostCategory.general]);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sort changes keep the current feed visible while loading',
+      (tester) async {
+    _setScreenSize(tester, const Size(393, 852));
+    final sortedResult = Completer<List<Post>>();
+    final repository = _ScriptedPostRepository([
+      () => Future.value(const [_loadedPost]),
+      () => sortedResult.future,
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Community(
+          teamId: 9,
+          postRepository: repository,
+          communityRepository: const StubCommunityRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('community-filter-popular')),
+    );
+    await tester.pump();
+
+    expect(find.text(_loadedPost.title), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-posts-loading')),
+      findsNothing,
+    );
+    expect(repository.sorts, [PostSort.newest, PostSort.popular]);
+
+    sortedResult.complete(const []);
+    await tester.pumpAndSettle();
+
+    expect(find.text(_loadedPost.title), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('ignores a stale result after the repository changes',
       (tester) async {
     _setScreenSize(tester, const Size(393, 852));
@@ -352,7 +419,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('creates a fan-art post and reloads the repository on a tall screen',
+  testWidgets(
+      'creates a fan-art post and reloads the repository on a tall screen',
       (tester) async {
     _setScreenSize(tester, const Size(430, 932));
     final repository = _ScriptedPostRepository(

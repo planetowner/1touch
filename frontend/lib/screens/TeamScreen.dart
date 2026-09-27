@@ -24,7 +24,6 @@ import 'package:onetouch/l10n/app_localizations.dart';
 
 const double _teamAppBarBaseToolbarHeight = 80;
 const double _teamAppBarLogoSize = 48;
-const double _teamAppBarMinimumContentTop = 47;
 
 class TeamScreen extends StatefulWidget {
   final int teamId;
@@ -287,8 +286,8 @@ class _TeamScreenState extends State<TeamScreen>
     const baseToolbarVerticalPadding =
         (_teamAppBarBaseToolbarHeight - _teamAppBarLogoSize) / 2;
     final currentContentTop = topInset + baseToolbarVerticalPadding;
-    final additionalTopSpace = currentContentTop < _teamAppBarMinimumContentTop
-        ? _teamAppBarMinimumContentTop - currentContentTop
+    final additionalTopSpace = currentContentTop < appBarMinimumContentTop
+        ? appBarMinimumContentTop - currentContentTop
         : 0.0;
     final toolbarHeight = _teamAppBarBaseToolbarHeight + additionalTopSpace;
     final toolbarContentOffset = additionalTopSpace / 2;

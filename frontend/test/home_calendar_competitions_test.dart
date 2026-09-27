@@ -87,7 +87,7 @@ void main() {
         colors: {
           'UEL': Colors.red,
           'CDR': Colors.blue,
-          'LALIGA': Colors.green,
+          'LA LIGA': Colors.green,
         }
       ),
       (
@@ -120,7 +120,7 @@ void main() {
         colors: {
           'UECL': Colors.red,
           'CDR': Colors.blue,
-          'LALIGA': Colors.green,
+          'LA LIGA': Colors.green,
         }
       ),
       (
@@ -158,7 +158,8 @@ void main() {
           final legendLabel = switch (competition.competitionId) {
             8 || 82 => competition.name,
             301 => 'League 1',
-            _ => competition.shortCode ?? competition.name,
+            _ => normalizeCompetitionDisplayLabel(
+                competition.shortCode ?? competition.name),
           };
           final color = scenario.colors[legendLabel];
           if (color == null) {

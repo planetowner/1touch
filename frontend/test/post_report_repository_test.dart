@@ -7,6 +7,7 @@ import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/posts/post_repository.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/ReportDialog.dart';
 import 'support/stub_community_repository.dart';
 import 'support/stub_post_comment_repository.dart';
 
@@ -110,6 +111,34 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Thanks for your report!'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('report thanks sheet fits a compact screen', (tester) async {
+    _setScreenSize(tester, const Size(320, 568));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => showThanksDialog(context),
+              child: const Text('Show thanks'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Show thanks'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('community-report-thanks')),
+      findsOneWidget,
+    );
+    expect(find.text('Thanks for your report!'), findsOneWidget);
+    expect(find.text('DONE'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
