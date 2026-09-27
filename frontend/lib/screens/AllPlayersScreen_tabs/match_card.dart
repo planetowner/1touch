@@ -4,7 +4,7 @@ import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 
 String _singularMatchStatLabel(BuildContext context, String label) {
-  final localized = tr(context, label);
+  final localized = appStatLabel(context, label);
   if (Localizations.localeOf(context).languageCode != 'en') return localized;
   return localized.replaceAllMapped(RegExp(r'\b[A-Za-z]+\b'), (match) {
     final word = match.group(0)!;

@@ -183,7 +183,7 @@ class _StatRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            tr(context, label),
+            appStatLabel(context, label),
             style: TextStyle(
               color: AppColors.of(context).mutedForeground,
               fontSize: 12,

@@ -44,6 +44,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 key: ValueKey(
                     'player-analysis-season-${detail.selectedSeason?.id}'),
                 detail: detail,
+                width: double.infinity,
                 onChanged: (id) => setState(() => _seasonId = id),
               ),
               const SizedBox(height: 32),
@@ -59,7 +60,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
   List<Widget> _content(PlayerDetail detail, PlayerAnalysis analysis) => [
         _topStats(detail, analysis),
         const SizedBox(height: 32),
-        _influenceBlock(detail, analysis),
+        _influenceBlock(analysis),
         const SizedBox(height: 48),
         _attributes(detail),
         const SizedBox(height: 48),
@@ -93,7 +94,8 @@ class _AnalysisTabState extends State<AnalysisTab> {
       ),
       child: PlayerSurface(
         key: const ValueKey('player-top-stats-card'),
-        padding: const EdgeInsets.all(16),
+        color: AppColors.of(context).subtleBackground,
+        padding: const EdgeInsets.all(24),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -118,9 +120,10 @@ class _AnalysisTabState extends State<AnalysisTab> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
+          key: ValueKey('player-top-stat-value-${stat?.metric.label}'),
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: AppColors.of(context).subtleBackground,
+            color: AppColors.of(context).cardBackground,
             borderRadius: BorderRadius.circular(8),
           ),
           child: FittedBox(
@@ -136,26 +139,28 @@ class _AnalysisTabState extends State<AnalysisTab> {
         const SizedBox(height: 8),
         SizedBox(
           height: 38,
-          child: Text(
-            tr(context, stat?.metric.label ?? 'Unavailable'),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Body1.style,
+          child: Center(
+            key: ValueKey('player-top-stat-label-${stat?.metric.label}'),
+            child: Text(
+              appStatLabel(context, stat?.metric.label ?? 'Unavailable'),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Body1.style,
+            ),
           ),
         ),
         const SizedBox(height: 4),
         Align(
           child: Container(
+            key: ValueKey('player-top-stat-rank-${stat?.metric.label}'),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: AppPalette.black,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              stat?.rank == null
-                  ? '—'
-                  : '#${stat!.rank} / ${stat.referenceCount}',
+              stat?.rank == null ? '—' : '#${stat!.rank}',
               style: Body1.style.copyWith(color: AppPalette.white),
             ),
           ),
@@ -174,39 +179,24 @@ class _AnalysisTabState extends State<AnalysisTab> {
     );
   }
 
-  Widget _influenceBlock(PlayerDetail detail, PlayerAnalysis analysis) {
-    final record =
-        detail.competitions.isEmpty ? null : detail.competitions.first.record;
-    final minutesPerGame = record == null || record.appearances == 0
-        ? null
-        : record.minutes / record.appearances;
-    final metrics = analysis.categories.expand((item) => item.metrics);
-    double metric(String code) => metrics
-        .where((item) => item.metric.code == code)
-        .map((item) => item.metric.value ?? 0)
-        .fold(0, (sum, value) => sum + value);
-    final contributions = metric('goals') + metric('assists');
-    return PlayerSection(
-      title: tr(context, 'INFLUENCE'),
-      child: GridView.count(
-        padding: EdgeInsets.zero,
-        primary: false,
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: .75,
-        children: [
-          _influence(tr(context, 'Starting Rate'), analysis.startingRate, '%'),
-          _influence(tr(context, 'Win Rate'), analysis.winRate, '%'),
-          _influence(
-              tr(context, 'Minutes Played\nPer Game'), minutesPerGame, ' Min.'),
-          _influence(tr(context, 'Goal\nContributions'), contributions, ''),
-        ],
-      ),
-    );
-  }
+  Widget _influenceBlock(PlayerAnalysis analysis) => PlayerSection(
+        title: tr(context, 'INFLUENCE'),
+        child: GridView.count(
+          padding: EdgeInsets.zero,
+          primary: false,
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: .75,
+          children: [
+            _influence(
+                tr(context, 'Starting Rate'), analysis.startingRate, '%'),
+            _influence(tr(context, 'Win Rate'), analysis.winRate, '%'),
+          ],
+        ),
+      );
 
   Widget _influence(String label, double? value, String suffix) =>
       PlayerSurface(

@@ -88,9 +88,10 @@ class _PlayerDetailViewState extends State<PlayerDetailView> {
 
 class PlayerSeasonSelector extends StatelessWidget {
   const PlayerSeasonSelector(
-      {super.key, required this.detail, required this.onChanged});
+      {super.key, required this.detail, required this.onChanged, this.width});
   final PlayerDetail detail;
   final ValueChanged<int?> onChanged;
+  final double? width;
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -98,6 +99,8 @@ class PlayerSeasonSelector extends StatelessWidget {
     final foreground = Theme.of(context).colorScheme.onSurface;
     return AppDropdown<int>(
       value: detail.selectedSeason?.id,
+      width: width,
+      matchMenuWidth: width != null,
       hintText: tr(context, 'SELECT A SEASON'),
       backgroundColor: surface,
       foregroundColor: foreground,
