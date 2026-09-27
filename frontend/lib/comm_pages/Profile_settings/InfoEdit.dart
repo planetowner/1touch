@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
-import 'package:onetouch/features/profile_fields.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as current_user_provider;
 import 'package:onetouch/data/profile/profile_avatar_repository.dart';
@@ -43,6 +42,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController passwordController;
   bool isPasswordVisible = false;
   bool _isAvatarSaving = false;
+  bool _isProfileSaving = false;
+  String? _profileSaveError;
 
   ProfileAvatarRepository get _avatarRepository =>
       widget.avatarRepository ?? avatar_provider.profileAvatarRepository;
@@ -222,6 +223,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         headers: _avatarRequestHeaders,
       ).evict();
 
+  Future<void> _saveProfile() async {
+    final username = usernameController.text.trim();
+    if (username.isEmpty || _isProfileSaving) return;
+
+    setState(() {
+      _isProfileSaving = true;
+      _profileSaveError = null;
+    });
+    try {
+      await current_user_provider.currentUserRepository.updateProfile(
+        username: username,
+        firstName: widget.profile?.firstName ?? '',
+        lastName: widget.profile?.lastName ?? '',
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _isProfileSaving = false;
+        _profileSaveError = tr(
+          context,
+          'Unable to save profile. Check your username and try again.',
+        );
+      });
+    }
+  }
+
   @override
   void dispose() {
     nameController.dispose();
@@ -235,7 +264,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: appColors.pageBackground,
       appBar: AppBar(
@@ -263,7 +291,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // Profile Image Section
               Center(
                 child: Stack(
-                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
                   children: [
                     CircleAvatar(
                       radius: 54,
@@ -291,37 +319,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                       ),
                     ),
-                    Positioned(
-                      bottom: -4,
-                      right: -4,
-                      child: GestureDetector(
-                        key: const ValueKey('profile-avatar-action'),
-                        onTap: _isAvatarSaving ? null : _showAvatarActions,
-                        child: Container(
-                          padding: const EdgeInsets.all(7),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppPalette.lightGrey
-                                : AppPalette.lightGreyBox,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: appColors.pageBackground,
-                              width: 2,
-                            ),
-                          ),
+                    Container(
+                      width: 108,
+                      height: 108,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: .3),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    GestureDetector(
+                      key: const ValueKey('profile-avatar-action'),
+                      onTap: _isAvatarSaving ? null : _showAvatarActions,
+                      behavior: HitTestBehavior.opaque,
+                      child: SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Center(
                           child: _isAvatarSaving
-                              ? SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: colors.onSurface,
-                                  ),
+                              ? CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.onSurface,
                                 )
                               : Icon(
-                                  Icons.camera_alt,
+                                  Icons.camera_alt_outlined,
                                   color: colors.onSurface,
-                                  size: 18,
+                                  size: 26,
                                 ),
                         ),
                       ),
@@ -340,29 +362,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 16),
 
               _buildTextField(
-                  label: tr(context, 'Name'),
-                  controller: nameController,
-                  fieldKey: const ValueKey('profile-real-name-field'),
-                  readOnly: true),
-              const SizedBox(height: 24),
-              ProfileFields(
-                showNameFields: false,
-                username: widget.profile?.username,
-                firstName: widget.profile?.firstName,
-                lastName: widget.profile?.lastName,
-                onSaved: () => Navigator.of(context).pop(true),
+                label: tr(context, 'Name'),
+                controller: nameController,
+                fieldKey: const ValueKey('profile-real-name-field'),
+                readOnly: true,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              _buildTextField(
+                label: tr(context, 'Username'),
+                controller: usernameController,
+                fieldKey: const ValueKey('profile-username-field'),
+              ),
+              const SizedBox(height: 8),
               _buildTextField(
                 label: tr(context, "Email"),
                 controller: emailController,
+                fieldKey: const ValueKey('profile-email-field'),
                 keyboardType: TextInputType.emailAddress,
                 readOnly: true,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
               _buildTextField(
                 label: tr(context, "Password"),
                 controller: passwordController,
+                fieldKey: const ValueKey('profile-password-field'),
                 isPassword: true,
                 isObscure: !isPasswordVisible,
                 onSuffixTap: () {
@@ -391,6 +414,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _divider(),
 
               const SizedBox(height: 48),
+
+              if (_profileSaveError != null) ...[
+                Text(
+                  _profileSaveError!,
+                  style: Eyebrow.style.copyWith(color: colors.error),
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  key: const ValueKey('profile-update-button'),
+                  onPressed: _isProfileSaving ? null : _saveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.onSurface,
+                    foregroundColor: appColors.pageBackground,
+                    disabledBackgroundColor: appColors.mutedForeground,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    _isProfileSaving
+                        ? tr(context, 'Saving…')
+                        : tr(context, 'UPDATE INFO'),
+                    style: Body2_b.style.copyWith(
+                      color: appColors.pageBackground,
+                    ),
+                  ),
+                ),
+              ),
 
               const SizedBox(height: 24),
 
@@ -430,50 +487,98 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }) {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
-    return TextField(
-      key: fieldKey,
-      controller: controller,
-      obscureText: isPassword && isObscure,
-      readOnly: readOnly,
-      enableInteractiveSelection: !readOnly,
-      showCursor: !readOnly,
-      keyboardType: keyboardType,
-      style: Body1.style.copyWith(color: colors.onSurface),
-      cursorColor: colors.onSurface,
-      decoration: InputDecoration(
-        filled: false,
-        labelText: label,
-        labelStyle: Body1.style,
-        floatingLabelStyle:
-            Body1.style.copyWith(color: appColors.mutedForeground),
-        suffixIcon: readOnly
-            ? Icon(
-                Icons.lock_outline,
-                color: appColors.mutedForeground,
-                size: 20,
-              )
-            : isPassword
-                ? IconButton(
-                    icon: Icon(
-                      isObscure
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: colors.onSurface,
-                      size: 20,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: appColors.divider, width: 2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: Body1.style.copyWith(color: appColors.mutedForeground),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: TextField(
+              key: fieldKey,
+              controller: controller,
+              obscureText: isPassword && isObscure,
+              readOnly: readOnly,
+              enableInteractiveSelection: !readOnly,
+              showCursor: !readOnly,
+              keyboardType: keyboardType,
+              textAlign: TextAlign.right,
+              style: Body1.style.copyWith(color: colors.onSurface),
+              cursorColor: colors.onSurface,
+              decoration: const InputDecoration(
+                isDense: true,
+                filled: false,
+                fillColor: Colors.transparent,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 64,
+            height: 32,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (isPassword)
+                  GestureDetector(
+                    onTap: onSuffixTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: Icon(
+                        isObscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: colors.onSurface,
+                        size: 24,
+                      ),
                     ),
-                    onPressed: onSuffixTap,
-                  )
-                : IconButton(
-                    icon: Icon(Icons.cancel, color: colors.onSurface, size: 20),
-                    onPressed: () => controller.clear(),
                   ),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: appColors.divider),
-        ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: colors.onSurface),
-        ),
-        contentPadding: const EdgeInsets.only(bottom: 8),
+                if (readOnly)
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Icon(
+                        Icons.lock_outline,
+                        color: appColors.mutedForeground,
+                        size: 20,
+                      ),
+                    ),
+                  )
+                else
+                  GestureDetector(
+                    onTap: controller.clear,
+                    behavior: HitTestBehavior.opaque,
+                    child: SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: Icon(
+                        Icons.close,
+                        color: colors.onSurface,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

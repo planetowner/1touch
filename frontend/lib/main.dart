@@ -199,6 +199,7 @@ final GoRouter _router = GoRouter(
     ),
     GoRoute(
       path: '/profile/edit',
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (c, s) => EditProfileScreen(
         profile: s.extra is CurrentUserProfile
             ? s.extra as CurrentUserProfile
@@ -207,9 +208,11 @@ final GoRouter _router = GoRouter(
     ),
     GoRoute(
         path: '/profile/notification',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (c, s) => NotificationListPage()),
     GoRoute(
       path: '/profile/notification/team/:name',
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (c, s) => TeamNotificationDetailPage(
         teamName: Uri.decodeComponent(s.pathParameters['name']!),
         teamId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
@@ -217,14 +220,27 @@ final GoRouter _router = GoRouter(
     ),
     GoRoute(
       path: '/profile/notification/player/:name',
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (c, s) => PlayerNotificationDetailPage(
         playerName: Uri.decodeComponent(s.pathParameters['name']!),
         playerId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
       ),
     ),
-    GoRoute(path: '/profile/preference', builder: (c, s) => PreferencePage()),
-    GoRoute(path: '/profile/about', builder: (c, s) => AboutPage()),
-    GoRoute(path: '/profile/contact', builder: (c, s) => ContactPage()),
+    GoRoute(
+      path: '/profile/preference',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (c, s) => PreferencePage(),
+    ),
+    GoRoute(
+      path: '/profile/about',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (c, s) => AboutPage(),
+    ),
+    GoRoute(
+      path: '/profile/contact',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (c, s) => ContactPage(),
+    ),
     GoRoute(
       path: '/search',
       parentNavigatorKey: _rootNavigatorKey,
