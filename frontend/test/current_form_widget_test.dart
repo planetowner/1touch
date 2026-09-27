@@ -95,6 +95,17 @@ void main() {
     final pointsLabelRect = tester.getRect(pointsLabel);
     expect(pointsLabelRect.left - chartCardRect.left, 16);
     expect(pointsLabelRect.top - chartCardRect.top, 16);
+    expect(
+      tester
+              .getTopLeft(find
+                  .byKey(const ValueKey('analysis-current-form-round-label')))
+              .dy -
+          tester
+              .getBottomLeft(
+                  find.byKey(const ValueKey('analysis-current-form-grid')))
+              .dy,
+      12,
+    );
     final filter = find.byKey(const ValueKey('analysis-form-filter'));
     expect(filter, findsOneWidget);
     expect(tester.getSize(filter).width, 165);
