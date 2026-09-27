@@ -306,6 +306,12 @@ void main() {
             labels
                 .every((text) => text.maxLines == 1 && text.softWrap == false),
             isTrue);
+        expect(labels.every((text) => text.overflow == TextOverflow.visible),
+            isTrue);
+        expect(
+          find.ancestor(of: dateTime, matching: find.byType(FittedBox)),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
       });
     }

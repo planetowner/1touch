@@ -26,12 +26,30 @@ class LineupPitch extends StatelessWidget {
   });
 
   static const double _centerGap = 64;
-  // Total pitch height — generous enough for either half to hold ~5-6 rows
-  // comfortably. Bounded on purpose: each half below is `Expanded`, and
-  // `MainAxisAlignment.spaceBetween` spreads whatever rows it actually has
-  // evenly across that space — so the row *count* alone decides the
-  // spacing, with no per-row pixel guess and no leftover gap anywhere.
-  static const double _pitchHeight = 820;
+  static const double _basePitchHeight = 820;
+  static const double _verticalPadding = 20;
+
+  double _pitchHeight(BuildContext context) {
+    const playerCircleHeight = 32.0;
+    const playerNameGap = 9.0;
+    const playerNameLines = 2;
+    final nameStyle = Eyebrow.style;
+    final scaledFontSize = MediaQuery.textScalerOf(context).scale(
+      nameStyle.fontSize ?? 12,
+    );
+    final playerRowHeight = playerCircleHeight +
+        playerNameGap +
+        scaledFontSize * (nameStyle.height ?? 1) * playerNameLines;
+    final rowCount =
+        homeRows.length > awayRows.length ? homeRows.length : awayRows.length;
+    const baseHalfHeight =
+        (_basePitchHeight - _verticalPadding * 2 - _centerGap) / 2;
+    final contentHalfHeight = playerRowHeight * rowCount;
+    final requiredHalfHeight =
+        contentHalfHeight > baseHalfHeight ? contentHalfHeight : baseHalfHeight;
+    return (_verticalPadding * 2 + _centerGap + requiredHalfHeight * 2)
+        .ceilToDouble();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +78,7 @@ class LineupPitch extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           key: const ValueKey('match-lineup-card'),
-          height: _pitchHeight,
+          height: _pitchHeight(context),
           decoration: BoxDecoration(
             color: isDark ? AppPalette.darkGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(20),
@@ -77,8 +95,10 @@ class LineupPitch extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
+                padding: const EdgeInsets.symmetric(
+                  vertical: _verticalPadding,
+                  horizontal: 4,
+                ),
                 child: Column(
                   children: [
                     // Away: GK pinned to the top edge, attackers pinned to

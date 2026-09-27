@@ -38,7 +38,7 @@ void main() {
                     ),
                   ),
                   MatchCard2(
-                    date: '6 days ago',
+                    date: 'Last week',
                     venue: '',
                     team1shortname: 'AAA',
                     team1Logo: 'https://example.test/home.png',
@@ -62,6 +62,13 @@ void main() {
       for (final key in ['last-match-home-logo', 'last-match-away-logo']) {
         expect(tester.getSize(find.byKey(ValueKey(key))), const Size(48, 48));
       }
+      final lastWeek = tester.widget<Text>(find.descendant(
+        of: find.byKey(const ValueKey('last-match-date-time')),
+        matching: find.text('Last week'),
+      ));
+      expect(lastWeek.maxLines, 1);
+      expect(lastWeek.softWrap, isFalse);
+      expect(lastWeek.overflow, TextOverflow.visible);
       expect(
         tester
                 .getTopLeft(

@@ -498,32 +498,40 @@ class _MatchesTabState extends State<MatchesTab> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                SizedBox(
-                  width: isUpcoming ? 84 : 96,
-                  child: isUpcoming
-                      ? FixtureDateTime(
-                          label: fixtureDateLabel(fixture.kickoff,
-                              locale: Localizations.localeOf(context)),
-                        )
-                      : FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            children: [
-                              scoreboard(
-                                fixture.homeScore ?? 0,
-                                isDimmed: (fixture.homeScore ?? 0) <
-                                    (fixture.awayScore ?? 0),
-                              ),
-                              const SizedBox(width: 8),
-                              scoreboard(
-                                fixture.awayScore ?? 0,
-                                isDimmed: (fixture.awayScore ?? 0) <
-                                    (fixture.homeScore ?? 0),
-                              ),
-                            ],
+                if (isUpcoming)
+                  SizedBox(
+                    width: 96,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: FixtureDateTime(
+                        label: fixtureDateLabel(fixture.kickoff,
+                            locale: Localizations.localeOf(context)),
+                        overflow: TextOverflow.visible,
+                      ),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: 96,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        children: [
+                          scoreboard(
+                            fixture.homeScore ?? 0,
+                            isDimmed: (fixture.homeScore ?? 0) <
+                                (fixture.awayScore ?? 0),
                           ),
-                        ),
-                ),
+                          const SizedBox(width: 8),
+                          scoreboard(
+                            fixture.awayScore ?? 0,
+                            isDimmed: (fixture.awayScore ?? 0) <
+                                (fixture.homeScore ?? 0),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Row(

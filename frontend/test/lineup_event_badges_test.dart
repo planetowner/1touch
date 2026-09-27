@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 
 void main() {
@@ -232,5 +233,47 @@ void main() {
       find.byKey(const ValueKey('lineup-event-redCard-0')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('grows a five-row pitch for two-line Korean player names',
+      (tester) async {
+    final previousLocale = appLocaleController.value;
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = previousLocale);
+
+    List<List<LineupPlayer>> rows(int teamId) => [
+          for (var index = 0; index < 5; index++)
+            [
+              LineupPlayer(
+                teamId: teamId,
+                playerId: teamId * 100 + index,
+                number: index + 1,
+                name: '아주긴한국어선수이름',
+              ),
+            ],
+        ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ko'),
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: LineupPitch(
+              awayRows: rows(2),
+              homeRows: rows(1),
+              homeColor: const Color(0xFFD92455),
+              awayColor: const Color(0xFF18539F),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      tester.getSize(find.byKey(const ValueKey('match-lineup-card'))).height,
+      greaterThan(820),
+    );
+    expect(tester.takeException(), isNull);
   });
 }
