@@ -7,6 +7,7 @@ import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/models/following_player.dart';
 import 'package:onetouch/screens/PlayerScreen.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
+import 'package:onetouch/features/player/player_directory_widgets.dart';
 import 'support/player_detail_fixture.dart';
 import 'support/player_directory_fixture.dart';
 
@@ -69,8 +70,13 @@ void main() {
         await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
         await tester.pumpAndSettle();
         expect(find.text('Improving player'), findsOneWidget);
-        expect(find.text('2.20'), findsOneWidget);
+        expect(find.byKey(const ValueKey('ones-to-watch-jersey-1')),
+            findsOneWidget);
+        expect(find.text('#17'), findsOneWidget);
+        expect(find.text('2.20'), findsNothing);
         expect(find.text('+2.20'), findsNothing);
+        expect(find.byIcon(Icons.arrow_drop_up), findsNothing);
+        expect(find.byIcon(Icons.arrow_drop_down), findsNothing);
         expect(tester.takeException(), isNull);
       });
     }
@@ -88,6 +94,64 @@ void main() {
     expect(find.byKey(const ValueKey('favorite-player-number-badge')),
         findsNothing);
     expect(find.byIcon(Icons.help_outline), findsNWidgets(2));
+  });
+
+  testWidgets('ranking title sits 16px above its card without filters',
+      (tester) async {
+    await pump(tester);
+
+    final titleBottom = tester.getBottomLeft(
+      find.byKey(const ValueKey('players-ranking-title-row')),
+    );
+    final cardTop = tester.getTopLeft(
+      find.byKey(const ValueKey('players-ranking-card')),
+    );
+
+    expect(cardTop.dy - titleBottom.dy, 16);
+  });
+
+  testWidgets('active ranking filters have 16px spacing on both sides',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: Scaffold(
+          body: PlayerRankingPanel(
+            repository: FakePlayerDirectoryRepository(),
+            league: 8,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final titleBottom = tester.getBottomLeft(
+      find.byKey(const ValueKey('players-ranking-title-row')),
+    );
+    final filters = tester.getRect(
+      find.byKey(const ValueKey('active-ranking-filters')),
+    );
+    final cardTop = tester.getTopLeft(
+      find.byKey(const ValueKey('players-ranking-card')),
+    );
+
+    expect(filters.top - titleBottom.dy, 16);
+    expect(cardTop.dy - filters.bottom, 16);
+  });
+
+  testWidgets('favorite players starts 24px below the app bar', (tester) async {
+    await pump(tester);
+
+    final appBar = find.descendant(
+      of: find.byKey(const ValueKey('players-app-bar')),
+      matching: find.byType(AppBar),
+    );
+    final appBarBottom = tester.getBottomLeft(appBar);
+    final favoritesTop = tester.getTopLeft(
+      find.byKey(const ValueKey('players-favorites-section')),
+    );
+
+    expect(favoritesTop.dy - appBarBottom.dy, 24);
   });
 
   testWidgets('pull refresh waits for every Players API request',

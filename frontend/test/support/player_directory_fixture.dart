@@ -42,6 +42,7 @@ class FakePlayerDirectoryRepository implements PlayerDirectoryRepository {
         id: 1,
         name: 'Improving player',
         image: null,
+        jerseyNumber: 17,
         recent: 8.4,
         previous: 6.2,
         change: 2.2
