@@ -14,15 +14,18 @@ import 'package:onetouch/l10n/app_localizations.dart';
 
 const double _playerDetailAppBarHeight = 100;
 const double _playerDetailTabBarHeight = 48;
-const double _playerDetailOverviewPadding = 16;
-const double _playerDetailTopBlockHeight = 145;
+const double _playerDetailOverviewPadding = 24;
+const double _playerDetailTopBlockHeight = 172;
 
-double playerDetailOverviewGradientHeight(double topInset) =>
+double playerDetailOverviewGradientHeight(
+  double topInset, {
+  double topBlockHeight = _playerDetailTopBlockHeight,
+}) =>
     topInset +
     _playerDetailAppBarHeight +
     _playerDetailTabBarHeight +
     _playerDetailOverviewPadding +
-    _playerDetailTopBlockHeight;
+    topBlockHeight;
 
 double playerDetailTabGradientHeight(double topInset) =>
     topInset + _playerDetailAppBarHeight + _playerDetailTabBarHeight;
@@ -50,6 +53,7 @@ class _PlayerCardState extends State<PlayerCard>
   late ScrollController _scrollController;
   late TabController _tabController;
   double _scrollOffset = 0.0;
+  double _overviewTopBlockHeight = _playerDetailTopBlockHeight;
   int currentTabIndex = 0;
   late PlayerDetailStore _detailStore;
   bool get isOverviewTab => currentTabIndex == 0;
@@ -108,8 +112,10 @@ class _PlayerCardState extends State<PlayerCard>
         : const [Color(0x333D3D3D), Color(0x003D3D3D)];
 
     final double topInset = MediaQuery.of(context).padding.top;
-    final double overviewGradientHeight =
-        playerDetailOverviewGradientHeight(topInset);
+    final double overviewGradientHeight = playerDetailOverviewGradientHeight(
+      topInset,
+      topBlockHeight: _overviewTopBlockHeight,
+    );
     final double gradientHeight = isOverviewTab
         ? overviewGradientHeight
         // Other tabs: fade ends just past the tab bar.
@@ -215,7 +221,18 @@ class _PlayerCardState extends State<PlayerCard>
                     PlayerOverviewTab(
                         player: widget.player,
                         playerId: widget.id,
-                        onMatches: () => _tabController.animateTo(2)),
+                        onMatches: () => _tabController.animateTo(2),
+                        onTopBlockHeightChanged: (height) {
+                          final nextHeight =
+                              height < _playerDetailTopBlockHeight
+                                  ? _playerDetailTopBlockHeight
+                                  : height;
+                          if (nextHeight == _overviewTopBlockHeight ||
+                              !mounted) {
+                            return;
+                          }
+                          setState(() => _overviewTopBlockHeight = nextHeight);
+                        }),
                     AnalysisTab(player: widget.player, playerId: widget.id),
                     MatchesTab(player: widget.player, playerId: widget.id),
                     CareerTab(player: widget.player, playerId: widget.id),

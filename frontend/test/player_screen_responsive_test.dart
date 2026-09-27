@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -13,8 +14,8 @@ void main() {
   setUpAppCatalog();
   final player = playerRepository.findById('lee-kang-in')!;
   test('player gradient ends below the overview profile', () {
-    expect(playerDetailOverviewGradientHeight(20), 329);
-    expect(playerDetailOverviewGradientHeight(59), 368);
+    expect(playerDetailOverviewGradientHeight(20), 364);
+    expect(playerDetailOverviewGradientHeight(59), 403);
     expect(playerDetailTabGradientHeight(20), 168);
     expect(playerDetailTabGradientHeight(59), 207);
   });
@@ -39,6 +40,134 @@ void main() {
     );
     expect(backing.width, 32);
     expect(backing.height, 32);
+  });
+
+  testWidgets('overview jersey number removes top leading beside player image',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final jersey = tester.widget<Text>(
+      find.byKey(const ValueKey('player-overview-jersey-number')),
+    );
+    final jerseyTop = tester.getTopLeft(
+      find.byKey(const ValueKey('player-overview-jersey-number')),
+    );
+    final imageTop = tester.getTopLeft(
+      find.byKey(const ValueKey('player-overview-image')),
+    );
+
+    expect(jersey.textHeightBehavior?.applyHeightToFirstAscent, isFalse);
+    expect(jerseyTop.dy, imageTop.dy);
+  });
+
+  testWidgets('overview uses the reference profile dimensions and spacing',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final scroll = tester.widget<SingleChildScrollView>(
+      find.byKey(const ValueKey('player-overview-scroll')),
+    );
+    final jersey = tester.getRect(
+      find.byKey(const ValueKey('player-overview-jersey-number')),
+    );
+    final position = tester.getRect(
+      find.byKey(const ValueKey('player-overview-position')),
+    );
+
+    expect(scroll.padding, const EdgeInsets.fromLTRB(24, 24, 24, 144));
+    expect(position.top - jersey.bottom, 24);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('player-overview-image'))),
+      const Size.square(160),
+    );
+  });
+
+  testWidgets('overview position team and country use 8px vertical spacing',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final position = tester.getRect(
+      find.byKey(const ValueKey('player-overview-position')),
+    );
+    final team = tester.getRect(
+      find.byKey(const ValueKey('player-overview-team-name')),
+    );
+    final country = tester.getRect(
+      find.byKey(const ValueKey('player-overview-country')),
+    );
+
+    expect(team.top - position.bottom, 8);
+    expect(country.top - team.bottom, 8);
+  });
+
+  testWidgets('overview country has 16px of bottom padding', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final topBlock = tester.getRect(
+      find.byKey(const ValueKey('player-overview-top-block')),
+    );
+    final country = tester.getRect(
+      find.byKey(const ValueKey('player-overview-country')),
+    );
+
+    expect(topBlock.bottom - country.bottom, 16);
+  });
+
+  testWidgets('Korean profile metrics expand without vertical overflow',
+      (tester) async {
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = const Locale('en'));
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final topBlock = tester.getRect(
+      find.byKey(const ValueKey('player-overview-top-block')),
+    );
+    final country = tester.getRect(
+      find.byKey(const ValueKey('player-overview-country')),
+    );
+    final gradient = tester.getRect(
+      find.byKey(const ValueKey('player-detail-gradient')),
+    );
+
+    expect(topBlock.height, greaterThanOrEqualTo(160));
+    expect(topBlock.bottom - country.bottom, 16);
+    expect(gradient.bottom, greaterThanOrEqualTo(topBlock.bottom));
+    expect(tester.takeException(), isNull);
   });
 
   for (final testCase in <({
@@ -95,7 +224,7 @@ void main() {
         tester
             .getSize(find.byKey(const ValueKey('player-detail-gradient')))
             .height,
-        closeTo(368, 0.01),
+        closeTo(403, 0.01),
       );
 
       await tester.tap(find.text('Analysis').first);
@@ -193,6 +322,50 @@ void main() {
           tester.getTopRight(find.text('TOP STATS')).dx,
       4,
     );
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('competition stats keep the collected-since note below the card',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.darktheme,
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final card = find.byKey(const ValueKey('player-competition-stats-card'));
+    final note =
+        find.byKey(const ValueKey('player-competition-collected-note'));
+    final opacity = tester.widget<Opacity>(note);
+    final noteText = tester.widget<Text>(
+      find.descendant(of: note, matching: find.byType(Text)),
+    );
+    final ratingFinder =
+        find.byKey(const ValueKey('player-competition-rating-2'));
+    final ratingBox = tester.widget<Container>(ratingFinder);
+    final ratingDecoration = ratingBox.decoration! as BoxDecoration;
+    final ratingText = tester.widget<Text>(
+      find.descendant(of: ratingFinder, matching: find.byType(Text)),
+    );
+
+    expect(tester.getTopLeft(note).dy - tester.getBottomLeft(card).dy, 12);
+    expect(opacity.opacity, 0.5);
+    expect(noteText.style?.fontSize, 14);
+    expect(noteText.style?.fontWeight, FontWeight.w400);
+    expect(noteText.style?.height, 1.3);
+    expect(find.text('UCL'), findsOneWidget);
+    expect(find.text('Champions League'), findsNothing);
+    expect(find.text('La Liga'), findsOneWidget);
+    expect(tester.getSize(ratingFinder).height, 32);
+    expect(ratingBox.padding, const EdgeInsets.all(8));
+    expect(ratingDecoration.color, app_style.AppPalette.black);
+    expect(ratingDecoration.borderRadius, BorderRadius.circular(4));
+    expect(ratingText.style?.fontSize, 15);
+    expect(ratingText.style?.fontWeight, FontWeight.w700);
+    expect(ratingText.style?.height, 1.3);
+    expect(ratingText.style?.color, app_style.AppPalette.white);
     expect(tester.takeException(), isNull);
   });
   testWidgets('season selection loads its own data', (tester) async {

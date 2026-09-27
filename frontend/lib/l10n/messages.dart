@@ -779,6 +779,11 @@ const appMessages = <String, MessageTranslations>{
   "No history available": (ko: "기록이 없어요", ja: "記録がありません", zh: "暂无记录"),
   "Career": (ko: "커리어", ja: "キャリア", zh: "职业生涯"),
   "COMPETITION STATS": (ko: "대회 기록", ja: "大会成績", zh: "赛事数据"),
+  "Collected since 17/18 season": (
+    ko: "17/18 시즌부터 집계",
+    ja: "17/18シーズン以降の集計",
+    zh: "自17/18赛季起统计"
+  ),
   "Competition statistics for the selected season.": (
     ko: "선택한 시즌의 대회 기록이에요.",
     ja: "選択したシーズンの大会成績です。",

@@ -14,11 +14,16 @@ import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerOverviewTab extends StatelessWidget {
   const PlayerOverviewTab(
-      {super.key, this.player, this.playerId, this.onMatches});
+      {super.key,
+      this.player,
+      this.playerId,
+      this.onMatches,
+      this.onTopBlockHeightChanged});
   final Player? player;
   final int? playerId;
   int? get id => playerId ?? player?.externalPlayerId;
   final VoidCallback? onMatches;
+  final ValueChanged<double>? onTopBlockHeightChanged;
   @override
   Widget build(BuildContext context) => PlayerDetailView(
       playerId: id,
@@ -27,37 +32,79 @@ class PlayerOverviewTab extends StatelessWidget {
         return SingleChildScrollView(
             key: const ValueKey('player-overview-scroll'),
             physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 144),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 144),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(
-                  key: const ValueKey('player-overview-top-block'),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                        child: DefaultTextStyle(
-                            style: Body1.style.copyWith(color: foreground),
-                            child: Column(
+              _PlayerOverviewProfileMeasure(
+                onHeightChanged: onTopBlockHeightChanged,
+                child: IntrinsicHeight(
+                  child: Row(
+                    key: const ValueKey('player-overview-top-block'),
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                          child: DefaultTextStyle(
+                              style: Body1.style.copyWith(color: foreground),
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('${detail.profile.jerseyNumber ?? '—'}',
-                                      style: Heading1.style
-                                          .copyWith(color: foreground)),
-                                  const SizedBox(height: 4),
-                                  Text(detail.currentPosition ?? '—'),
+                                  Text(
+                                    '${detail.profile.jerseyNumber ?? '—'}',
+                                    key: const ValueKey(
+                                        'player-overview-jersey-number'),
+                                    style: Heading1.style.copyWith(
+                                      color: foreground,
+                                    ),
+                                    textHeightBehavior:
+                                        const TextHeightBehavior(
+                                      applyHeightToFirstAscent: false,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    detail.currentPosition ?? '—',
+                                    key: const ValueKey(
+                                        'player-overview-position'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                   const SizedBox(height: 8),
-                                  Text(teamNameLabel(
+                                  Text(
+                                    teamNameLabel(
                                       context,
                                       detail.profile.teamId,
-                                      detail.profile.teamName ?? '—')),
-                                  const SizedBox(height: 4),
-                                  Text(detail.profile.nationality ?? '—'),
-                                ]))),
-                    ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child:
-                            PlayerRemoteImage(detail.profile.image, size: 145))
-                  ]),
+                                      detail.profile.teamName ?? '—',
+                                    ),
+                                    key: const ValueKey(
+                                        'player-overview-team-name'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    detail.profile.nationality ?? '—',
+                                    key: const ValueKey(
+                                        'player-overview-country'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ))),
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: PlayerRemoteImage(
+                              detail.profile.image,
+                              key: const ValueKey('player-overview-image'),
+                              size: 160,
+                            )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 48),
               PlayerBioStatsBlock(
                   player: player, playerId: id, profile: detail.profile),
@@ -74,9 +121,28 @@ class PlayerOverviewTab extends StatelessWidget {
                       size: 18,
                     ),
                   ),
-                  child: PlayerCompetitionTable(
-                      key: const ValueKey('player-competition-stats-card'),
-                      competitions: detail.competitions)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PlayerCompetitionTable(
+                        key: const ValueKey('player-competition-stats-card'),
+                        competitions: detail.competitions,
+                      ),
+                      const SizedBox(height: 12),
+                      Opacity(
+                        key:
+                            const ValueKey('player-competition-collected-note'),
+                        opacity: 0.5,
+                        child: Text(
+                          tr(context, 'Collected since 17/18 season'),
+                          style: Body2.style.copyWith(
+                            color: foreground,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )),
               const SizedBox(height: 48),
               PlayerSection(
                   title: tr(context, 'MATCHES'),
@@ -117,6 +183,54 @@ class PlayerOverviewTab extends StatelessWidget {
                       ]))),
             ]));
       });
+}
+
+class _PlayerOverviewProfileMeasure extends StatefulWidget {
+  const _PlayerOverviewProfileMeasure({
+    required this.child,
+    this.onHeightChanged,
+  });
+
+  final Widget child;
+  final ValueChanged<double>? onHeightChanged;
+
+  @override
+  State<_PlayerOverviewProfileMeasure> createState() =>
+      _PlayerOverviewProfileMeasureState();
+}
+
+class _PlayerOverviewProfileMeasureState
+    extends State<_PlayerOverviewProfileMeasure> {
+  final _measureKey = GlobalKey();
+  double? _lastHeight;
+  bool _reportScheduled = false;
+
+  void _scheduleReport() {
+    if (_reportScheduled || widget.onHeightChanged == null) return;
+    _reportScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _reportScheduled = false;
+      if (!mounted) return;
+      final height = _measureKey.currentContext?.size?.height;
+      if (height == null || height == _lastHeight) return;
+      _lastHeight = height;
+      widget.onHeightChanged!(height);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _scheduleReport();
+    return NotificationListener<SizeChangedLayoutNotification>(
+      onNotification: (_) {
+        _scheduleReport();
+        return false;
+      },
+      child: SizeChangedLayoutNotifier(
+        child: SizedBox(key: _measureKey, child: widget.child),
+      ),
+    );
+  }
 }
 
 class PlayerBioStatsBlock extends StatefulWidget {

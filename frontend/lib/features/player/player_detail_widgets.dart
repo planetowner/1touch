@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/features/player/player_stat_value.dart';
 import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
@@ -112,83 +113,128 @@ class PlayerRecordRow extends StatelessWidget {
 class PlayerCompetitionTable extends StatelessWidget {
   const PlayerCompetitionTable({super.key, required this.competitions});
   final List<PlayerCompetitionRecord> competitions;
+
+  String _competitionLabel(
+      BuildContext context, PlayerCompetitionRecord competition) {
+    final shortCode = footballCatalog.competitions.value
+        .where((item) => item.competitionId == competition.id)
+        .firstOrNull
+        ?.shortCode
+        ?.trim();
+    if (shortCode != null && shortCode.isNotEmpty) return shortCode;
+    return competitionNameLabel(context, competition.id, competition.name);
+  }
+
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
-    final badgeColor = Theme.of(context).brightness == Brightness.dark
-        ? AppPalette.lightGrey
-        : appColors.subtleBackground;
-    final muted = Body2.style.copyWith(color: appColors.mutedForeground);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headerStyle = Body1.style.copyWith(
+      color: isDark ? AppPalette.white : AppPalette.black,
+    );
     return PlayerSurface(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      child: Column(children: [
-        Row(children: [
-          Expanded(flex: 3, child: Text(tr(context, 'League'), style: muted)),
-          Expanded(
-              flex: 2,
-              child: Text(tr(context, 'MP'),
-                  textAlign: TextAlign.center, style: muted)),
-          Expanded(
-              flex: 2,
-              child: Text('WR', textAlign: TextAlign.center, style: muted)),
-          Expanded(
-              flex: 2,
-              child: Text(tr(context, 'Rating'),
-                  textAlign: TextAlign.right, style: muted)),
-        ]),
-        const SizedBox(height: 12),
-        Divider(color: appColors.divider, height: 1),
-        if (competitions.isEmpty)
-          Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(tr(context, 'No competitions this season'))),
-        for (var index = 0; index < competitions.length; index++) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: EdgeInsets.zero,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(children: [
+          Container(
+            key: const ValueKey('player-competition-header-surface'),
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            color: appColors.subtleBackground,
             child: Row(children: [
               Expanded(
                   flex: 3,
                   child: Text(
-                      competitionNameLabel(context, competitions[index].id,
-                          competitions[index].name),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Heading5.style)),
+                    tr(context, 'League'),
+                    key: const ValueKey('player-competition-league-header'),
+                    textAlign: TextAlign.left,
+                    style: headerStyle,
+                  )),
               Expanded(
                   flex: 2,
-                  child: Text('${competitions[index].record.appearances}',
-                      textAlign: TextAlign.center, style: Heading5.style)),
+                  child: Text(tr(context, 'MP'),
+                      textAlign: TextAlign.center, style: headerStyle)),
               Expanded(
                   flex: 2,
-                  child: Text(
-                      competitions[index].record.winRate == null
-                          ? '—'
-                          : '${playerNumber(competitions[index].record.winRate, decimals: 0)}%',
-                      textAlign: TextAlign.center,
-                      style: Heading5.style)),
+                  child: Text('WR',
+                      textAlign: TextAlign.center, style: headerStyle)),
               Expanded(
                   flex: 2,
-                  child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                              color: badgeColor,
-                              borderRadius: BorderRadius.circular(8)),
-                          child: Text(
-                              competitions[index]
-                                      .record
-                                      .rating
-                                      ?.toStringAsFixed(1) ??
-                                  '—',
-                              style: Heading5.style)))),
+                  child: Text(tr(context, 'Rating'),
+                      textAlign: TextAlign.right, style: headerStyle)),
             ]),
           ),
-          if (index != competitions.length - 1)
-            Divider(color: appColors.divider, height: 1),
-        ],
-      ]),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Column(children: [
+              if (competitions.isEmpty)
+                Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(tr(context, 'No competitions this season'))),
+              for (var index = 0; index < competitions.length; index++) ...[
+                Row(
+                  key: ValueKey(
+                      'player-competition-row-${competitions[index].id}'),
+                  children: [
+                    Expanded(
+                        flex: 3,
+                        child: Text(
+                            _competitionLabel(context, competitions[index]),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.left,
+                            style: Heading5.style)),
+                    Expanded(
+                        flex: 2,
+                        child: Text('${competitions[index].record.appearances}',
+                            textAlign: TextAlign.center,
+                            style: Heading5.style)),
+                    Expanded(
+                        flex: 2,
+                        child: Text(
+                            competitions[index].record.winRate == null
+                                ? '—'
+                                : '${playerNumber(competitions[index].record.winRate, decimals: 0)}%',
+                            textAlign: TextAlign.center,
+                            style: Heading5.style)),
+                    Expanded(
+                        flex: 2,
+                        child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Container(
+                                key: ValueKey(
+                                    'player-competition-rating-${competitions[index].id}'),
+                                height: 32,
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                    color: AppPalette.black,
+                                    borderRadius: BorderRadius.circular(4)),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                        competitions[index]
+                                                .record
+                                                .rating
+                                                ?.toStringAsFixed(1) ??
+                                            '—',
+                                        style: Body1_b.style.copyWith(
+                                          color: AppPalette.white,
+                                          height: 1.3,
+                                        )),
+                                  ],
+                                )))),
+                  ],
+                ),
+                if (index != competitions.length - 1) const SizedBox(height: 8),
+              ],
+            ]),
+          ),
+        ]),
+      ),
     );
   }
 }
