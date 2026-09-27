@@ -623,7 +623,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
         ),
         Expanded(
           child: Text(
-            tr(context, label),
+            appStatLabel(context, label),
             style: Body1.style,
             textAlign: TextAlign.center,
           ),

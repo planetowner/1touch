@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
@@ -13,11 +14,11 @@ import 'support/player_detail_fixture.dart';
 void main() {
   setUpAppCatalog();
   final player = playerRepository.findById('lee-kang-in')!;
-  test('player gradient ends below the overview profile', () {
+  test('player gradient is limited to the app bar and tabs', () {
+    expect(playerDetailHeaderGradientHeight(20), 168);
+    expect(playerDetailHeaderGradientHeight(59), 207);
     expect(playerDetailOverviewGradientHeight(20), 364);
     expect(playerDetailOverviewGradientHeight(59), 403);
-    expect(playerDetailTabGradientHeight(20), 168);
-    expect(playerDetailTabGradientHeight(59), 207);
   });
 
   testWidgets('match crests render without a background tile', (tester) async {
@@ -203,7 +204,7 @@ void main() {
       find.byKey(const ValueKey('player-overview-country')),
     );
     final gradient = tester.getRect(
-      find.byKey(const ValueKey('player-detail-gradient')),
+      find.byKey(const ValueKey('player-detail-overview-gradient')),
     );
 
     expect(topBlock.height, greaterThanOrEqualTo(160));
@@ -251,31 +252,98 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      final gradientContainer = tester.widget<Container>(
-        find.byKey(const ValueKey('player-detail-gradient')),
+      final overviewGradientContainer = tester.widget<Container>(
+        find.byKey(const ValueKey('player-detail-overview-gradient')),
       );
-      final gradient = (gradientContainer.decoration as BoxDecoration).gradient!
-          as LinearGradient;
+      final overviewGradient =
+          (overviewGradientContainer.decoration as BoxDecoration).gradient!
+              as LinearGradient;
       final tabBar = tester.widget<TabBar>(find.byType(TabBar));
       final indicator = tabBar.indicator! as UnderlineTabIndicator;
-      expect(gradient.colors, testCase.gradientColors);
+      expect(overviewGradient.colors, testCase.gradientColors);
       expect(tabBar.labelColor, testCase.foreground);
       expect(tabBar.unselectedLabelColor, testCase.foreground);
       expect(indicator.borderSide.color, testCase.foreground);
       expect(
         tester
-            .getSize(find.byKey(const ValueKey('player-detail-gradient')))
+            .getSize(
+                find.byKey(const ValueKey('player-detail-overview-gradient')))
             .height,
         closeTo(403, 0.01),
       );
 
       await tester.tap(find.text('Analysis').first);
       await tester.pumpAndSettle();
+      final topStatsSurface = tester.widget<PlayerSurface>(
+        find.byKey(const ValueKey('player-top-stats-card')),
+      );
+      final topStatValue = tester.widget<Container>(
+        find.byKey(const ValueKey('player-top-stat-value-Key passes')),
+      );
+      final topStatDecoration = topStatValue.decoration! as BoxDecoration;
+      expect(
+        topStatsSurface.color,
+        testCase.name == 'dark'
+            ? app_style.AppPalette.lightGrey
+            : app_style.AppPalette.lightGreyBox,
+      );
+      expect(
+        topStatDecoration.color,
+        testCase.name == 'dark'
+            ? app_style.AppPalette.darkGrey
+            : app_style.AppPalette.white,
+      );
+      expect(
+        find.byKey(const ValueKey('player-detail-overview-gradient')),
+        findsNothing,
+      );
+      final appBarGradientContainer = tester.widget<Container>(
+        find.byKey(const ValueKey('player-detail-gradient')),
+      );
+      final tabGradientContainer = tester.widget<Container>(
+        find.byKey(const ValueKey('player-detail-tab-gradient')),
+      );
+      final appBarGradient =
+          (appBarGradientContainer.decoration as BoxDecoration).gradient!
+              as LinearGradient;
+      final tabGradient = (tabGradientContainer.decoration as BoxDecoration)
+          .gradient! as LinearGradient;
+      expect(appBarGradient.colors.first, testCase.gradientColors.last);
+      expect(tabGradient.colors.last, testCase.gradientColors.first);
+      expect(appBarGradient.colors.last, tabGradient.colors.first);
       expect(
         tester
             .getSize(find.byKey(const ValueKey('player-detail-gradient')))
             .height,
-        closeTo(207, 0.01),
+        closeTo(159, 0.01),
+      );
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey('player-detail-tab-gradient')))
+            .height,
+        closeTo(48, 0.01),
+      );
+      expect(
+        tester
+            .getBottomLeft(find.byKey(const ValueKey('player-detail-gradient')))
+            .dy,
+        tester
+            .getTopLeft(
+                find.byKey(const ValueKey('player-detail-tab-gradient')))
+            .dy,
+      );
+      await tester.drag(
+        find.byKey(const ValueKey('player-analysis-scroll')),
+        const Offset(0, -300),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('player-detail-gradient')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('player-detail-tab-gradient')),
+        findsNothing,
       );
       expect(tester.takeException(), isNull);
     });
@@ -335,6 +403,28 @@ void main() {
     expect(
       tester.getTopLeft(overviewMatchBoxes.at(1)).dy -
           tester.getBottomLeft(overviewMatchBoxes.at(0)).dy,
+      16,
+    );
+    final clubHistoryCard = tester.widget<PlayerSurface>(
+      find.byKey(const ValueKey('player-club-history-card')),
+    );
+    final firstClubRow =
+        find.byKey(const ValueKey('player-club-history-row-7980'));
+    final secondClubRow =
+        find.byKey(const ValueKey('player-club-history-row-591'));
+    final firstClubName = tester.widget<Text>(
+      find.byKey(const ValueKey('player-club-history-name-7980')),
+    );
+    expect(clubHistoryCard.padding, const EdgeInsets.all(16));
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('player-club-history-logo-7980'))),
+      const Size.square(24),
+    );
+    expect(firstClubName.style, Heading5.style);
+    expect(
+      tester.getTopLeft(secondClubRow).dy -
+          tester.getBottomLeft(firstClubRow).dy,
       16,
     );
     expect(overviewCards.first.match.metrics.map((m) => m.code),
@@ -429,10 +519,45 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('ATTRIBUTES'), findsOneWidget);
     expect(find.text('Coming soon'), findsOneWidget);
-    expect(find.text('Minutes Played\nPer Game'), findsOneWidget);
-    expect(find.text('Goal\nContributions'), findsOneWidget);
+    expect(find.text('Starting Rate'), findsOneWidget);
+    expect(find.text('Win Rate'), findsOneWidget);
+    expect(find.text('Minutes Played\nPer Game'), findsNothing);
+    expect(find.text('Goal\nContributions'), findsNothing);
+    expect(find.text('Key Passes'), findsOneWidget);
+    expect(find.text('Ball Recoveries'), findsOneWidget);
+    expect(find.text('Passes in Final Third'), findsOneWidget);
+    expect(find.text('Key passes'), findsNothing);
+    expect(find.text('Ball recoveries'), findsNothing);
+    expect(find.text('Passes in final third'), findsNothing);
+    final topStatsSurface = tester.widget<PlayerSurface>(
+      find.byKey(const ValueKey('player-top-stats-card')),
+    );
+    final topStatValue = tester.widget<Container>(
+      find.byKey(const ValueKey('player-top-stat-value-Key passes')),
+    );
+    final topStatDecoration = topStatValue.decoration! as BoxDecoration;
+    final topStatLabel = tester.widget<Center>(
+      find.byKey(const ValueKey('player-top-stat-label-Key passes')),
+    );
+    final topStatRank = tester.widget<Text>(find.descendant(
+      of: find.byKey(const ValueKey('player-top-stat-rank-Key passes')),
+      matching: find.byType(Text),
+    ));
+    expect(topStatsSurface.color, app_style.AppPalette.lightGreyBox);
+    expect(topStatsSurface.padding, const EdgeInsets.all(24));
+    expect(topStatDecoration.color, app_style.AppPalette.white);
+    expect(topStatLabel.heightFactor, isNull);
+    expect(topStatRank.data, '#1');
     final selector =
         tester.widget<PlayerSeasonSelector>(find.byType(PlayerSeasonSelector));
+    final selectorRect = tester.getRect(
+      find.byKey(ValueKey(
+          'player-analysis-season-${selector.detail.selectedSeason?.id}')),
+    );
+    expect(selector.width, double.infinity);
+    expect(selectorRect.left, 24);
+    expect(selectorRect.right,
+        tester.getSize(find.byType(MaterialApp)).width - 24);
     selector.onChanged(selector.detail.seasons.last.id);
     await tester.pumpAndSettle();
     expect(repository.calls.last.seasonId, selector.detail.seasons.last.id);
