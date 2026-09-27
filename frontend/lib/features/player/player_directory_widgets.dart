@@ -265,6 +265,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          key: const ValueKey('players-ranking-title-row'),
           children: [
             Text(tr(context, '1TOUCH RANKING'), style: Body2_b.style),
             const SizedBox(width: 4),
@@ -273,6 +274,11 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
             IconButton(
               tooltip: tr(context, 'Ranking filters'),
               onPressed: _loading ? null : _filters,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(
+                width: 24,
+                height: 24,
+              ),
               icon: Icon(Icons.tune, color: colors.onSurface),
             ),
           ],
@@ -280,6 +286,7 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
         if (_league != null || _position != null) ...[
           const SizedBox(height: 16),
           SingleChildScrollView(
+            key: const ValueKey('active-ranking-filters'),
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -557,8 +564,6 @@ class _WatchCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final changeColor =
-        player.change >= 0 ? const Color(0xFF31C979) : const Color(0xFFFF5C5C);
     return Semantics(
       button: true,
       label: tr(context, 'Open {name}',
@@ -598,29 +603,14 @@ class _WatchCard extends StatelessWidget {
                       Positioned(
                         top: 10,
                         left: 10,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('##', style: Heading2.style),
-                            Row(
-                              children: [
-                                Icon(
-                                  player.change >= 0
-                                      ? Icons.arrow_drop_up
-                                      : Icons.arrow_drop_down,
-                                  color: changeColor,
-                                  size: 22,
-                                ),
-                                Text(
-                                  player.change.abs().toStringAsFixed(2),
-                                  style: Body2_b.style.copyWith(
-                                    color: changeColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                        child: player.jerseyNumber == null
+                            ? const SizedBox.shrink()
+                            : Text(
+                                '#${player.jerseyNumber}',
+                                key: ValueKey(
+                                    'ones-to-watch-jersey-${player.id}'),
+                                style: Heading2.style,
+                              ),
                       ),
                     ],
                   ),

@@ -56,6 +56,37 @@ void main() {
     expect(result.items.single.id, 123456);
     expect(result.items.single.score, 74.5);
   });
+  test('ones to watch preserves a jersey number when the API supplies it',
+      () async {
+    final repository = ApiPlayerDirectoryRepository(
+      api: ApiClient(
+        client: MockClient((request) async {
+          expect(request.url.path, '/v1/players/ones-to-watch');
+          return http.Response(
+              jsonEncode({
+                'items': [
+                  {
+                    'player_id': 7,
+                    'name': 'Watch player',
+                    'image': null,
+                    'jersey_number': 17,
+                    'recent_average': 8.4,
+                    'previous_average': 6.2,
+                    'change': 2.2,
+                  }
+                ]
+              }),
+              200);
+        }),
+        baseUri: Uri.parse('https://example.test/v1/'),
+        requestHeaders: () => const {},
+      ),
+    );
+
+    final result = await repository.watch();
+
+    expect(result.single.jerseyNumber, 17);
+  });
   test('favorite toggle first loads order and leaves list unchanged on failure',
       () async {
     final repository = FakeFollowingPlayersRepository();
