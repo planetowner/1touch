@@ -31,7 +31,7 @@ CLI 사용법::
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from ..core.db import upsert_many
 from ..core.sportmonks import SportmonksClient
@@ -61,6 +61,11 @@ ON DUPLICATE KEY UPDATE
 
 TeamRow = Tuple[int, str, Optional[str], Optional[str]]
 SeasonCache = Dict[int, Dict[str, Dict]]
+
+
+def matches_competition_scope(team_ids: Iterable[int], base_team_ids: Optional[Set[int]]) -> bool:
+    """네 자국 컵은 기준 리그 팀이 포함된 경기만 수집해요."""
+    return base_team_ids is None or bool(set(team_ids).intersection(base_team_ids))
 
 
 def _require_non_empty_string(value, field_name: str) -> str:
@@ -253,9 +258,9 @@ def _collect_related_cup_fixture_teams(
             actual_rows.append(row)
             actual_team_ids.add(row[0])
 
-    # 제품 규칙에 맞는 경기만 남겨요. 홈팀이나 원정팀 중 하나 이상이
-    # 같은 이름의 시즌에 대응하는 자국 리그 소속이어야 해요.
-        if not actual_team_ids.intersection(base_team_ids):
+        # 제품 규칙에 맞는 경기만 남겨요. 홈팀이나 원정팀 중 하나 이상이
+        # 같은 이름의 시즌에 대응하는 자국 리그 소속이어야 해요.
+        if not matches_competition_scope(actual_team_ids, base_team_ids):
             continue
 
         matched_fixture_rows += 1
