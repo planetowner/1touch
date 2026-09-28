@@ -5,6 +5,7 @@ import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
+import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/data/fixtures/fixture_team_resolver.dart';
 import 'package:onetouch/data/match_analysis/match_analysis_repository.dart';
 import 'package:onetouch/data/match_analysis/match_analysis_repository_provider.dart';
@@ -677,10 +678,11 @@ class _AnalysisTabState extends State<AnalysisTab> {
             children: [
               Text(tr(context, 'DEFENSE'), style: Body2_b.style),
               SizedBox(width: 4),
-              Tooltip(
-                message: tr(context,
-                    'Pitch values compare each team’s share of recoveries by third.'),
-                child: Icon(Icons.help_outline, size: 14),
+              const AppInfoButton(
+                key: ValueKey('match-analysis-defense-info'),
+                message:
+                    'Percentage of ball recovery locations across the lower, middle, and upper thirds compared against the league average.',
+                layoutSize: 14,
               ),
             ],
           ),
