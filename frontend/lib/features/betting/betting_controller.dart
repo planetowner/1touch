@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:onetouch/data/betting/bet_settlement_registry.dart';
 import 'package:onetouch/data/betting/betting_repository.dart';
 import 'package:onetouch/data/betting/betting_repository_provider.dart'
     as providers;
@@ -8,11 +9,16 @@ import 'package:onetouch/models/betting.dart';
 import 'package:uuid/uuid.dart';
 
 class BettingController extends ChangeNotifier {
-  BettingController({required this.fixtureId, BettingRepository? repository})
-      : _repository = repository;
+  BettingController({
+    required this.fixtureId,
+    BettingRepository? repository,
+    BetSettlementTracker? settlementTracker,
+  })  : _repository = repository,
+        _settlementTracker = settlementTracker;
 
   final int fixtureId;
   final BettingRepository? _repository;
+  final BetSettlementTracker? _settlementTracker;
   BettingRepository get repository =>
       _repository ?? providers.bettingRepository;
   BettingMarket? market;
@@ -43,6 +49,9 @@ class BettingController extends ChangeNotifier {
       final loaded = await repository.loadMarket(fixtureId);
       if (_disposed || version != _loadVersion) return;
       market = loaded;
+      if (loaded.bet?.isOpen == true) {
+        await _trackSettlement();
+      }
       _closeTimer?.cancel();
       if (loaded.closesAt != null &&
           DateTime.now().isBefore(loaded.closesAt!)) {
@@ -104,6 +113,11 @@ class BettingController extends ChangeNotifier {
             );
       if (_disposed) return true;
       market = current.withMutation(result);
+      if (cancel) {
+        await _removeSettlementTracking();
+      } else {
+        await _trackSettlement();
+      }
       _pendingSignature = null;
       _pendingRequestId = null;
       await load();
@@ -129,6 +143,29 @@ class BettingController extends ChangeNotifier {
 
   void _notify() {
     if (!_disposed) notifyListeners();
+  }
+
+  Future<void> _trackSettlement() async {
+    final tracker = _settlementTracker ??
+        (_repository == null ? betSettlementRegistry : null);
+    if (tracker == null) return;
+    try {
+      await tracker.track(fixtureId);
+    } on Object {
+      // A local persistence failure must not turn an accepted server bet into
+      // an apparent submission failure.
+    }
+  }
+
+  Future<void> _removeSettlementTracking() async {
+    final tracker = _settlementTracker ??
+        (_repository == null ? betSettlementRegistry : null);
+    if (tracker == null) return;
+    try {
+      await tracker.remove(fixtureId);
+    } on Object {
+      // The cancelled bet remains authoritative even if local cleanup fails.
+    }
   }
 
   @override
