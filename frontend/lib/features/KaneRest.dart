@@ -83,32 +83,36 @@ class PlayerMatchStatSheet extends StatelessWidget {
       snap: true,
       snapSizes: const [0.78, 0.95],
       builder: (_, scrollController) {
-        return ClipRRect(
-          key: const ValueKey('player-match-stat-sheet'),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          child: Column(
-            children: [
-              _Header(
-                player: player,
-                followingController: followingController,
-              ),
-              Expanded(
-                child: ColoredBox(
-                  color: isDark ? _sheetBg : AppPalette.white,
-                  child: ListView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-                    children: [
-                      for (int i = 0; i < player.sections.length; i++) ...[
-                        _StatSection(section: player.sections[i]),
-                        if (i < player.sections.length - 1)
-                          const SizedBox(height: 24),
+        return TapRegion(
+          key: const ValueKey('player-match-stat-tap-region'),
+          onTapOutside: (_) => Navigator.of(context).pop(),
+          child: ClipRRect(
+            key: const ValueKey('player-match-stat-sheet'),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Column(
+              children: [
+                _Header(
+                  player: player,
+                  followingController: followingController,
+                ),
+                Expanded(
+                  child: ColoredBox(
+                    color: isDark ? _sheetBg : AppPalette.white,
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+                      children: [
+                        for (int i = 0; i < player.sections.length; i++) ...[
+                          _StatSection(section: player.sections[i]),
+                          if (i < player.sections.length - 1)
+                            const SizedBox(height: 24),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -247,26 +251,39 @@ class _Header extends StatelessWidget {
                   ),
 
                   // Right: player headshot
-                  if (player.playerImageAsset != null)
+                  if (player.playerImageAsset != null ||
+                      player.playerImageUrl != null)
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: Image.asset(
-                        player.playerImageAsset!,
-                        height: 140,
-                        fit: BoxFit.contain,
-                      ),
-                    )
-                  else if (player.playerImageUrl != null)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Image.network(
-                        player.playerImageUrl!,
-                        height: 140,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const SizedBox(
-                          width: 90,
-                          height: 140,
-                        ),
+                      child: ShaderMask(
+                        key: const ValueKey(
+                            'player-match-stat-image-bottom-fade'),
+                        blendMode: BlendMode.dstIn,
+                        shaderCallback: (bounds) => const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white,
+                            Colors.white,
+                            Colors.transparent,
+                          ],
+                          stops: [0, 0.78, 1],
+                        ).createShader(bounds),
+                        child: player.playerImageAsset != null
+                            ? Image.asset(
+                                player.playerImageAsset!,
+                                height: 140,
+                                fit: BoxFit.contain,
+                              )
+                            : Image.network(
+                                player.playerImageUrl!,
+                                height: 140,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const SizedBox(
+                                  width: 90,
+                                  height: 140,
+                                ),
+                              ),
                       ),
                     ),
                 ],
