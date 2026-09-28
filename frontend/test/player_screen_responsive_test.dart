@@ -10,6 +10,7 @@ import 'package:onetouch/data/players/player_repository_provider.dart';
 import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
 import 'support/player_detail_fixture.dart';
 
@@ -73,6 +74,13 @@ void main() {
     expect(backing.width, 32);
     expect(backing.height, 32);
     expect(
+      tester.getTopLeft(find.byKey(const ValueKey('player-match-logo'))).dx -
+          tester
+              .getTopLeft(find.byKey(const ValueKey('player-match-card-top')))
+              .dx,
+      16,
+    );
+    expect(
       tester.getTopLeft(find.byKey(const ValueKey('player-match-result'))).dx -
           tester
               .getTopRight(find.byKey(const ValueKey('player-match-logo')))
@@ -114,6 +122,76 @@ void main() {
               .dx,
       16,
     );
+  });
+
+  testWidgets('Korean player match stats use minimal padding before wrapping',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final previousLocale = appLocaleController.value;
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = previousLocale);
+
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ko'),
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      theme: app_style.darktheme,
+      home: const Scaffold(
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: PlayerMatchCard(
+            result: 'WIN',
+            score: '3 - 0',
+            competition: 'LA LIGA · Round 4',
+            stats: [
+              {'label': 'Goals', 'value': '1'},
+              {'label': 'Assists', 'value': '2'},
+              {'label': 'Shots', 'value': '4'},
+            ],
+            rating: '8.4',
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final bottom = tester.widget<Container>(
+      find.byKey(const ValueKey('player-match-card-bottom')),
+    );
+    expect(
+      bottom.padding,
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    );
+    for (final label in ['골', '도움', '슈팅']) {
+      final text = tester.widget<Text>(find.text(label));
+      expect(text.maxLines, 2);
+      expect(tester.getSize(find.text(label)).height, lessThan(30));
+    }
+    final goalPair = tester.getRect(
+      find.byKey(const ValueKey('player-match-stat-pair-Goals')),
+    );
+    final assistPair = tester.getRect(
+      find.byKey(const ValueKey('player-match-stat-pair-Assists')),
+    );
+    final shotPair = tester.getRect(
+      find.byKey(const ValueKey('player-match-stat-pair-Shots')),
+    );
+    final ratingGap = tester.widget<SizedBox>(
+      find.byKey(const ValueKey('player-match-rating-gap')),
+    );
+    final bottomRect = tester.getRect(
+      find.byKey(const ValueKey('player-match-card-bottom')),
+    );
+    final ratingRect = tester.getRect(
+      find.byKey(const ValueKey('player-match-rating')),
+    );
+    expect(goalPair.left - bottomRect.left, 16);
+    expect(assistPair.left - goalPair.right, 16);
+    expect(shotPair.left - assistPair.right, 16);
+    expect(ratingGap.width, 8);
+    expect(bottomRect.right - ratingRect.right, 16);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('overview jersey number removes top leading beside player image',
@@ -637,6 +715,44 @@ void main() {
     expect(find.text('Coming soon'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('Korean top stat names stay on one line when they fit',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final previousLocale = appLocaleController.value;
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = previousLocale);
+
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ko'),
+      supportedLocales: appSupportedLocales,
+      localizationsDelegates: appLocalizationDelegates,
+      theme: app_style.darktheme,
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('분석').first);
+    await tester.pumpAndSettle();
+
+    final surface = tester.widget<PlayerSurface>(
+      find.byKey(const ValueKey('player-top-stats-card')),
+    );
+    expect(
+      surface.padding,
+      const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+    );
+    for (final label in ['키 패스', '볼 회수', '공격 지역 패스']) {
+      final text = tester.widget<Text>(find.text(label));
+      expect(text.maxLines, 2);
+      expect(tester.getSize(find.text(label)).height, lessThan(30));
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('performance chart follows the team current form format',
       (tester) async {
     final repository = FakePlayerDetailRepository();
@@ -732,6 +848,40 @@ void main() {
       find.byKey(const ValueKey('player-club-history-row-7980-4')),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('supported club history teams open their Team page',
+      (tester) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => PlayerCard(
+            player: player,
+            detailRepository: FakePlayerDetailRepository(),
+          ),
+        ),
+        GoRoute(
+          path: '/team/:teamId',
+          builder: (_, state) => Scaffold(
+            body: Text('team-${state.pathParameters['teamId']}'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    final club = find.byKey(
+      const ValueKey('player-club-history-row-7980'),
+    );
+    await tester.ensureVisible(club);
+    await tester.tap(club);
+    await tester.pumpAndSettle();
+
+    expect(find.text('team-7980'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

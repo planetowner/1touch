@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/team_navigation.dart';
 import 'package:onetouch/data/players/player_indicators_repository.dart';
 import 'package:onetouch/data/players/player_indicators_repository_provider.dart';
 import 'package:onetouch/features/player/player_indicator_value.dart';
@@ -41,32 +42,37 @@ class PlayerOverviewTab extends StatelessWidget {
   ) {
     final club = detail.clubs[index];
     final historyKey = _clubHistoryKey(detail, index);
-    return Row(
+    final canOpenTeam = isTeamPageSupported(club.teamId);
+    return GestureDetector(
       key: ValueKey('player-club-history-row-$historyKey'),
-      children: [
-        PlayerRemoteImage(
-          club.teamImage,
-          key: ValueKey('player-club-history-logo-$historyKey'),
-          size: 24,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            teamNameLabel(
-              context,
-              club.teamId,
-              club.teamName ?? '—',
-            ),
-            key: ValueKey('player-club-history-name-$historyKey'),
-            style: Heading5.style,
+      behavior: HitTestBehavior.opaque,
+      onTap: canOpenTeam ? () => openTeamPage(context, club.teamId) : null,
+      child: Row(
+        children: [
+          PlayerRemoteImage(
+            club.teamImage,
+            key: ValueKey('player-club-history-logo-$historyKey'),
+            size: 24,
           ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          '${club.startDate?.year ?? '—'}–${club.endDate?.year ?? ''}',
-          style: Body2.style,
-        ),
-      ],
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              teamNameLabel(
+                context,
+                club.teamId,
+                club.teamName ?? '—',
+              ),
+              key: ValueKey('player-club-history-name-$historyKey'),
+              style: Heading5.style,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${club.startDate?.year ?? '—'}–${club.endDate?.year ?? ''}',
+            style: Body2.style,
+          ),
+        ],
+      ),
     );
   }
 
