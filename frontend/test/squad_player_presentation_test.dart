@@ -58,6 +58,29 @@ void main() {
     expect(ageAt(null, DateTime.utc(2026, 9, 15)), isNull);
   });
 
+  group('twoLineSquadPlayerName', () {
+    test('places first and last names on separate lines', () {
+      expect(twoLineSquadPlayerName('Harry Kane'), 'Harry\nKane');
+    });
+
+    test('normalizes a name without forcing a line break', () {
+      expect(normalizeSquadPlayerName('  Harry   Kane  '), 'Harry Kane');
+    });
+
+    test('keeps remaining name parts together on the second line', () {
+      expect(
+        twoLineSquadPlayerName('Kevin De Bruyne'),
+        'Kevin\nDe Bruyne',
+      );
+    });
+
+    test('normalizes whitespace and keeps a single name on one line', () {
+      expect(twoLineSquadPlayerName('  Heung-min   Son  '), 'Heung-min\nSon');
+      expect(twoLineSquadPlayerName('Neymar'), 'Neymar');
+      expect(twoLineSquadPlayerName('   '), '');
+    });
+  });
+
   test('missing values sort last in both directions', () {
     final missing = SquadPlayer(
       id: 1,

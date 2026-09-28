@@ -100,6 +100,16 @@ Position? positionFromTeamGroup(TeamPositionGroup? positionGroup) {
   }
 }
 
+String normalizeSquadPlayerName(String name) {
+  return name.trim().split(RegExp(r'\s+')).join(' ');
+}
+
+String twoLineSquadPlayerName(String name) {
+  final parts = normalizeSquadPlayerName(name).split(' ');
+  if (parts.length < 2) return parts.first;
+  return '${parts.first}\n${parts.skip(1).join(' ')}';
+}
+
 int? ageAt(DateTime? dateOfBirth, DateTime asOf) {
   if (dateOfBirth == null) return null;
 

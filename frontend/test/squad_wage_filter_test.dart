@@ -46,7 +46,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('API Player'), findsOneWidget);
+    expect(find.text('Kane'), findsOneWidget);
     final playerCard = tester.widget<Container>(
       find.byKey(const ValueKey('squad-player-card-1')),
     );
@@ -105,6 +105,33 @@ void main() {
           tester.getRect(positionCheck).right,
       8,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('wraps an overflowing player name only at a space',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: whitetheme,
+        home: Scaffold(
+          body: SquadTab(
+            team: const {'id': 83, 'name': 'FC Barcelona'},
+            contractRepository: _FakeTeamContractRepository(
+              playerName: 'Andreas Christensen',
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Andreas\nChristensen'), findsOneWidget);
+    expect(find.text('Andreas Christensen'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -173,7 +200,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('squad-retry')));
     await tester.pumpAndSettle();
 
-    expect(find.text('API Player'), findsOneWidget);
+    expect(find.text('Kane'), findsOneWidget);
     expect(repository.requestedSeasonIds, [27965, 27965]);
   });
 
@@ -380,6 +407,7 @@ class _FakeTeamContractRepository implements TeamContractRepository {
     this.returnEmpty = false,
     this.includeLeadershipPlayers = false,
     this.includeMultiplePositions = false,
+    this.playerName = 'Kane',
   });
 
   final ValueNotifier<Map<TeamContractQuery, TeamContractRoster>> _cache =
@@ -389,6 +417,7 @@ class _FakeTeamContractRepository implements TeamContractRepository {
   final bool returnEmpty;
   final bool includeLeadershipPlayers;
   final bool includeMultiplePositions;
+  final String playerName;
 
   @override
   ValueListenable<Map<TeamContractQuery, TeamContractRoster>>
@@ -415,7 +444,7 @@ class _FakeTeamContractRepository implements TeamContractRepository {
           : [
               TeamPlayerContract(
                 playerId: 1,
-                playerName: 'API Player',
+                playerName: playerName,
                 positionGroup: TeamPositionGroup.forward,
                 jerseyNumber: 9,
                 dateOfBirth: DateTime.utc(2000, 1, 1),
