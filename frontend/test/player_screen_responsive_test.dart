@@ -246,6 +246,16 @@ void main() {
       tester.getSize(find.byKey(const ValueKey('player-overview-image'))),
       const Size.square(160),
     );
+    final imageFade = tester.widget<ShaderMask>(
+      find.byKey(const ValueKey('player-overview-image-bottom-fade')),
+    );
+    expect(imageFade.blendMode, BlendMode.dstIn);
+    expect(
+      tester.getSize(
+        find.byKey(const ValueKey('player-overview-image-bottom-fade')),
+      ),
+      const Size.square(160),
+    );
   });
 
   testWidgets('overview position team and country use 8px vertical spacing',
