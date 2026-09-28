@@ -73,6 +73,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   Widget _topStats(PlayerDetail detail, PlayerAnalysis analysis) {
     final season = detail.selectedSeason;
+    final isKorean = Localizations.localeOf(context).languageCode == 'ko';
     return PlayerSection(
       title: tr(context, 'TOP STATS'),
       titleAccessory: Tooltip(
@@ -96,13 +97,21 @@ class _AnalysisTabState extends State<AnalysisTab> {
       child: PlayerSurface(
         key: const ValueKey('player-top-stats-card'),
         color: AppColors.of(context).subtleBackground,
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.symmetric(
+          horizontal: isKorean ? 8 : 24,
+          vertical: 24,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (var index = 0; index < 3; index++) ...[
-              if (index > 0) const SizedBox(width: 12),
+              if (index > 0) SizedBox(width: isKorean ? 4 : 12),
               Expanded(
+                flex: isKorean
+                    ? _koreanTopStatFlex(index < analysis.topStats.length
+                        ? analysis.topStats[index]
+                        : null)
+                    : 1,
                 child: _topStat(index < analysis.topStats.length
                     ? analysis.topStats[index]
                     : null),
@@ -112,6 +121,20 @@ class _AnalysisTabState extends State<AnalysisTab> {
         ),
       ),
     );
+  }
+
+  int _koreanTopStatFlex(PlayerSeasonMetric? stat) {
+    final label = appStatLabel(context, stat?.metric.label ?? 'Unavailable');
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: Body1.style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width.clamp(64, 140).ceil();
   }
 
   Widget _topStat(PlayerSeasonMetric? stat) {
