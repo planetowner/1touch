@@ -12,6 +12,11 @@ import 'package:onetouch/data/home/home_repository_provider.dart'
 import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/data/home/news_repository_provider.dart'
     as news_provider;
+import 'package:onetouch/data/fixtures/fixture_repository.dart';
+import 'package:onetouch/data/fixtures/fixture_repository_provider.dart'
+    as fixture_provider;
+import 'package:onetouch/features/home/screen/live_match_ball_button.dart';
+import 'package:onetouch/models/fixture.dart';
 import '../core/style.dart';
 import '../core/stylesheet.dart';
 import '../core/user_preferences.dart';
@@ -28,16 +33,18 @@ class HomeScreen extends StatefulWidget {
     super.key,
     this.repository,
     this.newsRepository,
+    this.fixtureRepository,
   });
 
   final HomeRepository? repository;
   final NewsRepository? newsRepository;
+  final FixtureRepository? fixtureRepository;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
 
@@ -54,15 +61,22 @@ class _HomeScreenState extends State<HomeScreen> {
   int _homeRequestId = 0;
   int _newsRequestId = 0;
   bool _teamPreferenceRefreshScheduled = false;
+  Fixture? _liveMatch;
+  Timer? _liveMatchTimer;
+  int _liveMatchRequestId = 0;
 
   HomeRepository get _repository =>
       widget.repository ?? home_provider.homeRepository;
   NewsRepository get _newsRepository =>
       widget.newsRepository ?? news_provider.newsRepository;
+  FixtureRepository? get _fixtureRepository =>
+      widget.fixtureRepository ??
+      (widget.repository == null ? fixture_provider.fixtureRepository : null);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -89,12 +103,67 @@ class _HomeScreenState extends State<HomeScreen> {
     final languageChanged = _newsLanguage != language;
     final returnedToTab = _wasTickerEnabled == false && tickerEnabled;
     _wasTickerEnabled = tickerEnabled;
+    _updateLiveMatchPolling(tickerEnabled);
 
     if (initialLoad) {
       // 첫 요청부터 화면 언어를 사용하고, 홈 응답을 기다리지 않아요.
       _loadHome(refreshContent: true);
     } else if (languageChanged || returnedToTab) {
       _loadNews(currentUserPreferences.viewedTeamId.value);
+      if (returnedToTab) {
+        unawaited(_refreshLiveMatch());
+      }
+    }
+  }
+
+  void _updateLiveMatchPolling(bool enabled) {
+    _liveMatchTimer?.cancel();
+    _liveMatchTimer = null;
+    if (!enabled || _fixtureRepository == null) return;
+    _liveMatchTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => unawaited(_refreshLiveMatch()),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_wasTickerEnabled == true) {
+        _updateLiveMatchPolling(true);
+        unawaited(_refreshLiveMatch());
+      }
+    } else {
+      _liveMatchTimer?.cancel();
+      _liveMatchTimer = null;
+    }
+  }
+
+  Future<void> _refreshLiveMatch() async {
+    final repository = _fixtureRepository;
+    final teamId = currentUserPreferences.viewedTeamId.value;
+    if (repository == null || _homeData?.favoriteTeam.teamId != teamId) return;
+    final requestId = ++_liveMatchRequestId;
+    try {
+      final liveFixtures = await repository.loadForTeam(
+        teamId,
+        status: FixtureStatus.live,
+        limit: 10,
+      );
+      if (!mounted ||
+          requestId != _liveMatchRequestId ||
+          _homeData?.favoriteTeam.teamId != teamId) {
+        return;
+      }
+      setState(() {
+        _liveMatch = liveFixtures
+            .where((fixture) =>
+                fixture.status == FixtureStatus.live &&
+                (fixture.homeTeamId == teamId || fixture.awayTeamId == teamId))
+            .firstOrNull;
+      });
+    } on Object {
+      // Keep the latest known state until the next poll or refresh succeeds.
     }
   }
 
@@ -127,8 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_homeData?.favoriteTeam.teamId != teamId) {
       // 다른 팀을 조회하는 동안 이전 팀의 카드와 늦게 도착한 뉴스를 보여주지 않아요.
       ++_newsRequestId;
+      ++_liveMatchRequestId;
       setState(() {
         _homeData = null;
+        _liveMatch = null;
         _isLoading = true;
       });
     }
@@ -151,12 +222,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
       setState(() {
         _homeData = data;
+        if (data.liveMatch != null || _fixtureRepository == null) {
+          _liveMatch = data.liveMatch;
+        }
         _isLoading = false;
       });
+      unawaited(_refreshLiveMatch());
     } on Object {
       if (!mounted || requestId != _homeRequestId) return;
       setState(() {
         _homeData = null;
+        _liveMatch = null;
         _isLoading = false;
       });
     }
@@ -215,6 +291,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _liveMatchTimer?.cancel();
     mainTabActions.removeListener(_handleMainTabAction);
     currentUserPreferences.favoriteTeamId
         .removeListener(_onTeamPreferencesChanged);
@@ -468,6 +546,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          if (_liveMatch case final liveMatch?)
+            Positioned(
+              right: 24,
+              bottom: 24,
+              child: LiveMatchBallButton(
+                onPressed: () => context.push(
+                  '/match/${liveMatch.fixtureId}?status=live',
+                  extra: liveMatch,
+                ),
+              ),
+            ),
         ],
       ),
     );
