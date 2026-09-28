@@ -251,7 +251,7 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
               ),
               const SizedBox(height: 48),
               _SectionTitle(tr(context, 'PROJECTED FINAL POSITION')),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               _ProjectedPositions(
                 positions: snapshot.positions,
                 color: teamPrimaryColor,
@@ -260,7 +260,7 @@ class _TeamProbabilityScreenState extends State<TeamProbabilityScreen> {
               ),
               const SizedBox(height: 48),
               _SectionTitle(tr(context, 'PROJECTED POINTS')),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               _ProjectedPointsCard(
                 projectedPoints: snapshot.projectedPoints,
                 maximumPoints: snapshot.maximumPoints,
