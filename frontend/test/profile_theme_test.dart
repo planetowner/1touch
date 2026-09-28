@@ -58,6 +58,41 @@ void main() {
         ),
         findsNothing,
       );
+      final statCardRect = tester.getRect(
+        find.byKey(const ValueKey('profile-stat-card')),
+      );
+      final pointsRect = tester.getRect(
+        find.byKey(const ValueKey('profile-stat-points')),
+      );
+      final postsRect = tester.getRect(
+        find.byKey(const ValueKey('profile-stat-posts')),
+      );
+      final commentsRect = tester.getRect(
+        find.byKey(const ValueKey('profile-stat-comments')),
+      );
+      final expectedStatWidth = ((statCardRect.width - 48 - 4) / 3) < 85
+          ? (statCardRect.width - 48 - 4) / 3
+          : 85.0;
+      expect(statCard.padding,
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 16));
+      expect(
+        (statCard.decoration as BoxDecoration).borderRadius,
+        BorderRadius.circular(8),
+      );
+      expect(pointsRect.left - statCardRect.left, 24);
+      expect(pointsRect.width, closeTo(expectedStatWidth, 0.1));
+      expect(postsRect.width, closeTo(expectedStatWidth, 0.1));
+      expect(commentsRect.width, closeTo(expectedStatWidth, 0.1));
+      expect(postsRect.left, greaterThan(pointsRect.right));
+      expect(commentsRect.left, greaterThan(postsRect.right));
+      for (final dividerKey in ['points-posts', 'posts-comments']) {
+        expect(
+          tester.getSize(
+            find.byKey(ValueKey('profile-stat-divider-$dividerKey')),
+          ),
+          const Size(2, 51),
+        );
+      }
 
       await tester.drag(
         find.byType(CustomScrollView),

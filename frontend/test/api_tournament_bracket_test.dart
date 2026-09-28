@@ -108,6 +108,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('light-mode bracket shadows fit inside the zoom viewport',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(393, 852));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: ApiKnockoutBracket(
+            competitionId: 2,
+            seasonId: 100,
+            repository: repository(),
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final viewport = tester.getRect(
+      find.byKey(const ValueKey('tournament-bracket-zoom')),
+    );
+    final cardFinder =
+        find.byKey(const ValueKey('bracket-match-card-fixture:1'));
+    final card = tester.getRect(cardFinder);
+    expect(card.left - viewport.left, greaterThanOrEqualTo(16));
+    expect(card.top - viewport.top, greaterThanOrEqualTo(16));
+    expect(
+      (tester.widget<Container>(cardFinder).decoration as BoxDecoration)
+          .boxShadow,
+      app_style.lightModeCardShadows,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('opens every available bracket card on its match screen',
       (tester) async {
     final router = GoRouter(

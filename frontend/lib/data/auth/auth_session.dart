@@ -27,5 +27,9 @@ class AuthSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clear() => _accessToken = null;
+  void clear() {
+    if (_accessToken == null) return;
+    _accessToken = null;
+    notifyListeners();
+  }
 }
