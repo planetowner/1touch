@@ -46,6 +46,11 @@ INSERT INTO team_seasons (team_id, season_id)
 VALUES (%s, %s)
 """
 
+# 자동 동기화는 발견한 관계만 추가해 기존 관계와 하위 데이터를 보존해요.
+SQL_UPSERT_TEAM_SEASON = SQL_INSERT_TEAM_SEASON + """
+ON DUPLICATE KEY UPDATE team_id = VALUES(team_id)
+"""
+
 SeasonRow = Tuple[int, int, str, bool]
 
 

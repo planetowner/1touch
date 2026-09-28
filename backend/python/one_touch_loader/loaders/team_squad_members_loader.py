@@ -518,7 +518,8 @@ def _resolve_current_domestic_season(team_id: int) -> Tuple[int, str]:
     return int(rows[0][0]), str(rows[0][1])
 
 
-def _replace_squad_snapshot(
+def _write_squad_snapshot(
+    cursor,
     team_id: int,
     season_id: int,
     squad: List[Dict],
@@ -537,13 +538,11 @@ def _replace_squad_snapshot(
     player_ids = {int(row[2]) for row in member_rows}
     if player_ids:
         placeholders = ",".join(["%s"] * len(player_ids))
-        existing_player_ids = {
-            int(row[0])
-            for row in fetch_all(
-                f"SELECT player_id FROM players WHERE player_id IN ({placeholders})",
-                tuple(sorted(player_ids)),
-            )
-        }
+        cursor.execute(
+            f"SELECT player_id FROM players WHERE player_id IN ({placeholders})",
+            tuple(sorted(player_ids)),
+        )
+        existing_player_ids = {int(row[0]) for row in cursor.fetchall()}
         missing_player_ids = sorted(player_ids - existing_player_ids)
         if missing_player_ids:
             raise ValueError(
@@ -552,37 +551,35 @@ def _replace_squad_snapshot(
                 f"missing_player_ids={missing_player_ids}"
             )
 
-    with transaction() as connection:
-        with connection.cursor() as cursor:
-            if member_rows:
-                cursor.executemany(SQL_UPSERT_SQUAD_MEMBER, member_rows)
-
-            if member_rows:
-                placeholders = ",".join(["%s"] * len(member_rows))
-                cursor.execute(
-                    f"""
-                    DELETE FROM team_squad_members
-                    WHERE team_id = %s
-                      AND season_id = %s
-                      AND player_id NOT IN ({placeholders})
-                    """,
-                    (team_id, season_id, *(row[2] for row in member_rows)),
-                )
-            else:
-                cursor.execute(
-                    """
-                    DELETE FROM team_squad_members
-                    WHERE team_id = %s
-                      AND season_id = %s
-                    """,
-                    (team_id, season_id),
-                )
-            deleted_stale = cursor.rowcount
+    if member_rows:
+        cursor.executemany(SQL_UPSERT_SQUAD_MEMBER, member_rows)
+        placeholders = ",".join(["%s"] * len(member_rows))
+        cursor.execute(
+            f"""
+            DELETE FROM team_squad_members
+            WHERE team_id = %s
+              AND season_id = %s
+              AND player_id NOT IN ({placeholders})
+            """,
+            (team_id, season_id, *(row[2] for row in member_rows)),
+        )
+    else:
+        cursor.execute(
+            "DELETE FROM team_squad_members WHERE team_id = %s AND season_id = %s",
+            (team_id, season_id),
+        )
+    deleted_stale = cursor.rowcount
 
     return {
         "squad_members": len(member_rows),
         "deleted_stale": deleted_stale,
     }
+
+
+def _replace_squad_snapshot(team_id: int, season_id: int, squad: List[Dict]) -> Dict[str, int]:
+    with transaction() as connection:
+        with connection.cursor() as cursor:
+            return _write_squad_snapshot(cursor, team_id, season_id, squad)
 
 
 def _reconstruct_current_team_season_squad(
@@ -745,6 +742,16 @@ def refresh_team_squad(team_id: int) -> Dict[str, object]:
         f"deleted_stale={result['deleted_stale']}"
     )
     return result
+
+
+def load_current_squad_player_ids(scope: list[dict]) -> set[int]:
+    if not scope:
+        return set()
+    marks = ",".join("(%s,%s)" for _ in scope)
+    return {int(row[0]) for row in fetch_all(
+        f"SELECT DISTINCT player_id FROM team_squad_members WHERE (team_id, season_id) IN ({marks})",
+        tuple(value for item in scope for value in (item["team_id"], item["season_id"])),
+    )}
 
 
 def load_squad_scope(
@@ -914,5 +921,6 @@ def collect_squads_for_competition_season(
 
 
 def refresh_current_squads() -> Dict[str, object]:
-    """현재 이적 내역을 맞춰 모든 Big 5 현재 스쿼드를 갱신해요."""
-    return _refresh_scope(current_only=True)
+    """누락 선수도 함께 준비해 모든 Big 5 현재 스쿼드를 갱신해요."""
+    from .current_season_sync import sync_current_squads
+    return sync_current_squads(apply=True)

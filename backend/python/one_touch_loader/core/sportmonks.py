@@ -2166,6 +2166,10 @@ class SportmonksClient:
       - 페이지가 있는 엔드포인트: 최상위 "pagination.has_more"
     """
 
+    # 요청 시도와 페이지 응답을 따로 세어 동기화 비용을 측정해요.
+    request_count = 0
+    page_count = 0
+
     def __init__(
         self,
         api_base: Optional[str] = None,
@@ -2211,6 +2215,7 @@ class SportmonksClient:
         }
 
         self._wait_before_request()
+        self.request_count += 1
         try:
             response = self._session.get(
                 url,
@@ -2243,6 +2248,7 @@ class SportmonksClient:
                 params=request_params,
                 base_url=base_url,
             )
+            self.page_count += 1
 
             # 코파 델 레이 26/27처럼 조회 결과가 비면 pagination도 제공되지 않아요.
             if not response["data"]:
@@ -2299,11 +2305,11 @@ class SportmonksClient:
     def get_team_with_sidelined(self, team_id: int) -> Dict:
         """
         확인한 include 값이에요.
-          sidelined.player;sidelined.type
+          sidelined.type
         """
         response = self._get(
             f"teams/{team_id}",
-            params={"include": "sidelined.player;sidelined.type"},
+            params={"include": "sidelined.type"},
         )
         return response["data"]
 
@@ -2330,6 +2336,11 @@ class SportmonksClient:
     # ------------------------------------------------------------------
     # 선수
     # ------------------------------------------------------------------
+
+    def get_latest_players(self) -> List[Dict]:
+        # 최근 2시간의 기본 프로필 변경만 반환하며 페이지 구분은 없어요.
+        # 팀 소속과 등번호는 이 응답으로 갱신하지 않아요.
+        return self._get("players/latest")["data"]
 
     def get_player_or_none(self, player_id: int, *, include: Optional[str] = None) -> Optional[Dict]:
         response = self._get(f"players/{player_id}", params={"include": include} if include else None)
@@ -2547,11 +2558,26 @@ class SportmonksClient:
     def _iter_transfers(self, path: str, params: dict) -> Iterable[Dict]:
         # 스쿼드 계산과 이적 적재가 같은 원문 보정을 사용하도록 조회 경로를 모아요.
         for item in self._iter_paginated_data(path, params=params):
-            if item["id"] not in SPORTMONKS_DUPLICATE_TRANSFER_IDS:
-                if item["id"] in TRANSFER_DATE_OVERRIDES:
-                    # 확인된 이탈일만 정정해요. 응답 원본과 별도로 제공된 계약 날짜는 바꾸지 않아요.
-                    item = {**item, "date": TRANSFER_DATE_OVERRIDES[item["id"]]}
+            item = self._correct_transfer(item)
+            if item is not None:
                 yield item
+
+    @staticmethod
+    def _correct_transfer(item: Dict) -> Optional[Dict]:
+        if item["id"] in SPORTMONKS_DUPLICATE_TRANSFER_IDS:
+            return None
+        if item["id"] in TRANSFER_DATE_OVERRIDES:
+            # 확인된 이탈일만 정정하고 공급자가 준 계약 날짜는 유지해요.
+            return {**item, "date": TRANSFER_DATE_OVERRIDES[item["id"]]}
+        return item
+
+    def get_transfer(self, transfer_id: int) -> Optional[Dict]:
+        item = self._get(f"transfers/{transfer_id}", params={
+            "include": "player;fromTeam;toTeam;type",
+        })["data"]
+        if not isinstance(item, dict) or item.get("id") != transfer_id:
+            raise ValueError(f"Transfer response ID differs: requested={transfer_id}")
+        return self._correct_transfer(item)
 
     def iter_transfers_by_team(
         self,
