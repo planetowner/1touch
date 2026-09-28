@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
@@ -111,7 +112,7 @@ class PlayerSeasonSelector extends StatelessWidget {
             (season) => AppDropdownOption<int>(
               value: season.id,
               label:
-                  '${season.name} · ${competitionNameLabel(context, season.competitionId, season.competitionName)}',
+                  '${compactSeasonLabel(season.name)} · ${competitionNameLabel(context, season.competitionId, season.competitionName)}',
             ),
           )
           .toList(),

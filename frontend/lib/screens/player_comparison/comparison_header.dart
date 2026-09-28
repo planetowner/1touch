@@ -190,7 +190,7 @@ class _PlayerChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final season = player?.selectedSeason?.name;
-    final shortSeason = season == null ? '' : _shortSeason(season);
+    final shortSeason = season == null ? '' : compactSeasonLabel(season);
     final prefix = shortSeason.substring(0, math.min(2, shortSeason.length));
     return Opacity(
       opacity: .8,
