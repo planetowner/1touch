@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh changed transfers and departure contracts every six hours
+
+[Timer]
+Unit=onetouch-current-season-sync@transfers.service
+OnBootSec=25min
+OnUnitInactiveSec=6h
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

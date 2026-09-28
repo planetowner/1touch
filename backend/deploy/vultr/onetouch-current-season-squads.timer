@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh current Big 5 squads every six hours
+
+[Timer]
+Unit=onetouch-current-season-sync@squads.service
+OnBootSec=15min
+OnUnitInactiveSec=6h
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target
