@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh current season metadata daily
+
+[Timer]
+Unit=onetouch-current-season-sync@metadata.service
+OnBootSec=2min
+OnUnitInactiveSec=24h
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

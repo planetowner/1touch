@@ -1,4 +1,5 @@
 import sys
+import json
 from datetime import date
 
 from one_touch_loader.loaders.teams_loader import (
@@ -104,6 +105,16 @@ from one_touch_loader.loaders.player_rating_rankings_loader import (
 # best-eleven은 fixture-details의 라인업으로 시즌·포메이션별 대표 선발을 계산해요.
 # injuries는 갱신된 현재 DB 스쿼드에 속한 선수의 부상만 저장해요.
 USAGE = """
+Current season sync (read-only unless --apply is supplied):
+  python -m one_touch_loader.cli current-season metadata [--apply]
+  python -m one_touch_loader.cli current-season fixtures [--apply]
+  python -m one_touch_loader.cli current-season squads [--apply]
+  python -m one_touch_loader.cli current-season player-updates [--apply]
+  python -m one_touch_loader.cli current-season player-reconciliation [--apply]
+  python -m one_touch_loader.cli current-season injuries [--apply]
+  python -m one_touch_loader.cli current-season transfers [--apply]
+  python -m one_touch_loader.cli current-season transfer-reconciliation [--apply]
+
 New database reload order (redesigned commands):
 
 1. seasons
@@ -299,6 +310,29 @@ def main():
             print("Countries refresh done.")
         else:
             print(USAGE)
+
+    elif cmd == "current-season":
+        from .loaders.current_season_sync import (
+            sync_current_season_metadata, sync_current_season_fixtures,
+            sync_current_squads, sync_player_updates, reconcile_current_players,
+        )
+        from .loaders.current_transfer_sync import sync_current_transfers, reconcile_current_transfers
+        from .loaders.injuries_loader import sync_current_injuries
+        args = sys.argv[2:]
+        actions = {
+            "metadata": sync_current_season_metadata,
+            "fixtures": sync_current_season_fixtures,
+            "squads": sync_current_squads,
+            "player-updates": sync_player_updates,
+            "player-reconciliation": reconcile_current_players,
+            "injuries": sync_current_injuries,
+            "transfers": sync_current_transfers,
+            "transfer-reconciliation": reconcile_current_transfers,
+        }
+        if (len(args) not in (1, 2) or args[0] not in actions
+                or (len(args) == 2 and args[1] != "--apply")):
+            raise SystemExit("Usage: current-season {" + "|".join(actions) + "} [--apply]")
+        print(json.dumps(actions[args[0]](apply="--apply" in args), ensure_ascii=False))
 
     elif cmd == "seasons":
         if len(sys.argv) == 3 and sys.argv[2] == "all":

@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh current Big 5 injuries every three hours
+
+[Timer]
+Unit=onetouch-current-season-sync@injuries.service
+OnBootSec=20min
+OnUnitInactiveSec=3h
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

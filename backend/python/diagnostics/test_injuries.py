@@ -12,12 +12,14 @@ from unittest.mock import MagicMock, patch
 
 from fastapi import FastAPI, HTTPException
 
-from one_touch_loader.api.repos import injuries_repo as repo
-from one_touch_loader.api.routes import teams as routes
-from one_touch_loader.api.schemas.common import TeamInjuriesResponse
-from one_touch_loader import cli
-from one_touch_loader.core import db
-from one_touch_loader.loaders import injuries_loader as loader
+# 단독 실행에서도 운영 DB 풀을 열지 않고 아래 SQLite 연결만 사용해요.
+with patch("mysql.connector.pooling.MySQLConnectionPool"):
+    from one_touch_loader.api.repos import injuries_repo as repo
+    from one_touch_loader.api.routes import teams as routes
+    from one_touch_loader.api.schemas.common import TeamInjuriesResponse
+    from one_touch_loader import cli
+    from one_touch_loader.core import db
+    from one_touch_loader.loaders import injuries_loader as loader
 
 
 CASES = json.loads((Path(__file__).parent / "fixtures/sportmonks_injuries_verified.json").read_text(encoding="utf-8"))
@@ -202,6 +204,21 @@ class InjuryRouteTests(unittest.TestCase):
 
 
 class InjuryScopeTests(unittest.TestCase):
+    def test_preview_checks_current_roster_without_writing_and_failure_is_not_empty(self):
+        with patch.object(loader, 'load_squad_scope', return_value=[{'team_id': 8, 'season_id': 100}]), \
+                patch.object(loader, 'SportmonksClient') as factory, \
+                patch.object(loader, 'fetch_all', return_value=[]), \
+                patch.object(loader, 'replace_team_injuries') as store, redirect_stdout(io.StringIO()):
+            factory.return_value.request_count = 1
+            factory.return_value.page_count = 0
+            factory.return_value.get_team_with_sidelined.return_value = {'sidelined': []}
+            self.assertEqual(loader.sync_current_injuries()['injuries'], 0)
+            store.assert_not_called()
+            factory.return_value.get_team_with_sidelined.side_effect = RuntimeError('provider failed')
+            with self.assertRaisesRegex(RuntimeError, 'provider failed'):
+                loader.sync_current_injuries(apply=True)
+            store.assert_not_called()
+
     def test_all_and_single_team_use_the_same_current_squad_scope_and_storage(self):
         scope = [{"team_id": 8, "season_id": 28083}, {"team_id": 7047, "season_id": 28082}]
         with patch.object(loader, "load_squad_scope", return_value=scope) as read_scope, patch.object(loader, "SportmonksClient") as client, patch.object(loader, "replace_team_injuries", return_value={"received": 1, "injuries": 0, "non_injury": 0, "excluded_not_in_squad": [{"sideline_id": 1, "player_id": 99}]}) as store, redirect_stdout(io.StringIO()) as output:
