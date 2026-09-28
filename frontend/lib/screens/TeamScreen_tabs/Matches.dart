@@ -592,27 +592,26 @@ class _MatchesTabState extends State<MatchesTab> {
   }
 
   Widget scoreboard(int score, {required bool isDimmed}) {
-    final colors = Theme.of(context).colorScheme;
-    return Opacity(
-      opacity: isDimmed ? 0.5 : 1.0,
-      child: Material(
-        // elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          alignment: Alignment.center, // Centers the text
-          decoration: BoxDecoration(
-            color: colors.onPrimary,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(score.toString(),
-              textAlign: TextAlign.center,
-              style: Heading3.latinStyle.copyWith(color: colors.primary)),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final box = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: isDark ? AppPalette.black : AppPalette.lightModeDarkGrey,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        score.toString(),
+        textAlign: TextAlign.center,
+        style: Heading3.latinStyle.copyWith(
+          color: !isDark && isDimmed
+              ? foreground.withValues(alpha: 0.5)
+              : foreground,
         ),
       ),
     );
+    return isDark && isDimmed ? Opacity(opacity: 0.5, child: box) : box;
   }
 }
 

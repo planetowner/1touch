@@ -341,26 +341,42 @@ class _StandingState extends State<Standing> {
             Align(
                 key: const ValueKey('overview-standing-points-header'),
                 alignment: Alignment.center,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(tr(context, "Pts"),
-                      maxLines: 1,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface)),
+                child: SizedBox(
+                  height: 24,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: OverflowBox(
+                      alignment: Alignment.center,
+                      maxWidth: 36,
+                      maxHeight: 32,
+                      child: Text(tr(context, "Pts"),
+                          maxLines: 1,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface)),
+                    ),
+                  ),
                 )),
             const SizedBox.shrink(),
             Align(
                 key: const ValueKey('overview-standing-mp-header'),
                 alignment: Alignment.center,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    tr(context, "MP"),
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.visible,
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface),
+                child: SizedBox(
+                  height: 24,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: OverflowBox(
+                      alignment: Alignment.center,
+                      maxWidth: 36,
+                      maxHeight: 32,
+                      child: Text(
+                        tr(context, "MP"),
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.visible,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ),
+                    ),
                   ),
                 )),
             const SizedBox.shrink(),
