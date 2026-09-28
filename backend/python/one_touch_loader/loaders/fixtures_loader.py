@@ -27,6 +27,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
+from ..core.fixture_states import LIVE_STATE_IDS, COMPLETED_STATE_IDS
 from ..core.fixture_scores import (
     CURRENT_SCORE_TYPE_ID as SPORTMONKS_CURRENT_SCORE_TYPE_ID,
     PENALTY_SCORE_TYPE_ID as SPORTMONKS_PENALTY_SCORE_TYPE_ID,
@@ -36,7 +37,11 @@ from .teams_loader import (
     CUP_BASE_COMPETITION_IDS,
     MIN_SEASON_START_YEAR,
     SUPPORTED_COMPETITION_IDS,
+    SQL_UPSERT_TEAM,
+    _team_row,
+    matches_competition_scope,
 )
+from .team_seasons_loader import SQL_UPSERT_TEAM_SEASON
 
 
 FIXTURE_INCLUDE = "participants;state;scores;round;stage;group;venue;aggregate"
@@ -118,41 +123,33 @@ ON DUPLICATE KEY UPDATE
   winner_team_id = VALUES(winner_team_id)
 """
 
-SQL_UPSERT_FIXTURE = """
-INSERT INTO fixtures (
-  fixture_id,
-  stage_id,
-  round_id,
-  group_id,
-  aggregate_id,
-  leg,
-  home_team_id,
-  away_team_id,
-  starting_at,
-  venue_id,
-  state_id,
-  home_score,
-  away_score,
-  home_penalty_score,
-  away_penalty_score
+FIXTURE_COLUMNS = (
+    "fixture_id", "stage_id", "round_id", "group_id", "aggregate_id", "leg",
+    "home_team_id", "away_team_id", "starting_at", "venue_id", "state_id",
+    "home_score", "away_score", "home_penalty_score", "away_penalty_score",
 )
-VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-ON DUPLICATE KEY UPDATE
-  stage_id = VALUES(stage_id),
-  round_id = VALUES(round_id),
-  group_id = VALUES(group_id),
-  aggregate_id = VALUES(aggregate_id),
-  leg = VALUES(leg),
-  home_team_id = VALUES(home_team_id),
-  away_team_id = VALUES(away_team_id),
-  starting_at = VALUES(starting_at),
-  venue_id = VALUES(venue_id),
-  state_id = VALUES(state_id),
-  home_score = VALUES(home_score),
-  away_score = VALUES(away_score),
-  home_penalty_score = VALUES(home_penalty_score),
-  away_penalty_score = VALUES(away_penalty_score)
-"""
+
+
+def _fixture_upsert_sql(*, preserve_live_results: bool = False) -> str:
+    protected_states = ",".join(map(str, (*LIVE_STATE_IDS, *COMPLETED_STATE_IDS)))
+    updates = []
+    # MySQL은 대입 순서대로 평가하므로 점수 조건은 변경 전 state_id를 읽게 해요.
+    columns = [column for column in FIXTURE_COLUMNS[1:] if column != "state_id"]
+    for column in [*columns, "state_id"]:
+        value = f"VALUES({column})"
+        if preserve_live_results and (column == "state_id" or column.endswith("score")):
+            # 진행·종료된 경기의 상태와 점수는 라이브/상세 갱신이 담당해요.
+            value = f"CASE WHEN state_id IN ({protected_states}) THEN {column} ELSE {value} END"
+        updates.append(f"{column} = {value}")
+    return (
+        f"INSERT INTO fixtures ({', '.join(FIXTURE_COLUMNS)}) "
+        f"VALUES ({','.join(['%s'] * len(FIXTURE_COLUMNS))}) "
+        "ON DUPLICATE KEY UPDATE " + ",\n  ".join(updates)
+    )
+
+
+SQL_UPSERT_FIXTURE = _fixture_upsert_sql()
+SQL_SYNC_FIXTURE = _fixture_upsert_sql(preserve_live_results=True)
 
 SeasonRow = Tuple[int, int, str, bool]
 FixtureRow = Tuple[
@@ -194,9 +191,12 @@ def _season_start_year(season_name: str) -> int:
 def _load_scope(
     season_name: Optional[str],
     competition_id: Optional[int],
+    *,
+    current_only: bool = False,
 ) -> List[SeasonRow]:
     if season_name is None and competition_id is None:
-        rows = fetch_all(SQL_SELECT_ALL_SCOPE, (MIN_SEASON_START_YEAR,))
+        query = SQL_SELECT_ALL_SCOPE + (" AND is_current = 1" if current_only else "")
+        rows = fetch_all(query, (MIN_SEASON_START_YEAR,))
     elif season_name is not None and competition_id is not None:
         season_name = season_name.strip()
         if competition_id not in SUPPORTED_COMPETITION_IDS:
@@ -419,6 +419,8 @@ def _collect_and_upsert(
     progress: Optional[Tuple[int, int]] = None,
     *,
     fixture_ids: Optional[Set[int]] = None,
+    sync_participants: bool = False,
+    apply: bool = True,
 ) -> Dict[str, object]:
     season_id, competition_id, season_name, is_current = season
     base_competition_id = CUP_BASE_COMPETITION_IDS.get(competition_id)
@@ -435,6 +437,7 @@ def _collect_and_upsert(
     states: Dict[int, Tuple] = {}
     aggregates: Dict[int, Tuple] = {}
     fixtures: Dict[int, FixtureRow] = {}
+    teams: Dict[int, Tuple] = {}
     provider_fixture_count = 0
     skipped_placeholder_count = 0
     skipped_unrelated_cup_count = 0
@@ -459,10 +462,7 @@ def _collect_and_upsert(
             continue
 
         fixture_row = normalized["fixture"]
-        if base_team_ids is not None and not {
-            int(fixture_row[6]),
-            int(fixture_row[7]),
-        }.intersection(base_team_ids):
+        if not matches_competition_scope(fixture_row[6:8], base_team_ids):
             skipped_unrelated_cup_count += 1
             continue
 
@@ -470,7 +470,12 @@ def _collect_and_upsert(
             int(fixture_row[6]),
             int(fixture_row[7]),
         } - stored_team_ids
-        if missing_team_ids:
+        if sync_participants:
+            # 컵 범위와 placeholder를 먼저 거른 뒤 같은 응답의 팀을 저장해요.
+            for participant in raw_fixture["participants"]:
+                row = _team_row(participant, f"fixture[{fixture_row[0]}].participants")
+                teams[row[0]] = row
+        elif missing_team_ids:
             raise ValueError(
                 "Fixture teams are missing from teams for "
                 f"fixture_id={fixture_row[0]}: "
@@ -501,9 +506,15 @@ def _collect_and_upsert(
             f"competition_id={competition_id}, season_id={season_id}"
         )
 
-    if fixtures:
+    if fixtures and apply:
         with transaction() as connection:
             with connection.cursor() as cursor:
+                if teams:
+                    cursor.executemany(SQL_UPSERT_TEAM, [teams[key] for key in sorted(teams)])
+                    cursor.executemany(
+                        SQL_UPSERT_TEAM_SEASON,
+                        [(key, season_id) for key in sorted(teams)],
+                    )
                 cursor.executemany(
                     SQL_UPSERT_STAGE,
                     [stages[key] for key in sorted(stages)],
@@ -533,7 +544,7 @@ def _collect_and_upsert(
                         [aggregates[key] for key in sorted(aggregates)],
                     )
                 cursor.executemany(
-                    SQL_UPSERT_FIXTURE,
+                    SQL_SYNC_FIXTURE if sync_participants else SQL_UPSERT_FIXTURE,
                     [fixtures[key] for key in sorted(fixtures)],
                 )
 
@@ -545,7 +556,9 @@ def _collect_and_upsert(
         "is_pending": not fixtures,
         "base_competition_id": base_competition_id,
         "provider_fixture_count": provider_fixture_count,
-        "stored_fixture_count": len(fixtures),
+        "stored_fixture_count": len(fixtures) if apply else 0,
+        "selected_fixture_count": len(fixtures),
+        "upserted_team_count": len(teams) if apply else 0,
         "skipped_placeholder_count": skipped_placeholder_count,
         "skipped_unrelated_cup_count": skipped_unrelated_cup_count,
         "stage_count": len(stages),
@@ -563,10 +576,11 @@ def _collect_and_upsert(
     print(
         f"{prefix} competition_id={competition_id} season={season_name} "
         f"season_id={season_id} provider={provider_fixture_count} "
-        f"stored={len(fixtures)} placeholders={skipped_placeholder_count} "
+        f"selected={len(fixtures)} stored={len(fixtures) if apply else 0} "
+        f"placeholders={skipped_placeholder_count} "
         f"unrelated_cup={skipped_unrelated_cup_count} "
         f"ignored_aggregate_winners={len(ignored_aggregate_winner_ids)} "
-        f"status={'pending' if not fixtures else 'stored'}"
+        f"status={'pending' if not fixtures else ('stored' if apply else 'checked')}"
     )
     return result
 

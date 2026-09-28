@@ -13,6 +13,8 @@ from .team_squad_members_loader import (
 )
 
 
+# 직접 조사한 한국어 이름과 짧은 이름은 자동 수집 대상이 아니에요.
+# 번역·short_name 컬럼은 INSERT와 UPDATE 모두에서 빼서 빈 값도 임의로 채우지 않아요.
 SQL_INSERT_PLAYER = """
 INSERT INTO players (
   player_id,
@@ -29,11 +31,12 @@ VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
 # 직접 교체한 투명 사진은 프로필을 다시 수집해도 Sportmonks 사진으로 덮어쓰지 않아요.
+# 27393처럼 단건 프로필에 세부 포지션이 없으면 기존 스쿼드 보완 값을 유지해요.
 SQL_UPSERT_PLAYER = SQL_INSERT_PLAYER + """
 ON DUPLICATE KEY UPDATE
   display_name   = VALUES(display_name),
   full_name      = VALUES(full_name),
-  position_id    = VALUES(position_id),
+  position_id    = COALESCE(VALUES(position_id), position_id),
   nationality_id = VALUES(nationality_id),
   date_of_birth  = VALUES(date_of_birth),
   height_cm      = VALUES(height_cm),

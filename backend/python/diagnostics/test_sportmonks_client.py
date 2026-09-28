@@ -8,6 +8,32 @@ from one_touch_loader.core.sportmonks import SportmonksClient
 
 
 class SportmonksClientTest(unittest.TestCase):
+    def test_injuries_only_include_consumed_relation(self):
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._get = Mock(return_value={'data': {'id': 8, 'sidelined': []}})
+        self.assertEqual(client.get_team_with_sidelined(8), {'id': 8, 'sidelined': []})
+        client._get.assert_called_once_with('teams/8', params={'include': 'sidelined.type'})
+
+    def test_single_transfer_uses_shared_corrections_and_validates_identity(self):
+        from one_touch_loader.core.transfer_source_rules import DUPLICATE_TRANSFER_IDS, TRANSFER_DATE_OVERRIDES
+        client = SportmonksClient.__new__(SportmonksClient)
+        tid, corrected_date = next(iter(TRANSFER_DATE_OVERRIDES.items()))
+        client._get = Mock(return_value={'data': {'id': tid, 'date': '2026-01-01'}})
+        self.assertEqual(client.get_transfer(tid)['date'], corrected_date)
+        client._get.assert_called_once_with(f'transfers/{tid}', params={'include': 'player;fromTeam;toTeam;type'})
+        duplicate = next(iter(DUPLICATE_TRANSFER_IDS))
+        client._get.return_value = {'data': {'id': duplicate}}
+        self.assertIsNone(client.get_transfer(duplicate))
+        with self.assertRaisesRegex(ValueError, 'response ID differs'):
+            client.get_transfer(1)
+
+    def test_latest_players_uses_single_request_without_pagination_or_includes(self):
+        client = SportmonksClient.__new__(SportmonksClient)
+        client._get = Mock(side_effect=[{'data': [{'id': 27393}]}, {'data': []}])
+        self.assertEqual(client.get_latest_players(), [{'id': 27393}])
+        self.assertEqual(client.get_latest_players(), [])
+        self.assertEqual(client._get.call_args_list, [call('players/latest'), call('players/latest')])
+
     def test_statistics_batch_restores_requested_order_and_uses_single_request(self):
         client = SportmonksClient.__new__(SportmonksClient)
         client._get = Mock(return_value={'data': [{'id': 2, 'statistics': []}, {'id': 1, 'statistics': []}]})
@@ -67,6 +93,7 @@ class SportmonksClientTest(unittest.TestCase):
             timeout=60,
         )
         response.raise_for_status.assert_called_once_with()
+        self.assertEqual(client.request_count, 1)
 
     def test_paginated_data_uses_observed_next_cursor_params(self):
         client = SportmonksClient.__new__(SportmonksClient)
@@ -103,6 +130,7 @@ class SportmonksClientTest(unittest.TestCase):
         )
 
         self.assertEqual(rows, [{"id": 1}, {"id": 2}])
+        self.assertEqual(client.page_count, 2)
         self.assertEqual(
             client._get.call_args_list,
             [
