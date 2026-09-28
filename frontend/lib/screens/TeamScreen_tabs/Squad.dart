@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/player_navigation.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/contracts/team_contract_repository.dart';
@@ -340,14 +341,6 @@ class _SquadTabState extends State<SquadTab> {
   bool get _isCurrentSeason =>
       _rosterIsCurrent ?? _selectedSeason?.isCurrent ?? true;
 
-  String _seasonLabel(Season season) {
-    final years = season.name.split('/');
-    if (years.length != 2) return season.name;
-    String shortYear(String value) =>
-        value.length > 2 ? value.substring(value.length - 2) : value;
-    return '${shortYear(years[0])}/${shortYear(years[1])}';
-  }
-
   void _selectSeason(Season season) {
     setState(() {
       _selectedSeasonId = season.seasonId;
@@ -572,7 +565,7 @@ class _SquadTabState extends State<SquadTab> {
           .map(
             (season) => AppDropdownOption<int>(
               value: season.seasonId,
-              label: _seasonLabel(season),
+              label: compactSeasonLabel(season.name),
               optionKey: ValueKey(
                 'squad-season-option-${season.seasonId}',
               ),
@@ -697,10 +690,10 @@ class _PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
+    final localizedName = playerNameLabel(context, player.id, player.name);
     return Semantics(
       button: true,
-      label: tr(context, 'Open {name}',
-          {'name': playerNameLabel(context, player.id, player.name)}),
+      label: tr(context, 'Open {name}', {'name': localizedName}),
       child: InkWell(
         key: ValueKey('squad-player-link-${player.id}'),
         onTap: () => openPlayerPage(context, player.id.toString()),
@@ -784,11 +777,9 @@ class _PlayerCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            playerNameLabel(context, player.id, player.name),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Heading5.style,
+                          child: _SquadPlayerName(
+                            playerId: player.id,
+                            name: localizedName,
                           ),
                         ),
                       ],
@@ -800,6 +791,44 @@ class _PlayerCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SquadPlayerName extends StatelessWidget {
+  const _SquadPlayerName({
+    required this.playerId,
+    required this.name,
+  });
+
+  final int playerId;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final normalizedName = normalizeSquadPlayerName(name);
+    final style = Heading5.style;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final singleLinePainter = TextPainter(
+          text: TextSpan(text: normalizedName, style: style),
+          maxLines: 1,
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout();
+        final fitsOnOneLine = singleLinePainter.width <= constraints.maxWidth;
+
+        return Text(
+          fitsOnOneLine
+              ? normalizedName
+              : twoLineSquadPlayerName(normalizedName),
+          key: ValueKey('squad-player-name-$playerId'),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: style,
+        );
+      },
     );
   }
 }
