@@ -709,4 +709,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PlayerCompetitionTable), findsOneWidget);
   });
+
+  testWidgets('club history keeps repeated team periods as unique rows',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlayerCard(
+          player: player,
+          detailRepository: FakePlayerDetailRepository(
+            duplicateFirstClub: true,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('player-club-history-row-7980')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('player-club-history-row-7980-4')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
