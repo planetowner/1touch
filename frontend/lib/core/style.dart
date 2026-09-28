@@ -24,6 +24,20 @@ List<BoxShadow> appCardShadows(BuildContext context) {
       : const [];
 }
 
+const List<BoxShadow> lightModeWatchCardShadows = [
+  BoxShadow(
+    color: Color(0x26000000),
+    blurRadius: 8,
+    offset: Offset(0, 4),
+  ),
+];
+
+List<BoxShadow> appWatchCardShadows(BuildContext context) {
+  return Theme.of(context).brightness == Brightness.light
+      ? lightModeWatchCardShadows
+      : const [];
+}
+
 Color mainPageBackground(BuildContext context) {
   return Theme.of(context).brightness == Brightness.light
       ? AppPalette.lightModeDarkGrey

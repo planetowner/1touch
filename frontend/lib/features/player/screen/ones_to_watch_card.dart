@@ -28,7 +28,7 @@ class OnesToWatchCard extends StatelessWidget {
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
+            boxShadow: appWatchCardShadows(context),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
