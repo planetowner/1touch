@@ -1,8 +1,20 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/match_origin_navigation.dart';
 
-/// Opens a player profile through the Players branch of the bottom-navigation
-/// shell, so the selected navigation item always matches the visible screen.
+/// Keeps a source match in the route stack; otherwise opens the Players branch.
 void openPlayerPage(BuildContext context, String playerId) {
-  context.go('/players/${Uri.encodeComponent(playerId)}');
+  final location = playerPageLocation(context, playerId);
+  if (shouldPushFromMatch(context)) {
+    context.push(location);
+  } else {
+    context.go(location);
+  }
+}
+
+String playerPageLocation(BuildContext context, String playerId) {
+  final encodedId = Uri.encodeComponent(playerId);
+  return shouldPushFromMatch(context)
+      ? '/match-player/$encodedId'
+      : '/players/$encodedId';
 }

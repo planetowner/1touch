@@ -2,8 +2,12 @@ import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
-import 'package:onetouch/core/stylesheet_dark.dart';
+import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/core/player_navigation.dart';
+import 'package:onetouch/core/match_origin_navigation.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
+import 'package:onetouch/data/players/player_detail_repository.dart';
+import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 
 class PlayerMatchStatRow {
@@ -50,25 +54,30 @@ class PlayerMatchStatData {
   });
 }
 
-void showPlayerMatchStatSheet(
-    BuildContext context, PlayerMatchStatData player) {
+void showPlayerMatchStatSheet(BuildContext context, PlayerMatchStatData player,
+    {PlayerDetailRepository? detailRepository}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black54,
-    builder: (_) => PlayerMatchStatSheet(player: player),
+    builder: (_) => PlayerMatchStatSheet(
+      player: player,
+      detailRepository: detailRepository,
+    ),
   );
 }
 
 class PlayerMatchStatSheet extends StatelessWidget {
   final PlayerMatchStatData player;
   final PlayerFollowingController? followingController;
+  final PlayerDetailRepository? detailRepository;
 
   const PlayerMatchStatSheet({
     super.key,
     required this.player,
     this.followingController,
+    this.detailRepository,
   });
 
   static const _sheetBg = AppPalette.darkGrey;
@@ -94,10 +103,11 @@ class PlayerMatchStatSheet extends StatelessWidget {
                 _Header(
                   player: player,
                   followingController: followingController,
+                  detailRepository: detailRepository,
                 ),
                 Expanded(
                   child: ColoredBox(
-                    color: isDark ? _sheetBg : AppPalette.white,
+                    color: isDark ? _sheetBg : AppPalette.lightGreyBox,
                     child: ListView(
                       controller: scrollController,
                       padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
@@ -123,30 +133,44 @@ class PlayerMatchStatSheet extends StatelessWidget {
 class _Header extends StatelessWidget {
   final PlayerMatchStatData player;
   final PlayerFollowingController? followingController;
+  final PlayerDetailRepository? detailRepository;
 
-  const _Header({required this.player, this.followingController});
+  const _Header({
+    required this.player,
+    this.followingController,
+    this.detailRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final primary = _ensureWhiteTextContrast(Color(player.teamPrimaryColor));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Color(player.teamPrimaryColor);
+    final headerTextColor = isDark ? AppPalette.white : AppPalette.black;
+    final darkPrimary = _ensureWhiteTextContrast(primary);
     return Container(
       key: const ValueKey('player-match-stat-header'),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            primary,
-            Color.alphaBlend(
-              Colors.black.withValues(alpha: 0.28),
-              primary,
-            ),
-            Color.alphaBlend(
-              Colors.black.withValues(alpha: 0.62),
-              primary,
-            ),
-          ],
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-        ),
+        gradient: isDark
+            ? LinearGradient(
+                colors: [
+                  darkPrimary,
+                  Color.alphaBlend(
+                    Colors.black.withValues(alpha: 0.28),
+                    darkPrimary,
+                  ),
+                  Color.alphaBlend(
+                    Colors.black.withValues(alpha: 0.62),
+                    darkPrimary,
+                  ),
+                ],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+              )
+            : LinearGradient(
+                colors: [AppPalette.lightGreyBox, primary],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
       ),
       child: SafeArea(
         bottom: false,
@@ -166,8 +190,15 @@ class _Header extends StatelessWidget {
                           ? null
                           : () {
                               final router = GoRouter.of(context);
+                              final pushFromMatch = shouldPushFromMatch(context);
+                              final destination = playerPageLocation(
+                                  context, player.playerId!.toString());
                               Navigator.of(context).pop();
-                              router.go('/players/${player.playerId}');
+                              if (pushFromMatch) {
+                                router.push(destination);
+                              } else {
+                                router.go(destination);
+                              }
                             },
                       child: Row(
                         children: [
@@ -177,16 +208,17 @@ class _Header extends StatelessWidget {
                                   context, player.playerId, player.name),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style:
-                                  Heading2.style.copyWith(color: Colors.white),
+                              style: Heading3.style.copyWith(
+                                color: headerTextColor,
+                              ),
                             ),
                           ),
                           if (player.playerId != null) ...[
                             const SizedBox(width: 6),
-                            const Icon(
+                            Icon(
                               Icons.chevron_right,
-                              color: Colors.white70,
-                              size: 20,
+                              color: headerTextColor,
+                              size: 24,
                             ),
                           ],
                         ],
@@ -223,29 +255,25 @@ class _Header extends StatelessWidget {
                       children: [
                         Text(
                           player.jerseyNumber?.toString() ?? '—',
-                          style: const TextStyle(
-                            fontSize: 72,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            height: 1.0,
+                          style: Heading1.latinStyle.copyWith(
+                            color: headerTextColor,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           player.positions.join(' • '),
-                          style: Body1.style.copyWith(color: Colors.white70),
+                          style: Body1.style.copyWith(color: headerTextColor),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 8),
                         Text(
                           teamNameLabel(context, player.teamId, player.club),
-                          style: Body1.style.copyWith(color: Colors.white70),
+                          style: Body1.style.copyWith(color: headerTextColor),
                         ),
-                        const SizedBox(height: 2),
-                        if (player.nationality != null)
-                          Text(
-                            '${player.nationality}${player.flagEmoji != null ? ' ${player.flagEmoji}' : ''}',
-                            style: Body1.style.copyWith(color: Colors.white70),
-                          ),
+                        _PlayerNationalityLine(
+                          player: player,
+                          repository: detailRepository,
+                          color: headerTextColor,
+                        ),
                       ],
                     ),
                   ),
@@ -292,6 +320,76 @@ class _Header extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PlayerNationalityLine extends StatefulWidget {
+  const _PlayerNationalityLine({
+    required this.player,
+    required this.color,
+    this.repository,
+  });
+
+  final PlayerMatchStatData player;
+  final Color color;
+  final PlayerDetailRepository? repository;
+
+  @override
+  State<_PlayerNationalityLine> createState() => _PlayerNationalityLineState();
+}
+
+class _PlayerNationalityLineState extends State<_PlayerNationalityLine> {
+  Future<String?>? _nationality;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNationality();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PlayerNationalityLine oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.player.playerId != widget.player.playerId ||
+        oldWidget.player.nationality != widget.player.nationality ||
+        oldWidget.repository != widget.repository) {
+      _loadNationality();
+    }
+  }
+
+  void _loadNationality() {
+    final playerId = widget.player.playerId;
+    if (widget.player.nationality?.trim().isNotEmpty == true ||
+        playerId == null) {
+      _nationality = null;
+      return;
+    }
+    final repository = widget.repository ?? playerDetailRepository;
+    _nationality = Future.sync(() => repository.load(playerId))
+        .then((detail) => detail.profile.nationality);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _nationality,
+      builder: (context, snapshot) {
+        final nationality = widget.player.nationality?.trim().isNotEmpty == true
+            ? widget.player.nationality!.trim()
+            : snapshot.data?.trim();
+        if (nationality == null || nationality.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        final flag = widget.player.flagEmoji;
+        return Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            flag == null || flag.isEmpty ? nationality : '$nationality $flag',
+            style: Body1.style.copyWith(color: widget.color),
+          ),
+        );
+      },
     );
   }
 }
@@ -362,7 +460,7 @@ class _PlayerMatchFollowButtonState extends State<_PlayerMatchFollowButton> {
               padding: const EdgeInsets.all(8),
               child: Icon(
                 followed ? Icons.star_rounded : Icons.star_border_rounded,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 size: 22,
               ),
             ),
@@ -394,11 +492,12 @@ class _HeaderIconBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = Theme.of(context).colorScheme.onSurface;
     return GestureDetector(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Icon(icon, color: Colors.white, size: 22),
+        child: Icon(icon, color: iconColor, size: 22),
       ),
     );
   }
@@ -418,17 +517,15 @@ class _StatSection extends StatelessWidget {
       children: [
         Text(
           tr(context, section.category),
-          style: Eyebrow.style.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
-          ),
+          style: Body2_b.style,
         ),
         const SizedBox(height: 10),
         Container(
           key: const ValueKey('match-player-stat-card'),
           decoration: BoxDecoration(
-            color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
+            color: isDark ? AppPalette.lightGrey : AppPalette.white,
             borderRadius: BorderRadius.circular(14),
+            boxShadow: appCardShadows(context),
           ),
           child: Column(
             children: [
@@ -440,10 +537,14 @@ class _StatSection extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Text(appStatLabel(context, section.rows[i].label),
-                          style: Body1.style),
-                      const Spacer(),
-                      Text(section.rows[i].value, style: Body1_b.style),
+                      Expanded(
+                        child: Text(
+                          appStatLabel(context, section.rows[i].label),
+                          style: Body1_b.style,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(section.rows[i].value, style: Body1.style),
                     ],
                   ),
                 ),
