@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';

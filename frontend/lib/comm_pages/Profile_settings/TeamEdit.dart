@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/user_preferences.dart';
@@ -275,11 +276,13 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
               Container(
                 key: const ValueKey('profile-team-edit-search'),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: isDark
                       ? AppPalette.lightGrey
                       : appColors.subtleBackground,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius:
+                      BorderRadius.circular(AppSearchFieldTokens.radius),
                 ),
                 child: TextField(
                   controller: _searchController,

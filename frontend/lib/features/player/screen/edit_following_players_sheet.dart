@@ -111,10 +111,12 @@ class _EditFollowingPlayersSheetState extends State<EditFollowingPlayersSheet> {
               Container(
                 key: const ValueKey('following-players-search'),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color:
                       isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius:
+                      BorderRadius.circular(AppSearchFieldTokens.radius),
                 ),
                 child: TextField(
                   controller: _searchController,

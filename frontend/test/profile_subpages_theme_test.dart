@@ -304,6 +304,11 @@ void main() {
                 : ((sheet as Container).decoration as BoxDecoration).color,
             themeCase.sheet);
         expect((search.decoration as BoxDecoration).color, themeCase.search);
+        expect(
+          (search.decoration as BoxDecoration).borderRadius,
+          BorderRadius.circular(8),
+        );
+        expect(search.clipBehavior, Clip.antiAlias);
         expect(tester.takeException(), isNull);
       });
     }

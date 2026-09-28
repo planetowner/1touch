@@ -80,6 +80,14 @@ void main() {
       (tester) async {
     final repo = _Search();
     await _pump(tester, repo);
+    final searchBar = tester.widget<Container>(
+      find.byKey(const ValueKey('global-search-bar')),
+    );
+    expect(
+      (searchBar.decoration as BoxDecoration).borderRadius,
+      BorderRadius.circular(8),
+    );
+    expect(searchBar.clipBehavior, Clip.antiAlias);
     expect(find.byKey(const ValueKey('search-prompt')), findsOneWidget);
     expect(find.text('RECENTS'), findsNothing);
     expect(repo.calls, isEmpty);

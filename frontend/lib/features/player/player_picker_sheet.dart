@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -52,6 +53,10 @@ class PlayerPickerSheetState extends State<PlayerPickerSheet> {
                                   onSubmitted: (_) => setState(_search),
                                   decoration: InputDecoration(
                                       hintText: tr(context, 'Search players'),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              AppSearchFieldTokens.radius),
+                                          borderSide: BorderSide.none),
                                       suffixIcon: IconButton(
                                           onPressed: () => setState(_search),
                                           icon: const Icon(Icons.search))))),

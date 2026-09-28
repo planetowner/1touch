@@ -356,6 +356,14 @@ void main() {
     expect(find.byKey(const ValueKey('full-ranking-sheet')), findsOneWidget);
     expect(find.text('1Touch Ranking'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Look for players'), findsOneWidget);
+    final search = tester.widget<Container>(
+      find.byKey(const ValueKey('full-ranking-search')),
+    );
+    expect(
+      (search.decoration as BoxDecoration).borderRadius,
+      BorderRadius.circular(8),
+    );
+    expect(search.clipBehavior, Clip.antiAlias);
     expect(find.text('Ranked player 6'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

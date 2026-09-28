@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/player_navigation.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
@@ -170,10 +171,13 @@ class _SearchContentState extends State<SearchContent> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Container(
+                    key: const ValueKey('global-search-bar'),
                     height: 56,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       color: appColors.cardBackground,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius:
+                          BorderRadius.circular(AppSearchFieldTokens.radius),
                     ),
                     child: TextField(
                       key: const ValueKey('global-search-field'),

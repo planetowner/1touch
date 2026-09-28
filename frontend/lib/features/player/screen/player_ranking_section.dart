@@ -142,11 +142,14 @@ class FullRankingPopup extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
+                key: const ValueKey('full-ranking-search'),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: appColors.subtleBackground,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius:
+                      BorderRadius.circular(AppSearchFieldTokens.radius),
                 ),
                 child: Row(
                   children: [
