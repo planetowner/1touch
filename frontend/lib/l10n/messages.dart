@@ -9,6 +9,34 @@ const teamScreenKoreanMessages = <String, String>{
 };
 
 const appMessages = <String, MessageTranslations>{
+  "Open live match": (ko: "라이브 경기 보기", ja: "ライブ試合を見る", zh: "查看直播比赛"),
+  "You won {points} points!": (
+    ko: "{points}포인트를 획득했어요!",
+    ja: "{points}ポイント獲得しました！",
+    zh: "你赢得了{points}积分！"
+  ),
+  "{points} points returned": (
+    ko: "{points}포인트가 반환됐어요",
+    ja: "{points}ポイントが返還されました",
+    zh: "已返还{points}积分"
+  ),
+  "Your bet on {team} was correct.": (
+    ko: "{team}에 대한 베팅이 적중했어요.",
+    ja: "{team}への予想が的中しました。",
+    zh: "你对{team}的预测正确。"
+  ),
+  "Your bet on {team} was not correct.": (
+    ko: "{team}에 대한 베팅이 적중하지 않았어요.",
+    ja: "{team}への予想は的中しませんでした。",
+    zh: "你对{team}的预测未命中。"
+  ),
+  "Your bet on {team} was refunded.": (
+    ko: "{team}에 대한 베팅 포인트가 반환됐어요.",
+    ja: "{team}への予想ポイントが返還されました。",
+    zh: "你对{team}的投注积分已返还。"
+  ),
+  "SEE RESULTS": (ko: "결과 보기", ja: "結果を見る", zh: "查看结果"),
+  "MAYBE LATER": (ko: "나중에 보기", ja: "あとで見る", zh: "稍后查看"),
   "Email or username": (ko: "이메일 또는 아이디", ja: "メールアドレスまたはユーザー名", zh: "邮箱或用户名"),
   "Forgot password?": (ko: "비밀번호를 잊으셨나요?", ja: "パスワードをお忘れですか？", zh: "忘记密码？"),
   "Don't have an account?": (
@@ -1244,6 +1272,11 @@ const appMessages = <String, MessageTranslations>{
     ja: "キックオフ時間が決まると予想受付が始まります。",
     zh: "开球时间确定后将开放竞猜。"
   ),
+  "Betting opens 24 hours before kickoff.": (
+    ko: "베팅은 경기 시작 24시간 전에 열려요.",
+    ja: "予想受付は試合開始の24時間前に始まります。",
+    zh: "竞猜将在开赛前24小时开放。"
+  ),
   "Not enough points.": (ko: "포인트가 부족해요.", ja: "ポイントが足りません。", zh: "积分不足。"),
   "You need at least 10 pts to place a bet.": (
     ko: "베팅하려면 최소 10포인트가 필요해요.",
@@ -1402,10 +1435,10 @@ const appMessages = <String, MessageTranslations>{
     ja: "賭けたポイントを含め、合計{points}ポイントが返還されます。",
     zh: "包含投入积分在内，共返还{points}积分。"
   ),
-  "{count} participants · Home / Draw / Away": (
-    ko: "{count}명 참여 · 홈 / 무승부 / 원정",
-    ja: "{count}人参加 · ホーム / 引き分け / アウェイ",
-    zh: "{count}人参与 · 主胜 / 平局 / 客胜"
+  "{count} participants": (
+    ko: "{count}명 참여",
+    ja: "{count}人参加",
+    zh: "{count}人参与"
   ),
   "Return if correct: {points} pts (includes stake)": (
     ko: "적중 시 반환: {points}포인트 (베팅 포인트 포함)",
@@ -1724,4 +1757,30 @@ const appMessages = <String, MessageTranslations>{
   "Golden Boy": (ko: "골든보이", ja: "ゴールデンボーイ", zh: "金童奖"),
   "Ballon d'Or": (ko: "발롱도르", ja: "バロンドール", zh: "金球奖"),
   " Min.": (ko: "분", ja: "分", zh: "分钟"),
+  "Explanation": (ko: "설명", ja: "説明", zh: "说明"),
+  "Calculated using proprietary performance metrics and predictive analytics model": (
+    ko: "1Touch의 자체 경기력 지표와 예측 분석 모델을 사용해 계산해요.",
+    ja: "独自のパフォーマンス指標と予測分析モデルを使って算出しています。",
+    zh: "使用专有表现指标和预测分析模型计算。"
+  ),
+  "Percentage of ball recovery locations across the lower, middle, and upper thirds compared against the league average.": (
+    ko: "수비·중앙·공격 지역별 공 회수 비율을 리그 평균과 비교해요.",
+    ja: "守備・中盤・攻撃の各エリアでのボール奪回割合をリーグ平均と比較します。",
+    zh: "比较防守、中场和进攻三区的夺回球权比例与联赛平均值。"
+  ),
+  "Evaluates and ranks players using 1Touch's own data-driven performance metrics.": (
+    ko: "1Touch의 자체 데이터 기반 경기력 지표로 선수를 평가하고 순위를 매겨요.",
+    ja: "1Touch独自のデータに基づくパフォーマンス指標で選手を評価・順位付けします。",
+    zh: "使用1Touch自有的数据驱动表现指标评估球员并进行排名。"
+  ),
+  "Highlights players with the highest performance growth over recent matches, based on 1Touch metrics.": (
+    ko: "1Touch 지표를 기준으로 최근 경기에서 경기력이 가장 크게 향상된 선수를 보여줘요.",
+    ja: "1Touchの指標に基づき、最近の試合で最も成長した選手を紹介します。",
+    zh: "根据1Touch指标，展示近期比赛中表现进步最大的球员。"
+  ),
+  "Measured by comparing actual salary against 1Touch’s predicted market value based on performance and playtime.": (
+    ko: "실제 급여를 경기력과 출전 시간을 바탕으로 1Touch가 예측한 시장 가치와 비교해요.",
+    ja: "実際の給与を、パフォーマンスと出場時間から1Touchが予測した市場価値と比較します。",
+    zh: "将实际薪资与1Touch根据表现和出场时间预测的市场价值进行比较。"
+  ),
 };
