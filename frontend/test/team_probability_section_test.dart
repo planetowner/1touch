@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/teams/team_feature_unavailable_exception.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/TeamScreen_tabs/Analysis.dart';
 
@@ -170,6 +171,41 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('keeps every Korean probability card title on one line',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _StubProbabilityRepository(
+      initial: {
+        83: _snapshot(cards: [
+          _card('ucl_winner'),
+          _card('top_4'),
+          _card('relegation_playoff'),
+        ]),
+      },
+    );
+
+    await tester.pumpWidget(
+      _app(repository: repository, locale: const Locale('ko')),
+    );
+    await tester.pump();
+
+    for (final event in ['ucl_winner', 'top_4', 'relegation_playoff']) {
+      final title = tester.widget<Text>(
+        find.descendant(
+          of: find.byKey(ValueKey('team-probability-title-slot-$event')),
+          matching: find.byType(Text),
+        ),
+      );
+      expect(title.maxLines, 1);
+      expect(title.softWrap, isFalse);
+      expect(title.data, isNot(contains('\n')));
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('hides probability when the backend marks it unavailable',
       (tester) async {
     final repository = _StubProbabilityRepository(
@@ -285,8 +321,12 @@ Widget _app({
   required TeamProbabilityRepository repository,
   int teamId = 83,
   ThemeData? theme,
+  Locale locale = const Locale('en'),
 }) {
   return MaterialApp(
+    locale: locale,
+    supportedLocales: const [Locale('en'), Locale('ko')],
+    localizationsDelegates: appLocalizationDelegates,
     theme: theme ?? app_style.darktheme,
     home: Scaffold(
       body: SingleChildScrollView(

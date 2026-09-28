@@ -301,7 +301,8 @@ class MatchCard2 extends StatelessWidget {
                 return width;
               }
 
-              final scoreStyle = Heading3.style.copyWith(color: Colors.white);
+              final scoreStyle =
+                  Heading3.latinStyle.copyWith(color: Colors.white);
               final homeScoreWidth =
                   textWidth(homeScore?.toString() ?? '-', scoreStyle) + 24;
               final awayScoreWidth =
@@ -753,7 +754,7 @@ class _ScoreBoard extends StatelessWidget {
             child: Text(
               score?.toString() ?? '-',
               textAlign: TextAlign.center,
-              style: Heading3.style.copyWith(
+              style: Heading3.latinStyle.copyWith(
                 color: Colors.white,
               ),
             ),

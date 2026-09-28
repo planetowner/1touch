@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/Profile_settings/TeamEdit.dart';
 import 'package:onetouch/core/style.dart' as app_style;
+import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
 import 'package:onetouch/models/team.dart';
 
@@ -58,6 +59,37 @@ void main() {
     expect(
         find.byKey(const ValueKey('profile-team-edit-sheet')), findsOneWidget);
     expect(find.text('Favorite team can be changed later'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('uses the reordered first team across Home preferences',
+      (tester) async {
+    final repository = _RecordingFollowingTeamsRepository();
+    currentUserPreferences.viewTeam(83);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: _EditSheetHost(repository: repository),
+      ),
+    );
+    await tester.tap(find.text('OPEN'));
+    await tester.pumpAndSettle();
+
+    final firstHandle = find.descendant(
+      of: find.byKey(const ValueKey(83)),
+      matching: find.byIcon(Icons.drag_handle),
+    );
+    await tester.drag(firstHandle, const Offset(0, 180));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('UPDATE'));
+    await tester.pumpAndSettle();
+
+    expect(repository.savedTeamIds, [19, 83]);
+    expect(repository.savedFavoriteTeamId, 19);
+    expect(currentUserPreferences.favoriteTeamId.value, 19);
+    expect(currentUserPreferences.followedTeamIds.value, [19, 83]);
+    expect(currentUserPreferences.viewedTeamId.value, 19);
     expect(tester.takeException(), isNull);
   });
 }

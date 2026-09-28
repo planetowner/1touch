@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -605,7 +607,7 @@ class _MatchesTabState extends State<MatchesTab> {
           ),
           child: Text(score.toString(),
               textAlign: TextAlign.center,
-              style: Heading3.style.copyWith(color: colors.primary)),
+              style: Heading3.latinStyle.copyWith(color: colors.primary)),
         ),
       ),
     );
@@ -663,7 +665,7 @@ class _AnimatedStickyHeaderSlot extends StatelessWidget {
         ).animate(animation);
         return SizeTransition(
           sizeFactor: animation,
-          axisAlignment: -1,
+          alignment: Alignment.topCenter,
           child: FadeTransition(
             opacity: opacity,
             child: SlideTransition(position: offset, child: child),

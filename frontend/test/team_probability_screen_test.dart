@@ -1,8 +1,10 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/stylesheet.dart';
+import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/TeamProbabilityScreen.dart';
 
@@ -248,6 +250,46 @@ void main() {
           .width,
       40,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Korean probability title aligns with the percentage bottom',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final previousLocale = appLocaleController.value;
+    appLocaleController.value = const Locale('ko');
+    addTearDown(() => appLocaleController.value = previousLocale);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        theme: app_style.darkThemeForLocale(const Locale('ko')),
+        home: TeamProbabilityScreen(
+          teamId: 83,
+          event: 'league_winner',
+          initialSnapshot: _snapshot(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final valueBottom = tester
+        .getBottomLeft(
+          find.byKey(const ValueKey('probability-detail-value')),
+        )
+        .dy;
+    final titleBottom = tester
+        .getBottomLeft(
+          find.byKey(const ValueKey('probability-event-title')),
+        )
+        .dy;
+    expect(titleBottom, closeTo(valueBottom, 0.1));
+    expect(find.text('리그 우승 확률'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

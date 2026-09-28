@@ -30,6 +30,20 @@ Color mainPageBackground(BuildContext context) {
       : AppColors.of(context).pageBackground;
 }
 
+Color appPillBackground(BuildContext context, {required bool selected}) {
+  if (selected) return AppPalette.white;
+  return Theme.of(context).brightness == Brightness.dark
+      ? AppPalette.lightGrey
+      : AppPalette.lightGreyBox;
+}
+
+Color appPillForeground(BuildContext context, {required bool selected}) {
+  if (selected) return AppPalette.black;
+  return Theme.of(context).brightness == Brightness.dark
+      ? AppPalette.white
+      : AppPalette.black;
+}
+
 const double appBarMinimumContentTop = 47;
 
 double appBarContentTop(BuildContext context) {

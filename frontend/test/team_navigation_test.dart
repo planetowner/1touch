@@ -37,13 +37,19 @@ void main() {
               ],
             ),
             StatefulShellBranch(
-              initialLocation: '/team/83',
+              initialLocation: '/team',
               routes: [
                 GoRoute(
-                  path: '/team/:id',
-                  builder: (_, state) => Text(
-                    'Team ${state.pathParameters['id']}',
-                  ),
+                  path: '/team',
+                  builder: (_, __) => const Text('Previous team'),
+                  routes: [
+                    GoRoute(
+                      path: ':id',
+                      builder: (_, state) => Text(
+                        'Team ${state.pathParameters['id']}',
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -75,6 +81,11 @@ void main() {
 
     expect(find.text('Team 83'), findsOneWidget);
     expect(find.text('Selected branch 1'), findsOneWidget);
+
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Previous team'), findsOneWidget);
+    expect(find.text('Team 83'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

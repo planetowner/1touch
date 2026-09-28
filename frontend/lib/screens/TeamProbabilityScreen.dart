@@ -342,13 +342,21 @@ class _ProbabilityHero extends StatelessWidget {
                 SizedBox(
                   width: 138,
                   height: 39,
-                  child: Text(
-                    tr(context, _eventTitle(card.event)),
-                    key: const ValueKey('probability-event-title'),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.right,
-                    style: Body1.style,
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: Text(
+                      tr(context, _eventTitle(card.event)),
+                      key: const ValueKey('probability-event-title'),
+                      maxLines:
+                          Localizations.localeOf(context).languageCode == 'ko'
+                              ? 1
+                              : 2,
+                      softWrap:
+                          Localizations.localeOf(context).languageCode != 'ko',
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: Body1.style,
+                    ),
                   ),
                 ),
               ],

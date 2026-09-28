@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -157,6 +159,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     }
     setState(() {
       _followedTeams.removeAt(index);
+      _favoriteTeamId = _followedTeams.first.teamId;
       _updateEnabled = true;
     });
   }
@@ -188,8 +191,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
     setState(() => _isSaving = true);
 
     final teamIds = candidateTeams.map((team) => team.teamId).toList();
-    final favoriteTeamId =
-        teamIds.contains(_favoriteTeamId) ? _favoriteTeamId! : teamIds.first;
+    final favoriteTeamId = teamIds.first;
 
     try {
       final savedTeams = await widget.repository.replaceFollowing(
@@ -201,6 +203,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
         favoriteTeamId: favoriteTeamId,
         followedTeamIds: savedTeams.map((team) => team.teamId).toList(),
       ));
+      currentUserPreferences.resetViewedTeam();
       if (!mounted) return;
       Navigator.of(context).pop(
         FollowingTeamsEditResult(
@@ -408,6 +411,7 @@ class _EditFollowingTeamsSheetState extends State<EditFollowingTeamsSheet> {
         setState(() {
           final item = _followedTeams.removeAt(oldIndex);
           _followedTeams.insert(newIndex, item);
+          _favoriteTeamId = _followedTeams.first.teamId;
           _updateEnabled = true;
         });
       },
