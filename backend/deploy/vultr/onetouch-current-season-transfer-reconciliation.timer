@@ -1,0 +1,11 @@
+[Unit]
+Description=Reconcile current player and departure transfer histories weekly
+
+[Timer]
+Unit=onetouch-current-season-sync@transfer-reconciliation.service
+OnCalendar=Mon *-*-* 04:00:00 UTC
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

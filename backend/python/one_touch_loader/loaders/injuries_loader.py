@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+from time import monotonic
 
-from ..core.db import transaction
+from ..core.db import fetch_all, transaction
 from ..core.sportmonks import SportmonksClient
 from .team_squad_members_loader import load_squad_scope
 
@@ -73,7 +74,8 @@ def replace_team_injuries(team_id: int, season_id: int, sidelined: list[dict]) -
     }
 
 
-def refresh_current_injuries(team_ids: list[int] | None = None) -> dict:
+def refresh_current_injuries(team_ids: list[int] | None = None, *, check: bool = False) -> dict:
+    started_at = monotonic()
     # 선수·스쿼드와 같은 현재 Big 5 팀 범위를 써서 컵의 외부 상대팀을 포함하지 않아요.
     scope = load_squad_scope(current_only=True)
     if team_ids is not None:
@@ -87,7 +89,13 @@ def refresh_current_injuries(team_ids: list[int] | None = None) -> dict:
     for index, row in enumerate(scope, 1):
         team_id = row["team_id"]
         payload = client.get_team_with_sidelined(team_id)
-        result = replace_team_injuries(team_id, row["season_id"], payload["sidelined"])
+        if check:
+            player_ids = {item[0] for item in fetch_all(SQL_SELECT_SQUAD_PLAYER_IDS, (team_id, row["season_id"]))}
+            rows = build_injury_rows(team_id, payload["sidelined"], player_ids)
+            result = {"received": len(payload["sidelined"]), "injuries": len(rows["injuries"]),
+                      "non_injury": rows["non_injury"], "excluded_not_in_squad": rows["excluded_not_in_squad"]}
+        else:
+            result = replace_team_injuries(team_id, row["season_id"], payload["sidelined"])
         totals["teams"] += 1
         for key in ("received", "injuries", "non_injury"):
             totals[key] += result[key]
@@ -104,7 +112,12 @@ def refresh_current_injuries(team_ids: list[int] | None = None) -> dict:
                 + json.dumps(result["excluded_not_in_squad"]),
                 flush=True,
             )
-    return totals
+    return {**totals, "api_requests": client.request_count, "pages": client.page_count,
+            "elapsed_seconds": round(monotonic() - started_at, 2)}
+
+
+def sync_current_injuries(*, apply: bool = False) -> dict:
+    return {"mode": "injuries", "apply": apply, **refresh_current_injuries(check=not apply)}
 
 
 def refresh_team_injuries(team_id: int) -> dict:

@@ -50,6 +50,34 @@ def build_contract_rows(team_id: int, squad: list[dict], player_ids: set[int]) -
     }
 
 
+def write_team_contract_rows(cursor, team_id: int, rows: list[tuple]) -> None:
+    cursor.execute("DELETE FROM player_contracts WHERE team_id=%s", (team_id,))
+    if rows:
+        cursor.executemany(SQL_INSERT_CONTRACT, rows)
+
+
+def build_player_contract_rows(player_id: int, records: list[dict]) -> dict:
+    teams, contracts, invalid = [], [], []
+    for item in records:
+        team = item["team"]
+        # 현재 구단 계약만 선택해 국가대표·확인된 유소년 팀을 제외해요.
+        if team["type"] == "national" or team["placeholder"] or team["id"] in VERIFIED_NON_SENIOR_TEAM_IDS:
+            continue
+        result = build_contract_rows(team["id"], [item], {player_id})
+        teams.append(_team_row(team, "contract.team"))
+        contracts.extend(result["rows"])
+        invalid.extend(result["invalid_intervals"])
+    return {"teams": teams, "rows": contracts, "invalid_intervals": invalid}
+
+
+def write_player_contract_rows(cursor, player_id: int, rows: dict) -> None:
+    if rows["teams"]:
+        cursor.executemany(SQL_UPSERT_TEAM, rows["teams"])
+    cursor.execute("DELETE FROM player_contracts WHERE player_id=%s", (player_id,))
+    if rows["rows"]:
+        cursor.executemany(SQL_INSERT_CONTRACT, rows["rows"])
+
+
 def refresh_current_contracts(team_ids: list[int] | None = None, *, check: bool = False) -> dict:
     scope = load_squad_scope(current_only=True, team_ids=team_ids)
     client = SportmonksClient()
@@ -67,9 +95,7 @@ def refresh_current_contracts(team_ids: list[int] | None = None, *, check: bool 
                     with conn.cursor() as cursor:
                         cursor.execute(SQL_SQUAD_PLAYERS, (team_id, season_id))
                         result = build_contract_rows(team_id, squad, {row[0] for row in cursor.fetchall()})
-                        cursor.execute("DELETE FROM player_contracts WHERE team_id=%s", (team_id,))
-                        if result["rows"]:
-                            cursor.executemany(SQL_INSERT_CONTRACT, result["rows"])
+                        write_team_contract_rows(cursor, team_id, result["rows"])
             totals["teams"] += 1
             totals["contracts"] += len(result["rows"])
             for key in ("invalid_intervals", "missing_dates", "missing_players"):
@@ -97,27 +123,14 @@ def collect_player_contracts(player_ids: list[int], *, check: bool = False) -> d
                 totals["unavailable_players"].append(player_id)
                 print(f"[contracts {index}/{len(selected)}] player_id={player_id} unavailable=True check={check}", flush=True)
                 continue
-            teams, contracts = [], []
-            for item in records:
-                team = item["team"]
-                # 선수 단건 teams에는 국가대표도 있었어요. 현재 구단 계약만 선택해요.
-                if team["type"] == "national" or team["placeholder"] or team["id"] in VERIFIED_NON_SENIOR_TEAM_IDS:
-                    continue
-                # 구단 분류는 Club History 표시 기준이에요. 출발 선수의 확인된 계약을 버리지 않아요.
-                result = build_contract_rows(team["id"], [item], {player_id})
-                teams.append(_team_row(team, "contract.team"))
-                contracts.extend(result["rows"])
-                totals["invalid_intervals"].extend(result["invalid_intervals"])
+            result = build_player_contract_rows(player_id, records)
+            totals["invalid_intervals"].extend(result["invalid_intervals"])
             if not check:
                 with transaction() as conn:
                     with conn.cursor() as cursor:
-                        if teams:
-                            cursor.executemany(SQL_UPSERT_TEAM, teams)
-                        cursor.execute("DELETE FROM player_contracts WHERE player_id=%s", (player_id,))
-                        if contracts:
-                            cursor.executemany(SQL_INSERT_CONTRACT, contracts)
-            totals["contracts"] += len(contracts)
-            print(f"[contracts {index}/{len(selected)}] player_id={player_id} contracts={len(contracts)} check={check}", flush=True)
+                        write_player_contract_rows(cursor, player_id, result)
+            totals["contracts"] += len(result["rows"])
+            print(f"[contracts {index}/{len(selected)}] player_id={player_id} contracts={len(result['rows'])} check={check}", flush=True)
     finally:
         client._session.close()
     return totals

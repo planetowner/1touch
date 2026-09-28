@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh changed player profiles hourly
+
+[Timer]
+Unit=onetouch-current-season-sync@player-updates.service
+OnBootSec=5min
+OnUnitInactiveSec=1h
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

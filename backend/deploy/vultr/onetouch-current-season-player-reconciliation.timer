@@ -1,0 +1,11 @@
+[Unit]
+Description=Reconcile current Big 5 player profiles weekly
+
+[Timer]
+Unit=onetouch-current-season-sync@player-reconciliation.service
+OnCalendar=Sun *-*-* 04:00:00 UTC
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

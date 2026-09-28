@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh current season fixtures every three hours
+
+[Timer]
+Unit=onetouch-current-season-sync@fixtures.service
+OnBootSec=10min
+OnUnitInactiveSec=3h
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

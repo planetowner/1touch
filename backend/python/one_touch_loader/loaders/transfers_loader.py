@@ -25,6 +25,23 @@ ON DUPLICATE KEY UPDATE name=VALUES(name)
 """
 
 
+def fetch_transfers_between(client, start: date, end: date) -> list[dict]:
+    """전체 페이지를 받은 뒤에만 응답에 없는 이적을 비교해요."""
+    by_id = {}
+    while start <= end:
+        # 공급자 날짜 조회는 한 요청 구간이 최대 31일이에요.
+        chunk_end = min(start + timedelta(days=30), end)
+        print(f"[transfers range] start={start} end={chunk_end} fetching", flush=True)
+        received = 0
+        for received, item in enumerate(client.iter_transfers_between_dates(start, chunk_end), 1):
+            by_id[item["id"]] = item
+            if received % 1000 == 0:
+                print(f"[transfers range] start={start} end={chunk_end} received={received}", flush=True)
+        print(f"[transfers range] start={start} end={chunk_end} received={received} complete", flush=True)
+        start = chunk_end + timedelta(days=1)
+    return list(by_id.values())
+
+
 def build_transfer_rows(player_id: int, payload: list[dict], senior_ids: set[int]) -> dict:
     rows, teams, types, profiles, unclassified = [], {}, {}, {}, {}
     confirmed = sorted((item for item in payload if item["completed"] is True), key=lambda x: (x["date"], x["id"]))
@@ -69,19 +86,67 @@ def replace_player_transfers(player_id: int, rows: dict) -> None:
         raise ValueError(f"Review transfer source for player={player_id}: repeated={rows['repeated_movements']}")
     with transaction() as conn:
         with conn.cursor() as cursor:
-            if rows["teams"]:
-                cursor.executemany(SQL_UPSERT_TEAM, rows["teams"])
-            insert_missing_player_profiles(cursor, rows["profiles"])
-            if rows["types"]:
-                cursor.executemany(SQL_UPSERT_TYPE, rows["types"])
-            if rows["rows"]:
-                # 계약이 참조하는 기존 이적 ID를 삭제하지 않도록 먼저 갱신해요.
-                cursor.executemany(SQL_UPSERT_TRANSFER, rows["rows"])
-                ids = [row[0] for row in rows["rows"]]
-                marks = ",".join("%s" for _ in ids)
-                cursor.execute(f"DELETE FROM transfers WHERE player_id=%s AND transfer_id NOT IN ({marks})", (player_id, *ids))
-            else:
-                cursor.execute("DELETE FROM transfers WHERE player_id=%s", (player_id,))
+            write_transfer_rows(cursor, rows)
+            delete_stale_player_transfers(cursor, player_id, [row[0] for row in rows["rows"]])
+
+
+def write_transfer_rows(cursor, rows: dict) -> None:
+    """부분 응답도 저장할 수 있지만 기존 이력을 삭제하지는 않아요."""
+    if rows["teams"]:
+        cursor.executemany(SQL_UPSERT_TEAM, rows["teams"])
+    insert_missing_player_profiles(cursor, rows["profiles"])
+    if rows["types"]:
+        cursor.executemany(SQL_UPSERT_TYPE, rows["types"])
+    if rows["rows"]:
+        cursor.executemany(SQL_UPSERT_TRANSFER, rows["rows"])
+
+
+def delete_stale_player_transfers(cursor, player_id: int, transfer_ids: list[int]) -> None:
+    """선수의 전체 이력을 끝까지 확인한 경우에만 호출해요."""
+    if transfer_ids:
+        marks = ",".join("%s" for _ in transfer_ids)
+        cursor.execute(f"DELETE FROM transfers WHERE player_id=%s AND transfer_id NOT IN ({marks})", (player_id, *transfer_ids))
+    else:
+        cursor.execute("DELETE FROM transfers WHERE player_id=%s", (player_id,))
+
+
+def prepare_contract_transfers(client, contract_rows: list[tuple], available: dict[int, dict] | None = None,
+                               *, player_histories: dict[int, list[dict]] | None = None) -> list[dict]:
+    """계약의 외래 키를 쓰기 트랜잭션 전에 준비해요. 이력 교체와는 별개예요."""
+    required = {row[4]: row[1] for row in contract_rows if row[4] is not None}
+    if not required:
+        return []
+    marks = ",".join("%s" for _ in required)
+    existing = dict(fetch_all(f"SELECT transfer_id,player_id FROM transfers WHERE transfer_id IN ({marks})", tuple(required)))
+    for tid, pid in existing.items():
+        if pid != required[tid]:
+            raise ValueError(f"Contract transfer belongs to another player: transfer_id={tid}")
+    prepared = []
+    missing = required.keys() - existing.keys()
+    for pid in sorted({required[tid] for tid in missing}):
+        # 계약 때문에 최근 행만 먼저 저장하면 변경 비교에서 같다고 판단해 과거 이력 수집이 빠져요.
+        # 새 계약 이적을 준비할 때 전체 이력도 함께 받아 이 순서 의존성을 없애요.
+        payload = (player_histories or {}).get(pid)
+        history_ready = payload is not None
+        if payload is None:
+            payload = list(client.iter_transfers_by_player(pid))
+        by_id = {item["id"]: item for item in payload}
+        history_ids = set(by_id)
+        for tid in sorted(tid for tid in missing if required[tid] == pid):
+            raw = by_id.get(tid) or (available or {}).get(tid)
+            if raw is None:
+                raw = client.get_transfer(tid)
+            if raw is None or raw["player_id"] != pid or raw["completed"] is not True:
+                raise ValueError(f"Unresolved contract transfer: transfer_id={tid}, player_id={pid}")
+            by_id[tid] = raw
+        # 호출자가 전체 이력을 이미 준비했다면 빠진 계약 참조만 추가로 저장해요.
+        selected = [item for tid, item in by_id.items() if not history_ready or tid not in history_ids]
+        rows = build_transfer_rows(pid, selected, set())
+        if rows["repeated_movements"]:
+            raise ValueError(f"Review transfer source for player={pid}: repeated={rows['repeated_movements']}")
+        if rows["rows"]:
+            prepared.append(rows)
+    return prepared
 
 
 def collect_player_transfers(player_ids: list[int], *, check: bool = False) -> dict:
@@ -149,17 +214,13 @@ def refresh_current_transfers(team_ids: list[int] | None = None, *, check: bool 
     end = min(date.today(), max(row["end_date"] for row in windows.values()))
     client = SportmonksClient()
     try:
-        # 기존 31일 조회 범위를 유지하고 팀마다 같은 구간을 반복 요청하지 않아요.
-        while start <= end:
-            chunk_end = min(start + timedelta(days=30), end)
-            for item in client.iter_transfers_between_dates(start, chunk_end):
-                if item["completed"] is not True:
-                    continue
-                for team_id in (item["from_team_id"], item["to_team_id"]):
-                    window = windows.get(team_id)
-                    if window is not None and window["start_date"] <= date.fromisoformat(item["date"]) <= window["end_date"]:
-                        selected.add(item["player_id"])
-            start = chunk_end + timedelta(days=1)
+        for item in fetch_transfers_between(client, start, end):
+            if item["completed"] is not True:
+                continue
+            for team_id in (item["from_team_id"], item["to_team_id"]):
+                window = windows.get(team_id)
+                if window is not None and window["start_date"] <= date.fromisoformat(item["date"]) <= window["end_date"]:
+                    selected.add(item["player_id"])
     finally:
         client._session.close()
     # 최근 행만 저장하면 Club History가 잘리므로 해당 선수의 전체 이력을 같은 경로로 수집해요.

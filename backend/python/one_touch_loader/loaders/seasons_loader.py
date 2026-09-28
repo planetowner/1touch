@@ -79,8 +79,7 @@ def _season_rows(competition_id: int, seasons: object) -> List[SeasonRow]:
     return rows
 
 
-def collect_all_seasons() -> Dict[str, object]:
-    """DB가 지원하는 모든 대회의 2017/2018 이후 시즌을 저장해요."""
+def _load_competition_ids() -> List[int]:
     competition_ids = [
         int(row[0]) for row in fetch_all(SQL_SELECT_COMPETITION_IDS)
     ]
@@ -90,7 +89,12 @@ def collect_all_seasons() -> Dict[str, object]:
             "competitions does not contain the supported competition set: "
             f"expected={sorted(expected_ids)}, actual={competition_ids}"
         )
+    return competition_ids
 
+
+def collect_all_seasons() -> Dict[str, object]:
+    """DB가 지원하는 모든 대회의 2017/2018 이후 시즌을 저장해요."""
+    competition_ids = _load_competition_ids()
     sm = SportmonksClient()
     all_rows: List[SeasonRow] = []
     results: List[Dict[str, int]] = []

@@ -87,7 +87,7 @@ else
 fi
 
 # 기존 compose.yaml과 .env를 유지해 같은 DB 볼륨과 암호를 계속 사용해요.
-for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh; do
+for filename in compose.production.yaml Caddyfile compose-production.sh backup-db.sh cleanup-community.sh sync-live-fixtures.sh sync-match-refresh.sh sync-opta.sh sync-probability.sh sync-highlights.sh sync-betting.sh sync-news.sh sync-current-season.sh; do
   install -m 644 "$release_directory/deploy/vultr/$filename" "$runtime_directory/$filename"
 done
 # 일반 배포에도 소개 파일을 포함해 다음 API 배포에서 사이트가 빠지지 않게 해요.
@@ -121,6 +121,10 @@ install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.servi
 install -m 644 "$release_directory/deploy/vultr/onetouch-community-cleanup.timer" /etc/systemd/system/onetouch-community-cleanup.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.service" /etc/systemd/system/onetouch-fixture-live.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-fixture-live.timer" /etc/systemd/system/onetouch-fixture-live.timer
+# 각 동기화의 첫 실행 결과와 호출량을 확인한 뒤 해당 타이머를 켜요.
+for unit in onetouch-current-season-sync@.service onetouch-current-season-metadata.timer onetouch-current-season-fixtures.timer onetouch-current-season-squads.timer onetouch-current-season-player-updates.timer onetouch-current-season-player-reconciliation.timer onetouch-current-season-injuries.timer onetouch-current-season-transfers.timer onetouch-current-season-transfer-reconciliation.timer; do
+  install -m 644 "$release_directory/deploy/vultr/$unit" "/etc/systemd/system/$unit"
+done
 install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.service" /etc/systemd/system/onetouch-opta-sync.service
 install -m 644 "$release_directory/deploy/vultr/onetouch-opta-sync.timer" /etc/systemd/system/onetouch-opta-sync.timer
 install -m 644 "$release_directory/deploy/vultr/onetouch-probability-sync.service" /etc/systemd/system/onetouch-probability-sync.service
