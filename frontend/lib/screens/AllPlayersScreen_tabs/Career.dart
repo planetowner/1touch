@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
@@ -154,7 +155,9 @@ class _CareerTabState extends State<CareerTab> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    honour.season ?? '—',
+                    honour.season == null
+                        ? '—'
+                        : compactSeasonLabel(honour.season!),
                     style: Body2.style.copyWith(color: AppPalette.white),
                   ),
                 ),
@@ -284,7 +287,7 @@ class _CareerTabState extends State<CareerTab> {
                 Expanded(
                     flex: 2,
                     child: Text(
-                      _compactSeasonLabel(season.season),
+                      compactSeasonLabel(season.season),
                       style: Body2_b.style,
                     )),
                 Expanded(
@@ -372,13 +375,6 @@ class _CareerTabState extends State<CareerTab> {
         flex: 2,
         child: Text(text, textAlign: TextAlign.center, style: Body2_b.style),
       );
-
-  String _compactSeasonLabel(String season) {
-    final normalized = season.trim();
-    final match = RegExp(r'^(\d{4})/(\d{4})$').firstMatch(normalized);
-    if (match == null) return normalized;
-    return '${match.group(1)!.substring(2)}/${match.group(2)!.substring(2)}';
-  }
 
   Widget _rating(double? rating) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),

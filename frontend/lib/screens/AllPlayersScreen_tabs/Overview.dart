@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -146,12 +147,28 @@ class PlayerOverviewTab extends StatelessWidget {
                       Align(
                         alignment: Alignment.topCenter,
                         child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16),
+                          child: ShaderMask(
+                            key: const ValueKey(
+                                'player-overview-image-bottom-fade'),
+                            blendMode: BlendMode.dstIn,
+                            shaderCallback: (bounds) => const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white,
+                                Colors.white,
+                                Colors.transparent,
+                              ],
+                              stops: [0, 0.78, 1],
+                            ).createShader(bounds),
                             child: PlayerRemoteImage(
                               detail.profile.image,
                               key: const ValueKey('player-overview-image'),
                               size: 160,
-                            )),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -371,7 +388,8 @@ class _PlayerBioStatsBlockState extends State<PlayerBioStatsBlock> {
     final season = _indicators?.seasonName;
     final scope = season == null
         ? tr(context, 'Current season only.')
-        : tr(context, 'Current season: {season}.', {'season': season});
+        : tr(context, 'Current season: {season}.',
+            {'season': compactSeasonLabel(season)});
     final evidence = score?.grade == null
         ? switch (score?.unavailableReason) {
             'wage_unavailable' => tr(context, 'Wage data is unavailable.'),
