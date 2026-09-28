@@ -193,9 +193,40 @@ void main() {
     expect(label.maxLines, 1);
     expect(label.softWrap, isFalse);
     expect(
-      find.descendant(of: header, matching: find.byType(FittedBox)),
+      find.descendant(of: header, matching: find.byType(OverflowBox)),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps Korean points header at the club header size',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ko'),
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationDelegates,
+        home: Scaffold(
+          body: Standing(
+            teams: const <String, dynamic>{'id': 9},
+            repository: MockStandingRepository(),
+          ),
+        ),
+      ),
+    );
+
+    final header =
+        find.byKey(const ValueKey('overview-standing-points-header'));
+    expect(find.descendant(of: header, matching: find.byType(FittedBox)),
+        findsNothing);
+    expect(find.descendant(of: header, matching: find.byType(OverflowBox)),
+        findsOneWidget);
+    expect(tester.widget<Text>(find.text('승점')).style?.fontSize,
+        tester.widget<Text>(find.text('클럽')).style?.fontSize);
+    final clubHeaderTop = tester.getTopLeft(find.text('클럽')).dy;
+    for (final label in ['승점', '경기', '승', '무', '패']) {
+      expect(tester.getTopLeft(find.text(label)).dy, clubHeaderTop);
+    }
     expect(tester.takeException(), isNull);
   });
 

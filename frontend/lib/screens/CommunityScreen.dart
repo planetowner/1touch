@@ -316,11 +316,17 @@ class _CommunityState extends State<Community>
             ? FloatingActionButton(
                 backgroundColor: Colors.white,
                 elevation: 0,
+                shape: const CircleBorder(),
                 onPressed: _openPostComposer,
-                child: SvgPicture.asset(
-                  'assets/addpost_icon.svg',
-                  height: 40,
-                  width: 40,
+                child: Center(
+                  child: Transform.translate(
+                    offset: const Offset(0, -2.5),
+                    child: SvgPicture.asset(
+                      'assets/addpost_icon.svg',
+                      height: 40,
+                      width: 40,
+                    ),
+                  ),
                 ),
               )
             : null,

@@ -148,7 +148,15 @@ class _SortChip extends StatelessWidget {
           style: Body2_b.style.copyWith(
             color: appPillForeground(context, selected: isSelected),
           ),
-          child: Text(tr(context, label).toUpperCase()),
+          child: Align(
+            alignment: Alignment.center,
+            widthFactor: 1,
+            heightFactor: 1,
+            child: Text(
+              tr(context, label).toUpperCase(),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     );

@@ -367,7 +367,7 @@ void main() {
     );
     await tester.pump();
     expect(find.text('Key Passes'), findsNothing);
-    expect(find.text('Passes into Final Third'), findsWidgets);
+    expect(find.text('Passes Into Final Third'), findsWidgets);
   });
 
   testWidgets('shows an honest unavailable state', (tester) async {
@@ -455,7 +455,7 @@ void main() {
         findsOneWidget,
       );
       expect(_keyPassRowText(tester), ['0', 'Key Passes', '4']);
-      expect(find.text('Passes into Final Third'), findsNothing);
+      expect(find.text('Passes Into Final Third'), findsNothing);
       expect(find.byType(ShotMapDiagram), findsNothing);
       await tester.ensureVisible(find.text('Key Passes'));
       await tester.pump();

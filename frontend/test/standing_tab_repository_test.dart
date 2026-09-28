@@ -2,6 +2,7 @@ import 'support/app_catalog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -236,8 +237,16 @@ void main() {
       expect(tester.getSize(header).width, 24);
     }
 
+    Rect paintedRectOf(String label) {
+      final paragraph = tester.renderObject<RenderParagraph>(find.text(label));
+      final glyphs = paragraph.getBoxesForSelection(
+        TextSelection(baseOffset: 0, extentOffset: label.length),
+      );
+      return glyphs.first.toRect().shift(tester.getTopLeft(find.text(label)));
+    }
+
     for (final label in ['득점', '실점', '득실', '승점']) {
-      final textRect = tester.getRect(find.text(label));
+      final textRect = paintedRectOf(label);
       final headerRect = tester.getRect(
         find.byKey(ValueKey('standing-header-${switch (label) {
           '득점' => 'gf',
@@ -246,8 +255,19 @@ void main() {
           _ => 'pts',
         }}')),
       );
-      expect(textRect.center.dx, headerRect.center.dx);
-      expect(textRect.width, lessThanOrEqualTo(headerRect.width));
+      expect(textRect.center.dx, closeTo(headerRect.center.dx, 0.5));
+      expect(textRect.width, greaterThan(headerRect.width));
+    }
+
+    final club = tester.widget<Text>(find.text('클럽'));
+    final clubHeaderTop = tester.getTopLeft(find.text('클럽')).dy;
+    final clubPaintedRect = paintedRectOf('클럽');
+    for (final label in ['승점', '경기', '승', '무', '패', '득점', '실점', '득실']) {
+      expect(tester.widget<Text>(find.text(label)).style?.fontSize,
+          club.style?.fontSize);
+      expect(tester.getTopLeft(find.text(label)).dy, clubHeaderTop);
+      expect(paintedRectOf(label).top, clubPaintedRect.top);
+      expect(paintedRectOf(label).bottom, clubPaintedRect.bottom);
     }
 
     expect(tester.takeException(), isNull);

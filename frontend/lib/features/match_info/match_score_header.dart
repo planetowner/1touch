@@ -168,11 +168,8 @@ class _TeamBlock extends StatelessWidget {
       children: [
         const SizedBox(height: 24),
         GestureDetector(
-          // The match screen is pushed on the root navigator (see
-          // parentNavigatorKey on '/match/:matchId' in main.dart), but
-          // '/team/:id' lives inside the bottom-nav shell's own navigator —
-          // push() would land there invisibly, behind this screen. go()
-          // replaces the location so the shell actually surfaces.
+          // A team opened from this root-level match keeps the match beneath
+          // it, allowing back navigation to return to this fixture.
           onTap: isTeamPageSupported(teamId)
               ? () => openTeamPage(context, teamId)
               : null,
@@ -221,7 +218,7 @@ class _ScoreBox extends StatelessWidget {
       height: 65,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
+        color: isDark ? AppPalette.darkGrey : const Color(0x1A0A0A0A),
         borderRadius: BorderRadius.circular(4),
       ),
       child: FittedBox(
@@ -229,8 +226,7 @@ class _ScoreBox extends StatelessWidget {
         child: Text(
           score,
           style: Heading1.latinStyle.copyWith(
-            color:
-                isDimmed ? AppColors.of(context).mutedForeground : foreground,
+            color: isDimmed ? foreground.withValues(alpha: 0.5) : foreground,
           ),
         ),
       ),

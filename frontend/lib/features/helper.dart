@@ -737,10 +737,12 @@ class _ScoreBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: ShapeDecoration(
-        color: const Color(0xFF090A0A),
+        color: isDark ? AppPalette.black : AppPalette.lightModeDarkGrey,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
       child: Column(
@@ -750,12 +752,14 @@ class _ScoreBoard extends StatelessWidget {
         spacing: 8,
         children: [
           Opacity(
-            opacity: isDimmed ? 0.5 : 1.0,
+            opacity: isDark && isDimmed ? 0.5 : 1,
             child: Text(
               score?.toString() ?? '-',
               textAlign: TextAlign.center,
               style: Heading3.latinStyle.copyWith(
-                color: Colors.white,
+                color: !isDark && isDimmed
+                    ? foreground.withValues(alpha: 0.5)
+                    : foreground,
               ),
             ),
           ),

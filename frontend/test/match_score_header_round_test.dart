@@ -96,6 +96,52 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+      'light match scoreboard uses 10% black boxes and dims only the loser',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: const Scaffold(
+          body: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: MatchScoreHeader(
+              homeLogoAsset: '',
+              awayLogoAsset: '',
+              homeTeamId: 1,
+              awayTeamId: 2,
+              homeTeamName: 'Home',
+              awayTeamName: 'Away',
+              homeScore: '3',
+              awayScore: '0',
+              status: Text('Full Time'),
+              roundLabel: null,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    for (final key in const [
+      ValueKey('match-home-score-box'),
+      ValueKey('match-away-score-box'),
+    ]) {
+      final box = tester.widget<Container>(find.descendant(
+        of: find.byKey(key),
+        matching: find.byType(Container),
+      ));
+      expect(
+        (box.decoration! as BoxDecoration).color,
+        const Color(0x1A0A0A0A),
+      );
+    }
+    expect(tester.widget<Text>(find.text('3')).style?.color,
+        app_style.AppPalette.black);
+    expect(tester.widget<Text>(find.text('0')).style?.color,
+        app_style.AppPalette.black.withValues(alpha: 0.5));
+  });
+
   testWidgets('keeps the venue name on one line', (tester) async {
     await tester.binding.setSurfaceSize(const Size(393, 852));
     addTearDown(() => tester.binding.setSurfaceSize(null));
