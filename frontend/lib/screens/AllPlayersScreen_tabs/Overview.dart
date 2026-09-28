@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/style.dart';
@@ -24,6 +26,50 @@ class PlayerOverviewTab extends StatelessWidget {
   int? get id => playerId ?? player?.externalPlayerId;
   final VoidCallback? onMatches;
   final ValueChanged<double>? onTopBlockHeightChanged;
+
+  String _clubHistoryKey(PlayerDetail detail, int index) {
+    final teamId = detail.clubs[index].teamId;
+    final repeatedTeam =
+        detail.clubs.take(index).any((entry) => entry.teamId == teamId);
+    return repeatedTeam ? '$teamId-$index' : '$teamId';
+  }
+
+  Widget _clubHistoryRow(
+    BuildContext context,
+    PlayerDetail detail,
+    int index,
+  ) {
+    final club = detail.clubs[index];
+    final historyKey = _clubHistoryKey(detail, index);
+    return Row(
+      key: ValueKey('player-club-history-row-$historyKey'),
+      children: [
+        PlayerRemoteImage(
+          club.teamImage,
+          key: ValueKey('player-club-history-logo-$historyKey'),
+          size: 24,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            teamNameLabel(
+              context,
+              club.teamId,
+              club.teamName ?? '—',
+            ),
+            key: ValueKey('player-club-history-name-$historyKey'),
+            style: Heading5.style,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '${club.startDate?.year ?? '—'}–${club.endDate?.year ?? ''}',
+          style: Body2.style,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) => PlayerDetailView(
       playerId: id,
@@ -177,32 +223,7 @@ class PlayerOverviewTab extends StatelessWidget {
                         for (var index = 0;
                             index < detail.clubs.length;
                             index++) ...[
-                          Row(
-                            key: ValueKey(
-                                'player-club-history-row-${detail.clubs[index].teamId}'),
-                            children: [
-                              PlayerRemoteImage(
-                                detail.clubs[index].teamImage,
-                                key: ValueKey(
-                                    'player-club-history-logo-${detail.clubs[index].teamId}'),
-                                size: 24,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                  child: Text(
-                                      teamNameLabel(
-                                          context,
-                                          detail.clubs[index].teamId,
-                                          detail.clubs[index].teamName ?? '—'),
-                                      key: ValueKey(
-                                          'player-club-history-name-${detail.clubs[index].teamId}'),
-                                      style: Heading5.style)),
-                              const SizedBox(width: 8),
-                              Text(
-                                  '${detail.clubs[index].startDate?.year ?? '—'}–${detail.clubs[index].endDate?.year ?? ''}',
-                                  style: Body2.style)
-                            ],
-                          ),
+                          _clubHistoryRow(context, detail, index),
                           if (index != detail.clubs.length - 1)
                             const SizedBox(height: 16),
                         ],

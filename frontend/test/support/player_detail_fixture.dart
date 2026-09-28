@@ -8,7 +8,8 @@ Map<String, dynamic> playerDetailJson(
     {int playerId = 9967153,
     String position = 'FW',
     int? seasonId,
-    String? playerImage}) {
+    String? playerImage,
+    bool duplicateFirstClub = false}) {
   final json =
       jsonDecode(File('test/fixtures/player_detail.json').readAsStringSync())
           as Map<String, dynamic>;
@@ -23,6 +24,10 @@ Map<String, dynamic> playerDetailJson(
         (json['seasons'] as List).firstWhere((s) => s['season_id'] == seasonId);
     json['matches'] = (json['matches'] as List).take(1).toList();
   }
+  if (duplicateFirstClub) {
+    final clubs = json['clubs'] as List;
+    clubs.add(Map<String, dynamic>.from(clubs.first as Map));
+  }
   return json;
 }
 
@@ -30,14 +35,19 @@ PlayerDetail detailFixture(
         {int playerId = 9967153,
         String position = 'FW',
         int? seasonId,
-        String? playerImage}) =>
+        String? playerImage,
+        bool duplicateFirstClub = false}) =>
     playerDetailFromJson(playerDetailJson(
         playerId: playerId,
         position: position,
         seasonId: seasonId,
-        playerImage: playerImage));
+        playerImage: playerImage,
+        duplicateFirstClub: duplicateFirstClub));
 
 class FakePlayerDetailRepository implements PlayerDetailRepository {
+  FakePlayerDetailRepository({this.duplicateFirstClub = false});
+
+  final bool duplicateFirstClub;
   final calls = <({int playerId, int? seasonId})>[];
   final searchQueries = <String>[];
   bool fail = false;
@@ -48,7 +58,8 @@ class FakePlayerDetailRepository implements PlayerDetailRepository {
     return detailFixture(
         playerId: playerId,
         seasonId: seasonId,
-        position: playerId == 2 ? 'GK' : 'FW');
+        position: playerId == 2 ? 'GK' : 'FW',
+        duplicateFirstClub: duplicateFirstClub);
   }
 
   @override
