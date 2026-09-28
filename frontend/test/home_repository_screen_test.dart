@@ -216,6 +216,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('favorite team header starts 48px below the home app bar',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledHomeRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(_homeData());
+    await tester.pumpAndSettle();
+
+    final appBar = tester.getRect(
+      find.descendant(
+        of: find.byType(SliverAppBar),
+        matching: find.byType(NavigationToolbar),
+      ),
+    );
+    final favoriteTeamHeader = tester.getRect(
+      find.byKey(const ValueKey('home-favorite-team-header')),
+    );
+
+    expect(favoriteTeamHeader.top - appBar.bottom, 48);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('news title starts 48px below the final highlight card',
       (tester) async {
     await _setScreenSize(tester, const Size(430, 932));
@@ -406,6 +437,60 @@ void main() {
 
     expect(find.text('FC Bayern München'), findsOneWidget);
     expect(find.text('Arsenal'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('uses the reordered first followed team and preserves its order',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledHomeRepository();
+    const reorderedTeams = [
+      Team(teamId: 503, name: 'FC Bayern München'),
+      Team(teamId: 83, name: 'FC Barcelona'),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.whitetheme,
+        home: HomeScreen(
+          repository: repository,
+          newsRepository: _RecordingNewsRepository(),
+        ),
+      ),
+    );
+    repository.calls.single.completer.complete(
+      _homeData(
+        favoriteTeam: const Team(teamId: 83, name: 'FC Barcelona'),
+        followingTeams: reorderedTeams.reversed.toList(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    currentUserPreferences.applyServerSelection(const UserTeamPreferences(
+      favoriteTeamId: 503,
+      followedTeamIds: [503, 83],
+    ));
+    currentUserPreferences.resetViewedTeam();
+    await tester.pump();
+
+    expect(repository.calls.last.teamId, 503);
+    repository.calls.last.completer.complete(
+      _homeData(
+        favoriteTeam: reorderedTeams.first,
+        followingTeams: reorderedTeams,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('FC Bayern München'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('home-app-bar-team-picker')));
+    await tester.pumpAndSettle();
+
+    final bayernTop =
+        tester.getTopLeft(find.byKey(const ValueKey('team-selection-503'))).dy;
+    final barcelonaTop =
+        tester.getTopLeft(find.byKey(const ValueKey('team-selection-83'))).dy;
+    expect(bayernTop, lessThan(barcelonaTop));
     expect(tester.takeException(), isNull);
   });
 

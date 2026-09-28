@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_svg/flutter_svg.dart';
@@ -525,58 +527,54 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          SizedBox(
-            width: 64,
-            height: 32,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (isPassword)
-                  GestureDetector(
-                    onTap: onSuffixTap,
-                    behavior: HitTestBehavior.opaque,
-                    child: SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: Icon(
-                        isObscure
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: colors.onSurface,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                if (readOnly)
-                  SizedBox(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (isPassword)
+                GestureDetector(
+                  onTap: onSuffixTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: SizedBox(
                     width: 32,
                     height: 32,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Icon(
-                        Icons.lock_outline,
-                        color: appColors.mutedForeground,
-                        size: 20,
-                      ),
-                    ),
-                  )
-                else
-                  GestureDetector(
-                    onTap: controller.clear,
-                    behavior: HitTestBehavior.opaque,
-                    child: SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: Icon(
-                        Icons.close,
-                        color: colors.onSurface,
-                        size: 22,
-                      ),
+                    child: Icon(
+                      isObscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: colors.onSurface,
+                      size: 24,
                     ),
                   ),
-              ],
-            ),
+                ),
+              if (readOnly)
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.lock_outline,
+                      color: appColors.mutedForeground,
+                      size: 20,
+                    ),
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: controller.clear,
+                  behavior: HitTestBehavior.opaque,
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: Icon(
+                      Icons.close,
+                      color: colors.onSurface,
+                      size: 22,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import "package:flutter/material.dart";
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -405,11 +407,11 @@ class _ProfileState extends State<Profile> {
         ),
         child: Row(
           children: [
-            _buildStat('—', tr(context, "PTS")),
+            _buildStat('0', tr(context, "PTS")),
             _verticalDivider(),
-            _buildStat('—', tr(context, "POSTS")),
+            _buildStat('0', tr(context, "POSTS")),
             _verticalDivider(),
-            _buildStat('—', tr(context, "COMMENTS")),
+            _buildStat('0', tr(context, "COMMENTS")),
           ],
         ),
       ),
