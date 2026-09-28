@@ -180,8 +180,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final newestFilter = find.ancestor(
+      of: find.text('최신순'),
+      matching: find.byType(AnimatedContainer),
+    );
+    expect(
+      tester.getCenter(find.text('최신순')),
+      tester.getCenter(newestFilter),
+    );
     await tester.tap(
-      find.text('인기순'),
+      find.text('추천순'),
     );
     await tester.pumpAndSettle();
     expect(

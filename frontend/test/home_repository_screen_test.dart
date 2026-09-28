@@ -3,18 +3,91 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/main_tab_actions.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/home/home_repository.dart';
+import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/home/news_repository.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
+import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team.dart';
 import 'package:onetouch/screens/HomeScreen.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('shows a rolling shortcut only for the viewed team live match',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final homeRepository = _ControlledHomeRepository();
+    const liveFixture = Fixture(
+      fixtureId: 741,
+      seasonId: 1,
+      competitionId: 1,
+      homeTeamId: 83,
+      awayTeamId: 9,
+      competitionType: CompetitionType.league,
+      roundName: '7',
+      status: FixtureStatus.live,
+      startingAt: null,
+    );
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (context, state) => HomeScreen(
+            repository: homeRepository,
+            newsRepository: _RecordingNewsRepository(),
+            fixtureRepository: MockFixtureRepository(
+              fixtures: const [liveFixture],
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/match/:id',
+          builder: (context, state) => Text(
+            'match ${state.pathParameters['id']} ${state.uri.queryParameters['status']}',
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp.router(theme: app_style.whitetheme, routerConfig: router),
+    );
+    homeRepository.calls.single.completer.complete(_homeData());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    final button = find.byKey(const ValueKey('home-live-match-button'));
+    expect(button, findsOneWidget);
+    final firstOffset = tester
+        .widget<Transform>(
+          find.byKey(const ValueKey('home-live-match-ball-motion')),
+        )
+        .transform
+        .getTranslation()
+        .x;
+    await tester.pump(const Duration(milliseconds: 400));
+    final nextOffset = tester
+        .widget<Transform>(
+          find.byKey(const ValueKey('home-live-match-ball-motion')),
+        )
+        .transform
+        .getTranslation()
+        .x;
+    expect(nextOffset, isNot(firstOffset));
+
+    await tester.tap(button);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('match 741 live'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('loads Home and followed teams through the repository',
       (tester) async {
     await _setScreenSize(tester, const Size(320, 568));

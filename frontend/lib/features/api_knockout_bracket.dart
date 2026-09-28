@@ -89,6 +89,7 @@ class _ApiKnockoutBracketState extends State<ApiKnockoutBracket> {
 }
 
 class _TournamentBracketView extends StatelessWidget {
+  static const double _shadowInset = 16;
   static const double _cardWidth = 165;
   static const double _cardHeight = 92;
   static const double _connectorWidth = 20;
@@ -116,11 +117,12 @@ class _TournamentBracketView extends StatelessWidget {
     final bracketWidth = _roundWidth * (stages.length - 1) + _cardWidth;
     final maximumViewportHeight =
         (MediaQuery.sizeOf(context).height * 0.62).clamp(320.0, 620.0);
-    final viewportHeight = math.min(bracketHeight, maximumViewportHeight);
+    final viewportHeight =
+        math.min(bracketHeight + _shadowInset * 2, maximumViewportHeight);
 
     return Padding(
       key: const ValueKey('tournament-bracket'),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24 - _shadowInset),
       child: SizedBox(
         height: viewportHeight,
         width: double.infinity,
@@ -133,17 +135,20 @@ class _TournamentBracketView extends StatelessWidget {
             maxScale: 1.5,
             alignment: Alignment.topLeft,
             boundaryMargin: const EdgeInsets.all(48),
-            child: SizedBox(
-              width: bracketWidth,
-              height: bracketHeight,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var stageIndex = 0;
-                      stageIndex < stages.length;
-                      stageIndex++)
-                    _buildStage(context, stageIndex, bracketHeight),
-                ],
+            child: Padding(
+              padding: const EdgeInsets.all(_shadowInset),
+              child: SizedBox(
+                width: bracketWidth,
+                height: bracketHeight,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var stageIndex = 0;
+                        stageIndex < stages.length;
+                        stageIndex++)
+                      _buildStage(context, stageIndex, bracketHeight),
+                  ],
+                ),
               ),
             ),
           ),

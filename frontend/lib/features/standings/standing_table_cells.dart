@@ -48,13 +48,14 @@ Widget _buildHeaderCell(
   return SizedBox(
     key: key,
     width: isWide ? _standingLastFiveWidth : _standingStatCellWidth,
-    child: FittedBox(
-      fit: BoxFit.scaleDown,
+    child: OverflowBox(
       alignment: Alignment.center,
+      maxWidth: isWide ? _standingLastFiveWidth : 36,
       child: Text(
         tr(context, title),
         maxLines: 1,
         softWrap: false,
+        overflow: TextOverflow.visible,
         textAlign: TextAlign.center,
         style: Body1.style,
       ),

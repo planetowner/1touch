@@ -400,44 +400,71 @@ class _ProfileState extends State<Profile> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
         key: const ValueKey('profile-stat-card'),
-        height: 70,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(
           color: appColors.cardBackground,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          children: [
-            _buildStat('0', tr(context, "PTS")),
-            _verticalDivider(),
-            _buildStat('0', tr(context, "POSTS")),
-            _verticalDivider(),
-            _buildStat('0', tr(context, "COMMENTS")),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            const dividerWidth = 2.0;
+            final availableStatWidth =
+                (constraints.maxWidth - dividerWidth * 2) / 3;
+            final statWidth =
+                availableStatWidth < 85 ? availableStatWidth : 85.0;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildStat('0', tr(context, "PTS"),
+                    statKey: 'points', width: statWidth),
+                _verticalDivider('points-posts'),
+                SizedBox(
+                  width: 10,
+                ),
+                _buildStat('0', tr(context, "POSTS"),
+                    statKey: 'posts', width: statWidth),
+                _verticalDivider('posts-comments'),
+                SizedBox(
+                  width: 10,
+                ),
+                _buildStat('0', tr(context, "COMMENTS"),
+                    statKey: 'comments', width: statWidth),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildStat(String value, String label) {
-    return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(value, style: Heading4.style),
-            const SizedBox(height: 4),
-            Text(tr(context, label), style: Body2_b.style),
-          ],
-        ),
+  Widget _buildStat(
+    String value,
+    String label, {
+    required String statKey,
+    required double width,
+  }) {
+    return SizedBox(
+      key: ValueKey('profile-stat-$statKey'),
+      width: width,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(value, textAlign: TextAlign.left, style: Heading4.style),
+          const SizedBox(height: 4),
+          Text(tr(context, label),
+              textAlign: TextAlign.left, style: Body2_b.style),
+        ],
       ),
     );
   }
 
-  Widget _verticalDivider() {
+  Widget _verticalDivider(String dividerKey) {
     return Container(
-      width: 1,
-      height: 40,
+      key: ValueKey('profile-stat-divider-$dividerKey'),
+      width: 2,
+      height: 51,
       color: AppColors.of(context).divider,
     );
   }
