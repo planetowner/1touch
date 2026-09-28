@@ -65,6 +65,7 @@ class PlayerMatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isKorean = Localizations.localeOf(context).languageCode == 'ko';
     final topColor = isDark ? const Color(0xFF3D3D3D) : AppPalette.white;
     final bottomColor =
         isDark ? AppPalette.darkGrey : appColors.subtleBackground;
@@ -211,7 +212,11 @@ class PlayerMatchCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (stats.isNotEmpty) const SizedBox(width: 16),
+              if (stats.isNotEmpty)
+                SizedBox(
+                  key: const ValueKey('player-match-rating-gap'),
+                  width: isKorean ? 8 : 16,
+                ),
               // Rating badge sits on the app's near-black chip, distinct from
               // the grey stat pills.
               Container(

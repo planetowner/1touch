@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
 
 class PlayerMatchStatRow {
   final String label;
@@ -62,8 +63,13 @@ void showPlayerMatchStatSheet(
 
 class PlayerMatchStatSheet extends StatelessWidget {
   final PlayerMatchStatData player;
+  final PlayerFollowingController? followingController;
 
-  const PlayerMatchStatSheet({super.key, required this.player});
+  const PlayerMatchStatSheet({
+    super.key,
+    required this.player,
+    this.followingController,
+  });
 
   static const _sheetBg = AppPalette.darkGrey;
 
@@ -82,7 +88,10 @@ class PlayerMatchStatSheet extends StatelessWidget {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: Column(
             children: [
-              _Header(player: player),
+              _Header(
+                player: player,
+                followingController: followingController,
+              ),
               Expanded(
                 child: ColoredBox(
                   color: isDark ? _sheetBg : AppPalette.white,
@@ -109,8 +118,9 @@ class PlayerMatchStatSheet extends StatelessWidget {
 
 class _Header extends StatelessWidget {
   final PlayerMatchStatData player;
+  final PlayerFollowingController? followingController;
 
-  const _Header({required this.player});
+  const _Header({required this.player, this.followingController});
 
   @override
   Widget build(BuildContext context) {
@@ -179,11 +189,9 @@ class _Header extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _HeaderIconBtn(
-                    icon: Icons.star_border_rounded,
-                    onTap: () {
-                      // TODO: favourite player
-                    },
+                  _PlayerMatchFollowButton(
+                    playerId: player.playerId,
+                    controller: followingController,
                   ),
                   _HeaderIconBtn(
                     icon: Icons.safety_divider, // compare players
@@ -269,6 +277,81 @@ class _Header extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PlayerMatchFollowButton extends StatefulWidget {
+  const _PlayerMatchFollowButton({
+    required this.playerId,
+    this.controller,
+  });
+
+  final int? playerId;
+  final PlayerFollowingController? controller;
+
+  @override
+  State<_PlayerMatchFollowButton> createState() =>
+      _PlayerMatchFollowButtonState();
+}
+
+class _PlayerMatchFollowButtonState extends State<_PlayerMatchFollowButton> {
+  PlayerFollowingController get _controller =>
+      widget.controller ?? playerFollowingController;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.playerId != null && !_controller.loaded) {
+      _controller.load();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _PlayerMatchFollowButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if ((oldWidget.playerId != widget.playerId ||
+            oldWidget.controller != widget.controller) &&
+        widget.playerId != null &&
+        !_controller.loaded) {
+      _controller.load();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          final playerId = widget.playerId;
+          final followed = playerId != null && _controller.contains(playerId);
+          return GestureDetector(
+            key: const ValueKey('player-match-stat-follow-button'),
+            onTap: playerId == null || _controller.loading
+                ? null
+                : () async {
+                    try {
+                      await _controller.toggle(playerId);
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              tr(context, 'Could not save favorites'),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                followed ? Icons.star_rounded : Icons.star_border_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+          );
+        },
+      );
 }
 
 Color _ensureWhiteTextContrast(Color color) {
