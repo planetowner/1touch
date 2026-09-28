@@ -21,6 +21,7 @@ import 'package:onetouch/data/catalog/football_catalog_provider.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/features/app_error_view.dart';
+import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 
@@ -199,6 +200,28 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/match-team/:teamId',
+      parentNavigatorKey: _rootNavigatorKey,
+      redirect: (context, state) =>
+          redirectUnsupportedTeamPath(state.pathParameters['teamId']),
+      builder: (context, state) => _MatchOriginDetailPage(
+        selectedIndex: 1,
+        child: TeamScreen(
+          teamId: int.parse(state.pathParameters['teamId']!),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/match-player/:playerId',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _MatchOriginDetailPage(
+        selectedIndex: 2,
+        child: PlayerCard(
+          playerId: int.tryParse(state.pathParameters['playerId']!),
+        ),
+      ),
+    ),
+    GoRoute(
         path: '/notifications',
         builder: (c, s) => const NotificationInboxPage()),
     GoRoute(
@@ -300,6 +323,44 @@ class MainScreen extends StatelessWidget {
             initialLocation: true,
           );
           notifyRootScreen();
+        },
+      ),
+    );
+  }
+}
+
+/// Keeps the source match beneath a team or player detail page so system back
+/// and iOS swipe-back return to that exact match.
+class _MatchOriginDetailPage extends StatelessWidget {
+  const _MatchOriginDetailPage({
+    required this.selectedIndex,
+    required this.child,
+  });
+
+  final int selectedIndex;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: child,
+      bottomNavigationBar: OneTouchBottomNavigationBar(
+        currentIndex: selectedIndex,
+        onTap: (index) {
+          if (index == 1) {
+            context.go('/team/${currentUserPreferences.viewedTeamId.value}');
+          } else {
+            context.go(
+              switch (index) {
+                0 => '/home',
+                2 => '/players',
+                _ => '/community',
+              },
+            );
+          }
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            mainTabActions.select(index);
+          });
         },
       ),
     );
@@ -432,13 +493,24 @@ class MyApp extends StatelessWidget {
           localeListResolutionCallback: resolveAppLocale,
           builder: (context, child) {
             Intl.defaultLocale = Localizations.localeOf(context).languageCode;
-            return AppKeyboardDismissBoundary(
-              child: ListenableBuilder(
-                listenable: authSession,
-                builder: (context, _) => FootballNamesLoader(
-                  repository: _footballNames,
-                  enabled: authSession.isAuthenticated,
-                  child: child!,
+            return AnimatedBuilder(
+              animation: _router.routeInformationProvider,
+              builder: (context, _) => AppKeyboardDismissBoundary(
+                child: BetSettlementNotificationHost(
+                  reserveBottomNavigation: _usesMainBottomNavigation(
+                    _router.routeInformationProvider.value.uri.path,
+                  ),
+                  onSeeResults: (fixtureId) => _router.push(
+                    '/match/$fixtureId?status=past',
+                  ),
+                  child: ListenableBuilder(
+                    listenable: authSession,
+                    builder: (context, _) => FootballNamesLoader(
+                      repository: _footballNames,
+                      enabled: authSession.isAuthenticated,
+                      child: child!,
+                    ),
+                  ),
                 ),
               ),
             );
@@ -452,3 +524,11 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+bool _usesMainBottomNavigation(String path) =>
+    path == '/home' ||
+    path == '/team' ||
+    path.startsWith('/team/') ||
+    path == '/players' ||
+    path.startsWith('/players/') ||
+    path == '/community';
