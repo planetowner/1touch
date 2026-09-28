@@ -272,7 +272,7 @@ class _AttributesSectionState extends State<AttributesSection> {
                 if (_comparisonScores != null)
                   _legendDot(
                     comparisonColor ?? Colors.white,
-                    '${_compactSeasonLabel(_comparisonScores!.seasonLabel)} '
+                    '${compactSeasonLabel(_comparisonScores!.seasonLabel)} '
                     '${teamNameLabel(context, _comparisonScores!.teamId, teamRepository.findById(_comparisonScores!.teamId)?.name ?? 'Unknown Team').toUpperCase()}',
                   ),
               ],
@@ -298,7 +298,7 @@ class _AttributesSectionState extends State<AttributesSection> {
 
     final label = selectedSeason == null
         ? tr(context, 'SEASON')
-        : _compactSeasonLabel(selectedSeason.seasonName);
+        : compactSeasonLabel(selectedSeason.seasonName);
 
     return AppDropdown<int>(
       key: const ValueKey('analysis-attributes-filter'),
@@ -316,7 +316,7 @@ class _AttributesSectionState extends State<AttributesSection> {
           .map(
             (season) => AppDropdownOption<int>(
               value: season.seasonId,
-              label: _compactSeasonLabel(season.seasonName),
+              label: compactSeasonLabel(season.seasonName),
               optionKey: ValueKey(
                 'analysis-attributes-option-${season.seasonId}',
               ),

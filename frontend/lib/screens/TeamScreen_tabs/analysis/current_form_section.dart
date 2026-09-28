@@ -279,7 +279,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final selectedOption = _selectedOption;
     final label = selectedOption == null
         ? tr(context, 'SEASON')
-        : _compactSeasonLabel(selectedOption.seasonName);
+        : compactSeasonLabel(selectedOption.seasonName);
 
     return AppDropdown<CurrentFormOption>(
       key: const ValueKey('analysis-form-filter'),
@@ -302,7 +302,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
             (option) => AppDropdownOption<CurrentFormOption>(
               value: option,
               label:
-                  '${_compactSeasonLabel(option.seasonName)} · ${(option.teamShortCode ?? teamNameLabel(context, option.teamId, option.teamName ?? '')).toUpperCase()}',
+                  '${compactSeasonLabel(option.seasonName)} · ${(option.teamShortCode ?? teamNameLabel(context, option.teamId, option.teamName ?? '')).toUpperCase()}',
               optionKey: ValueKey(
                 'analysis-form-option-${option.teamId}-${option.seasonId}',
               ),
@@ -803,7 +803,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
             if (showComparison)
               _legendItem(
                 comparisonColors.opponent,
-                '${_compactSeasonLabel(comparison.seasonName)} '
+                '${compactSeasonLabel(comparison.seasonName)} '
                 '${(comparison.teamShortCode ?? teamNameLabel(context, comparison.teamId, comparison.teamName ?? '')).toUpperCase()}',
               ),
           ],

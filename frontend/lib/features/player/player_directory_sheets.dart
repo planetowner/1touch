@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
@@ -153,7 +154,7 @@ class _FixedSeasonRow extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(children: [
-            Text(season, style: Body1.style),
+            Text(compactSeasonLabel(season), style: Body1.style),
             const Spacer(),
             Icon(Icons.check, color: Theme.of(context).colorScheme.onSurface),
           ]),

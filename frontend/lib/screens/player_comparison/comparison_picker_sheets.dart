@@ -386,7 +386,7 @@ class _ComparisonSeasonPickerSheet extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                     child: Text(
-                      _shortSeason(season.name),
+                      compactSeasonLabel(season.name),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 15,
@@ -456,12 +456,4 @@ List<_SeasonGroup> _seasonGroups(PlayerDetail player) {
     );
   }
   return groups;
-}
-
-String _shortSeason(String season) {
-  final parts = season.split('/');
-  if (parts.length != 2) return season;
-  String shorten(String value) =>
-      value.length == 4 ? value.substring(2) : value;
-  return '${shorten(parts[0])}/${shorten(parts[1])}';
 }
