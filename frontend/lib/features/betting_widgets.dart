@@ -595,7 +595,7 @@ class BettingParticipationCard extends StatelessWidget {
                     if (market != null) ...[
                       const SizedBox(height: 8),
                       Text(
-                        tr(context, '{count} participants · Home / Draw / Away',
+                        tr(context, '{count} participants',
                             {'count': market.participantCount}),
                         style: Body2.style,
                       ),
