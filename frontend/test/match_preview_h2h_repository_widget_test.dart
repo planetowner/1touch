@@ -21,6 +21,42 @@ import 'package:onetouch/screens/MatchScreen_tabs/matchpreview.dart';
 
 void main() {
   setUpAppCatalog();
+  testWidgets('betting stays hidden until 24 hours before kickoff',
+      (tester) async {
+    final repository = _RecordingFixtureRepository(loader: (_, __) async => []);
+    Fixture fixtureIn(Duration fromNow) => Fixture(
+          fixtureId: 1001,
+          seasonId: 25583,
+          competitionId: 8,
+          homeTeamId: 8,
+          awayTeamId: 19,
+          competitionType: CompetitionType.league,
+          roundName: '10',
+          status: FixtureStatus.upcoming,
+          startingAt: DateTime.now().add(fromNow).toUtc().toIso8601String(),
+        );
+
+    await tester.pumpWidget(_testApp(
+      fixture: fixtureIn(const Duration(hours: 25)),
+      repository: repository,
+      locale: const Locale('ko'),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('베팅은 경기 시작 24시간 전에 열려요.'), findsOneWidget);
+    expect(find.byType(MatchBettingSection), findsNothing);
+
+    await tester.pumpWidget(_testApp(
+      fixture: fixtureIn(const Duration(hours: 23)),
+      repository: repository,
+      locale: const Locale('ko'),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byType(MatchBettingSection), findsOneWidget);
+    expect(find.byKey(const ValueKey('match-betting-opening-notice')),
+        findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('loads backend current standings instead of the fixture season',
       (tester) async {
     final requests = <Uri>[];

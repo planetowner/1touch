@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/l10n/date_labels.dart';
@@ -71,6 +73,7 @@ class MatchPreviewTab extends StatefulWidget {
 }
 
 class _MatchPreviewTabState extends State<MatchPreviewTab> {
+  Timer? _bettingOpenTimer;
   Fixture? _latestH2H;
   bool _isLatestH2HLoading = true;
   bool _hasLatestH2HError = false;
@@ -86,6 +89,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   @override
   void initState() {
     super.initState();
+    _scheduleBettingOpen();
     currentUserPreferences.favoriteTeamId.addListener(_handleFavoriteChanged);
     _loadLatestHeadToHead();
     _loadCurrentStandings();
@@ -93,6 +97,7 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
 
   @override
   void dispose() {
+    _bettingOpenTimer?.cancel();
     currentUserPreferences.favoriteTeamId
         .removeListener(_handleFavoriteChanged);
     super.dispose();
@@ -105,6 +110,10 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
   @override
   void didUpdateWidget(MatchPreviewTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.fixture.kickoff != oldWidget.fixture.kickoff ||
+        widget.fixture.status != oldWidget.fixture.status) {
+      _scheduleBettingOpen();
+    }
     if (widget.fixture.competitionId != oldWidget.fixture.competitionId ||
         widget.standingRepository != oldWidget.standingRepository) {
       _loadCurrentStandings();
@@ -113,6 +122,27 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
         widget.fixtureRepository != oldWidget.fixtureRepository) {
       _loadLatestHeadToHead();
     }
+  }
+
+  bool get _bettingOpensLater {
+    final kickoff = widget.fixture.kickoff;
+    return widget.fixture.status == FixtureStatus.upcoming &&
+        kickoff != null &&
+        DateTime.now().isBefore(kickoff.subtract(const Duration(hours: 24)));
+  }
+
+  void _scheduleBettingOpen() {
+    _bettingOpenTimer?.cancel();
+    final kickoff = widget.fixture.kickoff;
+    if (widget.fixture.status != FixtureStatus.upcoming || kickoff == null) {
+      return;
+    }
+    final untilOpen =
+        kickoff.subtract(const Duration(hours: 24)).difference(DateTime.now());
+    if (untilOpen.isNegative || untilOpen == Duration.zero) return;
+    _bettingOpenTimer = Timer(untilOpen, () {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _loadLatestHeadToHead() async {
@@ -193,15 +223,29 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Using the extracted widget from the new file
-          MatchBettingSection(
-            controller: widget.bettingController,
-            homeTeam: homeTeam,
-            awayTeam: awayTeam,
-            anchorTeamId: bettingAnchorTeamId,
-          ),
-
+          if (_bettingOpensLater)
+            Container(
+              key: const ValueKey('match-betting-opening-notice'),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              decoration: BoxDecoration(
+                color: AppColors.of(context).cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: appCardShadows(context),
+              ),
+              child: Text(
+                tr(context, 'Betting opens 24 hours before kickoff.'),
+                style: Body1.style,
+                textAlign: TextAlign.center,
+              ),
+            )
+          else
+            MatchBettingSection(
+              controller: widget.bettingController,
+              homeTeam: homeTeam,
+              awayTeam: awayTeam,
+              anchorTeamId: bettingAnchorTeamId,
+            ),
           const SizedBox(height: 48),
           MatchAttributeComparison(
             homeTeamId: widget.fixture.homeTeamId,
@@ -283,10 +327,6 @@ class _MatchPreviewTabState extends State<MatchPreviewTab> {
       child: Column(
         children: [
           GestureDetector(
-            // The match screen sits on the root navigator (see main.dart's
-            // '/match/:matchId'), but '/team/:id' belongs to the bottom-nav
-            // shell's own navigator — push() would land there invisibly,
-            // behind this screen. go() replaces the location so it surfaces.
             onTap: isTeamPageSupported(teamId)
                 ? () => openTeamPage(context, teamId)
                 : null,
