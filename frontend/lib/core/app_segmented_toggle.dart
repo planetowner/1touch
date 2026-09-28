@@ -25,7 +25,7 @@ class AppSegmentedToggleOption<T> {
 /// Dark mode uses a black selected segment. Light mode uses Light Mode Dark
 /// Grey so the same control remains visible against the white track.
 class AppSegmentedToggle<T> extends StatelessWidget {
-  static const double _height = 14 * 1.3 + 16;
+  static const double _lineHeight = 14 * 1.3;
 
   const AppSegmentedToggle({
     super.key,
@@ -35,6 +35,7 @@ class AppSegmentedToggle<T> extends StatelessWidget {
     this.containerKey,
     this.indicatorKey,
     this.indicatorSurfaceKey,
+    this.verticalPadding = 8,
   }) : assert(options.length > 0);
 
   final T value;
@@ -43,6 +44,7 @@ class AppSegmentedToggle<T> extends StatelessWidget {
   final Key? containerKey;
   final Key? indicatorKey;
   final Key? indicatorSurfaceKey;
+  final double verticalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +62,7 @@ class AppSegmentedToggle<T> extends StatelessWidget {
 
     return Container(
       key: containerKey,
-      height: _height,
+      height: _lineHeight + verticalPadding * 2,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: trackBackground,
@@ -97,6 +99,7 @@ class AppSegmentedToggle<T> extends StatelessWidget {
                     foreground: selectedForeground,
                     borderRadius: _segmentRadius(index, segmentCount),
                     onChanged: onChanged,
+                    verticalPadding: verticalPadding,
                   ),
                 ),
             ],
@@ -125,6 +128,7 @@ class _AppSegment<T> extends StatelessWidget {
     required this.foreground,
     required this.borderRadius,
     required this.onChanged,
+    required this.verticalPadding,
   });
 
   final AppSegmentedToggleOption<T> option;
@@ -132,6 +136,7 @@ class _AppSegment<T> extends StatelessWidget {
   final Color foreground;
   final BorderRadius borderRadius;
   final ValueChanged<T> onChanged;
+  final double verticalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +161,10 @@ class _AppSegment<T> extends StatelessWidget {
           child: Container(
             key: option.contentKey,
             width: double.infinity,
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: verticalPadding,
+            ),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: Colors.transparent,
