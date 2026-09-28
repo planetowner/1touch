@@ -353,10 +353,12 @@ class _MatchesTabState extends State<MatchesTab> {
                               key: ValueKey(
                                   'matches-${sections[index].type.name}-divider'),
                               height: 1,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppPalette.lightGrey
-                                  : AppColors.of(context).divider,
+                              color: index < visibleHeaderCount
+                                  ? Colors.transparent
+                                  : Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppPalette.lightGrey
+                                      : AppColors.of(context).divider,
                             ),
                           ),
                         ),
