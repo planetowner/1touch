@@ -409,7 +409,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 SliverList(
                   delegate: SliverChildListDelegate([
                     const SizedBox(height: 48),
-                    SectionHeader(title: tr(context, "FAVORITE TEAM")),
+                    SectionHeader(
+                      key: const ValueKey('home-favorite-team-header'),
+                      title: tr(context, "FAVORITE TEAM"),
+                    ),
                     FavoriteTeamCard(team: viewedTeam),
                     const SizedBox(height: 32),
                     Row(

@@ -63,6 +63,11 @@ void main() {
         expect(find.text('Ranked player 1'), findsOneWidget);
         expect(find.text('Ranked player 6'), findsNothing);
         expect(find.text('FAVORITE PLAYERS'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('favorite-player-number-1')),
+          findsOneWidget,
+        );
+        expect(find.text('7'), findsOneWidget);
         expect(find.byKey(const ValueKey('active-ranking-league-filter')),
             findsNothing);
         expect(find.byKey(const ValueKey('active-ranking-position-filter')),
@@ -106,8 +111,12 @@ void main() {
     expect(ranking.padding, const EdgeInsets.all(24));
     expect(decoration.borderRadius, BorderRadius.circular(16));
     expect(decoration.boxShadow, app_style.lightModeCardShadows);
-    expect(find.byKey(const ValueKey('favorite-player-number-badge')),
-        findsNothing);
+    final badge = find.byKey(const ValueKey('favorite-player-number-1'));
+    final circle = find.byKey(const ValueKey('favorite-player-circle-1'));
+    expect(badge, findsOneWidget);
+    expect(tester.getSize(badge), const Size.square(32));
+    expect(tester.getTopLeft(circle) - tester.getTopLeft(badge),
+        const Offset(5, 5));
     expect(find.byIcon(Icons.help_outline), findsNWidgets(2));
   });
 
@@ -302,22 +311,22 @@ void main() {
     expect(following.saved, isEmpty);
     expect(find.text('Add favorite players'), findsOneWidget);
   });
-  testWidgets('favorite editor shows search candidates without loading details',
+  testWidgets('favorite editor reuses cards while loading candidate details',
       (tester) async {
     final detailRepository = FakePlayerDetailRepository();
     await pump(tester, detailRepository: detailRepository);
-    expect(detailRepository.calls, isEmpty);
+    expect(detailRepository.calls.length, 1);
 
     await tester.tap(find.byTooltip('Edit favorites'));
     await tester.pumpAndSettle();
-    expect(detailRepository.calls.length, 1);
+    expect(detailRepository.calls.length, 2);
     await tester.enterText(find.byType(TextField), 'Player');
     await tester.pumpAndSettle();
 
     expect(find.text('Player 1'), findsNothing);
     expect(find.text('Player 2'), findsOneWidget);
     expect(find.text('Player 3'), findsOneWidget);
-    expect(detailRepository.calls.length, 1);
+    expect(detailRepository.calls.length, 2);
 
     await tester.tap(find.text('Player 2'));
     await tester.pump();

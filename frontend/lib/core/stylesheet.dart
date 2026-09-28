@@ -1,3 +1,5 @@
+// ignore_for_file: camel_case_types
+
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/locale_controller.dart';
 
@@ -17,6 +19,9 @@ class Heading1 {
 
   static TextStyle get style =>
       _localizedStyle(_englishStyle, KoreanHeading1.style);
+
+  /// Locale-independent Archivo style for scores and other numeric-only UI.
+  static const TextStyle latinStyle = _englishStyle;
 }
 
 class Heading2 {
@@ -29,6 +34,9 @@ class Heading2 {
 
   static TextStyle get style =>
       _localizedStyle(_englishStyle, KoreanHeading2.style);
+
+  /// Locale-independent Archivo style for scores and other numeric-only UI.
+  static const TextStyle latinStyle = _englishStyle;
 }
 
 class Heading3 {
@@ -41,6 +49,9 @@ class Heading3 {
 
   static TextStyle get style =>
       _localizedStyle(_englishStyle, KoreanHeading3.style);
+
+  /// Locale-independent Archivo style for scores and other numeric-only UI.
+  static const TextStyle latinStyle = _englishStyle;
 }
 
 class Heading4 {

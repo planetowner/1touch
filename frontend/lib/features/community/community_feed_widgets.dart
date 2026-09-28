@@ -131,9 +131,6 @@ class _SortChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colors = Theme.of(context).colorScheme;
-
     return GestureDetector(
       onTap: () => onTap(sort),
       child: AnimatedContainer(
@@ -142,27 +139,14 @@ class _SortChip extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isDark
-              ? (isSelected ? AppPalette.white : AppPalette.lightGrey)
-              : AppPalette.white,
+          color: appPillBackground(context, selected: isSelected),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: isDark
-              ? null
-              : const [
-                  BoxShadow(
-                    color: Color(0x26090A0A),
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
-                  ),
-                ],
         ),
         child: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           style: Body2_b.style.copyWith(
-            color: isDark
-                ? (isSelected ? AppPalette.black : AppPalette.white)
-                : colors.onSurface,
+            color: appPillForeground(context, selected: isSelected),
           ),
           child: Text(tr(context, label).toUpperCase()),
         ),

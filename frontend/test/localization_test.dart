@@ -91,6 +91,32 @@ void main() {
     expect(fixtureDateLabel(null, locale: const Locale('zh')), '日期待定');
   });
 
+  test('all Korean probability titles stay on one line', () {
+    const expected = {
+      'Chances to Win\nLeague Trophy': '리그 우승 확률',
+      'Chances to Win\nUCL Trophy': 'UCL 우승 확률',
+      'Chances to Win\nUEL Trophy': 'UEL 우승 확률',
+      'Chances to Win\nUECL Trophy': 'UECL 우승 확률',
+      'Chances to Finish\nTop 4': '4위 이내 진입 확률',
+      'Chances to Finish\nTop 6': '6위 이내 진입 확률',
+      'Chances of\nRelegation': '강등 확률',
+      'Chances of Relegation\nPlayoff': '강등 PO 확률',
+      'Chances to win\nLEAGUE Trophy': '리그 우승 확률',
+      'Chances to win\nUCL Trophy': 'UCL 우승 확률',
+      'Chances to win\nUEL Trophy': 'UEL 우승 확률',
+      'Chances to win\nUECL Trophy': 'UECL 우승 확률',
+      'Chances to finish\nTOP 4': '4위 이내 진입 확률',
+      'Chances to finish\nTOP 6': '6위 이내 진입 확률',
+      'Chances of\nRELEGATION': '강등 확률',
+      'Chances of\nRELEGATION PLAYOFF': '강등 PO 확률',
+    };
+    for (final entry in expected.entries) {
+      final translated = translateMessage(const Locale('ko'), entry.key);
+      expect(translated, entry.value);
+      expect(translated, isNot(contains('\n')));
+    }
+  });
+
   test('past fixtures switch from days to weeks in all supported languages',
       () {
     final now = DateTime(2026, 9, 24, 12);

@@ -4,11 +4,13 @@ import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
+import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/data/players/player_directory_repository.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/features/player/player_directory_sheets.dart';
 import 'package:onetouch/models/following_player.dart';
+import 'package:onetouch/models/player_detail.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 
 class PlayerFavorites extends StatefulWidget {
@@ -28,6 +30,8 @@ class PlayerFavorites extends StatefulWidget {
 }
 
 class _PlayerFavoritesState extends State<PlayerFavorites> {
+  final Map<int, Future<PlayerDetail?>> _details = {};
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +57,24 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
           SnackBar(content: Text(tr(context, 'Could not save favorites'))),
         );
       }
+    }
+  }
+
+  Future<PlayerDetail?> _detailFor(int playerId) =>
+      _details.putIfAbsent(playerId, () async {
+        try {
+          return await (widget.searchRepository ?? playerDetailRepository)
+              .load(playerId);
+        } on Object {
+          return null;
+        }
+      });
+
+  @override
+  void didUpdateWidget(covariant PlayerFavorites oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchRepository != widget.searchRepository) {
+      _details.clear();
     }
   }
 
@@ -119,31 +141,86 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
                       onTap: () => context.push('/players/${player.playerId}'),
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
-                        width: 78,
-                        child: Column(
+                        width: 79,
+                        height: 129,
+                        child: Stack(
                           children: [
-                            Stack(
-                              children: [
-                                ClipOval(
+                            Positioned(
+                              left: 5,
+                              top: 5,
+                              child: ClipOval(
+                                child: SizedBox(
+                                  key: ValueKey(
+                                    'favorite-player-circle-${player.playerId}',
+                                  ),
+                                  width: 74,
+                                  height: 74,
                                   child: ColoredBox(
                                     color:
                                         AppColors.of(context).subtleBackground,
-                                    child: PlayerRemoteImage(
-                                      player.imagePath,
-                                      size: 74,
+                                    child: Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: PlayerRemoteImage(
+                                        player.imagePath,
+                                        size: 64,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              playerNameLabel(
-                                  context, player.playerId, player.name),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: Body1.style,
+                            Positioned(
+                              left: 5,
+                              top: 87,
+                              child: SizedBox(
+                                width: 74,
+                                child: Text(
+                                  playerNameLabel(
+                                    context,
+                                    player.playerId,
+                                    player.name,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: Body1.style,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              child: FutureBuilder<PlayerDetail?>(
+                                future: _detailFor(player.playerId),
+                                builder: (context, snapshot) {
+                                  final number =
+                                      snapshot.data?.profile.jerseyNumber;
+                                  if (number == null) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  final isDark = Theme.of(context).brightness ==
+                                      Brightness.dark;
+                                  return Container(
+                                    key: ValueKey(
+                                      'favorite-player-number-${player.playerId}',
+                                    ),
+                                    width: 32,
+                                    height: 32,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? AppPalette.lightGrey
+                                          : AppPalette.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      '$number',
+                                      maxLines: 1,
+                                      style: Body2_b.style,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         ),

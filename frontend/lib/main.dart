@@ -61,10 +61,15 @@ final GoRouter _router = GoRouter(
     if (path == '/' ||
         path == '/session' ||
         path == '/onboarding' ||
-        path.startsWith('/auth/')) return null;
-    if (!authSession.isAuthenticated) return '/onboarding';
-    if (path.startsWith('/onboarding/') && footballCatalog.isLoaded)
+        path.startsWith('/auth/')) {
       return null;
+    }
+    if (!authSession.isAuthenticated) {
+      return '/onboarding';
+    }
+    if (path.startsWith('/onboarding/') && footballCatalog.isLoaded) {
+      return null;
+    }
     return isAppSessionReady ? null : '/session';
   },
   errorBuilder: (context, state) => const AppErrorScreen(statusCode: 404),
@@ -134,7 +139,10 @@ final GoRouter _router = GoRouter(
         StatefulShellBranch(routes: [
           GoRoute(
             path: '/team',
-            builder: (context, state) => const SizedBox(),
+            builder: (context, state) => ValueListenableBuilder<int>(
+              valueListenable: currentUserPreferences.viewedTeamId,
+              builder: (context, teamId, _) => TeamScreen(teamId: teamId),
+            ),
             routes: [
               GoRoute(
                 path: ':id',

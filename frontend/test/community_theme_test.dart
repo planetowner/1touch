@@ -153,37 +153,39 @@ void main() {
         24,
       );
 
-      if (testCase.name == 'light') {
-        final popular = tester.widget<AnimatedContainer>(
-          find.byKey(const ValueKey('community-filter-popular')),
-        );
-        final groundRules = tester.widget<Container>(
-          find.byKey(const ValueKey('community-ground-rules-card')),
-        );
-        expect(
-          (popular.decoration as BoxDecoration).color,
-          app_style.AppPalette.white,
-        );
-        expect(
-          (groundRules.decoration as BoxDecoration).color,
-          app_style.AppPalette.white,
-        );
-      } else {
-        final popular = tester.widget<AnimatedContainer>(
-          find.byKey(const ValueKey('community-filter-popular')),
-        );
-        final groundRules = tester.widget<Container>(
-          find.byKey(const ValueKey('community-ground-rules-card')),
-        );
-        expect(
-          (popular.decoration as BoxDecoration).color,
-          app_style.AppPalette.lightGrey,
-        );
-        expect(
-          (groundRules.decoration as BoxDecoration).color,
-          app_style.AppPalette.lightGrey,
-        );
-      }
+      Color filterColor(String name) => (tester
+              .widget<AnimatedContainer>(
+                find.byKey(ValueKey('community-filter-$name')),
+              )
+              .decoration as BoxDecoration)
+          .color!;
+      final filterContext =
+          tester.element(find.byKey(const ValueKey('community-filter-newest')));
+      expect(filterColor('newest'), app_style.AppPalette.white);
+      expect(
+        filterColor('popular'),
+        app_style.appPillBackground(filterContext, selected: false),
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('community-filter-popular')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        filterColor('newest'),
+        app_style.appPillBackground(filterContext, selected: false),
+      );
+      expect(filterColor('popular'), app_style.AppPalette.white);
+
+      final groundRules = tester.widget<Container>(
+        find.byKey(const ValueKey('community-ground-rules-card')),
+      );
+      expect(
+        (groundRules.decoration as BoxDecoration).color,
+        testCase.name == 'light'
+            ? app_style.AppPalette.white
+            : app_style.AppPalette.lightGrey,
+      );
       expect(tester.takeException(), isNull);
     });
   }

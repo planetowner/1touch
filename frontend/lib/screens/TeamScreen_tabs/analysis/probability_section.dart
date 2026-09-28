@@ -204,7 +204,10 @@ class _ProbabilitySectionState extends State<ProbabilitySection> {
               height: 39,
               child: Text(
                 _eventTitle(card.event),
-                maxLines: 2,
+                maxLines: Localizations.localeOf(context).languageCode == 'ko'
+                    ? 1
+                    : 2,
+                softWrap: Localizations.localeOf(context).languageCode != 'ko',
                 overflow: TextOverflow.ellipsis,
                 style: Body1.style.copyWith(height: 1.3),
               ),
