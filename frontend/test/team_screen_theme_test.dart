@@ -614,7 +614,7 @@ void main() {
         tester
             .getSize(find.byKey(const ValueKey('standing-view-toggle')))
             .height,
-        closeTo(34.2, 0.01));
+        closeTo(42.2, 0.01));
     expect(toggle.padding, isNull);
     final toggleDecoration = toggle.decoration as BoxDecoration;
     expect(toggleDecoration.color, app_style.AppPalette.lightGrey);
@@ -632,7 +632,7 @@ void main() {
     );
     expect(
       xgContent.padding,
-      const EdgeInsets.all(8),
+      const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
     );
     final standingDecoration = standingContent.decoration as BoxDecoration;
     final xgDecoration = xgContent.decoration as BoxDecoration;

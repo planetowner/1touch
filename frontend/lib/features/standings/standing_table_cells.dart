@@ -79,7 +79,7 @@ Widget _buildStatCell(
         maxLines: 1,
         softWrap: false,
         textAlign: TextAlign.center,
-        style: style ?? Body2.style,
+        style: style ?? Body1.style,
       ),
     ),
   );

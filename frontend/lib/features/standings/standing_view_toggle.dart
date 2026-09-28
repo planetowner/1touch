@@ -38,6 +38,7 @@ class StandingViewToggle extends StatelessWidget {
       containerKey: const ValueKey('standing-view-toggle'),
       indicatorKey: const ValueKey('standing-view-indicator'),
       indicatorSurfaceKey: const ValueKey('standing-view-indicator-surface'),
+      verticalPadding: 12,
       value: selectedView,
       options: [
         for (final view in displayedViews)
