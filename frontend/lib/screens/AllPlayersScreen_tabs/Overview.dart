@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/season_label.dart';
+import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -560,24 +561,28 @@ class _PlayerBioCell extends StatelessWidget {
         SizedBox(
             width: double.infinity,
             height: 18,
-            child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(tr(context, label), style: Body1.style),
-                    if (explanation != null)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Tooltip(
-                          message: explanation!,
-                          triggerMode: TooltipTriggerMode.tap,
-                          child: const Icon(Icons.help_outline, size: 16),
-                        ),
-                      ),
-                  ],
-                ))),
+            child: Row(
+              children: [
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(tr(context, label), style: Body1.style),
+                  ),
+                ),
+                if (explanation != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: AppInfoButton(
+                      key: const ValueKey('player-cost-effectiveness-info'),
+                      message:
+                          'Measured by comparing actual salary against 1Touch’s predicted market value based on performance and playtime.',
+                      layoutSize: 16,
+                    ),
+                  ),
+              ],
+            )),
         const SizedBox(height: 10),
         SizedBox(width: double.infinity, height: 22, child: value),
       ],

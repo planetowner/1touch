@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/team_navigation.dart';
@@ -281,8 +282,6 @@ class _H2HTabState extends State<H2HTab> {
         color: Colors.transparent,
       ),
       child: GestureDetector(
-        // Match screen is on the root navigator; '/team/:id' is on the
-        // shell's navigator. go() (not push()) so it actually surfaces.
         onTap: isTeamPageSupported(_againstTeamId)
             ? () => openTeamPage(context, _againstTeamId)
             : null,
@@ -384,7 +383,17 @@ class _H2HTabState extends State<H2HTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(tr(context, 'BETS'), style: Body2_b.style),
+        Row(
+          children: [
+            Text(tr(context, 'BETS'), style: Body2_b.style),
+            const SizedBox(width: 4),
+            const AppInfoButton(
+              key: ValueKey('match-h2h-bets-info'),
+              message:
+                  'Calculated using proprietary performance metrics and predictive analytics model',
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         BettingParticipationCard(
           controller: widget.bettingController,
@@ -406,6 +415,8 @@ class _H2HTabState extends State<H2HTab> {
     String league,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final home = int.tryParse(homeScore);
+    final away = int.tryParse(awayScore);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -444,9 +455,11 @@ class _H2HTabState extends State<H2HTab> {
                 ),
               ),
               const SizedBox(width: 4),
-              _scoreBox(homeScore),
+              _scoreBox(homeScore,
+                  isDimmed: home != null && away != null && home < away),
               const SizedBox(width: 8),
-              _scoreBox(awayScore),
+              _scoreBox(awayScore,
+                  isDimmed: home != null && away != null && away < home),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -483,18 +496,20 @@ class _H2HTabState extends State<H2HTab> {
     );
   }
 
-  Widget _scoreBox(String score) {
+  Widget _scoreBox(String score, {required bool isDimmed}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
+        color: isDark ? AppPalette.darkGrey : AppPalette.lightModeDarkGrey,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         score,
-        style: Heading2.latinStyle.copyWith(color: foreground),
+        style: Heading2.latinStyle.copyWith(
+          color: isDimmed ? foreground.withValues(alpha: 0.5) : foreground,
+        ),
       ),
     );
   }

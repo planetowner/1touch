@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/app_info_button.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
@@ -346,7 +347,12 @@ class PlayerRankingPanelState extends State<PlayerRankingPanel> {
           children: [
             Text(tr(context, '1TOUCH RANKING'), style: Body2_b.style),
             const SizedBox(width: 4),
-            Icon(Icons.help_outline, size: 18, color: colors.onSurface),
+            const AppInfoButton(
+              key: ValueKey('players-ranking-info'),
+              message:
+                  "Evaluates and ranks players using 1Touch's own data-driven performance metrics.",
+              layoutSize: 18,
+            ),
             const Spacer(),
             IconButton(
               tooltip: tr(context, 'Ranking filters'),
@@ -579,7 +585,6 @@ class PlayersToWatchState extends State<PlayersToWatch> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -587,7 +592,12 @@ class PlayersToWatchState extends State<PlayersToWatch> {
           children: [
             Text(tr(context, 'ONES TO WATCH'), style: Body2_b.style),
             const SizedBox(width: 4),
-            Icon(Icons.help_outline, size: 16, color: colors.onSurface),
+            const AppInfoButton(
+              key: ValueKey('players-ones-to-watch-info'),
+              message:
+                  'Highlights players with the highest performance growth over recent matches, based on 1Touch metrics.',
+              layoutSize: 16,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -619,6 +629,7 @@ class PlayersToWatchState extends State<PlayersToWatch> {
               height: 200,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
                 itemCount: players.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 16),
                 itemBuilder: (_, index) => _WatchCard(player: players[index]),
@@ -654,7 +665,7 @@ class _WatchCard extends StatelessWidget {
           width: 150,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: appCardShadows(context),
+            boxShadow: appWatchCardShadows(context),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
