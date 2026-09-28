@@ -143,7 +143,8 @@ class _ComparisonPlayerPickerSheetState
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius:
+                        BorderRadius.circular(AppSearchFieldTokens.radius),
                     borderSide: BorderSide.none,
                   ),
                   suffixIcon: ValueListenableBuilder<TextEditingValue>(

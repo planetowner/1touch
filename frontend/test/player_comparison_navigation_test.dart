@@ -78,6 +78,12 @@ void main() {
     await tester.tap(find.text('PLAYER 2'));
     await tester.pumpAndSettle();
 
+    final searchField = tester.widget<TextField>(
+      find.byKey(const ValueKey('comparison-player-search-field')),
+    );
+    final searchBorder = searchField.decoration!.border! as OutlineInputBorder;
+    expect(searchBorder.borderRadius, BorderRadius.circular(8));
+
     await tester.enterText(
       find.byKey(const ValueKey('comparison-player-search-field')),
       'missing',

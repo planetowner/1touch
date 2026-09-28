@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:onetouch/core/app_search_field.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -273,9 +274,11 @@ class _FollowingPlayersEditorSheetState
             const SizedBox(height: 12),
             Container(
               key: const ValueKey('following-players-search'),
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius:
+                    BorderRadius.circular(AppSearchFieldTokens.radius),
               ),
               child: TextField(
                 controller: _search,
@@ -583,9 +586,12 @@ class _PlayerFullRankingSheetState extends State<PlayerFullRankingSheet> {
                 onClose: () => Navigator.pop(context)),
             const SizedBox(height: 24),
             Container(
+              key: const ValueKey('full-ranking-search'),
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: isDark ? AppPalette.lightGrey : AppPalette.lightGreyBox,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius:
+                    BorderRadius.circular(AppSearchFieldTokens.radius),
               ),
               child: TextField(
                 controller: _search,
