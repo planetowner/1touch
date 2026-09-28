@@ -234,6 +234,8 @@ void main() {
         find.text('You earned 400 points from this bet! 🎉'), findsOneWidget);
     expect(find.text('Won · 400 pts returned'), findsNothing);
     expect(find.text('Draw · 100 pts'), findsNothing);
+    expect(find.text('0 participants'), findsOneWidget);
+    expect(find.textContaining('Home / Draw / Away'), findsNothing);
 
     final card = find.byKey(const ValueKey('match-h2h-bets-card'));
     final receipt = find.byKey(const ValueKey('match-h2h-bet-receipt'));
