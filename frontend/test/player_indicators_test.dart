@@ -242,7 +242,8 @@ void main() {
           await tester.tap(find.byIcon(Icons.help_outline));
           await tester.pumpAndSettle();
           expect(
-            find.textContaining('Transfer fees are not included.'),
+            find.textContaining(
+                'Measured by comparing actual salary against 1Touch’s predicted market value'),
             findsOneWidget,
           );
         },
