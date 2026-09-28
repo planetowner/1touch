@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/core/team_comparison_colors.dart';

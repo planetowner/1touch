@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/features/player/player_detail_widgets.dart';
@@ -82,7 +83,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
             context,
             '{season} {competition} · {position} · reference players with at least {minutes} minutes.',
             {
-              'season': season?.name ?? tr(context, 'Current season'),
+              'season': season == null
+                  ? tr(context, 'Current season')
+                  : compactSeasonLabel(season.name),
               'competition': competitionNameLabel(context,
                   season?.competitionId, season?.competitionName ?? ''),
               'position': analysis.position ?? '—',

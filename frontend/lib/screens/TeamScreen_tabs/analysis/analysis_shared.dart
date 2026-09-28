@@ -57,11 +57,3 @@ class _AnalysisSectionHeader extends StatelessWidget {
     );
   }
 }
-
-String _compactSeasonLabel(String label) {
-  final parts = label.split('/');
-  if (parts.length != 2) return label.toUpperCase();
-
-  String compact(String part) => part.length == 4 ? part.substring(2) : part;
-  return '${compact(parts[0])}/${compact(parts[1])}'.toUpperCase();
-}

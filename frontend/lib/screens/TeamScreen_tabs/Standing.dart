@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/competitions/competition_repository_provider.dart';
@@ -654,7 +655,7 @@ class _StandingTabState extends State<StandingTab> {
           .map(
             (season) => AppDropdownOption<int>(
               value: season.seasonId,
-              label: season.name.toUpperCase(),
+              label: compactSeasonLabel(season.name).toUpperCase(),
             ),
           )
           .toList(),
