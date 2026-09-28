@@ -1048,7 +1048,7 @@ const appMessages = <String, MessageTranslations>{
     ja: "ファイルは10個まで添付できます。",
     zh: "最多可添加10个文件。"
   ),
-  "Popular": (ko: "인기순", ja: "人気順", zh: "热门"),
+  "Popular": (ko: "추천순", ja: "人気順", zh: "热门"),
   "Newest": (ko: "최신순", ja: "新しい順", zh: "最新"),
   "Latest": (ko: "최신", ja: "最新", zh: "最新"),
   "Best": (ko: "인기", ja: "人気", zh: "热门"),
