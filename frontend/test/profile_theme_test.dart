@@ -44,6 +44,20 @@ void main() {
       final statCard = tester.widget<Container>(
         find.byKey(const ValueKey('profile-stat-card')),
       );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('profile-stat-card')),
+          matching: find.text('0'),
+        ),
+        findsNWidgets(3),
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('profile-stat-card')),
+          matching: find.text('—'),
+        ),
+        findsNothing,
+      );
 
       await tester.drag(
         find.byType(CustomScrollView),

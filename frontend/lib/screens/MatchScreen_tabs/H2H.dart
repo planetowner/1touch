@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/app_dropdown.dart';
@@ -420,11 +422,12 @@ class _H2HTabState extends State<H2HTab> {
                 onTap: isTeamPageSupported(idA)
                     ? () => openTeamPage(context, idA)
                     : null,
-                child: ClipOval(
+                child: SizedBox(
+                  key: ValueKey('match-h2h-past-home-logo-$idA'),
+                  width: 32,
+                  height: 32,
                   child: Image.network(
                     logoA,
-                    width: 32,
-                    height: 32,
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) =>
                         teamLogoFallback(idA, size: 32),
@@ -459,11 +462,12 @@ class _H2HTabState extends State<H2HTab> {
                 onTap: isTeamPageSupported(idB)
                     ? () => openTeamPage(context, idB)
                     : null,
-                child: ClipOval(
+                child: SizedBox(
+                  key: ValueKey('match-h2h-past-away-logo-$idB'),
+                  width: 32,
+                  height: 32,
                   child: Image.network(
                     logoB,
-                    width: 32,
-                    height: 32,
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) =>
                         teamLogoFallback(idB, size: 32),
@@ -488,7 +492,10 @@ class _H2HTabState extends State<H2HTab> {
         color: isDark ? AppPalette.darkGrey : AppPalette.lightGreyBox,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(score, style: Heading2.style.copyWith(color: foreground)),
+      child: Text(
+        score,
+        style: Heading2.latinStyle.copyWith(color: foreground),
+      ),
     );
   }
 }

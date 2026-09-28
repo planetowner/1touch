@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -367,17 +369,8 @@ class _MatchPillTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final background = selected
-        ? AppPalette.white
-        : isDark
-            ? AppPalette.lightGrey
-            : AppPalette.lightGreyBox;
-    final foreground = selected
-        ? AppPalette.black
-        : isDark
-            ? AppPalette.white
-            : AppPalette.black;
+    final background = appPillBackground(context, selected: selected);
+    final foreground = appPillForeground(context, selected: selected);
     const radius = BorderRadius.all(Radius.circular(16));
 
     return Semantics(

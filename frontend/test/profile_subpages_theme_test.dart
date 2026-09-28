@@ -116,6 +116,52 @@ void main() {
     expect(find.byIcon(Icons.lock_outline), findsNWidgets(2));
   });
 
+  testWidgets('personal info values have an 8px gap before right actions',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: app_style.darktheme,
+        home: const EditProfileScreen(),
+      ),
+    );
+    await tester.pump();
+
+    final usernameField = find.byKey(
+      const ValueKey('profile-username-field'),
+    );
+    final firstClearAction = find
+        .ancestor(
+          of: find.byIcon(Icons.close).first,
+          matching: find.byType(SizedBox),
+        )
+        .first;
+    final fieldRect = tester.getRect(usernameField);
+    final actionRect = tester.getRect(firstClearAction);
+
+    expect(actionRect.left - fieldRect.right, 8);
+    expect(actionRect.right, 369);
+    final actionCenters = <double>[
+      for (final icon in [
+        ...find.byIcon(Icons.lock_outline).evaluate(),
+        ...find.byIcon(Icons.close).evaluate(),
+      ])
+        tester
+            .getCenter(find.byElementPredicate((element) => element == icon))
+            .dx,
+    ];
+    expect(actionCenters, isNotEmpty);
+    expect(
+      actionCenters.every((center) => center == actionCenters.first),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   for (final testCase in <({String title, Widget page})>[
     (title: 'About', page: const AboutPage()),
     (title: 'Contact', page: const ContactPage()),

@@ -724,38 +724,38 @@ const appMessages = <String, MessageTranslations>{
     zh: "获胜可能使{team}的概率变化{win}个百分点，失利则可能变化{loss}个百分点。"
   ),
   "Chances to Win\nLeague Trophy": (
-    ko: "리그\n우승 확률",
+    ko: "리그 우승 확률",
     ja: "リーグ\n優勝確率",
     zh: "联赛\n夺冠概率"
   ),
   "Chances to Win\nUCL Trophy": (
-    ko: "UCL\n우승 확률",
+    ko: "UCL 우승 확률",
     ja: "UCL\n優勝確率",
     zh: "UCL\n夺冠概率"
   ),
   "Chances to Win\nUEL Trophy": (
-    ko: "UEL\n우승 확률",
+    ko: "UEL 우승 확률",
     ja: "UEL\n優勝確率",
     zh: "UEL\n夺冠概率"
   ),
   "Chances to Win\nUECL Trophy": (
-    ko: "UECL\n우승 확률",
+    ko: "UECL 우승 확률",
     ja: "UECL\n優勝確率",
     zh: "UECL\n夺冠概率"
   ),
   "Chances to Finish\nTop 4": (
-    ko: "4위 이내\n진입 확률",
+    ko: "4위 이내 진입 확률",
     ja: "4位以内の\n確率",
     zh: "进入前四的\n概率"
   ),
   "Chances to Finish\nTop 6": (
-    ko: "6위 이내\n진입 확률",
+    ko: "6위 이내 진입 확률",
     ja: "6位以内の\n確率",
     zh: "进入前六的\n概率"
   ),
-  "Chances of\nRelegation": (ko: "강등\n확률", ja: "降格の\n確率", zh: "降级的\n概率"),
+  "Chances of\nRelegation": (ko: "강등 확률", ja: "降格の\n確率", zh: "降级的\n概率"),
   "Chances of Relegation\nPlayoff": (
-    ko: "강등 플레이오프\n진출 확률",
+    ko: "강등 PO 확률",
     ja: "降格プレーオフの\n確率",
     zh: "参加保级附加赛的\n概率"
   ),
@@ -771,38 +771,38 @@ const appMessages = <String, MessageTranslations>{
   ),
   "Retry probability": (ko: "예상 확률 다시 불러오기", ja: "予測確率を再読み込み", zh: "重新加载预测概率"),
   "Chances to win\nLEAGUE Trophy": (
-    ko: "리그\n우승 확률",
+    ko: "리그 우승 확률",
     ja: "リーグ\n優勝確率",
     zh: "联赛\n夺冠概率"
   ),
   "Chances to win\nUCL Trophy": (
-    ko: "UCL\n우승 확률",
+    ko: "UCL 우승 확률",
     ja: "UCL\n優勝確率",
     zh: "UCL\n夺冠概率"
   ),
   "Chances to win\nUEL Trophy": (
-    ko: "UEL\n우승 확률",
+    ko: "UEL 우승 확률",
     ja: "UEL\n優勝確率",
     zh: "UEL\n夺冠概率"
   ),
   "Chances to win\nUECL Trophy": (
-    ko: "UECL\n우승 확률",
+    ko: "UECL 우승 확률",
     ja: "UECL\n優勝確率",
     zh: "UECL\n夺冠概率"
   ),
   "Chances to finish\nTOP 4": (
-    ko: "4위 이내\n진입 확률",
+    ko: "4위 이내 진입 확률",
     ja: "4位以内の\n確率",
     zh: "进入前四的\n概率"
   ),
   "Chances to finish\nTOP 6": (
-    ko: "6위 이내\n진입 확률",
+    ko: "6위 이내 진입 확률",
     ja: "6位以内の\n確率",
     zh: "进入前六的\n概率"
   ),
-  "Chances of\nRELEGATION": (ko: "강등\n확률", ja: "降格の\n確率", zh: "降级的\n概率"),
+  "Chances of\nRELEGATION": (ko: "강등 확률", ja: "降格の\n確率", zh: "降级的\n概率"),
   "Chances of\nRELEGATION PLAYOFF": (
-    ko: "강등 플레이오프\n진출 확률",
+    ko: "강등 PO 확률",
     ja: "降格プレーオフの\n確率",
     zh: "参加保级附加赛的\n概率"
   ),

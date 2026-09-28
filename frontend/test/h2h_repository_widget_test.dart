@@ -115,6 +115,25 @@ void main() {
       betCard.barColors![2],
       expectedColors.anchor,
     );
+    final firstPastMatch = find.byKey(
+      const ValueKey('match-h2h-fixture-901'),
+    );
+    expect(
+      find.descendant(of: firstPastMatch, matching: find.byType(ClipOval)),
+      findsNothing,
+    );
+    expect(
+      tester.getSize(
+        find.byKey(const ValueKey('match-h2h-past-home-logo-8')).first,
+      ),
+      const Size.square(32),
+    );
+    expect(
+      tester.getSize(
+        find.byKey(const ValueKey('match-h2h-past-away-logo-19')).first,
+      ),
+      const Size.square(32),
+    );
     expect(tester.takeException(), isNull);
   });
 
