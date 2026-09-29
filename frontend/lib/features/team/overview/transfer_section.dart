@@ -6,11 +6,15 @@ class Transfer extends StatefulWidget {
     this.teams,
     this.repository,
     this.onUnavailable,
+    this.showIncoming,
+    this.onDirectionChanged,
   });
 
   final teams;
   final TransferRepository? repository;
   final VoidCallback? onUnavailable;
+  final bool? showIncoming;
+  final ValueChanged<bool>? onDirectionChanged;
 
   @override
   State<Transfer> createState() => _TransferState();
@@ -25,6 +29,14 @@ class _TransferState extends State<Transfer> {
   int _loadRequestId = 0;
 
   TransferRepository get _repository => widget.repository ?? transferRepository;
+  bool get _showIn => widget.showIncoming ?? showIn;
+
+  void _changeDirection(bool value) {
+    if (widget.showIncoming == null) {
+      setState(() => showIn = value);
+    }
+    widget.onDirectionChanged?.call(value);
+  }
 
   int? get _teamId {
     if (widget.teams is Map<String, dynamic>) {
@@ -100,7 +112,7 @@ class _TransferState extends State<Transfer> {
     }
     final incoming = _window?.incoming ?? const <TransferEntry>[];
     final outgoing = _window?.outgoing ?? const <TransferEntry>[];
-    final list = showIn ? incoming : outgoing;
+    final list = _showIn ? incoming : outgoing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +124,7 @@ class _TransferState extends State<Transfer> {
           child: AppSegmentedToggle<bool>(
             containerKey: const ValueKey('transfer-toggle'),
             indicatorSurfaceKey: const ValueKey('transfer-toggle-indicator'),
-            value: showIn,
+            value: _showIn,
             options: [
               AppSegmentedToggleOption(
                 value: true,
@@ -125,7 +137,7 @@ class _TransferState extends State<Transfer> {
                 contentKey: const ValueKey('transfer-out-toggle'),
               ),
             ],
-            onChanged: (value) => setState(() => showIn = value),
+            onChanged: _changeDirection,
           ),
         ),
 

@@ -156,6 +156,55 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('controlled direction survives transfer widget recreation',
+      (tester) async {
+    final repository = _TestTransferRepository(
+      (teamId) async => TeamTransferWindow(
+        teamId: teamId,
+        windowKey: '2026 summer',
+        incoming: const [],
+        outgoing: const [
+          TransferEntry(
+            transferId: 300,
+            playerId: 301,
+            playerName: 'Outgoing Player',
+            direction: TransferDirection.outgoing,
+            typeId: 219,
+          ),
+        ],
+      ),
+    );
+    addTearDown(repository.dispose);
+    var showIncoming = true;
+    var generation = 0;
+    late StateSetter rebuildParent;
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: StatefulBuilder(builder: (context, setState) {
+          rebuildParent = setState;
+          return Transfer(
+            key: ValueKey(generation),
+            teams: const <String, dynamic>{'id': 9},
+            repository: repository,
+            showIncoming: showIncoming,
+            onDirectionChanged: (value) {
+              setState(() => showIncoming = value);
+            },
+          );
+        }),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('transfer-out-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('Outgoing Player'), findsOneWidget);
+
+    rebuildParent(() => generation++);
+    await tester.pumpAndSettle();
+    expect(find.text('Outgoing Player'), findsOneWidget);
+  });
+
   testWidgets('transfer player opens the player page', (tester) async {
     final repository = _TestTransferRepository(
       (teamId) async => TeamTransferWindow(
