@@ -94,14 +94,17 @@ class CommunityPostList extends StatelessWidget {
     super.key,
     required this.posts,
     required this.onPostTap,
+    this.physics,
   });
 
   final List<Post> posts;
   final ValueChanged<Post> onPostTap;
+  final ScrollPhysics? physics;
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      physics: physics,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       itemCount: posts.length,
       itemBuilder: (context, index) => _PostCard(

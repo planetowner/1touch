@@ -4,6 +4,7 @@ import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/models/current_user_profile.dart';
+import 'support/stub_profile_activity_repository.dart';
 
 void main() {
   final profile = CurrentUserProfile(
@@ -27,7 +28,10 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(
         theme: theme,
-        home: ProfileActivityScreen(profile: profile),
+        home: ProfileActivityScreen(
+          profile: profile,
+          repository: const StubProfileActivityRepository(),
+        ),
       ));
       await tester.pumpAndSettle();
       expect(find.text('John Doe'), findsOneWidget);
