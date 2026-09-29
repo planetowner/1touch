@@ -6,14 +6,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/comm_pages/Profile.dart';
+import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 import 'package:onetouch/comm_pages/Profile_settings/InfoEdit.dart';
 import 'package:onetouch/core/locale_controller.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/profile/current_user_repository.dart';
 import 'package:onetouch/data/teams/following_teams_repository.dart';
+import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
+import 'support/player_directory_fixture.dart';
 
 void main() {
   setUpAppCatalog();
@@ -222,11 +225,122 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('profile-following-team-83')));
+    final followedTeam =
+        find.byKey(const ValueKey('profile-following-team-83'));
+    await tester.ensureVisible(followedTeam);
+    await tester.pumpAndSettle();
+    await tester.tap(followedTeam);
     await tester.pumpAndSettle();
 
     expect(find.text('Team 83'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('opens a followed player from the root profile page',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final followingController = PlayerFollowingController(
+      repository: FakeFollowingPlayersRepository(),
+    );
+    addTearDown(followingController.dispose);
+    final router = GoRouter(
+      initialLocation: '/profile',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, shell) => Scaffold(body: shell),
+          branches: [
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/players',
+                builder: (_, __) => const Scaffold(body: Text('Players')),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, state) => Scaffold(
+                      body: Text('Player ${state.pathParameters['id']}'),
+                    ),
+                  ),
+                ],
+              ),
+            ]),
+          ],
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (_, __) => Profile(
+            repository: _StaticCurrentUserRepository(),
+            followingTeamsRepository: _StaticFollowingTeamsRepository(),
+            followingController: followingController,
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(
+      theme: app_style.whitetheme,
+      routerConfig: router,
+    ));
+    await tester.pumpAndSettle();
+    final followedPlayer = find.byKey(const ValueKey('favorite-player-1'));
+    await tester.ensureVisible(followedPlayer);
+    await tester.pumpAndSettle();
+    await tester.tap(followedPlayer);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Player 1'), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, '/players/1');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('all three profile stats open my activity with the right tab',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final router = GoRouter(
+      initialLocation: '/profile',
+      routes: [
+        GoRoute(
+          path: '/profile',
+          builder: (_, __) => Profile(
+            repository: _StaticCurrentUserRepository(),
+            followingTeamsRepository: _StaticFollowingTeamsRepository(),
+          ),
+        ),
+        GoRoute(
+          path: '/profile/activity',
+          builder: (_, state) => ProfileActivityScreen(
+            profile: state.extra as CurrentUserProfile?,
+            initialTab: state.uri.queryParameters['tab'] == 'comments'
+                ? ProfileActivityTab.comments
+                : ProfileActivityTab.posts,
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(
+      theme: app_style.whitetheme,
+      routerConfig: router,
+    ));
+
+    for (final stat in ['points', 'posts', 'comments']) {
+      router.go('/profile');
+      await tester.pumpAndSettle();
+      final statFinder = find.byKey(ValueKey('profile-stat-$stat'));
+      await tester.ensureVisible(statFinder);
+      await tester.pumpAndSettle();
+      await tester.tap(statFinder);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('profile-activity-screen')),
+          findsOneWidget);
+      expect(
+        find.byKey(ValueKey(
+          'profile-activity-empty-${stat == 'comments' ? 'comments' : 'posts'}',
+        )),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('profile setting rows open their routes', (tester) async {
