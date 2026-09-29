@@ -186,6 +186,7 @@ class CurrentPlayerRankingResponse(BaseModel):
 
 
 class PlayerWatch(PlayerCandidate):
+    jersey_number: int | None
     recent_average: float
     previous_average: float
     change: float

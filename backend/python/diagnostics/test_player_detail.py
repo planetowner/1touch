@@ -8,7 +8,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from one_touch_loader.core.player_detail import (
-    build_career, dominant_position, match_cards, rank_categories, season_categories, stat_index, summarize,
+    build_career, current_player_team, dominant_position, match_cards, rank_categories, season_categories,
+    stat_index, summarize,
 )
 from one_touch_loader.core.player_match_metrics import SUMMARY_METRICS
 
@@ -33,6 +34,20 @@ def metrics(categories):
 
 
 class PlayerDetailMathTests(unittest.TestCase):
+    def test_current_team_uses_latest_appearance_to_resolve_a_transfer(self):
+        roster = [dict(team_id=8, is_current=1, jersey_number=9),
+                  dict(team_id=9, is_current=1, jersey_number=17)]
+        self.assertIs(current_player_team(roster, [match(team_id=9, fixture=2), match()]), roster[1])
+
+    def test_current_team_keeps_roster_priority_without_a_matching_appearance(self):
+        roster = [dict(team_id=8, is_current=1, jersey_number=None),
+                  dict(team_id=9, is_current=1, jersey_number=17),
+                  dict(team_id=8, is_current=0, jersey_number=10)]
+        for matches in ([], [match(team_id=99)]):
+            with self.subTest(matches=matches):
+                self.assertIs(current_player_team(roster, matches), roster[0])
+        self.assertIsNone(current_player_team(roster[2:], [match()]))
+
     def test_all_competition_appearances_decide_position_before_minutes(self):
         rows = [match(fixture=1, position=26, minutes_played=90),
                 match(fixture=2, position=27, minutes_played=5),
