@@ -8,7 +8,7 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:onetouch/core/app_dropdown.dart';
+import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/season_label.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
@@ -29,6 +29,7 @@ import 'package:onetouch/models/team_probability.dart';
 import 'package:onetouch/screens/TeamProbabilityScreen.dart';
 
 part 'analysis/analysis_shared.dart';
+part 'analysis/comparison_filter_sheet.dart';
 part 'analysis/attributes_section.dart';
 part 'analysis/current_form_section.dart';
 part 'analysis/current_form_chart_painters.dart';

@@ -217,7 +217,6 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
     double verticalGap,
   ) {
     final colors = Theme.of(context).colorScheme;
-    final onBrand = AppColors.of(context).onBrand;
     final isFirst = index == 0;
     final primaryColor = Color(team.primaryColor);
     final darkerColor = Color.lerp(primaryColor, Colors.black, 0.55)!;
@@ -341,7 +340,10 @@ class _RankFavoriteTeamsScreenState extends State<RankFavoriteTeamsScreen> {
                             child: Center(
                               child: Icon(
                                 Icons.drag_handle_rounded,
-                                color: onBrand.withValues(alpha: 0.7),
+                                key: ValueKey(
+                                  'rank-team-drag-handle-${team.teamId}',
+                                ),
+                                color: AppPalette.white,
                               ),
                             ),
                           ),

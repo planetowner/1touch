@@ -22,6 +22,9 @@ import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
 import 'package:onetouch/features/app_error_view.dart';
 import 'package:onetouch/features/betting/bet_settlement_notifications.dart';
+import 'package:onetouch/data/community/mock/community_catalog.dart';
+import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
+import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 
@@ -222,8 +225,51 @@ final GoRouter _router = GoRouter(
       ),
     ),
     GoRoute(
-        path: '/notifications',
-        builder: (c, s) => const NotificationInboxPage()),
+      path: '/notifications',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => Scaffold(
+        body: const NotificationInboxPage(),
+        bottomNavigationBar: OneTouchBottomNavigationBar(
+          currentIndex: 0,
+          onTap: (index) {
+            if (index == 1) {
+              openTeamPage(
+                context,
+                currentUserPreferences.viewedTeamId.value,
+              );
+            } else {
+              context.go(
+                switch (index) {
+                  0 => '/home',
+                  2 => '/players',
+                  _ => '/community',
+                },
+              );
+            }
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              mainTabActions.select(index);
+            });
+          },
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/notifications/post/:postId',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final postId = int.tryParse(state.pathParameters['postId'] ?? '');
+        final posts = mockPosts.where((post) => post.postId == postId);
+        if (posts.isEmpty) {
+          return Scaffold(
+            body: Center(child: Text(tr(context, 'Post not found'))),
+          );
+        }
+        return PostDetailScreen(
+          post: posts.first,
+          postRepository: MockPostRepository(),
+        );
+      },
+    ),
     GoRoute(
       path: '/profile',
       parentNavigatorKey: _rootNavigatorKey,
@@ -527,6 +573,7 @@ class MyApp extends StatelessWidget {
 
 bool _usesMainBottomNavigation(String path) =>
     path == '/home' ||
+    path == '/notifications' ||
     path == '/team' ||
     path.startsWith('/team/') ||
     path == '/players' ||

@@ -1,6 +1,7 @@
 import 'support/app_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/comm_pages/Profile.dart';
 import 'package:onetouch/core/style.dart' as app_style;
@@ -70,9 +71,7 @@ void main() {
       final commentsRect = tester.getRect(
         find.byKey(const ValueKey('profile-stat-comments')),
       );
-      final expectedStatWidth = ((statCardRect.width - 48 - 4) / 3) < 85
-          ? (statCardRect.width - 48 - 4) / 3
-          : 85.0;
+      final expectedStatWidth = (statCardRect.width - 48 - 4 - 20) / 3;
       expect(statCard.padding,
           const EdgeInsets.symmetric(horizontal: 24, vertical: 16));
       expect(
@@ -83,6 +82,16 @@ void main() {
       expect(pointsRect.width, closeTo(expectedStatWidth, 0.1));
       expect(postsRect.width, closeTo(expectedStatWidth, 0.1));
       expect(commentsRect.width, closeTo(expectedStatWidth, 0.1));
+      expect(tester.getRect(find.text('COMMENTS')).right,
+          lessThanOrEqualTo(commentsRect.right + 0.1));
+      expect(
+        tester
+            .renderObject<RenderParagraph>(find.text('COMMENTS'))
+            .getBoxesForSelection(
+              const TextSelection(baseOffset: 0, extentOffset: 8),
+            ),
+        hasLength(1),
+      );
       expect(postsRect.left, greaterThan(pointsRect.right));
       expect(commentsRect.left, greaterThan(postsRect.right));
       for (final dividerKey in ['points-posts', 'posts-comments']) {

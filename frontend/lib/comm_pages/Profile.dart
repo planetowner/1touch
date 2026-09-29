@@ -408,26 +408,20 @@ class _ProfileState extends State<Profile> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             const dividerWidth = 2.0;
-            final availableStatWidth =
-                (constraints.maxWidth - dividerWidth * 2) / 3;
+            const dividerGap = 10.0;
             final statWidth =
-                availableStatWidth < 85 ? availableStatWidth : 85.0;
+                (constraints.maxWidth - dividerWidth * 2 - dividerGap * 2) / 3;
             return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _buildStat('0', tr(context, "PTS"),
                     statKey: 'points', width: statWidth),
                 _verticalDivider('points-posts'),
-                SizedBox(
-                  width: 10,
-                ),
+                const SizedBox(width: dividerGap),
                 _buildStat('0', tr(context, "POSTS"),
                     statKey: 'posts', width: statWidth),
                 _verticalDivider('posts-comments'),
-                SizedBox(
-                  width: 10,
-                ),
+                const SizedBox(width: dividerGap),
                 _buildStat('0', tr(context, "COMMENTS"),
                     statKey: 'comments', width: statWidth),
               ],
@@ -453,8 +447,16 @@ class _ProfileState extends State<Profile> {
         children: [
           Text(value, textAlign: TextAlign.left, style: Heading4.style),
           const SizedBox(height: 4),
-          Text(tr(context, label),
-              textAlign: TextAlign.left, style: Body2_b.style),
+          SizedBox(
+            width: width,
+            height: Body2_b.style.fontSize! * Body2_b.style.height!,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(tr(context, label),
+                  maxLines: 1, softWrap: false, style: Body2_b.style),
+            ),
+          ),
         ],
       ),
     );

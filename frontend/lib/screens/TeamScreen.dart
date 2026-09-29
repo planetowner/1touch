@@ -101,12 +101,18 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _showRootAppBar() {
-    final innerController = _nestedScrollKey.currentState?.innerController;
-    if (innerController?.hasClients ?? false) {
-      innerController!.jumpTo(innerController.position.minScrollExtent);
+    if (!mounted) return;
+    _jumpToStartIfReady(_nestedScrollKey.currentState?.innerController);
+    _jumpToStartIfReady(_scrollController);
+  }
+
+  void _jumpToStartIfReady(ScrollController? controller) {
+    if (controller == null || !controller.hasClients) return;
+    for (final position in controller.positions) {
+      if (position.hasPixels && position.hasContentDimensions) {
+        position.jumpTo(position.minScrollExtent);
+      }
     }
-    if (!mounted || !_scrollController.hasClients) return;
-    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
   }
 
   Future<void> _refreshTeam() async {
@@ -205,15 +211,19 @@ class _TeamScreenState extends State<TeamScreen>
   }
 
   void _revealTeamAppBar() {
-    if (_isRevealingTeamAppBar ||
-        !_scrollController.hasClients ||
-        _scrollController.offset <= 0) {
+    if (_isRevealingTeamAppBar || !_scrollController.hasClients) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (!position.hasPixels ||
+        !position.hasContentDimensions ||
+        position.pixels <= position.minScrollExtent) {
       return;
     }
     _isRevealingTeamAppBar = true;
     _scrollController
         .animateTo(
-          0,
+          position.minScrollExtent,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
         )

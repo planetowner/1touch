@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
-import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart' as app_style;
 import 'package:onetouch/data/team_attributes/api/api_team_attribute_repository.dart';
 import 'package:onetouch/models/team_attribute_scores.dart';
@@ -165,15 +164,7 @@ void main() {
     final filterFinder = find.byKey(
       const ValueKey('analysis-attributes-filter'),
     );
-    final filter = tester.widget<AppDropdown<int>>(
-      find.byKey(const ValueKey('analysis-attributes-filter')),
-    );
-    expect(
-      filter.options.map((item) => item.value),
-      [25659, 23621],
-    );
-
-    filter.onChanged(23621);
+    await _chooseAttributes(tester, 23621);
     await tester.pump();
 
     expect(
@@ -277,11 +268,7 @@ void main() {
     });
     await _pumpAttributes(tester, repository);
 
-    tester
-        .widget<AppDropdown<int>>(
-          find.byKey(const ValueKey('analysis-attributes-filter')),
-        )
-        .onChanged(23621);
+    await _chooseAttributes(tester, 23621);
     await tester.pump();
     await tester.pump();
 
@@ -294,6 +281,45 @@ void main() {
       hasLength(2),
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('attribute filter requests the selected comparison team',
+      (tester) async {
+    final requestedTeams = <String>[];
+    final repository = _repository((request) async {
+      if (request.url.queryParameters['season_id'] == '27965') {
+        return http.Response(jsonEncode(_attributeJson()), 200);
+      }
+      requestedTeams.add(request.url.path);
+      return http.Response(
+        jsonEncode(_attributeJson(
+          teamId: 19,
+          seasonId: 23621,
+          seasonName: '2024/2025',
+          isCurrent: false,
+        )),
+        200,
+      );
+    });
+    await _pumpAttributes(tester, repository);
+    await tester.tap(find.byKey(const ValueKey('analysis-attributes-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+    await tester.pump();
+    await tester
+        .tap(find.byKey(const ValueKey('analysis-filter-season-23621')));
+    await tester.pump();
+    await tester.enterText(
+        find.byKey(const ValueKey('analysis-filter-team-search')), 'Arsenal');
+    await tester.pump();
+    await tester
+        .tap(find.byKey(const ValueKey('analysis-attributes-option-19-23621')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
+    await tester.pumpAndSettle();
+
+    expect(requestedTeams, contains(contains('/teams/19/attributes')));
+    expect(find.text('24/25 ARSENAL'), findsOneWidget);
   });
 
   testWidgets('keeps current attributes visible when options fail',
@@ -354,13 +380,9 @@ void main() {
     await _pumpAttributes(tester, repository);
 
     expect(find.byType(RadarChart), findsOneWidget);
-    final filter = tester.widget<AppDropdown<int>>(
-      find.byKey(const ValueKey('analysis-attributes-filter')),
-    );
-    expect(
-      filter.options.map((item) => item.value),
-      [23621],
-    );
+    await tester.tap(find.byKey(const ValueKey('analysis-attributes-filter')));
+    await tester.pumpAndSettle();
+    expect(find.text('24/25'), findsOneWidget);
   });
 
   testWidgets('does not invent a Barcelona request without a selected team',
@@ -403,15 +425,9 @@ void main() {
     });
     await _pumpAttributes(tester, repository);
 
-    final firstFilter = tester.widget<AppDropdown<int>>(
-      find.byKey(const ValueKey('analysis-attributes-filter')),
-    );
-    firstFilter.onChanged(25659);
+    await _chooseAttributes(tester, 25659);
     await tester.pump();
-    final secondFilter = tester.widget<AppDropdown<int>>(
-      find.byKey(const ValueKey('analysis-attributes-filter')),
-    );
-    secondFilter.onChanged(23621);
+    await _chooseAttributes(tester, 23621);
     await tester.pump();
 
     responses[23621]!.complete(
@@ -524,6 +540,7 @@ Future<void> _pumpAttributes(
 }
 
 Map<String, dynamic> _attributeJson({
+  int teamId = 83,
   int seasonId = 27965,
   String seasonName = '2026/2027',
   bool isCurrent = true,
@@ -534,8 +551,8 @@ Map<String, dynamic> _attributeJson({
     'season_id': seasonId,
     'season_name': seasonName,
     'is_current': isCurrent,
-    'team_id': 83,
-    'team_name': 'FC Barcelona',
+    'team_id': teamId,
+    'team_name': teamId == 83 ? 'FC Barcelona' : 'Arsenal',
     'model_id': 1,
     'possession_build_up': 82.8,
     'attacking_threat': 73.57,
@@ -544,4 +561,25 @@ Map<String, dynamic> _attributeJson({
     'defending': 72.96,
     'attributes_updated_at': '2026-09-12T14:02:20Z',
   };
+}
+
+Future<void> _chooseAttributes(WidgetTester tester, int seasonId) async {
+  await tester.tap(find.byKey(const ValueKey('analysis-attributes-filter')));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+  await tester.pump();
+  await tester.tap(find.byKey(ValueKey('analysis-filter-season-$seasonId')));
+  await tester.pump();
+  await tester.enterText(
+    find.byKey(const ValueKey('analysis-filter-team-search')),
+    'Barcelona',
+  );
+  await tester.pump();
+  await tester
+      .tap(find.byKey(ValueKey('analysis-attributes-option-83-$seasonId')));
+  await tester.pump();
+  await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
 }

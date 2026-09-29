@@ -12,6 +12,7 @@ import 'package:onetouch/features/player/player_detail_widgets.dart';
 import 'package:onetouch/features/player/player_detail_view.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/screens/AllPlayersScreen_tabs/match_card.dart';
+import 'package:onetouch/screens/AllPlayersScreen_tabs/Anal.dart';
 import 'support/player_detail_fixture.dart';
 
 void main() {
@@ -616,7 +617,10 @@ void main() {
           tester.getTopRight(find.text('COMPETITION STATS')).dx,
       4,
     );
-
+    expect(
+      tester.getSize(find.byKey(const ValueKey('competition-stats-help-icon'))),
+      const Size(20, 20),
+    );
     await tester.tap(find.text('Analysis').first);
     await tester.pumpAndSettle();
     expect(
@@ -624,6 +628,34 @@ void main() {
           tester.getTopRight(find.text('TOP STATS')).dx,
       4,
     );
+    expect(tester.getSize(find.byKey(const ValueKey('top-stats-help-icon'))),
+        const Size(20, 20));
+    await tester.tap(find.byKey(const ValueKey('top-stats-help-icon')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('app-info-popup')), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('competition stats help uses the shared dismissible popup',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: PlayerCard(
+        player: player,
+        detailRepository: FakePlayerDetailRepository(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final help = find.byKey(const ValueKey('competition-stats-help-icon'));
+    await tester.ensureVisible(help);
+    await tester.pumpAndSettle();
+    await tester.tap(help);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('app-info-popup')), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('app-info-popup')), findsNothing);
     expect(tester.takeException(), isNull);
   });
   testWidgets('competition stats keep the collected-since note below the card',
@@ -786,10 +818,10 @@ void main() {
       find.byKey(const ValueKey('player-performance-axis-label')),
     );
     expect(tester.getSize(card).height, 346);
-    expect(lineChart.data.minX, 0);
-    expect(lineChart.data.maxX, 36);
-    expect(lineChart.data.minY, 0);
-    expect(lineChart.data.maxY, 10);
+    expect(lineChart.data.minX, 1);
+    expect(lineChart.data.maxX, 13);
+    expect(lineChart.data.minY, 6);
+    expect(lineChart.data.maxY, 9.5);
     expect(lineChart.data.lineBarsData.single.dotData.show, isFalse);
     expect(
       find.byKey(const ValueKey('player-performance-grid')),
@@ -808,9 +840,11 @@ void main() {
     );
     expect(axisLabel.quarterTurns, 1);
 
-    final chartRect = tester.getRect(chart);
+    final chartRect = tester.getRect(
+      find.byKey(const ValueKey('player-performance-viewport')),
+    );
     await tester.tapAt(Offset(
-      chartRect.left + chartRect.width * 7 / 36,
+      chartRect.center.dx,
       chartRect.center.dy,
     ));
     await tester.pump();
@@ -820,6 +854,35 @@ void main() {
     );
     expect(find.text('Round 7'), findsOneWidget);
     expect(find.text('Rating 6.94'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('performance uses the latest 13 rounds with seven centered',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: PlayerPerformanceChart(
+          points: [
+            for (var round = 1; round <= 20; round++)
+              (fixtureId: round, round: round, rating: 6.0),
+          ],
+        ),
+      ),
+    ));
+
+    final chart = tester.widget<LineChart>(find.byType(LineChart));
+    expect((chart.data.minX, chart.data.maxX), (8, 20));
+    expect(chart.data.lineBarsData.single.spots.length, 13);
+    final viewport = find.byKey(const ValueKey('player-performance-viewport'));
+    final scroll = tester.widget<SingleChildScrollView>(
+      find.descendant(
+          of: viewport, matching: find.byType(SingleChildScrollView)),
+    );
+    expect(scroll.controller!.offset,
+        closeTo(tester.getSize(viewport).width / 2, 0.1));
+    await tester.tapAt(tester.getCenter(viewport));
+    await tester.pump();
+    expect(find.text('Round 14'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('failed detail has retry without mock competitions',

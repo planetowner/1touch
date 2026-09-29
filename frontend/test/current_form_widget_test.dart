@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:onetouch/core/app_dropdown.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/current_form/current_form_repository.dart';
@@ -139,12 +138,7 @@ void main() {
     await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('analysis-form-option-2-200')),
-    );
-    await tester.pumpAndSettle();
+    await _chooseCurrentForm(tester, seasonId: 200, teamId: 2);
 
     expect(queries, hasLength(2));
     expect(queries.last.seasonId, 200);
@@ -345,8 +339,11 @@ void main() {
       find.byKey(const ValueKey('analysis-current-form-grid')),
     );
     final dynamic painter = grid.painter;
-    expect(painter.divisionCount, 11);
+    expect(painter.divisionCount, 3);
     expect(painter.insetLineCount, 2);
+    final lineChart = tester.widget<LineChart>(find.byType(LineChart));
+    expect((lineChart.data.minY, lineChart.data.maxY), (0, 9));
+    expect(lineChart.data.lineBarsData.first.spots.first.y, 3);
     expect(tester.takeException(), isNull);
   });
 
@@ -368,20 +365,24 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(
-          find.byKey(const ValueKey('analysis-form-filter')),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(
-          find.byKey(const ValueKey('analysis-form-option-1-100')),
-        );
-        await tester.pumpAndSettle();
+        await _chooseCurrentForm(tester, seasonId: 100, teamId: 1);
 
         final chart = find.byKey(
           const ValueKey('analysis-current-form-chart'),
         );
+        final viewport = find.byKey(
+          const ValueKey('analysis-current-form-viewport'),
+        );
+        final horizontalScroll = tester.widget<SingleChildScrollView>(
+          find.descendant(
+            of: viewport,
+            matching: find.byType(SingleChildScrollView),
+          ),
+        );
+        horizontalScroll.controller!.jumpTo(0);
+        await tester.pump();
         final chartRect = tester.getRect(chart);
-        final selectedPointX = chartRect.left + chartRect.width / 36;
+        final selectedPointX = chartRect.left + chartRect.width / 12;
         await tester.tapAt(Offset(selectedPointX, chartRect.center.dy));
         await tester.pump();
 
@@ -394,8 +395,10 @@ void main() {
           expect((box.decoration! as BoxDecoration).color, expectedBoxColor);
         }
         final lineChart = tester.widget<LineChart>(find.byType(LineChart));
-        expect(lineChart.data.maxX, 36);
-        expect(lineChart.data.maxY, 108);
+        expect(lineChart.data.minX, 1);
+        expect(lineChart.data.maxX, 13);
+        expect(lineChart.data.minY, 0);
+        expect(lineChart.data.maxY, 9);
         final comparisonTooltipRect = tester.getRect(
           find.byKey(
             const ValueKey('analysis-current-form-comparison-tooltip'),
@@ -417,9 +420,9 @@ void main() {
           currentTooltipRect.center.dy - comparisonTooltipRect.center.dy,
           closeTo(40, 0.01),
         );
-        expect(find.text('Round 1'), findsNWidgets(2));
-        expect(find.text('1 Pts'), findsNWidgets(2));
-        for (final label in ['Round 1', '1 Pts']) {
+        expect(find.text('Round 2'), findsNWidgets(2));
+        expect(find.text('4 Pts'), findsNWidgets(2));
+        for (final label in ['Round 2', '4 Pts']) {
           for (final element in find.text(label).evaluate()) {
             final paragraph = element.renderObject! as RenderParagraph;
             expect(
@@ -445,9 +448,6 @@ void main() {
 
     final filterFinder = find.byKey(const ValueKey('analysis-form-filter'));
     final closedFilterWidth = tester.getSize(filterFinder).width;
-    final popup = tester.widget<AppDropdown<CurrentFormOption>>(
-      filterFinder,
-    );
     final options = await repository.loadOptions(83);
     final baseline = options.firstWhere((option) => option.teamId == 83);
     final visibleOptions = options
@@ -457,20 +457,19 @@ void main() {
               option.seasonId != baseline.seasonId,
         )
         .toList();
-    expect(popup.options, hasLength(visibleOptions.length));
-    expect(
-      popup.options.map((item) => (item.value.teamId, item.value.seasonId)),
-      visibleOptions.map((option) => (option.teamId, option.seasonId)),
-    );
-    expect(popup.width, 165);
-    expect(popup.matchMenuWidth, isFalse);
-    expect(popup.maxMenuHeight, 272);
+    expect(closedFilterWidth, 165);
 
     await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('BAR'), findsWidgets);
     final firstOption = visibleOptions.first;
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+        find.byKey(ValueKey('analysis-filter-season-${firstOption.seasonId}')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(ValueKey(
+        'analysis-form-option-${firstOption.teamId}-${firstOption.seasonId}')));
     expect(
       tester
           .getSize(
@@ -485,6 +484,60 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('season expansion pushes the team list and selection closes it',
+      (tester) async {
+    useScreen(tester, const Size(393, 852));
+    final repository = _TestCurrentFormRepository(
+      optionsLoader: (_) async => _optionsForTeam(1),
+      comparisonLoader: (query) async =>
+          _comparisonFor(query, comparisonShortCode: 'PREV'),
+    );
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(buildSubject(teamId: 1, repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+    await tester.pumpAndSettle();
+
+    final teamHeader = find.text('TEAM').last;
+    final closedTop = tester.getTopLeft(teamHeader).dy;
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+    await tester.pump();
+    expect(tester.getTopLeft(teamHeader).dy, greaterThan(closedTop));
+
+    await tester.tap(find.byKey(const ValueKey('analysis-filter-season-100')));
+    await tester.pump();
+    expect(
+        find.byKey(const ValueKey('analysis-filter-season-100')), findsNothing);
+    expect(tester.getTopLeft(teamHeader).dy, closedTop);
+  });
+}
+
+Future<void> _chooseCurrentForm(
+  WidgetTester tester, {
+  required int seasonId,
+  required int teamId,
+}) async {
+  await tester.tap(find.byKey(const ValueKey('analysis-form-filter')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const ValueKey('analysis-filter-season')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(ValueKey('analysis-filter-season-$seasonId')));
+  await tester.pumpAndSettle();
+  final option = find.byKey(ValueKey('analysis-form-option-$teamId-$seasonId'));
+  await tester.ensureVisible(option);
+  await tester.tap(option);
+  await tester.pump();
+  expect(
+    tester
+        .widget<ElevatedButton>(
+          find.byKey(const ValueKey('analysis-filter-update')),
+        )
+        .onPressed,
+    isNotNull,
+  );
+  await tester.tap(find.byKey(const ValueKey('analysis-filter-update')));
+  await tester.pumpAndSettle();
 }
 
 List<CurrentFormOption> _optionsForTeam(int teamId) {
@@ -561,7 +614,7 @@ CurrentFormSeries _series({
     isCurrent: isCurrent,
     points: const [
       CurrentFormPoint(roundNo: 0, cumulativePoints: 0),
-      CurrentFormPoint(roundNo: 1, cumulativePoints: 1),
+      CurrentFormPoint(roundNo: 1, cumulativePoints: 3),
       CurrentFormPoint(roundNo: 2, cumulativePoints: 4),
     ],
   );

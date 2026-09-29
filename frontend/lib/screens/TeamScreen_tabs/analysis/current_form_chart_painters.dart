@@ -41,7 +41,8 @@ class _CurrentFormGridPainter extends CustomPainter {
 class _CurrentFormSelectionPainter extends CustomPainter {
   const _CurrentFormSelectionPainter({
     required this.round,
-    required this.maxRound,
+    required this.roundWindow,
+    required this.minPoints,
     required this.maxPoints,
     required this.currentPoints,
     required this.comparisonPoints,
@@ -50,7 +51,8 @@ class _CurrentFormSelectionPainter extends CustomPainter {
   });
 
   final int round;
-  final int maxRound;
+  final RoundChartWindow roundWindow;
+  final double minPoints;
   final double maxPoints;
   final double? currentPoints;
   final double? comparisonPoints;
@@ -59,7 +61,7 @@ class _CurrentFormSelectionPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final x = size.width * round / maxRound;
+    final x = size.width * roundWindow.fractionOf(round);
     final guidePaint = Paint()
       ..color = comparisonColor.withValues(alpha: 0.9)
       ..strokeWidth = 1;
@@ -86,14 +88,16 @@ class _CurrentFormSelectionPainter extends CustomPainter {
     Color color,
   ) {
     if (points == null) return;
-    final y = size.height * (1 - points / maxPoints);
+    final y =
+        size.height * (1 - (points - minPoints) / (maxPoints - minPoints));
     canvas.drawCircle(Offset(x, y), 4, Paint()..color = color);
   }
 
   @override
   bool shouldRepaint(_CurrentFormSelectionPainter oldDelegate) =>
       oldDelegate.round != round ||
-      oldDelegate.maxRound != maxRound ||
+      oldDelegate.roundWindow.firstRound != roundWindow.firstRound ||
+      oldDelegate.minPoints != minPoints ||
       oldDelegate.maxPoints != maxPoints ||
       oldDelegate.currentPoints != currentPoints ||
       oldDelegate.comparisonPoints != comparisonPoints ||

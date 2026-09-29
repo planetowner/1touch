@@ -153,20 +153,35 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       return const SizedBox.expand();
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return IndexedStack(
-      alignment: Alignment.center,
-      index: isDark ? 0 : 1,
-      children: [
-        AspectRatio(
-          aspectRatio: _darkController.value.aspectRatio,
-          child: VideoPlayer(_darkController),
-        ),
-        AspectRatio(
-          aspectRatio: _lightController.value.aspectRatio,
-          child: VideoPlayer(_lightController),
-        ),
-      ],
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appThemeController,
+      builder: (context, mode, _) => Stack(
+        fit: StackFit.expand,
+        alignment: Alignment.center,
+        children: [
+          Center(
+            child: AspectRatio(
+              aspectRatio: _darkController.value.aspectRatio,
+              child: VideoPlayer(_darkController),
+            ),
+          ),
+          AnimatedOpacity(
+            key: const ValueKey('welcome-light-video-layer'),
+            // MaterialApp animates the page colors from the theme controller.
+            // Start this fade from the same controller, instead of waiting for
+            // Theme.of(context).brightness to flip halfway through that fade.
+            opacity: mode == ThemeMode.dark ? 0.005 : 0.995,
+            duration: kThemeAnimationDuration,
+            curve: Curves.linear,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: _lightController.value.aspectRatio,
+                child: VideoPlayer(_lightController),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

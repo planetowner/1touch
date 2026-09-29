@@ -274,6 +274,33 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     );
   }
 
+  Future<void> _openComparisonFilter() async {
+    final options = _options
+        .where((option) =>
+            option.teamId != _teamId || option.seasonId != _baselineSeasonId)
+        .map((option) => _AnalysisFilterOption<CurrentFormOption>(
+              value: option,
+              seasonId: option.seasonId,
+              seasonName: option.seasonName,
+              teamId: option.teamId,
+              teamName:
+                  teamNameLabel(context, option.teamId, option.teamName ?? ''),
+            ))
+        .toList();
+    final selected = await showModalBottomSheet<CurrentFormOption>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _AnalysisComparisonFilterSheet<CurrentFormOption>(
+        options: options,
+        initialValue: _selectedOption,
+        optionKey: (option) =>
+            'analysis-form-option-${option.teamId}-${option.seasonId}',
+      ),
+    );
+    if (mounted && selected != null) _changeComparison(selected);
+  }
+
   Widget _buildComparisonPicker() {
     final colors = Theme.of(context).colorScheme;
     final selectedOption = _selectedOption;
@@ -281,34 +308,28 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
         ? tr(context, 'SEASON')
         : compactSeasonLabel(selectedOption.seasonName);
 
-    return AppDropdown<CurrentFormOption>(
+    return InkWell(
       key: const ValueKey('analysis-form-filter'),
-      value: selectedOption,
-      selectedLabel: tr(context, label),
-      width: 165,
-      maxMenuHeight: 272,
-      backgroundColor: AppColors.of(context).subtleBackground,
-      foregroundColor: colors.onSurface,
-      textStyle: Body2_b.style,
-      enabled: !_isLoading,
-      onChanged: _changeComparison,
-      options: _options
-          .where(
-            (option) =>
-                option.teamId != _teamId ||
-                option.seasonId != _baselineSeasonId,
-          )
-          .map(
-            (option) => AppDropdownOption<CurrentFormOption>(
-              value: option,
-              label:
-                  '${compactSeasonLabel(option.seasonName)} · ${(option.teamShortCode ?? teamNameLabel(context, option.teamId, option.teamName ?? '')).toUpperCase()}',
-              optionKey: ValueKey(
-                'analysis-form-option-${option.teamId}-${option.seasonId}',
-              ),
-            ),
-          )
-          .toList(),
+      onTap: _isLoading ? null : _openComparisonFilter,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 165,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.of(context).subtleBackground,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+                child: Text(tr(context, label),
+                    style: Body2_b.style.copyWith(color: colors.onSurface),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis)),
+            Icon(Icons.keyboard_arrow_down, color: colors.onSurface, size: 20),
+          ],
+        ),
+      ),
     );
   }
 
@@ -354,11 +375,32 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     );
     final teamPrimaryColor = comparisonColors.anchor;
     final comparisonColor = comparisonColors.opponent;
-    const maxRound = 36;
-    const maximumPointsPerRound = 3.0;
-    const maxPoints = maxRound * maximumPointsPerRound;
-    const horizontalGridLineCount = 12;
-    final selectedRound = _selectedFormRound;
+    final latestRound = current.points.fold<int>(
+      1,
+      (latest, point) => math.max(latest, point.roundNo),
+    );
+    final roundWindow = RoundChartWindow.endingAt(latestRound);
+    final chartPoints = [
+      ...current.points.where((point) => roundWindow.contains(point.roundNo)),
+      if (showComparison)
+        ...comparison.points
+            .where((point) => roundWindow.contains(point.roundNo)),
+    ];
+    final lowestPoints = chartPoints.fold<int>(
+      chartPoints.isEmpty ? 0 : chartPoints.first.cumulativePoints,
+      (lowest, point) => math.min(lowest, point.cumulativePoints),
+    );
+    final highestPoints = chartPoints.fold<int>(
+      0,
+      (highest, point) => math.max(highest, point.cumulativePoints),
+    );
+    final minPoints = math.max(0, (lowestPoints ~/ 3) * 3 - 3).toDouble();
+    final maxPoints = (((highestPoints / 3).ceil() + 1) * 3).toDouble();
+    final horizontalGridLineCount = ((maxPoints - minPoints) / 3).round() + 1;
+    final selectedRound =
+        _selectedFormRound != null && roundWindow.contains(_selectedFormRound!)
+            ? _selectedFormRound
+            : null;
     final currentPoint =
         selectedRound == null ? null : _pointAtRound(current, selectedRound);
     final comparisonPoint = !showComparison || selectedRound == null
@@ -382,9 +424,13 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final chartSize = Size(
+                final viewportSize = Size(
                   constraints.maxWidth,
                   constraints.maxHeight,
+                );
+                final chartSize = Size(
+                  viewportSize.width * 2,
+                  viewportSize.height,
                 );
                 final pointsAxisLabel = tr(context, 'POINTS');
                 final pointsAxisLabelStyle = Body2_b.style;
@@ -414,11 +460,15 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                 var currentTooltipCenterY = currentPoint == null
                     ? null
                     : chartSize.height *
-                        (1 - currentPoint.cumulativePoints / maxPoints);
+                        (1 -
+                            (currentPoint.cumulativePoints - minPoints) /
+                                (maxPoints - minPoints));
                 var comparisonTooltipCenterY = comparisonPoint == null
                     ? null
                     : chartSize.height *
-                        (1 - comparisonPoint.cumulativePoints / maxPoints);
+                        (1 -
+                            (comparisonPoint.cumulativePoints - minPoints) /
+                                (maxPoints - minPoints));
                 if (currentPoint != null &&
                     comparisonPoint != null &&
                     currentTooltipCenterY != null &&
@@ -457,129 +507,143 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
                     }
                   }
                 }
-                return GestureDetector(
-                  key: const ValueKey('analysis-current-form-chart'),
-                  behavior: HitTestBehavior.opaque,
-                  onTapDown: (details) => _selectFormRound(
-                    details.localPosition.dx,
-                    chartSize.width,
-                    maxRound,
-                    current,
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned.fill(
-                        child: CustomPaint(
-                          key: const ValueKey(
-                            'analysis-current-form-grid',
-                          ),
-                          painter: _CurrentFormGridPainter(
-                            color: gridColor,
-                            topLineInset: 34,
-                            divisionCount: horizontalGridLineCount - 1,
-                            insetLineCount: insetLineCount,
-                          ),
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        key: const ValueKey('analysis-current-form-grid'),
+                        painter: _CurrentFormGridPainter(
+                          color: gridColor,
+                          topLineInset: 34,
+                          divisionCount: horizontalGridLineCount - 1,
+                          insetLineCount: insetLineCount,
                         ),
                       ),
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: LineChart(
-                            LineChartData(
-                              minX: 0,
-                              maxX: maxRound.toDouble(),
-                              minY: 0,
-                              maxY: maxPoints,
-                              gridData: const FlGridData(show: false),
-                              borderData: FlBorderData(show: false),
-                              titlesData: const FlTitlesData(
-                                leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                topTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
+                    ),
+                    RoundChartViewport(
+                      key: const ValueKey('analysis-current-form-viewport'),
+                      viewportSize: viewportSize,
+                      builder: (context, _) => GestureDetector(
+                        key: const ValueKey('analysis-current-form-chart'),
+                        behavior: HitTestBehavior.opaque,
+                        onTapDown: (details) => _selectFormRound(
+                          details.localPosition.dx,
+                          chartSize.width,
+                          roundWindow,
+                          current,
+                        ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: LineChart(
+                                  LineChartData(
+                                    minX: roundWindow.firstRound.toDouble(),
+                                    maxX: roundWindow.lastRound.toDouble(),
+                                    minY: minPoints,
+                                    maxY: maxPoints,
+                                    gridData: const FlGridData(show: false),
+                                    borderData: FlBorderData(show: false),
+                                    titlesData: const FlTitlesData(
+                                      leftTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      rightTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      topTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      bottomTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                    ),
+                                    lineTouchData:
+                                        const LineTouchData(enabled: false),
+                                    lineBarsData: [
+                                      _formLine(current, teamPrimaryColor,
+                                          roundWindow),
+                                      if (showComparison)
+                                        _formLine(comparison, comparisonColor,
+                                            roundWindow),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              lineTouchData:
-                                  const LineTouchData(enabled: false),
-                              lineBarsData: [
-                                _formLine(current, teamPrimaryColor),
-                                if (showComparison)
-                                  _formLine(comparison, comparisonColor),
-                              ],
                             ),
-                          ),
-                        ),
-                      ),
-                      if (selectedRound != null)
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: CustomPaint(
-                              painter: _CurrentFormSelectionPainter(
+                            if (selectedRound != null)
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: CustomPaint(
+                                    painter: _CurrentFormSelectionPainter(
+                                      round: selectedRound,
+                                      roundWindow: roundWindow,
+                                      minPoints: minPoints,
+                                      maxPoints: maxPoints,
+                                      currentPoints: currentPoint
+                                          ?.cumulativePoints
+                                          .toDouble(),
+                                      comparisonPoints: comparisonPoint
+                                          ?.cumulativePoints
+                                          .toDouble(),
+                                      currentColor: teamPrimaryColor,
+                                      comparisonColor: comparisonColor,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            if (selectedRound != null &&
+                                comparisonPoint != null)
+                              _formTooltip(
+                                chartSize: chartSize,
                                 round: selectedRound,
-                                maxRound: maxRound,
+                                points: comparisonPoint.cumulativePoints,
+                                roundWindow: roundWindow,
+                                minPoints: minPoints,
                                 maxPoints: maxPoints,
-                                currentPoints:
-                                    currentPoint?.cumulativePoints.toDouble(),
-                                comparisonPoints: comparisonPoint
-                                    ?.cumulativePoints
-                                    .toDouble(),
-                                currentColor: teamPrimaryColor,
-                                comparisonColor: comparisonColor,
+                                verticalCenter: comparisonTooltipCenterY,
+                                placeBefore: true,
+                                isDark: isDark,
+                                key: const ValueKey(
+                                  'analysis-current-form-comparison-tooltip',
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        child: RotatedBox(
-                          key: const ValueKey(
-                            'analysis-current-form-points-label',
-                          ),
-                          quarterTurns: 1,
-                          child: Text(
-                            pointsAxisLabel,
-                            style: pointsAxisLabelStyle,
-                          ),
+                            if (selectedRound != null && currentPoint != null)
+                              _formTooltip(
+                                chartSize: chartSize,
+                                round: selectedRound,
+                                points: currentPoint.cumulativePoints,
+                                roundWindow: roundWindow,
+                                minPoints: minPoints,
+                                maxPoints: maxPoints,
+                                verticalCenter: currentTooltipCenterY,
+                                placeBefore: false,
+                                isDark: isDark,
+                                key: const ValueKey(
+                                  'analysis-current-form-current-tooltip',
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      if (selectedRound != null && comparisonPoint != null)
-                        _formTooltip(
-                          chartSize: chartSize,
-                          round: selectedRound,
-                          points: comparisonPoint.cumulativePoints,
-                          maxRound: maxRound,
-                          maxPoints: maxPoints,
-                          verticalCenter: comparisonTooltipCenterY,
-                          placeBefore: true,
-                          isDark: isDark,
-                          key: const ValueKey(
-                            'analysis-current-form-comparison-tooltip',
-                          ),
-                        ),
-                      if (selectedRound != null && currentPoint != null)
-                        _formTooltip(
-                          chartSize: chartSize,
-                          round: selectedRound,
-                          points: currentPoint.cumulativePoints,
-                          maxRound: maxRound,
-                          maxPoints: maxPoints,
-                          verticalCenter: currentTooltipCenterY,
-                          placeBefore: false,
-                          isDark: isDark,
-                          key: const ValueKey(
-                            'analysis-current-form-current-tooltip',
-                          ),
-                        ),
-                    ],
-                  ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      child: RotatedBox(
+                        key: const ValueKey(
+                            'analysis-current-form-points-label'),
+                        quarterTurns: 1,
+                        child:
+                            Text(pointsAxisLabel, style: pointsAxisLabelStyle),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -608,14 +672,17 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
   void _selectFormRound(
     double localX,
     double chartWidth,
-    int maxRound,
+    RoundChartWindow roundWindow,
     CurrentFormSeries current,
   ) {
-    if (chartWidth <= 0 || current.points.isEmpty) return;
+    final visiblePoints = current.points
+        .where((point) => roundWindow.contains(point.roundNo))
+        .toList();
+    if (chartWidth <= 0 || visiblePoints.isEmpty) return;
 
-    final targetRound = (localX / chartWidth * maxRound).clamp(0, maxRound);
-    var nearest = current.points.first;
-    for (final point in current.points.skip(1)) {
+    final targetRound = roundWindow.roundAt(localX, chartWidth);
+    var nearest = visiblePoints.first;
+    for (final point in visiblePoints.skip(1)) {
       if ((point.roundNo - targetRound).abs() <
           (nearest.roundNo - targetRound).abs()) {
         nearest = point;
@@ -629,7 +696,8 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     required Size chartSize,
     required int round,
     required int points,
-    required int maxRound,
+    required RoundChartWindow roundWindow,
+    required double minPoints,
     required double maxPoints,
     required double? verticalCenter,
     required bool placeBefore,
@@ -672,8 +740,9 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     final tooltipHeight = math.max(roundPainter.height, pointsPainter.height) +
         tooltipPadding * 2 +
         2;
-    final anchorX = chartSize.width * round / maxRound;
-    final anchorY = chartSize.height * (1 - points / maxPoints);
+    final anchorX = chartSize.width * roundWindow.fractionOf(round);
+    final anchorY =
+        chartSize.height * (1 - (points - minPoints) / (maxPoints - minPoints));
     final availableLeft = math.max(
       0.0,
       anchorX - anchorGap + horizontalTooltipAllowance,
@@ -755,9 +824,14 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
     );
   }
 
-  LineChartBarData _formLine(CurrentFormSeries series, Color color) {
+  LineChartBarData _formLine(
+    CurrentFormSeries series,
+    Color color,
+    RoundChartWindow roundWindow,
+  ) {
     return LineChartBarData(
       spots: series.points
+          .where((point) => roundWindow.contains(point.roundNo))
           .map(
             (point) => FlSpot(
               point.roundNo.toDouble(),

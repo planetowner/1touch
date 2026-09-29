@@ -55,6 +55,8 @@ void main() {
         closeTo(expectedLogoHeight, 0.01),
       );
       expect(toggleIcon.color, app_style.AppPalette.white);
+      expect(find.byKey(const ValueKey('favorite-league-trigger-blur')),
+          findsOneWidget);
       expect(find.text('PREMIER LEAGUE'), findsOneWidget);
       expect(find.text('Premier League'), findsNothing);
 
@@ -64,6 +66,8 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.keyboard_arrow_up), findsWidgets);
+      expect(find.byKey(const ValueKey('favorite-league-menu-blur')),
+          findsOneWidget);
       expect(find.text('LA LIGA'), findsOneWidget);
       expect(find.text('LaLiga'), findsNothing);
       expect(tester.takeException(), isNull);
@@ -290,6 +294,10 @@ void main() {
       );
       expect(teamName.style?.color, app_style.AppPalette.white);
       expect(teamPosition.style?.color, app_style.AppPalette.white);
+      final dragHandle = tester.widget<Icon>(
+        find.byKey(ValueKey('rank-team-drag-handle-${firstTeam.teamId}')),
+      );
+      expect(dragHandle.color, app_style.AppPalette.white);
       expect(tester.takeException(), isNull);
     });
   }

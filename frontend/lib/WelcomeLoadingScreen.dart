@@ -45,6 +45,7 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
+    final videoHeight = MediaQuery.sizeOf(context).height * 0.65;
 
     return Scaffold(
       backgroundColor: appColors.pageBackground,
@@ -56,7 +57,7 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
               top: 0,
               left: 0,
               right: 0,
-              height: MediaQuery.of(context).size.height * 0.65,
+              height: videoHeight,
               // Takes up top 65%
               child: FittedBox(
                 fit: BoxFit.cover,
@@ -69,22 +70,27 @@ class _WelcomeLoadingScreenState extends State<WelcomeLoadingScreen> {
               ),
             ),
 
-          // --- LAYER 2: GRADIENT OVERLAY (Fade to Black) ---
-          // This makes the text readable and blends the video into the black bottom
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    appColors.pageBackground.withValues(alpha: 0.0),
-                    appColors.pageBackground.withValues(alpha: 0.8),
-                    appColors.pageBackground,
-                  ],
-                  // Adjust these stops to control where the fade happens
-                  stops: const [0.0, 0.4, 0.6, 1.0],
+          // Fade to the current page color before the video reaches its edge.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: videoHeight,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                key: const ValueKey('welcome-loading-video-fade'),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      appColors.pageBackground.withValues(alpha: 0.8),
+                      appColors.pageBackground,
+                    ],
+                    stops: const [0.0, 0.45, 0.82, 1.0],
+                  ),
                 ),
               ),
             ),

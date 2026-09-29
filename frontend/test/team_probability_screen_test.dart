@@ -91,10 +91,26 @@ void main() {
     final historyLineChart = tester.getRect(
       find.byKey(const ValueKey('probability-history-line-chart')),
     );
+    final historyViewport = tester.getRect(
+      find.byKey(const ValueKey('probability-history-viewport')),
+    );
     expect(historyGrid.left - historyCard.left, 16);
     expect(historyCard.right - historyGrid.right, 16);
-    expect(historyLineChart.left - historyGrid.left, 32);
-    expect(historyLineChart.right, historyGrid.right);
+    expect(historyViewport.left - historyGrid.left, 32);
+    expect(historyViewport.right, historyGrid.right);
+    expect(historyLineChart.width, historyViewport.width * 2);
+    final historyData = tester
+        .widget<LineChart>(
+          find.byKey(const ValueKey('probability-history-line-chart')),
+        )
+        .data;
+    expect((historyData.minY, historyData.maxY), (20, 40));
+    final historyCardFinder =
+        find.byKey(const ValueKey('probability-history-card'));
+    expect(find.descendant(of: historyCardFinder, matching: find.text('40%')),
+        findsOneWidget);
+    expect(find.descendant(of: historyCardFinder, matching: find.text('30%')),
+        findsOneWidget);
     expect(
       tester
           .widget<LineChart>(find.byType(LineChart))
@@ -108,7 +124,7 @@ void main() {
     final historyChart = tester.getRect(
       find.byKey(const ValueKey('probability-history-chart')),
     );
-    final roundFourX = historyLineChart.left + historyLineChart.width * 4 / 38;
+    final roundFourX = historyViewport.left + 1;
     await tester.tapAt(Offset(roundFourX, historyChart.center.dy));
     await tester.pump();
     expect(
@@ -121,6 +137,13 @@ void main() {
     );
     expect(find.text('Round 4'), findsOneWidget);
     expect(find.text('26%'), findsOneWidget);
+    expect(
+      tester
+          .getRect(find.byKey(const ValueKey('probability-history-tooltip')))
+          .center
+          .dy,
+      closeTo(historyChart.top + historyChart.height * 0.7, 1),
+    );
     expect(find.text('PROJECTED FINAL POSITION'), findsOneWidget);
     expect(
       tester
@@ -143,6 +166,10 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('projected-points-card')),
       300,
+      scrollable: find.byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      ),
     );
     expect(find.text('82.4'), findsOneWidget);
     expect(find.text('Likely range of 75–90 pts'), findsOneWidget);
@@ -180,6 +207,7 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('what-if-outcome-win')));
     await tester.pump();
+
     expect(tester.takeException(), isNull);
   });
 
@@ -201,6 +229,23 @@ void main() {
       ),
     );
     await tester.pump();
+    expect(find.byType(ListView), findsOneWidget);
+    expect(find.byKey(const ValueKey('probability-history-card')),
+        findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('probability-history-card')),
+      200,
+      scrollable: find.byWidgetPredicate((widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down),
+    );
+
+    final historyData = tester
+        .widget<LineChart>(
+          find.byKey(const ValueKey('probability-history-line-chart')),
+        )
+        .data;
+    expect((historyData.minY, historyData.maxY), (0, 15));
 
     expect(
       find.byKey(const ValueKey('projected-position-1')),
@@ -360,7 +405,7 @@ TeamProbabilitySnapshot _snapshot() {
       TeamProbabilityHistoryPoint(
         asOf: DateTime.utc(2026, 9, 18),
         played: 5,
-        events: const [currentCard],
+        events: const [currentCard, relegationCard],
         expectedPoints: 82.4,
       ),
     ],

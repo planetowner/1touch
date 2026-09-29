@@ -20,7 +20,8 @@ class _MockNotif {
   final Map<String, Object> arguments;
   final String? bodyBold; // bolded segment immediately after bodyPrefix
   final Duration age;
-  final String? imageUrl; // team logo or player photo URL
+  final String? imageAsset;
+  final String? destination;
 
   const _MockNotif({
     required this.category,
@@ -29,7 +30,8 @@ class _MockNotif {
     this.arguments = const {},
     this.bodyBold,
     required this.age,
-    this.imageUrl,
+    this.imageAsset,
+    this.destination,
   });
 
   bool matchesFilter(_Filter f) {
@@ -57,6 +59,7 @@ const _mockNotifications = <_MockNotif>[
     bodyPrefix: '{user} and {count} more users liked your post.',
     arguments: {'user': 'Username121', 'count': 2},
     age: Duration(hours: 2),
+    destination: '/notifications/post/1',
   ),
   _MockNotif(
     category: _NotifCategory.comment,
@@ -65,32 +68,37 @@ const _mockNotifications = <_MockNotif>[
     arguments: {'user': 'Username144'},
     bodyBold: "can't agree more",
     age: Duration(hours: 3),
+    destination: '/notifications/post/1',
   ),
   _MockNotif(
     category: _NotifCategory.team,
     title: 'FC Barcelona',
     bodyPrefix: 'Full time 3-1 — Big win for Barcelona!',
     age: Duration(hours: 5),
-    imageUrl: 'https://cdn.sportmonks.com/images/soccer/teams/83/83.png',
+    imageAsset: 'TeamLogos/Barcelona.png',
+    destination: '/match/19300016?status=past',
   ),
   _MockNotif(
     category: _NotifCategory.player,
     title: 'Kang-In Lee',
     bodyPrefix: 'Kang-In is in the XI 👕',
     age: Duration(hours: 6),
+    destination: '/players/9967153',
   ),
   _MockNotif(
     category: _NotifCategory.team,
     title: 'Bayern Munich',
-    bodyPrefix: 'Kane scored twice! Bayern 2-0 Dortmund.',
+    bodyPrefix: 'Kane scored twice! Bayern lead 2-0 Leipzig.',
     age: Duration(days: 1),
-    imageUrl: 'https://cdn.sportmonks.com/images/soccer/teams/183/183.png',
+    imageAsset: 'TeamLogos/BayernMunich.png',
+    destination: '/match/19500003?status=live',
   ),
   _MockNotif(
     category: _NotifCategory.betting,
     title: 'New Bet Available',
     bodyPrefix: 'Barcelona vs Real Madrid — place your prediction.',
     age: Duration(days: 1),
+    destination: '/match/19300005?status=upcoming',
   ),
   _MockNotif(
     category: _NotifCategory.reaction,
@@ -98,18 +106,21 @@ const _mockNotifications = <_MockNotif>[
     bodyPrefix: '{user} liked your comment.',
     arguments: {'user': 'Username88'},
     age: Duration(days: 2),
+    destination: '/notifications/post/3',
   ),
   _MockNotif(
     category: _NotifCategory.player,
-    title: 'R. Lewandowski',
-    bodyPrefix: 'Lewandowski scored! Barcelona lead 1-0.',
+    title: 'Pedri',
+    bodyPrefix: 'Pedri scored! Barcelona lead 1-0.',
     age: Duration(days: 2),
+    destination: '/players/37288001',
   ),
   _MockNotif(
     category: _NotifCategory.betting,
     title: 'Post-match Result',
-    bodyPrefix: 'Your prediction was correct — Bayern won 3-1.',
+    bodyPrefix: 'Your prediction was correct — Bayern won 3-0.',
     age: Duration(days: 3),
+    destination: '/match/19500001?status=past',
   ),
   _MockNotif(
     category: _NotifCategory.comment,
@@ -118,6 +129,7 @@ const _mockNotifications = <_MockNotif>[
     arguments: {'user': 'Username203'},
     bodyBold: 'totally agree with you!',
     age: Duration(days: 3),
+    destination: '/notifications/post/3',
   ),
 ];
 
@@ -145,107 +157,117 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final appColors = AppColors.of(context);
-    final pageBackground = isDark ? Colors.black : AppPalette.lightModeDarkGrey;
-    final selectedSurface = isDark ? AppPalette.white : AppPalette.black;
-    final selectedForeground = isDark ? AppPalette.black : AppPalette.white;
-    final unselectedSurface = isDark ? AppPalette.lightGrey : AppPalette.white;
     final visible =
         _mockNotifications.where((n) => n.matchesFilter(_selected)).toList();
 
     return Scaffold(
       key: const ValueKey('notification-inbox-scaffold'),
-      backgroundColor: pageBackground,
-      body: CustomScrollView(
-        slivers: [
-          //   AppBar
-          SliverAppBar(
-            centerTitle: true,
-            automaticallyImplyLeading: false,
-            backgroundColor: pageBackground,
-            elevation: 0,
-            floating: true,
-            snap: true,
-            toolbarHeight: 80,
-            title: Text(tr(context, 'Notifications'), style: Body1.style),
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new, color: foreground),
-              onPressed: () => Navigator.of(context).pop(),
+      backgroundColor: mainPageBackground(context),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              appBarContentTop(context),
+              24,
+              0,
             ),
-            actions: [
-              IconButton(
-                onPressed: () => context.push('/search'),
-                icon: Icon(Icons.search, color: foreground),
+            child: SizedBox(
+              height: 32,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      iconSize: 32,
+                      icon: Icon(Icons.arrow_back_ios_new, color: foreground),
+                      onPressed: () => context.pop(),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      tr(context, 'Notifications'),
+                      textAlign: TextAlign.center,
+                      style: Body1.style.copyWith(color: foreground),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      iconSize: 32,
+                      onPressed: () => context.push('/search'),
+                      icon: Icon(Icons.search, color: foreground),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-
-          //   Filter pills
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-              child: SingleChildScrollView(
-                key: const ValueKey('notification-filter-scroll'),
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _filters.entries.map((e) {
-                    final isSelected = _selected == e.key;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selected = e.key),
-                        child: AnimatedContainer(
-                          key: ValueKey(
-                            'notification-filter-${e.value.toLowerCase()}',
-                          ),
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? selectedSurface
-                                : unselectedSurface,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            tr(context, e.value),
-                            style: Body2_b.style.copyWith(
-                              color:
-                                  isSelected ? selectedForeground : foreground,
-                            ),
-                          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 42,
+            child: ListView.separated(
+              key: const ValueKey('notification-filter-scroll'),
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              itemCount: _filters.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final entry = _filters.entries.elementAt(index);
+                final isSelected = _selected == entry.key;
+                return GestureDetector(
+                  onTap: () => setState(() => _selected = entry.key),
+                  child: AnimatedContainer(
+                    key: ValueKey(
+                      'notification-filter-${entry.value.toLowerCase()}',
+                    ),
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: appPillBackground(context, selected: isSelected),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      tr(context, entry.value).toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: Body2_b.style.copyWith(
+                        color: appPillForeground(
+                          context,
+                          selected: isSelected,
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              itemCount: visible.length,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: _NotifTile(notif: visible[index]),
+              ),
+              separatorBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Divider(
+                  color: AppColors.of(context).divider,
+                  height: 1,
+                  thickness: 1,
                 ),
               ),
             ),
           ),
-
-          //   Notification list
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final notif = visible[index];
-                return Column(
-                  children: [
-                    _NotifTile(notif: notif),
-                    Divider(
-                      color: isDark ? AppPalette.darkGrey : appColors.divider,
-                      height: 1,
-                      thickness: 1,
-                    ),
-                  ],
-                );
-              },
-              childCount: visible.length,
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 48)),
         ],
       ),
     );
@@ -263,32 +285,41 @@ class _NotifTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = AppColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _Avatar(notif: notif),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(tr(context, notif.title), style: Body1_b.style),
-                const SizedBox(height: 4),
-                _BodyText(notif: notif),
-                const SizedBox(height: 6),
-                Text(
-                  relativeTimeLabel(DateTime.now().subtract(notif.age),
-                      locale: Localizations.localeOf(context)),
-                  style: Eyebrow.style.copyWith(
-                    color: appColors.mutedForeground,
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: notif.destination == null
+          ? null
+          : () => context.push(notif.destination!),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 74),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _Avatar(notif: notif),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tr(context, notif.title),
+                    style: Body1_b.style.copyWith(color: foreground),
                   ),
-                ),
-              ],
+                  _BodyText(notif: notif),
+                  const SizedBox(height: 8),
+                  Text(
+                    relativeTimeLabel(DateTime.now().subtract(notif.age),
+                        locale: Localizations.localeOf(context)),
+                    style: Body2.style.copyWith(
+                      color: appColors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -305,62 +336,48 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Main circle
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: isDark ? AppPalette.darkGrey : AppPalette.white,
-          backgroundImage: notif.imageUrl != null
-              ? NetworkImage(notif.imageUrl!) as ImageProvider
-              : const AssetImage('assets/profileAvatar.png'),
-          onBackgroundImageError: notif.imageUrl != null ? (_, __) {} : null,
-        ),
-
-        // Badge for reaction
-        if (notif.category == _NotifCategory.reaction)
-          _badge(
-            context,
-            Icons.thumb_up_rounded,
-            const Color(0xFF1565C0),
+    return SizedBox(
+      width: 74,
+      height: 74,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            width: 64,
+            height: 64,
+            child: notif.imageAsset == null
+                ? Image.asset('assets/profileAvatar.png')
+                : Image.asset(notif.imageAsset!, fit: BoxFit.contain),
           ),
-
-        // Badge for comment
-        if (notif.category == _NotifCategory.comment)
-          _badge(
-            context,
-            Icons.chat_bubble_rounded,
-            const Color(0xFF424242),
-          ),
-
-        // Badge for betting
-        if (notif.category == _NotifCategory.betting)
-          _badge(
-            context,
-            Icons.monetization_on_rounded,
-            const Color(0xFF2E7D32),
-          ),
-      ],
+          if (notif.category == _NotifCategory.reaction)
+            _badge(Icons.thumb_up_outlined, isDark),
+          if (notif.category == _NotifCategory.comment)
+            _badge(Icons.chat_bubble_outline, isDark),
+          if (notif.category == _NotifCategory.betting)
+            _badge(Icons.sports_soccer_outlined, isDark),
+        ],
+      ),
     );
   }
 
-  Widget _badge(BuildContext context, IconData icon, Color color) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _badge(IconData icon, bool isDark) {
     return Positioned(
-      bottom: -2,
-      right: -4,
+      top: 34,
+      left: 34,
       child: Container(
-        padding: const EdgeInsets.all(5),
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: color,
+          color: isDark ? AppPalette.lightGrey : AppPalette.white,
           shape: BoxShape.circle,
-          border: Border.all(
-            color: isDark ? Colors.black : AppPalette.lightModeDarkGrey,
-            width: 1.5,
-          ),
         ),
-        child: Icon(icon, color: Colors.white, size: 11),
+        child: Icon(
+          icon,
+          color: isDark ? AppPalette.white : AppPalette.black,
+          size: 24,
+        ),
       ),
     );
   }
@@ -377,21 +394,20 @@ class _BodyText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = Theme.of(context).colorScheme.onSurface;
-    final mutedForeground = AppColors.of(context).mutedForeground;
     if (notif.bodyBold == null) {
       return Text(
         tr(context, notif.bodyPrefix, notif.arguments),
-        style: Body2.style.copyWith(color: mutedForeground),
+        style: Body1.style.copyWith(color: foreground),
       );
     }
     return RichText(
       text: TextSpan(
-        style: Body2.style.copyWith(color: mutedForeground),
+        style: Body1.style.copyWith(color: foreground),
         children: [
           TextSpan(text: tr(context, notif.bodyPrefix, notif.arguments)),
           TextSpan(
             text: notif.bodyBold,
-            style: Body2_b.style.copyWith(color: foreground),
+            style: Body1_b.style.copyWith(color: foreground),
           ),
         ],
       ),

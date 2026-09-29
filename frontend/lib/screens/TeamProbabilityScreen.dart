@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/round_chart_window.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/team_probability/team_probability_repository.dart';
 import 'package:onetouch/data/team_probability/team_probability_repository_provider.dart';
@@ -411,22 +414,35 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
     if (points.isEmpty) return const _UnavailableCard();
 
     final colors = AppColors.of(context);
+    final latestRound =
+        points.map((point) => point.played).reduce((a, b) => a > b ? a : b);
+    final roundWindow = RoundChartWindow.endingAt(latestRound);
+    final visiblePoints =
+        points.where((point) => roundWindow.contains(point.played)).toList();
     final spots = [
-      for (final point in points)
+      for (final point in visiblePoints)
         FlSpot(point.played.toDouble(), point.probability * 100),
     ];
-    final lastRound = widget.maximumRound <= 0
-        ? points.map((point) => point.played).reduce((a, b) => a > b ? a : b)
-        : widget.maximumRound;
+    final lowestProbability =
+        spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
     final highestProbability =
         spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
-    final maxY = ((highestProbability / 20).ceil() * 20).clamp(40, 100);
+    final spread = highestProbability - lowestProbability;
+    final gridStep = spread < 20 ? 5 : 10;
+    final padding = math.max(5.0, spread * 0.25);
+    final minY = math.max(
+        0, ((lowestProbability - padding) / gridStep).floor() * gridStep);
+    final maxY = math.min(
+        100, ((highestProbability + padding) / gridStep).ceil() * gridStep);
+    final middleY = (minY + maxY) / 2;
     final gridColor = Theme.of(context).colorScheme.onSurface.withValues(
           alpha: Theme.of(context).brightness == Brightness.dark ? 0.32 : 0.18,
         );
     final selectedPoint = _selectedRound == null
         ? null
-        : points.where((point) => point.played == _selectedRound).firstOrNull;
+        : visiblePoints
+            .where((point) => point.played == _selectedRound)
+            .firstOrNull;
 
     return Container(
       key: const ValueKey('probability-history-card'),
@@ -443,114 +459,137 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final chartSize = constraints.biggest;
-                return GestureDetector(
-                  key: const ValueKey('probability-history-chart'),
-                  behavior: HitTestBehavior.opaque,
-                  onTapDown: (details) => _selectRound(
-                    details.localPosition.dx,
-                    chartSize.width,
-                    lastRound,
-                    points,
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned.fill(
-                        child: CustomPaint(
-                          key: const ValueKey('probability-history-grid'),
-                          painter: _ProbabilityHistoryGridPainter(
-                            color: gridColor,
-                          ),
+                final plotViewportSize = Size(
+                  chartSize.width - _ProbabilityHistoryGridPainter.labelInset,
+                  chartSize.height,
+                );
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        key: const ValueKey('probability-history-grid'),
+                        painter: _ProbabilityHistoryGridPainter(
+                          color: gridColor,
                         ),
                       ),
-                      Positioned(
-                        left: _ProbabilityHistoryGridPainter.labelInset,
-                        top: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: LineChart(
-                          key: const ValueKey('probability-history-line-chart'),
-                          LineChartData(
-                            minX: 0,
-                            maxX: lastRound.toDouble(),
-                            minY: 0,
-                            maxY: maxY.toDouble(),
-                            gridData: const FlGridData(show: false),
-                            borderData: FlBorderData(show: false),
-                            titlesData: const FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
+                    ),
+                    Positioned(
+                      left: _ProbabilityHistoryGridPainter.labelInset,
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: RoundChartViewport(
+                        key: const ValueKey('probability-history-viewport'),
+                        viewportSize: plotViewportSize,
+                        builder: (context, contentSize) => GestureDetector(
+                          key: const ValueKey('probability-history-chart'),
+                          behavior: HitTestBehavior.opaque,
+                          onTapDown: (details) => _selectRound(
+                            details.localPosition.dx,
+                            contentSize.width,
+                            roundWindow,
+                            visiblePoints,
+                          ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned.fill(
+                                child: LineChart(
+                                  key: const ValueKey(
+                                      'probability-history-line-chart'),
+                                  LineChartData(
+                                    minX: roundWindow.firstRound.toDouble(),
+                                    maxX: roundWindow.lastRound.toDouble(),
+                                    minY: minY.toDouble(),
+                                    maxY: maxY.toDouble(),
+                                    gridData: const FlGridData(show: false),
+                                    borderData: FlBorderData(show: false),
+                                    titlesData: const FlTitlesData(
+                                      leftTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      rightTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      topTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      bottomTitles: AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                    ),
+                                    lineTouchData:
+                                        const LineTouchData(enabled: false),
+                                    lineBarsData: [
+                                      LineChartBarData(
+                                        spots: spots,
+                                        color: widget.color,
+                                        barWidth: 3,
+                                        isCurved: false,
+                                        isStepLineChart: true,
+                                        dotData: const FlDotData(show: false),
+                                        belowBarData: BarAreaData(show: false),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              topTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                            ),
-                            lineTouchData: const LineTouchData(enabled: false),
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: spots,
-                                color: widget.color,
-                                barWidth: 3,
-                                isCurved: false,
-                                isStepLineChart: true,
-                                dotData: const FlDotData(show: false),
-                                belowBarData: BarAreaData(show: false),
-                              ),
+                              if (selectedPoint != null)
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: CustomPaint(
+                                      key: const ValueKey(
+                                        'probability-history-selector-line',
+                                      ),
+                                      painter:
+                                          _ProbabilityHistorySelectionPainter(
+                                        round: selectedPoint.played,
+                                        roundWindow: roundWindow,
+                                        probability:
+                                            selectedPoint.probability * 100,
+                                        minimumProbability: minY.toDouble(),
+                                        maximumProbability: maxY.toDouble(),
+                                        color: widget.color,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              if (selectedPoint != null)
+                                _probabilityTooltip(
+                                  context: context,
+                                  chartSize: contentSize,
+                                  point: selectedPoint,
+                                  roundWindow: roundWindow,
+                                  minimumProbability: minY.toDouble(),
+                                  maximumProbability: maxY.toDouble(),
+                                ),
                             ],
                           ),
                         ),
                       ),
-                      if (selectedPoint != null)
-                        Positioned(
-                          left: _ProbabilityHistoryGridPainter.labelInset,
-                          top: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: IgnorePointer(
-                            child: CustomPaint(
-                              key: const ValueKey(
-                                'probability-history-selector-line',
-                              ),
-                              painter: _ProbabilityHistorySelectionPainter(
-                                round: selectedPoint.played,
-                                maximumRound: lastRound,
-                                probability: selectedPoint.probability * 100,
-                                maximumProbability: maxY.toDouble(),
-                                color: widget.color,
-                              ),
-                            ),
-                          ),
-                        ),
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: RotatedBox(
-                          quarterTurns: 1,
-                          child: Text('$maxY%', style: Body2_b.style),
+                    ),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: RotatedBox(
+                        quarterTurns: 1,
+                        child: Text('$maxY%', style: Body2_b.style),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: RotatedBox(
+                        quarterTurns: 1,
+                        child: Text(
+                          '${middleY % 1 == 0 ? middleY.toInt() : middleY.toStringAsFixed(1)}%',
+                          style: Body2_b.style,
                         ),
                       ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: RotatedBox(
-                          quarterTurns: 1,
-                          child: Text('${maxY ~/ 2}%', style: Body2_b.style),
-                        ),
-                      ),
-                      if (selectedPoint != null)
-                        _probabilityTooltip(
-                          context: context,
-                          chartSize: chartSize,
-                          point: selectedPoint,
-                          maximumRound: lastRound,
-                          maximumProbability: maxY.toDouble(),
-                        ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -558,7 +597,10 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
-            child: Text('RO$lastRound', style: Body2_b.style),
+            child: Text(
+              'RO${widget.maximumRound > 0 ? widget.maximumRound : roundWindow.lastRound}',
+              style: Body2_b.style,
+            ),
           ),
         ],
       ),
@@ -568,14 +610,11 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
   void _selectRound(
     double localX,
     double chartWidth,
-    int maximumRound,
+    RoundChartWindow roundWindow,
     List<({int played, double probability})> points,
   ) {
-    final plotWidth = chartWidth - _ProbabilityHistoryGridPainter.labelInset;
-    if (plotWidth <= 0 || points.isEmpty) return;
-    final plotX = (localX - _ProbabilityHistoryGridPainter.labelInset)
-        .clamp(0.0, plotWidth);
-    final targetRound = plotX / plotWidth * maximumRound;
+    if (chartWidth <= 0 || points.isEmpty) return;
+    final targetRound = roundWindow.roundAt(localX, chartWidth);
     var nearest = points.first;
     for (final point in points.skip(1)) {
       if ((point.played - targetRound).abs() <
@@ -591,18 +630,18 @@ class _ProbabilityHistoryCardState extends State<_ProbabilityHistoryCard> {
     required BuildContext context,
     required Size chartSize,
     required ({int played, double probability}) point,
-    required int maximumRound,
+    required RoundChartWindow roundWindow,
+    required double minimumProbability,
     required double maximumProbability,
   }) {
     const width = 132.0;
     const height = 36.0;
     const pointGap = 8.0;
-    final plotWidth =
-        chartSize.width - _ProbabilityHistoryGridPainter.labelInset;
-    final anchorX = _ProbabilityHistoryGridPainter.labelInset +
-        plotWidth * point.played / maximumRound;
-    final anchorY =
-        chartSize.height * (1 - point.probability * 100 / maximumProbability);
+    final anchorX = chartSize.width * roundWindow.fractionOf(point.played);
+    final anchorY = chartSize.height *
+        (1 -
+            (point.probability * 100 - minimumProbability) /
+                (maximumProbability - minimumProbability));
     final fitsRight = anchorX + pointGap + width <= chartSize.width;
     final left = fitsRight
         ? anchorX + pointGap
@@ -685,21 +724,23 @@ class _ProbabilityHistoryGridPainter extends CustomPainter {
 class _ProbabilityHistorySelectionPainter extends CustomPainter {
   const _ProbabilityHistorySelectionPainter({
     required this.round,
-    required this.maximumRound,
+    required this.roundWindow,
     required this.probability,
+    required this.minimumProbability,
     required this.maximumProbability,
     required this.color,
   });
 
   final int round;
-  final int maximumRound;
+  final RoundChartWindow roundWindow;
   final double probability;
+  final double minimumProbability;
   final double maximumProbability;
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final x = size.width * round / maximumRound;
+    final x = size.width * roundWindow.fractionOf(round);
     final guidePaint = Paint()
       ..color = color.withValues(alpha: 0.9)
       ..strokeWidth = 1;
@@ -712,15 +753,19 @@ class _ProbabilityHistorySelectionPainter extends CustomPainter {
         guidePaint,
       );
     }
-    final pointY = size.height * (1 - probability / maximumProbability);
+    final pointY = size.height *
+        (1 -
+            (probability - minimumProbability) /
+                (maximumProbability - minimumProbability));
     canvas.drawCircle(Offset(x, pointY), 4, Paint()..color = color);
   }
 
   @override
   bool shouldRepaint(_ProbabilityHistorySelectionPainter oldDelegate) =>
       oldDelegate.round != round ||
-      oldDelegate.maximumRound != maximumRound ||
+      oldDelegate.roundWindow.firstRound != roundWindow.firstRound ||
       oldDelegate.probability != probability ||
+      oldDelegate.minimumProbability != minimumProbability ||
       oldDelegate.maximumProbability != maximumProbability ||
       oldDelegate.color != color;
 }
