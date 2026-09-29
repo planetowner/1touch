@@ -20,10 +20,17 @@ import 'support/app_catalog.dart';
 import 'support/player_detail_fixture.dart';
 
 const _translations = {
-  'en': ['FC Barcelona', 'Barcelona', 'Getafe', 'La Liga', 'L. Messi'],
-  'ko': ['FC 바르셀로나', '바르셀로나', '헤타페', '라리가', 'L. 메시'],
-  'ja': ['FCバルセロナ', 'FCバルセロナ', 'ヘタフェ', 'ラ・リーガ', 'L・メッシ'],
-  'zh': ['巴塞罗那足球俱乐部', '巴塞罗那足球俱乐部', '赫塔费', '西甲联赛', 'L·梅西'],
+  'en': [
+    'FC Barcelona',
+    'Barcelona',
+    'Getafe',
+    'La Liga',
+    'L. Messi',
+    'South Korea'
+  ],
+  'ko': ['FC 바르셀로나', '바르셀로나', '헤타페', '라리가', 'L. 메시', '대한민국'],
+  'ja': ['FCバルセロナ', 'FCバルセロナ', 'ヘタフェ', 'ラ・リーガ', 'L・メッシ', '韓国'],
+  'zh': ['巴塞罗那足球俱乐部', '巴塞罗那足球俱乐部', '赫塔费', '西甲联赛', 'L·梅西', '韩国'],
 };
 
 http.Response _response(String locale) {
@@ -35,7 +42,7 @@ http.Response _response(String locale) {
         'players': {'184798': 'Full Messi'},
         'player_short_names': {'184798': values[4]},
         'competitions': {'564': values[3]},
-        'countries': locale == 'ko' ? {'712': '대한민국'} : {},
+        'countries': {'712': values[5]},
       }),
       200,
       headers: {'content-type': 'application/json; charset=utf-8'});
@@ -59,7 +66,7 @@ void main() {
       addTearDown(api.close);
       final repository = FootballNamesRepository(api);
       final details = FakePlayerDetailRepository();
-      for (final language in ['ko', 'en', 'ja', 'ko']) {
+      for (final language in ['ko', 'en', 'ja', 'zh', 'ko']) {
         await tester.pumpWidget(MaterialApp(
           locale: Locale(language),
           supportedLocales: appSupportedLocales,
@@ -84,10 +91,11 @@ void main() {
               : PlayerCard(playerId: 2, detailRepository: details),
         ));
         await tester.pumpAndSettle();
-        expect(find.text(language == 'ko' ? '대한민국' : 'South Korea'),
-            findsOneWidget);
-        expect(
-            find.text(language == 'ko' ? 'South Korea' : '대한민국'), findsNothing);
+        expect(find.text(_translations[language]![5]), findsOneWidget);
+        for (final other
+            in _translations.keys.where((key) => key != language)) {
+          expect(find.text(_translations[other]![5]), findsNothing);
+        }
         expect(tester.takeException(), isNull);
       }
       expect(details.calls, [(playerId: 2, seasonId: null)]);
