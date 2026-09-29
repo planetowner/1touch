@@ -70,6 +70,10 @@ DUPLICATE_TRANSFER_IDS = {
     # https://comofootball.com/en/como-1907-sign-uefa-under-19-european-champion-andres-cuenca/
     # https://proceso.hn/el-como-ficha-al-defensa-espanol-andres-cuenca-procedente-del-barcelona/
     562576,
+    # Bajcetic → 595556(2026-08-31). 구단이 2군 입단을 발표했고 현재 계약도 이 행을 참조해요.
+    # 같은 날의 셀타 1군행은 중복이에요. 포르투나 계약(2029-06-30)은 그대로 남겨요.
+    # https://rccelta.es/en/fundacion/actualidad/stefan-bajcetic-returns-home/
+    595453,
 }
 
 # Mata는 두 원문 날짜가 모두 틀렸어요. 당일 구단 발표를 인용한 두 보도가 같은 해지일을 확인해요.

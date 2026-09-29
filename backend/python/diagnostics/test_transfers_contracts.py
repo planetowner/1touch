@@ -210,6 +210,47 @@ class TransfersContractsTests(unittest.TestCase):
             rows=transfers.build_transfer_rows(contract["player_id"],selected,SENIOR)
             self.assertEqual(rows["repeated_movements"],[])
 
+    def test_bajcetic_reload_keeps_one_departure_and_the_fortuna_contract(self):
+        source = json.loads((Path(__file__).parent / "fixtures/sportmonks_bajcetic_transfers_verified.json").read_text(encoding="utf-8"))
+        pid = source["player_id"]
+        self.sql.execute("INSERT INTO players (player_id, display_name, image_path) VALUES (?, 'Stefan Bajcetic', NULL)", (pid,))
+        transfers.replace_player_transfers(pid, transfers.build_transfer_rows(pid, source["transfers"], SENIOR))
+        contract = source["stored_contracts"][0]
+        self.sql.execute("INSERT INTO player_contracts VALUES (?,?,?,?,?)", tuple(
+            contract[key] for key in ("team_id", "player_id", "start_date", "end_date", "transfer_id")
+        ))
+        self.sql.commit()
+        window = {"start_date": date(2026, 7, 1), "end_date": date(2026, 9, 1)}
+        before = transfers_repo.get_team_transfers_by_window(8, 28083, window, date(2026, 9, 29))
+        self.assertEqual({row["transfer_id"] for row in before}, {595453, 595556})
+
+        client = SportmonksClient.__new__(SportmonksClient)
+        expected_ids = {item["id"] for item in source["transfers"]} - {source["excluded_id"]}
+        with patch.object(client, "_iter_paginated_data", side_effect=lambda *a, **kw: iter(source["transfers"])):
+            queries = (
+                client.iter_transfers_by_player(pid),
+                client.iter_transfers_by_team(8),
+                client.iter_transfers_between_dates(window["start_date"], window["end_date"]),
+            )
+            for query in queries:
+                selected = list(query)
+                self.assertEqual({item["id"] for item in selected}, expected_ids)
+        excluded = next(item for item in source["transfers"] if item["id"] == source["excluded_id"])
+        with patch.object(client, "_get", return_value={"data": excluded}):
+            self.assertIsNone(client.get_transfer(source["excluded_id"]))
+
+        # 이미 두 행이 저장된 상태에서도 재수집하면 계약과 과거 임대 이력은 남아야 해요.
+        rows = transfers.build_transfer_rows(pid, selected, SENIOR)
+        transfers.replace_player_transfers(pid, rows)
+        transfers.replace_player_transfers(pid, rows)
+        self.assertEqual({row[0] for row in self.sql.execute("SELECT transfer_id FROM transfers WHERE player_id=?", (pid,))}, expected_ids)
+        after = transfers_repo.get_team_transfers_by_window(8, 28083, window, date(2026, 9, 29))
+        self.assertEqual([row["transfer_id"] for row in after], [source["retained_id"]])
+        self.assertEqual(after[0]["to_team_id"], contract["team_id"])
+        self.assertEqual(after[0]["contract_start_date"], date.fromisoformat(contract["start_date"]))
+        self.assertEqual(after[0]["contract_end_date"], date.fromisoformat(contract["end_date"]))
+        self.assertEqual(self.sql.execute("PRAGMA foreign_key_check").fetchall(), [])
+
     def test_web_verified_players_keep_only_the_supported_transfer(self):
         client=SportmonksClient.__new__(SportmonksClient)
         for case in CASES["web_verified_transfer_choices"]:
