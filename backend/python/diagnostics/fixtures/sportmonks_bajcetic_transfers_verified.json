@@ -1,0 +1,238 @@
+{
+  "verified_at": "2026-09-29",
+  "sources": [
+    "https://rccelta.es/en/fundacion/actualidad/stefan-bajcetic-returns-home/",
+    "https://www.liverpoolfc.com/news/stefan-bajcetic-completes-permanent-transfer-celta-vigo"
+  ],
+  "player_id": 37565677,
+  "excluded_id": 595453,
+  "retained_id": 595556,
+  "transfers": [
+    {
+      "id": 595556,
+      "player_id": 37565677,
+      "from_team_id": 8,
+      "to_team_id": 384,
+      "type_id": 219,
+      "amount": null,
+      "date": "2026-08-31",
+      "completed": true,
+      "fromteam": {
+        "id": 8,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+        "placeholder": false
+      },
+      "toteam": {
+        "id": 384,
+        "name": "Celta Fortuna",
+        "short_code": "CEL",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/0/384.png",
+        "placeholder": false
+      },
+      "type": {
+        "name": "Transfer"
+      },
+      "player": {
+        "id": 37565677,
+        "display_name": "Stefan Bajcetic "
+      }
+    },
+    {
+      "id": 595453,
+      "player_id": 37565677,
+      "from_team_id": 8,
+      "to_team_id": 36,
+      "type_id": 219,
+      "amount": null,
+      "date": "2026-08-31",
+      "completed": true,
+      "fromteam": {
+        "id": 8,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+        "placeholder": false
+      },
+      "toteam": {
+        "id": 36,
+        "name": "Celta de Vigo",
+        "short_code": "CEL",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/4/36.png",
+        "placeholder": false
+      },
+      "type": {
+        "name": "Transfer"
+      },
+      "player": {
+        "id": 37565677,
+        "display_name": "Stefan Bajcetic "
+      }
+    },
+    {
+      "id": 453243,
+      "player_id": 37565677,
+      "from_team_id": 49,
+      "to_team_id": 8,
+      "type_id": 9688,
+      "amount": null,
+      "date": "2025-01-30",
+      "completed": true,
+      "fromteam": {
+        "id": 49,
+        "name": "Salzburg",
+        "short_code": "RBS",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/17/49.png",
+        "placeholder": false
+      },
+      "toteam": {
+        "id": 8,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+        "placeholder": false
+      },
+      "type": {
+        "name": "End of loan"
+      },
+      "player": {
+        "id": 37565677,
+        "display_name": "Stefan Bajcetic "
+      }
+    },
+    {
+      "id": 453241,
+      "player_id": 37565677,
+      "from_team_id": 2921,
+      "to_team_id": 8,
+      "type_id": 9688,
+      "amount": null,
+      "date": "2025-06-30",
+      "completed": true,
+      "fromteam": {
+        "id": 2921,
+        "name": "Las Palmas",
+        "short_code": "LPA",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/9/2921.png",
+        "placeholder": false
+      },
+      "toteam": {
+        "id": 8,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+        "placeholder": false
+      },
+      "type": {
+        "name": "End of loan"
+      },
+      "player": {
+        "id": 37565677,
+        "display_name": "Stefan Bajcetic "
+      }
+    },
+    {
+      "id": 2381,
+      "player_id": 37565677,
+      "from_team_id": 8,
+      "to_team_id": 2921,
+      "type_id": 218,
+      "amount": null,
+      "date": "2025-01-31",
+      "completed": true,
+      "fromteam": {
+        "id": 8,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+        "placeholder": false
+      },
+      "toteam": {
+        "id": 2921,
+        "name": "Las Palmas",
+        "short_code": "LPA",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/9/2921.png",
+        "placeholder": false
+      },
+      "type": {
+        "name": "Loan"
+      },
+      "player": {
+        "id": 37565677,
+        "display_name": "Stefan Bajcetic "
+      }
+    },
+    {
+      "id": 205482,
+      "player_id": 37565677,
+      "from_team_id": 132724,
+      "to_team_id": 8,
+      "type_id": 219,
+      "amount": null,
+      "date": "2022-07-01",
+      "completed": true,
+      "fromteam": {
+        "id": 132724,
+        "name": "Liverpool U18",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/20/132724.png",
+        "placeholder": false
+      },
+      "toteam": {
+        "id": 8,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+        "placeholder": false
+      },
+      "type": {
+        "name": "Transfer"
+      },
+      "player": {
+        "id": 37565677,
+        "display_name": "Stefan Bajcetic "
+      }
+    },
+    {
+      "id": 380661,
+      "player_id": 37565677,
+      "from_team_id": 8,
+      "to_team_id": 49,
+      "type_id": 218,
+      "amount": null,
+      "date": "2024-08-30",
+      "completed": true,
+      "fromteam": {
+        "id": 8,
+        "name": "Liverpool",
+        "short_code": "LIV",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/8/8.png",
+        "placeholder": false
+      },
+      "toteam": {
+        "id": 49,
+        "name": "Salzburg",
+        "short_code": "RBS",
+        "image_path": "https://cdn.sportmonks.com/images/soccer/teams/17/49.png",
+        "placeholder": false
+      },
+      "type": {
+        "name": "Loan"
+      },
+      "player": {
+        "id": 37565677,
+        "display_name": "Stefan Bajcetic "
+      }
+    }
+  ],
+  "stored_contracts": [
+    {
+      "team_id": 384,
+      "player_id": 37565677,
+      "start_date": "2026-08-31",
+      "end_date": "2029-06-30",
+      "transfer_id": 595556
+    }
+  ]
+}
