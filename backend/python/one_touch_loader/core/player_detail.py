@@ -12,6 +12,16 @@ MINIMUM_REFERENCE_MINUTES = 450
 LOWER_IS_BETTER = frozenset({"goals_conceded", "possession_lost", "dribbled_past", "fouls_committed"})
 
 
+def current_player_team(roster: list[dict], current_matches: list[dict]) -> dict | None:
+    current_roster = [r for r in roster if r["is_current"]]
+    team = current_roster[0] if current_roster else None
+    # 이적 기록이 여러 개면 현재 시즌에 가장 최근에 출전한 팀을 우선해요.
+    if len(current_roster) > 1 and current_matches:
+        latest_team = max(current_matches, key=lambda r: r["starting_at"])["team_id"]
+        team = next((r for r in current_roster if r["team_id"] == latest_team), team)
+    return team
+
+
 def dominant_position(matches: list[dict]) -> int | None:
     positions = defaultdict(lambda: [0, 0, ""])
     for row in matches:

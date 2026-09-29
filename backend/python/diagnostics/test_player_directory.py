@@ -48,15 +48,53 @@ class PlayerDirectoryTests(unittest.TestCase):
     def test_watch_is_read_only_and_rolls_back(self):
         conn = MagicMock()
         cur = conn.cursor.return_value.__enter__.return_value
-        cur.fetchall.return_value = appearances()
+        cur.fetchall.side_effect = [appearances(), [], []]
         with patch.object(repo, 'get_conn', return_value=conn):
             self.assertEqual(len(repo.get_ones_to_watch()['items']), 1)
         conn.start_transaction.assert_called_once_with(readonly=True)
         conn.rollback.assert_called_once()
         conn.commit.assert_not_called()
-        sql = cur.execute.call_args.args[0]
+        sql = cur.execute.call_args_list[0].args[0]
         self.assertIn('ROW_NUMBER()', sql)
         self.assertNotIn('rating IS NOT NULL AND', sql)
+
+    def test_watch_route_returns_current_squad_numbers_and_preserves_missing_numbers(self):
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        app = FastAPI()
+        app.include_router(routes.router)
+        app.dependency_overrides[get_user_id] = lambda: 1
+        client = TestClient(app)
+        conn = MagicMock()
+        cur = conn.cursor.return_value.__enter__.return_value
+        cur.fetchall.side_effect = [
+            appearances() + appearances(2, recent=7, previous=6.5),
+            [dict(player_id=1, team_id=8, is_current=1, jersey_number=9),
+             dict(player_id=1, team_id=9, is_current=1, jersey_number=17),
+             dict(player_id=2, team_id=8, is_current=1, jersey_number=None),
+             dict(player_id=2, team_id=8, is_current=0, jersey_number=10)],
+            [dict(player_id=1, team_id=9, starting_at=datetime(2026, 9, 20)),
+             dict(player_id=1, team_id=8, starting_at=datetime(2026, 8, 1))],
+        ]
+        with patch.object(repo, 'get_conn', return_value=conn):
+            response = client.get('/players/ones-to-watch')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            'items': [dict(item, jersey_number=number) for item, number in zip(
+                repo.watch_players(appearances() + appearances(2, recent=7, previous=6.5)), (17, None))],
+            'scope': 'all_competitions_recent_10_appearances',
+        })
+        self.assertEqual(cur.execute.call_count, 3)
+        for call in cur.execute.call_args_list[1:]:
+            self.assertEqual(call.args[1], (1, 2))
+
+    def test_watch_without_qualifying_players_skips_squad_queries(self):
+        conn = MagicMock()
+        cur = conn.cursor.return_value.__enter__.return_value
+        cur.fetchall.return_value = appearances(recent=5, previous=6)
+        with patch.object(repo, 'get_conn', return_value=conn):
+            self.assertEqual(repo.get_ones_to_watch()['items'], [])
+        cur.execute.assert_called_once()
 
     def test_route_filters_and_authentication(self):
         from fastapi import FastAPI

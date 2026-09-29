@@ -9,7 +9,7 @@ from ..db import get_conn
 from .transfers_repo import get_player_club_history
 from ...core.fixture_states import COMPLETED_STATE_IDS, LIVE_STATE_IDS
 from ...core.player_detail import (
-    MINIMUM_REFERENCE_MINUTES, build_career, dominant_position, match_cards,
+    MINIMUM_REFERENCE_MINUTES, build_career, current_player_team, dominant_position, match_cards,
     rank_categories, season_categories, stat_index, summarize,
 )
 from ...core.player_match_metrics import POSITION_GROUPS
@@ -18,6 +18,7 @@ from ...core.player_appearances import APPEARED, MATCH_FROM
 
 COMPLETED = ','.join(map(str, COMPLETED_STATE_IDS))
 DISPLAY_STATES = ','.join(map(str, (*COMPLETED_STATE_IDS, *LIVE_STATE_IDS)))
+CURRENT_LEAGUE_SEASON = "SELECT MAX(s.name) AS name FROM seasons s JOIN competitions c ON c.competition_id=s.competition_id WHERE s.is_current=1 AND c.competition_type='league'"
 MATCH_SELECT = """
 SELECT fl.*, s.season_id, s.name AS season_name, s.competition_id,
        c.name AS competition_name, c.competition_type,
@@ -30,6 +31,16 @@ JOIN teams t ON t.team_id=fl.team_id
 LEFT JOIN teams op ON op.team_id=IF(fl.team_id=f.home_team_id,f.away_team_id,f.home_team_id)
 LEFT JOIN fixture_player_expected_goals x ON x.fixture_id=fl.fixture_id AND x.player_id=fl.player_id
 """
+
+
+def get_player_rosters(fetch, player_ids):
+    placeholders = ','.join(['%s'] * len(player_ids))
+    return fetch(f"""SELECT sm.*, s.name AS season_name, s.competition_id, s.is_current,
+        c.name AS competition_name, t.name AS team_name, t.image_path AS team_image
+        FROM team_squad_members sm JOIN seasons s ON s.season_id=sm.season_id
+        JOIN competitions c ON c.competition_id=s.competition_id JOIN teams t ON t.team_id=sm.team_id
+        WHERE sm.player_id IN ({placeholders}) AND c.competition_type='league'
+        ORDER BY s.is_current DESC,s.name DESC,sm.team_id""", tuple(player_ids))
 
 
 def get_player_detail(player_id: int, season_id: int | None = None) -> dict | None:
@@ -49,21 +60,12 @@ def get_player_detail(player_id: int, season_id: int | None = None) -> dict | No
                     return None
                 profile = profile[0]
                 clubs = get_player_club_history(player_id, now.date(), query=fetch)["clubs"]
-                roster = fetch("""SELECT sm.*, s.name AS season_name, s.competition_id, s.is_current,
-                    c.name AS competition_name, t.name AS team_name, t.image_path AS team_image
-                    FROM team_squad_members sm JOIN seasons s ON s.season_id=sm.season_id
-                    JOIN competitions c ON c.competition_id=s.competition_id JOIN teams t ON t.team_id=sm.team_id
-                    WHERE sm.player_id=%s AND c.competition_type='league'
-                    ORDER BY s.is_current DESC,s.name DESC,sm.team_id""", (player_id,))
+                roster = get_player_rosters(fetch, (player_id,))
                 history = fetch(MATCH_SELECT + f" WHERE fl.player_id=%s AND f.state_id IN ({DISPLAY_STATES}) AND f.starting_at<=%s AND {APPEARED}", (player_id, now))
-                current_name = fetch("SELECT MAX(s.name) AS name FROM seasons s JOIN competitions c ON c.competition_id=s.competition_id WHERE s.is_current=1 AND c.competition_type='league'")[0]["name"]
+                current_name = fetch(CURRENT_LEAGUE_SEASON)[0]["name"]
                 current = [r for r in history if r["season_name"] == current_name]
                 position = dominant_position(current)
-                current_roster = [r for r in roster if r["is_current"]]
-                team = current_roster[0] if current_roster else None
-                if len(current_roster) > 1 and current:
-                    latest_team = max(current, key=lambda r: r["starting_at"])["team_id"]
-                    team = next((r for r in current_roster if r["team_id"] == latest_team), team)
+                team = current_player_team(roster, current)
                 profile.update(team_id=team["team_id"] if team else None,
                                team_name=team["team_name"] if team else None,
                                team_image=team["team_image"] if team else None,
