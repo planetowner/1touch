@@ -8,8 +8,8 @@ NAME_COLUMNS = {
 LOCALE_COLUMNS = {
     'en': ('name', 'display_name', 'short_name', 'short_name', 'name'),
     'ko': ('name_ko', 'display_name_ko', 'short_name_ko', 'short_name_ko', 'name_ko'),
-    'ja': ('name_ja', 'display_name_ja', None, 'short_name_ja', None),
-    'zh': ('name_zh', 'display_name_zh', None, 'short_name_zh', None),
+    'ja': ('name_ja', 'display_name_ja', None, 'short_name_ja', 'name_ja'),
+    'zh': ('name_zh', 'display_name_zh', None, 'short_name_zh', 'name_zh'),
 }
 
 
@@ -21,7 +21,7 @@ def korean_names() -> dict[str, dict[str, str]]:
 
 def localized_names(locale: str) -> dict[str, dict[str, str]]:
     team, player, team_short, player_short, country = LOCALE_COLUMNS[locale]
-    # 일본어·중국어 팀 짧은 이름과 국가 이름은 아직 번역이 없어 빈 목록으로 응답해요.
+    # 일본어·중국어 팀 짧은 이름은 아직 번역이 없어 빈 목록으로 응답해요.
     catalogs = {'teams': ('teams', 'team_id', team), 'players': ('players', 'player_id', player),
                 'team_short_names': ('teams', 'team_id', team_short),
                 'player_short_names': ('players', 'player_id', player_short),
