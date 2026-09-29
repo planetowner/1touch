@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
@@ -7,6 +9,10 @@ import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/data/teams/team_repository.dart';
 import 'package:onetouch/data/teams/team_repository_provider.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
+import 'package:onetouch/data/notifications/notification_preferences.dart';
+import 'package:onetouch/data/notifications/notification_preferences_repository.dart';
+import 'package:onetouch/data/notifications/notification_preferences_repository_provider.dart';
+import 'package:onetouch/services/device_notification_service.dart';
 
 Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
       color: AppColors.of(context).divider,
@@ -14,21 +20,55 @@ Widget _divider(BuildContext context, {double thickness = 1}) => Divider(
       height: 1,
     );
 
+Future<void> _requestDeviceNotificationPermission(bool needed) async {
+  if (!needed) return;
+  try {
+    await deviceNotificationService.requestPermission();
+  } on Object catch (error) {
+    debugPrint('Unable to request notification permission: $error');
+  }
+}
+
 ///  Screen 1: Notification List
 class NotificationListPage extends StatefulWidget {
-  const NotificationListPage({super.key});
+  const NotificationListPage({super.key, this.repository});
+
+  final NotificationPreferencesRepository? repository;
 
   @override
   State<NotificationListPage> createState() => _NotificationListPageState();
 }
 
 class _NotificationListPageState extends State<NotificationListPage> {
-  bool _postsReactions = true;
-  bool _postsComments = true;
-  bool _postsFollowing = true;
+  GlobalNotificationPreferences _preferences =
+      const GlobalNotificationPreferences();
 
-  bool _bettingNewBets = true;
-  bool _bettingPostMatch = true;
+  NotificationPreferencesRepository get _repository =>
+      widget.repository ?? notificationPreferencesRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    final preferences = (await _repository.load()).global;
+    if (mounted) setState(() => _preferences = preferences);
+  }
+
+  void _update(GlobalNotificationPreferences preferences, bool enabled) {
+    setState(() => _preferences = preferences);
+    unawaited(_save(preferences, requestPermission: enabled));
+  }
+
+  Future<void> _save(
+    GlobalNotificationPreferences preferences, {
+    required bool requestPermission,
+  }) async {
+    await _repository.saveGlobal(preferences);
+    await _requestDeviceNotificationPermission(requestPermission);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,28 +134,35 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       );
                     }),
 
-                    const SizedBox(height: 48),
+                    if (players.isNotEmpty) ...[
+                      const SizedBox(height: 48),
 
-                    // Following Players
-                    Text(tr(context, "FOLLOWING PLAYERS"),
-                        style: Body2_b.style),
-                    const SizedBox(height: 16),
-                    ...players.asMap().entries.map((entry) {
-                      final i = entry.key;
-                      final player = entry.value;
-                      return Column(
-                        children: [
-                          _listRow(
-                            label: playerNameLabel(
-                                context, player.playerId, player.name),
-                            onTap: () => context.push(
-                              '/profile/notification/player/${Uri.encodeComponent(player.name)}?id=${player.playerId}',
+                      // Following Players
+                      Text(
+                        tr(context, "FOLLOWING PLAYERS"),
+                        style: Body2_b.style,
+                      ),
+                      const SizedBox(height: 16),
+                      ...players.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final player = entry.value;
+                        return Column(
+                          children: [
+                            _listRow(
+                              label: playerNameLabel(
+                                context,
+                                player.playerId,
+                                player.name,
+                              ),
+                              onTap: () => context.push(
+                                '/profile/notification/player/${Uri.encodeComponent(player.name)}?id=${player.playerId}',
+                              ),
                             ),
-                          ),
-                          if (i != players.length - 1) _divider(context),
-                        ],
-                      );
-                    }),
+                            if (i != players.length - 1) _divider(context),
+                          ],
+                        );
+                      }),
+                    ],
 
                     const SizedBox(height: 48),
 
@@ -125,22 +172,21 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     _switchRow(
                       context,
                       label: tr(context, 'Reactions'),
-                      value: _postsReactions,
-                      onChanged: (v) => setState(() => _postsReactions = v),
+                      value: _preferences.postReactions,
+                      onChanged: (value) => _update(
+                        _preferences.copyWith(postReactions: value),
+                        value,
+                      ),
                     ),
                     _divider(context),
                     _switchRow(
                       context,
                       label: tr(context, 'Comments'),
-                      value: _postsComments,
-                      onChanged: (v) => setState(() => _postsComments = v),
-                    ),
-                    _divider(context),
-                    _switchRow(
-                      context,
-                      label: tr(context, 'Following'),
-                      value: _postsFollowing,
-                      onChanged: (v) => setState(() => _postsFollowing = v),
+                      value: _preferences.postComments,
+                      onChanged: (value) => _update(
+                        _preferences.copyWith(postComments: value),
+                        value,
+                      ),
                     ),
 
                     const SizedBox(height: 48),
@@ -151,15 +197,21 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     _switchRow(
                       context,
                       label: tr(context, 'New bets'),
-                      value: _bettingNewBets,
-                      onChanged: (v) => setState(() => _bettingNewBets = v),
+                      value: _preferences.newBets,
+                      onChanged: (value) => _update(
+                        _preferences.copyWith(newBets: value),
+                        value,
+                      ),
                     ),
                     _divider(context),
                     _switchRow(
                       context,
                       label: tr(context, 'Post-match results'),
-                      value: _bettingPostMatch,
-                      onChanged: (v) => setState(() => _bettingPostMatch = v),
+                      value: _preferences.postMatchResults,
+                      onChanged: (value) => _update(
+                        _preferences.copyWith(postMatchResults: value),
+                        value,
+                      ),
                     ),
 
                     const SizedBox(height: 48),
@@ -202,8 +254,9 @@ class _NotificationListPageState extends State<NotificationListPage> {
 class TeamNotificationDetailPage extends StatefulWidget {
   final String teamName;
   final int? teamId;
+  final NotificationPreferencesRepository? repository;
   const TeamNotificationDetailPage(
-      {super.key, required this.teamName, this.teamId});
+      {super.key, required this.teamName, this.teamId, this.repository});
 
   @override
   State<TeamNotificationDetailPage> createState() =>
@@ -220,6 +273,43 @@ class _TeamNotificationDetailPageState
     "Substitution": false,
   };
 
+  NotificationPreferencesRepository get _repository =>
+      widget.repository ?? notificationPreferencesRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    final teamId = widget.teamId;
+    if (teamId == null) return;
+    final preferences = (await _repository.load()).team(teamId);
+    if (!mounted) return;
+    setState(() => _apply(preferences));
+  }
+
+  void _apply(TeamNotificationPreferences preferences) {
+    _opts['News'] = preferences.news;
+    _opts['Match Reminder'] = preferences.matchReminder;
+    _opts['Kickoff, Half Time, Full Time'] =
+        preferences.kickoff && preferences.halfTime && preferences.fullTime;
+    _opts['Goal'] = preferences.goal;
+    _opts['Substitution'] = preferences.substitution;
+  }
+
+  TeamNotificationPreferences get _currentPreferences =>
+      TeamNotificationPreferences(
+        news: _opts['News']!,
+        matchReminder: _opts['Match Reminder']!,
+        kickoff: _opts['Kickoff, Half Time, Full Time']!,
+        halfTime: _opts['Kickoff, Half Time, Full Time']!,
+        fullTime: _opts['Kickoff, Half Time, Full Time']!,
+        goal: _opts['Goal']!,
+        substitution: _opts['Substitution']!,
+      );
+
   bool get _allOn => _opts.values.every((v) => v);
   void _toggleAll(bool v) {
     setState(() {
@@ -227,6 +317,21 @@ class _TeamNotificationDetailPageState
         _opts[k] = v;
       }
     });
+  }
+
+  Future<void> _save({required bool applyToAll}) async {
+    final preferences = _currentPreferences;
+    if (applyToAll) {
+      await _repository.applyTeamToAll(
+        currentUserPreferences.followedTeamIds.value,
+        preferences,
+      );
+    } else if (widget.teamId case final int teamId) {
+      await _repository.saveTeam(teamId, preferences);
+    }
+    await _requestDeviceNotificationPermission(
+      _opts.values.any((enabled) => enabled),
+    );
   }
 
   @override
@@ -321,7 +426,9 @@ class _TeamNotificationDetailPageState
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        await _save(applyToAll: true);
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
@@ -351,7 +458,10 @@ class _TeamNotificationDetailPageState
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () async {
+                        await _save(applyToAll: false);
+                        if (context.mounted) context.pop();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             Theme.of(context).colorScheme.onSurface,
@@ -384,8 +494,9 @@ class _TeamNotificationDetailPageState
 class PlayerNotificationDetailPage extends StatefulWidget {
   final String playerName;
   final int? playerId;
+  final NotificationPreferencesRepository? repository;
   const PlayerNotificationDetailPage(
-      {super.key, required this.playerName, this.playerId});
+      {super.key, required this.playerName, this.playerId, this.repository});
 
   @override
   State<PlayerNotificationDetailPage> createState() =>
@@ -403,6 +514,44 @@ class _PlayerNotificationDetailPageState
     "Injury": false,
   };
 
+  NotificationPreferencesRepository get _repository =>
+      widget.repository ?? notificationPreferencesRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    final playerId = widget.playerId;
+    if (playerId == null) return;
+    final preferences = (await _repository.load()).player(playerId);
+    if (!mounted) return;
+    setState(() => _apply(preferences));
+  }
+
+  void _apply(PlayerNotificationPreferences preferences) {
+    _opts['Starting / Substitute'] =
+        preferences.startingXi && preferences.substitute;
+    _opts['Goal'] = preferences.goal;
+    _opts['Assist'] = preferences.assist;
+    _opts['Yellow Card'] = preferences.yellowCard;
+    _opts['Red Card'] = preferences.redCard;
+    _opts['Injury'] = preferences.injury;
+  }
+
+  PlayerNotificationPreferences get _currentPreferences =>
+      PlayerNotificationPreferences(
+        startingXi: _opts['Starting / Substitute']!,
+        substitute: _opts['Starting / Substitute']!,
+        goal: _opts['Goal']!,
+        assist: _opts['Assist']!,
+        yellowCard: _opts['Yellow Card']!,
+        redCard: _opts['Red Card']!,
+        injury: _opts['Injury']!,
+      );
+
   bool get _allOn => _opts.values.every((v) => v);
   void _toggleAll(bool v) {
     setState(() {
@@ -410,6 +559,21 @@ class _PlayerNotificationDetailPageState
         _opts[k] = v;
       }
     });
+  }
+
+  Future<void> _save({required bool applyToAll}) async {
+    final preferences = _currentPreferences;
+    if (applyToAll) {
+      await _repository.applyPlayerToAll(
+        playerFollowingController.players.map((player) => player.playerId),
+        preferences,
+      );
+    } else if (widget.playerId case final int playerId) {
+      await _repository.savePlayer(playerId, preferences);
+    }
+    await _requestDeviceNotificationPermission(
+      _opts.values.any((enabled) => enabled),
+    );
   }
 
   @override
@@ -503,7 +667,9 @@ class _PlayerNotificationDetailPageState
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        await _save(applyToAll: true);
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(tr(
@@ -533,7 +699,10 @@ class _PlayerNotificationDetailPageState
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () async {
+                        await _save(applyToAll: false);
+                        if (context.mounted) context.pop();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             Theme.of(context).colorScheme.onSurface,
@@ -582,13 +751,9 @@ Widget _switchRow(
         ),
       ),
       const SizedBox(width: 8),
-      Switch(
+      Switch.adaptive(
         value: value,
         onChanged: onChanged,
-        activeThumbColor: Colors.white,
-        activeTrackColor: Colors.green,
-        inactiveThumbColor: AppPalette.white,
-        inactiveTrackColor: AppPalette.lightGrey,
       ),
     ],
   );
