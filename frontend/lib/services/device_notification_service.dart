@@ -16,7 +16,7 @@ class DeviceNotificationService {
   static const _teamChannel = AndroidNotificationChannel(
     'team_updates',
     'Team updates',
-    description: 'Match, score, and news updates for followed teams.',
+    description: 'Match and score updates for followed teams.',
     importance: Importance.high,
   );
   static const _playerChannel = AndroidNotificationChannel(

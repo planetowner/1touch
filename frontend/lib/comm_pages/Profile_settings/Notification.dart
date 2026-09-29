@@ -266,7 +266,6 @@ class TeamNotificationDetailPage extends StatefulWidget {
 class _TeamNotificationDetailPageState
     extends State<TeamNotificationDetailPage> {
   final Map<String, bool> _opts = {
-    "News": true,
     "Match Reminder": false,
     "Kickoff, Half Time, Full Time": true,
     "Goal": true,
@@ -291,7 +290,6 @@ class _TeamNotificationDetailPageState
   }
 
   void _apply(TeamNotificationPreferences preferences) {
-    _opts['News'] = preferences.news;
     _opts['Match Reminder'] = preferences.matchReminder;
     _opts['Kickoff, Half Time, Full Time'] =
         preferences.kickoff && preferences.halfTime && preferences.fullTime;
@@ -301,7 +299,6 @@ class _TeamNotificationDetailPageState
 
   TeamNotificationPreferences get _currentPreferences =>
       TeamNotificationPreferences(
-        news: _opts['News']!,
         matchReminder: _opts['Match Reminder']!,
         kickoff: _opts['Kickoff, Half Time, Full Time']!,
         halfTime: _opts['Kickoff, Half Time, Full Time']!,

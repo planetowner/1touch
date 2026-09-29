@@ -6,9 +6,9 @@ enum NotificationDeliveryTiming { eventDriven, thirtyMinutesBeforeKickoff }
 
 /// Notification rows approved for both iOS and Android.
 ///
-/// Spreadsheet row 17 (new post from following) is intentionally excluded.
+/// Spreadsheet row 1 (team news) and row 17 (new post from following) are
+/// intentionally excluded.
 enum NotificationEventType {
-  teamNews(1, DeviceNotificationCategory.team),
   teamMatchReminder(
     2,
     DeviceNotificationCategory.team,
@@ -120,8 +120,6 @@ class NotificationMessageTemplates {
     bool ko,
   ) =>
       switch (type) {
-        NotificationEventType.teamNews =>
-          ko ? '${d.team} 새로운 소식이 있습니다.' : '${d.team} has a new update.',
         NotificationEventType.teamMatchReminder => ko
             ? '${d.team} 경기가 ${d.minutesUntilKickoff}분 후에 시작됩니다.'
             : '${d.team} kicks off in ${d.minutesUntilKickoff} minutes.',
