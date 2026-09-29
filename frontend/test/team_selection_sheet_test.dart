@@ -111,8 +111,8 @@ void main() {
     ));
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
-    expect(find.text('팔로잉 팀'), findsOneWidget);
-    expect(find.text('선택한 팀으로 바꿔요'), findsOneWidget);
+    expect(find.text('팔로우한 팀'), findsOneWidget);
+    expect(find.text('선택한 팀으로 바꾸기'), findsOneWidget);
     expect(find.text('라리가 1위'), findsOneWidget);
     expect(find.text('라리가 2위'), findsOneWidget);
     expect(find.text('프리미어리그 1위'), findsOneWidget);
@@ -140,7 +140,7 @@ void main() {
     expect(find.descendant(of: favorite, matching: find.byIcon(Icons.star)),
         findsOneWidget);
     expect(requests, hasLength(3));
-    await tester.tap(find.text('선택한 팀으로 바꿔요'));
+    await tester.tap(find.text('선택한 팀으로 바꾸기'));
     await tester.pumpAndSettle();
     expect(switchedTeamId, 3468);
     expect(currentUserPreferences.favoriteTeamId.value, 83);

@@ -310,7 +310,7 @@ class _ProfileState extends State<Profile> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: PlayerFavorites(
-                      title: tr(context, 'FOLLOWING PLAYERS'),
+                      title: 'FOLLOWING PLAYERS',
                       controller: widget.followingController ??
                           playerFollowingController,
                       searchRepository: null,

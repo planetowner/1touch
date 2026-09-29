@@ -95,7 +95,7 @@ class _PlayerFavoritesState extends State<PlayerFavorites> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.title,
+                    tr(context, widget.title),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Body2_b.style,
