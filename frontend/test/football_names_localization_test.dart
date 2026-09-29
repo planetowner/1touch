@@ -8,15 +8,19 @@ import 'package:http/testing.dart';
 import 'package:onetouch/core/api_client.dart';
 import 'package:onetouch/data/auth/auth_session.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
+import 'package:onetouch/features/KaneRest.dart';
 import 'package:onetouch/features/home/screen/home_screen_features.dart';
 import 'package:onetouch/features/match_info/match_info_features.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/football_names_loader.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/team_overview.dart';
+import 'package:onetouch/screens/AllPlayersScreen.dart';
 import 'support/app_catalog.dart';
+import 'support/player_detail_fixture.dart';
 
 const _translations = {
+  'en': ['FC Barcelona', 'Barcelona', 'Getafe', 'La Liga', 'L. Messi'],
   'ko': ['FC 바르셀로나', '바르셀로나', '헤타페', '라리가', 'L. 메시'],
   'ja': ['FCバルセロナ', 'FCバルセロナ', 'ヘタフェ', 'ラ・リーガ', 'L・メッシ'],
   'zh': ['巴塞罗那足球俱乐部', '巴塞罗那足球俱乐部', '赫塔费', '西甲联赛', 'L·梅西'],
@@ -31,6 +35,7 @@ http.Response _response(String locale) {
         'players': {'184798': 'Full Messi'},
         'player_short_names': {'184798': values[4]},
         'competitions': {'564': values[3]},
+        'countries': locale == 'ko' ? {'712': '대한민국'} : {},
       }),
       200,
       headers: {'content-type': 'application/json; charset=utf-8'});
@@ -44,6 +49,50 @@ ApiClient _client(Future<http.Response> Function(http.Request) handler) =>
 
 void main() {
   setUpAppCatalog();
+
+  testWidgets(
+      'profile and match sheet countries follow the shared language catalog',
+      (tester) async {
+    for (final sheet in [false, true]) {
+      final api =
+          _client((request) async => _response(request.url.pathSegments[2]));
+      addTearDown(api.close);
+      final repository = FootballNamesRepository(api);
+      final details = FakePlayerDetailRepository();
+      for (final language in ['ko', 'en', 'ja', 'ko']) {
+        await tester.pumpWidget(MaterialApp(
+          locale: Locale(language),
+          supportedLocales: appSupportedLocales,
+          localizationsDelegates: appLocalizationDelegates,
+          builder: (context, child) => FootballNamesLoader(
+              repository: repository, enabled: true, child: child!),
+          home: sheet
+              ? Scaffold(
+                  body: PlayerMatchStatSheet(
+                  player: const PlayerMatchStatData(
+                    playerId: 2,
+                    teamPrimaryColor: 0xFFA50044,
+                    name: 'Player 2',
+                    jerseyNumber: 7,
+                    positions: ['FW'],
+                    club: 'Barcelona',
+                    nationality: null,
+                    sections: [],
+                  ),
+                  detailRepository: details,
+                ))
+              : PlayerCard(playerId: 2, detailRepository: details),
+        ));
+        await tester.pumpAndSettle();
+        expect(find.text(language == 'ko' ? '대한민국' : 'South Korea'),
+            findsOneWidget);
+        expect(
+            find.text(language == 'ko' ? 'South Korea' : '대한민국'), findsNothing);
+        expect(tester.takeException(), isNull);
+      }
+      expect(details.calls, [(playerId: 2, seasonId: null)]);
+    }
+  });
 
   testWidgets(
       'home names, competitions and scorers follow language; codes stay English',

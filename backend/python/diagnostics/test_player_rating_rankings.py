@@ -183,11 +183,30 @@ class PlayerRatingRankingsTests(unittest.TestCase):
         self.assertEqual(data["reference"]["minimum_rated_matches"], 10)
         self.assertEqual(len(reference) + 1, len(self.fetch_all("SELECT * FROM player_rating_reference_samples")))
         self.assertEqual(data["reference"]["sample_count"], 81)
-        self.assertEqual(data["reference"]["early_season_minimum_rated_matches"], 1)
+        self.assertNotIn("early_season_minimum_rated_matches", data["reference"])
+
+    def test_early_season_uses_each_leagues_half_completed_rounds_for_scores_and_reference(self):
+        cases = ((5642025, 38, 7, 3, 4, 4), (822025, 34, 4, 5, 6, 2))
+        for season_id, total_rounds, completed_rounds, excluded, included, minimum in cases:
+            self.add_matches(season_id, excluded, count=minimum - 1, rating=9)
+            self.add_matches(season_id, included, count=minimum, rating=7)
+            self.add_scheduled_rounds(season_id, total_rounds=total_rounds, completed_rounds=completed_rounds)
+        self.initialize()
+        client, _ = self.client()
+        for season_id, _, _, _, included, minimum in cases:
+            with self.subTest(season_id=season_id):
+                data = client.get(f"/v1/players/rankings?season_id={season_id}").json()
+                self.assertEqual(data["total"], 1)
+                self.assertEqual([(row["player_id"], row["rated_matches"]) for row in data["items"]],
+                                 [(included, minimum)])
+                self.assertEqual(data["reference"]["sample_count"], 82)
+                samples = self.fetch_all("SELECT player_id,rated_matches FROM player_rating_reference_samples WHERE season_id=%s",
+                                         (season_id,))
+                self.assertEqual(samples, [{"player_id": included, "rated_matches": minimum}])
 
     def test_half_of_rounds_restores_standard_minimum_and_rebuilds_entire_season(self):
         self.initialize()
-        self.add_matches(self.target, 3, count=1)
+        self.add_matches(self.target, 3, count=9)
         self.add_matches(self.target, 4, count=10)
         schedule = self.add_scheduled_rounds(self.target, completed_rounds=18)
         self.assertEqual(loader.build_player_rating_scores(self.target), 2)

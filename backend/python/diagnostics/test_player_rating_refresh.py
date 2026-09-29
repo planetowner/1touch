@@ -148,13 +148,32 @@ class PlayerRatingRefreshTests(unittest.TestCase):
                         (self.target * 100 + 19, self.fixture_id))
         self.db.execute("UPDATE fixtures SET state_id=5 WHERE fixture_id=?", (schedule[19],))
         self.db.execute("""INSERT INTO fixture_lineups (fixture_id,team_id,player_id,rating,minutes_played,match_position_id)
-            SELECT fixture_id,10,4,7,90,27 FROM fixtures WHERE stage_id=? AND round_id=1 LIMIT 1""", (self.target,))
+            SELECT fixture_id,10,4,7,90,27 FROM fixtures WHERE stage_id=? AND round_id=1 LIMIT 9""", (self.target,))
         self.assertEqual(rankings.build_player_rating_scores(self.target), 2)
         self.store(state=2)
         self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_scores WHERE season_id=%s", (self.target,))["n"], 2)
         self.store()
         self.assertEqual(self.score()["rated_matches"], 10)
         self.assertEqual(self.fetch_one("SELECT COUNT(*) AS n FROM player_rating_scores WHERE season_id=%s", (self.target,))["n"], 1)
+
+    def test_seventh_completed_round_removes_three_match_player_from_scores_and_reference(self):
+        schedule = self.add_scheduled_rounds(self.target, completed_rounds=6)
+        self.db.execute("UPDATE fixtures SET round_id=? WHERE fixture_id=?",
+                        (self.target * 100 + 7, self.fixture_id))
+        self.db.execute("UPDATE fixtures SET state_id=5 WHERE fixture_id=?", (schedule[7],))
+        self.db.execute("""INSERT INTO fixture_lineups (fixture_id,team_id,player_id,rating,minutes_played,match_position_id)
+            SELECT fixture_id,10,4,9,90,27 FROM fixtures WHERE stage_id=? AND round_id=1 LIMIT 3""", (self.target,))
+        self.assertEqual(rankings.build_player_rating_scores(self.target), 2)
+        # 마지막 경기가 끝나야 완료 라운드가 6개에서 7개로 늘어요.
+        self.store(state=2)
+        self.assertIsNotNone(self.fetch_one("SELECT player_id FROM player_rating_scores WHERE season_id=%s AND player_id=4",
+                                           (self.target,)))
+        self.store()
+        self.assertEqual(self.score()["rated_matches"], 10)
+        self.assertIsNone(self.fetch_one("SELECT player_id FROM player_rating_scores WHERE season_id=%s AND player_id=4",
+                                        (self.target,)))
+        self.assertIsNone(self.fetch_one("SELECT player_id FROM player_rating_reference_samples WHERE season_id=%s AND player_id=4",
+                                        (self.target,)))
 
     def test_finished_rating_correction_updates_score_and_reference_together(self):
         self.store()

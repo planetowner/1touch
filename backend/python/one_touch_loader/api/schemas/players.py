@@ -18,6 +18,7 @@ class PlayerProfile(PlayerCandidate):
     height_cm: int | None
     weight_kg: int | None
     date_of_birth: date | None
+    nationality_id: int | None
     nationality: str | None
     nationality_image: str | None
     team_id: int | None
@@ -186,6 +187,7 @@ class CurrentPlayerRankingResponse(BaseModel):
 
 
 class PlayerWatch(PlayerCandidate):
+    jersey_number: int | None
     recent_average: float
     previous_average: float
     change: float

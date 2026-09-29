@@ -115,15 +115,17 @@ class PlayerShortNamesTests(unittest.TestCase):
                 values.append([(83, 'Short team')])
             values.append([(184798, 'Short player')])
             values.append([(564, 'League')])
+            if locale in ('en', 'ko'):
+                values.append([(712, 'Country')])
             with patch.object(football_names, 'fetch_all', side_effect=values) as fetch:
                 result = football_names.localized_names(locale)
             self.assertEqual(result['players'], {'184798': 'Full'})
             self.assertEqual(result['player_short_names'], {'184798': 'Short player'})
             self.assertEqual(result['competitions'], {'564': 'League'})
             column = 'name' if locale == 'en' else f'name_{locale}'
-            self.assertEqual(fetch.call_args.args[0],
-                             f'SELECT competition_id,{column} FROM competitions '
-                             f'WHERE {column} IS NOT NULL ORDER BY competition_id')
+            fetch.assert_any_call(f'SELECT competition_id,{column} FROM competitions '
+                                  f'WHERE {column} IS NOT NULL ORDER BY competition_id')
+            self.assertEqual(result['countries'], {'712': 'Country'} if locale in ('en', 'ko') else {})
             if locale in ('ja', 'zh'):
                 self.assertEqual(result['team_short_names'], {})
 

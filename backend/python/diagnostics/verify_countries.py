@@ -19,6 +19,7 @@ EXPECTED_COUNTRY_COLUMNS = [
     ("country_id", "bigint unsigned", "NO"),
     ("name", "varchar(120)", "NO"),
     ("image_path", "varchar(512)", "YES"),
+    ("name_ko", "varchar(120)", "YES"),
 ]
 
 

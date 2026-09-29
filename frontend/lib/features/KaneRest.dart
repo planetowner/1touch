@@ -9,6 +9,7 @@ import 'package:onetouch/core/team_comparison_colors.dart';
 import 'package:onetouch/data/players/player_detail_repository.dart';
 import 'package:onetouch/data/players/player_detail_repository_provider.dart';
 import 'package:onetouch/features/player/player_following_controller.dart';
+import 'package:onetouch/models/player_detail.dart';
 
 class PlayerMatchStatRow {
   final String label;
@@ -32,6 +33,7 @@ class PlayerMatchStatData {
   final int? jerseyNumber;
   final List<String> positions;
   final String club;
+  final int? nationalityId;
   final String? nationality;
   final String? flagEmoji;
   final String? playerImageUrl;
@@ -46,6 +48,7 @@ class PlayerMatchStatData {
     required this.jerseyNumber,
     required this.positions,
     required this.club,
+    this.nationalityId,
     required this.nationality,
     this.flagEmoji,
     this.playerImageUrl,
@@ -340,7 +343,7 @@ class _PlayerNationalityLine extends StatefulWidget {
 }
 
 class _PlayerNationalityLineState extends State<_PlayerNationalityLine> {
-  Future<String?>? _nationality;
+  Future<PlayerDetail>? _detail;
 
   @override
   void initState() {
@@ -362,30 +365,34 @@ class _PlayerNationalityLineState extends State<_PlayerNationalityLine> {
     final playerId = widget.player.playerId;
     if (widget.player.nationality?.trim().isNotEmpty == true ||
         playerId == null) {
-      _nationality = null;
+      _detail = null;
       return;
     }
     final repository = widget.repository ?? playerDetailRepository;
-    _nationality = Future.sync(() => repository.load(playerId))
-        .then((detail) => detail.profile.nationality);
+    _detail = Future.sync(() => repository.load(playerId));
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
-      future: _nationality,
+    return FutureBuilder<PlayerDetail>(
+      future: _detail,
       builder: (context, snapshot) {
         final nationality = widget.player.nationality?.trim().isNotEmpty == true
             ? widget.player.nationality!.trim()
-            : snapshot.data?.trim();
+            : snapshot.data?.profile.nationality?.trim();
         if (nationality == null || nationality.isEmpty) {
           return const SizedBox.shrink();
         }
         final flag = widget.player.flagEmoji;
+        final label = countryNameLabel(
+          context,
+          widget.player.nationalityId ?? snapshot.data?.profile.nationalityId,
+          nationality,
+        );
         return Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
-            flag == null || flag.isEmpty ? nationality : '$nationality $flag',
+            flag == null || flag.isEmpty ? label : '$label $flag',
             style: Body1.style.copyWith(color: widget.color),
           ),
         );
@@ -571,6 +578,7 @@ final mockRashfordStats = PlayerMatchStatData(
   jerseyNumber: 14,
   positions: ['ST', 'LW', 'LM'],
   club: 'FC Barcelona',
+  nationalityId: 462,
   nationality: 'England',
   flagEmoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
   playerImageAsset: 'assets/playerAvatar.png',

@@ -16,6 +16,7 @@ void main() {
       'players': {'184798': '리오넬 메시', '4313': '손흥민'},
       'player_short_names': {'184798': 'L. 메시'},
       'competitions': {'564': '라리가'},
+      'countries': {'712': '대한민국'},
     });
     expect(names.team(83, 'FC Barcelona'), 'FC 바르셀로나');
     expect(names.team(83, 'Barcelona', short: true), '바르셀로나');
@@ -27,6 +28,9 @@ void main() {
     expect(names.player(null, 'Unknown'), 'Unknown');
     expect(names.competition(564, 'La Liga'), '라리가');
     expect(names.competition(999, 'Other Cup'), 'Other Cup');
+    expect(names.country(712, 'South Korea'), '대한민국');
+    expect(names.country(3374, 'Gibraltar'), 'Gibraltar');
+    expect(names.country(null, '—'), '—');
   });
 
   test('loads once per language with authentication and retries failures',
@@ -43,6 +47,7 @@ void main() {
               'players': {},
               'player_short_names': {},
               'competitions': {'564': '라리가'},
+              'countries': {},
             }),
             200,
             headers: {'content-type': 'application/json; charset=utf-8'});

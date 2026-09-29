@@ -77,6 +77,9 @@ def _season_minimums(cur, season_ids: list[int], standard_minimum: int) -> dict[
         # 미래 일정도 분모에 포함하고, 연기·진행 중 경기가 있는 라운드는 완료로 세지 않아요.
         if row["total_rounds"] > 0 and row["completed_rounds"] * 2 >= row["total_rounds"]:
             minimums[row["season_id"]] = standard_minimum
+        else:
+            # 중반 전에는 완료 라운드의 절반을 올림해요. 첫 라운드 진행 중에도 평점 1경기는 필요해요.
+            minimums[row["season_id"]] = max(1, (row["completed_rounds"] + 1) // 2)
     return minimums
 
 

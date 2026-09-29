@@ -7,8 +7,10 @@ from pydantic import BaseModel, Field
 class PlayerRatingReferenceOut(BaseModel):
     start_season_name: str
     end_season_name: str
-    minimum_rated_matches: int = Field(description="각 리그·시즌 중반 이후의 최소 평점 경기 수예요.")
-    early_season_minimum_rated_matches: Literal[1] = 1
+    minimum_rated_matches: int = Field(description=(
+        "각 리그·시즌 중반 이후의 최소 평점 경기 수예요. "
+        "중반 전에는 해당 리그의 완료 라운드 수를 2로 나눈 뒤 올림해요. 최소 1경기는 필요해요."
+    ))
     competition_ids: list[int]
     sample_count: int
     updated_at: datetime
