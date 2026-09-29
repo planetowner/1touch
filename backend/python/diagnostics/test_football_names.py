@@ -15,6 +15,24 @@ with patch("mysql.connector.pooling.MySQLConnectionPool") as pool:
 
 
 class FootballNamesTests(unittest.TestCase):
+    def test_country_catalog_uses_available_translations_and_preserves_ids(self):
+        with sqlite3.connect(':memory:') as db:
+            db.execute('CREATE TABLE countries (country_id INTEGER, name TEXT, name_ko TEXT)')
+            db.executemany('INSERT INTO countries VALUES (?, ?, ?)', [
+                (462, 'England', '잉글랜드'), (712, 'South Korea', '대한민국'),
+                (3374, 'Gibraltar', None),
+            ])
+            def fetch(sql):
+                return db.execute(sql).fetchall() if 'FROM countries' in sql else []
+
+            with patch.object(names_repo, 'fetch_all', side_effect=fetch):
+                self.assertEqual(names_repo.localized_names('ko')['countries'],
+                                 {'462': '잉글랜드', '712': '대한민국'})
+                self.assertEqual(names_repo.localized_names('en')['countries'],
+                                 {'462': 'England', '712': 'South Korea', '3374': 'Gibraltar'})
+                for locale in ('ja', 'zh'):
+                    self.assertEqual(names_repo.localized_names(locale)['countries'], {})
+
     def test_verified_ids_and_unknowns(self):
         with patch.object(names_repo, "fetch_all", return_value=[(4313,)]) as fetch:
             self.assertEqual(names_repo.korean_name_ids("players", "손 흥민"), (4313,))
@@ -37,7 +55,7 @@ class FootballNamesTests(unittest.TestCase):
         self.assertIn("WHERE s.is_current=1 AND (", sql)
         self.assertIn("OR p.player_id IN (%s)", sql)
         self.assertNotIn("손흥민", sql)
-        self.assertEqual(params, ("%손흥민%", 4313))
+        self.assertEqual(params, ("%손흥민%", 4313, 100))
         self.assertEqual(rows[0]["name"], "Heung-min Son")
         conn.start_transaction.assert_called_once_with(readonly=True)
         conn.rollback.assert_called_once()
@@ -51,7 +69,7 @@ class FootballNamesTests(unittest.TestCase):
         sql, params = conn.cursor.return_value.__enter__.return_value.execute.call_args.args
         self.assertNotIn("IN ()", sql)
         self.assertNotIn("OR p.player_id", sql)
-        self.assertEqual(params, ("%Kane%",))
+        self.assertEqual(params, ("%Kane%", 100))
 
     def test_team_search_keeps_season_fixture_rules_and_limit(self):
         with patch.object(points_pace_repo, "fetch_all_dict", return_value=[]) as fetch, \
