@@ -222,8 +222,8 @@ void main() {
     expect(find.descendant(of: header, matching: find.byType(OverflowBox)),
         findsOneWidget);
     expect(tester.widget<Text>(find.text('승점')).style?.fontSize,
-        tester.widget<Text>(find.text('클럽')).style?.fontSize);
-    final clubHeaderTop = tester.getTopLeft(find.text('클럽')).dy;
+        tester.widget<Text>(find.text('팀')).style?.fontSize);
+    final clubHeaderTop = tester.getTopLeft(find.text('팀')).dy;
     for (final label in ['승점', '경기', '승', '무', '패']) {
       expect(tester.getTopLeft(find.text(label)).dy, clubHeaderTop);
     }

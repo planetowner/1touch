@@ -615,7 +615,7 @@ const appMessages = <String, MessageTranslations>{
   "R16": (ko: "16강", ja: "ベスト16", zh: "十六强"),
   "QF": (ko: "8강", ja: "準々決勝", zh: "八强"),
   "SF": (ko: "4강", ja: "準決勝", zh: "四强"),
-  "Club": (ko: "클럽", ja: "クラブ", zh: "俱乐部"),
+  "Club": (ko: "팀", ja: "クラブ", zh: "俱乐部"),
   "MP": (ko: "경기", ja: "試合", zh: "场次"),
   "W": (ko: "승", ja: "勝", zh: "胜"),
   "D": (ko: "무", ja: "分", zh: "平"),
