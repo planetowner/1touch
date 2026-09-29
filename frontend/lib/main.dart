@@ -5,6 +5,7 @@ import 'package:onetouch/l10n/football_names_loader.dart';
 import 'package:onetouch/data/catalog/football_names.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/services/mobile_ads_service.dart';
+import 'package:onetouch/services/device_notification_service.dart';
 
 // Core & Data
 import 'package:onetouch/core/style.dart' as style;
@@ -52,7 +53,22 @@ Future<void> runOneTouchApp({
   await appThemeController.initialize();
   await appLocaleController.initialize();
   await (restoreSession ?? auth_provider.authService.restoreSession)();
+  try {
+    await deviceNotificationService.initialize(
+        onPayload: _openNotificationPayload);
+  } on Object catch (error) {
+    debugPrint('Unable to initialize device notifications: $error');
+  }
   runApp(const MyApp());
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    final payload = deviceNotificationService.takeInitialPayload();
+    if (payload != null) _openNotificationPayload(payload);
+  });
+}
+
+void _openNotificationPayload(String payload) {
+  if (!payload.startsWith('/')) return;
+  _router.go(payload);
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -292,7 +308,7 @@ final GoRouter _router = GoRouter(
       path: '/profile/notification/team/:name',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (c, s) => TeamNotificationDetailPage(
-        teamName: Uri.decodeComponent(s.pathParameters['name']!),
+        teamName: s.pathParameters['name']!,
         teamId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
       ),
     ),
@@ -300,7 +316,7 @@ final GoRouter _router = GoRouter(
       path: '/profile/notification/player/:name',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (c, s) => PlayerNotificationDetailPage(
-        playerName: Uri.decodeComponent(s.pathParameters['name']!),
+        playerName: s.pathParameters['name']!,
         playerId: int.tryParse(s.uri.queryParameters['id'] ?? ''),
       ),
     ),
