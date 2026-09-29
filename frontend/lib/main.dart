@@ -28,6 +28,7 @@ import 'package:onetouch/data/posts/mock/mock_post_repository.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 import 'package:onetouch/models/fixture.dart';
 import 'package:onetouch/models/current_user_profile.dart';
+import 'package:onetouch/comm_pages/profile_activity_screen.dart';
 
 // Feature Modules
 import 'package:onetouch/screens/index.dart'; // Imports all screens
@@ -290,6 +291,42 @@ final GoRouter _router = GoRouter(
       path: '/profile',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (c, s) => Profile(),
+    ),
+    GoRoute(
+      path: '/profile/activity',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => Scaffold(
+        body: ProfileActivityScreen(
+          profile: state.extra is CurrentUserProfile
+              ? state.extra as CurrentUserProfile
+              : null,
+          initialTab: state.uri.queryParameters['tab'] == 'comments'
+              ? ProfileActivityTab.comments
+              : ProfileActivityTab.posts,
+        ),
+        bottomNavigationBar: OneTouchBottomNavigationBar(
+          currentIndex: 0,
+          onTap: (index) {
+            if (index == 1) {
+              openTeamPage(
+                context,
+                currentUserPreferences.viewedTeamId.value,
+              );
+            } else {
+              context.go(
+                switch (index) {
+                  0 => '/home',
+                  2 => '/players',
+                  _ => '/community',
+                },
+              );
+            }
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              mainTabActions.select(index);
+            });
+          },
+        ),
+      ),
     ),
     GoRoute(
       path: '/profile/edit',
@@ -589,6 +626,7 @@ class MyApp extends StatelessWidget {
 
 bool _usesMainBottomNavigation(String path) =>
     path == '/home' ||
+    path == '/profile/activity' ||
     path == '/notifications' ||
     path == '/team' ||
     path.startsWith('/team/') ||

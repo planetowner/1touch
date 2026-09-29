@@ -415,15 +415,15 @@ class _ProfileState extends State<Profile> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _buildStat('0', tr(context, "PTS"),
-                    statKey: 'points', width: statWidth),
+                    statKey: 'points', width: statWidth, tab: 'posts'),
                 _verticalDivider('points-posts'),
                 const SizedBox(width: dividerGap),
                 _buildStat('0', tr(context, "POSTS"),
-                    statKey: 'posts', width: statWidth),
+                    statKey: 'posts', width: statWidth, tab: 'posts'),
                 _verticalDivider('posts-comments'),
                 const SizedBox(width: dividerGap),
                 _buildStat('0', tr(context, "COMMENTS"),
-                    statKey: 'comments', width: statWidth),
+                    statKey: 'comments', width: statWidth, tab: 'comments'),
               ],
             );
           },
@@ -437,27 +437,32 @@ class _ProfileState extends State<Profile> {
     String label, {
     required String statKey,
     required double width,
+    required String tab,
   }) {
-    return SizedBox(
+    return GestureDetector(
       key: ValueKey('profile-stat-$statKey'),
-      width: width,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(value, textAlign: TextAlign.left, style: Heading4.style),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: width,
-            height: Body2_b.style.fontSize! * Body2_b.style.height!,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(tr(context, label),
-                  maxLines: 1, softWrap: false, style: Body2_b.style),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => context.push('/profile/activity?tab=$tab', extra: _profile),
+      child: SizedBox(
+        width: width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, textAlign: TextAlign.left, style: Heading4.style),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: width,
+              height: Body2_b.style.fontSize! * Body2_b.style.height!,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(tr(context, label),
+                    maxLines: 1, softWrap: false, style: Body2_b.style),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
