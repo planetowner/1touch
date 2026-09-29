@@ -1,13 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from ..db import fetch_all_dict, transaction
 from ..deps import get_user_id
 from ..repos.users_repo import get_user, lock_user, update_profile
-from ..repos import users_repo
+from ..repos import posts_repo, users_repo
 from ..schemas.users import DeleteAccountBody, UserProfileBody
 from ..services.community_periods import public_row
 
 router = APIRouter()
+
+
+@router.get("/users/me/posts")
+def my_posts(limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+             user_id: int = Depends(get_user_id)):
+    return {"items": posts_repo.list_my_posts(user_id, limit, offset), "limit": limit, "offset": offset}
+
+
+@router.get("/users/me/comments")
+def my_comments(limit: int = Query(default=50, ge=1, le=100), offset: int = Query(default=0, ge=0),
+                user_id: int = Depends(get_user_id)):
+    return {"items": posts_repo.list_my_comments(user_id, limit, offset), "limit": limit, "offset": offset}
 
 
 @router.get("/users/me")

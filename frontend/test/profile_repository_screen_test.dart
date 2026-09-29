@@ -17,6 +17,7 @@ import 'package:onetouch/features/player/player_following_controller.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/team.dart';
 import 'support/player_directory_fixture.dart';
+import 'support/stub_profile_activity_repository.dart';
 
 void main() {
   setUpAppCatalog();
@@ -309,6 +310,7 @@ void main() {
         GoRoute(
           path: '/profile/activity',
           builder: (_, state) => ProfileActivityScreen(
+            repository: const StubProfileActivityRepository(),
             profile: state.extra as CurrentUserProfile?,
             initialTab: state.uri.queryParameters['tab'] == 'comments'
                 ? ProfileActivityTab.comments

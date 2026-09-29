@@ -2,7 +2,7 @@
 from enum import Enum
 from fastapi import HTTPException
 from ..db import fetch_all_dict, fetch_one_dict, transaction
-from ..services.community_access import require_favorite_team_access, require_community_read_access
+from ..services.community_access import community_read_team_ids, require_favorite_team_access, require_community_read_access
 from ..services.community_periods import PostPeriod, period_bounds, public_row, utc_now
 from ..services.community_retention import UNPUBLISHED_RETENTION
 from .users_repo import get_user, lock_user, require_profile
@@ -16,6 +16,20 @@ class PostSort(str, Enum):
     newest = "newest"
     popular = "popular"
     best = "best"
+
+
+# 목록·상세·내 활동에서 작성자와 집계 정보를 같은 규칙으로 읽어요.
+_POST_SELECT = f"""SELECT p.*,u.username,EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=p.user_id) AS has_avatar,
+    (SELECT COUNT(*) FROM post_likes l WHERE l.post_id=p.post_id) AS like_count,
+    (SELECT COUNT(*) FROM post_comments c WHERE c.post_id=p.post_id AND c.state='active' AND NOT {blocked_sql('c.user_id')}) AS comment_count,
+    EXISTS(SELECT 1 FROM post_likes l WHERE l.post_id=p.post_id AND l.user_id=%s) AS liked
+    FROM posts p LEFT JOIN users u ON u.user_id=p.user_id"""
+
+_COMMENT_SELECT = f"""SELECT c.*,u.username,{blocked_sql('c.user_id')} AS blocked,
+    EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=c.user_id) AS has_avatar,
+    (SELECT COUNT(*) FROM comment_likes l WHERE l.comment_id=c.comment_id) AS like_count,
+    EXISTS(SELECT 1 FROM comment_likes l WHERE l.comment_id=c.comment_id AND l.user_id=%s) AS liked
+    FROM post_comments c LEFT JOIN users u ON u.user_id=c.user_id"""
 
 
 def community_user(user_id: int, team_id: int, *, read_only: bool = False) -> dict:
@@ -54,15 +68,9 @@ def list_posts(user_id: int, team_id: int, category: str | None, sort: PostSort,
     # 인기순도 선택 기간에 작성된 게시물의 전체 좋아요 수로 비교해요.
     order = "like_count DESC,p.created_at DESC,p.post_id DESC" if sort == PostSort.popular else "p.created_at DESC,p.post_id DESC"
     having = "HAVING like_count >= 10" if sort == PostSort.best else ""
-    rows = fetch_all_dict(f"""SELECT p.*,u.username,EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=p.user_id) AS has_avatar,
-        (SELECT COUNT(*) FROM post_likes l WHERE l.post_id=p.post_id) AS like_count,
-        (SELECT COUNT(*) FROM post_comments c WHERE c.post_id=p.post_id AND c.state='active' AND NOT {blocked_sql('c.user_id')}) AS comment_count,
-        EXISTS(SELECT 1 FROM post_likes l WHERE l.post_id=p.post_id AND l.user_id=%s) AS liked
-        FROM posts p LEFT JOIN users u ON u.user_id=p.user_id WHERE {' AND '.join(clauses)}
+    rows = fetch_all_dict(f"""{_POST_SELECT} WHERE {' AND '.join(clauses)}
         {having} ORDER BY {order} LIMIT %s OFFSET %s""", tuple(params + [limit, offset]))
-    for row in rows:
-        row["attachments"] = attachments_for_post(row["post_id"])
-    return [public_row(public_author(row)) for row in rows]
+    return [_public_post(row) for row in rows]
 
 
 def attachments_for_post(post_id: int) -> list[dict]:
@@ -74,18 +82,46 @@ def attachments_for_post(post_id: int) -> list[dict]:
     return rows
 
 
+def _public_post(row: dict) -> dict:
+    row["attachments"] = attachments_for_post(row["post_id"])
+    return public_row(public_author(row))
+
+
 def get_post(user_id: int, post_id: int) -> dict:
     community_user(user_id, _post_team(post_id), read_only=True)
-    row = fetch_one_dict(f"""SELECT p.*,u.username,EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=p.user_id) AS has_avatar,
-        (SELECT COUNT(*) FROM post_likes l WHERE l.post_id=p.post_id) AS like_count,
-        (SELECT COUNT(*) FROM post_comments c WHERE c.post_id=p.post_id AND c.state='active' AND NOT {blocked_sql('c.user_id')}) AS comment_count,
-        EXISTS(SELECT 1 FROM post_likes l WHERE l.post_id=p.post_id AND l.user_id=%s) AS liked
-        FROM posts p LEFT JOIN users u ON u.user_id=p.user_id WHERE p.post_id=%s AND p.state='active'""", (user_id, user_id, post_id))
+    row = fetch_one_dict(f"""{_POST_SELECT} WHERE p.post_id=%s AND p.state='active'""", (user_id, user_id, post_id))
     if row is None:
         raise HTTPException(404, "Post not found")
     require_visible_author(user_id, row["user_id"])
-    row["attachments"] = attachments_for_post(post_id)
-    return public_row(public_author(row))
+    return _public_post(row)
+
+
+def _activity_team_ids(user_id: int) -> tuple[int, ...]:
+    user = get_user(user_id)
+    require_profile(user)
+    # 내 활동도 현재 읽을 수 있는 팀으로 제한해 상세·첨부 조회 권한과 맞춰요.
+    return community_read_team_ids(user["favorite_team_id"], list_following_team_ids(user_id))
+
+
+def list_my_posts(user_id: int, limit: int, offset: int) -> list[dict]:
+    team_ids = _activity_team_ids(user_id)
+    rows = fetch_all_dict(f"""{_POST_SELECT}
+        WHERE p.user_id=%s AND p.state='active' AND p.team_id IN ({','.join(['%s'] * len(team_ids))})
+        ORDER BY p.created_at DESC,p.post_id DESC LIMIT %s OFFSET %s""",
+        (user_id, user_id, user_id, *team_ids, limit, offset))
+    return [_public_post(row) for row in rows]
+
+
+def list_my_comments(user_id: int, limit: int, offset: int) -> list[dict]:
+    team_ids = _activity_team_ids(user_id)
+    rows = fetch_all_dict(f"""{_COMMENT_SELECT} JOIN posts p ON p.post_id=c.post_id
+        WHERE c.user_id=%s AND c.state='active' AND p.state='active'
+          AND p.team_id IN ({','.join(['%s'] * len(team_ids))}) AND NOT {blocked_sql('p.user_id')}
+        ORDER BY c.created_at DESC,c.comment_id DESC LIMIT %s OFFSET %s""",
+        (user_id, user_id, user_id, *team_ids, user_id, limit, offset))
+    # 댓글 탭은 원문을 열 수 있어야 해요. 같은 글에 쓴 댓글들은 원문 조회를 함께 써요.
+    posts = {post_id: get_post(user_id, post_id) for post_id in dict.fromkeys(row["post_id"] for row in rows)}
+    return [{"post": posts[row["post_id"]], "comment": _public_comment(row)} for row in rows]
 
 
 def _set_attachments(cur, user_id: int, post_id: int, attachment_ids: list[int]) -> None:
@@ -214,20 +250,19 @@ def delete_post(user_id: int, post_id: int) -> None:
 
 def list_comments(user_id: int, post_id: int, after_id: int, limit: int) -> list[dict]:
     get_post(user_id, post_id)
-    rows = fetch_all_dict(f"""SELECT c.*,u.username,{blocked_sql('c.user_id')} AS blocked,
-        EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=c.user_id) AS has_avatar,
-        (SELECT COUNT(*) FROM comment_likes l WHERE l.comment_id=c.comment_id) AS like_count,
-        EXISTS(SELECT 1 FROM comment_likes l WHERE l.comment_id=c.comment_id AND l.user_id=%s) AS liked
-        FROM post_comments c LEFT JOIN users u ON u.user_id=c.user_id
+    rows = fetch_all_dict(f"""{_COMMENT_SELECT}
         WHERE c.post_id=%s AND c.comment_id>%s ORDER BY c.comment_id LIMIT %s""", (user_id, user_id, post_id, after_id, limit))
-    for row in rows:
-        blocked = row.pop("blocked")
-        public_author(row)
-        if blocked or row["state"] != "active":
-            # 댓글 행을 없애면 답글 대상이 사라져요. ID와 답글 관계만 남기고 내용은 숨겨요.
-            row.update(body="", username=None, user_id=None, avatar_url=None, liked=False, like_count=0,
-                       state="blocked" if blocked else row["state"])
-    return [public_row(row) for row in rows]
+    return [_public_comment(row) for row in rows]
+
+
+def _public_comment(row: dict) -> dict:
+    blocked = row.pop("blocked")
+    public_author(row)
+    if blocked or row["state"] != "active":
+        # 댓글 행을 없애면 답글 대상이 사라져요. ID와 답글 관계만 남기고 내용은 숨겨요.
+        row.update(body="", username=None, user_id=None, avatar_url=None, liked=False, like_count=0,
+                   state="blocked" if blocked else row["state"])
+    return public_row(row)
 
 
 def create_comment(user_id: int, post_id: int, body: str, reply_to_id: int | None) -> int:
