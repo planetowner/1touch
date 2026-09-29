@@ -873,7 +873,7 @@ class _CurrentFormSectionState extends State<CurrentFormSection> {
           spacing: 20,
           runSpacing: 8,
           children: [
-            _legendItem(comparisonColors.anchor, tr(context, 'CURRENT')),
+            _legendItem(comparisonColors.anchor, tr(context, 'MY TEAM')),
             if (showComparison)
               _legendItem(
                 comparisonColors.opponent,
