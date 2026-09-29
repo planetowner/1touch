@@ -78,6 +78,89 @@ void expectLegend(WidgetTester tester, Map<String, Color> expected) {
 }
 
 void main() {
+  testWidgets('calendar keeps its selected month when recreated',
+      (tester) async {
+    final selectedMonth = DateTime(2026, 4);
+    Widget subject(int generation) => MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: FixtureCalendar(
+                key: ValueKey('calendar-$generation'),
+                favoriteTeamId: 7980,
+                selectedMonth: selectedMonth,
+                participatingCompetitions: const [],
+                allMatches: const [],
+              ),
+            ),
+          ),
+        );
+
+    await tester.pumpWidget(subject(0));
+    expect(find.text('April'), findsOneWidget);
+    await tester.pumpWidget(subject(1));
+    expect(find.text('April'), findsOneWidget);
+  });
+
+  testWidgets('cup fixture adds CDR to the legend without a cup membership',
+      (tester) async {
+    final cupMatch = HomeCalendarFixture(
+      fixture: Fixture(
+        fixtureId: 20500001,
+        seasonId: 23902,
+        competitionId: 570,
+        homeTeamId: 3468,
+        awayTeamId: 7980,
+        competitionType: CompetitionType.cup,
+        roundName: 'SF',
+        status: FixtureStatus.past,
+        startingAt: DateTime(2026, 4, 2, 21).toIso8601String(),
+      ),
+      opponent: const Team(teamId: 3468, name: 'Real Madrid'),
+    );
+    final visibleCompetitions = calendarCompetitionsForFixtures(
+      participatingCompetitions: const [
+        Competition(competitionId: 564, name: 'La Liga', shortCode: 'LALIGA'),
+      ],
+      catalogCompetitions: competitions.values.toList(),
+      fixtures: [cupMatch],
+    );
+    expect(visibleCompetitions.map((c) => c.competitionId), contains(570));
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: FixtureCalendar(
+            favoriteTeamId: 7980,
+            selectedMonth: DateTime(2026, 4),
+            participatingCompetitions: visibleCompetitions,
+            allMatches: [cupMatch],
+          ),
+        ),
+      ),
+    ));
+    await tester.pump();
+    expectLegend(tester, {'CDR': Colors.red});
+    expect(find.byKey(const ValueKey('calendar-fixture-dot-20500001')),
+        findsOneWidget);
+  });
+
+  testWidgets('cup dot is visible when a league match is first on the same day',
+      (tester) async {
+    final month = DateTime.now();
+    final kickoff = DateTime(month.year, month.month, 12);
+    await tester.pumpWidget(calendar(
+      [564, 570],
+      [match(564, kickoff), match(570, kickoff)],
+      const Locale('en'),
+    ));
+
+    expectLegend(tester, {'CDR': Colors.red});
+    expect(
+        find.byKey(const ValueKey('calendar-fixture-dot-570')), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('calendar-fixture-dot-564')), findsNothing);
+  });
+
   for (final locale in appSupportedLocales) {
     for (final scenario
         in <({String name, List<int> ids, Map<String, Color> colors})>[
@@ -87,7 +170,6 @@ void main() {
         colors: {
           'UEL': Colors.red,
           'CDR': Colors.blue,
-          'LA LIGA': Colors.green,
         }
       ),
       (
@@ -97,21 +179,15 @@ void main() {
           'UCL': Colors.red,
           'FA Cup': Colors.blue,
           'EFL Cup': Colors.green,
-          'Premier League': Colors.orange,
         }
       ),
-      (
-        name: 'only Carabao',
-        ids: [27, 8],
-        colors: {'EFL Cup': Colors.red, 'Premier League': Colors.blue}
-      ),
+      (name: 'only Carabao', ids: [27, 8], colors: {'EFL Cup': Colors.red}),
       (
         name: 'two English cups',
         ids: [27, 8, 24],
         colors: {
           'FA Cup': Colors.red,
           'EFL Cup': Colors.blue,
-          'Premier League': Colors.green,
         }
       ),
       (
@@ -120,24 +196,15 @@ void main() {
         colors: {
           'UECL': Colors.red,
           'CDR': Colors.blue,
-          'LA LIGA': Colors.green,
         }
       ),
       (
-        name: 'Premier League uses its proper name',
+        name: 'Premier League has no legend or fixture dot',
         ids: [8],
-        colors: {'Premier League': Colors.red}
+        colors: {}
       ),
-      (
-        name: 'Bundesliga uses its proper name',
-        ids: [82],
-        colors: {'Bundesliga': Colors.red}
-      ),
-      (
-        name: 'League 1 uses its proper name',
-        ids: [301],
-        colors: {'League 1': Colors.red}
-      ),
+      (name: 'Bundesliga has no legend or fixture dot', ids: [82], colors: {}),
+      (name: 'Ligue 1 has no legend or fixture dot', ids: [301], colors: {}),
     ]) {
       testWidgets(
           '${scenario.name} uses participation priority in ${locale.languageCode}',
@@ -194,7 +261,6 @@ void main() {
     expectLegend(tester, {
       'UCL': Colors.red,
       'FA Cup': Colors.blue,
-      'Premier League': Colors.green
     });
     expect(find.byType(Image), findsNothing);
     await tester.tap(find.byIcon(Icons.chevron_right));
@@ -202,7 +268,6 @@ void main() {
     expectLegend(tester, {
       'UCL': Colors.red,
       'FA Cup': Colors.blue,
-      'Premier League': Colors.green
     });
     final dot = tester.widget<Container>(
         find.byKey(const ValueKey('calendar-fixture-dot-24')));
@@ -210,8 +275,7 @@ void main() {
 
     // 홈에서 조회 팀을 바꾸면 새 참가 목록을 기준으로 다시 배정해요.
     await tester.pumpWidget(calendar([8, 27], [], const Locale('en')));
-    expectLegend(
-        tester, {'EFL Cup': Colors.red, 'Premier League': Colors.blue});
+    expectLegend(tester, {'EFL Cup': Colors.red});
     expect(tester.takeException(), isNull);
   });
 }
