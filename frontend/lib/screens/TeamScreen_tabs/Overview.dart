@@ -35,6 +35,7 @@ class _OverviewTabState extends State<OverviewTab> {
   bool _showBestElevenSection = true;
   bool _showInjurySection = true;
   bool _showTransferSection = true;
+  bool _showIncomingTransfers = true;
 
   int? get _teamId => widget.team?['id'] as int?;
 
@@ -45,6 +46,7 @@ class _OverviewTabState extends State<OverviewTab> {
       _showBestElevenSection = true;
       _showInjurySection = true;
       _showTransferSection = true;
+      _showIncomingTransfers = true;
     }
   }
 
@@ -114,6 +116,10 @@ class _OverviewTabState extends State<OverviewTab> {
                   teams: widget.team,
                   repository: widget.transferRepository,
                   onUnavailable: _hideTransferSection,
+                  showIncoming: _showIncomingTransfers,
+                  onDirectionChanged: (showIncoming) {
+                    setState(() => _showIncomingTransfers = showIncoming);
+                  },
                 ),
               ],
 
