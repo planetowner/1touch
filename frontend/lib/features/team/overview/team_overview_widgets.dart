@@ -192,12 +192,12 @@ class TransferTile extends StatelessWidget {
     // 영문은 기존 표기를 유지하고, 요청된 세 언어의 문구만 바꿔요.
     if (Localizations.localeOf(context).languageCode == 'en') return original;
 
-    // 같은 이적 유형도 영입·방출 방향에 따라 문구가 달라요.
+    // 임대는 영입·방출에 같은 문구를 쓰고, 자유 계약·임대 복귀만 방향을 구분해요.
     final message = switch ((transfer.typeId, transfer.direction)) {
       (220, TransferDirection.incoming) => 'Free Transfer',
       (220, TransferDirection.outgoing) => 'Contract expired',
       (9688, TransferDirection.incoming) => 'Return from loan',
-      (218, TransferDirection.outgoing) => 'Loan transfer',
+      (218, _) => 'Loan transfer',
       (219, _) => 'No information',
       _ => null,
     };

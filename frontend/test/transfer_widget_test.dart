@@ -382,9 +382,9 @@ void main() {
             transferId: 93,
             playerId: 1093,
             playerName: 'Loan Player',
-            direction: TransferDirection.outgoing,
+            direction: TransferDirection.incoming,
             typeId: 218,
-            displayType: 'On Loan',
+            displayType: 'Loan',
           ),
           TransferEntry(
             transferId: 94,
@@ -395,7 +395,16 @@ void main() {
             displayType: 'Return from loan',
           ),
         ],
-        outgoing: const [],
+        outgoing: const [
+          TransferEntry(
+            transferId: 95,
+            playerId: 1095,
+            playerName: 'Outgoing Loan Player',
+            direction: TransferDirection.outgoing,
+            typeId: 218,
+            displayType: 'Loan',
+          ),
+        ],
       ),
     );
     addTearDown(repository.dispose);
@@ -407,22 +416,24 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    const expectedLabels = <int, String>{
-      91: '자유 계약',
-      92: '정보 없음',
-      93: '임대',
-      94: '임대 복귀',
+    const expectedLabels = {
+      'transfer-in-toggle': {91: '자유 계약', 92: '정보 없음', 93: '임대', 94: '임대 복귀'},
+      'transfer-out-toggle': {95: '임대'},
     };
-    for (final entry in expectedLabels.entries) {
-      final value = find.byKey(ValueKey('transfer-value-${entry.key}'));
-      expect(value, findsOneWidget);
-      expect(tester.widget<Text>(value).data, entry.value);
-      expect(tester.widget<Text>(value).style, Body1_b.style);
-      expect(
-        tester.renderObject<RenderParagraph>(value).didExceedMaxLines,
-        isFalse,
-        reason: '${entry.value} should fit at 320px',
-      );
+    for (final direction in expectedLabels.entries) {
+      await tester.tap(find.byKey(ValueKey(direction.key)));
+      await tester.pumpAndSettle();
+      for (final entry in direction.value.entries) {
+        final value = find.byKey(ValueKey('transfer-value-${entry.key}'));
+        expect(value, findsOneWidget);
+        expect(tester.widget<Text>(value).data, entry.value);
+        expect(tester.widget<Text>(value).style, Body1_b.style);
+        expect(
+          tester.renderObject<RenderParagraph>(value).didExceedMaxLines,
+          isFalse,
+          reason: '${entry.value} should fit at 320px',
+        );
+      }
     }
     expect(tester.takeException(), isNull);
   });
