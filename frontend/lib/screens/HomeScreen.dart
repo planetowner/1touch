@@ -520,8 +520,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       allMatches: homeData.calendar,
                       favoriteTeamId: viewedTeamId,
                       participatingCompetitions:
-                          footballCatalog.currentCompetitions(viewedTeamId),
+                          calendarCompetitionsForFixtures(
+                        participatingCompetitions:
+                            footballCatalog.currentCompetitions(viewedTeamId),
+                        catalogCompetitions: footballCatalog.competitions.value,
+                        fixtures: homeData.calendar,
+                      ),
                       onMonthChanged: _loadCalendarMonth,
+                      selectedMonth: _calendarMonth,
                     ),
                     const SizedBox(height: 32),
                     SectionHeader(title: tr(context, "HIGHLIGHTS")),
