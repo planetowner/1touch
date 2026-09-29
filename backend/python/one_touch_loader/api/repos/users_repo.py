@@ -9,6 +9,8 @@ from ..services.community_periods import utc_now
 from .media_repo import queue_deletion, remove_attachments
 from ..services import social_login
 from ..services.auth_security import token_hash
+from ..services.profile_changes import check_change_limit, record_change
+from ..schemas.users import validate_username
 
 
 def get_user(user_id: int) -> dict:
@@ -38,13 +40,25 @@ def require_profile(user: dict) -> None:
 def update_profile(user_id: int, profile: dict) -> None:
     try:
         with transaction() as conn, conn.cursor(dictionary=True) as cur:
-            lock_user(cur, user_id)
-            cur.execute("UPDATE users SET username=%s,first_name=%s,last_name=%s WHERE user_id=%s",
-                        (profile["username"], profile["first_name"], profile["last_name"], user_id))
+            user = lock_user(cur, user_id)
+            if profile["username"] != user["username"]:
+                try:
+                    validate_username(profile["username"])
+                except ValueError as exc:
+                    raise HTTPException(422, str(exc)) from exc
+            display_name = profile["display_name"]
+            changed = user["display_name"] is not None and display_name != user["display_name"]
+            now = utc_now()
+            if changed:
+                check_change_limit(cur, user_id, "display_name", now)
+            cur.execute("UPDATE users SET username=%s,display_name=%s,first_name=%s,last_name=%s WHERE user_id=%s",
+                        (profile["username"], display_name, profile["first_name"], profile["last_name"], user_id))
+            if changed:
+                record_change(cur, user_id, "display_name", now)
     except IntegrityError as exc:
         if exc.errno != 1062:
             raise
-        raise HTTPException(409, "Username is already registered") from exc
+        raise HTTPException(409, "Username or nickname is already in use") from exc
 
 
 def get_favorite_team_id(user_id: int) -> Optional[int]:
@@ -58,7 +72,7 @@ def get_favorite_team_id(user_id: int) -> Optional[int]:
 
 
 def list_blocks(user_id: int) -> list[dict]:
-    return fetch_all_dict("""SELECT u.user_id,u.username FROM user_blocks b
+    return fetch_all_dict("""SELECT u.user_id,u.username,u.display_name FROM user_blocks b
         JOIN users u ON u.user_id=b.blocked_user_id WHERE b.user_id=%s ORDER BY u.user_id""", (user_id,))
 
 

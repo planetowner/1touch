@@ -21,7 +21,7 @@ class ProfileActivityTests(unittest.TestCase):
         self.db.row_factory = sqlite3.Row
         self.addCleanup(self.db.close)
         self.db.executescript("""
-            CREATE TABLE users (user_id INTEGER PRIMARY KEY, username TEXT, first_name TEXT,
+            CREATE TABLE users (user_id INTEGER PRIMARY KEY, username TEXT, display_name TEXT, first_name TEXT,
                 last_name TEXT, favorite_team_id INTEGER, suspended_until TEXT);
             CREATE TABLE user_following_teams (user_id INTEGER, team_id INTEGER, position INTEGER);
             CREATE TABLE user_avatars (user_id INTEGER PRIMARY KEY);
@@ -34,8 +34,8 @@ class ProfileActivityTests(unittest.TestCase):
             CREATE TABLE comment_likes (comment_id INTEGER, user_id INTEGER);
             CREATE TABLE post_attachments (attachment_id INTEGER, post_id INTEGER, position INTEGER,
                 link_url TEXT, content_type TEXT, byte_size INTEGER);
-            INSERT INTO users VALUES (1,'me','First','Last',10,NULL),
-                (2,'friend','First','Last',10,NULL), (3,'blocked','First','Last',10,NULL);
+            INSERT INTO users VALUES (1,'me','Me','First','Last',10,NULL),
+                (2,'friend','Friend','First','Last',10,NULL), (3,'blocked','Blocked','First','Last',10,NULL);
             INSERT INTO user_following_teams VALUES (1,10,0),(1,20,1);
             INSERT INTO user_avatars VALUES (1),(2);
             INSERT INTO user_blocks VALUES (1,3);

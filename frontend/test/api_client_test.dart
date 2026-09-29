@@ -30,6 +30,7 @@ void main() {
                 jsonEncode({
                   'user_id': 7,
                   'username': 'member',
+                  'display_name': 'Member',
                   'first_name': 'First',
                   'last_name': 'Last',
                   'email': null,

@@ -28,7 +28,9 @@ void main() {
     );
     expect(
       tester.getTopLeft(passwordField).dy -
-          tester.getBottomLeft(find.byKey(const ValueKey('sign-in-username'))).dy,
+          tester
+              .getBottomLeft(find.byKey(const ValueKey('sign-in-username')))
+              .dy,
       16,
     );
     expect(find.text('Remember me'), findsNothing);
@@ -167,6 +169,7 @@ class _FakeAuthRepository implements AuthRepository {
     required String code,
     required String password,
     required String username,
+    required String displayName,
     required String firstName,
     required String lastName,
   }) =>

@@ -4,8 +4,9 @@ from ..db import fetch_all_dict, transaction
 from ..deps import get_user_id
 from ..repos.users_repo import get_user, lock_user, update_profile
 from ..repos import posts_repo, users_repo
-from ..schemas.users import DeleteAccountBody, UserProfileBody
+from ..schemas.users import DeleteAccountBody, UserProfileUpdateBody
 from ..services.community_periods import public_row
+from ..services.profile_changes import ProfileChangeLimitError
 
 router = APIRouter()
 
@@ -35,8 +36,11 @@ def my_profile(user_id: int = Depends(get_user_id)):
 
 
 @router.put("/users/me/profile")
-def put_profile(body: UserProfileBody, user_id: int = Depends(get_user_id)):
-    update_profile(user_id, body.model_dump())
+def put_profile(body: UserProfileUpdateBody, user_id: int = Depends(get_user_id)):
+    try:
+        update_profile(user_id, body.model_dump())
+    except ProfileChangeLimitError as exc:
+        raise HTTPException(409, {"message": str(exc), "available_at": exc.available_at.isoformat() + "Z"}) from exc
     return my_profile(user_id)
 
 

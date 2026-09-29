@@ -1,8 +1,29 @@
 from typing import Annotated, Literal
+import re
 from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
-Username = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
+
+
+def validate_username(value: str) -> str:
+    if not re.fullmatch(r"(?!\.)(?!.*\.\.)(?!.*\.$)[A-Za-z0-9._]{1,30}", value):
+        raise ValueError("Username must use 1-30 English letters, digits, underscores, or non-consecutive interior dots")
+    return value
+
+
+def validate_display_name(value: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9가-힣]+", value):
+        raise ValueError("Nickname must use Korean syllables, English letters, or digits only")
+    # 한글은 2단위, 영문·숫자는 1단위로 세어 혼합 이름도 같은 길이 규칙을 적용해요.
+    units = sum(2 if "가" <= char <= "힣" else 1 for char in value)
+    if not 4 <= units <= 12:
+        raise ValueError("Nickname length must be 4-12 units (Korean syllables count as 2)")
+    return value
+
+
+Username = Annotated[str, StringConstraints(min_length=1, max_length=30), AfterValidator(validate_username)]
+DisplayName = Annotated[str, StringConstraints(min_length=2, max_length=12), AfterValidator(validate_display_name)]
+LegacyUsername = Annotated[str, StringConstraints(min_length=1, max_length=50)]
 
 
 def validate_password_characters(value: str) -> str:
@@ -20,8 +41,14 @@ Password = Annotated[str, StringConstraints(min_length=8, max_length=128), After
 
 class UserProfileBody(BaseModel):
     username: Username
+    display_name: DisplayName
     first_name: Name
     last_name: Name
+
+
+class UserProfileUpdateBody(UserProfileBody):
+    # 예전 규칙으로 만든 아이디는 닉네임을 처음 설정할 때 그대로 둘 수 있어요.
+    username: LegacyUsername
 
 
 class EmailCodeBody(BaseModel):

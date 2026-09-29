@@ -1,13 +1,7 @@
 """가입과 설정 변경이 같은 최애팀 선택 규칙을 사용해요."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-
-
-class FavoriteTeamCooldownError(ValueError):
-    def __init__(self, available_at: datetime):
-        self.available_at = available_at
-        super().__init__("The home favorite team can be changed once every seven days")
+from datetime import datetime
 
 
 def validate_team_selection(
@@ -33,15 +27,5 @@ def favorite_changed_at_after_update(
     next_team_id: int,
     now: datetime,
 ) -> datetime | None:
-    # 최초 가입 선택은 변경권을 쓰지 않아요. 첫 실제 변경 시각부터 7일 간격을 계산해요.
-    # 입력 시각은 같은 UTC 기준을 사용해요. 서버의 EDT나 사용자의 현지 날짜로 세지 않아요.
-    if previous_team_id is None:
-        return None
-    if previous_team_id == next_team_id:
-        # 다른 팔로우 팀만 편집하거나 같은 요청을 다시 보내도 대기 기간을 늘리지 않아요.
-        return previous_changed_at
-    if previous_changed_at is not None:
-        available_at = previous_changed_at + timedelta(days=7)
-        if now < available_at:
-            raise FavoriteTeamCooldownError(available_at)
-    return now
+    # 최초 선택이나 팔로우 팀만 바꾼 요청은 최애팀 변경으로 세지 않아요.
+    return now if previous_team_id is not None and previous_team_id != next_team_id else previous_changed_at

@@ -50,7 +50,7 @@ class NotificationTemplateData {
     this.player = '',
     this.outPlayer = '',
     this.inPlayer = '',
-    this.username = '',
+    this.displayName = '',
     this.commentPreview = '',
     this.minute = '',
     this.score = '',
@@ -65,7 +65,7 @@ class NotificationTemplateData {
   final String player;
   final String outPlayer;
   final String inPlayer;
-  final String username;
+  final String displayName;
   final String commentPreview;
   final String minute;
   final String score;
@@ -160,11 +160,11 @@ class NotificationMessageTemplates {
             ? "${d.player}이(가) 부상으로 교체되었습니다. ${d.minute}'"
             : "${d.player} has been substituted due to injury. ${d.minute}'",
         NotificationEventType.postReaction => ko
-            ? '${d.username}님이 회원님의 게시물에 반응했습니다.'
-            : '${d.username} reacted to your post.',
+            ? '${d.displayName}님이 회원님의 게시물에 반응했습니다.'
+            : '${d.displayName} reacted to your post.',
         NotificationEventType.postComment => ko
-            ? '${d.username}: ${_preview(d.commentPreview)}'
-            : '${d.username}: ${_preview(d.commentPreview)}',
+            ? '${d.displayName}: ${_preview(d.commentPreview)}'
+            : '${d.displayName}: ${_preview(d.commentPreview)}',
         NotificationEventType.bettingNewBet => ko
             ? '새로운 베팅이 등록되었습니다. 지금 확인하세요!'
             : 'A new bet is now available. Check it out!',

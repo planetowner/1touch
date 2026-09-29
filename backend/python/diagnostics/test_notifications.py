@@ -114,6 +114,13 @@ class EventTests(unittest.TestCase):
             for locale in ('ko-KR', 'en-US'):
                 self.assertTrue(message(kind, {}, locale)['body'])
 
+    def test_community_notifications_show_display_name(self):
+        data = {'username': 'john_doe', 'display_name': '불광동호날두', 'comment_preview': '좋아요'}
+        for kind in ('post_reaction', 'post_comment'):
+            body = message(kind, data, 'ko-KR')['body']
+            self.assertIn('불광동호날두', body)
+            self.assertNotIn('john_doe', body)
+
     def test_betting_boundary_is_shared_by_market_and_notification(self):
         f = fixture()
         self.assertEqual(betting_opens_at(f), NOW)
@@ -200,7 +207,7 @@ class RepositoryTests(unittest.TestCase):
         self.addCleanup(self.db.close)
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.executescript('''
-            CREATE TABLE users(user_id INTEGER PRIMARY KEY,username TEXT,favorite_team_id INTEGER,first_name TEXT DEFAULT 'First',last_name TEXT DEFAULT 'Last',suspended_until TEXT);
+            CREATE TABLE users(user_id INTEGER PRIMARY KEY,username TEXT,display_name TEXT,favorite_team_id INTEGER,first_name TEXT DEFAULT 'First',last_name TEXT DEFAULT 'Last',suspended_until TEXT);
             CREATE TABLE teams(team_id INTEGER PRIMARY KEY,name TEXT);
             CREATE TABLE players(player_id INTEGER PRIMARY KEY);
             CREATE TABLE user_sessions(token_hash BLOB PRIMARY KEY,user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,expires_at TEXT);
@@ -211,7 +218,7 @@ class RepositoryTests(unittest.TestCase):
             CREATE TABLE posts(post_id INTEGER PRIMARY KEY,user_id INTEGER,team_id INTEGER,state TEXT);
             CREATE TABLE post_comments(comment_id INTEGER PRIMARY KEY,post_id INTEGER,user_id INTEGER,reply_to_id INTEGER,body TEXT,created_at TEXT,state TEXT DEFAULT 'active');
             CREATE TABLE post_likes(post_id INTEGER,user_id INTEGER,PRIMARY KEY(post_id,user_id));
-            INSERT INTO users(user_id,username,favorite_team_id) VALUES (1,'Owner',10),(2,'Actor',10),(3,'Other',20);
+            INSERT INTO users(user_id,username,display_name,favorite_team_id) VALUES (1,'Owner','Owner',10),(2,'Actor','Actor',10),(3,'Other','Other',20);
             INSERT INTO teams VALUES (10,'Home'),(20,'Away');
             INSERT INTO players VALUES (100),(200);
             INSERT INTO fixtures VALUES (500,'2026-09-30 12:00:00',1);

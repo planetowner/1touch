@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ..deps import get_user_id
-from ..services.user_preferences import FavoriteTeamCooldownError
+from ..services.profile_changes import ProfileChangeLimitError
 from ..repos.teams_repo import get_team, get_teams, list_following_team_ids, set_following_and_favorite, find_team_current_context
 from ..repos.fixtures_repo import get_team_last_fixture, get_team_next_fixture, list_team_fixtures
 from ..repos.standings_repo import get_current_team_standing
@@ -142,7 +142,7 @@ def put_following_teams(body: PutFollowingTeamsBody, user_id: int = Depends(get_
 
     try:
         set_following_and_favorite(user_id, body.teamIds, body.favoriteTeamId)
-    except FavoriteTeamCooldownError as exc:
+    except ProfileChangeLimitError as exc:
         raise HTTPException(409, {"message": str(exc), "available_at": exc.available_at.isoformat() + "Z"}) from exc
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc

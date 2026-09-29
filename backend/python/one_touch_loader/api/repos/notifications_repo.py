@@ -139,7 +139,7 @@ COMMUNITY_VISIBLE = '''n.scope='community' AND n.cancelled_at IS NULL AND p.stat
     AND ((n.kind='post_comment' AND c.state='active') OR (n.kind='post_reaction' AND EXISTS(
         SELECT 1 FROM post_likes l WHERE l.post_id=n.post_id AND l.user_id=n.actor_id)))'''
 COMMUNITY_FIELDS = '''n.notification_id,n.kind,n.post_id,n.comment_id,n.actor_id,n.created_at,n.read_at,
-    p.team_id,actor.username,LEFT(c.body,60) AS comment_preview'''
+    p.team_id,actor.username,actor.display_name,LEFT(c.body,60) AS comment_preview'''
 
 
 def list_community(user_id, *, before_id=None, limit=30, team_id=None):
@@ -212,7 +212,8 @@ def push_data(cur, row, now):
                              (row['notification_id'],))
         if community is None:
             return None
-        return {**data, 'username': community['username'], 'comment_preview': community['comment_preview'] or ''}
+        return {**data, 'username': community['username'], 'display_name': community['display_name'],
+                'comment_preview': community['comment_preview'] or ''}
     if row['kind'] in ('team_new_bets', 'team_match_reminder'):
         fixture = read_one(cur, 'SELECT starting_at,state_id FROM fixtures WHERE fixture_id=%s', (row['fixture_id'],))
         if (fixture is None or fixture['state_id'] not in (1, 16) or fixture['starting_at'] is None

@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from ..db import fetch_all_dict, fetch_one_dict, transaction
 from ..services.user_preferences import validate_team_selection, favorite_changed_at_after_update
+from ..services.profile_changes import check_change_limit, record_change
 from ..services.community_periods import utc_now
 from .users_repo import lock_user, require_profile
 
@@ -62,8 +63,12 @@ def set_following_and_favorite(
                 WHERE s.is_current=1 AND s.competition_id IN (8,82,301,384,564) AND c.competition_type='league'""")
             leagues = {int(row["team_id"]): int(row["competition_id"]) for row in cur.fetchall()}
             validate_team_selection(team_ids, favorite_team_id, leagues)
+            now = utc_now()
             changed_at = favorite_changed_at_after_update(
-                user["favorite_team_id"], user["favorite_changed_at"], favorite_team_id, utc_now())
+                user["favorite_team_id"], user["favorite_changed_at"], favorite_team_id, now)
+            favorite_changed = user["favorite_team_id"] is not None and user["favorite_team_id"] != favorite_team_id
+            if favorite_changed:
+                check_change_limit(cur, user_id, "favorite_team", now)
             rows = [(user_id, leagues[tid], tid, position) for position, tid in enumerate(team_ids)]
             cur.execute(
                 "DELETE FROM user_following_teams WHERE user_id=%s",
@@ -83,6 +88,8 @@ def set_following_and_favorite(
                 "UPDATE users SET favorite_team_id=%s,favorite_changed_at=%s WHERE user_id=%s",
                 (favorite_team_id, changed_at, user_id),
             )
+            if favorite_changed:
+                record_change(cur, user_id, "favorite_team", now)
 
 
 def find_team_current_context(team_id: int) -> Optional[Tuple[int, int]]:

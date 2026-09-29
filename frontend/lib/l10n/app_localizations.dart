@@ -44,6 +44,27 @@ String tr(BuildContext context, String message,
         [Map<String, Object> arguments = const {}]) =>
     translateMessage(Localizations.localeOf(context), message, arguments);
 
+String profileChangeLimitMessage(
+  BuildContext context, {
+  required String item,
+  required DateTime availableAt,
+}) {
+  final utc = availableAt.toUtc();
+  final minute =
+      DateTime.utc(utc.year, utc.month, utc.day, utc.hour, utc.minute);
+  // 초를 숨겨도 실제 해제 시각보다 이르게 안내하지 않도록 다음 분으로 올려요.
+  final local =
+      (utc.isAfter(minute) ? minute.add(const Duration(minutes: 1)) : minute)
+          .toLocal();
+  final labels = MaterialLocalizations.of(context);
+  final date =
+      '${labels.formatFullDate(local)} ${labels.formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
+  return tr(
+      context,
+      'You can change {item} twice in 14 days. Try again after {date}.',
+      {'item': item, 'date': date});
+}
+
 String translateMessage(Locale locale, String message,
     [Map<String, Object> arguments = const {}]) {
   final translations = appMessages[message];

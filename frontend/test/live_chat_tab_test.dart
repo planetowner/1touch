@@ -252,6 +252,7 @@ class _CurrentUserRepository implements CurrentUserRepository {
   Future<CurrentUserProfile> load() async => CurrentUserProfile(
         userId: 7,
         username: 'supporter',
+        displayName: 'Supporter',
         firstName: 'Test',
         lastName: 'User',
         email: null,

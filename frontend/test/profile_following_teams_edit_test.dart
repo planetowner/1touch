@@ -36,7 +36,7 @@ void main() {
   testWidgets('keeps the sheet open when the backend rejects the update',
       (tester) async {
     final repository = _RecordingFollowingTeamsRepository(
-      error: FavoriteTeamCooldownException(
+      error: FavoriteTeamChangeLimitException(
         message: 'Favorite team can be changed later',
         availableAt: DateTime.utc(2026, 9, 20),
       ),
@@ -58,7 +58,7 @@ void main() {
 
     expect(
         find.byKey(const ValueKey('profile-team-edit-sheet')), findsOneWidget);
-    expect(find.text('Favorite team can be changed later'), findsOneWidget);
+    expect(find.textContaining('Favorite team'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

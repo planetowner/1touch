@@ -2,9 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:onetouch/features/community/community_identity.dart';
 
 void main() {
+  test('shows the public display name instead of the account ID', () {
+    expect(
+      communityAuthorLabel(
+        username: 'john_doe',
+        displayName: '불광동호날두',
+        authorDeleted: false,
+      ),
+      '불광동호날두',
+    );
+  });
+
   test('formats a community identity from the username', () {
     expect(
-      communityUsernameLabel(
+      communityAuthorLabel(
         username: ' planetowner ',
         authorDeleted: false,
       ),
@@ -14,7 +25,7 @@ void main() {
 
   test('does not expose an identity for a deleted author', () {
     expect(
-      communityUsernameLabel(
+      communityAuthorLabel(
         username: 'planetowner',
         authorDeleted: true,
       ),
@@ -24,7 +35,7 @@ void main() {
 
   test('handles an unexpectedly missing username', () {
     expect(
-      communityUsernameLabel(
+      communityAuthorLabel(
         username: null,
         authorDeleted: false,
       ),

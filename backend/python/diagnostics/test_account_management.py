@@ -140,7 +140,7 @@ class AccountManagementTests(CommunityDatabaseCase):
         self.assertEqual(self.request("GET", "/v1/users/me").json()["email"], "alpha@example.com")
 
     def test_profile_edit_without_timezone_keeps_email_and_changes_login_username(self):
-        response = self.request("PUT", "/v1/users/me/profile", json={"username": "changed", "last_name": "정", "first_name": "준"})
+        response = self.request("PUT", "/v1/users/me/profile", json={"username": "changed", "display_name": "alpha", "last_name": "정", "first_name": "준"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["email"], "alpha@example.com")
         self.assertNotIn("timezone", response.json())

@@ -141,7 +141,7 @@ void main() {
         favoriteTeamId: 19,
       ),
       throwsA(
-        isA<FavoriteTeamCooldownException>()
+        isA<FavoriteTeamChangeLimitException>()
             .having((error) => error.message, 'message', contains('later'))
             .having(
               (error) => error.availableAt,

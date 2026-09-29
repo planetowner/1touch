@@ -42,7 +42,7 @@ class ApiFollowingTeamsRepository implements FollowingTeamsRepository {
       }),
     );
     if (response.statusCode == 409) {
-      throw _cooldownException(
+      throw _changeLimitException(
         _api.decodeJson<Map<String, dynamic>>(response, expectedStatus: 409),
       );
     }
@@ -88,18 +88,18 @@ class ApiFollowingTeamsRepository implements FollowingTeamsRepository {
     return teams;
   }
 
-  static FavoriteTeamCooldownException _cooldownException(
+  static FavoriteTeamChangeLimitException _changeLimitException(
       Map<String, dynamic> body) {
-    final response = ApiFavoriteTeamCooldownResponse.fromJson(
+    final response = ApiFavoriteTeamChangeLimitResponse.fromJson(
       body,
     );
     final availableAt = DateTime.tryParse(response.availableAt)?.toUtc();
     if (availableAt == null) {
       throw const FormatException(
-        'Expected a valid favorite-team cooldown available_at timestamp.',
+        'Expected a valid favorite-team change limit available_at timestamp.',
       );
     }
-    return FavoriteTeamCooldownException(
+    return FavoriteTeamChangeLimitException(
       message: response.message,
       availableAt: availableAt,
     );

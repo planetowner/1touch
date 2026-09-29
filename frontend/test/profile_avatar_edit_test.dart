@@ -53,6 +53,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('profile editor rejects invalid IDs and nicknames before saving',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: _EditProfileHost(
+        repository: _RecordingAvatarRepository(),
+        profile: _profile(),
+        pickAvatar: () async => null,
+      ),
+    ));
+    await tester.tap(find.text('OPEN'));
+    await tester.pumpAndSettle();
+
+    final username = find.byKey(const ValueKey('profile-username-field'));
+    final nickname = find.byKey(const ValueKey('profile-display-name-field'));
+    final update = find.byKey(const ValueKey('profile-update-button'));
+    await tester.enterText(username, 'june..kim');
+    await tester.ensureVisible(update);
+    await tester.tap(update);
+    await tester.pump();
+    expect(find.textContaining('Dots cannot be first'), findsOneWidget);
+
+    await tester.enterText(username, 'june.kim');
+    await tester.enterText(nickname, 'June_Kim');
+    await tester.ensureVisible(update);
+    await tester.tap(update);
+    await tester.pump();
+    expect(find.textContaining('Korean counts as 2'), findsOneWidget);
+    expect(find.text('RESULT true'), findsNothing);
+  });
+
   testWidgets('uses a Cupertino action sheet on iOS', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -249,6 +279,7 @@ class _RecordingAvatarRepository implements ProfileAvatarRepository {
 CurrentUserProfile _profile({Uri? avatarUri}) => CurrentUserProfile(
       userId: 1,
       username: 'planetowner',
+      displayName: 'PlanetOwner',
       firstName: 'Planet',
       lastName: 'Owner',
       email: 'owner@example.com',

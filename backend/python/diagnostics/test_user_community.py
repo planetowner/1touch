@@ -26,14 +26,14 @@ with patch("mysql.connector.pooling.MySQLConnectionPool"):
     from one_touch_loader.api.repos import auth_repo, posts_repo, teams_repo, users_repo, chat_repo
     from one_touch_loader.api.services import auth_security, media_storage, social_login
     from one_touch_loader.api.services.community_periods import PostPeriod, period_bounds, utc_now
-    from one_touch_loader.api.schemas.users import PasswordLoginBody, RegisterEmailBody, ResetPasswordBody
+    from one_touch_loader.api.schemas.users import PasswordLoginBody, RegisterEmailBody, ResetPasswordBody, UserProfileBody, UserProfileUpdateBody
     from diagnostics.verify_community_management import verify_schema
     from diagnostics.verify_social_webhook_receipts import verify_schema as verify_social_schema
     from diagnostics.verify_account_management import verify_schema as verify_account_schema
 
 
 class PasswordContractTests(unittest.TestCase):
-    profile = {"username": "member", "first_name": "First", "last_name": "Last"}
+    profile = {"username": "member", "display_name": "Member", "first_name": "First", "last_name": "Last"}
     code = {"challenge_id": "c" * 43, "code": "123456"}
 
     def test_same_password_policy_applies_to_signup_reset_and_login(self):
@@ -47,13 +47,51 @@ class PasswordContractTests(unittest.TestCase):
                 with self.subTest(model=model.__name__, password=password):
                     self.assertEqual(model.model_validate({**fields, "password": password}).password, password)
 
-    def test_signup_requires_both_username_and_password(self):
+    def test_signup_requires_username_nickname_and_password(self):
         body = {**self.profile, **self.code, "password": "Abcdefg1"}
-        for missing in ("username", "password"):
+        for missing in ("username", "display_name", "password"):
             with self.subTest(missing=missing), self.assertRaises(ValidationError):
                 RegisterEmailBody.model_validate({key: value for key, value in body.items() if key != missing})
         with self.assertRaises(ValidationError):
             RegisterEmailBody.model_validate({**body, "username": "   "})
+
+    def test_username_rules_apply_to_signup_and_profile_edits(self):
+        for name in ("june.kim", "june_kim", "_junekim", "junekim_", "june__kim", "_", "a", "a" * 30):
+            for model in (RegisterEmailBody, UserProfileBody):
+                with self.subTest(name=name, model=model.__name__):
+                    data = {**self.profile, "username": name}
+                    if model is RegisterEmailBody:
+                        data.update(self.code, password="Abcdefg1")
+                    self.assertEqual(model.model_validate(data).username, name)
+        for name in (".junekim", "junekim.", "june..kim", "june-kim", "june kim",
+                     "한글", "éclair", "june@kim", "a" * 31, " june", "june ", "june\n"):
+            for model in (RegisterEmailBody, UserProfileBody):
+                with self.subTest(name=name, model=model.__name__), self.assertRaises(ValidationError):
+                    data = {**self.profile, "username": name}
+                    if model is RegisterEmailBody:
+                        data.update(self.code, password="Abcdefg1")
+                    model.model_validate(data)
+
+    def test_nickname_rules_apply_to_signup_and_profile_edits(self):
+        for name in ("메시", "정미르", "Maple", "June123", "1234", "메이플123", "가a1", "a" * 12, "가" * 6):
+            for model in (RegisterEmailBody, UserProfileBody, UserProfileUpdateBody):
+                with self.subTest(name=name, model=model.__name__):
+                    data = {**self.profile, "display_name": name}
+                    if model is RegisterEmailBody:
+                        data.update(self.code, password="Abcdefg1")
+                    self.assertEqual(model.model_validate(data).display_name, name)
+        for name in ("June_Kim", "June.Kim", "June-Kim", "June Kim", "정미르♡", "ㅋㅋ메이플",
+                     "메", "abc", "가" * 7, "a" * 13, "가가" + "a" * 9, "가a", "닉네임 ", "Maple\n"):
+            for model in (RegisterEmailBody, UserProfileBody, UserProfileUpdateBody):
+                with self.subTest(name=name, model=model.__name__), self.assertRaises(ValidationError):
+                    data = {**self.profile, "display_name": name}
+                    if model is RegisterEmailBody:
+                        data.update(self.code, password="Abcdefg1")
+                    model.model_validate(data)
+
+    def test_profile_update_accepts_an_unchanged_legacy_username_shape(self):
+        self.assertEqual(UserProfileUpdateBody.model_validate({
+            **self.profile, "username": "old.member@example.com"}).username, "old.member@example.com")
 
     def test_login_requires_username_field_instead_of_email(self):
         with self.assertRaises(ValidationError):
@@ -152,6 +190,7 @@ class CommunityDatabaseCase(unittest.TestCase):
     social_webhooks_schema = True
     account_management_schema = True
     post_drafts_schema = True
+    display_name_schema = True
     @classmethod
     def setUpClass(cls):
         cls.config = {"host": "127.0.0.1", "port": 14873, "user": "root", "password": "", "connection_timeout": 5}
@@ -195,6 +234,8 @@ class CommunityDatabaseCase(unittest.TestCase):
                     self.apply_account_management_schema()
                     if self.post_drafts_schema:
                         self.apply_post_drafts_schema()
+                        if self.display_name_schema:
+                            self.apply_display_name_schema()
         # 게시물 쓰기는 알림도 같은 트랜잭션으로 저장하므로 배포와 같은 테이블을 준비해요.
         notification_sql = Path(__file__).resolve().parents[1] / 'one_touch_loader/sql/create_notifications.sql'
         for statement in notification_sql.read_text(encoding='utf-8').split(';'):
@@ -242,7 +283,10 @@ class CommunityDatabaseCase(unittest.TestCase):
                 self.execute(statement)
 
     def user(self, username, favorite=None):
-        user_id = self.execute("INSERT INTO users (username,first_name,last_name,created_at) VALUES (%s,'First','Last',%s)", (username, utc_now()))
+        if self.account_management_schema and self.post_drafts_schema and self.display_name_schema:
+            user_id = self.execute("INSERT INTO users (username,display_name,first_name,last_name,created_at) VALUES (%s,%s,'First','Last',%s)", (username, username, utc_now()))
+        else:
+            user_id = self.execute("INSERT INTO users (username,first_name,last_name,created_at) VALUES (%s,'First','Last',%s)", (username, utc_now()))
         if favorite:
             # 테스트 입력은 구·신 스키마에 공통인 관계로 준비하고, 변경 규칙은 각 API 테스트에서 검사해요.
             self.execute("""INSERT INTO user_following_teams (user_id,competition_id,team_id,position)
@@ -264,6 +308,13 @@ class CommunityDatabaseCase(unittest.TestCase):
         for statement in sql.read_text(encoding="utf-8").split(";"):
             if statement.strip():
                 self.execute(statement)
+
+    def apply_display_name_schema(self):
+        for migration in ("migrate_user_display_name_changes.sql", "migrate_unique_user_display_name.sql"):
+            sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql" / migration
+            for statement in sql.read_text(encoding="utf-8").split(";"):
+                if statement.strip():
+                    self.execute(statement)
 
     def apply_post_drafts_schema(self):
         sql = Path(__file__).resolve().parents[1] / "one_touch_loader/sql/migrate_post_drafts.sql"
@@ -334,8 +385,9 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("new@example.com", "signup")["challenge_id"]
         code = send.call_args.args[1]
         self.assertRegex(code, r"^\d{6}$")
-        profile = {"username": "new", "first_name": "First", "last_name": "Last"}
+        profile = {"username": "new", "display_name": "불광동호날두", "first_name": "First", "last_name": "Last"}
         token = auth_repo.register_email(challenge, code, "Password123", profile)["access_token"]
+        self.assertEqual(self.request("GET", "/v1/users/me", token).json()["display_name"], "불광동호날두")
         row = self.execute("SELECT password_hash FROM user_email_credentials")[0]
         self.assertNotEqual(row["password_hash"], "Password123")
         self.assertEqual(auth_repo.session_user(token)["username"], "new")
@@ -343,12 +395,42 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             auth_repo.register_email(challenge, code, "Password123", profile)
         self.assertEqual(len(self.execute("SELECT * FROM user_email_credentials")), 1)
 
+    def test_duplicate_nickname_is_rejected_on_signup_and_profile_edit(self):
+        body = {"username": "beta", "display_name": "ALPHA", "first_name": "First", "last_name": "Last"}
+        changed = self.request("PUT", "/v1/users/me/profile", self.token_b, json=body)
+        self.assertEqual(changed.status_code, 409, changed.text)
+        self.assertEqual(self.request("GET", "/v1/users/me", self.token_b).json()["display_name"], "beta")
+
+        with patch.object(auth_repo, "send_verification_code") as send:
+            challenge = auth_repo.request_email_code("duplicate@example.com", "signup")["challenge_id"]
+        registered = self.request("POST", "/v1/auth/email/register", json={
+            "challenge_id": challenge, "code": send.call_args.args[1], "password": "Abcdefg1",
+            "username": "newmember", "display_name": "alpha", "first_name": "F", "last_name": "L"})
+        self.assertEqual(registered.status_code, 409, registered.text)
+        self.assertEqual(self.execute("SELECT COUNT(*) AS total FROM users")[0]["total"], 3)
+
+    def test_existing_member_sets_a_first_nickname_without_changing_a_legacy_id(self):
+        self.execute("UPDATE users SET username=%s,display_name=NULL WHERE user_id=%s",
+                     ("old.member@example.com", self.a))
+        before = self.request("GET", "/v1/users/me").json()
+        self.assertIsNone(before["display_name"])
+        self.assertTrue(before["onboarding_complete"])
+        response = self.request("PUT", "/v1/users/me/profile", json={
+            "username": "old.member@example.com", "display_name": "메시",
+            "first_name": "First", "last_name": "Last"})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["display_name"], "메시")
+        self.assertEqual(self.execute("SELECT COUNT(*) AS total FROM user_profile_changes WHERE user_id=%s", (self.a,))[0]["total"], 0)
+        rejected = self.request("PUT", "/v1/users/me/profile", json={
+            "username": "old..member", "display_name": "메시", "first_name": "First", "last_name": "Last"})
+        self.assertEqual(rejected.status_code, 422, rejected.text)
+
     def test_signup_logout_and_login_with_username(self):
         with patch.object(auth_repo, "send_verification_code") as send:
             challenge = auth_repo.request_email_code("signup@example.com", "signup")["challenge_id"]
         registered = self.request("POST", "/v1/auth/email/register", json={
             "challenge_id": challenge, "code": send.call_args.args[1], "password": "Abcdefg1",
-            "username": "newmember", "first_name": "F", "last_name": "L"})
+            "username": "newmember", "display_name": "NewMember", "first_name": "F", "last_name": "L"})
         self.assertEqual(registered.status_code, 201, registered.text)
         token = registered.json()["access_token"]
         user_id = auth_repo.session_user(token)["user_id"]
@@ -374,7 +456,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
         self.execute("INSERT INTO user_email_credentials VALUES (%s,%s,%s)",
                      (self.a, "alpha@example.com", auth_security.PASSWORDS.hash("Password123")))
         response = self.request("PUT", "/v1/users/me/profile", json={
-            "username": "renamed", "first_name": "F", "last_name": "L"})
+            "username": "renamed", "display_name": "alpha", "first_name": "F", "last_name": "L"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(auth_repo.session_user(auth_repo.login_password("renamed", "Password123")["access_token"])["user_id"], self.a)
         with self.assertRaises(HTTPException):
@@ -390,7 +472,7 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             challenge = auth_repo.request_email_code("attempts@example.com", "signup")["challenge_id"]
         code = send.call_args.args[1]
         wrong = "000000" if code != "000000" else "111111"
-        profile = {"username": "new", "first_name": "F", "last_name": "L"}
+        profile = {"username": "new", "display_name": "NewMember", "first_name": "F", "last_name": "L"}
         for _ in range(5):
             with self.assertRaises(HTTPException):
                 auth_repo.register_email(challenge, wrong, "Password123", profile)
@@ -416,12 +498,15 @@ class MySQLCommunityTests(CommunityDatabaseCase):
 
     def test_first_favorite_change_and_concurrent_second_change(self):
         teams_repo.set_following_and_favorite(self.a, [6, 503], 503)
-        r = self.request("PUT", "/v1/users/me/following/teams", json={"teamIds": [6, 503], "favoriteTeamId": 6})
+        self.assertEqual(self.request("PUT", "/v1/users/me/following/teams",
+                                      json={"teamIds": [6, 503], "favoriteTeamId": 6}).status_code, 200)
+        r = self.request("PUT", "/v1/users/me/following/teams", json={"teamIds": [6, 503], "favoriteTeamId": 503})
         self.assertEqual(r.status_code, 409)
         self.assertIn("available_at", r.json()["detail"])
-        self.assertEqual(users_repo.get_favorite_team_id(self.a), 503)
+        self.assertEqual(users_repo.get_favorite_team_id(self.a), 6)
 
     def test_two_initial_changes_cannot_both_use_free_change(self):
+        teams_repo.set_following_and_favorite(self.a, [6, 503, 591], 503)
         def change(team):
             try:
                 teams_repo.set_following_and_favorite(self.a, [6, 503, 591], team)
@@ -429,8 +514,30 @@ class MySQLCommunityTests(CommunityDatabaseCase):
             except ValueError:
                 return "blocked"
         with ThreadPoolExecutor(2) as executor:
-            results = list(executor.map(change, [503, 591]))
+            results = list(executor.map(change, [6, 591]))
         self.assertCountEqual(results, ["ok", "blocked"])
+
+    def test_display_name_and_favorite_team_have_independent_limits(self):
+        body = {"username": "alpha", "first_name": "First", "last_name": "Last"}
+        for name in ("불광동호날두", "planetowner"):
+            response = self.request("PUT", "/v1/users/me/profile", json={**body, "display_name": name})
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(response.json()["display_name"], name)
+        self.assertEqual(self.request("PUT", "/v1/users/me/profile",
+                                      json={**body, "display_name": "third"}).status_code, 409)
+        # 같은 값과 아이디만 바꾼 요청은 닉네임 변경 횟수를 쓰지 않아요.
+        self.assertEqual(self.request("PUT", "/v1/users/me/profile",
+                                      json={**body, "username": "renamed", "display_name": "planetowner"}).status_code, 200)
+        self.execute("""UPDATE user_profile_changes SET changed_at=%s WHERE user_id=%s
+            AND change_type='display_name' ORDER BY change_id LIMIT 1""",
+            (utc_now() - timedelta(days=14, seconds=1), self.a))
+        self.assertEqual(self.request("PUT", "/v1/users/me/profile",
+                                      json={**body, "username": "renamed", "display_name": "newnickname"}).status_code, 200)
+        post_id = self.post()
+        self.assertEqual(posts_repo.get_post(self.a, post_id)["display_name"], "newnickname")
+        teams_repo.set_following_and_favorite(self.a, [6, 503], 503)
+        teams_repo.set_following_and_favorite(self.a, [6, 503], 6)
+        self.assertEqual(len(self.execute("SELECT * FROM user_profile_changes WHERE user_id=%s", (self.a,))), 5)
 
     def test_simultaneous_first_social_login_creates_one_user(self):
         with mysql.connector.connect(**self.configured) as conn, conn.cursor(dictionary=True) as cur:
@@ -993,6 +1100,20 @@ class AppleWebhookTests(CommunityDatabaseCase):
         self.assertEqual(results, [200, 200])
         self.assertEqual(len(self.execute("SELECT * FROM social_webhook_receipts")), 1)
         self.assertEqual(self.webhook(jti="later-event").status_code, 200)
+
+
+class DisplayNameMigrationTests(CommunityDatabaseCase):
+    display_name_schema = False
+
+    def test_existing_names_and_favorite_change_survive(self):
+        changed_at = utc_now() - timedelta(days=2)
+        self.execute("UPDATE users SET favorite_changed_at=%s WHERE user_id=%s", (changed_at, self.a))
+        self.apply_display_name_schema()
+        members = self.execute("SELECT username,display_name FROM users ORDER BY user_id")
+        self.assertEqual([(row["username"], row["display_name"]) for row in members],
+                         [("alpha", None), ("beta", None), ("gamma", None)])
+        changes = self.execute("SELECT change_type,changed_at FROM user_profile_changes WHERE user_id=%s", (self.a,))
+        self.assertEqual(changes, [{"change_type": "favorite_team", "changed_at": changed_at}])
 
 
 if __name__ == "__main__":

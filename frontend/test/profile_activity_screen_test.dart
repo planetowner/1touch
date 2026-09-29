@@ -10,6 +10,7 @@ void main() {
   final profile = CurrentUserProfile(
     userId: 1,
     username: 'owner',
+    displayName: 'Owner',
     firstName: 'John',
     lastName: 'Doe',
     email: 'john@example.com',
@@ -34,7 +35,7 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-      expect(find.text('John Doe'), findsOneWidget);
+      expect(find.text('@Owner'), findsOneWidget);
       expect(
           find.byType(AppSegmentedToggle<ProfileActivityTab>), findsOneWidget);
       final indicator = tester.widget<DecoratedBox>(

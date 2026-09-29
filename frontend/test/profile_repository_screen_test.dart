@@ -22,7 +22,7 @@ import 'support/stub_profile_activity_repository.dart';
 void main() {
   setUpAppCatalog();
   testWidgets(
-      'profile and personal info update name order when language changes',
+      'profile nickname and personal info names stay distinct by locale',
       (tester) async {
     for (final page in [
       Profile(
@@ -47,7 +47,8 @@ void main() {
           );
           expect(field.controller!.text, expected);
         } else {
-          expect(find.text(expected), findsOneWidget);
+          expect(find.text('@불광동호날두'), findsOneWidget);
+          expect(find.text(expected), findsNothing);
         }
         expect(tester.takeException(), isNull);
       }
@@ -75,9 +76,36 @@ void main() {
     repository.calls.single.complete(_profile());
     await tester.pump();
 
-    expect(find.text('Planet Owner'), findsOneWidget);
+    expect(find.text('@불광동호날두'), findsOneWidget);
     expect(find.text('owner@example.com'), findsOneWidget);
     expect(find.text('API Barcelona'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'existing member can open the nickname editor before choosing one',
+      (tester) async {
+    await _setScreenSize(tester, const Size(393, 852));
+    final repository = _ControlledCurrentUserRepository();
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: Profile(
+        repository: repository,
+        followingTeamsRepository: _StaticFollowingTeamsRepository(),
+      ),
+    ));
+    repository.calls.single.complete(_profile(displayName: null));
+    await tester.pump();
+    expect(find.text('@planetowner'), findsOneWidget);
+
+    await tester.pumpWidget(MaterialApp(
+      theme: app_style.whitetheme,
+      home: EditProfileScreen(profile: _profile(displayName: null)),
+    ));
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('profile-display-name-field')),
+    );
+    expect(field.controller!.text, isEmpty);
     expect(tester.takeException(), isNull);
   });
 
@@ -418,11 +446,13 @@ Future<void> _setScreenSize(WidgetTester tester, Size size) async {
 
 CurrentUserProfile _profile({
   String? email = 'owner@example.com',
+  String? displayName = '불광동호날두',
   Uri? avatarUri,
 }) {
   return CurrentUserProfile(
     userId: 1,
     username: 'planetowner',
+    displayName: displayName,
     firstName: 'Planet',
     lastName: 'Owner',
     email: email,

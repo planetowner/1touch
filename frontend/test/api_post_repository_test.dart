@@ -15,9 +15,11 @@ void main() {
         client: MockClient((request) async {
           if (request.method == 'GET') {
             expect(request.url.queryParameters['category'], 'fanart');
-            return http.Response(jsonEncode(_feedJson(items: [
-              {..._postJson(), 'category': 'fanart'},
-            ])), 200);
+            return http.Response(
+                jsonEncode(_feedJson(items: [
+                  {..._postJson(), 'category': 'fanart'},
+                ])),
+                200);
           }
           expect(request.method, 'POST');
           expect(jsonDecode(request.body)['category'], 'fanart');
@@ -32,12 +34,14 @@ void main() {
       category: PostCategory.fanart,
     );
     expect(posts.single.category, PostCategory.fanart);
-    expect(await repository.createPost(CreatePostInput(
-      teamId: 83,
-      category: posts.single.category,
-      title: 'Fan art',
-      body: 'My drawing',
-    )), 101);
+    expect(
+        await repository.createPost(CreatePostInput(
+          teamId: 83,
+          category: posts.single.category,
+          title: 'Fan art',
+          body: 'My drawing',
+        )),
+        101);
   });
 
   test('requests and maps a team post feed with Bearer headers', () async {
@@ -69,6 +73,7 @@ void main() {
     expect(post.teamId, 83);
     expect(post.userId, 1001);
     expect(post.username, 'planetowner');
+    expect(post.displayName, 'Planet Owner');
     expect(post.avatarUrl, 'https://api.1touch.football/v1/users/1001/avatar');
     expect(post.likeCount, 12);
     expect(post.commentCount, 3);
@@ -120,6 +125,7 @@ void main() {
       ..addAll({
         'user_id': null,
         'username': null,
+        'display_name': null,
         'avatar_url': null,
         'author_deleted': true,
         'liked': false,
@@ -546,6 +552,7 @@ Map<String, dynamic> _postJson() => {
       'state': 'active',
       'edited_at': null,
       'username': 'planetowner',
+      'display_name': 'Planet Owner',
       'avatar_url': '/v1/users/1001/avatar',
       'author_deleted': false,
       'like_count': 12,

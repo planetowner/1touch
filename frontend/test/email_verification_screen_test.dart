@@ -49,8 +49,10 @@ void main() {
       await tester.enterText(last, 'Family');
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(2), 'member');
-      await tester.enterText(fields.at(3), 'member@example.com');
-      await tester.enterText(fields.at(4), 'Password123');
+      await tester.enterText(
+          find.byKey(const ValueKey('signup-display-name-field')), 'Supporter');
+      await tester.enterText(fields.at(4), 'member@example.com');
+      await tester.enterText(fields.at(5), 'Password123');
       await tester.ensureVisible(find.byType(Checkbox));
       await tester.tap(find.byType(Checkbox));
       await tester.pump();
@@ -61,9 +63,62 @@ void main() {
       expect(find.text('Verification destination'), findsOneWidget);
       expect(draft!.firstName, 'Given');
       expect(draft!.lastName, 'Family');
+      expect(draft!.displayName, 'Supporter');
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('signup checks both names before requesting an email code',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _FakeAuthRepository();
+    final router = GoRouter(initialLocation: '/signup', routes: [
+      GoRoute(
+        path: '/signup',
+        builder: (_, __) => EmailSignUpScreen(
+          authService: _service(repository, AuthSession()),
+        ),
+      ),
+      GoRoute(
+        path: '/auth/verify',
+        builder: (_, __) =>
+            const Scaffold(body: Text('Verification destination')),
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'John');
+    await tester.enterText(fields.at(1), 'Doe');
+    await tester.enterText(fields.at(2), '.john');
+    await tester.enterText(fields.at(3), 'June_Kim');
+    await tester.enterText(fields.at(4), 'john@example.com');
+    await tester.enterText(fields.at(5), 'Password123');
+    await tester.ensureVisible(find.byType(Checkbox));
+    await tester.tap(find.byType(Checkbox));
+    await tester.pump();
+    final submit = find.byKey(const ValueKey('email-sign-up-button'));
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pump();
+
+    expect(repository.requestedEmails, isEmpty);
+    expect(find.textContaining('Dots cannot be first'), findsOneWidget);
+    expect(find.textContaining('Korean counts as 2'), findsOneWidget);
+
+    await tester.enterText(fields.at(2), 'john_doe');
+    await tester.enterText(fields.at(3), '메이플123');
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(repository.requestedEmails, ['john@example.com']);
+    expect(find.text('Verification destination'), findsOneWidget);
+  });
 
   testWidgets('submits the six-digit code and establishes the session',
       (tester) async {
@@ -131,6 +186,7 @@ GoRouter _router(AuthService service) => GoRouter(
               firstName: 'First',
               lastName: 'Last',
               username: 'member',
+              displayName: 'Member',
               email: 'member@example.com',
               password: 'Password123',
               challengeId: 'initial-challenge',
@@ -186,6 +242,7 @@ class _FakeAuthRepository implements AuthRepository {
     required String code,
     required String password,
     required String username,
+    required String displayName,
     required String firstName,
     required String lastName,
   }) async {

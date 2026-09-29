@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta, timezone
 import unittest
+from unittest.mock import Mock
 
 from one_touch_loader.api.services.user_preferences import (
-    FavoriteTeamCooldownError,
     favorite_changed_at_after_update,
     validate_team_selection,
+)
+from one_touch_loader.api.services.profile_changes import (
+    ProfileChangeLimitError, check_change_limit,
 )
 
 
@@ -39,18 +42,16 @@ class FavoriteTeamChangeTests(unittest.TestCase):
         self.assertIsNone(favorite_changed_at_after_update(None, None, 6, self.now))
         self.assertEqual(favorite_changed_at_after_update(6, None, 503, self.now), self.now)
 
-    def test_second_change_is_rejected_until_seven_days_have_elapsed(self):
-        attempted_at = self.now + timedelta(days=7) - timedelta(microseconds=1)
-        with self.assertRaises(FavoriteTeamCooldownError) as raised:
-            favorite_changed_at_after_update(503, self.now, 6, attempted_at)
-        self.assertEqual(raised.exception.available_at, self.now + timedelta(days=7))
-
-    def test_exactly_seven_days_allows_change_and_starts_next_interval(self):
-        next_time = self.now + timedelta(days=7)
-        changed = favorite_changed_at_after_update(503, self.now, 6, next_time)
-        self.assertEqual(changed, next_time)
-        with self.assertRaises(FavoriteTeamCooldownError):
-            favorite_changed_at_after_update(6, changed, 503, next_time + timedelta(seconds=1))
+    def test_two_changes_are_allowed_then_oldest_expires_after_14_days(self):
+        cursor = Mock()
+        cursor.fetchall.return_value = [{"changed_at": self.now + timedelta(days=1)},
+                                        {"changed_at": self.now}]
+        with self.assertRaises(ProfileChangeLimitError) as raised:
+            check_change_limit(cursor, 7, "display_name", self.now + timedelta(days=13))
+        self.assertEqual(raised.exception.available_at, self.now + timedelta(days=14))
+        self.assertEqual(cursor.execute.call_args.args[1][1], "display_name")
+        cursor.fetchall.return_value = [{"changed_at": self.now + timedelta(days=1)}]
+        check_change_limit(cursor, 7, "display_name", self.now + timedelta(days=14))
 
     def test_same_home_team_does_not_consume_or_extend_change_interval(self):
         self.assertIsNone(favorite_changed_at_after_update(6, None, 6, self.now))

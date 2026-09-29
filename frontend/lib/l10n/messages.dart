@@ -112,7 +112,37 @@ const appMessages = <String, MessageTranslations>{
   "SIGN IN": (ko: "로그인", ja: "ログイン", zh: "登录"),
   "SIGN UP": (ko: "회원가입", ja: "新規登録", zh: "注册"),
   "LOGIN": (ko: "로그인", ja: "ログイン", zh: "登录"),
-  "Username": (ko: "유저네임", ja: "ユーザー名", zh: "用户名"),
+  "Username": (ko: "아이디", ja: "ユーザー名", zh: "用户名"),
+  "Nickname": (ko: "닉네임", ja: "ニックネーム", zh: "昵称"),
+  "Favorite team": (ko: "최애팀", ja: "お気に入りのチーム", zh: "最喜欢的球队"),
+  "Enter nickname": (ko: "닉네임을 입력해 주세요", ja: "ニックネームを入力してください", zh: "请输入昵称"),
+  "Use 1–30 English letters, numbers, underscores, or dots. Dots cannot be first, last, or consecutive.":
+      (
+    ko: "아이디는 영문, 숫자, 밑줄(_), 마침표(.)로 1~30자 입력해 주세요. 마침표는 맨 앞·뒤나 연속으로 쓸 수 없어요.",
+    ja: "ユーザー名は英数字、アンダースコア、ピリオドで1～30文字にしてください。ピリオドは先頭・末尾・連続で使えません。",
+    zh: "用户名须为1～30位英文字母、数字、下划线或句点。句点不能在开头、结尾或连续使用。"
+  ),
+  "Use Korean syllables, English letters, or numbers only (4–12 units; Korean counts as 2).":
+      (
+    ko: "닉네임은 완성형 한글, 영문, 숫자만 쓸 수 있어요. 한글은 2단위, 영문·숫자는 1단위로 세어 총 4~12단위로 입력해 주세요.",
+    ja: "ニックネームはハングル音節、英数字のみ使用できます。ハングルを2、英数字を1として4～12単位にしてください。",
+    zh: "昵称只能使用完整韩文字、英文字母和数字。韩文字计2，英文字母和数字计1，总计须为4～12。"
+  ),
+  "Username or nickname is already in use": (
+    ko: "이미 사용 중인 아이디 또는 닉네임이에요.",
+    ja: "そのユーザー名またはニックネームは既に使用されています。",
+    zh: "该用户名或昵称已被使用。"
+  ),
+  "Email, username, or nickname is already registered": (
+    ko: "이미 등록된 이메일, 아이디 또는 닉네임이에요.",
+    ja: "そのメールアドレス、ユーザー名、またはニックネームは既に登録されています。",
+    zh: "该邮箱、用户名或昵称已被注册。"
+  ),
+  "You can change {item} twice in 14 days. Try again after {date}.": (
+    ko: "{item}은 14일 동안 2번까지 바꿀 수 있어요. {date} 이후 다시 시도해 주세요.",
+    ja: "{item}は14日間に2回まで変更できます。{date}以降に再試行してください。",
+    zh: "{item}在14天内最多可修改两次。请在{date}之后重试。"
+  ),
   "Password": (ko: "비밀번호", ja: "パスワード", zh: "密码"),
   "Email": (ko: "이메일", ja: "メールアドレス", zh: "邮箱"),
   "EMAIL": (ko: "이메일", ja: "メール", zh: "邮箱"),
@@ -120,7 +150,7 @@ const appMessages = <String, MessageTranslations>{
   "Last name": (ko: "성", ja: "姓", zh: "姓氏"),
   "Enter first name": (ko: "이름을 입력해 주세요", ja: "名を入力してください", zh: "请输入名字"),
   "Enter last name": (ko: "성을 입력해 주세요", ja: "姓を入力してください", zh: "请输入姓氏"),
-  "Enter username": (ko: "유저네임을 입력해 주세요", ja: "ユーザー名を入力してください", zh: "请输入用户名"),
+  "Enter username": (ko: "아이디를 입력해 주세요", ja: "ユーザー名を入力してください", zh: "请输入用户名"),
   "Enter email": (ko: "이메일을 입력해 주세요", ja: "メールアドレスを入力してください", zh: "请输入邮箱"),
   "Enter a valid email": (
     ko: "올바른 이메일을 입력해 주세요",

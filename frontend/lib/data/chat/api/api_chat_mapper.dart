@@ -33,6 +33,7 @@ FixtureChatMessage chatMessageFromApiResponse(
     fixtureId: response.fixtureId,
     userId: response.userId,
     username: response.username,
+    displayName: response.displayName,
     text: response.text,
     createdAt: createdAt,
     avatarUrl: _resolveOptionalUri(apiBaseUri, response.avatarUrl),

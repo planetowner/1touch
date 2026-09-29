@@ -12,6 +12,7 @@ const mockPosts = <Post>[
       teamId: 83,
       userId: 1001,
       username: 'alexkim',
+      displayName: 'Alex Kim',
       category: PostCategory.news,
       title: 'Barcelona clinch La Liga title with five games to spare',
       body:
@@ -23,6 +24,7 @@ const mockPosts = <Post>[
       teamId: 503,
       userId: 1002,
       username: 'mariaschmidt',
+      displayName: 'Maria Schmidt',
       category: PostCategory.analysis,
       title: 'Why Bayern\'s pressing system is breaking records this season',
       body:
@@ -33,6 +35,7 @@ const mockPosts = <Post>[
       teamId: 83,
       userId: 1001,
       username: 'alexkim',
+      displayName: 'Alex Kim',
       category: PostCategory.general,
       title: 'Best XI of the week — RO 32',
       body:
@@ -43,6 +46,7 @@ const mockPosts = <Post>[
       teamId: 9,
       userId: 1003,
       username: 'jwalker',
+      displayName: 'James Walker',
       category: PostCategory.news,
       title: 'Man City confirm Haaland fit for Arsenal clash',
       body:
@@ -53,6 +57,7 @@ const mockPosts = <Post>[
       teamId: 7980,
       userId: 1002,
       username: 'mariaschmidt',
+      displayName: 'Maria Schmidt',
       category: PostCategory.analysis,
       title: 'Atletico\'s defensive structure under the microscope',
       body:

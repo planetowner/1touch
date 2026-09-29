@@ -5,9 +5,11 @@ import "package:flutter/material.dart";
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart'
     as current_user_provider;
+import 'package:onetouch/data/profile/api/api_current_user_repository.dart';
 import 'package:onetouch/data/profile/profile_avatar_repository.dart';
 import 'package:onetouch/data/profile/profile_avatar_repository_provider.dart'
     as avatar_provider;
@@ -40,6 +42,7 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController nameController;
   late final TextEditingController usernameController;
+  late final TextEditingController displayNameController;
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   bool isPasswordVisible = false;
@@ -63,6 +66,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     nameController = TextEditingController();
     usernameController = TextEditingController(
       text: profile?.username ?? '',
+    );
+    displayNameController = TextEditingController(
+      text: profile?.displayName ?? '',
     );
     emailController = TextEditingController(
       text: profile?.email ?? '',
@@ -226,8 +232,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ).evict();
 
   Future<void> _saveProfile() async {
-    final username = usernameController.text.trim();
-    if (username.isEmpty || _isProfileSaving) return;
+    if (_isProfileSaving) return;
+    final username = usernameController.text;
+    final displayName = displayNameController.text;
+    final message = (username == widget.profile?.username
+            ? null
+            : usernameValidationMessage(username)) ??
+        displayNameValidationMessage(displayName);
+    if (message != null) {
+      setState(() => _profileSaveError = tr(context, message));
+      return;
+    }
 
     setState(() {
       _isProfileSaving = true;
@@ -236,11 +251,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       await current_user_provider.currentUserRepository.updateProfile(
         username: username,
+        displayName: displayName,
         firstName: widget.profile?.firstName ?? '',
         lastName: widget.profile?.lastName ?? '',
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);
+    } on ProfileChangeLimitException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isProfileSaving = false;
+        _profileSaveError = profileChangeLimitMessage(context,
+            item: tr(context, 'Nickname'), availableAt: error.availableAt);
+      });
+    } on ProfileNameConflictException {
+      if (!mounted) return;
+      setState(() {
+        _isProfileSaving = false;
+        _profileSaveError =
+            tr(context, 'Username or nickname is already in use');
+      });
     } on Object {
       if (!mounted) return;
       setState(() {
@@ -257,6 +287,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     nameController.dispose();
     usernameController.dispose();
+    displayNameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -374,6 +405,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 label: tr(context, 'Username'),
                 controller: usernameController,
                 fieldKey: const ValueKey('profile-username-field'),
+                maxLength: 30,
+              ),
+              const SizedBox(height: 8),
+              _buildTextField(
+                label: tr(context, 'Nickname'),
+                controller: displayNameController,
+                fieldKey: const ValueKey('profile-display-name-field'),
+                maxLength: 12,
               ),
               const SizedBox(height: 8),
               _buildTextField(
@@ -486,6 +525,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bool readOnly = false,
     VoidCallback? onSuffixTap,
     TextInputType? keyboardType,
+    int? maxLength,
   }) {
     final appColors = AppColors.of(context);
     final colors = Theme.of(context).colorScheme;
@@ -512,11 +552,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               enableInteractiveSelection: !readOnly,
               showCursor: !readOnly,
               keyboardType: keyboardType,
+              maxLength: maxLength,
               textAlign: TextAlign.right,
               style: Body1.style.copyWith(color: colors.onSurface),
               cursorColor: colors.onSurface,
               decoration: const InputDecoration(
                 isDense: true,
+                counterText: '',
                 filled: false,
                 fillColor: Colors.transparent,
                 border: InputBorder.none,
@@ -546,8 +588,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       size: 24,
                     ),
                   ),
-                ),
-              if (readOnly)
+                )
+              else if (readOnly)
                 SizedBox(
                   width: 32,
                   height: 32,

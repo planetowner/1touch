@@ -355,7 +355,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
                       final isMe = msg.userId == _currentUserId;
                       final prevMsg = index > 0 ? _messages[index - 1] : null;
                       final showHeader =
-                          prevMsg == null || prevMsg.username != msg.username;
+                          prevMsg == null || prevMsg.userId != msg.userId;
 
                       return GestureDetector(
                         onLongPressStart: (details) => _showContextMenu(
@@ -448,7 +448,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
               Text(
                   msg.authorDeleted
                       ? tr(context, 'Deleted user')
-                      : msg.displayUsername,
+                      : msg.displayAuthor,
                   style: Body2_b.style),
               const SizedBox(width: 8),
               Opacity(
@@ -488,7 +488,7 @@ class _LiveChatTabState extends State<LiveChatTab> {
               Text(
                   msg.authorDeleted
                       ? tr(context, 'Deleted user')
-                      : msg.displayUsername,
+                      : msg.displayAuthor,
                   style: Body2_b.style),
             ],
           ),

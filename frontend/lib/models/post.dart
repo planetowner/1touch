@@ -45,6 +45,7 @@ class Post {
   final String createdAt; // timestamp string
   final String? editedAt;
   final String? username;
+  final String? displayName;
   final String? avatarUrl;
   final bool authorDeleted;
   final int likeCount;
@@ -63,6 +64,7 @@ class Post {
     required this.createdAt,
     this.editedAt,
     this.username,
+    this.displayName,
     this.avatarUrl,
     this.authorDeleted = false,
     this.likeCount = 0,
@@ -84,6 +86,7 @@ class Post {
       createdAt: json['created_at'] as String,
       editedAt: json['edited_at'] as String?,
       username: json['username'] as String?,
+      displayName: json['display_name'] as String?,
       avatarUrl: json['avatar_url'] as String?,
       authorDeleted: json['author_deleted'] as bool? ?? false,
       likeCount: json['like_count'] as int? ?? 0,

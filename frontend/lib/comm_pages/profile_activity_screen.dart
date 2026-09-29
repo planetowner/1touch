@@ -9,7 +9,6 @@ import 'package:onetouch/data/profile/profile_activity_repository.dart';
 import 'package:onetouch/data/profile/profile_activity_repository_provider.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
-import 'package:onetouch/l10n/user_name_labels.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/post.dart';
 import 'package:onetouch/models/profile_comment_activity.dart';
@@ -116,11 +115,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                userNameLabel(
-                  locale: Localizations.localeOf(context),
-                  firstName: profile.firstName,
-                  lastName: profile.lastName,
-                ),
+                profile.profileHeading,
                 style: Heading5.style,
               ),
               const SizedBox(height: 48),

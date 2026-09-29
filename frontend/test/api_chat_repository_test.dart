@@ -53,7 +53,7 @@ void main() {
       messages.first.avatarUrl,
       'https://api.example.test/v1/users/7/avatar',
     );
-    expect(messages.last.displayUsername, 'Deleted user');
+    expect(messages.last.displayAuthor, 'Deleted user');
     expect(repository.cachedHistoryForFixture(42), orderedEquals(messages));
     expect(() => messages.clear(), throwsUnsupportedError);
   });

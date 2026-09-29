@@ -62,7 +62,7 @@ void main() {
       type: NotificationEventType.postComment,
       locale: const Locale('en'),
       data: NotificationTemplateData(
-        username: 'colin',
+        displayName: 'colin',
         commentPreview: List.filled(61, 'a').join(),
       ),
     );

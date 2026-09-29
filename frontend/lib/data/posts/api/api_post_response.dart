@@ -29,6 +29,7 @@ class ApiPostResponse {
     required this.createdAt,
     required this.editedAt,
     required this.username,
+    this.displayName,
     required this.avatarUrl,
     required this.authorDeleted,
     required this.likeCount,
@@ -46,6 +47,7 @@ class ApiPostResponse {
   final String createdAt;
   final String? editedAt;
   final String? username;
+  final String? displayName;
   final String? avatarUrl;
   final bool authorDeleted;
   final int likeCount;
@@ -64,6 +66,7 @@ class ApiPostResponse {
       createdAt: _requiredString(json, 'created_at'),
       editedAt: _nullableString(json, 'edited_at'),
       username: _nullableString(json, 'username'),
+      displayName: json['display_name'] as String?,
       avatarUrl: _nullableString(json, 'avatar_url'),
       authorDeleted: _requiredBool(json, 'author_deleted'),
       likeCount: _requiredInt(json, 'like_count'),

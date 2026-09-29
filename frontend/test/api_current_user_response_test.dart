@@ -8,6 +8,7 @@ void main() {
 
       expect(response.userId, 1001);
       expect(response.username, 'colin');
+      expect(response.displayName, 'Planet Owner');
       expect(response.firstName, 'Colin');
       expect(response.lastName, 'Sung');
       expect(response.email, 'colin@example.com');
@@ -21,6 +22,7 @@ void main() {
       final response = ApiCurrentUserResponse.fromJson({
         ..._profileJson(),
         'username': null,
+        'display_name': null,
         'first_name': null,
         'last_name': null,
         'email': null,
@@ -53,6 +55,7 @@ void main() {
       for (final field in [
         'user_id',
         'username',
+        'display_name',
         'first_name',
         'last_name',
         'email',
@@ -92,6 +95,7 @@ Map<String, dynamic> _profileJson() {
   return {
     'user_id': 1001,
     'username': 'colin',
+    'display_name': 'Planet Owner',
     'first_name': 'Colin',
     'last_name': 'Sung',
     'email': 'colin@example.com',

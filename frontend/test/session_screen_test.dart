@@ -51,6 +51,7 @@ void main() {
     account = {
       'user_id': 1,
       'username': 'example',
+      'display_name': 'Example',
       'first_name': 'First',
       'last_name': 'Last',
       'email': null,
@@ -96,12 +97,19 @@ void main() {
             r.headers['Authorization'] == 'Bearer ${authSession.accessToken}'),
         isTrue);
   });
+  testWidgets('an existing member without a nickname can enter the app',
+      (tester) async {
+    account['display_name'] = null;
+    await pump(tester);
+    expect(find.text('Ready Home'), findsOneWidget);
+  });
   for (final locale in appSupportedLocales) {
     testWidgets(
         'incomplete social profile preserves name fields with $locale input order',
         (tester) async {
       account.addAll({
         'username': null,
+        'display_name': null,
         'first_name': null,
         'last_name': null,
         'favorite_team_id': null,
@@ -120,12 +128,18 @@ void main() {
           find.byKey(const ValueKey('profile-last-name-field')), 'Last');
       await tester.enterText(
           find.byKey(const ValueKey('profile-username-field')), 'chosen');
+      await tester.enterText(
+          find.byKey(const ValueKey('profile-nickname-field')), 'Supporter');
       await tester.tap(find.text(translateMessage(locale, 'Save profile')));
       await tester.pumpAndSettle();
       expect(find.text('Select Teams Next'), findsOneWidget);
       final update = requests.singleWhere((r) => r.method == 'PUT');
-      expect(jsonDecode(update.body),
-          {'username': 'chosen', 'first_name': 'First', 'last_name': 'Last'});
+      expect(jsonDecode(update.body), {
+        'username': 'chosen',
+        'display_name': 'Supporter',
+        'first_name': 'First',
+        'last_name': 'Last'
+      });
       expect(isAppSessionReady, isFalse);
     });
   }

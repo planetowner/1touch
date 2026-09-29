@@ -18,6 +18,7 @@ class EmailRegistrationDraft {
     required this.firstName,
     required this.lastName,
     required this.username,
+    required this.displayName,
     required this.email,
     required this.password,
     required this.challengeId,
@@ -27,6 +28,7 @@ class EmailRegistrationDraft {
   final String firstName;
   final String lastName;
   final String username;
+  final String displayName;
   final String email;
   final String password;
   final String challengeId;
@@ -40,6 +42,7 @@ class EmailRegistrationDraft {
         firstName: firstName,
         lastName: lastName,
         username: username,
+        displayName: displayName,
         email: email,
         password: password,
         challengeId: challengeId,
@@ -183,6 +186,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen> {
           code: _code.text,
           password: draft.password,
           username: draft.username,
+          displayName: draft.displayName,
           firstName: draft.firstName,
           lastName: draft.lastName,
         );
