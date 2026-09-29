@@ -115,8 +115,7 @@ class PlayerShortNamesTests(unittest.TestCase):
                 values.append([(83, 'Short team')])
             values.append([(184798, 'Short player')])
             values.append([(564, 'League')])
-            if locale in ('en', 'ko'):
-                values.append([(712, 'Country')])
+            values.append([(712, 'Country')])
             with patch.object(football_names, 'fetch_all', side_effect=values) as fetch:
                 result = football_names.localized_names(locale)
             self.assertEqual(result['players'], {'184798': 'Full'})
@@ -125,7 +124,7 @@ class PlayerShortNamesTests(unittest.TestCase):
             column = 'name' if locale == 'en' else f'name_{locale}'
             fetch.assert_any_call(f'SELECT competition_id,{column} FROM competitions '
                                   f'WHERE {column} IS NOT NULL ORDER BY competition_id')
-            self.assertEqual(result['countries'], {'712': 'Country'} if locale in ('en', 'ko') else {})
+            self.assertEqual(result['countries'], {'712': 'Country'})
             if locale in ('ja', 'zh'):
                 self.assertEqual(result['team_short_names'], {})
 
@@ -140,7 +139,7 @@ class PlayerShortNamesTests(unittest.TestCase):
         self.assertEqual(client.get('/v1/football-names/ja/display').status_code, 401)
         app.dependency_overrides[get_user_id] = lambda: 1
         self.assertEqual(client.get('/v1/football-names/invalid/display').status_code, 422)
-        with patch.object(football_names, 'fetch_all', side_effect=[[], [(184798, 'リオネル・メッシ')], [(184798, 'L・メッシ')], [(564, 'ラ・リーガ')]]):
+        with patch.object(football_names, 'fetch_all', side_effect=[[], [(184798, 'リオネル・メッシ')], [(184798, 'L・メッシ')], [(564, 'ラ・リーガ')], [(712, '韓国')]]):
             result = client.get('/v1/football-names/ja/display')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()['player_short_names'], {'184798': 'L・メッシ'})

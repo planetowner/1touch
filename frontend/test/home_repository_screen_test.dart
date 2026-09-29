@@ -10,6 +10,7 @@ import 'package:onetouch/core/user_preferences.dart';
 import 'package:onetouch/data/home/home_repository.dart';
 import 'package:onetouch/data/fixtures/mock/mock_fixture_repository.dart';
 import 'package:onetouch/data/home/news_repository.dart';
+import 'package:onetouch/features/home/screen/home_screen_features.dart';
 import 'package:onetouch/models/home_content_item.dart';
 import 'package:onetouch/models/home_data.dart';
 import 'package:onetouch/models/fixture.dart';
@@ -660,6 +661,15 @@ void main() {
         .complete(_homeData(favoriteTeam: teams.last, followingTeams: teams));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.byIcon(Icons.sync));
+    await tester.tap(find.byIcon(Icons.sync));
+    await tester.pumpAndSettle();
+    final syncDialog = tester.widget<SyncDialog>(find.byType(SyncDialog));
+    expect(syncDialog.teamId, 503);
+    expect(syncDialog.teamName, contains('Bayern'));
+    await tester.tap(find.text('CANCEL'));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byIcon(Icons.chevron_right));
     await tester.pump();
     expect(homeRepository.calls.last.teamId, 503);
@@ -681,6 +691,11 @@ void main() {
     expect(homeRepository.calls.last.teamId, 19);
     homeRepository.calls.last.completer.complete(
         _homeData(favoriteTeam: const Team(teamId: 19, name: 'Arsenal')));
+    await tester.pumpAndSettle();
+    tester
+        .widget<CustomScrollView>(find.byType(CustomScrollView))
+        .controller!
+        .jumpTo(0);
     await tester.pumpAndSettle();
     expect(find.text('Arsenal'), findsOneWidget);
     expect(tester.takeException(), isNull);

@@ -506,7 +506,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               color: colorScheme.onSurface,
                               size: 24,
                             ),
-                            onPressed: () => SyncDialog.show(context),
+                            onPressed: () => SyncDialog.show(
+                              context,
+                              teamId: viewedTeamId,
+                              teamName: teamNameLabel(context, viewedTeamId,
+                                  homeData.favoriteTeam.name),
+                            ),
                           ),
                         ),
                       ],

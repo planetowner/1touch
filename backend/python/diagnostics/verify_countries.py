@@ -20,6 +20,8 @@ EXPECTED_COUNTRY_COLUMNS = [
     ("name", "varchar(120)", "NO"),
     ("image_path", "varchar(512)", "YES"),
     ("name_ko", "varchar(120)", "YES"),
+    ("name_ja", "varchar(120)", "YES"),
+    ("name_zh", "varchar(120)", "YES"),
 ]
 
 

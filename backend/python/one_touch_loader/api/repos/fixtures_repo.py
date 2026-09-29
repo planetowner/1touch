@@ -283,13 +283,14 @@ def list_team_fixtures(
 
     where = " AND ".join(clauses)
     # 예정 경기는 가까운 일정부터 페이지에 담고, 다른 조회는 기존 최신순을 유지해요.
+    # 같은 시작 시각에도 페이지 경계가 바뀌지 않도록 경기 ID로 순서를 확정해요.
     direction = "ASC" if status == "upcoming" else "DESC"
     return _with_status_many(
         fetch_all_dict(
             _BASE_SELECT
             + f"""
             WHERE {where}
-            ORDER BY f.starting_at {direction}
+            ORDER BY f.starting_at {direction}, f.fixture_id {direction}
             LIMIT %s OFFSET %s
             """,
             tuple(params + [limit, offset]),
