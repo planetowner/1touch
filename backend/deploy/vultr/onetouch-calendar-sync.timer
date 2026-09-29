@@ -1,0 +1,10 @@
+[Unit]
+Description=1Touch Google Calendar refresh schedule
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=15min
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target

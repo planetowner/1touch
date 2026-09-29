@@ -44,10 +44,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>GIDClientID</key>
-	<string>20814259598-q73q31tk4qpc0cv1j08drjiofd854hk6.apps.googleusercontent.com</string>
-	<key>GIDServerClientID</key>
-	<string>20814259598-dsu514vmr01t3cflhn6c8mobiu5pmpft.apps.googleusercontent.com</string>
 	<!-- Google Mobile Ads sample App ID. Replace before production. -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
