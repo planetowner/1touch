@@ -182,7 +182,8 @@ void main() {
               .dy));
 
       final fade = find.byKey(const ValueKey('matches-top-fade'));
-      expect(tester.getSize(fade).height, 56);
+      expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
+      expect(tester.getRect(fade), tester.getRect(scroll));
       expect(tester.getTopLeft(fade).dy,
           closeTo(tester.getTopLeft(scroll).dy, 0.1));
       expect(controller.position.minScrollExtent, lessThan(0));
@@ -191,14 +192,14 @@ void main() {
       controller.jumpTo(controller.position.minScrollExtent);
       await tester.pumpAndSettle();
       expect(
-        find.byKey(const ValueKey('matches-top-fade')),
-        findsNothing,
+        tester.widget<ShaderMask>(fade).blendMode,
+        BlendMode.dst,
       );
       controller.jumpTo(0);
       await tester.pumpAndSettle();
       expect(
-        find.byKey(const ValueKey('matches-top-fade')),
-        findsOneWidget,
+        tester.widget<ShaderMask>(fade).blendMode,
+        BlendMode.dstIn,
       );
 
       // 카드를 중간까지 스크롤해도 페이드 앞에 밝은 띠가 생기지 않아야 해요.
@@ -251,7 +252,12 @@ void main() {
       await tester.pumpWidget(_app(repository, teamId: 9));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const ValueKey('matches-top-fade')), findsNothing);
+      expect(
+        tester
+            .widget<ShaderMask>(find.byKey(const ValueKey('matches-top-fade')))
+            .blendMode,
+        BlendMode.dst,
+      );
       final first = find
           .byKey(ValueKey('team-fixture-card-${upcomingCount == 1 ? 2 : 1}'));
       expect(first.hitTestable(), findsOneWidget);
@@ -496,7 +502,9 @@ void main() {
 
     final fade = find.byKey(const ValueKey('matches-top-fade'));
     expect(fade, findsOneWidget);
-    expect(tester.getSize(fade).height, 56);
+    expect(tester.widget<ShaderMask>(fade).blendMode, BlendMode.dstIn);
+    expect(tester.getRect(fade),
+        tester.getRect(find.byKey(const ValueKey('matches-scroll'))));
     expect(
       tester.getTopLeft(fade).dy,
       closeTo(
