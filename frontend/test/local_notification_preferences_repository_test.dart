@@ -41,7 +41,6 @@ void main() {
   test('apply-to-all writes only the supplied followed entities', () async {
     final repository = LocalNotificationPreferencesRepository();
     const disabledTeams = TeamNotificationPreferences(
-      news: false,
       kickoff: false,
       halfTime: false,
       fullTime: false,
@@ -51,8 +50,8 @@ void main() {
     await repository.applyTeamToAll([83, 9], disabledTeams);
 
     final snapshot = await repository.load();
-    expect(snapshot.team(83).news, isFalse);
+    expect(snapshot.team(83).kickoff, isFalse);
     expect(snapshot.team(9).goal, isFalse);
-    expect(snapshot.team(14).news, isTrue);
+    expect(snapshot.team(14).kickoff, isTrue);
   });
 }

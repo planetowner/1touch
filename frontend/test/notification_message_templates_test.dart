@@ -4,12 +4,12 @@ import 'package:onetouch/services/device_notification_service.dart';
 import 'package:onetouch/services/notification_message_templates.dart';
 
 void main() {
-  test('contains iOS and Android rows except spreadsheet row 17', () {
-    expect(NotificationEventType.values, hasLength(18));
-    expect(
-      NotificationEventType.values.map((type) => type.spreadsheetNumber),
-      isNot(contains(17)),
-    );
+  test('contains iOS and Android rows except spreadsheet rows 1 and 17', () {
+    expect(NotificationEventType.values, hasLength(17));
+    final rows =
+        NotificationEventType.values.map((type) => type.spreadsheetNumber);
+    expect(rows, isNot(contains(1)));
+    expect(rows, isNot(contains(17)));
     expect(
       NotificationEventType.teamMatchReminder.deliveryTiming,
       NotificationDeliveryTiming.thirtyMinutesBeforeKickoff,
@@ -19,7 +19,7 @@ void main() {
           .where((type) =>
               type.deliveryTiming == NotificationDeliveryTiming.eventDriven)
           .length,
-      17,
+      16,
     );
   });
 

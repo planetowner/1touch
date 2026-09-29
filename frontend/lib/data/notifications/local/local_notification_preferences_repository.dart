@@ -111,7 +111,6 @@ class LocalNotificationPreferencesRepository
         'teams': {
           for (final entry in snapshot.teams.entries)
             '${entry.key}': {
-              'news': entry.value.news,
               'match_reminder': entry.value.matchReminder,
               'kickoff': entry.value.kickoff,
               'half_time': entry.value.halfTime,
@@ -160,7 +159,6 @@ class LocalNotificationPreferencesRepository
 
   TeamNotificationPreferences _decodeTeam(Map<String, dynamic> json) =>
       TeamNotificationPreferences(
-        news: _bool(json, 'news', true),
         matchReminder: _bool(json, 'match_reminder', false),
         kickoff: _bool(json, 'kickoff', true),
         halfTime: _bool(json, 'half_time', true),
