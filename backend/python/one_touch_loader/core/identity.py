@@ -5,6 +5,14 @@ import unicodedata
 from collections import defaultdict
 
 
+# 73643은 Toma Bašić의 중복 ID에 다른 선수의 생일이 섞여 있어요. 검증한 74062로 연결해요.
+SPORTMONKS_DUPLICATE_PLAYER_IDS = {73643: 74062}
+
+
+def canonical_sportmonks_player_id(player_id):
+    return SPORTMONKS_DUPLICATE_PLAYER_IDS.get(player_id, player_id)
+
+
 def normalize_identity_text(value: str) -> str:
     translated = value.casefold().translate(str.maketrans({
         # Yılmaz/Yilmaz·Yazıcı/Yazici처럼 실제 확인한 튀르키예어 표기 차이예요.

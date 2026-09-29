@@ -1,0 +1,11 @@
+[Unit]
+Description=1Touch pending push notifications
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=15s
+AccuracySec=1s
+Unit=onetouch-notifications@push.service
+
+[Install]
+WantedBy=timers.target
