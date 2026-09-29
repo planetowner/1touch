@@ -74,7 +74,7 @@ void main() {
             body: SingleChildScrollView(
               child: Column(
                 children: const [
-                  SyncDialog(),
+                  SyncDialog(teamId: 8, teamName: 'Liverpool'),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24),
                     child: MatchCard(
