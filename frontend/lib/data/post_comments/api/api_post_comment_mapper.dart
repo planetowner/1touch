@@ -51,6 +51,7 @@ PostComment postCommentFromApiResponse(
     editedAt: response.editedAt,
     state: state,
     username: response.username,
+    displayName: response.displayName,
     avatarUrl: _resolveOptionalUri(apiBaseUri, response.avatarUrl),
     authorDeleted: response.authorDeleted,
     likeCount: response.likeCount,

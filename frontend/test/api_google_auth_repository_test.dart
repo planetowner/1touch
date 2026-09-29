@@ -166,6 +166,7 @@ void main() {
               'code': '373262',
               'password': 'Password123',
               'username': 'member',
+              'display_name': 'Member',
               'first_name': 'First',
               'last_name': 'Last',
             });
@@ -186,6 +187,7 @@ void main() {
       code: '373262',
       password: 'Password123',
       username: 'member',
+      displayName: 'Member',
       firstName: 'First',
       lastName: 'Last',
     );
@@ -214,6 +216,7 @@ void main() {
         code: '000000',
         password: 'Password123',
         username: 'member',
+        displayName: 'Member',
         firstName: 'First',
         lastName: 'Last',
       ),

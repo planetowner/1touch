@@ -86,6 +86,7 @@ class _SessionScreenState extends State<SessionScreen> {
                     const SizedBox(height: 24),
                     ProfileFields(
                         username: profile.username,
+                        displayName: profile.displayName,
                         firstName: profile.firstName,
                         lastName: profile.lastName,
                         onSaved: _load),

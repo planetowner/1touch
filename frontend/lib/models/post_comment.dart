@@ -11,6 +11,7 @@ class PostComment {
     required this.editedAt,
     required this.state,
     required this.username,
+    this.displayName,
     required this.avatarUrl,
     required this.authorDeleted,
     required this.likeCount,
@@ -26,6 +27,7 @@ class PostComment {
   final String? editedAt;
   final PostCommentState state;
   final String? username;
+  final String? displayName;
   final String? avatarUrl;
   final bool authorDeleted;
   final int likeCount;

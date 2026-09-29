@@ -19,13 +19,13 @@ class PostSort(str, Enum):
 
 
 # 목록·상세·내 활동에서 작성자와 집계 정보를 같은 규칙으로 읽어요.
-_POST_SELECT = f"""SELECT p.*,u.username,EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=p.user_id) AS has_avatar,
+_POST_SELECT = f"""SELECT p.*,u.username,u.display_name,EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=p.user_id) AS has_avatar,
     (SELECT COUNT(*) FROM post_likes l WHERE l.post_id=p.post_id) AS like_count,
     (SELECT COUNT(*) FROM post_comments c WHERE c.post_id=p.post_id AND c.state='active' AND NOT {blocked_sql('c.user_id')}) AS comment_count,
     EXISTS(SELECT 1 FROM post_likes l WHERE l.post_id=p.post_id AND l.user_id=%s) AS liked
     FROM posts p LEFT JOIN users u ON u.user_id=p.user_id"""
 
-_COMMENT_SELECT = f"""SELECT c.*,u.username,{blocked_sql('c.user_id')} AS blocked,
+_COMMENT_SELECT = f"""SELECT c.*,u.username,u.display_name,{blocked_sql('c.user_id')} AS blocked,
     EXISTS(SELECT 1 FROM user_avatars a WHERE a.user_id=c.user_id) AS has_avatar,
     (SELECT COUNT(*) FROM comment_likes l WHERE l.comment_id=c.comment_id) AS like_count,
     EXISTS(SELECT 1 FROM comment_likes l WHERE l.comment_id=c.comment_id AND l.user_id=%s) AS liked
@@ -260,7 +260,7 @@ def _public_comment(row: dict) -> dict:
     public_author(row)
     if blocked or row["state"] != "active":
         # 댓글 행을 없애면 답글 대상이 사라져요. ID와 답글 관계만 남기고 내용은 숨겨요.
-        row.update(body="", username=None, user_id=None, avatar_url=None, liked=False, like_count=0,
+        row.update(body="", username=None, display_name=None, user_id=None, avatar_url=None, liked=False, like_count=0,
                    state="blocked" if blocked else row["state"])
     return public_row(row)
 

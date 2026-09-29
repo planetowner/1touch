@@ -119,11 +119,12 @@ def message(kind: str, data: dict, locale: str) -> dict:
     ko = locale.lower().startswith('ko')
     scope, _ = KINDS[kind]
     d = {key: data.get(key, '') for key in ('home_team', 'away_team', 'team', 'player', 'minute',
-                                         'score', 'in_player', 'out_player', 'username', 'comment_preview')}
+                                         'score', 'in_player', 'out_player', 'username', 'display_name', 'comment_preview')}
+    author_name = d['display_name'] or d['username']
     match = f"{d['home_team']} vs {d['away_team']}"
     bodies = {
-        'post_reaction': (f"{d['username']}님이 내 게시물에 좋아요를 눌렀어요.", f"{d['username']} liked your post."),
-        'post_comment': (f"{d['username']}: {d['comment_preview']}", f"{d['username']}: {d['comment_preview']}"),
+        'post_reaction': (f"{author_name}님이 내 게시물에 좋아요를 눌렀어요.", f"{author_name} liked your post."),
+        'post_comment': (f"{author_name}: {d['comment_preview']}", f"{author_name}: {d['comment_preview']}"),
         'team_new_bets': (f'{match} 베팅이 열렸어요.', f'Betting is open for {match}.'),
         'team_match_reminder': (f"{match} 경기가 {data.get('minutes_until_kickoff', 60)}분 후 시작해요.",
                                 f"{match} starts in {data.get('minutes_until_kickoff', 60)} minutes."),

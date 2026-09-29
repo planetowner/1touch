@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onetouch/core/style.dart';
+import 'package:onetouch/core/identity_name_rules.dart';
 import 'package:onetouch/core/stylesheet_dark.dart';
 import 'package:onetouch/data/auth/auth_repository_provider.dart'
     as auth_provider;
@@ -25,6 +26,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
   final _username = TextEditingController();
+  final _displayName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
 
@@ -54,6 +56,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       _firstName.text.trim().isNotEmpty &&
       _lastName.text.trim().isNotEmpty &&
       _username.text.trim().isNotEmpty &&
+      _displayName.text.trim().isNotEmpty &&
       _email.text.trim().isNotEmpty &&
       isValidNewPassword(_password.text);
 
@@ -72,7 +75,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         extra: EmailRegistrationDraft(
           firstName: _firstName.text.trim(),
           lastName: _lastName.text.trim(),
-          username: _username.text.trim(),
+          username: _username.text,
+          displayName: _displayName.text,
           email: email,
           password: _password.text,
           challengeId: challenge.challengeId,
@@ -107,6 +111,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     _firstName.dispose();
     _lastName.dispose();
     _username.dispose();
+    _displayName.dispose();
     _email.dispose();
     _password.dispose();
     super.dispose();
@@ -173,10 +178,29 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _username,
-                        decoration: _dec(context, 'john_doe'),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? tr(context, 'Enter username')
-                            : null,
+                        maxLength: 30,
+                        decoration:
+                            _dec(context, 'john_doe').copyWith(counterText: ''),
+                        validator: (v) {
+                          final message = usernameValidationMessage(v ?? '');
+                          return message == null ? null : tr(context, message);
+                        },
+                        style: Body1.style,
+                      ),
+                      const SizedBox(height: 16),
+
+                      Text(tr(context, 'Nickname'), style: Eyebrow.style),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        key: const ValueKey('signup-display-name-field'),
+                        controller: _displayName,
+                        maxLength: 12,
+                        decoration:
+                            _dec(context, '불광동호날두').copyWith(counterText: ''),
+                        validator: (v) {
+                          final message = displayNameValidationMessage(v ?? '');
+                          return message == null ? null : tr(context, message);
+                        },
                         style: Body1.style,
                       ),
                       const SizedBox(height: 16),

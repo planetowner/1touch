@@ -39,7 +39,7 @@ def email_code(body: EmailCodeBody):
 @router.post("/auth/email/register", dependencies=[Depends(auth_request_limit)], status_code=201)
 def register_email(body: RegisterEmailBody):
     return auth_repo.register_email(body.challenge_id, body.code, body.password,
-                                   body.model_dump(include={"username", "first_name", "last_name"}))
+                                   body.model_dump(include={"username", "display_name", "first_name", "last_name"}))
 
 
 @router.post("/auth/login", dependencies=[Depends(auth_request_limit)])

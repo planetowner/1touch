@@ -35,6 +35,7 @@ class ApiPostCommentResponse {
     required this.editedAt,
     required this.state,
     required this.username,
+    this.displayName,
     required this.avatarUrl,
     required this.authorDeleted,
     required this.likeCount,
@@ -50,6 +51,7 @@ class ApiPostCommentResponse {
   final String? editedAt;
   final String state;
   final String? username;
+  final String? displayName;
   final String? avatarUrl;
   final bool authorDeleted;
   final int likeCount;
@@ -66,6 +68,7 @@ class ApiPostCommentResponse {
       editedAt: _nullableString(json, 'edited_at'),
       state: _requiredString(json, 'state'),
       username: _nullableString(json, 'username'),
+      displayName: json['display_name'] as String?,
       avatarUrl: _nullableString(json, 'avatar_url'),
       authorDeleted: _requiredBool(json, 'author_deleted'),
       likeCount: _requiredInt(json, 'like_count'),

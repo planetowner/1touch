@@ -143,9 +143,10 @@ class PostDetailContent extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          communityUsernameLabel(
+                          communityAuthorLabel(
                             locale: Localizations.localeOf(context),
                             username: post.username,
+                            displayName: post.displayName,
                             authorDeleted: post.authorDeleted,
                           ),
                           style: Body1.style,
@@ -634,9 +635,10 @@ class _PostCommentRow extends StatelessWidget {
 
 String _commentAuthorLabel(BuildContext context, PostComment comment) {
   return switch (comment.state) {
-    PostCommentState.active => communityUsernameLabel(
+    PostCommentState.active => communityAuthorLabel(
         locale: Localizations.localeOf(context),
         username: comment.username,
+        displayName: comment.displayName,
         authorDeleted: comment.authorDeleted,
       ),
     PostCommentState.deleted => tr(context, 'Deleted comment'),

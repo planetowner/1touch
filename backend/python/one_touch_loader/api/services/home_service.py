@@ -24,7 +24,7 @@ def build_home_payload(
     if team_id is not None and team_id not in following_ids:
         raise HTTPException(status_code=400, detail="Select a followed team to view Home")
 
-    # 홈에서 볼 팀은 조회에만 써요. 저장된 최애팀과 7일 변경 제한은 건드리지 않아요.
+    # 홈에서 볼 팀은 조회에만 써요. 저장된 최애팀과 14일 변경 횟수는 건드리지 않아요.
     viewed_team_id = team_id if team_id is not None else get_favorite_team_id(user_id)
     viewed_team = None
     if viewed_team_id:

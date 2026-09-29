@@ -56,6 +56,7 @@ void main() {
           body = {
             'user_id': 1,
             'username': 'example',
+            'display_name': 'Example',
             'first_name': 'First',
             'last_name': 'Last',
             'email': null,
