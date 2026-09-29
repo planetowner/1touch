@@ -18,11 +18,38 @@ class CalendarEvent {
   });
 }
 
+/// Include cup competitions found in this month's fixtures even when the
+/// catalog's current team memberships only include the domestic league.
+List<Competition> calendarCompetitionsForFixtures({
+  required List<Competition> participatingCompetitions,
+  required List<Competition> catalogCompetitions,
+  required List<HomeCalendarFixture> fixtures,
+}) {
+  final competitionsById = {
+    for (final competition in participatingCompetitions)
+      competition.competitionId: competition,
+  };
+  final catalogById = {
+    for (final competition in catalogCompetitions)
+      competition.competitionId: competition,
+  };
+  for (final match in fixtures) {
+    final fixture = match.fixture;
+    if (fixture.competitionType == CompetitionType.league) continue;
+    final competition = catalogById[fixture.competitionId];
+    if (competition != null) {
+      competitionsById[competition.competitionId] = competition;
+    }
+  }
+  return competitionsById.values.toList(growable: false);
+}
+
 class FixtureCalendar extends StatefulWidget {
   final List<HomeCalendarFixture> allMatches;
   final int favoriteTeamId;
   final List<Competition> participatingCompetitions;
   final ValueChanged<DateTime>? onMonthChanged;
+  final DateTime? selectedMonth;
 
   const FixtureCalendar({
     super.key,
@@ -30,6 +57,7 @@ class FixtureCalendar extends StatefulWidget {
     required this.favoriteTeamId,
     required this.participatingCompetitions,
     this.onMonthChanged,
+    this.selectedMonth,
   });
 
   @override
@@ -37,29 +65,33 @@ class FixtureCalendar extends StatefulWidget {
 }
 
 class _FixtureCalendarState extends State<FixtureCalendar> {
-  DateTime _currentMonth =
-      DateTime(DateTime.now().year, DateTime.now().month, 1);
+  late DateTime _currentMonth =
+      _monthStart(widget.selectedMonth ?? DateTime.now());
 
-  // 유럽대항전 → 자국 컵 → 잉글랜드 리그컵 → 자국 리그 순서로
-  // 색을 배정해 기존 컵 색상을 유지하면서 리그도 항상 표시해요.
+  static DateTime _monthStart(DateTime date) =>
+      DateTime(date.year, date.month, 1);
+
+  @override
+  void didUpdateWidget(covariant FixtureCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedMonth case final selectedMonth?) {
+      if (_monthStart(selectedMonth) != _currentMonth) {
+        _currentMonth = _monthStart(selectedMonth);
+      }
+    }
+  }
+
+  // 유럽대항전 → 자국 컵 → 잉글랜드 리그컵 순서로 색을 배정해요.
   static int _competitionPriority(Competition competition) =>
       switch (competition.competitionId) {
         2 || 5 || 2286 => 0,
         27 => 2,
-        8 || 82 || 301 || 384 || 564 => 3,
         _ => 1,
       };
 
   static String _competitionLegendLabel(Competition competition) =>
-      switch (competition.competitionId) {
-        8 => competition.name,
-        // `BL` is the provider's short code, but it is not the approved
-        // user-facing abbreviation for the Bundesliga calendar legend.
-        82 => competition.name,
-        301 => 'League 1',
-        _ => normalizeCompetitionDisplayLabel(
-            competition.shortCode ?? competition.name),
-      };
+      normalizeCompetitionDisplayLabel(
+          competition.shortCode ?? competition.name);
 
   Map<DateTime, List<CalendarEvent>> _generateEventsForMonth(
       DateTime month, Map<int, Color> competitionColors) {
@@ -85,7 +117,9 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
             fixture: fixture,
             opponentLogoUrl: opponent.imagePath ?? '',
             opponentTeamId: opponent.teamId,
-            dotColor: competitionColors[fixture.competitionId],
+            dotColor: fixture.competitionType == CompetitionType.league
+                ? null
+                : competitionColors[fixture.competitionId],
             fixtureId: fixture.fixtureId,
             status: fixture.status.name,
           ));
@@ -128,8 +162,17 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    // 월별 경기 유무와 관계없이 참가 대회에 색을 배정해 범례와 경기 점을 함께 사용해요.
-    final competitions = widget.participatingCompetitions.toList()
+    // 리그는 로고만 보여주고, 범례와 점 색상은 컵 대회에만 사용해요.
+    final leagueCompetitionIds = {
+      ...TeamPageEligibility.domesticBigFiveCompetitionIds,
+      for (final match in widget.allMatches)
+        if (match.fixture.competitionType == CompetitionType.league)
+          match.fixture.competitionId,
+    };
+    final competitions = widget.participatingCompetitions
+        .where((competition) =>
+            !leagueCompetitionIds.contains(competition.competitionId))
+        .toList()
       ..sort((a, b) {
         final priority =
             _competitionPriority(a).compareTo(_competitionPriority(b));
@@ -355,6 +398,12 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
 
     final date = DateTime(_currentMonth.year, _currentMonth.month, dayNumber);
     final dayEvents = events[date] ?? [];
+    // A date can contain more than one fixture. Keep the cup fixture visible
+    // when a league fixture happens to be first in the API response.
+    final displayedEvent = dayEvents.cast<CalendarEvent?>().firstWhere(
+          (event) => event!.dotColor != null,
+          orElse: () => dayEvents.isEmpty ? null : dayEvents.first,
+        );
     final today = DateTime.now();
     final todayDateOnly = DateTime(today.year, today.month, today.day);
     final isHighlighted = date == todayDateOnly;
@@ -365,10 +414,10 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: dayEvents.isNotEmpty
+      onTap: displayedEvent != null
           ? () => context.push(
-                '/match/${dayEvents.first.fixtureId}?status=${dayEvents.first.status}',
-                extra: dayEvents.first.fixture,
+                '/match/${displayedEvent.fixtureId}?status=${displayedEvent.status}',
+                extra: displayedEvent.fixture,
               )
           : null,
       child: Container(
@@ -391,7 +440,7 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
               ),
             ),
             const SizedBox(height: 8),
-            if (dayEvents.isNotEmpty) ...[
+            if (displayedEvent != null) ...[
               SizedBox(
                 width: double.infinity,
                 height: 28,
@@ -399,26 +448,26 @@ class _FixtureCalendarState extends State<FixtureCalendar> {
                   alignment: Alignment.center,
                   children: [
                     Image.network(
-                      dayEvents.first.opponentLogoUrl,
+                      displayedEvent.opponentLogoUrl,
                       width: 28,
                       height: 28,
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => teamLogoFallback(
-                        dayEvents.first.opponentTeamId,
+                        displayedEvent.opponentTeamId,
                         size: 28,
                       ),
                     ),
-                    if (dayEvents.first.dotColor != null)
+                    if (displayedEvent.dotColor != null)
                       Positioned(
                         top: 0,
                         right: 3,
                         child: Container(
                           key: ValueKey(
-                              'calendar-fixture-dot-${dayEvents.first.fixtureId}'),
+                              'calendar-fixture-dot-${displayedEvent.fixtureId}'),
                           width: 6,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: dayEvents.first.dotColor,
+                            color: displayedEvent.dotColor,
                             shape: BoxShape.circle,
                           ),
                         ),
