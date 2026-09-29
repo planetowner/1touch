@@ -216,7 +216,7 @@ class XgTable extends StatelessWidget {
   }
 
   String _formatXpts(dynamic value) {
-    if (value is num) return value.toStringAsFixed(1);
+    if (value is num) return value.toStringAsFixed(0);
     return '—';
   }
 }
