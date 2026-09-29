@@ -5,36 +5,29 @@ import 'package:onetouch/core/app_segmented_toggle.dart';
 import 'package:onetouch/core/style.dart';
 import 'package:onetouch/core/stylesheet.dart';
 import 'package:onetouch/data/profile/current_user_repository_provider.dart';
+import 'package:onetouch/data/profile/profile_activity_repository.dart';
+import 'package:onetouch/data/profile/profile_activity_repository_provider.dart';
 import 'package:onetouch/features/community/community_feed_widgets.dart';
 import 'package:onetouch/l10n/app_localizations.dart';
 import 'package:onetouch/l10n/user_name_labels.dart';
 import 'package:onetouch/models/current_user_profile.dart';
 import 'package:onetouch/models/post.dart';
-import 'package:onetouch/models/post_comment.dart';
+import 'package:onetouch/models/profile_comment_activity.dart';
 import 'package:onetouch/screens/CommunityScreen_utils/PostScreen.dart';
 
 enum ProfileActivityTab { posts, comments }
-
-class ProfileCommentActivity {
-  const ProfileCommentActivity({required this.post, required this.comment});
-
-  final Post post;
-  final PostComment comment;
-}
 
 class ProfileActivityScreen extends StatefulWidget {
   const ProfileActivityScreen({
     super.key,
     this.profile,
     this.initialTab = ProfileActivityTab.posts,
-    this.posts = const [],
-    this.comments = const [],
+    this.repository,
   });
 
   final CurrentUserProfile? profile;
   final ProfileActivityTab initialTab;
-  final List<Post> posts;
-  final List<ProfileCommentActivity> comments;
+  final ProfileActivityRepository? repository;
 
   @override
   State<ProfileActivityScreen> createState() => _ProfileActivityScreenState();
@@ -42,6 +35,9 @@ class ProfileActivityScreen extends StatefulWidget {
 
 class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
   late ProfileActivityTab _selectedTab = widget.initialTab;
+  int _activityRevision = 0;
+  ProfileActivityRepository get _repository =>
+      widget.repository ?? profileActivityRepository;
   late final Future<CurrentUserProfile> _profileFuture = widget.profile == null
       ? currentUserRepository.load()
       : Future.value(widget.profile!);
@@ -162,27 +158,41 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
 
   Widget _buildActivity(BuildContext context) {
     if (_selectedTab == ProfileActivityTab.posts) {
-      if (widget.posts.isEmpty) {
-        return _emptyState(context, 'No posts yet.');
-      }
-      return CommunityPostList(
-        posts: widget.posts,
-        onPostTap: _openPost,
+      return _ActivityList<Post>(
+        key: ValueKey((_selectedTab, _activityRevision)),
+        tab: _selectedTab,
+        loadPage: _repository.loadPosts,
+        emptyMessage: 'No posts yet.',
+        errorMessage: 'Unable to load community posts.',
+        buildList: (items) => CommunityPostList(
+          posts: items,
+          onPostTap: _openPost,
+          physics: const AlwaysScrollableScrollPhysics(),
+        ),
       );
     }
-    if (widget.comments.isEmpty) {
-      return _emptyState(context, 'No comments yet.');
-    }
+    return _ActivityList<ProfileCommentActivity>(
+      key: ValueKey((_selectedTab, _activityRevision)),
+      tab: _selectedTab,
+      loadPage: _repository.loadComments,
+      emptyMessage: 'No comments yet.',
+      errorMessage: 'Unable to load comments.',
+      buildList: _buildComments,
+    );
+  }
+
+  Widget _buildComments(List<ProfileCommentActivity> comments) {
     return ListView.separated(
       key: const ValueKey('profile-activity-comments-list'),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: widget.comments.length,
+      itemCount: comments.length,
       separatorBuilder: (context, _) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Divider(height: 1, color: AppColors.of(context).divider),
       ),
       itemBuilder: (context, index) {
-        final activity = widget.comments[index];
+        final activity = comments[index];
         return InkWell(
           key: ValueKey(
               'profile-activity-comment-${activity.comment.commentId}'),
@@ -212,18 +222,145 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen> {
     );
   }
 
-  Widget _emptyState(BuildContext context, String message) => Center(
-        child: Text(
-          tr(context, message),
-          key: ValueKey('profile-activity-empty-${_selectedTab.name}'),
-          style: Body1.style
-              .copyWith(color: AppColors.of(context).mutedForeground),
+  Future<void> _openPost(Post post) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => PostDetailScreen(post: post)),
+    );
+    // 상세에서 바뀐 좋아요와 댓글 수를 돌아온 목록에도 반영해요.
+    if (mounted) setState(() => _activityRevision++);
+  }
+}
+
+// 게시글과 댓글은 항목 UI만 다르고 조회·새로고침·페이지·오류 처리는 같아요.
+class _ActivityList<T> extends StatefulWidget {
+  const _ActivityList({
+    super.key,
+    required this.tab,
+    required this.loadPage,
+    required this.emptyMessage,
+    required this.errorMessage,
+    required this.buildList,
+  });
+
+  final ProfileActivityTab tab;
+  final Future<List<T>> Function({int limit, int offset}) loadPage;
+  final String emptyMessage;
+  final String errorMessage;
+  final Widget Function(List<T>) buildList;
+
+  @override
+  State<_ActivityList<T>> createState() => _ActivityListState<T>();
+}
+
+class _ActivityListState<T> extends State<_ActivityList<T>> {
+  static const _pageSize = 50;
+  List<T> _items = [];
+  bool _loading = false;
+  bool _hasMore = true;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load({bool refresh = false}) async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _failed = false;
+      if (refresh) _items = [];
+    });
+    try {
+      final page = await widget.loadPage(
+        limit: _pageSize,
+        offset: _items.length,
+      );
+      if (!mounted) return;
+      setState(() {
+        _items = [..._items, ...page];
+        _hasMore = page.length == _pageSize;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _failed = true;
+        _loading = false;
+      });
+    }
+  }
+
+  Widget _error() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+                child:
+                    Text(tr(context, widget.errorMessage), style: Body1.style)),
+            TextButton(
+              key: ValueKey('profile-activity-retry-${widget.tab.name}'),
+              onPressed: () => _load(),
+              child: Text(tr(context, 'Retry')),
+            ),
+          ],
         ),
       );
 
-  void _openPost(Post post) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => PostDetailScreen(post: post)),
+  @override
+  Widget build(BuildContext context) {
+    final loading = Center(
+      child: CircularProgressIndicator(
+        key: ValueKey('profile-activity-loading-${widget.tab.name}'),
+      ),
+    );
+    if (_items.isEmpty && _loading) return loading;
+    if (_items.isEmpty && _failed) {
+      return Center(child: SingleChildScrollView(child: _error()));
+    }
+    return Column(
+      children: [
+        Expanded(
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification.depth == 0 &&
+                  (notification is ScrollUpdateNotification ||
+                      notification is OverscrollNotification) &&
+                  notification.metrics.extentAfter < 200 &&
+                  _hasMore &&
+                  !_failed) {
+                _load();
+              }
+              return false;
+            },
+            child: RefreshIndicator(
+              onRefresh: () => _load(refresh: true),
+              child: _items.isEmpty
+                  ? CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Text(
+                              tr(context, widget.emptyMessage),
+                              key: ValueKey(
+                                  'profile-activity-empty-${widget.tab.name}'),
+                              style: Body1.style.copyWith(
+                                  color: AppColors.of(context).mutedForeground),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : widget.buildList(_items),
+            ),
+          ),
+        ),
+        if (_failed) _error(),
+        if (_loading) SizedBox(height: 48, child: loading),
+      ],
     );
   }
 }

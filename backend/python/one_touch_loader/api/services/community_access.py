@@ -14,9 +14,17 @@ def require_favorite_team_access(
         raise HTTPException(status_code=403, detail="Access requires a matching home favorite team")
 
 
+def community_read_team_ids(
+    favorite_team_id: int | None, followed_team_ids: list[int]
+) -> tuple[int, ...]:
+    # 다른 팔로우 팀은 조회만 허용해요. 작성·좋아요 권한과 경기 채팅에는 적용하지 않아요.
+    if favorite_team_id is None:
+        raise HTTPException(status_code=403, detail="Community viewing requires a followed team")
+    return tuple(dict.fromkeys((favorite_team_id, *followed_team_ids)))
+
+
 def require_community_read_access(
     favorite_team_id: int | None, followed_team_ids: list[int], team_id: int
 ) -> None:
-    # 다른 팔로우 팀은 조회만 허용해요. 작성·좋아요 권한과 경기 채팅에는 적용하지 않아요.
-    if favorite_team_id is None or (team_id != favorite_team_id and team_id not in followed_team_ids):
+    if team_id not in community_read_team_ids(favorite_team_id, followed_team_ids):
         raise HTTPException(status_code=403, detail="Community viewing requires a followed team")
