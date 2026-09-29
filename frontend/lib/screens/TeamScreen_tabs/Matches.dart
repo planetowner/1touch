@@ -36,6 +36,23 @@ class MatchesTab extends StatefulWidget {
 }
 
 class _MatchesTabState extends State<MatchesTab> {
+  // 공유 미리보기에서 디자이너가 확정한 높이와 알파 값을 사용해요.
+  static const _topFadeHeight = 40.0;
+  static const _topFadeGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0x00000000),
+      Color(0x00000000),
+      Color(0x40000000),
+      Color(0x80000000),
+      Color(0xCC000000),
+      Color(0xFF000000),
+      Color(0xFF000000),
+    ],
+    stops: [0, 0.20, 0.45, 0.70, 0.82, 0.92, 1],
+  );
+
   final ScrollController _scrollController =
       ScrollController(keepScrollOffset: false);
   final GlobalKey _entrySliverKey = GlobalKey();
@@ -289,7 +306,9 @@ class _MatchesTabState extends State<MatchesTab> {
     final visibleHeaderCount = _visibleHeaderCount.clamp(0, sections.length);
     final laterUpcomingCount =
         (upcomingMatches.length - 2).clamp(0, upcomingMatches.length);
-    final pageBackground = mainPageBackground(context);
+    final showTopFade =
+        (upcomingMatches.length > 1 && !_isAtLastUpcomingMatch) ||
+            visibleHeaderCount > 1;
 
     return Column(
       key: const ValueKey('matches-tab-layout'),
@@ -315,126 +334,105 @@ class _MatchesTabState extends State<MatchesTab> {
           ],
         ),
         Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  if (notification is OverscrollNotification &&
-                      notification.overscroll < 0 &&
-                      notification.metrics.pixels <=
-                          notification.metrics.minScrollExtent + 0.5) {
-                    widget.onTopOverscroll?.call();
-                  }
-                  return false;
-                },
-                child: CustomScrollView(
-                  key: const ValueKey('matches-scroll'),
-                  controller: _scrollController,
-                  // 가까운 예정 경기 두 개에서 시작하고, 더 먼 일정은 위로 이어 붙여요.
-                  center: _entrySliverKey,
-                  slivers: [
-                    if (laterUpcomingCount > 0)
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (_, index) => buildMatchCard(
-                            upcomingMatches[laterUpcomingCount - index - 1],
+          // 그림자까지 같은 마스크로 지우고, 페이드가 꺼져도 스크롤 트리는 유지해요.
+          child: ShaderMask(
+            key: const ValueKey('matches-top-fade'),
+            blendMode: showTopFade ? BlendMode.dstIn : BlendMode.dst,
+            shaderCallback: (bounds) => _topFadeGradient.createShader(
+              Rect.fromLTWH(0, 0, bounds.width, _topFadeHeight),
+            ),
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification is OverscrollNotification &&
+                    notification.overscroll < 0 &&
+                    notification.metrics.pixels <=
+                        notification.metrics.minScrollExtent + 0.5) {
+                  widget.onTopOverscroll?.call();
+                }
+                return false;
+              },
+              child: CustomScrollView(
+                key: const ValueKey('matches-scroll'),
+                controller: _scrollController,
+                // 가까운 예정 경기 두 개에서 시작하고, 더 먼 일정은 위로 이어 붙여요.
+                center: _entrySliverKey,
+                slivers: [
+                  if (laterUpcomingCount > 0)
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (_, index) => buildMatchCard(
+                          upcomingMatches[laterUpcomingCount - index - 1],
+                        ),
+                        childCount: laterUpcomingCount,
+                      ),
+                    ),
+                  for (var index = 0; index < sections.length; index++) ...[
+                    // 카드 하단 8px에 16px을 더해 마지막 카드와 divider를 24px 띄워요.
+                    if (index > 0)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                          child: Container(
+                            key: ValueKey(
+                                'matches-${sections[index].type.name}-divider'),
+                            height: 1,
+                            color: index < visibleHeaderCount
+                                ? Colors.transparent
+                                : Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? AppPalette.lightGrey
+                                    : AppColors.of(context).divider,
                           ),
-                          childCount: laterUpcomingCount,
                         ),
                       ),
-                    for (var index = 0; index < sections.length; index++) ...[
-                      // 카드 하단 8px에 16px을 더해 마지막 카드와 divider를 24px 띄워요.
-                      if (index > 0)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                            child: Container(
-                              key: ValueKey(
-                                  'matches-${sections[index].type.name}-divider'),
-                              height: 1,
-                              color: index < visibleHeaderCount
-                                  ? Colors.transparent
-                                  : Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppPalette.lightGrey
-                                      : AppColors.of(context).divider,
-                            ),
-                          ),
-                        ),
-                      if (index > 0)
-                        SliverToBoxAdapter(
-                          child: SizedBox(
-                            key: sections[index].key,
-                            height: _MatchSectionHeader.sectionHeight +
-                                _MatchSectionHeader.cardSpacing,
-                            child: index < visibleHeaderCount
-                                ? const SizedBox.expand()
-                                : Align(
-                                    alignment: Alignment.topCenter,
-                                    child: SizedBox(
-                                      height: _MatchSectionHeader.sectionHeight,
-                                      child: _MatchSectionHeader(
-                                        key: ValueKey(
-                                          'matches-inline-${sections[index].type.name}-header',
-                                        ),
-                                        title: sections[index].title,
+                    if (index > 0)
+                      SliverToBoxAdapter(
+                        child: SizedBox(
+                          key: sections[index].key,
+                          height: _MatchSectionHeader.sectionHeight +
+                              _MatchSectionHeader.cardSpacing,
+                          child: index < visibleHeaderCount
+                              ? const SizedBox.expand()
+                              : Align(
+                                  alignment: Alignment.topCenter,
+                                  child: SizedBox(
+                                    height: _MatchSectionHeader.sectionHeight,
+                                    child: _MatchSectionHeader(
+                                      key: ValueKey(
+                                        'matches-inline-${sections[index].type.name}-header',
                                       ),
+                                      title: sections[index].title,
                                     ),
                                   ),
-                          ),
-                        )
-                      else
-                        SliverToBoxAdapter(
-                          key: _entrySliverKey,
-                          child: SizedBox(key: sections[index].key, height: 0),
+                                ),
                         ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (_, matchIndex) => buildMatchCard(
-                            sections[index].matches[matchIndex +
-                                (sections[index].type == _MatchSection.upcoming
-                                    ? laterUpcomingCount
-                                    : 0)],
-                          ),
-                          childCount: sections[index].matches.length -
+                      )
+                    else
+                      SliverToBoxAdapter(
+                        key: _entrySliverKey,
+                        child: SizedBox(key: sections[index].key, height: 0),
+                      ),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (_, matchIndex) => buildMatchCard(
+                          sections[index].matches[matchIndex +
                               (sections[index].type == _MatchSection.upcoming
                                   ? laterUpcomingCount
-                                  : 0),
+                                  : 0)],
                         ),
+                        childCount: sections[index].matches.length -
+                            (sections[index].type == _MatchSection.upcoming
+                                ? laterUpcomingCount
+                                : 0),
                       ),
-                    ],
-                    SliverPadding(
-                      padding: EdgeInsets.only(bottom: _trailingScrollExtent),
                     ),
                   ],
-                ),
-              ),
-              if ((upcomingMatches.length > 1 && !_isAtLastUpcomingMatch) ||
-                  visibleHeaderCount > 1)
-                Positioned(
-                  top: 0,
-                  left: 24,
-                  right: 24,
-                  height: 56,
-                  child: IgnorePointer(
-                    child: DecoratedBox(
-                      key: const ValueKey('matches-top-fade'),
-                      decoration: BoxDecoration(
-                        // 스크롤 경계부터 가려야 지나가는 카드 위에 밝은 띠가 남지 않아요.
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            pageBackground,
-                            pageBackground.withValues(alpha: 0),
-                          ],
-                        ),
-                      ),
-                    ),
+                  SliverPadding(
+                    padding: EdgeInsets.only(bottom: _trailingScrollExtent),
                   ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ],
